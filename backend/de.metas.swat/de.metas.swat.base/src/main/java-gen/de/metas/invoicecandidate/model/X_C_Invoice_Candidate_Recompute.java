@@ -63,21 +63,6 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
-	{
-		if (C_Async_Batch_ID < 1)
-			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
-		else
-			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
-	}
-
-	@Override
-	public int getC_Async_Batch_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
-	}
-	
-	@Override
 	public I_C_Invoice_Candidate getC_Invoice_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.class);

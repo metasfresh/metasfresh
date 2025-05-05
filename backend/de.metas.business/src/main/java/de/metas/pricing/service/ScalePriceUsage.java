@@ -23,15 +23,16 @@
 package de.metas.pricing.service;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.collect.ImmutableMap;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_M_ProductPrice;
 
+import java.util.Objects;
+
+@Getter
 @AllArgsConstructor
 public enum ScalePriceUsage implements ReferenceListAwareEnum
 {
@@ -39,30 +40,30 @@ public enum ScalePriceUsage implements ReferenceListAwareEnum
 	USE_SCALE_PRICE_STRICT(X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict),
 	USE_SCALE_PRICE(X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice);
 
-	@Getter
+	private static final ReferenceListAwareEnums.ValuesIndex<ScalePriceUsage> index = ReferenceListAwareEnums.index(values());
+
 	private final String code;
 
 	@JsonCreator
 	@NonNull
-	public static ScalePriceUsage ofCode(@NonNull final String code)
-	{
-		final ScalePriceUsage scalePriceUsage = typesByCode.get(code);
-		if (scalePriceUsage == null)
-		{
-			throw new AdempiereException("No " + ScalePriceUsage.class + " found for code: " + code);
-		}
+	public static ScalePriceUsage ofCode(@NonNull final String code) {return index.ofCode(code);}
 
-		return scalePriceUsage;
-	}
+	public static boolean equals(ScalePriceUsage type1, ScalePriceUsage type2) {return Objects.equals(type1, type2);}
 
-	private static final ImmutableMap<String, ScalePriceUsage> typesByCode = ReferenceListAwareEnums.indexByCode(values());
-
-	public boolean useScalePrice()
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public boolean isUseScalePrice()
 	{
 		return this == USE_SCALE_PRICE_STRICT || this == USE_SCALE_PRICE;
 	}
 
-	public boolean allowFallbackToProductPrice()
+	public boolean isUseScalePriceStrict()
+	{
+		return this == USE_SCALE_PRICE_STRICT;
+	}
+
+	public boolean isDoNotUseScalePrice() {return this == DONT_USE_SCALE_PRICE;}
+
+	public boolean isAllowFallbackToProductPrice()
 	{
 		return this == USE_SCALE_PRICE;
 	}

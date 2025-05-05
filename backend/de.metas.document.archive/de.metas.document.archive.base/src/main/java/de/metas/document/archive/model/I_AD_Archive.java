@@ -27,9 +27,10 @@ public interface I_AD_Archive extends org.compiere.model.I_AD_Archive
 {
 	//@formatter:off
 	// task 09417
-	String COLUMNNAME_C_Doc_Outbound_Config_ID = "C_Doc_Outbound_Config_ID";
+	@Override
 	void setC_Doc_Outbound_Config_ID(int C_Doc_Outbound_Config_ID);
-	I_C_Doc_Outbound_Config getC_Doc_Outbound_Config();
+	//I_C_Doc_Outbound_Config getC_Doc_Outbound_Config();
+	@Override
 	int getC_Doc_Outbound_Config_ID();
 	//@formatter:on
 }

@@ -24,9 +24,11 @@ package de.metas.rest_api.v2.shipping;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.JsonRequestCandidateResult;
 import de.metas.common.shipping.v2.JsonRequestCandidateResults;
@@ -131,9 +133,9 @@ class ShipmentCandidateAPIServiceTest
 
 		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
 				new ShipmentScheduleAuditRepository(),
-				new ShipmentScheduleRepository(),
-				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
-				new ProductRepository(),
+				new ShipmentScheduleRepository(ModelCacheInvalidationService.newInstanceForUnitTesting()),
+				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository()),
+				ProductRepository.newInstanceForUnitTesting(),
 				exportSequenceNumberProvider,
 				new OxidAdaptor());
 	}

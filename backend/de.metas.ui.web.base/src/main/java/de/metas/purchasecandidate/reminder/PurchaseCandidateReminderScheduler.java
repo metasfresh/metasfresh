@@ -29,6 +29,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
@@ -73,7 +74,7 @@ import java.util.concurrent.ScheduledFuture;
 
 /**
  * Class responsible with notifying all users which have {@link #NOTIFICATION_GROUP_NAME} in one of their roles about which purchase candidates are due.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 @Component
@@ -132,14 +133,6 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	public synchronized ZonedDateTime getNextDispatchTime()
 	{
 		return nextDispatch != null ? nextDispatch.getNotificationTime() : null;
-	}
-
-	public void scheduleNotification(final BPartnerId vendorBPartnerId, final ZonedDateTime notificationTime)
-	{
-		scheduleNotification(PurchaseCandidateReminder.builder()
-				.vendorBPartnerId(vendorBPartnerId)
-				.notificationTime(notificationTime)
-				.build());
 	}
 
 	public synchronized void scheduleNotification(@NonNull final PurchaseCandidateReminder reminder)
@@ -218,15 +211,12 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 				.contentADMessage(MSG_PurchaseCandidatesDue)
 				.contentADMessageParam(count)
 				.contentADMessageParam(TableRecordReference.of(I_C_BPartner.Table_Name, reminder.getVendorBPartnerId().getRepoId()))
-				.targetAction(TargetViewAction.builder()
-						.adWindowId(viewId.getWindowId().toAdWindowIdOrNull())
-						.viewId(viewId.toJson())
-						.build())
+				.targetAction(TargetViewAction.openViewById(viewId.toJson(), viewId.getWindowId().toAdWindowIdOrNull()))
 				.build();
 		Services.get(INotificationBL.class).send(notification);
 	}
 
-	private final IView createPurchaseCandidatesView(final PurchaseCandidateReminder reminder)
+	private IView createPurchaseCandidatesView(final PurchaseCandidateReminder reminder)
 	{
 		final IView view = viewsRepo.createView(CreateViewRequest.builder(getWindowId(I_C_PurchaseCandidate.Table_Name))
 				.addStickyFilters(createViewStickyFilter(reminder))
@@ -243,7 +233,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		}
 	}
 
-	private final DocumentFilter createViewStickyFilter(final PurchaseCandidateReminder reminder)
+	private DocumentFilter createViewStickyFilter(final PurchaseCandidateReminder reminder)
 	{
 		final BPartnerId vendorBPartnerId = reminder.getVendorBPartnerId();
 		final String vendorName = bpartnersService.getBPartnerValueAndName(vendorBPartnerId);
@@ -261,9 +251,11 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 				.build();
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private WindowId getWindowId(final String tableName)
 	{
-		final AdWindowId adWindowId = RecordWindowFinder.findAdWindowId(tableName).get();
+		final AdWindowId adWindowId = RecordWindowFinder.findAdWindowId(tableName)
+				.orElseThrow(() -> new AdempiereException("No window found for " + tableName));
 		return WindowId.of(adWindowId);
 	}
 
@@ -290,7 +282,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		public List<PurchaseCandidateReminder> removeAllUntil(final ZonedDateTime maxNotificationTime)
 		{
 			final List<PurchaseCandidateReminder> result = new ArrayList<>();
-			for (final Iterator<PurchaseCandidateReminder> it = reminders.iterator(); it.hasNext();)
+			for (final Iterator<PurchaseCandidateReminder> it = reminders.iterator(); it.hasNext(); )
 			{
 				final PurchaseCandidateReminder reminder = it.next();
 				final ZonedDateTime notificationTime = reminder.getNotificationTime();
@@ -343,7 +335,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		{
 			if (!notificationTime.isAfter(date) && !scheduledFuture.isDone())
 			{
-				logger.trace("Skip rescheduling {} because it's not after {}", date);
+				logger.trace("Skip rescheduling because it's not after {}", date);
 				return this;
 			}
 

@@ -25,6 +25,7 @@ package de.metas.calendar.standard.impl;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.YearId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -36,6 +37,7 @@ import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
@@ -50,6 +52,7 @@ import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -57,6 +60,7 @@ public class CalendarBL implements ICalendarBL
 {
 
 	public static final AdMessageKey MSG_SET_DEFAULT_OR_ORG_CALENDAR = AdMessageKey.of("de.metas.calendar.impl.CalendarBL.SetDefaultCalendarOrOrgCalendar");
+	public static final AdMessageKey MSG_YEAR_HAS_NO_PERIOD = AdMessageKey.of("de.metas.calendar.standard.impl.CalendarBL.YearHasNoPeriod");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -70,6 +74,13 @@ public class CalendarBL implements ICalendarBL
 		final List<I_C_Period> periodsOfTheYear = Services.get(ICalendarDAO.class).retrievePeriods(ctx, year, trxName);
 
 		final int numberOfPeriods = periodsOfTheYear.size();
+
+		if (numberOfPeriods == 0)
+		{
+			throw new AdempiereException(MSG_YEAR_HAS_NO_PERIOD)
+					.appendParametersToMessage()
+					.setParameter("C_Year_ID", year.getC_Year_ID());
+		}
 
 		final Timestamp firstDate = periodsOfTheYear.get(0).getStartDate();
 		final Timestamp lastDate = periodsOfTheYear.get(numberOfPeriods - 1).getEndDate();
@@ -148,9 +159,9 @@ public class CalendarBL implements ICalendarBL
 	}
 
 	@Override
-	public Timestamp getLastDayOfYear(final I_C_Year year)
+	public Timestamp getLastDayOfYear(@NonNull final YearId yearId)
 	{
-		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveLastPeriodOfTheYear(year);
+		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveLastPeriodOfTheYear(yearId);
 
 		final Timestamp lastDay = period.getEndDate();
 
@@ -158,9 +169,9 @@ public class CalendarBL implements ICalendarBL
 	}
 
 	@Override
-	public Timestamp getFirstDayOfYear(final I_C_Year year)
+	public Timestamp getFirstDayOfYear(@NonNull final YearId yearId)
 	{
-		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveFirstPeriodOfTheYear(year);
+		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveFirstPeriodOfTheYear(yearId);
 
 		final Timestamp firstDay = period.getStartDate();
 
@@ -180,6 +191,13 @@ public class CalendarBL implements ICalendarBL
 			Check.errorUnless(isLengthOneYear(year), "{} doesn't have the length 1 year", year);
 		}
 
+	}
+
+	public void checkCorrectCalendar(@NonNull final CalendarId calendarId)
+	{
+		final I_C_Calendar calendar = calendarDAO.getById(calendarId);
+
+		checkCorrectCalendar(calendar);
 	}
 
 	private List<I_C_Period> getPeriodsOfCalendar(final I_C_Calendar calendar)

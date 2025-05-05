@@ -23,7 +23,6 @@
 package de.metas.externalsystem.leichmehl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,108 +31,21 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
+@Builder
 public class ExternalSystemLeichMehlConfigProductMapping
 {
 	@NonNull
 	ExternalSystemLeichMehlConfigProductMappingId id;
 
 	@NonNull
-	Integer seqNo;
-
-	@NonNull
 	String pluFile;
 
-	@Nullable
-	ProductCategoryId productCategoryId;
-
-	@Nullable
+	@NonNull
 	ProductId productId;
 
 	@Nullable
 	BPartnerId bPartnerId;
 
-	@Builder
-	public ExternalSystemLeichMehlConfigProductMapping(
-			@NonNull final ExternalSystemLeichMehlConfigProductMappingId id,
-			@NonNull final Integer seqNo,
-			@NonNull final String pluFile,
-			@Nullable final ProductCategoryId productCategoryId,
-			@Nullable final ProductId productId,
-			@Nullable final BPartnerId bPartnerId)
-	{
-		this.id = id;
-		this.seqNo = seqNo;
-		this.pluFile = pluFile;
-		this.productCategoryId = productCategoryId;
-		this.productId = productId;
-		this.bPartnerId = bPartnerId;
-	}
-
-	public boolean isMatchingQuery(@NonNull final LeichMehlProductMappingQuery query)
-	{
-		return isMatchingBPartner(query.getBPartnerId())
-				&& isMatchingProduct(query.getProductId())
-				&& isMatchingProductCategory(query.getProductCategoryId());
-	}
-
-	private boolean isMatchingBPartner(@Nullable final BPartnerId candidateBPartnerId)
-	{
-		if (candidateBPartnerId == null && this.bPartnerId == null)
-		{
-			return true;
-		}
-		else if (this.bPartnerId == null)
-		{
-			return true;
-		}
-		else if (candidateBPartnerId != null)
-		{
-			return candidateBPartnerId.equals(this.bPartnerId);
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	private boolean isMatchingProduct(@Nullable final ProductId candidateProductId)
-	{
-		if (candidateProductId == null && this.productId == null)
-		{
-			return true;
-		}
-		else if (this.productId == null)
-		{
-			return true;
-		}
-		else if (candidateProductId != null)
-		{
-
-			return candidateProductId.equals(this.productId);
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	private boolean isMatchingProductCategory(@Nullable final ProductCategoryId candidateProductCategoryId)
-	{
-		if (candidateProductCategoryId == null && this.productCategoryId == null)
-		{
-			return true;
-		}
-		else if (this.productCategoryId == null)
-		{
-			return true;
-		}
-		else if (candidateProductCategoryId != null)
-		{
-			return candidateProductCategoryId.equals(this.productCategoryId);
-		}
-		else
-		{
-			return false;
-		}
-	}
+	@NonNull
+	LeichMehlPluFileConfigGroup leichMehlPluFileConfigGroup;
 }

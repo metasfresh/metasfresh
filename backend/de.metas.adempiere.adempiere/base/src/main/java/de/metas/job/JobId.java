@@ -57,4 +57,6 @@ public class JobId implements RepoIdAware
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Job_ID");
 	}
+
+	public static int toRepoId(@Nullable final JobId id) {return id != null ? id.getRepoId() : -1;}
 }

@@ -92,7 +92,7 @@ public class DD_OrderLine_StepDef
 		assertThat(orderLineId).isNotNull();
 
 		final Supplier<Optional<I_DD_OrderLine>> locateDDOrderLine = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId)
-				.firstOnly(I_DD_OrderLine.class));
+																									   .firstOnly(I_DD_OrderLine.class));
 
 		final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateDDOrderLine);
 

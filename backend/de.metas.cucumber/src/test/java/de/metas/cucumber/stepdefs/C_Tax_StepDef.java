@@ -22,15 +22,19 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.location.ICountryDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -42,15 +46,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Tax_StepDef
 {
 	private final C_Tax_StepDefData taxTable;
+	private final AD_Org_StepDefData orgTable;
 
-	public C_Tax_StepDef(@NonNull final C_Tax_StepDefData taxTable)
+	public C_Tax_StepDef(
+			@NonNull final C_Tax_StepDefData taxTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.taxTable = taxTable;
+		this.orgTable = orgTable;
 	}
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
@@ -64,6 +74,26 @@ public class C_Tax_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			createC_Tax(tableRow);
+		}
+	}
+
+	@And("load C_Tax:")
+	public void load_C_Tax(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			loadTax(row);
+		}
+	}
+
+	@And("update C_Tax:")
+	public void update_C_Tax(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			updateTax(row);
 		}
 	}
 
@@ -92,7 +122,13 @@ public class C_Tax_StepDef
 				.map(currentMinSeqNo -> currentMinSeqNo - 1)
 				.orElse(0);
 
-		final I_C_Tax taxRecord = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
+		final I_C_Tax taxRecord = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> queryBL.createQueryBuilder(I_C_Tax.class)
+						.addEqualsFilter(I_C_Tax.COLUMNNAME_Name, taxName)
+						.create()
+						.firstOnly(I_C_Tax.class),
+				() -> InterfaceWrapperHelper.newInstance(I_C_Tax.class));
+
 		taxRecord.setName(taxName);
 		taxRecord.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
 		taxRecord.setValidFrom(validFrom);
@@ -101,9 +137,48 @@ public class C_Tax_StepDef
 		taxRecord.setTo_Country_ID(toCountryRecord.getC_Country_ID());
 		taxRecord.setSeqNo(seqNo);
 
-		InterfaceWrapperHelper.saveRecord(taxRecord);
+		final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Tax.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(orgIdentifier))
+		{
+			final I_AD_Org org = orgTable.get(orgIdentifier);
+			taxRecord.setAD_Org_ID(org.getAD_Org_ID());
+		}
+
+		saveRecord(taxRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_C_Tax.Table_Name);
 		taxTable.putOrReplace(recordIdentifier, taxRecord);
+	}
+
+	private void loadTax(@NonNull final Map<String, String> tableRow)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Tax.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_Tax.COLUMNNAME_C_Tax_ID);
+
+		if (id != null)
+		{
+			final I_C_Tax taxRecord = InterfaceWrapperHelper.load(id, I_C_Tax.class);
+
+			taxTable.putOrReplace(identifier, taxRecord);
+		}
+	}
+
+	private void updateTax(@NonNull final Map<String, String> tableRow)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Tax.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Tax taxRecord = taxTable.get(identifier);
+		assertThat(taxRecord).isNotNull();
+
+		final String seqNo = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Tax.COLUMNNAME_SeqNo);
+
+		if (Check.isNotBlank(seqNo))
+		{
+			taxRecord.setSeqNo(Integer.parseInt(seqNo));
+		}
+
+		saveRecord(taxRecord);
+
+		taxTable.putOrReplace(identifier, taxRecord);
 	}
 }

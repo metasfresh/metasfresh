@@ -23,6 +23,7 @@
 package de.metas.ui.web.bpartner.filter;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
@@ -37,18 +38,16 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 @Component
 public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDescriptorsProviderFactory, SqlDocumentFilterConverter
@@ -72,9 +71,9 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 			.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_INLINE_FILTERS)
 			.addParameter(DocumentFilterParamDescriptor.builder()
-					.setFieldName(PARAMETERNAME_SearchText)
-					.setDisplayName(MSG_Caption)
-					.setWidgetType(DocumentFieldWidgetType.Text)
+					.fieldName(PARAMETERNAME_SearchText)
+					.displayName(TranslatableStrings.adMessage(MSG_Caption))
+					.widgetType(DocumentFieldWidgetType.Text)
 			)
 			.build();
 
@@ -82,9 +81,7 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 
 	@Nullable
 	@Override
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			@NonNull final Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		if (I_C_BPartner.Table_Name.equals(context.getTableName())
 				&& isEnabled())
@@ -121,13 +118,17 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			return null;
 		}
 		final String searchText = filterParameter.getValueAsString();
+		if(Check.isBlank(searchText))
+		{
+			return null;
+		}
 		return FilterSql.ofWhereClause(SqlAndParams.builder()
 				.append(sqlOpts.getTableNameOrAlias())
 				.append(getSqlCriteria(searchText))
 				.build());
 	}
 
-	private SqlAndParams getSqlCriteria(final String searchText)
+	private SqlAndParams getSqlCriteria(@NonNull final String searchText)
 	{
 		final String searchLikeValue = convertSearchTextToSqlLikeString(searchText);
 		return SqlAndParams.of(BPARTNER_SEARCH_SQL_TEMPLATE, searchLikeValue, searchLikeValue, searchLikeValue);

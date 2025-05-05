@@ -18,6 +18,7 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.standard.IPeriodBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
@@ -67,7 +68,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAllocationHdr;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -102,7 +102,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 @Service
 public class ESRImportBL implements IESRImportBL
 {
-	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
+	private static final Logger logger = LogManager.getLogger(ESRImportBL.class);
 	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -121,7 +121,7 @@ public class ESRImportBL implements IESRImportBL
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/2118
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/2118">https://github.com/metasfresh/metasfresh/issues/2118</a>
 	 */
 	private static final String CFG_PROCESS_UNSPPORTED_TRX_TYPES = "de.metas.payment.esr.ProcessUnspportedTrxTypes";
 
@@ -144,7 +144,7 @@ public class ESRImportBL implements IESRImportBL
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
-	private final void lockAndProcess(
+	private void lockAndProcess(
 			@NonNull final I_ESR_Import esrImport,
 			@NonNull final Runnable processor)
 	{
@@ -221,7 +221,7 @@ public class ESRImportBL implements IESRImportBL
 		{
 			in.close();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -373,9 +373,9 @@ public class ESRImportBL implements IESRImportBL
 		// task 05917: check if the the payment date from the ESR file is OK for us
 		try
 		{
-			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), X_C_DocType.DOCBASETYPE_APPayment, importLine.getAD_Org_ID());
+			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), DocBaseType.APPayment, importLine.getAD_Org_ID());
 		}
-		catch (PeriodClosedException p)
+		catch (final PeriodClosedException p)
 		{
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine, p.getLocalizedMessage());
 		}
@@ -404,9 +404,6 @@ public class ESRImportBL implements IESRImportBL
 	 * <li>AccountingDate</li>
 	 * <li>PaymentDate</li>
 	 * </ul>
-	 *
-	 * @param importedLines
-	 * @return
 	 */
 	private Map<ArrayKey, List<I_ESR_ImportLine>> groupLines(final List<I_ESR_ImportLine> importedLines)
 	{
@@ -422,12 +419,7 @@ public class ESRImportBL implements IESRImportBL
 
 			final ArrayKey key = mkESRLineKey(line);
 
-			List<I_ESR_ImportLine> linesOfInvoice = key2Lines.get(key);
-			if (linesOfInvoice == null)
-			{
-				linesOfInvoice = new ArrayList<>();
-				key2Lines.put(key, linesOfInvoice);
-			}
+			List<I_ESR_ImportLine> linesOfInvoice = key2Lines.computeIfAbsent(key, k -> new ArrayList<>());
 			linesOfInvoice.add(line);
 
 		}
@@ -475,7 +467,7 @@ public class ESRImportBL implements IESRImportBL
 	{
 		if (esrImport.isProcessed())
 		{
-			throw new AdempiereException("@Processed@: @Y@");
+			throw AdempiereException.newWithTranslatableMessage("@Processed@: @Y@");
 		}
 
 		final List<I_ESR_ImportFile> allFiles = esrImportDAO.retrieveActiveESRImportFiles(esrImport);
@@ -512,7 +504,7 @@ public class ESRImportBL implements IESRImportBL
 		{
 			if (allLines.isEmpty())
 			{
-				throw new AdempiereException("@NoLines@");
+				throw AdempiereException.noLines();
 			}
 
 			for (final I_ESR_ImportLine line : allLines)
@@ -669,7 +661,7 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/2118
+	 * task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
 	private void handleUnsupportedTrxType(@NonNull final I_ESR_ImportLine line)
 	{
@@ -972,7 +964,7 @@ public class ESRImportBL implements IESRImportBL
 	{
 		if (esrImport.isProcessed())
 		{
-			throw new AdempiereException("@Processed@: @Y@");
+			throw AdempiereException.newWithTranslatableMessage("@Processed@: @Y@");
 		}
 
 		process(esrImport);
@@ -1041,7 +1033,7 @@ public class ESRImportBL implements IESRImportBL
 			{
 				if (invPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
 				{
-					final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
+					final AdempiereException ex = AdempiereException.newWithTranslatableMessage("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
 					logger.warn(ex.getLocalizedMessage(), ex);
 					ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
 					esrImportDAO.save(line);
@@ -1053,7 +1045,7 @@ public class ESRImportBL implements IESRImportBL
 			{
 				if (paymentPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
 				{
-					final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
+					final AdempiereException ex = AdempiereException.newWithTranslatableMessage("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
 					logger.warn(ex.getLocalizedMessage(), ex);
 					ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
 					esrImportDAO.save(line);
@@ -1065,7 +1057,7 @@ public class ESRImportBL implements IESRImportBL
 		final String actionType = line.getESR_Payment_Action();
 		if (Check.isEmpty(actionType, true))
 		{
-			final AdempiereException ex = new AdempiereException("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
+			final AdempiereException ex = AdempiereException.newWithTranslatableMessage("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
 			logger.warn(ex.getLocalizedMessage(), ex);
 			ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
 			esrImportDAO.save(line);
@@ -1075,7 +1067,7 @@ public class ESRImportBL implements IESRImportBL
 		final IESRActionHandler handler = handlers.get(actionType);
 		if (handler == null)
 		{
-			final AdempiereException ex = new AdempiereException("@NotSupported@ @ESR_Payment_Action@: " + actionType);
+			final AdempiereException ex = AdempiereException.newWithTranslatableMessage("@NotSupported@ @ESR_Payment_Action@: " + actionType);
 			logger.warn(ex.getLocalizedMessage(), ex);
 			ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
 			esrImportDAO.save(line);
@@ -1120,10 +1112,7 @@ public class ESRImportBL implements IESRImportBL
 		// cg: if we have a payment and the open amount matches pay amount set status allocate with current invoice
 		if (importLine.getC_Invoice_ID() == invoice.getC_Invoice_ID() && importLine.getC_Payment_ID() > 0)
 		{
-			// services
-
-			final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
-			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
+			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, ImmutableSet.of());
 			final BigDecimal invoiceOpenAmt = invoice.getGrandTotal().subtract(externalAllocationsSum);
 			final PaymentId paymentId = fetchDuplicatePaymentIfExists(importLine);
 			if (importLine.getAmount().compareTo(invoiceOpenAmt) == 0)
@@ -1229,7 +1218,7 @@ public class ESRImportBL implements IESRImportBL
 		final IAllocationDAO allocationDAOLocal = Services.get(IAllocationDAO.class);
 
 		// We start by collecting the C_Payment_IDs from our lines
-		final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
+		final Set<PaymentId> linesOwnPaymentIDs = new HashSet<>();
 		for (final I_ESR_ImportLine importLine : linesWithSameInvoice)
 		{
 			final PaymentId importLinePaymentId = PaymentId.ofRepoIdOrNull(importLine.getC_Payment_ID());
@@ -1239,7 +1228,7 @@ public class ESRImportBL implements IESRImportBL
 			// if the invoice is paid with the current line, exclude it from computing
 			if (importLinePayment != null && paymentBL.isMatchInvoice(importLinePayment, invoice))
 			{
-				linesOwnPaymentIDs.add(importLine.getC_Payment_ID());
+				linesOwnPaymentIDs.add(importLinePaymentId);
 			}
 		}
 

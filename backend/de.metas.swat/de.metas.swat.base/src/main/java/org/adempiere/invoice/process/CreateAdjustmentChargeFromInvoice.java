@@ -25,7 +25,7 @@ public class CreateAdjustmentChargeFromInvoice extends JavaProcess implements IP
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_C_DocType docType = docTypeDAO.getById(p_C_DocType_ID);
+		final I_C_DocType docType = docTypeDAO.getRecordById(p_C_DocType_ID);
 
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_ARInvoice, docType.getDocSubType());
 

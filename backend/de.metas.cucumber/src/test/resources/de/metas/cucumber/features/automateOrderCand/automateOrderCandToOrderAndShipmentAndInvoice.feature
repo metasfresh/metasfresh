@@ -1,30 +1,33 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor3
 Feature: Process order candidate and automatically generate shipment and invoice for it
   As a user
   I create an order candidate and the process EP will automatically generate shipment schedule, shipment, invoice candidate and invoice
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And metasfresh has date and time 2021-11-20T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And preexisting test data is put into tableData
       | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
       | bpartner_1               | 2156425       | bpartnerLocation_1                | 2205175                | product_1               | 2005577      |
 
-
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_100
+  @Id:S0190_300
   Scenario: Order candidate to shipment and invoice flow and closed order
     Given metasfresh contains C_Project
       | C_Project_ID | Name     | C_Currency_ID.ISO_Code |
-      | 1000000      | testName | EUR                    |
+      | 2100000      | testName | EUR                    |
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project' and fulfills with '200' status code
     """
 {
 "requestItems":[
     {
-        "projectId": 1000000,
+        "projectId": 2100000,
         "orgId": 1000000,
         "name": "nameFromTest",
         "projectTypeId": 540004,
@@ -50,7 +53,32 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created projects
       | C_Project_ID.Identifier | OPT.C_Project_ID | OPT.Name     | OPT.Description     | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.ISO_Code | OPT.C_ProjectType_ID.Identifier | OPT.R_Project_Status_ID.Identifier | OPT.IsActive |
-      | project_1               | 1000000          | nameFromTest | descriptionFromTest | 2156425                      | EUR                        | 540004                          | 540030                             | true         |
+      | project_1               | 2100000          | nameFromTest | descriptionFromTest | 2156425                      | EUR                        | 540004                          | 540030                             | true         |
+
+    And update C_OLCandAggAndOrder:
+      | C_OLCandProcessor_ID | Column           | AD_Column_OLCand_ID | OPT.SplitOrder |
+      | 1000003              | M_SectionCode_ID | 584431              | Y              |
+    And update C_AggregationItem:
+      | C_Aggregation_ID | Column           | AD_Column_ID | OPT.IsActive |
+      | 1000000          | M_SectionCode_ID | 584388       | Y            |
+
+    And metasfresh contains M_SectionCode:
+      | M_SectionCode_ID.Identifier | Value       |
+      | testSection_S0150_100       | testSection |
+
+    And metasfresh contains C_Doc_Outbound_Config:
+      | C_Doc_Outbound_Config_ID.Identifier | TableName    | PrintFormat.Name               |
+      | DunningDocOutboundConfig_S0150_100  | C_DunningDoc | Mahnbrief mit Rechnungsbelegen |
+    And metasfresh contains C_Dunning:
+      | C_Dunning_ID.Identifier | Name    |
+      | dunning_S0150_100       | Level 1 |
+    And metasfresh contains C_DunningLevel:
+      | C_DunningLevel_ID.Identifier | C_Dunning_ID.Identifier | Name        |
+      | dunningLevel_S0150_100       | dunning_S0150_100       | First level |
+
+    And update C_BPartner:
+      | Identifier | OPT.C_Dunning_ID.Identifier |
+      | bpartner_1 | dunning_S0150_100           |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -67,7 +95,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "dateRequired": "2021-08-20",
     "dateOrdered": "2021-07-20",
     "orderDocType": "SalesOrder",
-    "paymentTerm": "val-1000002",
+    "paymentTerm": "val-10 Tage 1 %",
     "productIdentifier": 2005577,
     "qty": 10,
     "price": 5,
@@ -77,7 +105,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "deliveryViaRule": "S",
     "deliveryRule": "F",
     "bpartnerName": "testName",
-    "projectId": 1000000
+    "projectId": 2100000,
+    "sectionCode":"testSection"
 }
 """
 
@@ -97,28 +126,64 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | OPT.C_Project_ID.Identifier |
-      | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | 1000000                     |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | OPT.C_Project_ID.Identifier | OPT.M_SectionCode_ID.Identifier |
+      | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | 2100000                     | testSection_S0150_100           |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Project_ID.Identifier |
       | ol_1                      | order_1               | 2021-07-20      | product_1               | 10           | 10         | 10          | 5     | 0        | EUR          | true      | project_1                   |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
-      | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | po_ref_mock     | true      | CO        | Shopware                               |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName | OPT.M_SectionCode_ID.Identifier |
+      | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | po_ref_mock     | true      | CO        | Shopware                               | testSection_S0150_100           |
 
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_Project_ID.Identifier |
       | shipmentLine_1            | shipment_1            | product_1               | 10          | true      | project_1                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
-      | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName | OPT.M_SectionCode_ID.Identifier |
+      | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 10 Tage 1 % | true      | CO        | Shopware                               | testSection_S0150_100           |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_Project_ID.Identifier |
-      | invoiceLine_1_1             | invoice_1               | 2005577                 | 10          | true      | project_1                   |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.C_Project_ID.Identifier |
+      | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      | project_1                   |
+
+    And after not more than 60s, Fact_Acct are found
+      | TableName | Record_ID.Identifier | OPT.M_SectionCode_ID.Identifier |
+      | C_Invoice | invoice_1            | testSection_S0150_100           |
+
+    # dev-note: update dateInvoiced to be set in the past in order to generate dunning
+    And update C_Invoice:
+      | Identifier | OPT.DueDate |
+      | invoice_1  | 2021-04-08  |
+
+    And invoke "C_Dunning_Candidate_Create" process:
+      | C_DunningLevel_ID.Identifier | DunningDate | OPT.IsFullUpdate |
+      | dunningLevel_S0150_100       | 2022-09-29  | Y                |
+    And locate C_Dunning_Candidate:
+      | C_Dunning_Candidate_ID.Identifier | TableName | Record_ID.Identifier | OPT.M_SectionCode_ID.Identifier |
+      | dunningCandInvoice_1              | C_Invoice | invoice_1            | testSection_S0150_100           |
+    And invoke "C_Dunning_Candidate_Process" process:
+      | C_Dunning_Candidate_ID.Identifier | AutoProcess |
+      | dunningCandInvoice_1              | false       |
+    And validate C_DunningDoc:
+      | C_BPartner_ID.Identifier | C_DunningLevel_ID.Identifier | OPT.M_SectionCode_ID.Identifier | Processed |
+      | bpartner_1               | dunningLevel_S0150_100       | testSection_S0150_100           | N         |
+
+    And metasfresh contains C_BP_BankAccount
+      | Identifier       | C_BPartner_ID.Identifier | C_Currency.ISO_Code |
+      | bp_bank_account1 | bpartner_1               | EUR                 |
+    And metasfresh contains C_Payment
+      | Identifier  | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier |
+      | payment_100 | bpartner_1               | 50     | EUR                 | Zahlungseingang   | true      | bp_bank_account1            |
+    And the payment identified by payment_100 is completed
+    And allocate payments to invoices
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
+      | invoice_1                   | payment_100                 |
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.M_SectionCode_ID.Identifier |
+      | payment_100             | true                     | testSection_S0150_100           |
 
   @from:cucumber
   @topic:orderCandidate
@@ -266,7 +331,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
@@ -378,7 +443,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
 
 
@@ -509,7 +574,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
       | invoiceLine_1_2             | invoice_1               | product_1               | 2           | true      |
 
@@ -587,7 +652,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
   @from:cucumber
@@ -688,6 +753,6 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1_1             | invoice_1               | product_1               | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE

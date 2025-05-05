@@ -44,6 +44,8 @@ public final class MakeUniqueLocationNameCommand
 	private final List<String> existingNames;
 	private final int maxLength;
 
+	public final static String BPARTNER_LOCATION_NAME_DEFAULT = ".";
+
 	@Builder
 	private MakeUniqueLocationNameCommand(
 			@Nullable final String name,
@@ -57,7 +59,7 @@ public final class MakeUniqueLocationNameCommand
 		this.existingNames = existingNames != null ? existingNames : ImmutableList.of();
 		this.maxLength = maxLength > 0 ? maxLength : Integer.MAX_VALUE;
 
-		if (Check.isEmpty(name, true) || ".".equals(name))
+		if (Check.isEmpty(name, true) || BPARTNER_LOCATION_NAME_DEFAULT.equals(name))
 		{
 			this.nameInitial = null;
 		}
@@ -137,7 +139,8 @@ public final class MakeUniqueLocationNameCommand
 		return defaultName;
 	}
 
-	private static String appendToName(final String name, final String namePartToAppend)
+	@NonNull
+	private static String appendToName(@Nullable final String name, @Nullable final String namePartToAppend)
 	{
 		if (name == null || name.isEmpty())
 		{
@@ -175,5 +178,3 @@ public final class MakeUniqueLocationNameCommand
 		return nameUnique;
 	}
 }
-
-

@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
+import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,8 +49,12 @@ public class CalendarQuery
 	@NonNull @Builder.Default InSetPredicate<CalendarResourceId> resourceIds = InSetPredicate.any();
 	@Nullable ProjectId onlyProjectId;
 	@Nullable BPartnerId onlyCustomerId;
+	@Nullable UserId onlyProjectResponsibleId;
+
 	@Nullable Instant startDate;
 	@Nullable Instant endDate;
+
+	boolean skipAllocatedResources;
 
 	public boolean isMatchingSimulationId(@Nullable final SimulationPlanId simulationId)
 	{
@@ -73,7 +78,7 @@ public class CalendarQuery
 
 	public boolean isMatchingDateRange(@NonNull final CalendarDateRange dateRange)
 	{
-		return dateRange.isConnectedTo(this.startDate, this.endDate);
+		return dateRange.isOverlappingWith(this.startDate, this.endDate);
 	}
 
 	public boolean isMatchingEntry(@NonNull final CalendarEntry entry)
@@ -83,5 +88,7 @@ public class CalendarQuery
 				&& isMatchingCalendarId(entry.getCalendarId())
 				&& isMatchingResourceId(entry.getResourceId())
 				&& isMatchingDateRange(entry.getDateRange());
+
+		// TODO match customerId, onlyProjectResponsibleId
 	}
 }

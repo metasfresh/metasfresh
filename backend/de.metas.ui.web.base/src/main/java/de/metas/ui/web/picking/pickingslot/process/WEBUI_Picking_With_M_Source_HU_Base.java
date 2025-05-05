@@ -3,6 +3,8 @@ package de.metas.ui.web.picking.pickingslot.process;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -15,10 +17,14 @@ import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.PickingConfig;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -30,8 +36,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -61,7 +69,6 @@ import java.util.List;
  * contains common code of the two fine picking process classes that we have.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */abstract class WEBUI_Picking_With_M_Source_HU_Base extends PickingSlotViewBasedProcess
 {
@@ -69,8 +76,9 @@ import java.util.List;
 
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final PickingConfigRepository pickingConfigRepo = SpringContextHolder.instance.getBean(PickingConfigRepository.class);
+	private final ModularContractProvider modularContractProvider = SpringContextHolder.instance.getBean(ModularContractProvider.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
-	private final IShipmentSchedulePA shipmentSchedulePA =  Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	protected final boolean noSourceHUAvailable()
 	{
@@ -125,26 +133,26 @@ import java.util.List;
 		return huPickingSlotBL.retrieveAvailableHUIdsToPickForShipmentSchedule(request);
 	}
 
-	protected boolean isForceDelivery()
+	protected final boolean isForceDelivery()
 	{
-		return DeliveryRule.ofCode(getCurrentShipmentSchedule().getDeliveryRule()).isForce();
+		final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(getCurrentShipmentSchedule());
+		return deliveryRule.isForce();
 	}
 
 	protected Quantity pickHUsAndPackTo(@NonNull final ImmutableList<HuId> huIdsToPick, @NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
 	{
-		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
-
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
 
 		return pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
-				.qtyToPack(qtyToPack)
-				.packToHuId(packToHuId)
-				.sourceHUIds(huIdsToPick)
-				.pickingSlotId(pickingSlotId)
-				.shipmentScheduleId(getCurrentShipmentScheduleId())
-				.allowOverDelivery(allowOverDelivery)
-				.build());
+														  .qtyToPack(qtyToPack)
+														  .packToHuId(packToHuId)
+														  .sourceHUIds(huIdsToPick)
+														  .pickingSlotId(pickingSlotId)
+														  .shipmentScheduleId(getCurrentShipmentScheduleId())
+														  .allowOverDelivery(getPickingConfig().isAllowOverDelivery())
+														  .isForbidAggCUsForDifferentOrders(getPickingConfig().isForbidAggCUsForDifferentOrders())
+														  .build());
 	}
 
 	protected void forcePick(Quantity qtyToPack, final HuId packToHuId)
@@ -201,6 +209,19 @@ import java.util.List;
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
 	}
 
+	@NonNull
+	protected PickingConfig getPickingConfig()
+	{
+		return pickingConfigRepo.getPickingConfig();
+	}
+
+	@Nullable
+	protected OrderId getCurrentlyPickingOrderId()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
+		return OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());
+	}
+
 	private HuId createInventoryForMissingQty(@NonNull final Quantity qtyToBeAdded)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
@@ -211,6 +232,9 @@ import java.util.List;
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNull(shipmentSchedule.getM_AttributeSetInstance_ID());
 
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
+		final FlatrateTermId contractId = modularContractProvider.getSinglePurchaseContractsForSalesOrderLineOrNull(orderAndLineId);
+
 		final CreateVirtualInventoryWithQtyReq req = CreateVirtualInventoryWithQtyReq.builder()
 				.clientId(clientId)
 				.orgId(orgId)
@@ -219,6 +243,8 @@ import java.util.List;
 				.qty(qtyToBeAdded)
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(attributeSetInstanceId)
+				.modularContractId(contractId)
+				.forRecordRef(TableRecordReference.of(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.Table_Name, shipmentSchedule.getM_ShipmentSchedule_ID()))
 				.build();
 
 		return inventoryService.createInventoryForMissingQty(req);

@@ -155,6 +155,7 @@ BEGIN
             facts_ToDate AS (PARTITION BY fa.AD_Client_ID, fa.ad_org_id, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID ORDER BY fa.DateAcct)
             , facts_YearToDate AS (PARTITION BY fa.AD_Client_ID, fa.ad_org_id, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID, fa.C_Year_ID ORDER BY fa.DateAcct);
     --
+    RAISE NOTICE 'About to create unique index on TMP_Fact_Acct_Summary_FromDate. If that fails, you might check if you have DateAcct/C_Period_ID mismatch.';
     CREATE UNIQUE INDEX ON TMP_Fact_Acct_Summary_FromDate (ad_client_id, ad_org_id, c_acctschema_id, postingtype, account_id, dateacct);
 
 

@@ -31,23 +31,22 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Set Address.
-	 * Anschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAddress (@Nullable java.lang.String Address);
+	void setAddress(@Nullable java.lang.String Address);
 
 	/**
 	 * Get Address.
-	 * Anschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAddress();
+	@Nullable
+	java.lang.String getAddress();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Address = new ModelColumn<>(I_C_BPartner_Location.class, "Address", null);
 	String COLUMNNAME_Address = "Address";
@@ -60,7 +59,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID(int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -239,6 +238,28 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new ModelColumn<>(I_C_BPartner_Location.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
 	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+
+	/**
+	 * Set Delivery Information.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDelivery_Info(@Nullable java.lang.String Delivery_Info);
+
+	/**
+	 * Get Delivery Information.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	java.lang.String getDelivery_Info();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Delivery_Info = new ModelColumn<>(I_C_BPartner_Location.class, "Delivery_Info", null);
+	String COLUMNNAME_Delivery_Info = "Delivery_Info";
 
 	/**
 	 * Set eMail.
@@ -507,7 +528,8 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_ISDN = "ISDN";
 
 	/**
-	 * Set Ephemeral.
+	 * Set One-time-address.
+	 * One-time addresses are ephemeral business partner addresses created via the REST API. If an address is marked as a one-time address, it will be used when importing documents into the metafresh system. However, it is not available for selection when creating new documents in the metasfresh user interface.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -516,7 +538,8 @@ public interface I_C_BPartner_Location
 	void setIsEphemeral (boolean IsEphemeral);
 
 	/**
-	 * Get Ephemeral.
+	 * Get One-time-address.
+	 * One-time addresses are ephemeral business partner addresses created via the REST API. If an address is marked as a one-time address, it will be used when importing documents into the metafresh system. However, it is not available for selection when creating new documents in the metasfresh user interface.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -572,7 +595,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsNameReadWrite = "IsNameReadWrite";
 
 	/**
-	 * Set Zahlungs-Adresse.
+	 * Set Pay-From Address.
 	 * Business Partner pays from that address and we'll send dunning letters there
 	 *
 	 * <br>Type: YesNo
@@ -582,7 +605,7 @@ public interface I_C_BPartner_Location
 	void setIsPayFrom (boolean IsPayFrom);
 
 	/**
-	 * Get Zahlungs-Adresse.
+	 * Get Pay-From Address.
 	 * Business Partner pays from that address and we'll send dunning letters there
 	 *
 	 * <br>Type: YesNo
@@ -683,7 +706,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
 
 	/**
-	 * Set Abo Adresse.
+	 * Set isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -693,7 +716,7 @@ public interface I_C_BPartner_Location
 	void setIsSubscriptionTo (boolean IsSubscriptionTo);
 
 	/**
-	 * Get Abo Adresse.
+	 * Get isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -814,6 +837,48 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_Previous_ID = "Previous_ID";
 
 	/**
+	 * Set SAP BPartner Id.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_BPartnerCode (@Nullable java.lang.String SAP_BPartnerCode);
+
+	/**
+	 * Get SAP BPartner Id.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSAP_BPartnerCode();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_SAP_BPartnerCode = new ModelColumn<>(I_C_BPartner_Location.class, "SAP_BPartnerCode", null);
+	String COLUMNNAME_SAP_BPartnerCode = "SAP_BPartnerCode";
+
+	/**
+	 * Set SAP Payment method.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_PaymentMethod (@Nullable java.lang.String SAP_PaymentMethod);
+
+	/**
+	 * Get SAP Payment method.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSAP_PaymentMethod();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_SAP_PaymentMethod = new ModelColumn<>(I_C_BPartner_Location.class, "SAP_PaymentMethod", null);
+	String COLUMNNAME_SAP_PaymentMethod = "SAP_PaymentMethod";
+
+	/**
 	 * Set Setup Place No..
 	 *
 	 * <br>Type: String
@@ -879,6 +944,27 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_ValidFrom = new ModelColumn<>(I_C_BPartner_Location.class, "ValidFrom", null);
 	String COLUMNNAME_ValidFrom = "ValidFrom";
+
+	/**
+	 * Set VAT ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxID (@Nullable java.lang.String VATaxID);
+
+	/**
+	 * Get VAT ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getVATaxID();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxID = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxID", null);
+	String COLUMNNAME_VATaxID = "VATaxID";
 
 	/**
 	 * Set Visitors Address.

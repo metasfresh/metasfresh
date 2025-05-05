@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.process;
 
 import com.google.common.base.MoreObjects;
@@ -6,8 +28,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -22,6 +46,8 @@ import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.FileUtil;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.WorkflowId;
@@ -33,6 +59,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -53,13 +82,19 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.Ini;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -81,6 +116,8 @@ import java.util.Set;
 public final class ProcessInfo implements Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
+
+	private static final AdMessageKey MSG_NO_TABLE_RECORD_REFERENCE_FOUND = AdMessageKey.of("de.metas.process.NoTableRecordReferenceFound");
 
 	public static ProcessInfoBuilder builder()
 	{
@@ -106,6 +143,8 @@ public final class ProcessInfo implements Serializable
 		adWindowId = builder.getAdWindowId();
 
 		title = builder.getTitle();
+
+		reportResultDataTarget = builder.getReportResultDataTarget();
 
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
@@ -155,15 +194,13 @@ public final class ProcessInfo implements Serializable
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
-	private final Properties ctx;
+	private Properties ctx;
 
 	/**
 	 * Title of the Process/Report
 	 */
-	@Getter
-	private final String title;
-	@Getter
-	private final AdProcessId adProcessId;
+	@Getter private final String title;
+	@Getter private final AdProcessId adProcessId;
 
 	/**
 	 * Table ID if the Process
@@ -252,11 +289,16 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final Optional<String> jsonPath;
 
+	@NonNull private final ReportResultDataTarget reportResultDataTarget;
+
 	/**
 	 * Process result
 	 */
 	@Getter
 	private final ProcessExecutionResult result;
+
+	private static final String PARA_IsAlsoSendToBrowser = "IsAlsoSendToBrowser";
+	private static final String PARA_PRINTER_OPTS_IsAlsoSendToBrowser = "PRINTER_OPTS_IsAlsoSendToBrowser";
 
 	@Override
 	public String toString()
@@ -280,6 +322,11 @@ public final class ProcessInfo implements Serializable
 	public Properties getCtx()
 	{
 		return Env.coalesce(ctx);
+	}
+
+	public void snapshotCtx()
+	{
+		this.ctx = Env.copyCtx(getCtx());
 	}
 
 	/**
@@ -321,16 +368,9 @@ public final class ProcessInfo implements Serializable
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-		{
-			classLoader = getClass().getClassLoader();
-		}
-
 		try
 		{
-			final Class<?> processClass = classLoader.loadClass(classname);
-			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
+			final JavaProcess processClassInstance = newProcessClassInstance(classname);
 			processClassInstance.init(this);
 
 			return processClassInstance;
@@ -339,6 +379,19 @@ public final class ProcessInfo implements Serializable
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo", this);
 		}
+	}
+
+	@NonNull
+	public static JavaProcess newProcessClassInstance(@NonNull final String classname) throws ClassNotFoundException
+	{
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null)
+		{
+			classLoader = ProcessInfo.class.getClassLoader();
+		}
+
+		final Class<?> processClass = classLoader.loadClass(classname);
+		return Util.newInstance(JavaProcess.class, processClass);
 	}
 
 	/**
@@ -409,6 +462,13 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 		return TableRecordReference.of(adTableId, recordId);
+	}
+
+	@NonNull
+	public TableRecordReference getRecordRefNotNull()
+	{
+		return Optional.ofNullable(getRecordRefOrNull())
+				.orElseThrow(() -> new AdempiereException(MSG_NO_TABLE_RECORD_REFERENCE_FOUND, getPinstanceId()));
 	}
 
 	public boolean isRecordSet()
@@ -629,7 +689,7 @@ public final class ProcessInfo implements Serializable
 	 * gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
 	 * <p>
 	 * task 03685
-	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
+	 * @see JavaProcess#retrieveActiveSelectedRecordsQueryBuilder(Class)
 	 */
 	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
@@ -660,7 +720,7 @@ public final class ProcessInfo implements Serializable
 		{
 			whereFilter = defaultQueryFilter;
 
-			// In case te default filter is null, return null
+			// In case the default filter is null, return null
 			if (whereFilter == null)
 			{
 				return null;
@@ -735,6 +795,26 @@ public final class ProcessInfo implements Serializable
 		return _processClassInfo;
 	}
 
+	public ReportResultDataTarget getReportResultDataTarget()
+	{
+		return reportResultDataTarget.forwardingToUserBrowser(isAlsoSendToBrowser());
+	}
+
+	private OptionalBoolean isAlsoSendToBrowser()
+	{
+		final IRangeAwareParams params = getParameterAsIParams();
+		if (params.hasParameter(PARA_PRINTER_OPTS_IsAlsoSendToBrowser))
+		{
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser));
+		}
+		if (params.hasParameter(PARA_IsAlsoSendToBrowser))
+		{
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_IsAlsoSendToBrowser));
+		}
+
+		return OptionalBoolean.UNKNOWN;
+	}
+
 	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	public static final class ProcessInfoBuilder
 	{
@@ -748,6 +828,7 @@ public final class ProcessInfo implements Serializable
 		 */
 		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
 		private static final String SYSCONFIG_UseLoginLanguageForDraftDocuments = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
+		private static final String SYSCONFIG_DefaultStoringFileServerPath = "de.metas.process.DefaultStoringFileServerPath";
 
 		private PInstanceId pInstanceId;
 		private transient I_AD_PInstance _adPInstance;
@@ -758,6 +839,7 @@ public final class ProcessInfo implements Serializable
 		private RoleId _adRoleId;
 		private AdWindowId _adWindowId = null;
 		private String title = null;
+
 		private Optional<String> classname;
 		private Boolean refreshAllAfterExecution;
 
@@ -772,7 +854,7 @@ public final class ProcessInfo implements Serializable
 		private int tabNo = Env.TAB_None;
 
 		private Language reportLanguage;
-		private Boolean printPreview;
+		@NonNull private OptionalBoolean printPreview = OptionalBoolean.UNKNOWN;
 		private Boolean archiveReportData;
 
 		private OutputType jrDesiredOutputType = null;
@@ -824,7 +906,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		private Properties createTemporaryCtx(final Properties ctx)
+		private Properties createTemporaryCtx(@NonNull final Properties ctx)
 		{
 			final Properties processCtx = Env.newTemporaryCtx();
 
@@ -886,6 +968,16 @@ public final class ProcessInfo implements Serializable
 			// Date
 			final Timestamp date = SystemTime.asDayTimestamp();
 			Env.setContext(processCtx, Env.CTXNAME_Date, date);
+
+			//
+			// Allow using the where clause in expressions.
+			// For example, in a report that exports data, the SQL-Expression could be
+			// "SELECT DocumentNo, DateOrdered FROM C_Order WHERE @SELECTION_WHERECLAUSE/false@;"
+			final String whereClause = getWhereClause();
+			if (EmptyUtil.isNotBlank(whereClause))
+			{
+				Env.setContext(processCtx, Env.CTXNAME_PROCESS_SELECTION_WHERECLAUSE, whereClause);
+			}
 
 			//
 			// Copy relevant properties from window context
@@ -1045,6 +1137,39 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		@NonNull
+		private ReportResultDataTarget getReportResultDataTarget()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return ReportResultDataTarget.ForwardToUserBrowser;
+			}
+
+			final ReportResultDataTargetType targetType = ReportResultDataTargetType.optionalOfNullableCode(process.getStoreProcessResultFileOn()).orElse(ReportResultDataTargetType.ForwardToUserBrowser);
+
+			Path serverTargetDirectory = null;
+			if (targetType.isSaveToServerDirectory())
+			{
+				serverTargetDirectory = StringUtils.trimBlankToOptional(process.getStoreProcessResultFilePath())
+						.or(ProcessInfoBuilder::getDefaultStoringFileServerPath)
+						.map(Paths::get)
+						.orElse(null);
+			}
+
+			return ReportResultDataTarget.builder()
+					.targetType(targetType)
+					.serverTargetDirectory(serverTargetDirectory)
+					.targetFilename(getReportTargetFilename().orElse(null))
+					.build();
+		}
+
+		private static Optional<String> getDefaultStoringFileServerPath()
+		{
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+			return StringUtils.trimBlankToOptional(sysConfigBL.getValue(SYSCONFIG_DefaultStoringFileServerPath));
+		}
+
 		private I_AD_PInstance getAD_PInstanceOrNull()
 		{
 			final PInstanceId adPInstanceId = getPInstanceId();
@@ -1069,7 +1194,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder setAD_PInstance(final I_AD_PInstance adPInstance)
+		public ProcessInfoBuilder setAD_PInstance(@NonNull final I_AD_PInstance adPInstance)
 		{
 			this._adPInstance = adPInstance;
 			setPInstanceId(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));
@@ -1213,6 +1338,7 @@ public final class ProcessInfo implements Serializable
 						.translateHeaders(process.isTranslateExcelHeaders())
 						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
 						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
+						.doNotQuoteRows(process.isDoNotQuoteRows())
 						.build();
 			}
 		}
@@ -1225,13 +1351,37 @@ public final class ProcessInfo implements Serializable
 				return Optional.empty();
 			}
 
-			final String reportTemplate = adProcess.getJasperReport();
-			if (reportTemplate == null || Check.isEmpty(reportTemplate, true))
+			return StringUtils.trimBlankToOptional(adProcess.getJasperReport());
+		}
+
+		private Optional<String> getReportTargetFilename()
+		{
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			if(adProcess == null)
 			{
 				return Optional.empty();
 			}
 
-			return Optional.of(reportTemplate.trim());
+			final String reportFilenamePatternStr = StringUtils.trimBlankToNull(adProcess.getFilenamePattern());
+			if(reportFilenamePatternStr == null)
+			{
+				return Optional.empty();
+			}
+
+			final IStringExpression reportFilenamePattern = StringExpressionCompiler.instance.compile(reportFilenamePatternStr);
+
+			// !! Please keep this in sync with the description of AD_Element_ID=582878 (ColumnName=FilenamePattern)
+			final Evaluatee evalCtx = Evaluatees.mapBuilder()
+					.put("AD_PInstance_ID", pInstanceId != null ? String.valueOf(pInstanceId.getRepoId()) : "")
+					.put("AD_Process_ID", String.valueOf(adProcess.getAD_Process_ID()))
+					.put("AD_Process.Value", adProcess.getValue())
+					.put("AD_Process.Name", getTitle())
+					.put("Date", DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS").withZone(SystemTime.zoneId()).format(SystemTime.asInstant()))
+					.build();
+
+			String reportFilename = reportFilenamePattern.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
+			reportFilename = FileUtil.stripIllegalCharacters(reportFilename);
+			return Optional.of(reportFilename);
 		}
 
 		private boolean isReportApplySecuritySettings()
@@ -1462,12 +1612,12 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
-		/**
-		 * Only really matters when forking with the swing client.
-		 * {@code true} means that the system shall just if the report data shall just be returned.
-		 * If not set, then the system will look at {@link Ini#P_PRINTPREVIEW} and {@code AD_Process.IsDirectPrint}.
-		 */
 		public ProcessInfoBuilder setPrintPreview(final Boolean printPreview)
+		{
+			return setPrintPreview(OptionalBoolean.ofNullableBoolean(printPreview));
+		}
+
+		public ProcessInfoBuilder setPrintPreview(@NonNull final OptionalBoolean printPreview)
 		{
 			this.printPreview = printPreview;
 			return this;
@@ -1479,9 +1629,9 @@ public final class ProcessInfo implements Serializable
 		 */
 		private boolean isPrintPreview()
 		{
-			if (this.printPreview != null)
+			if (this.printPreview.isPresent())
 			{
-				return this.printPreview;
+				return this.printPreview.isTrue();
 			}
 
 			if (Ini.isSwingClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
@@ -1490,12 +1640,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			if (adProcess != null && !adProcess.isDirectPrint())
-			{
-				return true;
-			}
-
-			return false;
+			return adProcess != null && !adProcess.isDirectPrint();
 		}
 
 		/**
@@ -1623,18 +1768,18 @@ public final class ProcessInfo implements Serializable
 			if (logWarning == null)
 			{
 
-					final I_AD_Process processRecord = getAD_ProcessOrNull();
-					if (processRecord != null)
-					{
-						this.logWarning = processRecord.isLogWarning();
-						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
-					}
-					else
-					{
-						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
-						this.logWarning = false;
-					}
+				final I_AD_Process processRecord = getAD_ProcessOrNull();
+				if (processRecord != null)
+				{
+					this.logWarning = processRecord.isLogWarning();
+					logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
 				}
+				else
+				{
+					logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+					this.logWarning = false;
+				}
+			}
 
 			return logWarning;
 		}

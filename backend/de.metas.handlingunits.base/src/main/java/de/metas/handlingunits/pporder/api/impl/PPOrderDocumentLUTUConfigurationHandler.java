@@ -97,7 +97,7 @@ import java.util.Properties;
 		}
 
 		// Update LU/TU configuration
-		updateLUTUConfigurationFromPPOrder(lutuConfiguration, ppOrder);
+		updateLUTUConfigurationFromDocumentLine(lutuConfiguration, ppOrder);
 
 		return lutuConfiguration;
 	}
@@ -122,7 +122,7 @@ import java.util.Properties;
 		final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(ppOrder.getM_HU_PI_Item_Product_ID());
 		if (packingMaterialId != null)
 		{
-			return hupiItemProductDAO.getById(packingMaterialId);
+			return hupiItemProductDAO.getRecordById(packingMaterialId);
 		}
 
 		//
@@ -160,7 +160,7 @@ import java.util.Properties;
 	}
 
 	@Override
-	public void updateLUTUConfigurationFromPPOrder(
+	public void updateLUTUConfigurationFromDocumentLine(
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
 			@NonNull final I_PP_Order ppOrder)
 	{

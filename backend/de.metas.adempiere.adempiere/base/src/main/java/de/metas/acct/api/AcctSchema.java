@@ -68,6 +68,8 @@ public class AcctSchema
 	boolean postTradeDiscount;
 	boolean postServices;
 	boolean postIfSameClearingAccounts;
+	boolean isAllowMultiDebitAndCredit;
+
 	boolean isAutoSetDebtoridAndCreditorid;
 	int debtorIdPrefix;
 	int creditorIdPrefix;
@@ -106,6 +108,11 @@ public class AcctSchema
 		return !isAllowPostingForOrg(orgId);
 	}
 
+	public boolean isElementEnabled(@NonNull final AcctSchemaElementType elementType)
+	{
+		return getSchemaElements().isElementEnabled(elementType);
+	}
+
 	public AcctSchemaElement getSchemaElementByType(@NonNull final AcctSchemaElementType elementType)
 	{
 		return getSchemaElements().getByElementType(elementType);
@@ -119,5 +126,10 @@ public class AcctSchema
 	public ChartOfAccountsId getChartOfAccountsId()
 	{
 		return getSchemaElements().getChartOfAccountsId();
+	}
+
+	public boolean isAccountingCurrency(@NonNull final CurrencyId currencyId)
+	{
+		return CurrencyId.equals(this.currencyId, currencyId);
 	}
 }

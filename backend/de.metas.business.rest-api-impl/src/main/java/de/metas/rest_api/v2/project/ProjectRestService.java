@@ -44,13 +44,18 @@ import de.metas.project.Project;
 import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
-import de.metas.project.RStatusId;
+import de.metas.project.status.RStatusId;
+import de.metas.project.RequestStatusCategoryId;
 import de.metas.project.service.ProjectRepository;
+import de.metas.project.service.ProjectService;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -66,10 +71,14 @@ public class ProjectRestService
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 
 	private final ProjectRepository projectRepository;
+	private final ProjectService projectService;
 
-	public ProjectRestService(@NonNull final ProjectRepository projectRepository)
+	public ProjectRestService(
+			@NonNull final ProjectRepository projectRepository,
+			@NonNull final ProjectService projectService)
 	{
 		this.projectRepository = projectRepository;
+		this.projectService = projectService;
 	}
 
 	@NonNull
@@ -127,6 +136,7 @@ public class ProjectRestService
 				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(projectData.getProjectParentId())))
 				.projectTypeId(JsonMetasfreshId.ofOrNull(ProjectTypeId.toRepoId(projectData.getProjectTypeId())))
 				.projectCategory(projectCategory)
+				.requestStatusCategoryId(JsonMetasfreshId.of(RequestStatusCategoryId.toRepoId(projectData.getRequestStatusCategoryId())))
 				.projectStatusId(JsonMetasfreshId.ofOrNull(RStatusId.toRepoId(projectData.getProjectStatusId())))
 				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(projectData.getBPartnerId())))
 				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(projectData.getSalesRepId())))
@@ -140,6 +150,8 @@ public class ProjectRestService
 			@NonNull final JsonRequestProjectUpsertItem jsonRequestProjectUpsertItem,
 			@NonNull final SyncAdvise syncAdvise)
 	{
+		validateJsonRequestProjectUpsertItem(jsonRequestProjectUpsertItem);
+
 		final JsonResponseUpsertItem.SyncOutcome syncOutcome;
 		final ProjectId projectId;
 
@@ -176,11 +188,22 @@ public class ProjectRestService
 	{
 		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(jsonRequestProjectUpsertItem.getCurrencyCode())).getId();
 
+		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(jsonRequestProjectUpsertItem.getProjectTypeId()));
+
+		final String projectValue = Check.isNotBlank(jsonRequestProjectUpsertItem.getValue())
+				? jsonRequestProjectUpsertItem.getValue()
+				: Optional.ofNullable(projectTypeId).map(projectService::getNextProjectValue).orElse(null);
+
+		if (Check.isBlank(projectValue))
+		{
+			throw new AdempiereException("Could not compute C_Project.Value for projectTypeId: " + projectTypeId);
+		}
+
 		return ProjectData.builder()
 				.orgId(OrgId.ofRepoId(jsonRequestProjectUpsertItem.getOrgId().getValue()))
 				.name(jsonRequestProjectUpsertItem.getName())
 				.currencyId(currencyId)
-				.value(jsonRequestProjectUpsertItem.getValue())
+				.value(projectValue)
 				.description(jsonRequestProjectUpsertItem.getDescription())
 				.projectParentId(ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValue(jsonRequestProjectUpsertItem.getProjectParentId())))
 				.projectTypeId(ProjectTypeId.ofRepoIdOrNull(JsonMetasfreshId.toValue(jsonRequestProjectUpsertItem.getProjectTypeId())))
@@ -348,5 +371,23 @@ public class ProjectRestService
 				.metasfreshId(JsonMetasfreshId.of(projectId.getRepoId()))
 				.syncOutcome(syncOutcome)
 				.build();
+	}
+
+	private void validateJsonRequestProjectUpsertItem(@NonNull final JsonRequestProjectUpsertItem jsonRequestProjectUpsertItem)
+	{
+		if (jsonRequestProjectUpsertItem.getOrgId() == null)
+		{
+			throw new MissingPropertyException("orgId", jsonRequestProjectUpsertItem);
+		}
+
+		if (Check.isEmpty(jsonRequestProjectUpsertItem.getCurrencyCode()))
+		{
+			throw new MissingPropertyException("currencyCode", jsonRequestProjectUpsertItem);
+		}
+
+		if (Check.isEmpty(jsonRequestProjectUpsertItem.getName()))
+		{
+			throw new MissingPropertyException("name", jsonRequestProjectUpsertItem);
+		}
 	}
 }

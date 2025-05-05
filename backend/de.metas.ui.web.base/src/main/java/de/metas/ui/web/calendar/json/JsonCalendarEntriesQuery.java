@@ -27,6 +27,7 @@ import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.project.ProjectId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -45,7 +46,11 @@ public class JsonCalendarEntriesQuery
 	@Nullable Set<CalendarResourceId> onlyResourceIds;
 	@Nullable ProjectId onlyProjectId;
 	@Nullable BPartnerId onlyCustomerId;
+	@Nullable UserId onlyResponsibleId;
 
 	@Nullable JsonDateTime startDate;
 	@Nullable JsonDateTime endDate;
+
+	@Builder.Default
+	boolean skipAllocatedResources = true;
 }

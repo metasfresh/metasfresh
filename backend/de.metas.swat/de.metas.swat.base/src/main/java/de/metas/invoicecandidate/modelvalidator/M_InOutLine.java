@@ -22,15 +22,6 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Component;
-
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -43,6 +34,14 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Interceptor(I_M_InOutLine.class)
 @Component

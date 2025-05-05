@@ -1,20 +1,19 @@
 package de.metas.rfq.model.interceptor;
 
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.rfq.model.I_C_RfQ;
+import de.metas.rfq.model.I_C_RfQ_Topic;
+import de.metas.rfq.util.IRfQWorkDatesAware;
+import de.metas.rfq.util.RfQWorkDatesUtil;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
-
-import de.metas.rfq.model.I_C_RfQ;
-import de.metas.rfq.model.I_C_RfQ_Topic;
-import de.metas.rfq.util.IRfQWorkDatesAware;
-import de.metas.rfq.util.RfQWorkDatesUtil;
-import de.metas.util.Services;
 
 /*
  * #%L

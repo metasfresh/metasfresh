@@ -1,14 +1,16 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.math.BigDecimal;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.FillMandatoryException;
-
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
+import org.adempiere.exceptions.FillMandatoryException;
+
+import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -34,23 +36,21 @@ import de.metas.process.Param;
 
 public class WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam extends WEBUI_M_ReceiptSchedule_ReceiveCUs implements IProcessDefaultParametersProvider
 {
-	private static final String PARAM_QtyCU = "QtyCU";
-	@Param(parameterName = PARAM_QtyCU, mandatory = true)
-	private BigDecimal p_QtyCU;
+	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
+	@Param(parameterName = PARAM_QtyCUsPerTU, mandatory = true)
+	private BigDecimal p_QtyCUsPerTU;
 
 	public WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam()
 	{
-		super();
-
 		// configure defaults
-		setAllowMultipleReceiptsSchedules(false);
-		setAllowNoQuantityAvailable(true);
+		setDisallowMultipleReceiptsSchedules();
+		setAllowNoQuantityAvailable();
 	}
 
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_QtyCU.equals(parameter.getColumnName()))
+		if (PARAM_QtyCUsPerTU.equals(parameter.getColumnName()))
 		{
 			final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
 			return getDefaultAvailableQtyToReceive(receiptSchedule);
@@ -71,14 +71,16 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam extends WEBUI_M_Receip
 	{
 		return getRecord(I_M_ReceiptSchedule.class);
 	}
-	
+
 	@Override
-	protected BigDecimal getEffectiveQtyToReceive(I_M_ReceiptSchedule rs)
+	protected Quantity getEffectiveQtyToReceive(final I_M_ReceiptSchedule rs)
 	{
-		if(p_QtyCU == null || p_QtyCU.signum() <= 0)
+		if (p_QtyCUsPerTU == null || p_QtyCUsPerTU.signum() <= 0)
 		{
-			throw new FillMandatoryException(PARAM_QtyCU);
+			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
 		}
-		return p_QtyCU;
+
+		final UomId uomId = UomId.ofRepoId(rs.getC_UOM_ID());
+		return Quantitys.of(p_QtyCUsPerTU, uomId);
 	}
 }

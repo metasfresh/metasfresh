@@ -12,6 +12,7 @@ export const useCalendarData = ({
   onlyResourceIds,
   onlyProjectId,
   onlyCustomerId,
+  onlyResponsibleId,
   fetchAvailableCalendarsFromAPI,
   fetchAvailableSimulationsFromAPI,
   fetchEntriesFromAPI,
@@ -131,7 +132,7 @@ export const useCalendarData = ({
         loading: false,
         error,
         query,
-        queryResolved,
+        queryResolved: queryResolved ?? {},
         array,
       };
     });
@@ -188,6 +189,7 @@ export const useCalendarData = ({
       onlyResourceIds,
       onlyProjectId,
       onlyCustomerId,
+      onlyResponsibleId,
       startDate,
       endDate,
     });
@@ -221,7 +223,7 @@ export const useCalendarData = ({
         });
       })
       .catch((error) => {
-        console.log('Got error while loading entries', error);
+        console.log('Got error while loading entries', { error, query });
         setEntriesLoadingDone({
           error: true,
           query,
@@ -245,6 +247,11 @@ export const useCalendarData = ({
       loadSimulationsFromAPI();
     }
 
+    console.log('********** ', {
+      simulationId,
+      changedSimulationIds,
+      bool: simulationId && changedSimulationIds.includes(simulationId),
+    });
     if (simulationId && changedSimulationIds.includes(simulationId)) {
       refreshEntriesFromAPI();
       loadConflictsFromAPI();
@@ -262,6 +269,7 @@ export const useCalendarData = ({
   };
 
   return {
+    isLoading: !!entries?.loading,
     getResourcesArray: () => resources, // IMPORTANT: don't copy it because we don't want to trigger a "react change"
     //
     loadSimulationsFromAPI,

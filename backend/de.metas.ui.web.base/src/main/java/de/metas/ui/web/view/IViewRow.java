@@ -1,14 +1,7 @@
 package de.metas.ui.web.view;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -21,6 +14,11 @@ import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -73,7 +71,7 @@ public interface IViewRow
 
 	/**
 	 * @return a map with an entry for each of this row's fields.<br>
-	 *         Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
+	 * Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
 	 */
 	ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues();
 
@@ -95,6 +93,11 @@ public interface IViewRow
 	default Object getFieldValueAsJsonObject(@NonNull final String fieldName, final JSONOptions jsonOpts)
 	{
 		return getFieldNameAndJsonValues().getAsJsonObject(fieldName, jsonOpts);
+	}
+
+	default Comparable<?> getFieldValueAsComparable(@NonNull final String fieldName, final JSONOptions jsonOpts)
+	{
+		return getFieldNameAndJsonValues().getAsComparable(fieldName, jsonOpts);
 	}
 
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
@@ -135,7 +138,9 @@ public interface IViewRow
 	default ITranslatableString getSingleColumnCaption() { return TranslatableStrings.empty(); }
 	// @formatter:on
 
-	/** @return a stream of given row and all it's included rows recursively */
+	/**
+	 * @return a stream of given row and all it's included rows recursively
+	 */
 	default Stream<IViewRow> streamRecursive()
 	{
 		return this.getIncludedRows()

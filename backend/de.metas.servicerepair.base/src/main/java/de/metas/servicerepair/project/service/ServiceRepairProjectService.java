@@ -131,7 +131,7 @@ public class ServiceRepairProjectService
 				.orElseThrow(() -> new AdempiereException("Not a Service/Repair project: " + projectId));
 	}
 
-	private Optional<ServiceRepairProjectInfo> getByIdIfRepairProject(@NonNull final ProjectId projectId)
+	public Optional<ServiceRepairProjectInfo> getByIdIfRepairProject(@NonNull final ProjectId projectId)
 	{
 		return toServiceRepairProjectInfo(projectService.getRecordById(projectId));
 	}
@@ -147,6 +147,7 @@ public class ServiceRepairProjectService
 		return Optional.of(ServiceRepairProjectInfo.builder()
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
+				.active(record.isActive())
 				.dateContract(TimeUtil.asLocalDate(record.getDateContract()))
 				.dateFinish(TimeUtil.asZonedDateTime(record.getDateFinish()))
 				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
@@ -204,12 +205,12 @@ public class ServiceRepairProjectService
 
 		final ProjectId projectId = taskId.getProjectId();
 		huReservationService.makeReservation(ReserveHUsRequest.builder()
-				.documentRef(HUReservationDocRef.ofProjectId(projectId))
-				.productId(request.getProductId())
-				.qtyToReserve(request.getQtyRequired())
-				.customerId(getProjectBPartnerId(projectId))
-				.huId(request.getRepairVhuId())
-				.build())
+						.documentRef(HUReservationDocRef.ofProjectId(projectId))
+						.productId(request.getProductId())
+						.qtyToReserve(request.getQtyRequired())
+						.customerId(getProjectBPartnerId(projectId))
+						.huId(request.getRepairVhuId())
+						.build())
 				.orElseThrow(() -> new AdempiereException("Cannot make reservation"));
 	}
 
@@ -276,12 +277,12 @@ public class ServiceRepairProjectService
 	{
 		final ProjectId projectId = task.getId().getProjectId();
 		final HUReservation huReservation = huReservationService.makeReservation(ReserveHUsRequest.builder()
-				.documentRef(HUReservationDocRef.ofProjectId(projectId))
-				.productId(task.getProductId())
-				.qtyToReserve(qtyToReserve)
-				.customerId(getProjectBPartnerId(projectId))
-				.huIds(fromHUIds)
-				.build())
+						.documentRef(HUReservationDocRef.ofProjectId(projectId))
+						.productId(task.getProductId())
+						.qtyToReserve(qtyToReserve)
+						.customerId(getProjectBPartnerId(projectId))
+						.huIds(fromHUIds)
+						.build())
 				.orElseThrow(() -> new AdempiereException("Cannot make reservation"));
 
 		for (final HuId vhuId : huReservation.getVhuIds())

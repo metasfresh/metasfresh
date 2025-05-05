@@ -9,13 +9,14 @@ import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
-import de.metas.product.ResourceId;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProject;
-import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectService;
-import de.metas.project.workorder.WOProjectStep;
-import de.metas.project.workorder.WOProjectStepId;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.resource.ResourceGroupId;
 import de.metas.resource.ResourceService;
 import de.metas.util.InSetPredicate;
@@ -27,7 +28,9 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.Null;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Optional;
 
+@SuppressWarnings("ALL")
 public final class WOProjectsCalendarQueryExecutor
 {
 	// Services:
@@ -52,39 +55,56 @@ public final class WOProjectsCalendarQueryExecutor
 	private ImmutableMap<WOProjectStepId, WOProjectStep> _stepsById;
 	private SimulationHeaderAndPlan _simulationHeaderAndPlan;
 
+	private final boolean skipAllocatedResources;
+
 	@Builder
 	private WOProjectsCalendarQueryExecutor(
 			final @NonNull ResourceService resourceService,
 			final @NonNull SimulationPlanService simulationPlanService,
 			final @NonNull WOProjectService woProjectService,
 			final @NonNull WOProjectSimulationService woProjectSimulationService,
-			final @NonNull ToCalendarEntryConverter toCalendarEntry,
+			final @Nullable ToCalendarEntryConverter toCalendarEntry,
 			//
 			final @NonNull InSetPredicate<ProjectId> projectIds,
 			final @NonNull InSetPredicate<CalendarResourceId> calendarResourceIds,
 			final @Nullable SimulationPlanId simulationId,
 			final @Nullable Instant startDate,
-			final @Nullable Instant endDate)
+			final @Nullable Instant endDate,
+			final boolean skipAllocatedResources)
 	{
 		this.resourceService = resourceService;
 		this.simulationPlanService = simulationPlanService;
 		this.woProjectService = woProjectService;
 		this.woProjectSimulationService = woProjectSimulationService;
-		this.toCalendarEntry = toCalendarEntry;
+		this.toCalendarEntry = toCalendarEntry != null ? toCalendarEntry : new ToCalendarEntryConverter(woProjectService);
 
 		this.projectIds = projectIds;
 		this.calendarResourceIds = calendarResourceIds;
 		this.simulationId = simulationId;
 		this.startDate = startDate;
 		this.endDate = endDate;
+		this.skipAllocatedResources = skipAllocatedResources;
 	}
 
+	public static class WOProjectsCalendarQueryExecutorBuilder
+	{
+		public ImmutableList<CalendarEntry> execute() {return build().execute();}
+	}
+
+	@NonNull
 	public ImmutableList<CalendarEntry> execute()
 	{
+		final SimulationHeaderAndPlan simulationHeaderAndPlan = getSimulationHeaderAndPlan();
+
 		return getProjectResources()
 				.stream()
+				.map(simulationHeaderAndPlan::applyOn)
 				.filter(this::isActiveProject)
+				.filter(this::isNotFullyAllocated)
+				.filter(this::isStartAndEndDatesMatching)
 				.map(this::toCalendarEntry)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -92,12 +112,16 @@ public final class WOProjectsCalendarQueryExecutor
 	{
 		if (this._projectResources == null)
 		{
+
 			this._projectResources = woProjectService.getResources(
-					WOProjectResourceQuery.builder()
+					WOProjectResourceCalendarQuery.builder()
 							.projectIds(projectIds)
 							.resourceIds(getResourceIdsPredicate(calendarResourceIds, resourceService))
-							.startDate(startDate)
-							.endDate(endDate)
+							//
+							// NOTE: in case we deal with a simulation then filter by start/end date later, when we apply the simulation changes too
+							.startDate(simulationId != null ? null : startDate)
+							.endDate(simulationId != null ? null : endDate)
+							//
 							.build());
 		}
 		return this._projectResources;
@@ -121,17 +145,18 @@ public final class WOProjectsCalendarQueryExecutor
 		if (this._stepsById == null)
 		{
 			final ImmutableList<WOProjectResource> projectResources = getProjectResources();
-			final ImmutableSet<WOProjectStepId> stepIds = projectResources.stream().map(WOProjectResource::getStepId).collect(ImmutableSet.toImmutableSet());
-			this._stepsById = Maps.uniqueIndex(woProjectService.getStepsByIds(stepIds), WOProjectStep::getId);
+			final ImmutableSet<WOProjectStepId> stepIds = projectResources.stream().map(WOProjectResource::getWoProjectStepId).collect(ImmutableSet.toImmutableSet());
+			this._stepsById = Maps.uniqueIndex(woProjectService.getStepsByIds(stepIds), WOProjectStep::getWoProjectStepId);
 		}
 		return this._stepsById;
 	}
 
 	private WOProjectStep getStep(@NonNull final WOProjectResource projectResource)
 	{
-		return getSteps().get(projectResource.getStepId());
+		return getSteps().get(projectResource.getWoProjectStepId());
 	}
 
+	@NonNull
 	private SimulationHeaderAndPlan getSimulationHeaderAndPlan()
 	{
 		if (this._simulationHeaderAndPlan == null)
@@ -143,17 +168,13 @@ public final class WOProjectsCalendarQueryExecutor
 		return this._simulationHeaderAndPlan;
 	}
 
-	public boolean isActiveProject(@NonNull final WOProjectResource projectResource)
-	{
-		return getActiveProject(projectResource) != null;
-	}
-
 	private WOProject getActiveProject(final @NonNull WOProjectResource projectResource)
 	{
 		return getActiveProjects().get(projectResource.getProjectId());
 	}
 
-	private CalendarEntry toCalendarEntry(@NonNull final WOProjectResource projectResource)
+	@NonNull
+	private Optional<CalendarEntry> toCalendarEntry(@NonNull final WOProjectResource projectResource)
 	{
 		final SimulationHeaderAndPlan simulationHeaderAndPlan = getSimulationHeaderAndPlan();
 
@@ -164,7 +185,33 @@ public final class WOProjectsCalendarQueryExecutor
 				simulationHeaderAndPlan.getHeader());
 	}
 
-	public static InSetPredicate<ResourceId> getResourceIdsPredicate(
+	private boolean isActiveProject(@NonNull final WOProjectResource projectResource)
+	{
+		return getActiveProject(projectResource) != null;
+	}
+
+	private boolean isNotFullyAllocated(@NonNull final WOProjectResource projectResource)
+	{
+		if (!skipAllocatedResources)
+		{
+			return true;
+		}
+
+		return projectResource.isNotFullyResolved();
+	}
+
+	private boolean isStartAndEndDatesMatching(final WOProjectResource projectResource)
+	{
+		if (startDate == null && endDate == null)
+		{
+			return true;
+		}
+
+		final CalendarDateRange dateRange = projectResource.getDateRange();
+		return dateRange != null && dateRange.isOverlappingWith(startDate, endDate);
+	}
+
+	public static InSetPredicate<ResourceIdAndType> getResourceIdsPredicate(
 			@NonNull final InSetPredicate<CalendarResourceId> calendarResourceIds,
 			@NonNull final ResourceService resourceService)
 	{
@@ -178,7 +225,7 @@ public final class WOProjectsCalendarQueryExecutor
 		}
 		else
 		{
-			final HashSet<ResourceId> resourceIdsSet = new HashSet<>();
+			final HashSet<ResourceIdAndType> resourceIdsSet = new HashSet<>();
 			final HashSet<ResourceGroupId> resourceGroupIdsSet = new HashSet<>();
 			for (final CalendarResourceId calendarResourceId : calendarResourceIds.toSet())
 			{
@@ -187,14 +234,14 @@ public final class WOProjectsCalendarQueryExecutor
 					continue;
 				}
 
-				final ResourceId resourceId = calendarResourceId.toRepoIdOrNull(ResourceId.class);
+				final ResourceIdAndType resourceId = ResourceIdAndType.ofCalendarResourceIdOrNull(calendarResourceId);
 				if (resourceId != null)
 				{
 					resourceIdsSet.add(resourceId);
 					continue;
 				}
 
-				final ResourceGroupId resourceGroupId = calendarResourceId.toRepoIdOrNull(ResourceGroupId.class);
+				final ResourceGroupId resourceGroupId = calendarResourceId.toResourceGroupIdOrNull();
 				if (resourceGroupId != null)
 				{
 					resourceGroupIdsSet.add(resourceGroupId);
@@ -202,7 +249,10 @@ public final class WOProjectsCalendarQueryExecutor
 				}
 			}
 
-			resourceIdsSet.addAll(resourceService.getActiveResourceIdsByGroupIds(resourceGroupIdsSet));
+			resourceService.getActiveResourceIdsByGroupIds(resourceGroupIdsSet)
+					.stream()
+					.flatMap(ResourceIdAndType::streamForAllTypes)
+					.forEach(resourceIdsSet::add);
 
 			return InSetPredicate.only(resourceIdsSet);
 		}

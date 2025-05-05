@@ -2,6 +2,7 @@ package de.metas.bpartner;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
@@ -44,7 +45,7 @@ public enum ShipmentAllocationBestBeforePolicy implements ReferenceListAwareEnum
 
 	Newest_First(X_C_BPartner.SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First);
 
-	public static final int AD_REFERENCE_ID = X_C_BPartner.SHIPMENTALLOCATION_BESTBEFORE_POLICY_AD_Reference_ID;
+	public static final ReferenceId AD_REFERENCE_ID = ReferenceId.ofRepoId(X_C_BPartner.SHIPMENTALLOCATION_BESTBEFORE_POLICY_AD_Reference_ID);
 
 	@Getter
 	private final String code;

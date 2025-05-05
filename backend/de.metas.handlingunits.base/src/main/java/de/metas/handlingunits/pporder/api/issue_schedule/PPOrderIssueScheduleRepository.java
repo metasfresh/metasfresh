@@ -10,6 +10,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,7 +38,7 @@ public class PPOrderIssueScheduleRepository
 		final I_PP_Order_IssueSchedule record = InterfaceWrapperHelper.newInstance(I_PP_Order_IssueSchedule.class);
 		record.setPP_Order_ID(request.getPpOrderId().getRepoId());
 		record.setPP_Order_BOMLine_ID(request.getPpOrderBOMLineId().getRepoId());
-		record.setSeqNo(request.getSeqNo());
+		record.setSeqNo(request.getSeqNo().toInt());
 
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setC_UOM_ID(request.getQtyToIssue().getUomId().getRepoId());
@@ -65,10 +66,10 @@ public class PPOrderIssueScheduleRepository
 				.id(PPOrderIssueScheduleId.ofRepoId(record.getPP_Order_IssueSchedule_ID()))
 				.ppOrderId(PPOrderId.ofRepoId(record.getPP_Order_ID()))
 				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(record.getPP_Order_BOMLine_ID()))
-				.seqNo(record.getSeqNo())
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.qtyToIssue(Quantitys.create(record.getQtyToIssue(), uomId))
+				.qtyToIssue(Quantitys.of(record.getQtyToIssue(), uomId))
 				.issueFromHUId(HuId.ofRepoId(record.getIssueFrom_HU_ID()))
 				.issueFromLocatorId(LocatorId.ofRepoId(record.getIssueFrom_Warehouse_ID(), record.getIssueFrom_Locator_ID()))
 				.isAlternativeIssue(record.isAlternativeHU())
@@ -100,7 +101,7 @@ public class PPOrderIssueScheduleRepository
 	private static Quantity extractQtyIssued(final I_PP_Order_IssueSchedule record)
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
-		return Quantitys.create(record.getQtyIssued(), uomId);
+		return Quantitys.of(record.getQtyIssued(), uomId);
 	}
 
 	@Nullable
@@ -112,7 +113,7 @@ public class PPOrderIssueScheduleRepository
 		if (qtyReject.signum() != 0 && reasonCode != null)
 		{
 			final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
-			return QtyRejectedWithReason.of(Quantitys.create(qtyReject, uomId), reasonCode);
+			return QtyRejectedWithReason.of(Quantitys.of(qtyReject, uomId), reasonCode);
 		}
 		else
 		{
@@ -140,6 +141,7 @@ public class PPOrderIssueScheduleRepository
 		final Quantity qtyIssued = issued != null ? issued.getQtyIssued() : null;
 		final QtyRejectedWithReason qtyRejected = issued != null ? issued.getQtyRejected() : null;
 
+		record.setSeqNo(issueSchedule.getSeqNo().toInt());
 		record.setProcessed(processed);
 		record.setQtyIssued(qtyIssued != null ? qtyIssued.toBigDecimal() : BigDecimal.ZERO);
 		record.setQtyReject(qtyRejected != null ? qtyRejected.toBigDecimal() : BigDecimal.ZERO);
@@ -156,6 +158,16 @@ public class PPOrderIssueScheduleRepository
 				.create()
 				.delete();
 	}
+
+	public void deleteNotProcessedById(@NonNull final PPOrderIssueScheduleId issueScheduleId)
+	{
+		queryBL.createQueryBuilder(I_PP_Order_IssueSchedule.class)
+				.addEqualsFilter(I_PP_Order_IssueSchedule.COLUMNNAME_PP_Order_IssueSchedule_ID, issueScheduleId)
+				.addEqualsFilter(I_PP_Order_IssueSchedule.COLUMNNAME_Processed, false)
+				.create()
+				.delete();
+	}
+
 
 	public boolean matchesByOrderId(@NonNull final PPOrderId ppOrderId)
 	{

@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -48,11 +47,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -609,45 +610,72 @@ class SqlViewDataRepository implements IViewDataRepository
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final Class<T> modelClass)
 	{
+		return retrieveModelsByIdsAsStream(viewId, rowIds, modelClass)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	@NonNull
+	public <T> Stream<T> retrieveModelsByIdsAsStream(
+			@NonNull final ViewId viewId,
+			@NonNull final DocumentIdsSelection rowIds,
+			@NonNull final Class<T> modelClass)
+	{
 		if (rowIds.isEmpty())
 		{
-			return ImmutableList.of();
+			return Stream.empty();
 		}
 
 		final SqlViewRowsWhereClause sqlWhereClause = getSqlWhereClause(viewId, DocumentFilterList.EMPTY, rowIds, SqlOptions.usingTableAlias(getTableAlias()));
 		if (sqlWhereClause.isNoRecords())
 		{
 			logger.warn("Could get the SQL where clause for {}/{}. Returning empty", viewId, rowIds);
-			return ImmutableList.of();
+			return Stream.empty();
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(modelClass, getTableName(), PlainContextAware.createUsingOutOfTransaction())
 				.filter(sqlWhereClause.toQueryFilter())
 				.create()
-				.list(modelClass);
+				.iterateAndStream();
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection removeRowIdsNotMatchingFilters(
+	public ViewRowIdsOrderedSelection addRemoveChangedRows(
 			@NonNull final ViewRowIdsOrderedSelection selection,
 			@NonNull final DocumentFilterList filters,
-			@NonNull final Set<DocumentId> rowIds)
+			@NonNull final Set<DocumentId> changedRowIds,
+			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
 	{
-		if (rowIds.isEmpty())
+		if (changedRowIds.isEmpty())
 		{
 			return selection;
 		}
 
 		final ViewId viewId = selection.getViewId();
-		final Set<DocumentId> matchingRowIds = retrieveRowIdsMatchingFilters(viewId, filters, rowIds);
-		final Set<DocumentId> notMatchingRowIds = Sets.difference(rowIds, matchingRowIds);
-		if (notMatchingRowIds.isEmpty())
+
+		final Set<DocumentId> rowIdsToAdd = retrieveRowIdsMatchingFiltersButNotInView(viewId, filters, changedRowIds)
+				.stream()
+				// sort them by ID because at least to have them appended using the creation order
+				// ideally would be to insert them in the right place respecting the view's ORDER BY clause
+				.sorted(Comparator.comparing(DocumentId::toJson))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Set<DocumentId> rowIdsToRemove = new HashSet<>(changedRowIds);
+		rowIdsToRemove.removeAll((rowIdsToAdd));
+		if (!rowIdsToRemove.isEmpty())
 		{
-			return selection;
+			final Set<DocumentId> rowIdsInViewAndMatching = retrieveRowIdsMatchingFilters(viewId, filters, rowIdsToRemove);
+			rowIdsToRemove.removeAll(rowIdsInViewAndMatching);
+
+			changesCollector.collectChangedRowIds(rowIdsInViewAndMatching);
 		}
 
-		return viewRowIdsOrderedSelectionFactory.removeRowIdsFromSelection(selection, DocumentIdsSelection.of(notMatchingRowIds));
+		return viewRowIdsOrderedSelectionFactory.removeAndAddRowIdsFromSelection(
+				selection,
+				DocumentIdsSelection.of(rowIdsToRemove),
+				DocumentIdsSelection.of(rowIdsToAdd),
+				changesCollector);
 	}
 
 	public Set<DocumentId> retrieveRowIdsMatchingFilters(
@@ -660,11 +688,28 @@ class SqlViewDataRepository implements IViewDataRepository
 			return ImmutableSet.of();
 		}
 
-		final SqlViewRowsWhereClause sqlWhereClause = getSqlWhereClause(
-				viewId,
-				filters,
-				DocumentIdsSelection.of(rowIds),
-				SqlOptions.usingTableName(getTableName()));
+		final SqlViewRowsWhereClause sqlWhereClause = getSqlWhereClause(viewId, filters, DocumentIdsSelection.of(rowIds), SqlOptions.usingTableName(getTableName()));
+		return retrieveRowIdsByWhereClause(sqlWhereClause);
+	}
+
+	public Set<DocumentId> retrieveRowIdsMatchingFiltersButNotInView(
+			@NonNull final ViewId viewId,
+			@NonNull final DocumentFilterList filters,
+			@NonNull final Set<DocumentId> rowIds)
+	{
+		if (rowIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final SqlViewRowsWhereClause sqlWhereClause = getSqlWhereClause(viewId, filters, DocumentIdsSelection.of(rowIds), SqlOptions.usingTableName(getTableName()))
+				.withRowsNotPresentInViewSelection();
+
+		return retrieveRowIdsByWhereClause(sqlWhereClause);
+	}
+
+	private Set<DocumentId> retrieveRowIdsByWhereClause(final SqlViewRowsWhereClause sqlWhereClause)
+	{
 		if (sqlWhereClause.isNoRecords())
 		{
 			return ImmutableSet.of();
@@ -684,17 +729,17 @@ class SqlViewDataRepository implements IViewDataRepository
 			DB.setParameters(pstmt, sql.getSqlParams());
 			rs = pstmt.executeQuery();
 
-			final HashSet<DocumentId> matchingRowIds = new HashSet<>();
+			final HashSet<DocumentId> rowIds = new HashSet<>();
 			while (rs.next())
 			{
 				final DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs);
 				if (rowId != null)
 				{
-					matchingRowIds.add(rowId);
+					rowIds.add(rowId);
 				}
 			}
 
-			return matchingRowIds;
+			return rowIds;
 		}
 		catch (final Exception ex)
 		{

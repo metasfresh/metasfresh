@@ -22,6 +22,7 @@
 
 package de.metas.costrevaluation.callout;
 
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -36,7 +37,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.TabCallout;
 import org.compiere.model.I_M_CostRevaluation;
-import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -70,7 +70,7 @@ public class M_CostRevaluation implements ITabCallout
 	private void setDocTypeId(final I_M_CostRevaluation costRevaluation)
 	{
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_CostRevaluation)
+				.docBaseType(DocBaseType.CostRevaluation)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(costRevaluation.getAD_Client_ID())
 				.adOrgId(costRevaluation.getAD_Org_ID())
@@ -93,7 +93,7 @@ public class M_CostRevaluation implements ITabCallout
 
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(docTypeDAO.getById(docTypeId))
+				.setNewDocType(docTypeDAO.getRecordById(docTypeId))
 				.setOldDocumentNo(costRevaluation.getDocumentNo())
 				.setDocumentModel(costRevaluation)
 				.buildOrNull();

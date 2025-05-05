@@ -28,9 +28,11 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_cctop_invoic_v;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -46,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
 public class EDI_cctop_invoic_v_StepDef
@@ -62,13 +65,16 @@ public class EDI_cctop_invoic_v_StepDef
 
 	private final EDI_cctop_invoic_v_StepDefData cctopInvoiceTable;
 	private final C_Invoice_StepDefData invoiceTable;
+	private final EDI_Desadv_StepDefData desadvTable;
 
 	public EDI_cctop_invoic_v_StepDef(
 			@NonNull final EDI_cctop_invoic_v_StepDefData cctopInvoiceTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable)
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final EDI_Desadv_StepDefData desadvTable)
 	{
 		this.cctopInvoiceTable = cctopInvoiceTable;
 		this.invoiceTable = invoiceTable;
+		this.desadvTable = desadvTable;
 	}
 
 	@Then("invoice is EDI exported")
@@ -206,7 +212,7 @@ public class EDI_cctop_invoic_v_StepDef
 	private static Element getElement(@NonNull final Node node, @NonNull final String tagName)
 	{
 		final Element element = node instanceof Document
-				? ((Document) node).getDocumentElement()
+				? ((Document)node).getDocumentElement()
 				: (Element)node;
 
 		final NodeList nodeList = element.getElementsByTagName(tagName);
@@ -259,5 +265,25 @@ public class EDI_cctop_invoic_v_StepDef
 		}
 
 		return locationType2Cctop119Element;
+	}
+
+	@And("validate EDI_cctop_invoic_v:")
+	public void validateEDI_cctop_invoic_v(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String invoicIdentifier = DataTableUtil.extractStringForColumnName(row, I_EDI_cctop_invoic_v.COLUMNNAME_EDI_cctop_invoic_v_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final Document invoic = cctopInvoiceTable.get(invoicIdentifier);
+
+			final String desadvIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_EDI_cctop_invoic_v.COLUMNNAME_EDIDesadvDocumentNo + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(desadvIdentifier))
+			{
+				final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
+
+				final Element ediDocNoElement = getElement(invoic, I_EDI_cctop_invoic_v.COLUMNNAME_EDIDesadvDocumentNo);
+				assertThat(ediDocNoElement).isNotNull();
+				assertThat(ediDocNoElement.getTextContent()).isEqualTo(desadvRecord.getDocumentNo());
+			}
+		}
 	}
 }

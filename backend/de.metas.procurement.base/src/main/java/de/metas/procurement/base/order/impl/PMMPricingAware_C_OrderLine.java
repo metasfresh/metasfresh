@@ -7,7 +7,8 @@ import java.util.Properties;
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.commons.lang.NotImplementedException;
+
+import org.apache.commons.lang3.NotImplementedException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;

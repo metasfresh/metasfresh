@@ -1,0 +1,33 @@
+{
+  "id": 22222,
+  "productCategoryId": 2001587,
+  "productNo": "P002737",
+  "name": "Product",
+  "description": "description test",
+  "ean": null,
+  "externalId": null,
+  "uom": "Stk",
+  "manufacturerId": null,
+  "manufacturerName": null,
+  "manufacturerNumber": null,
+  "bpartners": [
+    {
+      "bPartnerId": 33333,
+      "productNo": null,
+      "productName": null,
+      "productDescription": null,
+      "productCategory": null,
+      "ean": null,
+      "vendor": true,
+      "currentVendor": false,
+      "customer": false,
+      "leadTimeInDays": 0,
+      "excludedFromSale": false,
+      "exclusionFromSaleReason": null,
+      "excludedFromPurchase": false,
+      "exclusionFromPurchaseReason": null,
+      "productId": 22222
+    }
+  ],
+  "albertaProductInfo": null
+}

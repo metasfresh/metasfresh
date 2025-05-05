@@ -286,7 +286,7 @@ public class RecordChangeLogEntryLoader
 	{
 		final IModelTranslationMap adColumnTrlMap = trlRepo.retrieveAll(
 				adColumnPOInfo.getTrlInfo(),
-				columnInfo.getAD_Column_ID());
+				columnInfo.getAD_Column_ID().getRepoId());
 		final ITranslatableString columnTrl = adColumnTrlMap.getColumnTrl(I_AD_Column.COLUMNNAME_Name, columnInfo.getColumnName());
 		return columnTrl;
 	}

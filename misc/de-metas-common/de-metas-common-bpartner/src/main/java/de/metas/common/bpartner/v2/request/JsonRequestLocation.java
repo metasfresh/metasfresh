@@ -22,8 +22,7 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -33,162 +32,188 @@ import javax.annotation.Nullable;
 @Getter
 @ToString
 @EqualsAndHashCode
-@ApiModel(description = "Locations can be inserted/updated, or just looked up. For lookup, metasfresh tries first the `externalId` and then the `gln`.")
+@Schema(description = "Locations can be inserted/updated, or just looked up. For lookup, metasfresh tries first the `externalId` and then the `gln`.")
 public class JsonRequestLocation
 {
-	@ApiModelProperty(position = 20, //
-			value = "If not specified but required (e.g. because a new location is created), then `true` is assumed")
+	@Schema(description = "If not specified but required (e.g. because a new location is created), then `true` is assumed")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 30, //
-			value = "This translates to `C_BPartner_Location.Name`")
+	@Schema(description = "This translates to `C_BPartner_Location.Name`")
 	private String name;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean nameSet;
 
-	@ApiModelProperty(position = 40, //
-			value = "This translates to `C_BPartner_Location.BPartnerName`")
+	@Schema(description = "This translates to `C_BPartner_Location.BPartnerName`")
 	private String bpartnerName;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean bpartnerNameSet;
 
-	@ApiModelProperty(position = 50)
+	@Schema
 	private String address1;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean address1Set;
 
-	@ApiModelProperty(position = 60)
+	@Schema
 	private String address2;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean address2Set;
 
-	@ApiModelProperty(position = 70)
+	@Schema
 	private String address3;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean address3Set;
 
-	@ApiModelProperty(position = 80)
+	@Schema
 	private String address4;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean address4Set;
 
-	@ApiModelProperty(position = 90)
+	@Schema
 	private String poBox;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean poBoxSet;
 
-	@ApiModelProperty(position = 100, //
-			value = "If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
+	@Schema(description = "If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
 					+ "If there is one matching postal record, the system **will ignore** the following properties and instead use the postal record's values:\n"
 					+ "* countryCode\n"
 					+ "* city\n"
 					+ "* region\n")
 	private String postal;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean postalSet;
 
-	@ApiModelProperty(position = 110)
+	@Schema
 	private String city;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean citySet;
 
-	@ApiModelProperty(position = 120, //
-			value = "If specified, then metasfresh will use this property (in addition to `postal`) as a filter criterion to look up `C_Postal` records.\n"
+	@Schema(description = "If specified, then metasfresh will use this property (in addition to `postal`) as a filter criterion to look up `C_Postal` records.\n"
 					+ "The property may be empty so a caller can explicitly tell metasfresh *not* to filter by district")
 	private String district;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean districtSet;
 
-	@ApiModelProperty(position = 130)
+	@Schema
 	private String region;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean regionSet;
 
-	@ApiModelProperty(position = 140)
+	@Schema
 	private String countryCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean countryCodeSet;
 
-	@ApiModelProperty(position = 150, //
-			value = "This translates to `C_BPartner_Location.GLN`")
+	@Schema(description = "This translates to `C_BPartner_Location.GLN`")
 	private String gln;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean glnSet;
 
-	@ApiModelProperty(position = 160)
+	@Schema
 	private Boolean shipTo;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean shipToSet;
 
-	@ApiModelProperty(position = 170, //
-			value = "Only one location per request may have `shipToDefault == true`.\n"
+	@Schema(description = "Only one location per request may have `shipToDefault == true`.\n"
 					+ "If `true`, then " //
 					+ "* `shipTo` is always be assumed to be `true` as well"
 					+ "* another possibly exiting metasfresh location might be set to `shipToDefault = false`, even if it is not specified in this request.")
 	private Boolean shipToDefault;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean shipToDefaultSet;
 
-	@ApiModelProperty(position = 180)
+	@Schema
 	private Boolean billTo;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean billToSet;
 
-	@ApiModelProperty(position = 190, //
-			value = "Only one location per request may have `billToDefault == true`.\n"
+	@Schema(description = "Only one location per request may have `billToDefault == true`.\n"
 					+ "If `true`, then " //
 					+ "* `billTo` is always be assumed to be `true` as well"
 					+ "* another possibly exiting metasfresh location might be set to `billToDefault = false`, even if it is not specified in this request.")
 	private Boolean billToDefault;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean billToDefaultSet;
 
-	@ApiModelProperty(position = 200, //
-			value = "Translates to C_BPartner_Location.IsEphemeral")
+	@Schema(description = "Translates to C_BPartner_Location.IsEphemeral")
 	private boolean ephemeral;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean ephemeralSet;
 
-	@ApiModelProperty(position = 210)
+	@Schema(nullable = true)
 	@Nullable
 	private String email;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean emailSet;
 
-	@ApiModelProperty(position = 220)
+	@Schema
 	private String phone;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean phoneSet;
 
-	@ApiModelProperty(position = 230, //
-			value = "Translates to C_BPartner_Location.VisitorsAddress")
+	@Schema(description = "Translates to C_BPartner_Location.VisitorsAddress")
 	private Boolean visitorsAddress;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean visitorsAddressSet;
+
+	@Schema(description = "Translates to C_BPartner_Location.IsHandoverLocation")
+	private Boolean handoverLocation;
+
+	@Schema(hidden = true)
+	private boolean handoverLocationSet;
+
+	@Schema(description = "Translates to C_BPartner_Location.IsRemitTo")
+	private Boolean remitTo;
+
+	@Schema(hidden = true)
+	private boolean remitToAddressSet;
+
+	@Schema(description = "Translates to C_BPartner_Location.IsReplicationLookupDefault")
+	private Boolean replicationLookupDefault;
+
+	@Schema(hidden = true)
+	private boolean replicationLookupDefaultSet;
+
+	@Schema(description = "Translates to C_BPartner_Location.VATaxId")
+	private String vatId;
+
+	@Schema(hidden = true)
+	private boolean vatIdSet;
+
+	@Schema(description = "Translates to C_BPartner_Location.SAP_PaymentMethod")
+	private String sapPaymentMethod;
+
+	private boolean sapPaymentMethodSet;
+
+
+	@Schema(description = "This translates to `C_BPartner_Location.SAP_BPartnerCode`.")
+	private String sapBPartnerCode;
+
+	@Schema(hidden = true)
+	private boolean sapBPartnerCodeSet;
 
 	public void setActive(final Boolean active)
 	{
@@ -320,5 +345,41 @@ public class JsonRequestLocation
 	{
 		this.visitorsAddress = visitorsAddress;
 		this.visitorsAddressSet = true;
+	}
+
+	public void setHandoverLocation(final Boolean handoverLocation)
+	{
+		this.handoverLocation = handoverLocation;
+		this.handoverLocationSet = true;
+	}
+
+	public void setRemitTo(final Boolean remitTo)
+	{
+		this.remitTo = remitTo;
+		this.remitToAddressSet = true;
+	}
+
+	public void setReplicationLookupDefault(final Boolean replicationLookupDefault)
+	{
+		this.replicationLookupDefault = replicationLookupDefault;
+		this.replicationLookupDefaultSet = true;
+	}
+
+	public void setVatId(final String vatId)
+	{
+		this.vatId = vatId;
+		this.vatIdSet = true;
+	}
+
+	public void setSapPaymentMethod(final String sapPaymentMethod)
+	{
+		this.sapPaymentMethod = sapPaymentMethod;
+		this.sapPaymentMethodSet = true;
+	}
+
+	public void setSapBPartnerCode(final String sapBPartnerCode)
+	{
+		this.sapBPartnerCode = sapBPartnerCode;
+		this.sapBPartnerCodeSet = true;
 	}
 }

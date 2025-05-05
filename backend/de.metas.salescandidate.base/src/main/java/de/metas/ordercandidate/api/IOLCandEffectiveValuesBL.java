@@ -18,6 +18,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -186,4 +187,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 
 	@Nullable
 	HUPIItemProductId getEffectivePackingInstructions(I_C_OLCand olCand);
+
+	@NonNull
+	BigDecimal getEffectiveQtyEntered(@NonNull I_C_OLCand olCand);
 }

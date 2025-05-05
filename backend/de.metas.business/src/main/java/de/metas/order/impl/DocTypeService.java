@@ -23,12 +23,12 @@
 package de.metas.order.impl;
 
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,17 +48,20 @@ public class DocTypeService
 	private final IOrgDAO orgsDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	@Nullable
-	public DocTypeId getInvoiceDocTypeId(
-			@Nullable final String docBaseType,
+	@NonNull
+	public DocTypeId getDocTypeId(
+			@NonNull final DocBaseType docBaseType,
+			@NonNull final OrgId orgId)
+	{
+		return getDocTypeId(docBaseType, null, orgId);
+	}
+
+	@NonNull
+	public DocTypeId getDocTypeId(
+			@NonNull final DocBaseType docBaseType,
 			@Nullable final String docSubType,
 			@NonNull final OrgId orgId)
 	{
-		if (Check.isBlank(docBaseType))
-		{
-			return null;
-		}
-
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);
 
 		final DocTypeQuery query = DocTypeQuery
@@ -80,7 +83,7 @@ public class DocTypeService
 			return null;
 		}
 
-		final String docBaseType = X_C_DocType.DOCBASETYPE_SalesOrder;
+		final DocBaseType docBaseType = DocBaseType.SalesOrder;
 		final String docSubType;
 
 		if (JsonOrderDocType.PrepayOrder.equals(orderDocType))
@@ -112,13 +115,14 @@ public class DocTypeService
 		{
 			return Optional.empty();
 		}
-		
-		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
-		if (!X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType()))
+
+		final I_C_DocType docType = docTypeDAO.getRecordById(docTypeId);
+		final DocBaseType docBaseType = DocBaseType.ofCode(docType.getDocBaseType());
+		if (!docBaseType.isSalesOrder())
 		{
 			throw new AdempiereException("Invalid base doc type!");
 		}
 
-		return Optional.of(JsonOrderDocType.ofCode(docType.getDocSubType()));
+		return Optional.ofNullable(JsonOrderDocType.ofCodeOrNull(docType.getDocSubType()));
 	}
 }

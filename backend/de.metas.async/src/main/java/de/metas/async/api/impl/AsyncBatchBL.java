@@ -55,7 +55,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -364,8 +364,9 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return Optional.of(temporaryBatchId);
 		}
 
-		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
-		return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
+		// final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
+		// return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
+		return Optional.empty();
 	}
 
 	@Override

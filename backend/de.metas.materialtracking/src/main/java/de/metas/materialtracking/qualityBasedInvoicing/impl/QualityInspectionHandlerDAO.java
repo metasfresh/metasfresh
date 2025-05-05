@@ -22,19 +22,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.TimeUtil;
-
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
@@ -49,10 +36,25 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderS
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.TimeUtil;
+
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 {
@@ -151,14 +153,17 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 
 		final I_M_InOut inOut = iol.getM_InOut();
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(inOut.getAD_Org_ID()));
 
 		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
 		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(inOut.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
 		final I_C_Location location = InterfaceWrapperHelper.load(bPartnerLocation.getC_Location_ID(), I_C_Location.class);
 		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(
 				PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
+				null,
 				CountryId.ofRepoId(location.getC_Country_ID()),
-				TimeUtil.asZonedDateTime(inOut.getMovementDate()),
+				TimeUtil.asZonedDateTime(inOut.getMovementDate(), timeZone),
 				SOTrx.ofBoolean(inOut.isSOTrx()),
 				processedPLVFiltering);
 		ic.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());

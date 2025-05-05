@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import FullCalendar from '@fullcalendar/react';
@@ -28,6 +28,9 @@ import {
   getEventClassNames,
   renderEventContent,
 } from './components/CalendarEvent';
+import SimulationOptimizerButton from './components/SimulationOptimizerButton';
+import { useSimulationOptimizerStatus } from './hooks/useSimulationOptimizerStatus';
+import counterpart from 'counterpart';
 
 const Calendar = ({
   view,
@@ -35,6 +38,7 @@ const Calendar = ({
   onlyResourceIds,
   onlyProjectId,
   onlyCustomerId,
+  onlyResponsibleId,
   onParamsChanged,
 }) => {
   const notifyParamsChanged = (changedParams) => {
@@ -44,6 +48,7 @@ const Calendar = ({
       onlyResourceIds,
       onlyProjectId,
       onlyCustomerId,
+      onlyResponsibleId,
       ...changedParams,
     };
     console.log('notifyParamsChanged', { changedParams, params });
@@ -55,17 +60,25 @@ const Calendar = ({
     onlyResourceIds,
     onlyProjectId,
     onlyCustomerId,
+    onlyResponsibleId,
     fetchAvailableCalendarsFromAPI: api.fetchAvailableCalendars,
     fetchAvailableSimulationsFromAPI: api.fetchAvailableSimulations,
     fetchEntriesFromAPI: api.fetchCalendarEntries,
     fetchConflictsFromAPI: api.fetchConflicts,
   });
 
+  const simulationOptimizerStatus = useSimulationOptimizerStatus({
+    simulationId,
+  });
+
   useCalendarWebsocketEvents({
     simulationId,
     onlyResourceIds,
     onlyProjectId,
-    onWSEvents: calendarData.applyWSEvents,
+    onWSEvents: (wsEvents) => {
+      calendarData.applyWSEvents(wsEvents);
+      simulationOptimizerStatus.setStatusFromWSEvents(wsEvents);
+    },
   });
 
   const fetchCalendarEntries = (fetchInfo, successCallback) => {
@@ -108,10 +121,16 @@ const Calendar = ({
       });
   };
 
+  //
+  //
+  //
+
   // Calendar Key:
   // * view - it's important to be part of the key, else the Calendar component when we do browser back/forward between different view types
   // noinspection UnnecessaryLocalVariableJS
   const calendarKey = view;
+
+  const calendarRef = useRef();
 
   return (
     <div className="calendar">
@@ -123,12 +142,27 @@ const Calendar = ({
           <CalendarFilters resolvedQuery={calendarData.getResolvedQuery()} />
         </div>
         <div className="calendar-top-right">
+          <SimulationOptimizerButton
+            simulationId={simulationOptimizerStatus.simulationId}
+            status={simulationOptimizerStatus.status}
+            onStart={({ simulationId }) =>
+              api
+                .startSimulationOptimizer({ simulationId })
+                .then(simulationOptimizerStatus.setStatusFromAPIResponse)
+            }
+            onStop={({ simulationId }) =>
+              api
+                .stopSimulationOptimizer({ simulationId })
+                .then(simulationOptimizerStatus.setStatusFromAPIResponse)
+            }
+            hidden={calendarData.isLoading}
+          />
           <SimulationsDropDown
             simulations={calendarData.getSimulationsArray()}
             selectedSimulationId={simulationId}
             onOpenDropdown={() => calendarData.loadSimulationsFromAPI()}
             onSelect={(simulation) => {
-              calendarData.setSimulationId(simulation?.simulationId);
+              notifyParamsChanged({ simulationId: simulation?.simulationId });
             }}
             onNew={() => {
               api
@@ -147,7 +181,9 @@ const Calendar = ({
         <FullCalendar
           schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
           key={calendarKey}
+          ref={calendarRef}
           height="100%"
+          now={new Date()}
           locales={[deLocale]}
           locale={getCurrentActiveLanguage()}
           views={{
@@ -155,6 +191,9 @@ const Calendar = ({
               slotDuration: { months: 1 },
               slotLabelInterval: { months: 1 },
               slotLabelFormat: [{ month: 'long' }],
+            },
+            resourceTimelineMonth: {
+              slotMinWidth: '60',
             },
           }}
           initialView={view}
@@ -172,7 +211,9 @@ const Calendar = ({
             right:
               'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear',
           }}
-          resourceAreaHeaderContent="Resources"
+          resourceAreaHeaderContent={counterpart.translate(
+            'calendar.resource.area.header'
+          )}
           resources={calendarData.getResourcesArray()}
           resourceLabelContent={(params) => (
             <CalendarResourceLabel
@@ -185,6 +226,14 @@ const Calendar = ({
             const newView = params.view.type;
             if (view !== newView) {
               notifyParamsChanged({ view: newView });
+            }
+
+            // WORKAROUND: resource lane height is not updated after events are loaded,
+            // so we have to refresh it manually,
+            // but we have to schedule it after the events are really fetched from API
+            const calendarApi = calendarRef?.current?.getApi();
+            if (calendarApi) {
+              setTimeout(() => calendarApi.updateSize(), 100);
             }
           }}
           //dateClick={handleDateClick}
@@ -241,6 +290,7 @@ Calendar.propTypes = {
   onlyResourceIds: PropTypes.array,
   onlyProjectId: PropTypes.string,
   onlyCustomerId: PropTypes.string,
+  onlyResponsibleId: PropTypes.string,
   onParamsChanged: PropTypes.func,
 };
 

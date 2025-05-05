@@ -22,43 +22,31 @@
 
 package de.metas.audit.apirequest.config;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_API_Audit_Config;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 public class ApiAuditConfigRepositoryTest
 {
 	private ApiAuditConfigRepository apiAuditConfigRepository;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		apiAuditConfigRepository = new ApiAuditConfigRepository();
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -77,7 +65,7 @@ public class ApiAuditConfigRepositoryTest
 
 		//then
 		assertThat(configs.size()).isEqualTo(1);
-		expect(configs).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(configs);
 	}
 
 	private void createMockAuditConfig(final OrgId orgId, final boolean isActive)

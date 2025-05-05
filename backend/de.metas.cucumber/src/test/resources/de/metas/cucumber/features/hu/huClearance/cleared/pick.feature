@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Cleared HU can be picked on the fly and manually picked
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-31T13:30:13+01:00[Europe/Berlin]
 
     And destroy existing M_HUs
@@ -35,17 +37,17 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | M_HU_PI_ID.Identifier | Name            |
       | huPackingVirtualPI    | No Packing Item |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
-      | packingVersionCU              | huPackingVirtualPI    | No Packing Item  | V           | Y         |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name            | HU_UnitType | IsCurrent |
+      | packingVersionCU              | huPackingVirtualPI    | No Packing Item | V           | Y         |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | huProduct_inventory       | 2022-03-20T00:00:00Z | inventoryDocNo |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo     |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |
     And complete inventory with inventoryIdentifier 'huProduct_inventory'
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | huProduct_inventoryLine       | createdCU          |
 
@@ -71,7 +73,7 @@ Feature: Cleared HU can be picked on the fly and manually picked
 
     And the order identified by order_1 is completed
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -79,7 +81,7 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_1                            | shipment_1            | CO            |
 
@@ -109,7 +111,7 @@ Feature: Cleared HU can be picked on the fly and manually picked
 
     And the order identified by order_1 is completed
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_2      | ol_1                      | N             |
 

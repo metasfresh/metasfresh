@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.pricing;
 
+import de.metas.cucumber.stepdefs.C_Country_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.location.CountryId;
@@ -30,6 +31,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_TaxCategory;
@@ -51,17 +53,21 @@ public class M_Product_TaxCategory_StepDef
 {
 
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_Product_StepDefData productTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final M_Product_TaxCategory_StepDefData productTaxCategoryTable;
+	private final C_Country_StepDefData countryTable;
 
 	public M_Product_TaxCategory_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Country_StepDefData countryTable,
 			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
 			@NonNull final M_Product_TaxCategory_StepDefData productTaxCategoryTable)
 	{
 		this.productTable = productTable;
+		this.countryTable = countryTable;
 		this.taxCategoryTable = taxCategoryTable;
 		this.productTaxCategoryTable = productTaxCategoryTable;
 	}
@@ -93,14 +99,22 @@ public class M_Product_TaxCategory_StepDef
 				.map(I_C_TaxCategory::getC_TaxCategory_ID)
 				.orElseGet(() -> Integer.parseInt(taxCategoryIdentifier));
 
-		final I_M_Product_TaxCategory productTaxCategoryRecord = InterfaceWrapperHelper.newInstance(I_M_Product_TaxCategory.class);
+		final I_M_Product_TaxCategory productTaxCategoryRecord = queryBL
+				.createQueryBuilder(I_M_Product_TaxCategory.class)
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(COLUMNNAME_C_Country_ID, countryId)
+				.firstOptional()
+				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_M_Product_TaxCategory.class));
+
 		productTaxCategoryRecord.setM_Product_ID(productId);
 		productTaxCategoryRecord.setC_Country_ID(countryId.getRepoId());
 		productTaxCategoryRecord.setC_TaxCategory_ID(taxCategoryId);
 		productTaxCategoryRecord.setValidFrom(validFrom);
+		productTaxCategoryRecord.setIsActive(true);
 
 		saveRecord(productTaxCategoryRecord);
 
 		productTaxCategoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_Product_TaxCategory.COLUMNNAME_M_Product_TaxCategory_ID), productTaxCategoryRecord);
 	}
 }
+

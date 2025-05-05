@@ -100,7 +100,7 @@ public interface I_C_Project
 	/**
 	 * Set Target date of business-partner.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -109,7 +109,7 @@ public interface I_C_Project
 	/**
 	 * Get Target date of business-partner.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -492,7 +492,7 @@ public interface I_C_Project
 	 * Set Date of Contract.
 	 * The (planned) effective date of this document.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -502,7 +502,7 @@ public interface I_C_Project
 	 * Get Date of Contract.
 	 * The (planned) effective date of this document.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -515,7 +515,7 @@ public interface I_C_Project
 	 * Set Date planned finished.
 	 * Finish or (planned) completion date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -525,7 +525,7 @@ public interface I_C_Project
 	 * Get Date planned finished.
 	 * Finish or (planned) completion date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -538,7 +538,7 @@ public interface I_C_Project
 	 * Set Date of provision.
 	 * Provision date planned by the business partner for the required resources.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -548,7 +548,7 @@ public interface I_C_Project
 	 * Get Date of provision.
 	 * Provision date planned by the business partner for the required resources.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -579,6 +579,27 @@ public interface I_C_Project
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalId (@Nullable java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalId();
+
+	ModelColumn<I_C_Project, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_Project.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
 	 * Set Generate To.
 	 * Generate To
 	 *
@@ -600,6 +621,27 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_GenerateTo = new ModelColumn<>(I_C_Project.class, "GenerateTo", null);
 	String COLUMNNAME_GenerateTo = "GenerateTo";
+
+	/**
+	 * Set Internal Priority.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalPriority (@Nullable java.lang.String InternalPriority);
+
+	/**
+	 * Get Internal Priority.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalPriority();
+
+	ModelColumn<I_C_Project, Object> COLUMN_InternalPriority = new ModelColumn<>(I_C_Project.class, "InternalPriority", null);
+	String COLUMNNAME_InternalPriority = "InternalPriority";
 
 	/**
 	 * Set Invoiced Amount.
@@ -760,6 +802,28 @@ public interface I_C_Project
 	int getM_PriceList_Version_ID();
 
 	String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Warehouse.
@@ -1077,10 +1141,37 @@ public interface I_C_Project
 	String COLUMNNAME_R_Project_Status_ID = "R_Project_Status_ID";
 
 	/**
+	 * Set Status Category.
+	 * Request Status Category
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setR_StatusCategory_ID (int R_StatusCategory_ID);
+
+	/**
+	 * Get Status Category.
+	 * Request Status Category
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getR_StatusCategory_ID();
+
+	@Nullable org.compiere.model.I_R_StatusCategory getR_StatusCategory();
+
+	void setR_StatusCategory(@Nullable org.compiere.model.I_R_StatusCategory R_StatusCategory);
+
+	ModelColumn<I_C_Project, org.compiere.model.I_R_StatusCategory> COLUMN_R_StatusCategory_ID = new ModelColumn<>(I_C_Project.class, "R_StatusCategory_ID", org.compiere.model.I_R_StatusCategory.class);
+	String COLUMNNAME_R_StatusCategory_ID = "R_StatusCategory_ID";
+
+	/**
 	 * Set Account manager.
 	 * Sales Representative or Company Agent
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1090,7 +1181,7 @@ public interface I_C_Project
 	 * Get Account manager.
 	 * Sales Representative or Company Agent
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1186,4 +1277,27 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_WOOwner = new ModelColumn<>(I_C_Project.class, "WOOwner", null);
 	String COLUMNNAME_WOOwner = "WOOwner";
+
+	/**
+	 * Set Project created.
+	 * Date on which the test project was created.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOProjectCreatedDate (@Nullable java.sql.Timestamp WOProjectCreatedDate);
+
+	/**
+	 * Get Project created.
+	 * Date on which the test project was created.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWOProjectCreatedDate();
+
+	ModelColumn<I_C_Project, Object> COLUMN_WOProjectCreatedDate = new ModelColumn<>(I_C_Project.class, "WOProjectCreatedDate", null);
+	String COLUMNNAME_WOProjectCreatedDate = "WOProjectCreatedDate";
 }

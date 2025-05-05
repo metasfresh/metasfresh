@@ -23,6 +23,8 @@ import org.compiere.util.Task;
 
 import de.metas.i18n.Msg;
 
+import javax.annotation.Nullable;
+
 /**
  * 	Operating Task Model
  *	
@@ -42,7 +44,7 @@ public class MTask extends X_AD_Task
 	 *	@param AD_Task_ID id
 	 *	@param trxName trx
 	 */
-	public MTask (Properties ctx, int AD_Task_ID, String trxName)
+	public MTask (Properties ctx, int AD_Task_ID, @Nullable String trxName)
 	{
 		super (ctx, AD_Task_ID, trxName);
 	}	//	MTask

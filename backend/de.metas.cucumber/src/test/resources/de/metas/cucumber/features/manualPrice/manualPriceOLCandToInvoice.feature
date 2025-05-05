@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor6
 Feature: Process order candidate and automatically generate shipment and invoice for it, using a product without product price
   As a user
   I create an order candidate, using a product without product price
@@ -19,8 +20,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_10052022_1 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -95,7 +96,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_10052022_1 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_TaxCategory_ID.Identifier |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.C_TaxCategory_ID.Identifier |
       | invoiceLine_1_1             | invoice_1               | p_1                     | 10          | true      | 1000009                         |
 
 
@@ -108,8 +109,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_08072022_1 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -185,7 +186,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_08072022_1 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_TaxCategory_ID.Identifier | OPT.Discount |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.C_TaxCategory_ID.Identifier | OPT.Discount |
       | invoiceLine_1_1             | invoice_1               | p_1                     | 10          | true      | 1000009                         | 10           |
 
   @from:cucumber
@@ -196,17 +197,27 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_08072022_2 | true      |
 
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name                |
+      | packingTU             | packingTU_S0163_300 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                       | HU_UnitType | IsCurrent |
+      | packingTUVersion              | packingTU             | packingVersionTU_S0163_300 | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
+      | huPiItemTU                 | packingTUVersion              | 0   | PM       |
+
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | TU                   | 0.1          |
 
     And metasfresh contains M_HU_PI_Item_Product:
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | 5010005                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2020-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
+      | 5010005                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                 | p_1                     | 10  | 2020-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -282,7 +293,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_08072022_2 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_TaxCategory_ID.Identifier |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.C_TaxCategory_ID.Identifier |
       | invoiceLine_1_1             | invoice_1               | p_1                     | 100         | true      | 1000009                         |
 
   @from:cucumber
@@ -294,8 +305,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_08072022_3 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -334,11 +345,11 @@ Feature: Process order candidate and automatically generate shipment and invoice
 }
 """
 
-    And after not more than 30s, locate C_Invoice_Candidates by externalHeaderId
+    And after not more than 60s, locate C_Invoice_Candidates by externalHeaderId
       | C_Invoice_Candidate_ID.Identifier | ExternalHeaderId            |
       | invoice_candidate_1               | externalHeaderId_08072022_3 |
 
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
 
@@ -350,7 +361,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
 
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
 
@@ -359,7 +370,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_08072022_3 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_TaxCategory_ID.Identifier |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.C_TaxCategory_ID.Identifier |
       | invoiceLine_1_1             | invoice_1               | p_1                     | 10          | true      | 1000009                         |
 
   @from:cucumber
@@ -371,8 +382,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_07072022_1 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -448,7 +459,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_07072022_1 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_TaxCategory_ID.Identifier |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.C_TaxCategory_ID.Identifier |
       | invoiceLine_1_1             | invoice_1               | p_1                     | 10          | true      | 1000010                         |
 
 
@@ -463,8 +474,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_07072022_2 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -521,8 +532,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_07072022_3 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |

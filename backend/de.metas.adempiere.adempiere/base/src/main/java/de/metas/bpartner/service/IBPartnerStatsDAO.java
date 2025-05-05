@@ -1,14 +1,17 @@
 package de.metas.bpartner.service;
 
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.impl.CreditStatus;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Iterator;
 
 /*
  * #%L
@@ -49,7 +52,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 		return getCreateBPartnerStats(bpartner);
 	}
-	
+
 	default BPartnerStats getCreateBPartnerStats(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
@@ -63,13 +66,18 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 */
 	BigDecimal retrieveOpenItems(BPartnerStats stats);
 
-
 	/**
 	 * Set the given soCreditStatus value to the I_C_BPartner_Stats entry linked with the stats object
 	 */
-	void setSOCreditStatus(BPartnerStats stats, String soCreditStatus);
+	void setSOCreditStatus(BPartnerStats stats, CreditStatus soCreditStatus);
+
+	void setDeliveryCreditStatus(BPartnerStats stats, CreditStatus deliveryCreditStatus);
 
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
-	void updateBPartnerStatistics(BPartnerStats bpStats);
+	I_C_BPartner_Stats loadDataRecord(@NonNull BPartnerStats bpStats);
+
+	@Nullable
+	abstract BigDecimal computeActualLifeTimeValue(@NonNull BPartnerId partnerId);
+
 }

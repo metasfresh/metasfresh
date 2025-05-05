@@ -25,6 +25,7 @@ package de.metas.job;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 @Value
 @Builder
@@ -33,4 +34,5 @@ public class Job
 	@NonNull JobId id;
 	@NonNull String name;
 	boolean isActive;
+	@NonNull ClientId clientId;
 }

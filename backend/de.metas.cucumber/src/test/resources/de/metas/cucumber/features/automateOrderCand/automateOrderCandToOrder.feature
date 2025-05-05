@@ -1,9 +1,11 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor3
 Feature: Process order candidate and validate created order
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     And metasfresh contains M_Products:
@@ -104,9 +106,8 @@ Feature: Process order candidate and validate created order
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.DropShip_Partner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | order_1               | Test_111_1     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | dropShip_bpartner                  | dropShipBPLocation                  | contact_4                       | bpartner                        | bpLocation_1                    | contact_1                   |
-
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.IsDropShip | OPT.DropShip_Partner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.IsUseHandOver_Location |
+      | order_1               | Test_111_1     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | true           | dropShip_bpartner                  | dropShipBPLocation                  | contact_4                       | bpartner                        | bpLocation_1                    | contact_1                   | false                      |
 
   @from:cucumber
   @topic:orderCandidate
@@ -155,8 +156,8 @@ Feature: Process order candidate and validate created order
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.DropShip_Partner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | order_1               | Test_111_2     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | bpartner                           | bpLocation_2                        | contact_2                       | bpartner                        | bpLocation_1                    | contact_1                   |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.IsDropShip | OPT.DropShip_Partner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.IsUseHandOver_Location |
+      | order_1               | Test_111_2     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | true           | bpartner                           | bpLocation_2                        | contact_2                       | bpartner                        | bpLocation_1                    | contact_1                   | false                      |
 
 
   @from:cucumber
@@ -201,8 +202,8 @@ Feature: Process order candidate and validate created order
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | order_1               | Test_111_3     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | bpartner                        | bpLocation_1                    | contact_1                   |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.IsDropShip | OPT.IsUseHandOver_Location |
+      | order_1               | Test_111_3     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | bpartner                        | bpLocation_1                    | contact_1                   | false          | false                      |
 
 
   @from:cucumber
@@ -252,8 +253,8 @@ Feature: Process order candidate and validate created order
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | order_1               | Test_111_4     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | bill_bpartner                   | billBPLocation                  | contact_3                   |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.IsDropShip | OPT.IsUseHandOver_Location |
+      | order_1               | Test_111_4     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | bill_bpartner                   | billBPLocation                  | contact_3                   | false          | false                      |
 
   @from:cucumber
   @topic:orderCandidate
@@ -302,8 +303,8 @@ Feature: Process order candidate and validate created order
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | OPT.HandOver_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | order_1               | Test_111_5     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | handOver_bpartner                  | handOverBPLocation                  | contact_5                       | bpartner                        | bpLocation_1                    | contact_1                   |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.IsUseHandOver_Location | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | OPT.HandOver_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.IsDropShip |
+      | order_1               | Test_111_5     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | true                       | handOver_bpartner                  | handOverBPLocation                  | contact_5                       | bpartner                        | bpLocation_1                    | contact_1                   | false          |
 
 
   @from:cucumber
@@ -358,8 +359,8 @@ Feature: Process order candidate and validate created order
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.DropShip_Partner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | OPT.HandOver_User_ID.Identifier |
-      | order_1               | Test_111_6     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | dropShip_bpartner                  | dropShipBPLocation                  | contact_4                       | bpartner                        | bpLocation_1                    | contact_1                   | handOver_bpartner                  | handOverBPLocation                  | contact_5                       |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.IsDropShip | OPT.DropShip_Partner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.IsUseHandOver_Location | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | OPT.HandOver_User_ID.Identifier |
+      | order_1               | Test_111_6     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | true           | dropShip_bpartner                  | dropShipBPLocation                  | contact_4                       | bpartner                        | bpLocation_1                    | contact_1                   | true                       | handOver_bpartner                  | handOverBPLocation                  | contact_5                       |
 
 
   @from:cucumber
@@ -419,5 +420,5 @@ Feature: Process order candidate and validate created order
       | C_Order_ID.Identifier |
       | order_1               |
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.DropShip_Partner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | OPT.HandOver_User_ID.Identifier |
-      | order_1               | Test_111_7     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | dropShip_bpartner                  | dropShipBPLocation                  | contact_4                       | bill_bpartner                   | billBPLocation                  | contact_3                   | handOver_bpartner                  | handOverBPLocation                  | contact_5                       |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | dateordered | docbasetype | deliveryViaRule | deliveryRule | currencyCode | poReference | processed | docStatus | OPT.IsDropShip | OPT.DropShip_Partner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.IsUseHandOver_Location | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | OPT.HandOver_User_ID.Identifier |
+      | order_1               | Test_111_7     | bpartner                 | bpLocation_1                      | contact_1                 | 2022-07-11  | SOO         | P               | A            | EUR          | po_ref_mock | true      | CO        | true           | dropShip_bpartner                  | dropShipBPLocation                  | contact_4                       | bill_bpartner                   | billBPLocation                  | contact_3                   | true                       | handOver_bpartner                  | handOverBPLocation                  | contact_5                       |

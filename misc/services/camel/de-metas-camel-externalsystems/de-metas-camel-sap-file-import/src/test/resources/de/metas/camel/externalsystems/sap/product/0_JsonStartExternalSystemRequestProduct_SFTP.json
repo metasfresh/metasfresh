@@ -1,0 +1,25 @@
+{
+  "traceId": "traceId",
+  "orgCode": "orgCode",
+  "externalSystemName": "SAP",
+  "externalSystemChildConfigValue": "sapValue",
+  "command": "startProductSyncSFTP",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "writeAuditEndpoint": "fileFolder",
+  "parameters": {
+    "SFTP_HostName" : "localhost",
+    "SFTP_Port" : "22",
+    "SFTP_Username" : "doesntmatter",
+    "SFTP_Password" : "doesntmatter",
+    "SFTP_Product_Target_Directory" : "doesntmatter",
+    "SFTPProcessedDirectory": "doesntmatter",
+    "SFTPErroredDirectory": "doesntmatter",
+    "SFTPPollingFrequencyInMs": "1000",
+    "SFTPProductFileNamePattern": "doesntmatter",
+    "UOMMappings": "[{\"metasfreshId\":null,\"externalValue\":\"KG\",\"value\":\"KGM\"}]",
+    "ProductTypeMappings": "[{\"metasfreshId\":null,\"externalValue\":\"MyProductType1\",\"value\":\"doesntmatter\"}, {\"metasfreshId\":null,\"externalValue\":\"MyProductType2\",\"value\":\"I\"}]",
+    "ProductCategoryMappings": "[{\"metasfreshId\":123456,\"externalValue\":\"CategoryIdentifier\",\"value\":\"doesntmatter\"}, {\"metasfreshId\":123466,\"externalValue\":\"customValue\",\"value\":\"null\"}]",
+    "CheckDescriptionForMaterialType": "true"
+  }
+}

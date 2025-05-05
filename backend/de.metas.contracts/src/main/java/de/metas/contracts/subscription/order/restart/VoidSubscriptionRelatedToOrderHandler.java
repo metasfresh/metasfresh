@@ -3,7 +3,7 @@ package de.metas.contracts.subscription.order.restart;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.springframework.stereotype.Component;
 

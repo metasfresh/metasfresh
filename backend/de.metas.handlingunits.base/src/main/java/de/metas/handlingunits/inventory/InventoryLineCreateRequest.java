@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.inventory;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
@@ -52,6 +53,7 @@ public class InventoryLineCreateRequest
 
 	@NonNull
 	LocatorId locatorId;
+	@Nullable FlatrateTermId modularContractId;
 
 	@Nullable
 	AttributeSetInstanceId attributeSetId;
@@ -69,10 +71,12 @@ public class InventoryLineCreateRequest
 			@NonNull final Quantity qtyCount,
 			@NonNull final Quantity qtyBooked,
 			@NonNull final LocatorId locatorId,
+			@Nullable final FlatrateTermId modularContractId,
 			@Nullable final AttributeSetInstanceId attributeSetId,
 			@Nullable final HUAggregationType aggregationType,
 			@Nullable final List<InventoryLineHU> inventoryLineHUList)
 	{
+
 		Quantity.getCommonUomIdOfAll(qtyBooked, qtyCount);
 
 		if (inventoryLineHUList != null)
@@ -88,6 +92,8 @@ public class InventoryLineCreateRequest
 		this.locatorId = locatorId;
 		this.attributeSetId = attributeSetId;
 		this.aggregationType = aggregationType;
+		this.modularContractId = modularContractId;
 		this.inventoryLineHUList = inventoryLineHUList;
 	}
+
 }

@@ -40,6 +40,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
 @Repository
 public class BoilerPlateRepository
 {
+	@NonNull
 	public BoilerPlate getByBoilerPlateId(
 			@NonNull final BoilerPlateId boilerPlateId,
 			@Nullable final Language language)

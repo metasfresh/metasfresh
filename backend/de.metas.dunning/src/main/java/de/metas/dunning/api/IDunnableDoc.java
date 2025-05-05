@@ -22,12 +22,11 @@ package de.metas.dunning.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Date;
-
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 
-import de.metas.util.Services;
+import java.math.BigDecimal;
 
 /**
  * Dunnable document.
@@ -56,9 +55,9 @@ public interface IDunnableDoc
 
 	BigDecimal getOpenAmt();
 
-	Date getDueDate();
+	LocalDateAndOrgId getDueDate();
 
-	Date getGraceDate();
+	LocalDateAndOrgId getGraceDate();
 
 	int getDaysDue();
 
@@ -66,8 +65,7 @@ public interface IDunnableDoc
 
 	default int getTableId()
 	{
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(getTableName());
-		return tableId;
+		return Services.get(IADTableDAO.class).retrieveTableId(getTableName());
 	}
 
 	int getRecordId();
@@ -77,4 +75,8 @@ public interface IDunnableDoc
 	// FRESH-504: Add DocumentNo
 
 	String getDocumentNo();
+
+	int getM_SectionCode_ID();
+
+	String getPoReference();
 }

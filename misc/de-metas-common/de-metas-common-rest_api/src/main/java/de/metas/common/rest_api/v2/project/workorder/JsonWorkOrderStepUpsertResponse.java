@@ -22,31 +22,30 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
+@Builder
+@Jacksonized
 public class JsonWorkOrderStepUpsertResponse
 {
 	@NonNull
-	JsonMetasfreshId createdStepId;
+	JsonMetasfreshId metasfreshId;
+
+	@NonNull
+	String identifier;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
-	@Builder
-	@JsonCreator
-	public JsonWorkOrderStepUpsertResponse(
-			@NonNull @JsonProperty("createdStepId") final JsonMetasfreshId createdStepId,
-			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
-	)
-	{
-		this.createdStepId = createdStepId;
-		this.syncOutcome = syncOutcome;
-	}
+	@Nullable
+	List<JsonWorkOrderResourceUpsertResponse> resources;
 }

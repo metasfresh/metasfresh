@@ -1,11 +1,10 @@
 package de.metas.rest_api.invoicecandidates.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.rest_api.utils.MetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -36,21 +35,21 @@ import lombok.Value;
 @Builder
 public class JsonCloseInvoiceCandidatesResponseItem
 {
-	@ApiModelProperty(position = 10, dataType = "java.lang.String")
+	@Schema
 	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 20, dataType = "java.lang.String")
+	@Schema
 	JsonExternalId externalLineId;
 
-	@ApiModelProperty(position = 30, dataType = "java.lang.Long", value = "The metasfresh-ID of the upserted record")
+	@Schema(description = "The metasfresh-ID of the upserted record")
 	@NonNull
 	MetasfreshId metasfreshId;
 
-	@ApiModelProperty(position = 40, dataType = "java.lang.String")
+	@Schema(type = "java.lang.String")
 	CloseInvoiceCandidateStatus status;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@ApiModelProperty(position = 50, dataType = "java.lang.String")
+	@Schema(type = "java.lang.String")
 	JsonErrorItem error;
 
 	public enum CloseInvoiceCandidateStatus

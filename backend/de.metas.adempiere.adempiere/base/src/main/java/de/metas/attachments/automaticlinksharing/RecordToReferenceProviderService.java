@@ -1,21 +1,18 @@
 package de.metas.attachments.automaticlinksharing;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.attachments.AttachmentEntry;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.attachments.AttachmentEntry;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -56,7 +53,7 @@ public class RecordToReferenceProviderService
 	 */
 	public ExpandResult expand(
 			@NonNull final ImmutableList<AttachmentEntry> attachmentEntries,
-			@NonNull final Collection<? extends Object> newlyLinkedRecords)
+			@NonNull final Collection<?> newlyLinkedRecords)
 	{
 		final List<TableRecordReference> tableRecordReferences = TableRecordReference.ofCollection(newlyLinkedRecords);
 

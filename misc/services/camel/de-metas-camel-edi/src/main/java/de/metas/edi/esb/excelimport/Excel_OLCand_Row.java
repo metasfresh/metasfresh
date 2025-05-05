@@ -65,6 +65,18 @@ public class Excel_OLCand_Row
 
 	}
 
+	// public static List<Excel_OLCand_Row> ofMaps(final List<Map<String, Object>> mapsList)
+	// {
+	// 	final List<Excel_OLCand_Row> rows = new ArrayList<>(mapsList.size());
+	// 	for (final Map<String, Object> rowData : mapsList)
+	// 	{
+	// 		final Excel_OLCand_Row row = ofMap(rowData);
+	// 		rows.add(row);
+	// 	}
+	//
+	// 	return rows;
+	// }
+
 	private final Integer lineNo;
 
 	private final int M_Product_ID;
@@ -93,7 +105,7 @@ public class Excel_OLCand_Row
 
 	private final int C_BPartner_ID;
 	private final int C_BPartner_Location_ID;
-	
+
 	@Getter private final int Bill_BPartner_ID;
 	@Getter private final int Bill_Location_ID;
 	@Getter private final int HandOver_Partner_ID;

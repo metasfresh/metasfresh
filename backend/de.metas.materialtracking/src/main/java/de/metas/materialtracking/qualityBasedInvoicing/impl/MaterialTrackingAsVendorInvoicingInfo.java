@@ -1,16 +1,21 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import org.compiere.model.I_M_PriceList_Version;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.location.CountryId;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_M_PriceList_Version;
 
 /**
  * Wraps an {@link I_C_Invoice_Candidate} and make it behave like {@link IVendorInvoicingInfo}.
@@ -28,7 +33,7 @@ import de.metas.util.Services;
 	private I_M_PriceList_Version _priceListVersion = null;
 	private final I_M_Material_Tracking materialTracking;
 
-	public MaterialTrackingAsVendorInvoicingInfo(I_M_Material_Tracking materialTracking)
+	public MaterialTrackingAsVendorInvoicingInfo(@NonNull final I_M_Material_Tracking materialTracking)
 	{
 		this.materialTracking = materialTracking;
 	}
@@ -70,6 +75,23 @@ import de.metas.util.Services;
 	public int getC_Currency_ID()
 	{
 		return getM_PriceList_Version().getM_PriceList().getC_Currency_ID();
+	}
+
+	@Override
+	public CountryId getCountryId()
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				// first, try the contract's location from the tine the contract was created
+				() -> {
+					final I_C_Location billLocationValue = getC_Flatrate_Term().getBill_Location_Value();
+					return billLocationValue != null ? CountryId.ofRepoId(billLocationValue.getC_Country_ID()) : null;
+				},
+				// second, try the current C_Location of the C_BPartner_Location
+				() -> {
+					final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+					return bPartnerDAO.getCountryId(BPartnerLocationId.ofRepoId(getC_Flatrate_Term().getBill_BPartner_ID(), getC_Flatrate_Term().getBill_Location_ID()));
+				}
+		);
 	}
 
 	@Override

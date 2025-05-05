@@ -22,136 +22,179 @@
 
 package de.metas.externalsystem.externalservice.authorization;
 
+import ch.qos.logback.classic.Level;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.Profiles;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
 import de.metas.common.externalsystem.JsonExternalSystemMessagePayload;
 import de.metas.common.externalsystem.JsonExternalSystemMessageType;
 import de.metas.externalsystem.rabbitmq.custom.CustomMFToExternalSystemMessageSender;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.Recipient;
-import de.metas.notification.UserNotificationRequest;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
-import de.metas.user.UserGroupId;
+import de.metas.security.requests.CreateUserAuthTokenRequest;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
+import org.compiere.model.I_AD_User;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.util.Optional;
+import java.util.List;
 
 @Service
-@Profile(Profiles.PROFILE_App)
 public class ExternalSystemAuthorizationService
 {
 	private static final Logger log = LogManager.getLogger(ExternalSystemAuthorizationService.class);
 
-	private static final String SYS_CONFIG_EXTERNAL_SYSTEM_AUTH_TOKEN = "de.metas.externalsystem.externalservice.authorization.authToken";
-	private static final String SYS_CONFIG_EXTERNAL_SYSTEM_NOTIFICATION_USER_GROUP = "de.metas.externalsystem.externalservice.authorization.notificationUserGroupId";
+	private static final String SYS_CONFIG_EXTERNAL_SYSTEM_AD_USER_ID = "de.metas.externalsystem.externalservice.authorization.AD_User_ID";
+	private static final String SYS_CONFIG_EXTERNAL_SYSTEM_AD_ROLE_ID = "de.metas.externalsystem.externalservice.authorization.AD_Role_ID";
 
-	private static final AdMessageKey EXTERNAL_SYSTEM_AUTH_NOTIFICATION_SUBJECT = AdMessageKey.of("External_Systems_Authorization_Subject");
 	private static final AdMessageKey EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_VERIFICATION = AdMessageKey.of("ExternalSystem_Authorization_Verification_Error");
 	private static final AdMessageKey EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_SYSCONFIG_NOT_FOUND = AdMessageKey.of("External_Systems_Authorization_SysConfig_Not_Found_Error");
+	private static final AdMessageKey EXTERNAL_SYSTEM_AUTH_NOTIFICATION_ROLE_NOT_FOUND = AdMessageKey.of("External_Systems_Authorization_Role_Not_Found_For_User");
 
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final UserAuthTokenRepository authTokenRepository;
 	@NonNull
 	private final CustomMFToExternalSystemMessageSender customMessageSender;
+	@NonNull
+	private final ExternalSystemNotificationHelper externalsystemNotificationHelper;
 
 	public ExternalSystemAuthorizationService(
-			@NonNull final UserAuthTokenRepository authTokenRepository,
-			@NonNull final CustomMFToExternalSystemMessageSender customMessageSender
-	)
+			final @NonNull UserAuthTokenRepository authTokenRepository,
+			final @NonNull CustomMFToExternalSystemMessageSender customMessageSender,
+			final @NonNull ExternalSystemNotificationHelper externalsystemNotificationHelper)
 	{
 		this.authTokenRepository = authTokenRepository;
 		this.customMessageSender = customMessageSender;
+		this.externalsystemNotificationHelper = externalsystemNotificationHelper;
 	}
 
 	public void postAuthorizationReply()
 	{
 		try
 		{
-			final String authToken = getAuthToken().orElse(null);
+			final String authToken = getConfiguredAuthToken();
 
-			if (authToken == null)
-			{
-				return;
-			}
-
-			final JsonExternalSystemMessagePayload payload = JsonExternalSystemMessagePayload.builder()
-					.authToken(authToken)
-					.build();
-
-			final JsonExternalSystemMessage message = JsonExternalSystemMessage.builder()
-					.type(JsonExternalSystemMessageType.AUTHORIZATION_REPLY)
-					.payload(JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(payload))
-					.build();
+			final JsonExternalSystemMessage message = buildJsonExternalSystemMessage(authToken);
 
 			customMessageSender.send(message);
+
+			Loggables.withLogger(log, Level.INFO).addLog("Sending AuthToken to Camel-ExternalSystem!");
+		}
+		catch (final ESMissingConfigurationException missingConfigException)
+		{
+			Loggables.withLogger(log, Level.ERROR).addLog(missingConfigException.getMessage() + "; exception: {}!", missingConfigException);
+
+			externalsystemNotificationHelper.sendNotification(missingConfigException.getAdMessageKey(), missingConfigException.getParams());
 		}
 		catch (final Exception e)
 		{
-			log.error(e.getMessage(), e);
-			sendErrorNotification(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_VERIFICATION, e);
+			Loggables.withLogger(log, Level.ERROR).addLog(e.getMessage() + "; exception: {}!", e);
+
+			externalsystemNotificationHelper.sendNotification(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_VERIFICATION, ImmutableList.of(e.getMessage()));
 		}
 	}
 
 	@NonNull
-	private Optional<String> getAuthToken()
+	private String getConfiguredAuthToken()
 	{
-		final String token = sysConfigBL.getValue(SYS_CONFIG_EXTERNAL_SYSTEM_AUTH_TOKEN);
+		final I_AD_User configuredESUser = getConfiguredESUser();
+		final UserId configuredUserId = UserId.ofRepoId(configuredESUser.getAD_User_ID());
+		final Role role = getAndValidateRole(configuredUserId);
 
-		if (Check.isBlank(token))
-		{
-			sendErrorNotification(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_SYSCONFIG_NOT_FOUND, null);
-			return Optional.empty();
-		}
+		final UserAuthToken userAuthToken = authTokenRepository.retrieveOptionalByUserAndRoleId(configuredUserId, role.getId())
+				.orElseGet(() -> createNewUserAuthToken(configuredESUser, role));
 
-		final UserAuthToken authToken = authTokenRepository.getByToken(token);
-
-		return Optional.of(authToken.getAuthToken());
+		return userAuthToken.getAuthToken();
 	}
 
-	private void sendErrorNotification(@NonNull final AdMessageKey errorMessage, @Nullable final Exception exception)
+	@NonNull
+	private UserAuthToken createNewUserAuthToken(@NonNull final I_AD_User user, @NonNull final Role configuredRole)
 	{
-		final int externalSystemAPIUserGroup = sysConfigBL.getIntValue(SYS_CONFIG_EXTERNAL_SYSTEM_NOTIFICATION_USER_GROUP, -1);
+		Loggables.withLogger(log, Level.DEBUG).addLog("Creating AuthToken for userId: {} && role: {}", user.getAD_User_ID(), configuredRole.getId().getRepoId());
 
-		final UserGroupId userGroupId = UserGroupId.ofRepoIdOrNull(externalSystemAPIUserGroup);
-
-		if (userGroupId == null)
-		{
-			log.error("No AD_UserGroup is configured to be in charge of the ExternalSystem services authorization!");
-			log.error(msgBL.getMsg(Env.getAD_Language(), errorMessage), exception);
-			return;
-		}
-
-		final String errorDetails = Optional.ofNullable(exception)
-				.map(Util::dumpStackTraceToString)
-				.orElse(null);
-
-		final Recipient recipient = Recipient.group(userGroupId);
-
-		final UserNotificationRequest verificationFailureNotification = UserNotificationRequest.builder()
-				.recipient(recipient)
-				.subjectADMessage(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_SUBJECT)
-				.contentADMessage(errorMessage)
-				.contentADMessageParam(errorDetails)
+		final CreateUserAuthTokenRequest request = CreateUserAuthTokenRequest.builder()
+				.userId(UserId.ofRepoId(user.getAD_User_ID()))
+				.roleId(configuredRole.getId())
+				.orgId(configuredRole.getOrgId())
+				.clientId(configuredRole.getClientId())
 				.build();
 
-		notificationBL.send(verificationFailureNotification);
+		return authTokenRepository.createNew(request);
+	}
+
+	@NonNull
+	private Role getAndValidateRole(@NonNull final UserId userId)
+	{
+		final RoleId configuredRoleId = RoleId.ofRepoId(resolveAuthRelatedSysConfig(SYS_CONFIG_EXTERNAL_SYSTEM_AD_ROLE_ID));
+
+		final Role role = roleDAO.getById(configuredRoleId);
+
+		final List<Role> userRoles = roleDAO.getUserRoles(userId);
+
+		final boolean hasNecessaryRole = userRoles.stream()
+				.map(Role::getId)
+				.anyMatch(roleId -> roleId.getRepoId() == configuredRoleId.getRepoId());
+
+		if (!hasNecessaryRole)
+		{
+			throw ESMissingConfigurationException.builder()
+					.adMessageKey(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_ROLE_NOT_FOUND)
+					.params(ImmutableList.of(role.getName(), userId.getRepoId()))
+					.build();
+		}
+
+		return role;
+	}
+
+	@NonNull
+	private I_AD_User getConfiguredESUser()
+	{
+		final UserId configuredUserId = UserId.ofRepoId(resolveAuthRelatedSysConfig(SYS_CONFIG_EXTERNAL_SYSTEM_AD_USER_ID));
+
+		return userDAO.getById(configuredUserId);
+	}
+
+	@NonNull
+	private Integer resolveAuthRelatedSysConfig(@NonNull final String sysConfig)
+	{
+		final String sysConfigValueAsString = sysConfigBL.getValue(sysConfig);
+		if (Check.isNotBlank(sysConfigValueAsString))
+		{
+			return Integer.parseInt(sysConfigValueAsString);
+		}
+
+		throw ESMissingConfigurationException.builder()
+				.adMessageKey(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_SYSCONFIG_NOT_FOUND)
+				.params(ImmutableList.of(sysConfig))
+				.build();
+	}
+
+	@NonNull
+	private static JsonExternalSystemMessage buildJsonExternalSystemMessage(@NonNull final String authToken) throws JsonProcessingException
+	{
+		final JsonExternalSystemMessagePayload payload = JsonExternalSystemMessagePayload.builder()
+				.authToken(authToken)
+				.build();
+
+		return JsonExternalSystemMessage.builder()
+				.type(JsonExternalSystemMessageType.AUTHORIZATION_REPLY)
+				.payload(JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(payload))
+				.build();
 	}
 }

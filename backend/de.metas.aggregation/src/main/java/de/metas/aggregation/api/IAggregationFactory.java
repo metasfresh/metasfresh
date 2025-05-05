@@ -22,10 +22,9 @@ package de.metas.aggregation.api;
  * #L%
  */
 
+import de.metas.util.ISingletonService;
 
 import java.util.Properties;
-
-import de.metas.util.ISingletonService;
 
 /**
  * Factory service used to create {@link IAggregationKeyBuilder}s.
@@ -47,11 +46,8 @@ public interface IAggregationFactory extends ISingletonService
 
 	/**
 	 * Sets the default aggregation key builder to be used if nothing else was found.
-	 * 
+	 * <p> 
 	 * Basically this is the LAST place that will be checked.
-	 * 
-	 * @param modelClass
-	 * @param aggregationKeyBuilder
 	 */
 	<ModelType> void setDefaultAggregationKeyBuilder(Class<? extends ModelType> modelClass, String aggregationUsageLevel, IAggregationKeyBuilder<ModelType> aggregationKeyBuilder);
 

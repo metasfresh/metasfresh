@@ -1,9 +1,8 @@
 package de.metas.handlingunits.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Job_Step_PickedHU
  *  @author metasfresh (generated) 
@@ -53,26 +52,47 @@ public interface I_M_Picking_Job_Step_PickedHU
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_UOM_ID (int C_UOM_ID);
+	void setCatch_UOM_ID (int Catch_UOM_ID);
 
 	/**
-	 * Get UOM.
-	 * Unit of Measure
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_UOM_ID();
+	int getCatch_UOM_ID();
 
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
+	 * Set Catch Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCatchWeight (@Nullable BigDecimal CatchWeight);
+
+	/**
+	 * Get Catch Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCatchWeight();
+
+	ModelColumn<I_M_Picking_Job_Step_PickedHU, Object> COLUMN_CatchWeight = new ModelColumn<>(I_M_Picking_Job_Step_PickedHU.class, "CatchWeight", null);
+	String COLUMNNAME_CatchWeight = "CatchWeight";
 
 	/**
 	 * Get Created.
@@ -98,6 +118,28 @@ public interface I_M_Picking_Job_Step_PickedHU
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Active.
@@ -126,7 +168,7 @@ public interface I_M_Picking_Job_Step_PickedHU
 	 * Set Picking candidate.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID);
@@ -135,14 +177,14 @@ public interface I_M_Picking_Job_Step_PickedHU
 	 * Get Picking candidate.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_Picking_Candidate_ID();
 
-	de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
+	@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
 
-	void setM_Picking_Candidate(de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
+	void setM_Picking_Candidate(@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
 
 	ModelColumn<I_M_Picking_Job_Step_PickedHU, de.metas.handlingunits.model.I_M_Picking_Candidate> COLUMN_M_Picking_Candidate_ID = new ModelColumn<>(I_M_Picking_Job_Step_PickedHU.class, "M_Picking_Candidate_ID", de.metas.handlingunits.model.I_M_Picking_Candidate.class);
 	String COLUMNNAME_M_Picking_Candidate_ID = "M_Picking_Candidate_ID";
@@ -267,6 +309,27 @@ public interface I_M_Picking_Job_Step_PickedHU
 
 	ModelColumn<I_M_Picking_Job_Step_PickedHU, de.metas.handlingunits.model.I_M_HU> COLUMN_Picked_HU_ID = new ModelColumn<>(I_M_Picking_Job_Step_PickedHU.class, "Picked_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_Picked_HU_ID = "Picked_HU_ID";
+
+	/**
+	 * Set Picked QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPicked_RenderedQRCode (@Nullable java.lang.String Picked_RenderedQRCode);
+
+	/**
+	 * Get Picked QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPicked_RenderedQRCode();
+
+	ModelColumn<I_M_Picking_Job_Step_PickedHU, Object> COLUMN_Picked_RenderedQRCode = new ModelColumn<>(I_M_Picking_Job_Step_PickedHU.class, "Picked_RenderedQRCode", null);
+	String COLUMNNAME_Picked_RenderedQRCode = "Picked_RenderedQRCode";
 
 	/**
 	 * Set Pick From HU.

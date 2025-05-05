@@ -22,11 +22,16 @@
 
 package de.metas.rest_api.v2.shipping;
 
-import javax.annotation.Nullable;
-
 import ch.qos.logback.classic.Level;
+import de.metas.Profiles;
+import de.metas.common.shipping.v2.JsonRequestCandidateResults;
+import de.metas.common.shipping.v2.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -39,12 +44,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.Profiles;
-import de.metas.common.shipping.v2.JsonRequestCandidateResults;
-import de.metas.common.shipping.v2.receiptcandidate.JsonResponseReceiptCandidates;
-import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
-import lombok.NonNull;
+import javax.annotation.Nullable;
 
 @RequestMapping(value = {MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/receipts" })
 @RestController
@@ -60,9 +60,12 @@ public class ReceiptCandidatesRestController
 		this.receiptCandidateAPIService = receiptCandidateAPIService;
 	}
 
+	@Operation(summary = "Returns the currently open receipt candidates to be exported e.g. to an external warehouse management system.\n"
+			+ "Sidenote: when a purchase order was created, after a configurable time interval (e.g. 10 minutes); one can get the material receipts candidates that were created in metasfresh." 
+			+ "These are the items that metasfresh is now waiting to be delivered.")
 	@GetMapping("receiptCandidates")
 	public ResponseEntity<JsonResponseReceiptCandidates> getReceiptCandidates(
-			@ApiParam("Max number of items to be returned in one request.") //
+			@Parameter(description = "Max number of items to be returned in one request.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "500") //
 			@Nullable final Integer limit)
 	{
@@ -73,6 +76,7 @@ public class ReceiptCandidatesRestController
 		return ResponseEntity.ok(result);
 	}
 
+	@Operation(summary = "Used by the external caller to indicate which receipt candidates were successfully exported to the external system.")
 	@PostMapping("receiptCandidatesResult")
 	public ResponseEntity<String> postReceiptCandidatesStatus(@RequestBody @NonNull final JsonRequestCandidateResults status)
 	{

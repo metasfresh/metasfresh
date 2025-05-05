@@ -41,6 +41,7 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.service.ISysConfigBL;
@@ -107,7 +108,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			@NonNull final ImmutableSet<ProductId> productIds,
 			@NonNull final I_M_HU hu,
 			final boolean readonly,
-			final boolean isMaterialReceipt)
+			final boolean serialNoFromSequence,
+			final AttributeSourceDocument attributeSourceDocument)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
@@ -140,11 +142,15 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
+			if (serialNoFromSequence && AttributeConstants.ATTR_SerialNo.equals(attributeCode))
+			{
+				readonlyAttributeNames.add(attributeCode);
+			}
 			if (!attributesStorage.isDisplayedUI(attribute, productIds))
 			{
 				hiddenAttributeNames.add(attributeCode);
 			}
-			if (attributesStorage.isMandatory(attribute, productIds, isMaterialReceipt))
+			if (attributesStorage.isMandatory(attribute, productIds, attributeSourceDocument))
 			{
 				mandatoryAttributeNames.add(attributeCode);
 			}
@@ -158,6 +164,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		// each change on attribute storage shall be forwarded to current execution
 		AttributeStorage2ExecutionEventsForwarder.bind(attributesStorage, documentPath);
 	}
+
+
 
 	/*
 	Introduced in #gh11244
@@ -176,12 +184,9 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return AttributeCode.ofString(HUAttributeConstants.ATTR_QualityDiscountPercent_Value).equals(attributeCode);
 	}
 
-	private boolean isWeightAttribute(@NonNull final AttributeCode attributeCode)
+	private static boolean isWeightAttribute(@NonNull final AttributeCode attributeCode)
 	{
-		return Weightables.ATTR_WeightGross.equals(attributeCode)
-				|| Weightables.ATTR_WeightNet.equals(attributeCode)
-				|| Weightables.ATTR_WeightTare.equals(attributeCode)
-				|| Weightables.ATTR_WeightTareAdjust.equals(attributeCode);
+		return Weightables.isWeightableAttribute(attributeCode);
 
 	}
 
@@ -430,9 +435,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return Optional.of(toJSONDocumentField(clearanceNote, jsonOptions));
 	}
 
-
 	@NonNull
-	private static JSONDocumentField toJSONDocumentField(@NonNull final String clearanceNote,@NonNull final JSONOptions jsonOpts)
+	private static JSONDocumentField toJSONDocumentField(@NonNull final String clearanceNote, @NonNull final JSONOptions jsonOpts)
 	{
 		final Object jsonValue = Values.valueToJsonObject(clearanceNote, jsonOpts);
 

@@ -76,7 +76,7 @@ class DateIntervalIntersectionQueryFilterTest
 		void regularCase()
 		{
 			final DateIntervalIntersectionQueryFilter<I_TestRecord> filter = filter("2020-02-10", "2020-02-20");
-			assertThat(filter.getSql()).isEqualTo("NOT ISEMPTY(TSTZRANGE(Date1, Date2, '[]') * TSTZRANGE(?, ?, '[]'))");
+			assertThat(filter.getSql()).isEqualTo("NOT ISEMPTY(TSTZRANGE(Date1, Date2, '[)') * TSTZRANGE(?, ?, '[)'))");
 			assertThat(filter.getSqlParams()).containsExactly(instant("2020-02-10"), instant("2020-02-20"));
 		}
 
@@ -121,7 +121,7 @@ class DateIntervalIntersectionQueryFilterTest
 		@Test
 		void range1_connectedTo_range2_onLowerEnd()
 		{
-			test(true, "2020-02-01", "2020-02-10", "2020-02-10", "2020-02-20");
+			test(false, "2020-02-01", "2020-02-10", "2020-02-10", "2020-02-20");
 		}
 
 		@Test
@@ -151,7 +151,7 @@ class DateIntervalIntersectionQueryFilterTest
 		@Test
 		void range1_connectedTo_range2_onUpperEnd()
 		{
-			test(true, "2020-02-20", "2020-02-25", "2020-02-10", "2020-02-20");
+			test(false, "2020-02-20", "2020-02-25", "2020-02-10", "2020-02-20");
 		}
 
 		@Test

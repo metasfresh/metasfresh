@@ -5,6 +5,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.picking.api.PickingSlotId;
@@ -35,6 +36,7 @@ class PickingJobSlotServiceTest
 		AdempiereTestHelper.get().init();
 		pickingJobSlotService = new PickingJobSlotService(new PickingJobRepository());
 		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
+		SpringContextHolder.registerJUnitBean((PickingSlotConnectedComponent)slotId -> false);
 	}
 
 	private PickingJobId createJob(@NonNull DocStatus docStatus, @Nullable final PickingSlotId pickingSlotId)

@@ -6,22 +6,23 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_D
                                                                                            ad_language character varying)
     RETURNS TABLE
             (
-                description  character varying,
-                documentno   character varying,
-                movementdate timestamp WITHOUT TIME ZONE,
-                reference    character varying,
-                bp_value     character varying,
-                eori         character varying,
-                cont_name    text,
-                cont_phone   character varying,
-                cont_fax     character varying,
-                cont_email   character varying,
-                sr_name      text,
-                sr_phone     character varying,
-                sr_fax       character varying,
-                sr_email     character varying,
-                printname    character varying,
-                order_docno  text
+                description        character varying,
+                documentno         character varying,
+                movementdate       timestamp WITHOUT TIME ZONE,
+                reference          character varying,
+                bp_value           character varying,
+                eori               character varying,
+                customernoatvendor character varying,
+                cont_name          text,
+                cont_phone         character varying,
+                cont_fax           character varying,
+                cont_email         character varying,
+                sr_name            text,
+                sr_phone           character varying,
+                sr_fax             character varying,
+                sr_email           character varying,
+                printname          character varying,
+                order_docno        text
             )
     STABLE
     LANGUAGE sql
@@ -33,6 +34,7 @@ SELECT io.description                        AS description,
        io.poreference                        AS reference,
        bp.value                              AS bp_value,
        bp.eori                               AS eori,
+       bp.customernoatvendor                 AS customernoatvendor,
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
@@ -71,7 +73,4 @@ FROM m_inout io
 WHERE io.m_inout_id = $1
   AND io.isActive = 'Y'
 $$
-;
-
-ALTER FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_inout_description(numeric, varchar) OWNER TO metasfresh
 ;

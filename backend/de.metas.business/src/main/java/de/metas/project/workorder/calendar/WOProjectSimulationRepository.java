@@ -7,10 +7,10 @@ import de.metas.cache.CCache;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectResourceSimulation;
-import de.metas.project.workorder.WOProjectStepId;
-import de.metas.project.workorder.WOProjectStepSimulation;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceSimulation;
+import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.project.workorder.step.WOProjectStepSimulation;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -150,6 +150,7 @@ public class WOProjectSimulationRepository
 		return WOProjectStepId.ofRepoId(ProjectId.ofRepoId(record.getC_Project_ID()), record.getC_Project_WO_Step_ID());
 	}
 
+	@NonNull
 	private static WOProjectStepSimulation fromRecord(@NonNull final I_C_Project_WO_Step_Simulation record)
 	{
 		return WOProjectStepSimulation.builder()
@@ -217,7 +218,7 @@ public class WOProjectSimulationRepository
 		record.setIsAllDay_Prev(from.getDateRangeBeforeApplying() != null && from.getDateRangeBeforeApplying().isAllDay());
 	}
 
-	public void savePlan(@NonNull WOProjectSimulationPlan plan)
+	public void savePlan(@NonNull final WOProjectSimulationPlan plan)
 	{
 		final HashMap<WOProjectStepId, I_C_Project_WO_Step_Simulation> existingStepRecordsById = queryBL
 				.createQueryBuilder(I_C_Project_WO_Step_Simulation.class)
@@ -257,8 +258,8 @@ public class WOProjectSimulationRepository
 			InterfaceWrapperHelper.save(record);
 		}
 
-		InterfaceWrapperHelper.deleteAll(existingStepRecordsById.entrySet());
-		InterfaceWrapperHelper.deleteAll(existingProjectResourceRecordsById.entrySet());
+		InterfaceWrapperHelper.deleteAll(existingStepRecordsById.values());
+		InterfaceWrapperHelper.deleteAll(existingProjectResourceRecordsById.values());
 
 		// NOTE: cache will be invalidated automatically after trx commit
 		//cacheById.remove(plan.getSimulationPlanId());
@@ -272,5 +273,22 @@ public class WOProjectSimulationRepository
 		return changeSimulationPlanById(
 				toSimulationId,
 				toSimulation -> toSimulation.mergeFrom(fromSimulationPlan));
+	}
+
+	@NonNull
+	public ImmutableList<WOProjectSimulationPlan> getSimulationPlansForStep(@NonNull final WOProjectStepId stepId)
+	{
+		final ImmutableList<SimulationPlanId> matchingSimulationIds = queryBL.createQueryBuilder(I_C_Project_WO_Step_Simulation.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_Project_WO_Step_ID, stepId)
+				.create()
+				.listDistinct(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_SimulationPlan_ID, SimulationPlanId.class);
+
+		if (matchingSimulationIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return ImmutableList.copyOf(cacheById.getAllOrLoad(matchingSimulationIds, this::retrieveSimulationPlansByIds));
 	}
 }

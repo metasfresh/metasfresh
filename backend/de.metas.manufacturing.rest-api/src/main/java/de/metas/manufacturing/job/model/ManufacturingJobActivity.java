@@ -1,10 +1,15 @@
 package de.metas.manufacturing.job.model;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
+import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
+import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -24,11 +29,16 @@ public class ManufacturingJobActivity
 
 	@Nullable RawMaterialsIssue rawMaterialsIssue;
 	@Nullable FinishedGoodsReceive finishedGoodsReceive;
+	@Getter @Nullable GlobalQRCode scannedQRCode;
 
 	@NonNull PPOrderRoutingActivityId orderRoutingActivityId;
 	@NonNull PPOrderRoutingActivityStatus routingActivityStatus;
 
 	@NonNull WFActivityStatus status;
+
+	@NonNull PPAlwaysAvailableToUser alwaysAvailableToUser;
+	@Nullable UserInstructions userInstructions;
+	@Nullable PPOrderTargetPlanningStatus targetPlanningStatus;
 
 	@Builder(toBuilder = true)
 	private ManufacturingJobActivity(
@@ -37,8 +47,12 @@ public class ManufacturingJobActivity
 			@NonNull final PPRoutingActivityType type,
 			@Nullable final RawMaterialsIssue rawMaterialsIssue,
 			@Nullable final FinishedGoodsReceive finishedGoodsReceive,
+			@Nullable final GlobalQRCode scannedQRCode,
 			@NonNull final PPOrderRoutingActivityId orderRoutingActivityId,
-			@NonNull final PPOrderRoutingActivityStatus routingActivityStatus)
+			@NonNull final PPOrderRoutingActivityStatus routingActivityStatus,
+			@NonNull final PPAlwaysAvailableToUser alwaysAvailableToUser,
+			@Nullable final UserInstructions userInstructions,
+			@Nullable final PPOrderTargetPlanningStatus targetPlanningStatus)
 	{
 		if (CoalesceUtil.countNotNulls(rawMaterialsIssue, finishedGoodsReceive) > 1)
 		{
@@ -50,10 +64,15 @@ public class ManufacturingJobActivity
 		this.type = type;
 		this.rawMaterialsIssue = rawMaterialsIssue;
 		this.finishedGoodsReceive = finishedGoodsReceive;
+		this.scannedQRCode = scannedQRCode;
 		this.orderRoutingActivityId = orderRoutingActivityId;
 
 		this.status = computeStatus(rawMaterialsIssue, finishedGoodsReceive, routingActivityStatus);
 		this.routingActivityStatus = toPPOrderRoutingActivityStatus(this.status);
+
+		this.alwaysAvailableToUser = alwaysAvailableToUser;
+		this.userInstructions = userInstructions;
+		this.targetPlanningStatus = targetPlanningStatus;
 	}
 
 	private static WFActivityStatus computeStatus(

@@ -10,6 +10,7 @@ import java.util.Set;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.junit.Assert;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -39,24 +40,19 @@ public class ClasspathAnnotatedModelInterceptorTester
 	{
 	}
 
-	public void testAll() throws Exception
-	{
-		final List<Class<?>> classes = getAllClasses();
-		for (final Class<?> clazz : classes)
-		{
-			testClass(clazz);
-		}
-
-		assertNoExceptions();
-	}
-
 	public List<Class<?>> getAllClasses()
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final Reflections reflections = new Reflections(new ConfigurationBuilder()
 				.addUrls(ClasspathHelper.forClassLoader())
+				//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+				.forPackages("de")
 				.setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
+
+		// IMPORTANT: make sure JUnit test is enabled because we are about to load all classes,
+		// and some of them have static fields which assume there is a database connection
+		Adempiere.enableUnitTestMode();
 
 		final Set<Class<?>> classes_withValidator = reflections.getTypesAnnotatedWith(Validator.class);
 		System.out.println("Found " + classes_withValidator.size() + " classes annotated with " + Validator.class);

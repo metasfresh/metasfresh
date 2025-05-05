@@ -1,7 +1,7 @@
 ARG REFNAME=local
 FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
-FROM postgres:10
+FROM postgres:15.4
 
 RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
 
@@ -17,7 +17,7 @@ COPY docker-builds/db/init/ /docker-entrypoint-initdb.d/
 COPY docker-builds/db/scripts/ /tmp/scripts/
 
 # COPY docker-builds/db/metasfresh_latest.pgdump .
-ADD --chown=postgres https://www.metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump .
+ADD --chown=postgres https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_172.pgdump metasfresh.pgdump
 
 COPY --from=backend /backend/metasfresh-dist/dist/target/dist/sql /tmp/sql
 

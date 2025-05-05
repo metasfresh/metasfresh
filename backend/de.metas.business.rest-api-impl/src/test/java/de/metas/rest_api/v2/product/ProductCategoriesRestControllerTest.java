@@ -22,22 +22,24 @@
 
 package de.metas.rest_api.v2.product;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductCategoryId;
 import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import de.metas.rest_api.v2.product.response.JsonGetProductCategoriesResponse;
 import de.metas.rest_api.v2.product.response.JsonProductCategory;
+import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.user.UserId;
-import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product_Category;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -49,26 +51,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 public class ProductCategoriesRestControllerTest
 {
 	private ProductCategoriesRestController restController;
 
 	private JsonCreatedUpdatedInfo createdUpdatedInfo;
+	private Expect expect;
 
 	@BeforeAll
 	static void initStatic()
 	{
-		SnapshotMatcher.start(
-				AdempiereTestHelper.SNAPSHOT_CONFIG,
-				AdempiereTestHelper.createSnapshotJsonFunction());
-
 		LogManager.setLoggerLevel(ProductCategoriesRestController.class, Level.ALL);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		SnapshotMatcher.validateSnapshots();
 	}
 
 	@BeforeEach
@@ -78,7 +72,9 @@ public class ProductCategoriesRestControllerTest
 
 		createMasterData();
 
-		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade()
+		final SectionCodeRepository sectionCodeRepository = new SectionCodeRepository();
+
+		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade(sectionCodeRepository)
 		{
 			@Override
 			public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product_Category record)
@@ -147,7 +143,7 @@ public class ProductCategoriesRestControllerTest
 						.build());
 
 		//
-		SnapshotMatcher.expect(responseBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
 	}
 
 	@Builder(builderMethodName = "prepareProductCategory", builderClassName = "prepareProductCategoryBuilder")

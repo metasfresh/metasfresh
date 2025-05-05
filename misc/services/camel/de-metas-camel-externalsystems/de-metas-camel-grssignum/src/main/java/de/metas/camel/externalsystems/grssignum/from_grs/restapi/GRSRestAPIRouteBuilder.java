@@ -290,7 +290,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 
 	private void prepareHttpErrorResponse(@NonNull final Exchange exchange)
 	{
-		final JsonError jsonError = ErrorProcessor.processHttpErrorEncounteredResponse(exchange);
+		final JsonError jsonError = ErrorProcessor.processMetasfreshHttpError(exchange);
 		exchange.getIn().setBody(jsonError);
 	}
 

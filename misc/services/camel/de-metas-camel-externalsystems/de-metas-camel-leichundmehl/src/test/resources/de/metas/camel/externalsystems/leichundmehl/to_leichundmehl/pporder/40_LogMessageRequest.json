@@ -1,0 +1,4 @@
+{
+  "pinstanceId": 2,
+  "logMessage": "{\"fileName\":\"pluFile.xml\",\"missingKeys\":[\"NAME-03\"],\"processedKeys\":[{\"key\":\"NAME-01\",\"oldValue\":\"data\",\"newValue\":\"description test\"},{\"key\":\"NAME-02\",\"oldValue\":\"Hello TEST name!!\",\"newValue\":\"Hello Product name!!\"}]}"
+}

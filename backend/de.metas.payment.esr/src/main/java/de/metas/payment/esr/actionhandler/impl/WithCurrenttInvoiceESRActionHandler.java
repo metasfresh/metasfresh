@@ -22,14 +22,7 @@ package de.metas.payment.esr.actionhandler.impl;
  * #L%
  */
 
-import org.slf4j.Logger;
-
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
-
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
@@ -37,6 +30,9 @@ import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Services;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.slf4j.Logger;
 
 /**
  * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice}. Invokes {@link IESRImportBL#linkInvoiceToPayment(I_ESR_ImportLine)}.

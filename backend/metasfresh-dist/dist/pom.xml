@@ -105,6 +105,20 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.acct</groupId>
+            <artifactId>de.metas.acct.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.forex</groupId>
+            <artifactId>de.metas.forex.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.adempiere.adempiere</groupId>
@@ -155,6 +169,13 @@
         <dependency>
             <groupId>de.metas.manufacturing</groupId>
             <artifactId>de.metas.manufacturing</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.manufacturing</groupId>
+            <artifactId>de.metas.manufacturing.webui</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
@@ -333,6 +354,13 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.marketing</groupId>
+            <artifactId>marketing-activecampaign</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.vertical.creditscore</groupId>
@@ -472,7 +500,15 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
-                
+
+        <dependency>
+            <groupId>de.metas.postfinance</groupId>
+            <artifactId>de.metas.postfinance.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.serviceprovider</groupId>
             <artifactId>de.metas.serviceprovider.base</artifactId>
@@ -542,6 +578,20 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.swat</groupId>
+            <artifactId>de.metas.swat.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.invoice</groupId>
+            <artifactId>de.metas.invoice.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.ui.web</groupId>
@@ -599,6 +649,14 @@
         <dependency>
             <groupId>de.metas.servicerepair</groupId>
             <artifactId>de.metas.servicerepair.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.deliveryplanning</groupId>
+            <artifactId>de.metas.deliveryplanning.base</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>

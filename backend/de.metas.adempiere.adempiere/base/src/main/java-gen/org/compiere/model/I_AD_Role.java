@@ -1,43 +1,33 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Role
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_AD_Role 
 {
 
-    /** TableName=AD_Role */
-    public static final String Table_Name = "AD_Role";
+	String Table_Name = "AD_Role";
 
-    /** AD_Table_ID=156 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=156 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 6 - System - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Client>(I_AD_Role.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Special Form.
@@ -47,7 +37,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Form_ID (int AD_Form_ID);
+	void setAD_Form_ID (int AD_Form_ID);
 
 	/**
 	 * Get Special Form.
@@ -57,128 +47,113 @@ public interface I_AD_Role
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Form_ID();
+	int getAD_Form_ID();
 
-	public org.compiere.model.I_AD_Form getAD_Form();
+	@Nullable org.compiere.model.I_AD_Form getAD_Form();
 
-	public void setAD_Form(org.compiere.model.I_AD_Form AD_Form);
+	void setAD_Form(@Nullable org.compiere.model.I_AD_Form AD_Form);
 
-    /** Column definition for AD_Form_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Form> COLUMN_AD_Form_ID = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Form>(I_AD_Role.class, "AD_Form_ID", org.compiere.model.I_AD_Form.class);
-    /** Column name AD_Form_ID */
-    public static final String COLUMNNAME_AD_Form_ID = "AD_Form_ID";
+	ModelColumn<I_AD_Role, org.compiere.model.I_AD_Form> COLUMN_AD_Form_ID = new ModelColumn<>(I_AD_Role.class, "AD_Form_ID", org.compiere.model.I_AD_Form.class);
+	String COLUMNNAME_AD_Form_ID = "AD_Form_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Org>(I_AD_Role.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Rolle.
+	 * Set Role.
 	 * Responsibility Role
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Role_ID (int AD_Role_ID);
+	void setAD_Role_ID (int AD_Role_ID);
 
 	/**
-	 * Get Rolle.
+	 * Get Role.
 	 * Responsibility Role
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Role_ID();
+	int getAD_Role_ID();
 
-    /** Column definition for AD_Role_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_AD_Role_ID = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "AD_Role_ID", null);
-    /** Column name AD_Role_ID */
-    public static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
+	ModelColumn<I_AD_Role, Object> COLUMN_AD_Role_ID = new ModelColumn<>(I_AD_Role.class, "AD_Role_ID", null);
+	String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
 	/**
-	 * Set Primärbaum Menü.
+	 * Set Menu Tree.
 	 * Tree of the menu
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Tree_Menu_ID (int AD_Tree_Menu_ID);
+	void setAD_Tree_Menu_ID (int AD_Tree_Menu_ID);
 
 	/**
-	 * Get Primärbaum Menü.
+	 * Get Menu Tree.
 	 * Tree of the menu
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Tree_Menu_ID();
+	int getAD_Tree_Menu_ID();
 
-	public org.compiere.model.I_AD_Tree getAD_Tree_Menu();
+	@Nullable org.compiere.model.I_AD_Tree getAD_Tree_Menu();
 
-	public void setAD_Tree_Menu(org.compiere.model.I_AD_Tree AD_Tree_Menu);
+	void setAD_Tree_Menu(@Nullable org.compiere.model.I_AD_Tree AD_Tree_Menu);
 
-    /** Column definition for AD_Tree_Menu_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Tree> COLUMN_AD_Tree_Menu_ID = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Tree>(I_AD_Role.class, "AD_Tree_Menu_ID", org.compiere.model.I_AD_Tree.class);
-    /** Column name AD_Tree_Menu_ID */
-    public static final String COLUMNNAME_AD_Tree_Menu_ID = "AD_Tree_Menu_ID";
+	ModelColumn<I_AD_Role, org.compiere.model.I_AD_Tree> COLUMN_AD_Tree_Menu_ID = new ModelColumn<>(I_AD_Role.class, "AD_Tree_Menu_ID", org.compiere.model.I_AD_Tree.class);
+	String COLUMNNAME_AD_Tree_Menu_ID = "AD_Tree_Menu_ID";
 
 	/**
-	 * Set Primärbaum Organisation.
-	 * Tree to determine organizational hierarchy
+	 * Set Organization Tree.
+	 * Trees are used for (financial) reporting and security access (via role)
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Tree_Org_ID (int AD_Tree_Org_ID);
+	void setAD_Tree_Org_ID (int AD_Tree_Org_ID);
 
 	/**
-	 * Get Primärbaum Organisation.
-	 * Tree to determine organizational hierarchy
+	 * Get Organization Tree.
+	 * Trees are used for (financial) reporting and security access (via role)
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Tree_Org_ID();
+	int getAD_Tree_Org_ID();
 
-	public org.compiere.model.I_AD_Tree getAD_Tree_Org();
+	@Nullable org.compiere.model.I_AD_Tree getAD_Tree_Org();
 
-	public void setAD_Tree_Org(org.compiere.model.I_AD_Tree AD_Tree_Org);
+	void setAD_Tree_Org(@Nullable org.compiere.model.I_AD_Tree AD_Tree_Org);
 
-    /** Column definition for AD_Tree_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Tree> COLUMN_AD_Tree_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Tree>(I_AD_Role.class, "AD_Tree_Org_ID", org.compiere.model.I_AD_Tree.class);
-    /** Column name AD_Tree_Org_ID */
-    public static final String COLUMNNAME_AD_Tree_Org_ID = "AD_Tree_Org_ID";
+	ModelColumn<I_AD_Role, org.compiere.model.I_AD_Tree> COLUMN_AD_Tree_Org_ID = new ModelColumn<>(I_AD_Role.class, "AD_Tree_Org_ID", org.compiere.model.I_AD_Tree.class);
+	String COLUMNNAME_AD_Tree_Org_ID = "AD_Tree_Org_ID";
 
 	/**
 	 * Set Allow Info Account.
@@ -187,7 +162,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_Account (boolean Allow_Info_Account);
+	void setAllow_Info_Account (boolean Allow_Info_Account);
 
 	/**
 	 * Get Allow Info Account.
@@ -196,12 +171,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_Account();
+	boolean isAllow_Info_Account();
 
-    /** Column definition for Allow_Info_Account */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Account = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_Account", null);
-    /** Column name Allow_Info_Account */
-    public static final String COLUMNNAME_Allow_Info_Account = "Allow_Info_Account";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Account = new ModelColumn<>(I_AD_Role.class, "Allow_Info_Account", null);
+	String COLUMNNAME_Allow_Info_Account = "Allow_Info_Account";
 
 	/**
 	 * Set Allow Info Asset.
@@ -210,7 +183,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_Asset (boolean Allow_Info_Asset);
+	void setAllow_Info_Asset (boolean Allow_Info_Asset);
 
 	/**
 	 * Get Allow Info Asset.
@@ -219,12 +192,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_Asset();
+	boolean isAllow_Info_Asset();
 
-    /** Column definition for Allow_Info_Asset */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Asset = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_Asset", null);
-    /** Column name Allow_Info_Asset */
-    public static final String COLUMNNAME_Allow_Info_Asset = "Allow_Info_Asset";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Asset = new ModelColumn<>(I_AD_Role.class, "Allow_Info_Asset", null);
+	String COLUMNNAME_Allow_Info_Asset = "Allow_Info_Asset";
 
 	/**
 	 * Set Allow Info BPartner.
@@ -233,7 +204,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_BPartner (boolean Allow_Info_BPartner);
+	void setAllow_Info_BPartner (boolean Allow_Info_BPartner);
 
 	/**
 	 * Get Allow Info BPartner.
@@ -242,12 +213,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_BPartner();
+	boolean isAllow_Info_BPartner();
 
-    /** Column definition for Allow_Info_BPartner */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_BPartner = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_BPartner", null);
-    /** Column name Allow_Info_BPartner */
-    public static final String COLUMNNAME_Allow_Info_BPartner = "Allow_Info_BPartner";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_BPartner = new ModelColumn<>(I_AD_Role.class, "Allow_Info_BPartner", null);
+	String COLUMNNAME_Allow_Info_BPartner = "Allow_Info_BPartner";
 
 	/**
 	 * Set Allow Info CashJournal.
@@ -256,7 +225,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_CashJournal (boolean Allow_Info_CashJournal);
+	void setAllow_Info_CashJournal (boolean Allow_Info_CashJournal);
 
 	/**
 	 * Get Allow Info CashJournal.
@@ -265,12 +234,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_CashJournal();
+	boolean isAllow_Info_CashJournal();
 
-    /** Column definition for Allow_Info_CashJournal */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_CashJournal = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_CashJournal", null);
-    /** Column name Allow_Info_CashJournal */
-    public static final String COLUMNNAME_Allow_Info_CashJournal = "Allow_Info_CashJournal";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_CashJournal = new ModelColumn<>(I_AD_Role.class, "Allow_Info_CashJournal", null);
+	String COLUMNNAME_Allow_Info_CashJournal = "Allow_Info_CashJournal";
 
 	/**
 	 * Set Allow Info CRP.
@@ -279,7 +246,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_CRP (boolean Allow_Info_CRP);
+	void setAllow_Info_CRP (boolean Allow_Info_CRP);
 
 	/**
 	 * Get Allow Info CRP.
@@ -288,12 +255,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_CRP();
+	boolean isAllow_Info_CRP();
 
-    /** Column definition for Allow_Info_CRP */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_CRP = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_CRP", null);
-    /** Column name Allow_Info_CRP */
-    public static final String COLUMNNAME_Allow_Info_CRP = "Allow_Info_CRP";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_CRP = new ModelColumn<>(I_AD_Role.class, "Allow_Info_CRP", null);
+	String COLUMNNAME_Allow_Info_CRP = "Allow_Info_CRP";
 
 	/**
 	 * Set Allow Info InOut.
@@ -302,7 +267,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_InOut (boolean Allow_Info_InOut);
+	void setAllow_Info_InOut (boolean Allow_Info_InOut);
 
 	/**
 	 * Get Allow Info InOut.
@@ -311,12 +276,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_InOut();
+	boolean isAllow_Info_InOut();
 
-    /** Column definition for Allow_Info_InOut */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_InOut = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_InOut", null);
-    /** Column name Allow_Info_InOut */
-    public static final String COLUMNNAME_Allow_Info_InOut = "Allow_Info_InOut";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_InOut = new ModelColumn<>(I_AD_Role.class, "Allow_Info_InOut", null);
+	String COLUMNNAME_Allow_Info_InOut = "Allow_Info_InOut";
 
 	/**
 	 * Set Allow Info Invoice.
@@ -325,7 +288,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_Invoice (boolean Allow_Info_Invoice);
+	void setAllow_Info_Invoice (boolean Allow_Info_Invoice);
 
 	/**
 	 * Get Allow Info Invoice.
@@ -334,12 +297,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_Invoice();
+	boolean isAllow_Info_Invoice();
 
-    /** Column definition for Allow_Info_Invoice */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Invoice = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_Invoice", null);
-    /** Column name Allow_Info_Invoice */
-    public static final String COLUMNNAME_Allow_Info_Invoice = "Allow_Info_Invoice";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Invoice = new ModelColumn<>(I_AD_Role.class, "Allow_Info_Invoice", null);
+	String COLUMNNAME_Allow_Info_Invoice = "Allow_Info_Invoice";
 
 	/**
 	 * Set Allow Info MRP.
@@ -348,7 +309,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_MRP (boolean Allow_Info_MRP);
+	void setAllow_Info_MRP (boolean Allow_Info_MRP);
 
 	/**
 	 * Get Allow Info MRP.
@@ -357,12 +318,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_MRP();
+	boolean isAllow_Info_MRP();
 
-    /** Column definition for Allow_Info_MRP */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_MRP = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_MRP", null);
-    /** Column name Allow_Info_MRP */
-    public static final String COLUMNNAME_Allow_Info_MRP = "Allow_Info_MRP";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_MRP = new ModelColumn<>(I_AD_Role.class, "Allow_Info_MRP", null);
+	String COLUMNNAME_Allow_Info_MRP = "Allow_Info_MRP";
 
 	/**
 	 * Set Allow Info Order.
@@ -371,7 +330,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_Order (boolean Allow_Info_Order);
+	void setAllow_Info_Order (boolean Allow_Info_Order);
 
 	/**
 	 * Get Allow Info Order.
@@ -380,12 +339,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_Order();
+	boolean isAllow_Info_Order();
 
-    /** Column definition for Allow_Info_Order */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Order = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_Order", null);
-    /** Column name Allow_Info_Order */
-    public static final String COLUMNNAME_Allow_Info_Order = "Allow_Info_Order";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Order = new ModelColumn<>(I_AD_Role.class, "Allow_Info_Order", null);
+	String COLUMNNAME_Allow_Info_Order = "Allow_Info_Order";
 
 	/**
 	 * Set Allow Info Payment.
@@ -394,7 +351,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_Payment (boolean Allow_Info_Payment);
+	void setAllow_Info_Payment (boolean Allow_Info_Payment);
 
 	/**
 	 * Get Allow Info Payment.
@@ -403,12 +360,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_Payment();
+	boolean isAllow_Info_Payment();
 
-    /** Column definition for Allow_Info_Payment */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Payment = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_Payment", null);
-    /** Column name Allow_Info_Payment */
-    public static final String COLUMNNAME_Allow_Info_Payment = "Allow_Info_Payment";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Payment = new ModelColumn<>(I_AD_Role.class, "Allow_Info_Payment", null);
+	String COLUMNNAME_Allow_Info_Payment = "Allow_Info_Payment";
 
 	/**
 	 * Set Allow Info Product.
@@ -417,7 +372,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_Product (boolean Allow_Info_Product);
+	void setAllow_Info_Product (boolean Allow_Info_Product);
 
 	/**
 	 * Get Allow Info Product.
@@ -426,12 +381,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_Product();
+	boolean isAllow_Info_Product();
 
-    /** Column definition for Allow_Info_Product */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Product = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_Product", null);
-    /** Column name Allow_Info_Product */
-    public static final String COLUMNNAME_Allow_Info_Product = "Allow_Info_Product";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Product = new ModelColumn<>(I_AD_Role.class, "Allow_Info_Product", null);
+	String COLUMNNAME_Allow_Info_Product = "Allow_Info_Product";
 
 	/**
 	 * Set Allow Info Resource.
@@ -440,7 +393,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_Resource (boolean Allow_Info_Resource);
+	void setAllow_Info_Resource (boolean Allow_Info_Resource);
 
 	/**
 	 * Get Allow Info Resource.
@@ -449,12 +402,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_Resource();
+	boolean isAllow_Info_Resource();
 
-    /** Column definition for Allow_Info_Resource */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Resource = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_Resource", null);
-    /** Column name Allow_Info_Resource */
-    public static final String COLUMNNAME_Allow_Info_Resource = "Allow_Info_Resource";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Resource = new ModelColumn<>(I_AD_Role.class, "Allow_Info_Resource", null);
+	String COLUMNNAME_Allow_Info_Resource = "Allow_Info_Resource";
 
 	/**
 	 * Set Allow Info Schedule.
@@ -463,7 +414,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAllow_Info_Schedule (boolean Allow_Info_Schedule);
+	void setAllow_Info_Schedule (boolean Allow_Info_Schedule);
 
 	/**
 	 * Get Allow Info Schedule.
@@ -472,219 +423,193 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllow_Info_Schedule();
+	boolean isAllow_Info_Schedule();
 
-    /** Column definition for Allow_Info_Schedule */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Schedule = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Allow_Info_Schedule", null);
-    /** Column name Allow_Info_Schedule */
-    public static final String COLUMNNAME_Allow_Info_Schedule = "Allow_Info_Schedule";
+	ModelColumn<I_AD_Role, Object> COLUMN_Allow_Info_Schedule = new ModelColumn<>(I_AD_Role.class, "Allow_Info_Schedule", null);
+	String COLUMNNAME_Allow_Info_Schedule = "Allow_Info_Schedule";
 
 	/**
-	 * Set Freigabe-Betrag.
+	 * Set Approval Amount.
 	 * The approval amount limit for this role
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAmtApproval (java.math.BigDecimal AmtApproval);
+	void setAmtApproval (@Nullable BigDecimal AmtApproval);
 
 	/**
-	 * Get Freigabe-Betrag.
+	 * Get Approval Amount.
 	 * The approval amount limit for this role
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getAmtApproval();
+	BigDecimal getAmtApproval();
 
-    /** Column definition for AmtApproval */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_AmtApproval = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "AmtApproval", null);
-    /** Column name AmtApproval */
-    public static final String COLUMNNAME_AmtApproval = "AmtApproval";
+	ModelColumn<I_AD_Role, Object> COLUMN_AmtApproval = new ModelColumn<>(I_AD_Role.class, "AmtApproval", null);
+	String COLUMNNAME_AmtApproval = "AmtApproval";
 
 	/**
-	 * Set Währung.
+	 * Set Currency.
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Currency_ID (int C_Currency_ID);
+	void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
+	 * Get Currency.
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Currency_ID();
+	int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_C_Currency>(I_AD_Role.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Bestätigung Anzahl Suchergebnisse.
+	 * Set Confirm Query Records.
 	 * Require Confirmation if more records will be returned by the query (If not defined 500)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setConfirmQueryRecords (int ConfirmQueryRecords);
+	void setConfirmQueryRecords (int ConfirmQueryRecords);
 
 	/**
-	 * Get Bestätigung Anzahl Suchergebnisse.
+	 * Get Confirm Query Records.
 	 * Require Confirmation if more records will be returned by the query (If not defined 500)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getConfirmQueryRecords();
+	int getConfirmQueryRecords();
 
-    /** Column definition for ConfirmQueryRecords */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_ConfirmQueryRecords = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "ConfirmQueryRecords", null);
-    /** Column name ConfirmQueryRecords */
-    public static final String COLUMNNAME_ConfirmQueryRecords = "ConfirmQueryRecords";
+	ModelColumn<I_AD_Role, Object> COLUMN_ConfirmQueryRecords = new ModelColumn<>(I_AD_Role.class, "ConfirmQueryRecords", null);
+	String COLUMNNAME_ConfirmQueryRecords = "ConfirmQueryRecords";
 
 	/**
-	 * Set Verbindungsart.
+	 * Set Connection Profile.
 	 * How a Java Client connects to the server(s)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setConnectionProfile (java.lang.String ConnectionProfile);
+	void setConnectionProfile (@Nullable java.lang.String ConnectionProfile);
 
 	/**
-	 * Get Verbindungsart.
+	 * Get Connection Profile.
 	 * How a Java Client connects to the server(s)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getConnectionProfile();
+	@Nullable java.lang.String getConnectionProfile();
 
-    /** Column definition for ConnectionProfile */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_ConnectionProfile = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "ConnectionProfile", null);
-    /** Column name ConnectionProfile */
-    public static final String COLUMNNAME_ConnectionProfile = "ConnectionProfile";
+	ModelColumn<I_AD_Role, Object> COLUMN_ConnectionProfile = new ModelColumn<>(I_AD_Role.class, "ConnectionProfile", null);
+	String COLUMNNAME_ConnectionProfile = "ConnectionProfile";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_Role, Object> COLUMN_Created = new ModelColumn<>(I_AD_Role.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_User>(I_AD_Role.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_AD_Role, Object> COLUMN_Description = new ModelColumn<>(I_AD_Role.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Zugriff auf alle Organisationen.
+	 * Set Access all Orgs.
 	 * Access all Organizations (no org access control) of the client
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAccessAllOrgs (boolean IsAccessAllOrgs);
+	void setIsAccessAllOrgs (boolean IsAccessAllOrgs);
 
 	/**
-	 * Get Zugriff auf alle Organisationen.
+	 * Get Access all Orgs.
 	 * Access all Organizations (no org access control) of the client
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAccessAllOrgs();
+	boolean isAccessAllOrgs();
 
-    /** Column definition for IsAccessAllOrgs */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsAccessAllOrgs = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsAccessAllOrgs", null);
-    /** Column name IsAccessAllOrgs */
-    public static final String COLUMNNAME_IsAccessAllOrgs = "IsAccessAllOrgs";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsAccessAllOrgs = new ModelColumn<>(I_AD_Role.class, "IsAccessAllOrgs", null);
+	String COLUMNNAME_IsAccessAllOrgs = "IsAccessAllOrgs";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Role.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Allow chaning login date.
@@ -693,7 +618,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAllowLoginDateOverride (boolean IsAllowLoginDateOverride);
+	void setIsAllowLoginDateOverride (boolean IsAllowLoginDateOverride);
 
 	/**
 	 * Get Allow chaning login date.
@@ -702,35 +627,31 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllowLoginDateOverride();
+	boolean isAllowLoginDateOverride();
 
-    /** Column definition for IsAllowLoginDateOverride */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsAllowLoginDateOverride = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsAllowLoginDateOverride", null);
-    /** Column name IsAllowLoginDateOverride */
-    public static final String COLUMNNAME_IsAllowLoginDateOverride = "IsAllowLoginDateOverride";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsAllowLoginDateOverride = new ModelColumn<>(I_AD_Role.class, "IsAllowLoginDateOverride", null);
+	String COLUMNNAME_IsAllowLoginDateOverride = "IsAllowLoginDateOverride";
 
 	/**
-	 * Set IsAttachmentDeletionAllowed.
+	 * Set Attachment Deletion Allowed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAttachmentDeletionAllowed (boolean IsAttachmentDeletionAllowed);
+	void setIsAttachmentDeletionAllowed (boolean IsAttachmentDeletionAllowed);
 
 	/**
-	 * Get IsAttachmentDeletionAllowed.
+	 * Get Attachment Deletion Allowed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAttachmentDeletionAllowed();
+	boolean isAttachmentDeletionAllowed();
 
-    /** Column definition for IsAttachmentDeletionAllowed */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsAttachmentDeletionAllowed = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsAttachmentDeletionAllowed", null);
-    /** Column name IsAttachmentDeletionAllowed */
-    public static final String COLUMNNAME_IsAttachmentDeletionAllowed = "IsAttachmentDeletionAllowed";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsAttachmentDeletionAllowed = new ModelColumn<>(I_AD_Role.class, "IsAttachmentDeletionAllowed", null);
+	String COLUMNNAME_IsAttachmentDeletionAllowed = "IsAttachmentDeletionAllowed";
 
 	/**
 	 * Set Skip role login page.
@@ -740,7 +661,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAutoRoleLogin (boolean IsAutoRoleLogin);
+	void setIsAutoRoleLogin (boolean IsAutoRoleLogin);
 
 	/**
 	 * Get Skip role login page.
@@ -750,112 +671,102 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAutoRoleLogin();
+	boolean isAutoRoleLogin();
 
-    /** Column definition for IsAutoRoleLogin */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsAutoRoleLogin = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsAutoRoleLogin", null);
-    /** Column name IsAutoRoleLogin */
-    public static final String COLUMNNAME_IsAutoRoleLogin = "IsAutoRoleLogin";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsAutoRoleLogin = new ModelColumn<>(I_AD_Role.class, "IsAutoRoleLogin", null);
+	String COLUMNNAME_IsAutoRoleLogin = "IsAutoRoleLogin";
 
 	/**
-	 * Set Freigabe eigener Belege.
+	 * Set Approve own Documents.
 	 * Users with this role can approve their own documents
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCanApproveOwnDoc (boolean IsCanApproveOwnDoc);
+	void setIsCanApproveOwnDoc (boolean IsCanApproveOwnDoc);
 
 	/**
-	 * Get Freigabe eigener Belege.
+	 * Get Approve own Documents.
 	 * Users with this role can approve their own documents
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCanApproveOwnDoc();
+	boolean isCanApproveOwnDoc();
 
-    /** Column definition for IsCanApproveOwnDoc */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsCanApproveOwnDoc = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsCanApproveOwnDoc", null);
-    /** Column name IsCanApproveOwnDoc */
-    public static final String COLUMNNAME_IsCanApproveOwnDoc = "IsCanApproveOwnDoc";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsCanApproveOwnDoc = new ModelColumn<>(I_AD_Role.class, "IsCanApproveOwnDoc", null);
+	String COLUMNNAME_IsCanApproveOwnDoc = "IsCanApproveOwnDoc";
 
 	/**
-	 * Set Kann exportieren.
+	 * Set Can Export.
 	 * Users with this role can export data
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCanExport (boolean IsCanExport);
+	void setIsCanExport (boolean IsCanExport);
 
 	/**
-	 * Get Kann exportieren.
+	 * Get Can Export.
 	 * Users with this role can export data
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCanExport();
+	boolean isCanExport();
 
-    /** Column definition for IsCanExport */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsCanExport = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsCanExport", null);
-    /** Column name IsCanExport */
-    public static final String COLUMNNAME_IsCanExport = "IsCanExport";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsCanExport = new ModelColumn<>(I_AD_Role.class, "IsCanExport", null);
+	String COLUMNNAME_IsCanExport = "IsCanExport";
 
 	/**
-	 * Set Kann Berichte erstellen.
+	 * Set Can Report.
 	 * Users with this role can create reports
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCanReport (boolean IsCanReport);
+	void setIsCanReport (boolean IsCanReport);
 
 	/**
-	 * Get Kann Berichte erstellen.
+	 * Get Can Report.
 	 * Users with this role can create reports
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCanReport();
+	boolean isCanReport();
 
-    /** Column definition for IsCanReport */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsCanReport = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsCanReport", null);
-    /** Column name IsCanReport */
-    public static final String COLUMNNAME_IsCanReport = "IsCanReport";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsCanReport = new ModelColumn<>(I_AD_Role.class, "IsCanReport", null);
+	String COLUMNNAME_IsCanReport = "IsCanReport";
 
 	/**
-	 * Set Änderungen protokollieren.
+	 * Set Maintain Change Log.
 	 * Maintain a log of changes
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsChangeLog (boolean IsChangeLog);
+	void setIsChangeLog (boolean IsChangeLog);
 
 	/**
-	 * Get Änderungen protokollieren.
+	 * Get Maintain Change Log.
 	 * Maintain a log of changes
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isChangeLog();
+	boolean isChangeLog();
 
-    /** Column definition for IsChangeLog */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsChangeLog = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsChangeLog", null);
-    /** Column name IsChangeLog */
-    public static final String COLUMNNAME_IsChangeLog = "IsChangeLog";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsChangeLog = new ModelColumn<>(I_AD_Role.class, "IsChangeLog", null);
+	String COLUMNNAME_IsChangeLog = "IsChangeLog";
 
 	/**
 	 * Set IsDiscountAllowedOnTotal.
@@ -864,7 +775,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDiscountAllowedOnTotal (boolean IsDiscountAllowedOnTotal);
+	void setIsDiscountAllowedOnTotal (boolean IsDiscountAllowedOnTotal);
 
 	/**
 	 * Get IsDiscountAllowedOnTotal.
@@ -873,12 +784,10 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDiscountAllowedOnTotal();
+	boolean isDiscountAllowedOnTotal();
 
-    /** Column definition for IsDiscountAllowedOnTotal */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsDiscountAllowedOnTotal = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsDiscountAllowedOnTotal", null);
-    /** Column name IsDiscountAllowedOnTotal */
-    public static final String COLUMNNAME_IsDiscountAllowedOnTotal = "IsDiscountAllowedOnTotal";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsDiscountAllowedOnTotal = new ModelColumn<>(I_AD_Role.class, "IsDiscountAllowedOnTotal", null);
+	String COLUMNNAME_IsDiscountAllowedOnTotal = "IsDiscountAllowedOnTotal";
 
 	/**
 	 * Set IsDiscountUptoLimitPrice.
@@ -887,7 +796,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDiscountUptoLimitPrice (boolean IsDiscountUptoLimitPrice);
+	void setIsDiscountUptoLimitPrice (boolean IsDiscountUptoLimitPrice);
 
 	/**
 	 * Get IsDiscountUptoLimitPrice.
@@ -896,37 +805,33 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDiscountUptoLimitPrice();
+	boolean isDiscountUptoLimitPrice();
 
-    /** Column definition for IsDiscountUptoLimitPrice */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsDiscountUptoLimitPrice = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsDiscountUptoLimitPrice", null);
-    /** Column name IsDiscountUptoLimitPrice */
-    public static final String COLUMNNAME_IsDiscountUptoLimitPrice = "IsDiscountUptoLimitPrice";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsDiscountUptoLimitPrice = new ModelColumn<>(I_AD_Role.class, "IsDiscountUptoLimitPrice", null);
+	String COLUMNNAME_IsDiscountUptoLimitPrice = "IsDiscountUptoLimitPrice";
 
 	/**
-	 * Set Manuell.
-	 * This is a manual process
+	 * Set Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsManual (boolean IsManual);
+	void setIsManual (boolean IsManual);
 
 	/**
-	 * Get Manuell.
-	 * This is a manual process
+	 * Get Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isManual();
+	boolean isManual();
 
-    /** Column definition for IsManual */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsManual = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsManual", null);
-    /** Column name IsManual */
-    public static final String COLUMNNAME_IsManual = "IsManual";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsManual = new ModelColumn<>(I_AD_Role.class, "IsManual", null);
+	String COLUMNNAME_IsManual = "IsManual";
 
 	/**
 	 * Set Menu available.
@@ -935,7 +840,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsMenuAvailable (boolean IsMenuAvailable);
+	void setIsMenuAvailable (boolean IsMenuAvailable);
 
 	/**
 	 * Get Menu available.
@@ -944,112 +849,100 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isMenuAvailable();
+	boolean isMenuAvailable();
 
-    /** Column definition for IsMenuAvailable */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsMenuAvailable = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsMenuAvailable", null);
-    /** Column name IsMenuAvailable */
-    public static final String COLUMNNAME_IsMenuAvailable = "IsMenuAvailable";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsMenuAvailable = new ModelColumn<>(I_AD_Role.class, "IsMenuAvailable", null);
+	String COLUMNNAME_IsMenuAvailable = "IsMenuAvailable";
 
 	/**
-	 * Set Zugriff auf gesperrte Einträge.
+	 * Set Personal Access.
 	 * Allow access to all personal records
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPersonalAccess (boolean IsPersonalAccess);
+	void setIsPersonalAccess (boolean IsPersonalAccess);
 
 	/**
-	 * Get Zugriff auf gesperrte Einträge.
+	 * Get Personal Access.
 	 * Allow access to all personal records
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPersonalAccess();
+	boolean isPersonalAccess();
 
-    /** Column definition for IsPersonalAccess */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsPersonalAccess = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsPersonalAccess", null);
-    /** Column name IsPersonalAccess */
-    public static final String COLUMNNAME_IsPersonalAccess = "IsPersonalAccess";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsPersonalAccess = new ModelColumn<>(I_AD_Role.class, "IsPersonalAccess", null);
+	String COLUMNNAME_IsPersonalAccess = "IsPersonalAccess";
 
 	/**
-	 * Set Persönliche Sperre.
+	 * Set Personal Lock.
 	 * Allow users with role to lock access to personal records
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPersonalLock (boolean IsPersonalLock);
+	void setIsPersonalLock (boolean IsPersonalLock);
 
 	/**
-	 * Get Persönliche Sperre.
+	 * Get Personal Lock.
 	 * Allow users with role to lock access to personal records
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPersonalLock();
+	boolean isPersonalLock();
 
-    /** Column definition for IsPersonalLock */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsPersonalLock = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsPersonalLock", null);
-    /** Column name IsPersonalLock */
-    public static final String COLUMNNAME_IsPersonalLock = "IsPersonalLock";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsPersonalLock = new ModelColumn<>(I_AD_Role.class, "IsPersonalLock", null);
+	String COLUMNNAME_IsPersonalLock = "IsPersonalLock";
 
 	/**
-	 * Set Beta-Funktionalität verwenden abw..
-	 * Diese Einstellung kann für eine bestimmte Rolle die bei "Mandant" hinterlegte Einstellung überschreiben
+	 * Set Use Beta Functionality override.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsRoleAlwaysUseBetaFunctions (boolean IsRoleAlwaysUseBetaFunctions);
+	void setIsRoleAlwaysUseBetaFunctions (boolean IsRoleAlwaysUseBetaFunctions);
 
 	/**
-	 * Get Beta-Funktionalität verwenden abw..
-	 * Diese Einstellung kann für eine bestimmte Rolle die bei "Mandant" hinterlegte Einstellung überschreiben
+	 * Get Use Beta Functionality override.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isRoleAlwaysUseBetaFunctions();
+	boolean isRoleAlwaysUseBetaFunctions();
 
-    /** Column definition for IsRoleAlwaysUseBetaFunctions */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsRoleAlwaysUseBetaFunctions = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsRoleAlwaysUseBetaFunctions", null);
-    /** Column name IsRoleAlwaysUseBetaFunctions */
-    public static final String COLUMNNAME_IsRoleAlwaysUseBetaFunctions = "IsRoleAlwaysUseBetaFunctions";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsRoleAlwaysUseBetaFunctions = new ModelColumn<>(I_AD_Role.class, "IsRoleAlwaysUseBetaFunctions", null);
+	String COLUMNNAME_IsRoleAlwaysUseBetaFunctions = "IsRoleAlwaysUseBetaFunctions";
 
 	/**
-	 * Set Buchführungsdaten zeigen.
+	 * Set Show Accounting.
 	 * Users with this role can see accounting information
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsShowAcct (boolean IsShowAcct);
+	void setIsShowAcct (boolean IsShowAcct);
 
 	/**
-	 * Get Buchführungsdaten zeigen.
+	 * Get Show Accounting.
 	 * Users with this role can see accounting information
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isShowAcct();
+	boolean isShowAcct();
 
-    /** Column definition for IsShowAcct */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsShowAcct = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsShowAcct", null);
-    /** Column name IsShowAcct */
-    public static final String COLUMNNAME_IsShowAcct = "IsShowAcct";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsShowAcct = new ModelColumn<>(I_AD_Role.class, "IsShowAcct", null);
+	String COLUMNNAME_IsShowAcct = "IsShowAcct";
 
 	/**
 	 * Set Show all entity types.
@@ -1059,7 +952,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsShowAllEntityTypes (boolean IsShowAllEntityTypes);
+	void setIsShowAllEntityTypes (boolean IsShowAllEntityTypes);
 
 	/**
 	 * Get Show all entity types.
@@ -1069,62 +962,56 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isShowAllEntityTypes();
+	boolean isShowAllEntityTypes();
 
-    /** Column definition for IsShowAllEntityTypes */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsShowAllEntityTypes = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsShowAllEntityTypes", null);
-    /** Column name IsShowAllEntityTypes */
-    public static final String COLUMNNAME_IsShowAllEntityTypes = "IsShowAllEntityTypes";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsShowAllEntityTypes = new ModelColumn<>(I_AD_Role.class, "IsShowAllEntityTypes", null);
+	String COLUMNNAME_IsShowAllEntityTypes = "IsShowAllEntityTypes";
 
 	/**
-	 * Set Nutzerbezogener Organisationszugriff.
+	 * Set Use User Org Access.
 	 * Use Org Access defined by user instead of Role Org Access
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsUseUserOrgAccess (boolean IsUseUserOrgAccess);
+	void setIsUseUserOrgAccess (boolean IsUseUserOrgAccess);
 
 	/**
-	 * Get Nutzerbezogener Organisationszugriff.
+	 * Get Use User Org Access.
 	 * Use Org Access defined by user instead of Role Org Access
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isUseUserOrgAccess();
+	boolean isUseUserOrgAccess();
 
-    /** Column definition for IsUseUserOrgAccess */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsUseUserOrgAccess = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsUseUserOrgAccess", null);
-    /** Column name IsUseUserOrgAccess */
-    public static final String COLUMNNAME_IsUseUserOrgAccess = "IsUseUserOrgAccess";
+	ModelColumn<I_AD_Role, Object> COLUMN_IsUseUserOrgAccess = new ModelColumn<>(I_AD_Role.class, "IsUseUserOrgAccess", null);
+	String COLUMNNAME_IsUseUserOrgAccess = "IsUseUserOrgAccess";
 
 	/**
-	 * Set Max. Suchergebnisse.
+	 * Set Max Query Records.
 	 * If defined, you cannot query more records as defined - the query criteria needs to be changed to query less records
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMaxQueryRecords (int MaxQueryRecords);
+	void setMaxQueryRecords (int MaxQueryRecords);
 
 	/**
-	 * Get Max. Suchergebnisse.
+	 * Get Max Query Records.
 	 * If defined, you cannot query more records as defined - the query criteria needs to be changed to query less records
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getMaxQueryRecords();
+	int getMaxQueryRecords();
 
-    /** Column definition for MaxQueryRecords */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_MaxQueryRecords = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "MaxQueryRecords", null);
-    /** Column name MaxQueryRecords */
-    public static final String COLUMNNAME_MaxQueryRecords = "MaxQueryRecords";
+	ModelColumn<I_AD_Role, Object> COLUMN_MaxQueryRecords = new ModelColumn<>(I_AD_Role.class, "MaxQueryRecords", null);
+	String COLUMNNAME_MaxQueryRecords = "MaxQueryRecords";
 
 	/**
 	 * Set Name.
@@ -1133,7 +1020,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -1142,62 +1029,81 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_AD_Role, Object> COLUMN_Name = new ModelColumn<>(I_AD_Role.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Mindestpreis überschreiben.
+	 * Set Overwrite Price Limit.
 	 * Overwrite Price Limit if the Price List  enforces the Price Limit
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOverwritePriceLimit (boolean OverwritePriceLimit);
+	void setOverwritePriceLimit (boolean OverwritePriceLimit);
 
 	/**
-	 * Get Mindestpreis überschreiben.
+	 * Get Overwrite Price Limit.
 	 * Overwrite Price Limit if the Price List  enforces the Price Limit
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverwritePriceLimit();
+	boolean isOverwritePriceLimit();
 
-    /** Column definition for OverwritePriceLimit */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_OverwritePriceLimit = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "OverwritePriceLimit", null);
-    /** Column name OverwritePriceLimit */
-    public static final String COLUMNNAME_OverwritePriceLimit = "OverwritePriceLimit";
+	ModelColumn<I_AD_Role, Object> COLUMN_OverwritePriceLimit = new ModelColumn<>(I_AD_Role.class, "OverwritePriceLimit", null);
+	String COLUMNNAME_OverwritePriceLimit = "OverwritePriceLimit";
 
 	/**
-	 * Set Ebene für Einstellungen.
+	 * Set Preference Level.
 	 * Determines what preferences the user can set
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPreferenceType (java.lang.String PreferenceType);
+	void setPreferenceType (java.lang.String PreferenceType);
 
 	/**
-	 * Get Ebene für Einstellungen.
+	 * Get Preference Level.
 	 * Determines what preferences the user can set
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPreferenceType();
+	java.lang.String getPreferenceType();
 
-    /** Column definition for PreferenceType */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_PreferenceType = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "PreferenceType", null);
-    /** Column name PreferenceType */
-    public static final String COLUMNNAME_PreferenceType = "PreferenceType";
+	ModelColumn<I_AD_Role, Object> COLUMN_PreferenceType = new ModelColumn<>(I_AD_Role.class, "PreferenceType", null);
+	String COLUMNNAME_PreferenceType = "PreferenceType";
+
+	/**
+	 * Set Role group.
+	 * Can be used to mark roles;
+ the respective group is added to the logged user's CTX and can be used e.g. to determine if particular fields shall be read-only.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRole_Group (@Nullable java.lang.String Role_Group);
+
+	/**
+	 * Get Role group.
+	 * Can be used to mark roles;
+ the respective group is added to the logged user's CTX and can be used e.g. to determine if particular fields shall be read-only.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRole_Group();
+
+	ModelColumn<I_AD_Role, Object> COLUMN_Role_Group = new ModelColumn<>(I_AD_Role.class, "Role_Group", null);
+	String COLUMNNAME_Role_Group = "Role_Group";
 
 	/**
 	 * Set Root menu node.
@@ -1206,7 +1112,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRoot_Menu_ID (int Root_Menu_ID);
+	void setRoot_Menu_ID (int Root_Menu_ID);
 
 	/**
 	 * Get Root menu node.
@@ -1215,102 +1121,86 @@ public interface I_AD_Role
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getRoot_Menu_ID();
+	int getRoot_Menu_ID();
 
-	public org.compiere.model.I_AD_Menu getRoot_Menu();
+	@Nullable org.compiere.model.I_AD_Menu getRoot_Menu();
 
-	public void setRoot_Menu(org.compiere.model.I_AD_Menu Root_Menu);
+	void setRoot_Menu(@Nullable org.compiere.model.I_AD_Menu Root_Menu);
 
-    /** Column definition for Root_Menu_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Menu> COLUMN_Root_Menu_ID = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Menu>(I_AD_Role.class, "Root_Menu_ID", org.compiere.model.I_AD_Menu.class);
-    /** Column name Root_Menu_ID */
-    public static final String COLUMNNAME_Root_Menu_ID = "Root_Menu_ID";
+	ModelColumn<I_AD_Role, org.compiere.model.I_AD_Menu> COLUMN_Root_Menu_ID = new ModelColumn<>(I_AD_Role.class, "Root_Menu_ID", org.compiere.model.I_AD_Menu.class);
+	String COLUMNNAME_Root_Menu_ID = "Root_Menu_ID";
 
 	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der EintrÃ¤ge;
- die kleinste Zahl kommt zuerst
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNo (int SeqNo);
+	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der EintrÃ¤ge;
- die kleinste Zahl kommt zuerst
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNo();
+	int getSeqNo();
 
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_AD_Role, Object> COLUMN_SeqNo = new ModelColumn<>(I_AD_Role.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Set Vorgesetzter.
+	 * Set Supervisor.
 	 * Supervisor for this user/organization - used for escalation and approval
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSupervisor_ID (int Supervisor_ID);
+	void setSupervisor_ID (int Supervisor_ID);
 
 	/**
-	 * Get Vorgesetzter.
+	 * Get Supervisor.
 	 * Supervisor for this user/organization - used for escalation and approval
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSupervisor_ID();
+	int getSupervisor_ID();
 
-	public org.compiere.model.I_AD_User getSupervisor();
-
-	public void setSupervisor(org.compiere.model.I_AD_User Supervisor);
-
-    /** Column definition for Supervisor_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_User> COLUMN_Supervisor_ID = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_User>(I_AD_Role.class, "Supervisor_ID", org.compiere.model.I_AD_User.class);
-    /** Column name Supervisor_ID */
-    public static final String COLUMNNAME_Supervisor_ID = "Supervisor_ID";
+	String COLUMNNAME_Supervisor_ID = "Supervisor_ID";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_Role, Object> COLUMN_Updated = new ModelColumn<>(I_AD_Role.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_User>(I_AD_Role.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set UserDiscount.
@@ -1319,7 +1209,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUserDiscount (java.math.BigDecimal UserDiscount);
+	void setUserDiscount (@Nullable BigDecimal UserDiscount);
 
 	/**
 	 * Get UserDiscount.
@@ -1328,37 +1218,33 @@ public interface I_AD_Role
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getUserDiscount();
+	BigDecimal getUserDiscount();
 
-    /** Column definition for UserDiscount */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_UserDiscount = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "UserDiscount", null);
-    /** Column name UserDiscount */
-    public static final String COLUMNNAME_UserDiscount = "UserDiscount";
+	ModelColumn<I_AD_Role, Object> COLUMN_UserDiscount = new ModelColumn<>(I_AD_Role.class, "UserDiscount", null);
+	String COLUMNNAME_UserDiscount = "UserDiscount";
 
 	/**
-	 * Set Nutzer-Ebene.
+	 * Set User Level.
 	 * System Client Organization
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setUserLevel (java.lang.String UserLevel);
+	void setUserLevel (java.lang.String UserLevel);
 
 	/**
-	 * Get Nutzer-Ebene.
+	 * Get User Level.
 	 * System Client Organization
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUserLevel();
+	java.lang.String getUserLevel();
 
-    /** Column definition for UserLevel */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_UserLevel = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "UserLevel", null);
-    /** Column name UserLevel */
-    public static final String COLUMNNAME_UserLevel = "UserLevel";
+	ModelColumn<I_AD_Role, Object> COLUMN_UserLevel = new ModelColumn<>(I_AD_Role.class, "UserLevel", null);
+	String COLUMNNAME_UserLevel = "UserLevel";
 
 	/**
 	 * Set Is webui role.
@@ -1367,7 +1253,7 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setWEBUI_Role (boolean WEBUI_Role);
+	void setWEBUI_Role (boolean WEBUI_Role);
 
 	/**
 	 * Get Is webui role.
@@ -1376,10 +1262,8 @@ public interface I_AD_Role
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isWEBUI_Role();
+	boolean isWEBUI_Role();
 
-    /** Column definition for WEBUI_Role */
-    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_WEBUI_Role = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "WEBUI_Role", null);
-    /** Column name WEBUI_Role */
-    public static final String COLUMNNAME_WEBUI_Role = "WEBUI_Role";
+	ModelColumn<I_AD_Role, Object> COLUMN_WEBUI_Role = new ModelColumn<>(I_AD_Role.class, "WEBUI_Role", null);
+	String COLUMNNAME_WEBUI_Role = "WEBUI_Role";
 }

@@ -40,6 +40,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -235,7 +236,8 @@ public class CandidateRepositoryRetrieval
 				.groupId(MaterialDispoGroupId.ofIntOrNull(candidateRecord.getMD_Candidate_GroupId()))
 				.materialDescriptor(materialDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
-				.simulated(isSimulated(candidateRecord));
+				.simulated(isSimulated(candidateRecord))
+				.lotForLot(candidateRecord.getIsLotForLot());
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
@@ -373,12 +375,13 @@ public class CandidateRepositoryRetrieval
 	 * Only use this method in testing
 	 */
 	@VisibleForTesting
-	public List<Candidate> retrieveAllNotStockOrderedByDateAndSeqNo()
+	public List<Candidate> retrieveAllNotStockOrderedByDateAndSeqNoFor(@NonNull final ProductId productId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
-		
+				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productId);
+
 		return retrieveForQueryBuilder(queryBuilderWithoutOrdering);
 	}
 

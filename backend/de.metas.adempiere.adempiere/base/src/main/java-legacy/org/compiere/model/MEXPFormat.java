@@ -52,22 +52,18 @@ package org.compiere.model;
  * #L%
  */
 
+import de.metas.cache.CCache;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import de.metas.cache.CCache;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
-import javax.annotation.Nullable;
 
 /**
  * @author Trifon N. Trifonov
@@ -178,6 +174,7 @@ public class MEXPFormat extends X_EXP_Format {
 		}
 		final StringBuilder whereClause =
 				new StringBuilder(X_EXP_Format.COLUMNNAME_Value).append("=?")
+						.append(" AND IsActive = 'Y'")
 						.append(" AND AD_Client_ID IN (?, 0)")
 						.append(" AND ").append(X_EXP_Format.COLUMNNAME_Version).append(" = ?");
 

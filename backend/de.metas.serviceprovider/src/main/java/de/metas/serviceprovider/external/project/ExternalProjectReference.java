@@ -52,4 +52,7 @@ public class ExternalProjectReference
 
 	@Nullable
 	ProjectId projectId;
+
+	@Nullable
+	ExternalProjectReferenceId externalProjectReferenceEffortId;
 }

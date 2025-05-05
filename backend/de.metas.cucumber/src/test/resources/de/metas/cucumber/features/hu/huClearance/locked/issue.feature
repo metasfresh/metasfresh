@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Locked HUs can not be issued to production order
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-31T13:30:13+01:00[Europe/Berlin]
 
     And destroy existing M_HUs
@@ -36,13 +38,13 @@ Feature: Locked HUs can not be issued to production order
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | huProduct_inventory       | 2022-03-20T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |
     And complete inventory with inventoryIdentifier 'huProduct_inventory'
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | huProduct_inventoryLine       | createdCU          |
 
@@ -50,7 +52,7 @@ Feature: Locked HUs can not be issued to production order
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU           | 10    | huProductTU                        | createdTU                 | newCreatedCU              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | createdTU          | huProductTU                            |
 
@@ -85,7 +87,7 @@ Feature: Locked HUs can not be issued to production order
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
       | ppOrder_manufacturing  | MOP         | manufacturingProduct_HU | 10         | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                |
 
-    Then after not more than 30s, PP_Order_BomLines are found
+    Then after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppOrderBOMLine_1               | ppOrder_manufacturing  | ppol_1     | huProduct               | 100          | false           | PCE               | CO            |
 
@@ -117,7 +119,7 @@ Feature: Locked HUs can not be issued to production order
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
       | ppOrder_manufacturing  | MOP         | manufacturingProduct_HU | 10         | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                |
 
-    And after not more than 30s, PP_Order_BomLines are found
+    And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppOrderBOMLine_1               | ppOrder_manufacturing  | ppol_1     | huProduct               | 100          | false           | PCE               | CO            |
 
@@ -134,5 +136,5 @@ Feature: Locked HUs can not be issued to production order
       | newCreatedCU       | Locked          | Locked HU         |
 
     And complete planning for PP_Order:
-      | PP_Order_ID.Identifier | OPT.ErrorMessage                         |
+      | PP_Order_ID.Identifier | OPT.ErrorMessage                                    |
       | ppOrder_manufacturing  | Nur freigegebene HUs können final zugeteilt werden! |

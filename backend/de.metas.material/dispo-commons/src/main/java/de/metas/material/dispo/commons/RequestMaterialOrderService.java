@@ -177,6 +177,7 @@ public class RequestMaterialOrderService
 						.datePromised(groupMember.getDate())
 						.dateStartSchedule(groupMember.getDate())
 						.plantId(prodDetail.getPlantId())
+						.workstationId(prodDetail.getWorkstationId())
 						.productDescriptor(materialDescriptor)
 						.bpartnerId(materialDescriptor.getCustomerId())
 						.qtyRequired(groupMember.getQuantity())
@@ -269,7 +270,8 @@ public class RequestMaterialOrderService
 			ddOrderBuilder
 					.plantId(distributionDetail.getPlantId())
 					.productPlanningId(distributionDetail.getProductPlanningId())
-					.shipperId(distributionDetail.getShipperId());
+					.shipperId(distributionDetail.getShipperId())
+					.materialDispoGroupId(groupMember.getEffectiveGroupId());
 
 			ddOrderLineBuilder
 					.networkDistributionLineId(distributionDetail.getNetworkDistributionLineId());

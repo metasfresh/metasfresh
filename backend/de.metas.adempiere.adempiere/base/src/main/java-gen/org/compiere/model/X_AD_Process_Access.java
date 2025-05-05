@@ -1,168 +1,102 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Process_Access
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Process_Access extends org.compiere.model.PO implements I_AD_Process_Access, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 500429489L;
+	private static final long serialVersionUID = 380016108L;
 
     /** Standard Constructor */
-    public X_AD_Process_Access (Properties ctx, int AD_Process_Access_ID, String trxName)
+    public X_AD_Process_Access (final Properties ctx, final int AD_Process_Access_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Process_Access_ID, trxName);
-      /** if (AD_Process_Access_ID == 0)
-        {
-			setAD_Process_Access_ID (0);
-			setAD_Process_ID (0);
-			setAD_Role_ID (0);
-			setIsReadWrite (false);
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_Process_Access (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Process_Access (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Process Access.
-		@param AD_Process_Access_ID Process Access	  */
+	/** Load Meta Data */
 	@Override
-	public void setAD_Process_Access_ID (int AD_Process_Access_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		if (AD_Process_Access_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_Process_Access_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Process_Access_ID, Integer.valueOf(AD_Process_Access_ID));
-	}
-
-	/** Get Process Access.
-		@return Process Access	  */
-	@Override
-	public int getAD_Process_Access_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_Access_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
 
 	@Override
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
+	public void setAD_Process(final org.compiere.model.I_AD_Process AD_Process)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
 	}
 
-	/** Set Prozess.
-		@param AD_Process_ID 
-		Process or Report
-	  */
 	@Override
-	public void setAD_Process_ID (int AD_Process_ID)
+	public void setAD_Process_ID (final int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Process_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
-	/** Get Prozess.
-		@return Process or Report
-	  */
 	@Override
-	public int getAD_Process_ID () 
+	public int getAD_Process_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Process_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	public org.compiere.model.I_AD_Role getAD_Role()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
 	}
 
 	@Override
-	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role)
+	public void setAD_Role(final org.compiere.model.I_AD_Role AD_Role)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class, AD_Role);
 	}
 
-	/** Set Rolle.
-		@param AD_Role_ID 
-		Responsibility Role
-	  */
 	@Override
-	public void setAD_Role_ID (int AD_Role_ID)
+	public void setAD_Role_ID (final int AD_Role_ID)
 	{
 		if (AD_Role_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_AD_Role_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Role_ID, Integer.valueOf(AD_Role_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Role_ID, AD_Role_ID);
 	}
 
-	/** Get Rolle.
-		@return Responsibility Role
-	  */
 	@Override
-	public int getAD_Role_ID () 
+	public int getAD_Role_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Role_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Role_ID);
 	}
 
-	/** Set Lesen und Schreiben.
-		@param IsReadWrite 
-		Field is read / write
-	  */
 	@Override
-	public void setIsReadWrite (boolean IsReadWrite)
+	public void setIsReadWrite (final boolean IsReadWrite)
 	{
-		set_Value (COLUMNNAME_IsReadWrite, Boolean.valueOf(IsReadWrite));
+		set_Value (COLUMNNAME_IsReadWrite, IsReadWrite);
 	}
 
-	/** Get Lesen und Schreiben.
-		@return Field is read / write
-	  */
 	@Override
-	public boolean isReadWrite () 
+	public boolean isReadWrite() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsReadWrite);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsReadWrite);
 	}
 }

@@ -1,15 +1,15 @@
 package de.metas.ui.web.view.json;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
-import de.metas.util.GuavaCollectors;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.List;
 
 /*
  * #%L
@@ -35,12 +35,18 @@ import de.metas.util.GuavaCollectors;
 
 /**
  * JSON representation of {@link DocumentQueryOrderBy}.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
+@Value
+@Builder
+@Jacksonized
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE) // cannot use it because of "otherProperties"
 public class JSONViewOrderBy
 {
+	@NonNull String fieldName;
+	boolean ascending;
+
 	public static List<JSONViewOrderBy> ofList(final DocumentQueryOrderByList orderBys)
 	{
 		if (orderBys == null || orderBys.isEmpty())
@@ -48,50 +54,11 @@ public class JSONViewOrderBy
 			return ImmutableList.of();
 		}
 
-		return orderBys
-				.stream()
-				.map(orderBy -> of(orderBy))
-				.filter(jsonOrderBy -> jsonOrderBy != null)
-				.collect(GuavaCollectors.toImmutableList());
+		return orderBys.stream().map(JSONViewOrderBy::of).collect(ImmutableList.toImmutableList());
 	}
 
-	private static JSONViewOrderBy of(final DocumentQueryOrderBy orderBy)
+	private static JSONViewOrderBy of(@NonNull final DocumentQueryOrderBy orderBy)
 	{
 		return new JSONViewOrderBy(orderBy.getFieldName(), orderBy.isAscending());
-	}
-
-	@JsonProperty("fieldName")
-	private final String fieldName;
-	@JsonProperty("ascending")
-	private final boolean ascending;
-
-	@JsonCreator
-	public JSONViewOrderBy(
-			@JsonProperty("fieldName") final String fieldName //
-			, @JsonProperty("ascending") final boolean ascending //
-	)
-	{
-		super();
-		this.fieldName = fieldName;
-		this.ascending = ascending;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("fieldName", fieldName)
-				.add("asc", ascending)
-				.toString();
-	}
-
-	public String getFieldName()
-	{
-		return fieldName;
-	}
-
-	public boolean isAscending()
-	{
-		return ascending;
 	}
 }

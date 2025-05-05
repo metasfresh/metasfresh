@@ -343,7 +343,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		final BigDecimal convertedQty = uomConversionBL.convertToProductUOM(
 				productId,
 				targetUOMRecord,
-				olCand.getQtyEntered());
+				olCandEffectiveValuesBL.getEffectiveQtyEntered(olCand));
 
 		if (convertedQty == null)
 		{

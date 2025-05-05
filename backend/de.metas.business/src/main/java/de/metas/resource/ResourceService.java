@@ -24,11 +24,13 @@ package de.metas.resource;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -42,7 +44,9 @@ import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.I_S_Resource_Group;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -195,6 +199,12 @@ public class ResourceService
 		createOrUpdateProductFromResource(ResourceRepository.toResource(resourceRecord));
 	}
 
+	@NonNull
+	public Optional<ResourceId> getResourceIdByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	{
+		return resourceRepository.getResourceIdByValue(value, orgId);
+	}
+
 	private void createOrUpdateProductFromResource(final @NonNull Resource resource)
 	{
 		productDAO.updateProductsByResourceIds(
@@ -228,7 +238,7 @@ public class ResourceService
 
 	public void onResourceTypeChanged(final I_S_ResourceType resourceTypeRecord)
 	{
-		final ResourceType resourceType = resourceTypeRepository.toResourceType(resourceTypeRecord);
+		final ResourceType resourceType = ResourceTypeRepository.fromRecord(resourceTypeRecord);
 
 		final Set<ResourceId> resourceIds = resourceRepository.getActiveResourceIdsByResourceTypeId(resourceType.getId());
 		if (resourceIds.isEmpty())
@@ -237,6 +247,14 @@ public class ResourceService
 		}
 
 		productDAO.updateProductsByResourceIds(resourceIds, product -> updateProductFromResourceType(product, resourceType));
+	}
+
+	@NonNull
+	public Optional<ResourceGroupId> getResourceGroupId(@Nullable final ResourceId resourceId)
+	{
+		return Optional.ofNullable(resourceId)
+				.map(this::getResourceById)
+				.map(Resource::getResourceGroupId);
 	}
 
 	private static void updateProductFromResourceType(final I_M_Product product, final ResourceType from)
@@ -278,6 +296,23 @@ public class ResourceService
 	{
 		productDAO.deleteProductByResourceGroupId(resourceGroupId);
 	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+	{
+		return resourceRepository.getResourceIdsByUserId(userId);
+	}
+
+	public ResourceTypeId getResourceTypeIdByResourceId(final ResourceId resourceId)
+	{
+		return resourceRepository.getResourceTypeIdByResourceId(resourceId);
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(final ImmutableSet<ResourceTypeId> resourceTypeIds)
+	{
+		return resourceRepository.getResourceIdsByResourceTypeIds(resourceTypeIds);
+	}
+
+	public ImmutableSet<ResourceId> getActivePlantIds() {return resourceRepository.getActivePlantIds();}
 
 	//
 	//

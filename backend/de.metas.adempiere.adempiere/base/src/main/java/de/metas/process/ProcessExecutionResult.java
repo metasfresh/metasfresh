@@ -16,6 +16,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.report.ReportResultData;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -28,6 +29,7 @@ import lombok.Setter;
 import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -35,6 +37,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 
@@ -47,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -200,6 +204,12 @@ public class ProcessExecutionResult
 	@Getter
 	@Nullable
 	private String stringResultContentType = null;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Getter
+	@Setter
+	@Nullable
+	private WebuiNewRecord webuiNewRecord;
 
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
@@ -464,12 +474,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.records(records)
-									.adWindowId(adWindowId)
-									.target(OpenTarget.GridView)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.records(records)
+					.adWindowId(adWindowId)
+					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -485,12 +495,12 @@ public class ProcessExecutionResult
 					.map(recordId -> TableRecordReference.of(tableName, recordId))
 					.collect(ImmutableSet.toImmutableSet());
 			setRecordToOpen(RecordsToOpen.builder()
-									.records(records)
-									.adWindowId(adWindowId)
-									.target(OpenTarget.GridView)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.records(records)
+					.adWindowId(adWindowId)
+					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -503,18 +513,23 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.records(records)
-									.adWindowId(null)
-									.target(OpenTarget.GridView)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.records(records)
+					.adWindowId(null)
+					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target)
 	{
 		setRecordToOpen(record, String.valueOf(adWindowId), target);
+	}
+
+	public void setRecordToOpen(@Nullable final TableRecordReference record, @Nullable final AdWindowId adWindowId, @NonNull final OpenTarget target)
+	{
+		setRecordToOpen(record, adWindowId != null ? String.valueOf(adWindowId.getRepoId()) : null, target);
 	}
 
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)
@@ -531,12 +546,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.record(record)
-									.adWindowId(adWindowId)
-									.target(target)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.record(record)
+					.adWindowId(adWindowId)
+					.target(target)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -549,12 +564,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.record(record)
-									.adWindowId(adWindowId)
-									.target(target)
-									.targetTab(targetTab)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.record(record)
+					.adWindowId(adWindowId)
+					.target(target)
+					.targetTab(targetTab)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -579,13 +594,19 @@ public class ProcessExecutionResult
 		return printFormat;
 	}
 
+	public void setReportData(@NonNull final Resource data)
+	{
+		final String filename = Check.assumeNotNull(data.getFilename(), "Resource shall have the filename set: {}", data);
+		setReportData(data, filename, MimeType.getMimeType(data.getFilename()));
+	}
+
 	public void setReportData(@NonNull final Resource data, @Nullable final String filename, final String contentType)
 	{
 		setReportData(ReportResultData.builder()
-							  .reportData(data)
-							  .reportFilename(filename)
-							  .reportContentType(contentType)
-							  .build());
+				.reportData(data)
+				.reportFilename(filename)
+				.reportContentType(contentType)
+				.build());
 	}
 
 	public void setReportData(@NonNull final File file)
@@ -593,6 +614,10 @@ public class ProcessExecutionResult
 		setReportData(ReportResultData.ofFile(file));
 	}
 
+	public void setReportData(@NonNull final File file, @NonNull final String fileName)
+	{
+		setReportData(ReportResultData.ofFile(file, fileName));
+	}
 	public void setReportData(@Nullable final ReportResultData reportData)
 	{
 		this.reportData = reportData;
@@ -1028,6 +1053,11 @@ public class ProcessExecutionResult
 			this.profileId = profileId;
 			this.target = target;
 		}
+
+		public static WebuiViewToOpen modalOverlay(@NonNull final String viewId)
+		{
+			return builder().viewId(viewId).target(ViewOpenTarget.ModalOverlay).build();
+		}
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -1055,5 +1085,34 @@ public class ProcessExecutionResult
 		@Nullable String calendarResourceId;
 		@Nullable String projectId;
 		@Nullable BPartnerId customerId;
+		@Nullable UserId responsibleId;
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Value
+	@lombok.Builder
+	public static class WebuiNewRecord
+	{
+		/**
+		 * If this string is used as field value
+		 * then the frontend will try to open the new record modal window to populate that field.
+		 * <p>
+		 * Used mainly to trigger new BPartner.
+		 */
+		public static final String FIELD_VALUE_NEW = "NEW";
+
+		@NonNull String windowId;
+
+		/**
+		 * Field values to be set by frontend, after the NEW record is created
+		 */
+		@NonNull @Singular Map<String, String> fieldValues;
+
+		public enum TargetTab
+		{
+			SAME_TAB, NEW_TAB,
+		}
+
+		@NonNull @Builder.Default TargetTab targetTab = TargetTab.SAME_TAB;
 	}
 }

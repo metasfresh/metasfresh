@@ -1,6 +1,7 @@
 package de.metas.util;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -55,7 +56,7 @@ public final class InSetPredicate<T> implements Predicate<T>
 	{
 		return onlyValues.isEmpty()
 				? none()
-				: new InSetPredicate<>(Mode.ONLY, toUnmodifiableSet(onlyValues));
+				: new InSetPredicate<>(Mode.ONLY, toUnmodifiableSet(new HashSet<>(onlyValues)));
 	}
 
 	@SafeVarargs
@@ -122,5 +123,35 @@ public final class InSetPredicate<T> implements Predicate<T>
 	{
 		assertNotAny();
 		return onlyValues; // we can return it as is because it's already readonly
+	}
+
+	@SafeVarargs
+	public final InSetPredicate<T> intersectWith(@NonNull final T... onlyValues)
+	{
+		return intersectWith(only(onlyValues));
+	}
+
+	public InSetPredicate<T> intersectWith(@NonNull final Set<T> onlyValues)
+	{
+		return intersectWith(only(onlyValues));
+	}
+
+	public InSetPredicate<T> intersectWith(@NonNull final InSetPredicate<T> other)
+	{
+		if (isNone() || other.isNone())
+		{
+			return none();
+		}
+
+		if (isAny())
+		{
+			return other;
+		}
+		else if (other.isAny())
+		{
+			return this;
+		}
+
+		return only(Sets.intersection(this.toSet(), other.toSet()));
 	}
 }

@@ -20,10 +20,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MOrderLinePOCopyRecordSupport;
 import org.compiere.model.ModelValidator;
-
-import java.util.function.Predicate;
 
 /**
  * @author cg
@@ -32,17 +29,6 @@ import java.util.function.Predicate;
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine
 {
-	private static final Predicate<org.compiere.model.I_C_OrderLine> PREDICATE_NOT_PACKAGING_MATERIAL = orderLine -> {
-		final I_C_OrderLine huOrderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
-		return !huOrderLine.isPackagingMaterial();
-	};
-
-	@Init
-	public void setupCopyRecordSupport()
-	{
-		MOrderLinePOCopyRecordSupport.addSkipPredicate(PREDICATE_NOT_PACKAGING_MATERIAL);
-	}
-
 	@Init
 	public void setupCallouts()
 	{

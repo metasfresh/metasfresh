@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_C_Project_WO_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2034969764L;
+	private static final long serialVersionUID = 472261246L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Resource (final Properties ctx, final int C_Project_WO_Resource_ID, @Nullable final String trxName)
@@ -36,7 +36,7 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setAssignDateFrom (final java.sql.Timestamp AssignDateFrom)
+	public void setAssignDateFrom (final @Nullable java.sql.Timestamp AssignDateFrom)
 	{
 		set_Value (COLUMNNAME_AssignDateFrom, AssignDateFrom);
 	}
@@ -48,7 +48,7 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setAssignDateTo (final java.sql.Timestamp AssignDateTo)
+	public void setAssignDateTo (final @Nullable java.sql.Timestamp AssignDateTo)
 	{
 		set_Value (COLUMNNAME_AssignDateTo, AssignDateTo);
 	}
@@ -237,6 +237,39 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setResolvedHours (final int ResolvedHours)
+	{
+		set_Value (COLUMNNAME_ResolvedHours, ResolvedHours);
+	}
+
+	@Override
+	public int getResolvedHours() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ResolvedHours);
+	}
+
+	/** 
+	 * ResourceType AD_Reference_ID=541846
+	 * Reference name: C_Project_WO_Resource_Type
+	 */
+	public static final int RESOURCETYPE_AD_Reference_ID=541846;
+	/** Machine = M */
+	public static final String RESOURCETYPE_Machine = "M";
+	/** Human Resource = H */
+	public static final String RESOURCETYPE_HumanResource = "H";
+	@Override
+	public void setResourceType (final java.lang.String ResourceType)
+	{
+		set_Value (COLUMNNAME_ResourceType, ResourceType);
+	}
+
+	@Override
+	public java.lang.String getResourceType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ResourceType);
+	}
+
+	@Override
 	public void setS_Resource_ID (final int S_Resource_ID)
 	{
 		if (S_Resource_ID < 1) 
@@ -249,6 +282,30 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public void setWOPlannedPersonDurationHours (final @Nullable BigDecimal WOPlannedPersonDurationHours)
+	{
+		throw new IllegalArgumentException ("WOPlannedPersonDurationHours is virtual column");	}
+
+	@Override
+	public BigDecimal getWOPlannedPersonDurationHours() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_WOPlannedPersonDurationHours);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setWOPlannedResourceDurationHours (final @Nullable BigDecimal WOPlannedResourceDurationHours)
+	{
+		throw new IllegalArgumentException ("WOPlannedResourceDurationHours is virtual column");	}
+
+	@Override
+	public BigDecimal getWOPlannedResourceDurationHours() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_WOPlannedResourceDurationHours);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

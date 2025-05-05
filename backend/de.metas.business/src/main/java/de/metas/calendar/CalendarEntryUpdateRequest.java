@@ -39,11 +39,11 @@ public class CalendarEntryUpdateRequest
 	@Nullable SimulationPlanId simulationId;
 	
 	@NonNull UserId updatedByUserId;
+	@NonNull CalendarDateRange dateRange;
 
 	@Nullable CalendarResourceId resourceId;
 	@Nullable String title;
 	@Nullable String description;
-	@Nullable CalendarDateRange dateRange;
 
 	public CalendarGlobalId getCalendarId()
 	{

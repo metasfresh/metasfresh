@@ -1,5 +1,6 @@
 package de.metas.product;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
@@ -8,6 +9,7 @@ import de.metas.bpartner_product.CreateBPartnerProductRequest;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -15,6 +17,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -24,7 +27,6 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -59,11 +61,18 @@ public class ProductRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+	@VisibleForTesting
+	public static ProductRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProductRepository();
+	}
 
 	@NonNull
 	public ImmutableList<BPartnerProduct> getByProductId(@NonNull final ProductId productId)
 	{
-
 		return queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
@@ -72,19 +81,6 @@ public class ProductRepository
 				.stream()
 				.map(ProductRepository::ofBPartnerProductRecord)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public void inactivateBpartnerProducts(@NonNull final List<BPartnerId> bPartnerIdList, @NonNull final ProductId productId)
-	{
-
-		queryBL.createQueryBuilder(I_C_BPartner_Product.class)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
-				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bPartnerIdList)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_C_BPartner_Product.COLUMNNAME_IsActive, false)
-				.execute();
 	}
 
 	public Product getById(@NonNull final ProductId id)
@@ -112,18 +108,17 @@ public class ProductRepository
 
 	public ImmutableList<Product> getByIds(@NonNull final Set<ProductId> ids)
 	{
-		final List<I_M_Product> productRecords = queryBL
-				.createQueryBuilder(I_M_Product.class)
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_Product.class)
 				.addInArrayFilter(I_M_Product.COLUMNNAME_M_Product_ID, ids)
 				.create()
-				.list();
-
-		final ImmutableList.Builder<Product> products = ImmutableList.builder();
-		for (final I_M_Product productRecord : productRecords)
-		{
-			products.add(ofProductRecord(productRecord));
-		}
-		return products.build();
+				.stream()
+				.map(this::ofProductRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -144,6 +139,8 @@ public class ProductRepository
 		product.setGTIN(request.getGtin());
 		product.setDescription(request.getDescription());
 		product.setAD_Org_ID(request.getOrgId().getRepoId());
+		product.setGuaranteeMonths(request.getGuaranteeMonths());
+		product.setWarehouse_temperature(request.getWarehouseTemperature());
 
 		final boolean isDiscontinued = Boolean.TRUE.equals(request.getDiscontinued());
 
@@ -151,8 +148,8 @@ public class ProductRepository
 		{
 			final ZoneId zoneId = orgDAO.getTimeZone(request.getOrgId());
 			product.setDiscontinuedFrom(product.getDiscontinuedFrom() != null
-											   ? TimeUtil.asTimestamp(request.getDiscontinuedFrom(), zoneId)
-											   : TimeUtil.asTimestamp(Instant.now()));
+					? TimeUtil.asTimestamp(request.getDiscontinuedFrom(), zoneId)
+					: TimeUtil.asTimestamp(Instant.now()));
 		}
 		else
 		{
@@ -171,6 +168,13 @@ public class ProductRepository
 			product.setIsStocked(request.getStocked());
 		}
 
+		if (request.getSectionCodeId() != null)
+		{
+			product.setM_SectionCode_ID(request.getSectionCodeId().getRepoId());
+		}
+
+		product.setSAP_ProductHierarchy(request.getSapProductHierarchy());
+
 		saveRecord(product);
 
 		return ofProductRecord(product);
@@ -182,7 +186,7 @@ public class ProductRepository
 		saveRecord(record);
 	}
 
-	public BPartnerProduct createBPartnerProduct(@NonNull final CreateBPartnerProductRequest request)
+	public void createBPartnerProduct(@NonNull final CreateBPartnerProductRequest request)
 	{
 		final I_C_BPartner_Product bPartnerProduct = newInstance(I_C_BPartner_Product.class);
 
@@ -248,8 +252,6 @@ public class ProductRepository
 		}
 
 		saveRecord(bPartnerProduct);
-
-		return ofBPartnerProductRecord(bPartnerProduct);
 	}
 
 	public void updateBPartnerProduct(@NonNull final BPartnerProduct request)
@@ -282,6 +284,19 @@ public class ProductRepository
 				.usedForVendor(record.isUsedForVendor())
 				.build();
 	}
+
+	public void resetCurrentVendorFor(@NonNull final ProductId productId)
+	{
+		queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, false)
+				.execute();
+	}
+
 	@NonNull
 	private I_M_Product getRecordById(@NonNull final ProductId id)
 	{
@@ -333,17 +348,21 @@ public class ProductRepository
 
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
 
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
+
 		return Product.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.productNo(productRecord.getValue())
 				.name(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()))
+				.value(productRecord.getValue())
 				.description(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()))
 				.documentNote(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_DocumentNote, productRecord.getDocumentNote()))
-				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(productRecord.getM_Product_Category_ID()))
+				.productCategoryId(productCategoryId)
+				.productCategoryName(productDAO.getProductCategoryById(productCategoryId).getName())
 				.uomId(UomId.ofRepoId(productRecord.getC_UOM_ID()))
 				.discontinued(productRecord.isDiscontinued())
 				.discontinuedFrom(TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId))
-				.manufacturerId(manufacturerId > 0 ? BPartnerId.ofRepoId(manufacturerId) : null)
+				.manufacturerId(BPartnerId.ofRepoIdOrNull(manufacturerId))
 				.packageSize(productRecord.getPackageSize())
 				.weight(productRecord.getWeight())
 				.stocked(productRecord.isStocked())
@@ -353,6 +372,12 @@ public class ProductRepository
 				.gtin(productRecord.getGTIN())
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(productRecord.getM_SectionCode_ID()))
+				.purchased(productRecord.isPurchased())
+				.sapProductHierarchy(productRecord.getSAP_ProductHierarchy())
+				.guaranteeMonths(productRecord.getGuaranteeMonths())
+				.warehouseTemperature(productRecord.getWarehouse_temperature())
+				.procurementStatus(productRecord.getProcurementStatus())
 				.build();
 	}
 
@@ -368,8 +393,8 @@ public class ProductRepository
 			final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
 
 			record.setDiscontinuedFrom(product.getDiscontinuedFrom() != null
-											   ? TimeUtil.asTimestamp(product.getDiscontinuedFrom(), zoneId)
-											   : TimeUtil.asTimestamp(Instant.now()));
+					? TimeUtil.asTimestamp(product.getDiscontinuedFrom(), zoneId)
+					: TimeUtil.asTimestamp(Instant.now()));
 		}
 		else
 		{
@@ -392,6 +417,11 @@ public class ProductRepository
 		record.setUPC(product.getEan());
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
 		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(product.getSectionCodeId()));
+		record.setIsPurchased(product.isPurchased());
+		record.setSAP_ProductHierarchy(product.getSapProductHierarchy());
+		record.setGuaranteeMonths(product.getGuaranteeMonths());
+		record.setWarehouse_temperature(product.getWarehouseTemperature());
 
 		return record;
 	}
@@ -401,7 +431,7 @@ public class ProductRepository
 	{
 		final I_C_BPartner_Product record = getRecordById(bPartnerProduct.getProductId(), bPartnerProduct.getBPartnerId())
 				.orElseThrow(() -> new AdempiereException("No BPartner product record found for "
-																  + bPartnerProduct.getProductId() + " " + bPartnerProduct.getBPartnerId()));
+						+ bPartnerProduct.getProductId() + " " + bPartnerProduct.getBPartnerId()));
 
 		record.setC_BPartner_ID(bPartnerProduct.getBPartnerId().getRepoId());
 		record.setIsActive(bPartnerProduct.getActive() != null ? bPartnerProduct.getActive() : record.isActive());

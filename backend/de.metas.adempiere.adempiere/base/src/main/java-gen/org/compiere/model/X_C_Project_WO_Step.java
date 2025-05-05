@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Project_WO_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1053617724L;
+	private static final long serialVersionUID = -852883066L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Step (final Properties ctx, final int C_Project_WO_Step_ID, @Nullable final String trxName)
@@ -65,7 +65,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public void setDateEnd (final java.sql.Timestamp DateEnd)
+	public void setDateEnd (final @Nullable java.sql.Timestamp DateEnd)
 	{
 		set_Value (COLUMNNAME_DateEnd, DateEnd);
 	}
@@ -77,7 +77,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public void setDateStart (final java.sql.Timestamp DateStart)
+	public void setDateStart (final @Nullable java.sql.Timestamp DateStart)
 	{
 		set_Value (COLUMNNAME_DateStart, DateStart);
 	}
@@ -113,6 +113,18 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
+	public void setIsManuallyLocked (final boolean IsManuallyLocked)
+	{
+		set_Value (COLUMNNAME_IsManuallyLocked, IsManuallyLocked);
+	}
+
+	@Override
+	public boolean isManuallyLocked() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManuallyLocked);
+	}
+
+	@Override
 	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
@@ -137,6 +149,30 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
+	public void setWOActualFacilityHours (final int WOActualFacilityHours)
+	{
+		set_Value (COLUMNNAME_WOActualFacilityHours, WOActualFacilityHours);
+	}
+
+	@Override
+	public int getWOActualFacilityHours() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WOActualFacilityHours);
+	}
+
+	@Override
+	public void setWOActualManHours (final int WOActualManHours)
+	{
+		set_Value (COLUMNNAME_WOActualManHours, WOActualManHours);
+	}
+
+	@Override
+	public int getWOActualManHours() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WOActualManHours);
+	}
+
+	@Override
 	public void setWODeliveryDate (final @Nullable java.sql.Timestamp WODeliveryDate)
 	{
 		set_Value (COLUMNNAME_WODeliveryDate, WODeliveryDate);
@@ -146,6 +182,18 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	public java.sql.Timestamp getWODeliveryDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_WODeliveryDate);
+	}
+
+	@Override
+	public void setWODueDate (final @Nullable java.sql.Timestamp WODueDate)
+	{
+		set_Value (COLUMNNAME_WODueDate, WODueDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getWODueDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_WODueDate);
 	}
 
 	@Override
@@ -206,6 +254,17 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	public int getWOPlannedResourceDurationHours() 
 	{
 		return get_ValueAsInt(COLUMNNAME_WOPlannedResourceDurationHours);
+	}
+
+	@Override
+	public void setWO_Step_ExternalId (final @Nullable java.lang.String WO_Step_ExternalId)
+	{
+		throw new IllegalArgumentException ("WO_Step_ExternalId is virtual column");	}
+
+	@Override
+	public java.lang.String getWO_Step_ExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_WO_Step_ExternalId);
 	}
 
 	/** 

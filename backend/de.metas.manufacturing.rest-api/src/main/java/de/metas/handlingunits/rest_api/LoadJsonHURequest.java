@@ -22,25 +22,39 @@
 
 package de.metas.handlingunits.rest_api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
+
+import javax.annotation.Nullable;
+
+import java.util.Set;
 
 @Value
-@Builder
-public class LoadJsonHURequest
+@Builder(toBuilder = true)
+class LoadJsonHURequest
 {
-	@With
-	@NonNull
-	I_M_HU hu;
+	public static final Set<String> INCLUDE_EMPTY_ATTRIBUTES_NONE = ImmutableSet.of();
 
-	@NonNull
-	String adLanguage;
+	@NonNull I_M_HU hu;
+	@Nullable HUQRCode expectedQRCode;
+	@NonNull String adLanguage;
+	boolean includeAllowedClearanceStatuses;
 
-	@With
-	boolean getAllowedClearanceStatuses;
+	/**
+	 * If {@code true}, then generally exclude all HU-attributes with an empty value, unless their {@code  M_Attribute.Value} is explicitly included in {@link #getEmptyAttributesToInclude()}.
+	 */
+	@Builder.Default
+	boolean excludeEmptyAttributes = true;
+
+	/**
+	 * Represents a set of {@code  M_Attribute.Value}s to include the result even if they have an empty value.
+	 */
+	@Builder.Default
+	Set<String> emptyAttributesToInclude = INCLUDE_EMPTY_ATTRIBUTES_NONE;
 
 	@NonNull
 	public static LoadJsonHURequest ofHUAndLanguage(@NonNull final I_M_HU hu, @NonNull final String adLanguage)
@@ -49,5 +63,10 @@ public class LoadJsonHURequest
 				.adLanguage(adLanguage)
 				.hu(hu)
 				.build();
+	}
+
+	public LoadJsonHURequest withIncludedHU(final I_M_HU includedHU)
+	{
+		return toBuilder().hu(includedHU).expectedQRCode(null).build();
 	}
 }

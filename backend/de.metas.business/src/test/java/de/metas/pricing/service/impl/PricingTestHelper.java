@@ -9,6 +9,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.IProductPA;
@@ -96,7 +97,7 @@ public class PricingTestHelper
 		final IProductPA productPA = Mockito.mock(IProductPA.class);
 		Services.registerService(IProductPA.class, productPA);
 
-		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
 
 		createPricingRules();
 
@@ -123,13 +124,15 @@ public class PricingTestHelper
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
 		return ImmutableList.of(
-				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
-				de.metas.pricing.rules.PriceListVersion.class.getName(),
+				// note: maybe consider to also add AttributePricing? it was added in soft_panda_uat..but maybe it's superflous here..
+				de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName());
 	}
 
 	private void createPricingRules()
 	{
+		PriceListVersionConfiguration.reset();
+
 		final List<String> classnames = getPricingRuleClassnamesToRegister();
 
 		int nextSeqNo = 10;

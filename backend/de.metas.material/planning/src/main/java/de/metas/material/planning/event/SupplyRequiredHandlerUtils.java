@@ -1,8 +1,15 @@
 package de.metas.material.planning.event;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
+import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
+import de.metas.organization.IOrgDAO;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -12,6 +19,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -40,6 +48,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 @UtilityClass
 public class SupplyRequiredHandlerUtils
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	private final MainDataRequestHandler mainDataRequestHandler = new MainDataRequestHandler();
 
 	@NonNull
 	public MaterialRequest mkRequest(
@@ -66,5 +77,30 @@ public class SupplyRequiredHandlerUtils
 				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
 				.isSimulated(supplyRequiredDescriptor.isSimulated())
 				.build();
+	}
+
+	public void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	{
+		updateMainDataWithQty(supplyRequiredDescriptor, supplyRequiredDescriptor.getMaterialDescriptor().getQuantity());
+	}
+
+	public void updateMainDataWithQty(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor, final BigDecimal qty)
+	{
+		if (supplyRequiredDescriptor.isSimulated())
+		{
+			return;
+		}
+
+		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
+
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier
+				.createForMaterial(supplyRequiredDescriptor.getMaterialDescriptor(), orgTimezone);
+
+		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
+				.identifier(mainDataRecordIdentifier)
+				.qtySupplyRequired(qty)
+				.build();
+
+		mainDataRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
 	}
 }

@@ -1,23 +1,9 @@
 package de.metas.pricing.service.impl;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.SOTrx;
@@ -30,6 +16,19 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
+import java.util.Optional;
 
 /*
  * #%L
@@ -121,7 +120,13 @@ public class PriceListBL implements IPriceListBL
 			@NonNull final SOTrx soTrx)
 	{
 		final Boolean processedPLVFiltering = null;
-		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystemId, countryId, date, soTrx, processedPLVFiltering);
+		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(
+				pricingSystemId,
+				null,
+				countryId, 
+				date, 
+				soTrx, 
+				processedPLVFiltering);
 		return currentVersion != null
 				? Optional.of(PriceListId.ofRepoId(currentVersion.getM_PriceList_ID()))
 				: Optional.empty();
@@ -131,8 +136,9 @@ public class PriceListBL implements IPriceListBL
 	@Nullable
 	@Override
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(
-			final PricingSystemId pricingSystemId,
-			final CountryId countryId,
+			@Nullable final PricingSystemId pricingSystemId,
+			@Nullable final PriceListId priceListId,
+			@Nullable final CountryId countryId,
 			@NonNull final ZonedDateTime date,
 			final SOTrx soTrx,
 			@Nullable final Boolean processedPLVFiltering)
@@ -147,8 +153,16 @@ public class PriceListBL implements IPriceListBL
 			return null;
 		}
 
-		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx)
-				.iterator();
+		final Iterator<I_M_PriceList> pricelists;
+		if(priceListId == null)
+		{
+			pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx).iterator();	
+		}
+		else
+		{
+			pricelists = ImmutableList.of(priceListDAO.retrievePriceListbyId(priceListId)).iterator();
+		}
+		
 		if (!pricelists.hasNext())
 		{
 			return null;
@@ -210,8 +224,8 @@ public class PriceListBL implements IPriceListBL
 		final UserId updatedBy = Env.getLoggedUserId();
 		final Timestamp now = SystemTime.asTimestamp();
 
-		final String sqlStr = ""
-				+ " UPDATE " + I_M_PriceList_Version.Table_Name + " plv "
+		final String sqlStr = 
+				" UPDATE " + I_M_PriceList_Version.Table_Name + " plv "
 				+ " SET " + I_M_PriceList_Version.COLUMNNAME_Name + "      = ? || ' ' || to_char(plv." + I_M_PriceList_Version.COLUMNNAME_ValidFrom + ", '" + dateFormat + "'), "
 				+ "     " + I_M_PriceList_Version.COLUMNNAME_UpdatedBy + " = ?, "
 				+ "     " + I_M_PriceList_Version.COLUMNNAME_Updated + "   = ? "

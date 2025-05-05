@@ -22,6 +22,7 @@
 
 package de.metas.fulltextsearch.query;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.IESSystem;
@@ -45,7 +46,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.elasticsearch.action.search.SearchRequest;
@@ -54,11 +54,11 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.DeprecationHandler;
-import org.elasticsearch.common.xcontent.NamedXContentRegistry;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.xcontent.DeprecationHandler;
+import org.elasticsearch.xcontent.NamedXContentRegistry;
+import org.elasticsearch.xcontent.XContentFactory;
+import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchModule;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -116,6 +116,7 @@ public class FTSSearchService
 							DeprecationHandler.THROW_UNSUPPORTED_OPERATION,
 							jsonQuery);
 
+			final Stopwatch stopwatch = Stopwatch.createStarted();
 			final RestHighLevelClient elasticsearchClient = elasticsearchSystem.elasticsearchClient();
 			final SearchResponse elasticsearchResponse = elasticsearchClient
 					.search(new SearchRequest()
@@ -124,6 +125,8 @@ public class FTSSearchService
 											.size(getResultMaxSize())),
 							RequestOptions.DEFAULT
 					);
+			stopwatch.stop();
+			logger.debug("Got response from elasticsearch server in {}", stopwatch);
 
 			final FTSSearchResult ftsResult = FTSSearchResult.builder()
 					.searchId(request.getSearchId())
@@ -152,10 +155,16 @@ public class FTSSearchService
 			final @NonNull FTSSearchRequest request,
 			final @NonNull FTSConfig ftsConfig)
 	{
+		final ESQueryTemplate jsonQueryTemplate = ftsConfig.getQueryCommand();
+
 		final Evaluatees.MapEvaluateeBuilder builder = Evaluatees.mapBuilder();
 		builder.put(ESQueryTemplate.PARAM_query, request.getSearchText());
 
-		final ESQueryTemplate jsonQueryTemplate = ftsConfig.getQueryCommand();
+		if (jsonQueryTemplate.isParameterRequired(ESQueryTemplate.PARAM_queryStartsWith))
+		{
+			builder.put(ESQueryTemplate.PARAM_queryStartsWith, request.getSearchText() + "*");
+		}
+
 		if (jsonQueryTemplate.isOrgFilterParameterRequired())
 		{
 			builder.put(ESQueryTemplate.PARAM_orgFilter, buildOrgIdsFilterPart(request.getUserRolePermissionsKey()));

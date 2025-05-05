@@ -1,7 +1,7 @@
 package de.metas.business;
 
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -49,7 +49,7 @@ public class TestInvoiceLine
 
 	private I_C_InvoiceLine invoiceLineRecord;
 
-	private InvoiceLineId invoiceLineId;
+	private InvoiceAndLineId invoiceAndLineId;
 
 	private String externalIds;
 
@@ -63,7 +63,7 @@ public class TestInvoiceLine
 		invoiceLineRecord.setQtyInvoiced(BigDecimal.TEN);
 		saveRecord(invoiceLineRecord);
 
-		invoiceLineId = InvoiceLineId.ofRepoId(invoiceId, invoiceLineRecord.getC_InvoiceLine_ID());
+		invoiceAndLineId = InvoiceAndLineId.ofRepoId(invoiceId, invoiceLineRecord.getC_InvoiceLine_ID());
 	}
 
 	public I_C_InvoiceLine getInvoiceLineRecord()
@@ -71,8 +71,8 @@ public class TestInvoiceLine
 		return assumeNotNull(invoiceLineRecord, "invoiceLine first needs to be created with createInvoiceLineRecord");
 	}
 
-	public InvoiceLineId getInvoiceLineId()
+	public InvoiceAndLineId getInvoiceAndLineId()
 	{
-		return assumeNotNull(invoiceLineId, "invoiceLine first needs to be created with createInvoiceLineRecord");
+		return assumeNotNull(invoiceAndLineId, "invoiceLine first needs to be created with createInvoiceLineRecord");
 	}
 }

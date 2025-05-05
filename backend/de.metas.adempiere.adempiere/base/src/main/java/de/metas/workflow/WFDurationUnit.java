@@ -54,13 +54,16 @@ public enum WFDurationUnit implements ReferenceListAwareEnum
 	private static final ImmutableMap<TemporalUnit, WFDurationUnit> typesByTemporalUnit = Maps.uniqueIndex(Arrays.asList(values()), WFDurationUnit::getTemporalUnit);
 
 	@Getter
-	@NonNull private final String code;
+	@NonNull
+	private final String code;
 
 	@Getter
-	@NonNull private final Duration duration;
+	@NonNull
+	private final Duration duration;
 
 	@Getter
-	@NonNull private final TemporalUnit temporalUnit;
+	@NonNull
+	private final TemporalUnit temporalUnit;
 
 	WFDurationUnit(
 			@NonNull final String code,
@@ -109,4 +112,9 @@ public enum WFDurationUnit implements ReferenceListAwareEnum
 		return DurationUtils.toWorkDurationRoundUp(durationBD, getTemporalUnit());
 	}
 
+	@Nullable
+	public static WFDurationUnit ofNullableCode(@Nullable final String code)
+	{
+		return code != null ? ofCode(code) : null;
+	}
 }

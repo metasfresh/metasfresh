@@ -22,31 +22,26 @@
 
 package de.metas.common.bpartner.v1.request;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+
 @Value
 @Builder(toBuilder = true)
-@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+@Schema(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestBPartnerUpsertItem
 {
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 10,
-			value = BPARTNER_IDENTIFIER_DOC) //
+	@Schema(minLength = 1,
+			description = BPARTNER_IDENTIFIER_DOC)
 	@NonNull
 	String bpartnerIdentifier;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 20,
-			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+	@Schema(description = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestComposite bpartnerComposite;
 

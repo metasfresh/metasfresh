@@ -5,8 +5,10 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 
 /**
@@ -70,7 +72,7 @@ public class FillMandatoryException extends AdempiereException
 
 			if (firstField)
 			{
-				builder.append(": ");
+				builder.append(" ");
 			}
 			else
 			{
@@ -100,5 +102,40 @@ public class FillMandatoryException extends AdempiereException
 				? fields.toArray(new String[0])
 				: new String[] {};
 		return buildMessage(fieldsAreAlreadyTranslated, fieldsArr);
+	}
+
+	@NonNull
+	public static <T> T assertNotNull(@Nullable final T value, @NonNull final String parameterName)
+	{
+		if(value != null)
+		{
+			return value;
+		}
+		else
+		{
+			throw new FillMandatoryException(parameterName);
+		}
+	}
+
+	public static BigDecimal assertPositive(@Nullable final BigDecimal value, @NonNull final String parameterName)
+	{
+		if(value != null && value.signum() > 0)
+		{
+			return value;
+		}
+		else
+		{
+			throw new FillMandatoryException(parameterName);
+		}
+	}
+
+
+	public static void assumeNotNull(@Nullable final Object objectToCheck,
+			@NonNull final String... fields)
+	{
+		if (objectToCheck == null)
+		{
+			throw new FillMandatoryException(false, fields);
+		}
 	}
 }

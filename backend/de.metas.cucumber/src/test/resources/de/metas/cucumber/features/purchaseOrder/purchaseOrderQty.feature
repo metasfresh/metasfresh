@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: Purchase order
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -63,10 +65,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_100    | order_PO_S0156_100    | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_100    | order_PO_S0156_100    | orderLine_PO_S0156_100    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 0            | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_100          | orderLine_PO_S0156_100    | 0            |
     And validate C_Invoice_Candidate:
@@ -74,8 +76,8 @@ Feature: Purchase order
       | invoiceCand_PO_S0156_100          | order_PO_S0156_100        | orderLine_PO_S0156_100        | 0            | 26             | 0                | false                |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_100                | hu_S0156_100       | receiptSchedule_PO_S0156_100    | N               | 1     | N               | 3     | N               | 8     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_S0156_100                | hu_S0156_100       | receiptSchedule_PO_S0156_100    | N               | 1     | N               | 3     | N               | 8           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -83,10 +85,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_100    | order_PO_S0156_100    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_100    | order_PO_S0156_100    | orderLine_PO_S0156_100    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_100          | orderLine_PO_S0156_100    | 24           |
     And validate C_Invoice_Candidate:
@@ -97,10 +99,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_100    | order_PO_S0156_100    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 0               |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_100    | order_PO_S0156_100    | orderLine_PO_S0156_100    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | true          |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_100          | orderLine_PO_S0156_100    | 24           |
     And validate C_Invoice_Candidate:
@@ -123,10 +125,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_200    | order_PO_S0156_200    | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_200    | order_PO_S0156_200    | orderLine_PO_S0156_200    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 0            | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_200          | orderLine_PO_S0156_200    | 0            |
     And validate C_Invoice_Candidate:
@@ -134,8 +136,8 @@ Feature: Purchase order
       | invoiceCand_PO_S0156_200          | order_PO_S0156_200        | orderLine_PO_S0156_200        | 0            | 26             | 0                | false                |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_200                | hu_S0156_200       | receiptSchedule_PO_S0156_200    | N               | 1     | N               | 3     | N               | 8     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_S0156_200                | hu_S0156_200       | receiptSchedule_PO_S0156_200    | N               | 1     | N               | 3     | N               | 8           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -143,10 +145,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_200    | order_PO_S0156_200    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_200    | order_PO_S0156_200    | orderLine_PO_S0156_200    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_200          | orderLine_PO_S0156_200    | 24           |
     And validate C_Invoice_Candidate:
@@ -157,10 +159,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_200    | order_PO_S0156_200    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 0               |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_200    | order_PO_S0156_200    | orderLine_PO_S0156_200    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | true          |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_200          | orderLine_PO_S0156_200    | 24           |
     And validate C_Invoice_Candidate:
@@ -171,10 +173,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_200    | order_PO_S0156_200    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_200    | order_PO_S0156_200    | orderLine_PO_S0156_200    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_200          | orderLine_PO_S0156_200    | 24           |
     And validate C_Invoice_Candidate:
@@ -197,10 +199,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_300    | order_PO_S0156_300    | product_PO_17062022     | 27         | 0            | 0           | 10    | 0        | EUR          | true      | 27              |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_300    | order_PO_S0156_300    | orderLine_PO_S0156_300    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 27         | warehouseStd              | 0            | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_300          | orderLine_PO_S0156_300    | 0            |
     And validate C_Invoice_Candidate:
@@ -208,8 +210,8 @@ Feature: Purchase order
       | invoiceCand_PO_S0156_300          | order_PO_S0156_300        | orderLine_PO_S0156_300        | 0            | 27             | 0                | false                |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_300                | hu_S0156_300       | receiptSchedule_PO_S0156_300    | N               | 1     | N               | 3     | N               | 9     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_S0156_300                | hu_S0156_300       | receiptSchedule_PO_S0156_300    | N               | 1     | N               | 3     | N               | 9           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -217,10 +219,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_300    | order_PO_S0156_300    | product_PO_17062022     | 27         | 27           | 0           | 10    | 0        | EUR          | true      | 0               |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_300    | order_PO_S0156_300    | orderLine_PO_S0156_300    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 27         | warehouseStd              | 27           | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_300          | orderLine_PO_S0156_300    | 27           |
     And validate C_Invoice_Candidate:
@@ -243,10 +245,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_400    | order_PO_S0156_400    | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_400    | order_PO_S0156_400    | orderLine_PO_S0156_400    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 0            | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_400          | orderLine_PO_S0156_400    | 0            |
     And validate C_Invoice_Candidate:
@@ -254,8 +256,8 @@ Feature: Purchase order
       | invoiceCand_PO_S0156_400          | order_PO_S0156_400        | orderLine_PO_S0156_400        | 0            | 26             | 0                | false                |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_400_1              | hu_S0156_400_1     | receiptSchedule_PO_S0156_400    | N               | 1     | N               | 3     | N               | 8     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_S0156_400_1              | hu_S0156_400_1     | receiptSchedule_PO_S0156_400    | N               | 1     | N               | 3     | N               | 8           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -263,10 +265,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_400    | order_PO_S0156_400    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_400    | order_PO_S0156_400    | orderLine_PO_S0156_400    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_400          | orderLine_PO_S0156_400    | 24           |
     And validate C_Invoice_Candidate:
@@ -274,8 +276,8 @@ Feature: Purchase order
       | invoiceCand_PO_S0156_400          | order_PO_S0156_400        | orderLine_PO_S0156_400        | 24           | 26             | 24               | false                |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_400_2              | hu_S0156_400_2     | receiptSchedule_PO_S0156_400    | N               | 1     | N               | 1     | N               | 2     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_S0156_400_2              | hu_S0156_400_2     | receiptSchedule_PO_S0156_400    | N               | 1     | N               | 1     | N               | 2           | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -283,10 +285,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_400    | order_PO_S0156_400    | product_PO_17062022     | 26         | 26           | 0           | 10    | 0        | EUR          | true      | 0               |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_400    | order_PO_S0156_400    | orderLine_PO_S0156_400    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 26           | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_400          | orderLine_PO_S0156_400    | 26           |
     And validate C_Invoice_Candidate:
@@ -309,10 +311,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_500    | order_PO_S0156_500    | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_500    | order_PO_S0156_500    | orderLine_PO_S0156_500    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 0            | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_500          | orderLine_PO_S0156_500    | 0            |
     And validate C_Invoice_Candidate:
@@ -320,8 +322,8 @@ Feature: Purchase order
       | invoiceCand_PO_S0156_500          | order_PO_S0156_500        | orderLine_PO_S0156_500        | 0            | 26             | 0                | false                |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig_S0156_500                | hu_S0156_500       | receiptSchedule_PO_S0156_500    | N               | 1     | N               | 3     | N               | 10    | huPiItemProduct_17062022           | huPackingTauschpalette       |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_S0156_500                | hu_S0156_500       | receiptSchedule_PO_S0156_500    | N               | 1     | N               | 3     | N               | 10          | huPiItemProduct_17062022           | huPackingTauschpalette       |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -329,10 +331,10 @@ Feature: Purchase order
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO_S0156_500    | order_PO_S0156_500    | product_PO_17062022     | 26         | 30           | 0           | 10    | 0        | EUR          | true      | 0               |
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_500    | order_PO_S0156_500    | orderLine_PO_S0156_500    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 30           | false         |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_PO_S0156_500          | orderLine_PO_S0156_500    | 30           |
     And validate C_Invoice_Candidate:

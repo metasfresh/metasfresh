@@ -26,7 +26,7 @@ public interface IHUAttributesDAO extends ISingletonService
 
 	void delete(I_M_HU_Attribute huAttribute);
 
-	List<I_M_HU_Attribute> retrieveAttributesNoCache(Collection<HuId> huIds);
+	List<I_M_HU_Attribute> retrieveAllAttributesNoCache(Collection<HuId> huIds);
 
 	/**
 	 * Load the given <code>hu</code>'s attributes, ordered by their <code>M_HU_PI_Attribute</code>'s <code>SeqNo</code> (see {@link HUAttributesBySeqNoComparator}).

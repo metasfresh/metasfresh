@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
@@ -23,7 +24,6 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.attribute.SecurPharmAttributesStatus;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
@@ -38,9 +38,9 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Set;
@@ -74,16 +74,14 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 	private static final AdMessageKey MSG_ScanRequired = AdMessageKey.of("securPharm.scanRequiredError");
 	private static final AdMessageKey MSG_MissingMandatoryHUAttribute = AdMessageKey.of("WEBUI_Receipt_Missing_Mandatory_HU_Attribute");
 
-	@Autowired
-	private IViewsRepository viewsRepo;
-	@Autowired
-	private DocumentCollection documentsCollection;
-	@Autowired
-	private SecurPharmService securPharmService;
-	@Autowired
-	private ProductRepository productRepository;
+	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
+	private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
+	private final SecurPharmService securPharmService = SpringContextHolder.instance.getBean(SecurPharmService.class);
+	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+	private ImmutableList<I_M_ReceiptSchedule> _receiptSchedules;
 
 	/**
 	 * Only allows rows whose HU is in the "planning" status.
@@ -201,12 +199,17 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		return getView(HUEditorView.class);
 	}
 
-	protected List<I_M_ReceiptSchedule> getM_ReceiptSchedules()
+	protected final ImmutableList<I_M_ReceiptSchedule> getM_ReceiptSchedules()
 	{
-		return getView()
-				.getReferencingDocumentPaths().stream()
-				.map(referencingDocumentPath -> getReceiptSchedule(referencingDocumentPath))
-				.collect(GuavaCollectors.toImmutableList());
+		ImmutableList<I_M_ReceiptSchedule> receiptSchedules = this._receiptSchedules;
+		if (receiptSchedules == null)
+		{
+			receiptSchedules = _receiptSchedules = getView()
+					.getReferencingDocumentPaths().stream()
+					.map(this::getReceiptSchedule)
+					.collect(ImmutableList.toImmutableList());
+		}
+		return receiptSchedules;
 	}
 
 	private I_M_ReceiptSchedule getReceiptSchedule(@NonNull final DocumentPath referencingDocumentPath)

@@ -36,6 +36,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
@@ -49,6 +50,7 @@ import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -71,6 +73,8 @@ import java.util.Properties;
 public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 {
 	private static final String DYNATTR_DisableChangeCheckingOnSave = LUTUConfigurationFactory.class.getName() + "#DisableChangeCheckingOnSave";
+
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
 	public ILUTUProducerAllocationDestination createLUTUProducerAllocationDestination(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
@@ -112,12 +116,9 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 		else
 		{
-			luProducerDestination.setLUItemPI(null);
-			luProducerDestination.setLUPI(null);
-			luProducerDestination.setMaxLUs(0);
+			luProducerDestination.setNoLU();
 
 			// TU configuration
-			// luProducerDestination.setMaxTUsPerLU(0); // no need to set
 			luProducerDestination.setCreateTUsForRemainingQty(true); // we will create only TUs
 
 			if (qtyTUInfinite)
@@ -138,7 +139,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final ProductId cuProductId = ProductId.ofRepoId(lutuConfiguration.getM_Product_ID());
 		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final boolean qtyCUInfinite = lutuConfiguration.isInfiniteQtyCU();
-		final BigDecimal qtyCUPerTU = qtyCUInfinite ? Quantity.QTY_INFINITE : lutuConfiguration.getQtyCU();
+		final BigDecimal qtyCUPerTU = qtyCUInfinite ? Quantity.QTY_INFINITE : lutuConfiguration.getQtyCUsPerTU();
 		luProducerDestination.addCUPerTU(cuProductId, qtyCUPerTU, cuUOM);
 
 		//
@@ -202,12 +203,12 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		if (tuCapacity.isInfiniteCapacity())
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(true);
-			lutuConfiguration.setQtyCU(BigDecimal.ZERO);
+			lutuConfiguration.setQtyCUsPerTU(BigDecimal.ZERO);
 		}
 		else
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(false);
-			lutuConfiguration.setQtyCU(tuCapacity.toBigDecimal());
+			lutuConfiguration.setQtyCUsPerTU(tuCapacity.toBigDecimal());
 		}
 
 		//
@@ -339,7 +340,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 		else
 		{
-			final BigDecimal qtyCU = NumberUtils.stripTrailingDecimalZeros(lutuConfiguration.getQtyCU());
+			final BigDecimal qtyCU = NumberUtils.stripTrailingDecimalZeros(lutuConfiguration.getQtyCUsPerTU());
 			keyItems.add(false); // IsInfiniteQtyCU
 			keyItems.add(qtyCU); // Qty CU
 		}
@@ -364,8 +365,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	{
 		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
 		final I_M_HU_LUTU_Configuration lutuConfigurationNew = InterfaceWrapperHelper.newInstance(I_M_HU_LUTU_Configuration.class, lutuConfiguration);
-		final boolean honorIsCalculated = true;
-		InterfaceWrapperHelper.copyValues(lutuConfiguration, lutuConfigurationNew, honorIsCalculated);
+		InterfaceWrapperHelper.copyValues(lutuConfiguration, lutuConfigurationNew, true);
 
 		return lutuConfigurationNew;
 	}
@@ -482,7 +482,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Calculate how many CUs we need for an LU
-		final BigDecimal qtyCUsPerLU = lutuConfiguration.getQtyCU().multiply(lutuConfiguration.getQtyTU());
+		final BigDecimal qtyCUsPerLU = lutuConfiguration.getQtyCUsPerTU().multiply(lutuConfiguration.getQtyTU());
 		if (qtyCUsPerLU.signum() <= 0)
 		{
 			return 0;
@@ -558,7 +558,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			return Quantity.infinite(uom);
 		}
 
-		final BigDecimal qtyCU = lutuConfiguration.getQtyCU();
+		final BigDecimal qtyCU = lutuConfiguration.getQtyCUsPerTU();
 		if (qtyCU.signum() <= 0)
 		{
 			return Quantity.zero(uom);
@@ -624,7 +624,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		if (lutuConfiguration.isInfiniteQtyCU())
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(false);
-			lutuConfiguration.setQtyCU(qtyCUsTotal);
+			lutuConfiguration.setQtyCUsPerTU(qtyCUsTotal);
 
 			lutuConfiguration.setIsInfiniteQtyTU(false);
 			lutuConfiguration.setQtyTU(BigDecimal.ONE);
@@ -644,7 +644,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 
 		Check.assume(!lutuConfiguration.isInfiniteQtyCU(), "Infinite QtyCU not allowed for {}", lutuConfiguration);
-		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCU();
+		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCUsPerTU();
 
 		//
 		// Case: QtyTUs/LU is finite
@@ -676,7 +676,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setQtyTU(qtyTUs_Effective);
 
 			lutuConfiguration.setIsInfiniteQtyCU(false); // since we calculated it, we're not considering it infinite any longer
-			lutuConfiguration.setQtyCU(qtyCUs_Effective);
+			lutuConfiguration.setQtyCUsPerTU(qtyCUs_Effective);
 		}
 		//
 		// Case: QtyTUs/LU is infinite
@@ -691,7 +691,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setQtyTU(qtyTUs_Effective);
 
 			lutuConfiguration.setIsInfiniteQtyCU(false); // since we calculated it, we're not considering it infinite any longer
-			lutuConfiguration.setQtyCU(qtyCUs_Effective);
+			lutuConfiguration.setQtyCUsPerTU(qtyCUs_Effective);
 		}
 	}
 
@@ -720,7 +720,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			return BigDecimal.ZERO;
 		}
 
-		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCU();
+		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCUsPerTU();
 		if (qtyCUsPerTU.signum() <= 0)
 		{
 			// Qty TU not available => cannot compute
@@ -738,5 +738,72 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		final BigDecimal qtyLU = calculateQtyLUForTotalQtyCUsByLUMaxWeight(lutuConfiguration, Quantity.of(totalQtyCUs, productUOM), packingMaterial);
 		return qtyLU;
+	}
+
+	@NonNull
+	public I_M_HU_LUTU_Configuration createNewLUTUConfigWithParams(@NonNull final ILUTUConfigurationFactory.CreateLUTUConfigRequest lutuConfigRequest)
+	{
+		final I_M_HU_LUTU_Configuration lutuConfigurationNew = InterfaceWrapperHelper.copy()
+				.setFrom(lutuConfigRequest.getBaseLUTUConfiguration())
+				.copyToNew(I_M_HU_LUTU_Configuration.class);
+		//
+		// CU
+		lutuConfigurationNew.setQtyCUsPerTU(lutuConfigRequest.getQtyCUsPerTU());
+		lutuConfigurationNew.setIsInfiniteQtyCU(false);
+
+		//
+		// TU
+		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(
+				InterfaceWrapperHelper.getCtx(lutuConfigRequest.getBaseLUTUConfiguration()),
+				lutuConfigRequest.getTuHUPIItemProductID(),
+				I_M_HU_PI_Item_Product.class,
+				ITrx.TRXNAME_None);
+
+		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
+		lutuConfigurationNew.setM_HU_PI_Item_Product_ID(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
+		lutuConfigurationNew.setM_TU_HU_PI(tuPI);
+		lutuConfigurationNew.setQtyTU(lutuConfigRequest.getQtyTU());
+		lutuConfigurationNew.setIsInfiniteQtyTU(false);
+
+		//
+		// LU
+		if (lutuConfigRequest.getLuHUPIID() != null && lutuConfigRequest.getLuHUPIID() > 0)
+		{
+			if (lutuConfigRequest.getQtyLU() == null || lutuConfigRequest.getQtyLU().signum() <= 0)
+			{
+				throw new AdempiereException("QtyLU cannot be null if LU packing item is provided!");
+			}
+
+			final I_M_HU_PI luPI = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(lutuConfigRequest.getBaseLUTUConfiguration()),
+																 lutuConfigRequest.getLuHUPIID(),
+																 I_M_HU_PI.class,
+																 ITrx.TRXNAME_None);
+
+			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
+			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
+					tuPI,
+					X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
+					ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfigurationNew))
+					//
+					.stream()
+					.filter(piItem -> piItem.getM_HU_PI_Version_ID() == luPIV.getM_HU_PI_Version_ID())
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException(tuPI.getName() + " cannot be loaded to " + luPI.getName()));
+
+			lutuConfigurationNew.setM_LU_HU_PI(luPI);
+			lutuConfigurationNew.setM_LU_HU_PI_Item(luPI_Item);
+			lutuConfigurationNew.setQtyLU(lutuConfigRequest.getQtyLU());
+			lutuConfigurationNew.setIsInfiniteQtyLU(false);
+		}
+		else
+		{
+			lutuConfigurationNew.setM_LU_HU_PI(null);
+			lutuConfigurationNew.setM_LU_HU_PI_Item(null);
+			lutuConfigurationNew.setQtyLU(BigDecimal.ZERO);
+		}
+
+		// InterfaceWrapperHelper.save(lutuConfigurationNew); // expected to not be saved (important)
+
+		return lutuConfigurationNew;
 	}
 }

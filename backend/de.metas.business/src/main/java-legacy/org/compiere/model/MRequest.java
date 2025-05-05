@@ -16,8 +16,19 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.request.RequestId;
+import de.metas.request.notifications.RequestNotificationsSender;
+import de.metas.request.notifications.RequestSalesRepChanged;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -26,20 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.BPGroupId;
-import de.metas.bpartner.service.IBPGroupDAO;
-import de.metas.logging.LogManager;
-import de.metas.request.RequestId;
-import de.metas.request.notifications.RequestNotificationsSender;
-import de.metas.request.notifications.RequestSalesRepChanged;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Request Model
@@ -515,9 +514,9 @@ public class MRequest extends X_R_Request
 		{
 			if (status.isOpen())
 			{
-				if (getStartDate() == null)
+				if (getStartTime() == null)
 				{
-					setStartDate(new Timestamp(System.currentTimeMillis()));
+					setStartTime(SystemTime.asTimestamp());
 				}
 				if (getCloseDate() != null)
 				{
@@ -648,7 +647,7 @@ public class MRequest extends X_R_Request
 			I_R_Request.COLUMNNAME_M_ProductSpent_ID,
 			I_R_Request.COLUMNNAME_QtySpent,
 			I_R_Request.COLUMNNAME_QtyInvoiced,
-			I_R_Request.COLUMNNAME_StartDate,
+			I_R_Request.COLUMNNAME_StartTime,
 			I_R_Request.COLUMNNAME_CloseDate,
 			I_R_Request.COLUMNNAME_TaskStatus,
 			I_R_Request.COLUMNNAME_DateStartPlan,

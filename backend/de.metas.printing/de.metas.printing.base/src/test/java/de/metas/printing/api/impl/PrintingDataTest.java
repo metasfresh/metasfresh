@@ -39,11 +39,12 @@ import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingSegment;
 import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 
 class PrintingDataTest
@@ -51,16 +52,18 @@ class PrintingDataTest
 	private Helper helper;
 
 	@BeforeEach
-	void beforeEach(TestInfo testInfo)
+	final void beforeEach(TestInfo testInfo)
 	{
+		AdempiereTestHelper.get().init();
+		
+		helper = new Helper(testInfo);
+		helper.setup(); // this also sets Adempiere.isUnitTestMode() to true, which we need when setting up the BLs below
+
 		final PrintPackageBL printPackageBL = new PrintPackageBL(
 				new PrintingDataFactory(
 						new HardwarePrinterRepository(),
-		 				new ArchiveFileNameService()));
+						new ArchiveFileNameService()));
 		Services.registerService(IPrintPackageBL.class, printPackageBL);
-
-		helper = new Helper(testInfo);
-		helper.setup();
 	}
 
 	@Test
@@ -89,16 +92,16 @@ class PrintingDataTest
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(20))
 				.data(binaryPdfData)
 				.segment(PrintingSegment.builder()
-						.printerRoutingId(PrinterRoutingId.ofRepoId(401))
-						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
-						.initialPageFrom(1)
-						.initialPageTo(100)
-						.printer(printer).build())
+								 .printerRoutingId(PrinterRoutingId.ofRepoId(401))
+								 .routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
+								 .initialPageFrom(1)
+								 .initialPageTo(100)
+								 .printer(printer).build())
 				.segment(PrintingSegment.builder()
-						.printerRoutingId(PrinterRoutingId.ofRepoId(402))
-						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
-						.lastPages(1)
-						.printer(printer).build())
+								 .printerRoutingId(PrinterRoutingId.ofRepoId(402))
+								 .routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
+								 .lastPages(1)
+								 .printer(printer).build())
 				.build();
 
 		// then
@@ -143,26 +146,27 @@ class PrintingDataTest
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(20))
 				.data(binaryPdfData)
 				.segment(PrintingSegment.builder()
-						.printerRoutingId(PrinterRoutingId.ofRepoId(401))
-						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
-						.initialPageFrom(1)
-						.initialPageTo(3)
-						.printer(printer)
-						.trayId(tray1Id).build())
+								 .printerRoutingId(PrinterRoutingId.ofRepoId(401))
+								 .routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
+								 .initialPageFrom(1)
+								 .initialPageTo(3)
+								 .printer(printer)
+								 .trayId(tray1Id).build())
 				.segment(PrintingSegment.builder()
-						.printerRoutingId(PrinterRoutingId.ofRepoId(402))
-						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
-						.lastPages(2)
-						.printer(printer)
-						.trayId(tray2Id).build())
+								 .printerRoutingId(PrinterRoutingId.ofRepoId(402))
+								 .routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
+								 .lastPages(2)
+								 .printer(printer)
+								 .copies(2)
+								 .trayId(tray2Id).build())
 				.build();
 
 		// then
 		assertThat(printingData.getNumberOfPages()).isEqualTo(3);
-		assertThat(printingData.getSegments()).extracting("printerRoutingId.repoId", "pageFrom", "pageTo")
+		assertThat(printingData.getSegments()).extracting("printerRoutingId.repoId", "pageFrom", "pageTo", "copies")
 				// the segment we first added has to be discarded, because the "LastPages" one takes precedence and there are no paged left to cover for the first segment
 				.containsExactly(
-						tuple(401, 1, 1),
-						tuple(402, 2, 3));
+						tuple(401, 1, 1, 1),
+						tuple(402, 2, 3, 2));
 	}
 }

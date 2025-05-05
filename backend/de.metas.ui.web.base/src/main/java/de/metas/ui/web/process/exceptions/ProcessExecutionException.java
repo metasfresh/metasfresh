@@ -1,5 +1,6 @@
 package de.metas.ui.web.process.exceptions;
 
+import de.metas.i18n.ITranslatableString;
 import org.adempiere.exceptions.AdempiereException;
 
 /*
@@ -31,4 +32,10 @@ public class ProcessExecutionException extends AdempiereException
 	{
 		super(message);
 	}
+
+	public ProcessExecutionException(final ITranslatableString message)
+	{
+		super(message);
+	}
+
 }

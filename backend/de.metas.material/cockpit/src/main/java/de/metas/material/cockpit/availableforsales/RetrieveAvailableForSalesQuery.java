@@ -22,12 +22,12 @@
 
 package de.metas.material.cockpit.availableforsales;
 
-import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 
 import javax.annotation.Nullable;
 

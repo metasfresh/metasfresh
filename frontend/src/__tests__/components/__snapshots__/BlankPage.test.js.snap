@@ -5,10 +5,10 @@ exports[`BlankPage renders correctly 1`] = `
   className="blank-page"
 >
   <h1>
-    404
+    not found title
   </h1>
   <h3>
-    Not found
+    not found description
   </h3>
 </div>
 `;

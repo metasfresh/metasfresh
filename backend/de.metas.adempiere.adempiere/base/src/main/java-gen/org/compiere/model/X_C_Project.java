@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1167694284L;
+	private static final long serialVersionUID = 949373025L;
 
     /** Standard Constructor */
     public X_C_Project (final Properties ctx, final int C_Project_ID, @Nullable final String trxName)
@@ -57,7 +57,7 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public java.lang.String getBPartnerDepartment() 
+	public java.lang.String getBPartnerDepartment()
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerDepartment);
 	}
@@ -69,7 +69,7 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public java.sql.Timestamp getBPartnerTargetDate() 
+	public java.sql.Timestamp getBPartnerTargetDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_BPartnerTargetDate);
 	}
@@ -168,7 +168,7 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public BigDecimal getCommittedAmt() 
+	public BigDecimal getCommittedAmt()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -181,7 +181,7 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public BigDecimal getCommittedQty() 
+	public BigDecimal getCommittedQty()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedQty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -194,7 +194,7 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public java.lang.String getCopyFrom() 
+	public java.lang.String getCopyFrom()
 	{
 		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
@@ -286,14 +286,14 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	@Override
 	public void setC_Project_Parent_ID (final int C_Project_Parent_ID)
 	{
-		if (C_Project_Parent_ID < 1) 
+		if (C_Project_Parent_ID < 1)
 			set_Value (COLUMNNAME_C_Project_Parent_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Project_Parent_ID, C_Project_Parent_ID);
 	}
 
 	@Override
-	public int getC_Project_Parent_ID() 
+	public int getC_Project_Parent_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_Parent_ID);
 	}
@@ -305,7 +305,7 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public java.lang.String getC_Project_Reference_Ext() 
+	public java.lang.String getC_Project_Reference_Ext()
 	{
 		return get_ValueAsString(COLUMNNAME_C_Project_Reference_Ext);
 	}
@@ -368,7 +368,7 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public java.sql.Timestamp getDateOfProvisionByBPartner() 
+	public java.sql.Timestamp getDateOfProvisionByBPartner()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateOfProvisionByBPartner);
 	}
@@ -386,6 +386,18 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
 	public void setGenerateTo (final @Nullable java.lang.String GenerateTo)
 	{
 		set_Value (COLUMNNAME_GenerateTo, GenerateTo);
@@ -395,6 +407,33 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public java.lang.String getGenerateTo() 
 	{
 		return get_ValueAsString(COLUMNNAME_GenerateTo);
+	}
+
+	/**
+	 * InternalPriority AD_Reference_ID=154
+	 * Reference name: _PriorityRule
+	 */
+	public static final int INTERNALPRIORITY_AD_Reference_ID=154;
+	/** High = 3 */
+	public static final String INTERNALPRIORITY_High = "3";
+	/** Medium = 5 */
+	public static final String INTERNALPRIORITY_Medium = "5";
+	/** Low = 7 */
+	public static final String INTERNALPRIORITY_Low = "7";
+	/** Urgent = 1 */
+	public static final String INTERNALPRIORITY_Urgent = "1";
+	/** Minor = 9 */
+	public static final String INTERNALPRIORITY_Minor = "9";
+	@Override
+	public void setInternalPriority (final @Nullable java.lang.String InternalPriority)
+	{
+		set_Value (COLUMNNAME_InternalPriority, InternalPriority);
+	}
+
+	@Override
+	public java.lang.String getInternalPriority()
+	{
+		return get_ValueAsString(COLUMNNAME_InternalPriority);
 	}
 
 	@Override
@@ -472,6 +511,21 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public int getM_PriceList_Version_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_PriceList_Version_ID);
+	}
+
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+	}
+
+	@Override
+	public int getM_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	@Override
@@ -708,6 +762,33 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
+	public org.compiere.model.I_R_StatusCategory getR_StatusCategory()
+	{
+		return get_ValueAsPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class);
+	}
+
+	@Override
+	public void setR_StatusCategory(final org.compiere.model.I_R_StatusCategory R_StatusCategory)
+	{
+		set_ValueFromPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class, R_StatusCategory);
+	}
+
+	@Override
+	public void setR_StatusCategory_ID (final int R_StatusCategory_ID)
+	{
+		if (R_StatusCategory_ID < 1)
+			set_Value (COLUMNNAME_R_StatusCategory_ID, null);
+		else
+			set_Value (COLUMNNAME_R_StatusCategory_ID, R_StatusCategory_ID);
+	}
+
+	@Override
+	public int getR_StatusCategory_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_R_StatusCategory_ID);
+	}
+
+	@Override
 	public void setSalesRep_ID (final int SalesRep_ID)
 	{
 		if (SalesRep_ID < 1) 
@@ -725,14 +806,14 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	@Override
 	public void setSpecialist_Consultant_ID (final int Specialist_Consultant_ID)
 	{
-		if (Specialist_Consultant_ID < 1) 
+		if (Specialist_Consultant_ID < 1)
 			set_Value (COLUMNNAME_Specialist_Consultant_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Specialist_Consultant_ID, Specialist_Consultant_ID);
 	}
 
 	@Override
-	public int getSpecialist_Consultant_ID() 
+	public int getSpecialist_Consultant_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Specialist_Consultant_ID);
 	}
@@ -756,8 +837,20 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public java.lang.String getWOOwner() 
+	public java.lang.String getWOOwner()
 	{
 		return get_ValueAsString(COLUMNNAME_WOOwner);
+	}
+
+	@Override
+	public void setWOProjectCreatedDate (final @Nullable java.sql.Timestamp WOProjectCreatedDate)
+	{
+		set_Value (COLUMNNAME_WOProjectCreatedDate, WOProjectCreatedDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getWOProjectCreatedDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_WOProjectCreatedDate);
 	}
 }

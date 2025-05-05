@@ -22,10 +22,15 @@ package de.metas.util;
  * #L%
  */
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -89,4 +94,53 @@ public class FileUtilTest
 		assertThat(FileUtil.getFileExtension(filename)).isEqualTo(expected);
 	}
 
+	@Nested
+	class findNotExistingFile
+	{
+		private Path directory;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			directory = FileUtil.createTempDirectory("FileUtilTest_findNotExistingFile_").toPath();
+		}
+
+		void createFile(String filename) throws IOException {Files.createFile(directory.resolve(filename));}
+
+		String getFileName(final Path path) {return path.toFile().getName();}
+
+		@Test
+		void noExistingFile()
+		{
+			assertThat(FileUtil.findNotExistingFile(directory, "report.pdf", 1))
+					.contains(directory.resolve("report.pdf"));
+		}
+
+		@Test
+		void oneFileExists() throws IOException
+		{
+			createFile("report.pdf");
+			assertThat(FileUtil.findNotExistingFile(directory, "report.pdf", 100))
+					.contains(directory.resolve("report_2.pdf"));
+		}
+
+		@Test
+		void moreFileExists() throws IOException
+		{
+			createFile("report.pdf");
+			createFile("report_2.pdf");
+			createFile("report_3.pdf");
+			assertThat(FileUtil.findNotExistingFile(directory, "report.pdf", 100))
+					.contains(directory.resolve("report_4.pdf"));
+		}
+
+		@Test
+		void triesCountExceeded() throws IOException
+		{
+			createFile("report.pdf");
+			assertThat(FileUtil.findNotExistingFile(directory, "report.pdf", 1))
+					.isEmpty();
+		}
+
+	}
 }

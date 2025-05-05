@@ -1,15 +1,11 @@
 package org.eevolution.api;
 
-import java.util.Arrays;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.model.X_PP_Cost_Collector;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.eevolution.model.X_PP_Cost_Collector;
 
 import javax.annotation.Nullable;
 
@@ -35,42 +31,27 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-public enum CostCollectorType
+@RequiredArgsConstructor
+@Getter
+public enum CostCollectorType implements ReferenceListAwareEnum
 {
-	MaterialReceipt(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt), //
-	ComponentIssue(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue), //
-	UsageVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance), //
-	MethodChangeVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance), //
-	RateVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_RateVariance), //
-	MixVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance), //
-	ActivityControl(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl) //
+	MaterialReceipt(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt),
+	ComponentIssue(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue),
+	UsageVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance),
+	MethodChangeVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance),
+	RateVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_RateVariance),
+	MixVariance(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance),
+	ActivityControl(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl),
 	;
 
-	@Getter
-	private final String code;
+	private static final ReferenceListAwareEnums.ValuesIndex<CostCollectorType> index = ReferenceListAwareEnums.index(values());
 
-	CostCollectorType(final String code)
-	{
-		this.code = code;
-	}
+	@NonNull private final String code;
 
 	@Nullable
-	public static CostCollectorType ofNullableCode(@Nullable final String code)
-	{
-		return code != null ? ofCode(code) : null;
-	}
+	public static CostCollectorType ofNullableCode(@Nullable final String code) {return index.ofNullableCodeOrName(code);}
 
-	public static CostCollectorType ofCode(@NonNull final String code)
-	{
-		final CostCollectorType type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + CostCollectorType.class + " found for code: " + code);
-		}
-		return type;
-	}
-
-	private static final ImmutableMap<String, CostCollectorType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), CostCollectorType::getCode);
+	public static CostCollectorType ofCode(@NonNull final String code) {return index.ofCodeOrName(code);}
 
 	public boolean isMaterial(@Nullable final PPOrderBOMLineId orderBOMLineId)
 	{

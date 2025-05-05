@@ -1,17 +1,22 @@
 @from:cucumber
 @topic:orderCandidate
+@ghActions:run_on_executor3
 Feature: Enqueue order candidate in multiple workpackages for processing to order
   As a user
   I create multiple order candidates and when processing, multiple workpackages are enqueued for each order to be generated
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
   @topic:orderCandidate
-  Scenario: Process C_OLCand in batches
+  Scenario: Process C_OLCand in batches:
+  - create 4 olcands - they would end of in 3 C_Orders
+  - deactivate the productprice of one of the C_OLcand's products
+  - verify that three C_Orders are still created
     Given metasfresh contains M_PricingSystems
       | Identifier           | Name                             | Value                            | OPT.IsActive |
       | ps_scenario_14042022 | pricing_system_scenario_14042022 | pricing_system_scenario_14042022 | true         |
@@ -143,8 +148,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | N             | 14042022             | 14042022_3         | 10.00           |
 
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | IsActive |
-      | pp_product_priceChange       | false    |
+      | M_ProductPrice_ID.Identifier | OPT.IsActive |
+      | pp_product_priceChange       | false        |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """

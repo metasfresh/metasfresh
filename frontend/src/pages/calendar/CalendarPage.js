@@ -9,12 +9,19 @@ import { buildURL } from '../../utils';
 
 import './CalendarPage.scss';
 
-const DEFAULT_CALENDAR_VIEW = 'resourceTimelineYear';
+const DEFAULT_CALENDAR_VIEW = 'resourceTimelineMonth';
 
 const updateURI = (
   history,
   location,
-  { simulationId, onlyResourceIds, onlyProjectId, onlyCustomerId, view }
+  {
+    simulationId,
+    onlyResourceIds,
+    onlyProjectId,
+    onlyCustomerId,
+    onlyResponsibleId,
+    view,
+  }
 ) => {
   // IMPORTANT: keep the URL query param names
   // in sync with de.metas.ui.web.process.json.JSONProcessInstanceResult.JSONOpenCalendarAction
@@ -24,6 +31,7 @@ const updateURI = (
     resourceId: onlyResourceIds ? onlyResourceIds.join(',') : null,
     projectId: onlyProjectId,
     customerId: onlyCustomerId,
+    responsibleId: onlyResponsibleId,
     view,
   });
 
@@ -49,6 +57,7 @@ const CalendarPage = ({ location }) => {
           onlyResourceIds={onlyResourceIds}
           onlyProjectId={location.query.projectId}
           onlyCustomerId={location.query.customerId}
+          onlyResponsibleId={location.query.responsibleId}
           onParamsChanged={(params) => updateURI(history, location, params)}
         />
       </div>

@@ -23,8 +23,13 @@
 package de.metas.ui.web.pporder;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.order.OrderLineId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -47,6 +52,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderDocBaseType;
@@ -57,26 +63,21 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
+@RequiredArgsConstructor
 @ViewFactory(windowId = PPOrderConstants.AD_WINDOW_ID_IssueReceipt_String)
 public class PPOrderLinesViewFactory implements IViewFactory
 {
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	private final ASIRepository asiRepository;
-	private final DefaultHUEditorViewFactory huEditorViewFactory;
-	private final HUReservationService huReservationService;
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private static final AdMessageKey MANUFACTURING_ISSUE_RECEIPT_CAPTION = AdMessageKey.of("de.metas.ui.web.pporder.MANUFACTURING_ISSUE_RECEIPT_CAPTION");
+
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ASIRepository asiRepository;
+	@NonNull private final DefaultHUEditorViewFactory huEditorViewFactory;
+	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final ADReferenceService adReferenceService;
 
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
-
-	public PPOrderLinesViewFactory(
-			@NonNull final ASIRepository asiRepository,
-			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
-			@NonNull final HUReservationService huReservationService)
-	{
-		this.asiRepository = asiRepository;
-		this.huEditorViewFactory = huEditorViewFactory;
-		this.huReservationService = huReservationService;
-	}
 
 	@Override
 	public PPOrderLinesView createView(final @NonNull CreateViewRequest request)
@@ -84,6 +85,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 		final ViewId viewId = request.getViewId();
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(request.getSingleFilterOnlyId());
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final boolean hasSerialNumberSequence = ppOrderBL.hasSerialNumberSequence(ppOrderId);
 		final PPOrderDocBaseType ppOrderDocBaseType = PPOrderDocBaseType.ofCode(ppOrder.getDocBaseType());
 
 		final PPOrderLinesViewDataSupplier dataSupplier = PPOrderLinesViewDataSupplier
@@ -91,8 +93,10 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.viewWindowId(viewId.getWindowId())
 				.ppOrderId(ppOrderId)
 				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
+				.serialNoFromSequence(hasSerialNumberSequence)
 				.huSQLViewBinding(huEditorViewFactory.getSqlViewBinding())
 				.huReservationService(huReservationService)
+				.adReferenceService(adReferenceService)
 				.build();
 
 		return PPOrderLinesView.builder()
@@ -103,6 +107,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.referencingDocumentPaths(request.getReferencingDocumentPaths())
 				.ppOrderId(ppOrderId)
 				.docBaseType(ppOrderDocBaseType)
+				.docStatus(DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus()))
+				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID()))
 				.dataSupplier(dataSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
@@ -110,9 +116,9 @@ public class PPOrderLinesViewFactory implements IViewFactory
 
 	@Override
 	public IView filterView(
-			final IView view,
-			final JSONFilterViewRequest filterViewRequest,
-			final Supplier<IViewsRepository> viewsRepo)
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest,
+			@NonNull final Supplier<IViewsRepository> viewsRepo)
 	{
 		throw new AdempiereException("View does not support filtering")
 				.setParameter("view", view)
@@ -137,9 +143,9 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	{
 		return ViewLayout.builder()
 				.setWindowId(windowId)
-				.setCaption("PP Order Issue/Receipt")
-				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setCaption(msgBL.getTranslatableMsgText(MANUFACTURING_ISSUE_RECEIPT_CAPTION))
+				.setEmptyResultText(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_HINT))
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)

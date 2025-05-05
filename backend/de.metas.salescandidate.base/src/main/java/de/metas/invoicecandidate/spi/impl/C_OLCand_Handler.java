@@ -1,6 +1,5 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.common.util.CoalesceUtil;
@@ -21,12 +20,14 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -54,7 +55,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_OLCand}.
- *
+ * <p>
  * Please note:
  * <ul>
  * <li>only those {@link I_C_OLCand}s are handled which have {@link InvoiceCandidate_Constants#DATA_DESTINATION_INTERNAL_NAME} as their destination datasource
@@ -64,12 +65,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final C_OLCand_HandlerDAO dao = new C_OLCand_HandlerDAO();
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	@Override
-	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
-	{
-		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
-	}
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	@Override
 	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
@@ -192,7 +188,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		}
 		
 		// 07442 activity and tax
-		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+		final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
 				ClientId.ofRepoId(olcRecord.getAD_Client_ID()),
 				OrgId.ofRepoId(olcRecord.getAD_Org_ID()),
 				productId);
@@ -201,6 +197,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final BPartnerInfo shipToPartnerInfo = olCandEffectiveValuesBL
 				.getDropShipPartnerInfo(olcRecord)
 				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olcRecord));
+		final VatCodeId vatCodeId = null;
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final TaxId taxId = taxBL.getTaxNotNull(
@@ -211,14 +208,17 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				(WarehouseId)null,
 				shipToPartnerInfo.toBPartnerLocationAndCaptureId(),
-				SOTrx.SALES);
+				SOTrx.SALES,
+				vatCodeId);
 		ic.setC_Tax_ID(taxId.getRepoId());
 
 		ic.setExternalLineId(olcRecord.getExternalLineId());
 		ic.setExternalHeaderId(olcRecord.getExternalHeaderId());
-		ic.setC_Async_Batch_ID(olcRecord.getC_Async_Batch_ID());
 
 		ic.setAD_InputDataSource_ID(olcRecord.getAD_InputDataSource_ID());
+
+		ic.setM_SectionCode_ID(olcRecord.getM_SectionCode_ID());
+		ic.setC_Auction_ID(olcRecord.getC_Auction_ID());
 
 		olcRecord.setProcessed(true);
 		saveRecord(olcRecord);
@@ -264,9 +264,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setDateOrdered(olc.getDateCandidate());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
-		final Quantity olCandQuantity = Quantity.of(olc.getQtyEntered(), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
+		final Quantity olCandQuantity = Quantity.of(olCandEffectiveValuesBL.getEffectiveQtyEntered(olc), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
 		ic.setQtyEntered(olCandQuantity.toBigDecimal());
 		ic.setC_UOM_ID(UomId.toRepoId(olCandQuantity.getUomId()));
 
@@ -308,7 +307,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				olc,
 				null,
 				PricingSystemId.NULL,
-				TimeUtil.asLocalDate(olc.getDateCandidate(), timeZone));
+				TimeUtil.asLocalDate(olCandEffectiveValuesBL.getDatePromised_Effective(olc), timeZone));
 
 		return PriceAndTax.builder()
 				.priceUOMId(pricingResult.getPriceUomId())
@@ -321,8 +320,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-
 		final I_C_OLCand olc = getOLCand(ic);
 
 		InvoiceCandidateLocationAdapterFactory

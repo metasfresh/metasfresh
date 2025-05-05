@@ -8,8 +8,6 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.user.UserId;
@@ -23,7 +21,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -56,8 +53,7 @@ import java.util.function.UnaryOperator;
 @Component
 public class WebuiMailRepository
 {
-	@Autowired
-	private ApplicationEventPublisher eventPublisher;
+	private final ApplicationEventPublisher eventPublisher;
 
 	private final AtomicInteger nextEmailId = new AtomicInteger(1);
 	private final Cache<String, WebuiEmailEntry> emailsById = CacheBuilder.newBuilder()
@@ -67,17 +63,18 @@ public class WebuiMailRepository
 
 	private final LookupDataSource emailToLookup;
 
-	public WebuiMailRepository()
+	public WebuiMailRepository(
+			@NonNull final ApplicationEventPublisher eventPublisher,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
-		final LookupDescriptor emailToLookupDescriptor = SqlLookupDescriptor.builder()
+		this.eventPublisher = eventPublisher;
+		emailToLookup = lookupDataSourceFactory.getLookupDataSource(builder -> builder
 				.setCtxTableName(null)
 				.setCtxColumnName(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
 				.setDisplayType(DisplayType.Search)
-				.addValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(I_AD_User.COLUMNNAME_EMail+" IS NOT NULL"))
+				.addValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(I_AD_User.COLUMNNAME_EMail + " IS NOT NULL"))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.buildForDefaultScope();
-
-		emailToLookup = LookupDataSourceFactory.instance.getLookupDataSource(emailToLookupDescriptor);
+				.buildForDefaultScope());
 	}
 
 	public WebuiEmail createNewEmail(
@@ -134,7 +131,7 @@ public class WebuiMailRepository
 		eventPublisher.publishEvent(new WebuiEmailRemovedEvent(email));
 	}
 
-	public LookupValuesPage getToTypeahead(final String emailId_NOTUSED, final String query)
+	public LookupValuesPage getToTypeahead(final String ignoredEmailId, final String query)
 	{
 		final Evaluatee ctx = Evaluatees.empty(); // TODO
 

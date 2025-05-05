@@ -1,6 +1,7 @@
 package de.metas.inout.invoicecandidate;
 
 import com.jgoodies.common.base.Objects;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
@@ -15,8 +16,10 @@ import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFac
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.material.MovementType;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -102,7 +105,13 @@ public class M_InOutLine_HandlerTest
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
+
+		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
+		save(paymentTerm);
+
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
+		bPartner.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		save(bPartner);
 
 		final I_C_BPartner_Location bPartnerLocation = newInstance(I_C_BPartner_Location.class);
@@ -117,6 +126,7 @@ public class M_InOutLine_HandlerTest
 
 		inout = newInstance(I_M_InOut.class);
 		inout.setIsSOTrx(true);
+		inout.setMovementType(MovementType.CustomerShipment.getCode());
 		inout.setDocStatus(IDocument.STATUS_Completed); // otherwise the code won't consider the inoutLines' quantities
 		inout.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		inout.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
@@ -144,7 +154,7 @@ public class M_InOutLine_HandlerTest
 		save(packagingInOutLine);
 
 		orderPaymentTermId = createPaymentTerm("orderPaymentTerm");
-		paymentTermA = createPaymentTerm("paymentTermA");
+		paymentTermA = createPaymentTerm("paymentTermA", true);
 		paymentTermB = createPaymentTerm("paymentTermB");
 
 		inOutLineHandlerUnderTest = new M_InOutLine_Handler();
@@ -156,8 +166,14 @@ public class M_InOutLine_HandlerTest
 
 	private PaymentTermId createPaymentTerm(final String name)
 	{
+		return createPaymentTerm(name, false);
+	}
+
+	private PaymentTermId createPaymentTerm(final String name, final boolean isDefault)
+	{
 		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
 		paymentTerm.setName(name);
+		paymentTerm.setIsDefault(isDefault);
 		save(paymentTerm);
 		POJOWrapper.setInstanceName(paymentTerm, name);
 		return PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
@@ -778,7 +794,7 @@ public class M_InOutLine_HandlerTest
 	{
 		final String description = termId == null ? "C_PaymentTerm_ID=0" : termId.toString();
 
-		return new Condition<I_C_Invoice_Candidate>(description)
+		return new Condition<>(description)
 		{
 			@Override
 			public boolean matches(final I_C_Invoice_Candidate ic)

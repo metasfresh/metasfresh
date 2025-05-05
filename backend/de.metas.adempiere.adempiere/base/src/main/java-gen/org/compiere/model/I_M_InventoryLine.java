@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_InventoryLine
  *  @author metasfresh (generated) 
@@ -53,7 +52,7 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Zugewiesen an.
+	 * Set Assigned to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -62,7 +61,7 @@ public interface I_M_InventoryLine
 	void setAssignedTo (@Nullable java.lang.String AssignedTo);
 
 	/**
-	 * Get Zugewiesen an.
+	 * Get Assigned to.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -74,8 +73,7 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_AssignedTo = "AssignedTo";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -84,8 +82,7 @@ public interface I_M_InventoryLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -276,7 +273,6 @@ public interface I_M_InventoryLine
 
 	/**
 	 * Set Counted.
-	 * Count number of not empty elements
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -286,7 +282,6 @@ public interface I_M_InventoryLine
 
 	/**
 	 * Get Counted.
-	 * Count number of not empty elements
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -298,7 +293,7 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_IsCounted = "IsCounted";
 
 	/**
-	 * Set IsExplicitCostPrice.
+	 * Set Override Cost Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -307,7 +302,7 @@ public interface I_M_InventoryLine
 	void setIsExplicitCostPrice (boolean IsExplicitCostPrice);
 
 	/**
-	 * Get IsExplicitCostPrice.
+	 * Get Override Cost Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -466,6 +461,29 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
+	 * Set Modular Contract.
+	 * Document lines linked to a modular contract will generate contract module logs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModular_Flatrate_Term_ID (int Modular_Flatrate_Term_ID);
+
+	/**
+	 * Get Modular Contract.
+	 * Document lines linked to a modular contract will generate contract module logs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModular_Flatrate_Term_ID();
+
+	ModelColumn<I_M_InventoryLine, Object> COLUMN_Modular_Flatrate_Term_ID = new ModelColumn<>(I_M_InventoryLine.class, "Modular_Flatrate_Term_ID", null);
+	String COLUMNNAME_Modular_Flatrate_Term_ID = "Modular_Flatrate_Term_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -486,6 +504,31 @@ public interface I_M_InventoryLine
 	int getM_Product_ID();
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_M_InventoryLine, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_InventoryLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Processed.
@@ -595,7 +638,30 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
 
 	/**
-	 * Set Storno-Zeile.
+	 * Set Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRenderedQRCode (@Nullable java.lang.String RenderedQRCode);
+
+	/**
+	 * Get Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRenderedQRCode();
+
+	ModelColumn<I_M_InventoryLine, Object> COLUMN_RenderedQRCode = new ModelColumn<>(I_M_InventoryLine.class, "RenderedQRCode", null);
+	String COLUMNNAME_RenderedQRCode = "RenderedQRCode";
+
+	/**
+	 * Set Reverse Line.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -604,7 +670,7 @@ public interface I_M_InventoryLine
 	void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Storno-Zeile.
+	 * Get Reverse Line.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false

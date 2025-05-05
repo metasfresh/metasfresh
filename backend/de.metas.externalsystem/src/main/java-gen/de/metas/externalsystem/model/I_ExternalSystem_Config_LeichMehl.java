@@ -2,19 +2,17 @@ package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-
 /** Generated Interface for ExternalSystem_Config_LeichMehl
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_LeichMehl 
+public interface I_ExternalSystem_Config_LeichMehl
 {
 
 	String Table_Name = "ExternalSystem_Config_LeichMehl";
 
-//	/** AD_Table_ID=542129 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=542129 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -102,7 +100,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
-	 * Set LeichUndMehl.
+	 * Set Leich + Mehl.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -111,7 +109,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	void setExternalSystem_Config_LeichMehl_ID (int ExternalSystem_Config_LeichMehl_ID);
 
 	/**
-	 * Get LeichUndMehl.
+	 * Get Leich + Mehl.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -167,7 +165,31 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Product_BaseFolderName.
+	 * Set Enable PLU-file export audit.
+	 * If enabled, then all the changes done during the PLU-file export will be stored also in metasfresh i.e. the replaced keys from the PLU-file
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPluFileExportAuditEnabled (boolean IsPluFileExportAuditEnabled);
+
+	/**
+	 * Get Enable PLU-file export audit.
+	 * If enabled, then all the changes done during the PLU-file export will be stored also in metasfresh i.e. the replaced keys from the PLU-file
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPluFileExportAuditEnabled();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_IsPluFileExportAuditEnabled = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "IsPluFileExportAuditEnabled", null);
+	String COLUMNNAME_IsPluFileExportAuditEnabled = "IsPluFileExportAuditEnabled";
+
+	/**
+	 * Set Product directory.
+	 * Root directly that contains all PLU Files
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -176,7 +198,8 @@ public interface I_ExternalSystem_Config_LeichMehl
 	void setProduct_BaseFolderName (java.lang.String Product_BaseFolderName);
 
 	/**
-	 * Get Product_BaseFolderName.
+	 * Get Product directory.
+	 * Root directly that contains all PLU Files
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -188,28 +211,31 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_Product_BaseFolderName = "Product_BaseFolderName";
 
 	/**
-	 * Set TCP_Host.
+	 * Set LANScale Address.
+	 * IP-address or hostname of the Leich + Mehl device
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTCP_Host (@Nullable java.lang.String TCP_Host);
+	void setTCP_Host (java.lang.String TCP_Host);
 
 	/**
-	 * Get TCP_Host.
+	 * Get LANScale Address.
+	 * IP-address or hostname of the Leich + Mehl device
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getTCP_Host();
+	java.lang.String getTCP_Host();
 
 	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_TCP_Host = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "TCP_Host", null);
 	String COLUMNNAME_TCP_Host = "TCP_Host";
 
 	/**
-	 * Set TCP_PortNumber.
+	 * Set LANScale port.
+	 * Port number of the Leich + Mehl device
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -218,7 +244,8 @@ public interface I_ExternalSystem_Config_LeichMehl
 	void setTCP_PortNumber (int TCP_PortNumber);
 
 	/**
-	 * Get TCP_PortNumber.
+	 * Get LANScale port.
+	 * Port number of the Leich + Mehl device
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true

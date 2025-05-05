@@ -8,10 +8,11 @@ import javax.annotation.Nullable;
 /** Generated Model for PP_ComponentGenerator
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_PP_ComponentGenerator extends org.compiere.model.PO implements I_PP_ComponentGenerator, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -109296013L;
+	private static final long serialVersionUID = 1986728610L;
 
     /** Standard Constructor */
     public X_PP_ComponentGenerator (final Properties ctx, final int PP_ComponentGenerator_ID, @Nullable final String trxName)
@@ -73,6 +74,18 @@ public class X_PP_ComponentGenerator extends org.compiere.model.PO implements I_
 	public int getAD_Sequence_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	@Override
+	public java.lang.String getDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override

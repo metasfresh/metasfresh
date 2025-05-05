@@ -50,6 +50,8 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCode;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -230,6 +232,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.bomProductId(existingBOMProductId)
 				//
 				.orgId(OrgId.ofRepoId(mainQuotationLine.getAD_Org_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(mainQuotationLine.getM_SectionCode_ID()))
 				.quotationTemplateProductId(ProductId.ofRepoId(mainQuotationLine.getM_Product_ID()))
 				.price(price)
 				.qty(mainQuotationLine.getQtyEntered())
@@ -342,6 +345,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 
 		final I_M_Product bomProduct = productsRepo.createProduct(CreateProductRequest.builder()
 				.orgId(candidate.getOrgId())
+                .sectionCodeId(candidate.getSectionCodeId())
 				// .productValue(null) // shall use the standard codification
 				.productName(candidate.getQuotationGroupName())
 				.productCategoryId(productCategoryId)
@@ -544,6 +548,8 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		final UomId uomId;
 		@NonNull
 		final TaxCategoryId taxCategoryId;
+		@Nullable
+		final SectionCodeId sectionCodeId;
 
 		//
 		// Additional quotation lines to copy directly

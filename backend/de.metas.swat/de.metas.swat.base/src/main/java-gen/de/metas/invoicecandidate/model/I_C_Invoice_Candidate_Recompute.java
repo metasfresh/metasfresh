@@ -41,23 +41,6 @@ public interface I_C_Invoice_Candidate_Recompute
 	ModelColumn<I_C_Invoice_Candidate_Recompute, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
 	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
-	/**
-	 * Set Async Batch.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Async_Batch_ID (int C_Async_Batch_ID);
-
-	/**
-	 * Get Async Batch.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Async_Batch_ID();
 
 	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
 

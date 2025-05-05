@@ -22,29 +22,26 @@ package de.metas.product.modelvalidator;
  * #L%
  */
 
-import de.metas.product.IProductPA;
-import de.metas.util.Services;
-import org.adempiere.model.I_M_ProductScalePrice;
+import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.pricing.service.ScalePriceUsage;
+import de.metas.pricing.service.ScaleProductPrice;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.model.X_M_ProductPrice;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class MProductPriceValidator implements ModelValidator
 {
 	private int ad_Client_ID = -1;
 
-	private final IProductPA productPA = Services.get(IProductPA.class);
+	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
 	@Override
 	public String docValidate(PO po, int timing)
@@ -91,62 +88,41 @@ public class MProductPriceValidator implements ModelValidator
 		}
 
 		final I_M_ProductPrice productPrice = create(po, I_M_ProductPrice.class);
-		final String useScalePrice = productPrice.getUseScalePrice();
-		if (Objects.equals(useScalePrice, X_M_ProductPrice.USESCALEPRICE_DonTUseScalePrice))
+		final ScalePriceUsage useScalePrice = ScalePriceUsage.ofCode(productPrice.getUseScalePrice());
+		if (useScalePrice.isDoNotUseScalePrice())
 		{
 			return null;
 		}
 
 		if (type == ModelValidator.TYPE_BEFORE_DELETE)
 		{
-			productPriceDelete(productPrice);
+			onBeforeDeleteProductPrice(productPrice);
 		}
 		else
 		{
-			final IProductPA productPA = Services.get(IProductPA.class);
-
-			if (!Objects.equals(useScalePrice, X_M_ProductPrice.USESCALEPRICE_DonTUseScalePrice))
-			{
-				final String trxName = getTrxName(productPrice);
-				final I_M_ProductScalePrice productScalePrice = productPA.retrieveOrCreateScalePrices(
-						productPrice.getM_ProductPrice_ID(),
-						BigDecimal.ONE, // Qty
-						true, // createNew=true => if the scalePrice doesn't exist yet, create a new one
-						trxName);
-
-				// copy the price from the productPrice
-				productScalePrice.setM_ProductPrice_ID(productPrice.getM_ProductPrice_ID());
-				productScalePrice.setPriceLimit(productPrice.getPriceLimit());
-				productScalePrice.setPriceList(productPrice.getPriceList());
-				productScalePrice.setPriceStd(productPrice.getPriceStd());
-
-				save(productScalePrice);
-			}
+			final ProductPriceId productPriceId = ProductPriceId.ofRepoId(productPrice.getM_ProductPrice_ID());
+			productScalePriceService.createScalePriceIfMissing(
+					productPriceId,
+					ScaleProductPrice.builder()
+							.quantityMin(BigDecimal.ZERO)
+							.priceStd(productPrice.getPriceStd())
+							.priceList(productPrice.getPriceList())
+							.priceLimit(productPrice.getPriceLimit())
+							.build()
+			);
 		}
 
 		return null;
 	}
 
-	private void productPriceDelete(final I_M_ProductPrice productPrice)
+	private void onBeforeDeleteProductPrice(final I_M_ProductPrice productPrice)
 	{
-		if (productPrice.getM_ProductPrice_ID() <= 0)
+		final ProductPriceId productPriceId = ProductPriceId.ofRepoIdOrNull(productPrice.getM_ProductPrice_ID());
+		if (productPriceId == null)
 		{
 			return;
 		}
 
-		final String trxName = getTrxName(productPrice);
-		for (final I_M_ProductScalePrice psp : productPA.retrieveScalePrices(productPrice.getM_ProductPrice_ID(), trxName))
-		{
-
-			if (psp.getM_ProductPrice_ID() != productPrice.getM_ProductPrice_ID())
-			{
-				// the psp comes from cache and is stale
-				// NOTE: i think this problem does not apply anymore, so we can safely delete this check
-				continue;
-			}
-
-			delete(psp);
-		}
-
+		productScalePriceService.deleteByProductPriceId(productPriceId);
 	}
 }

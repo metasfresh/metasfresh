@@ -118,31 +118,6 @@ public interface I_C_Project_WO_Step_Simulation
 	String COLUMNNAME_C_Project_WO_Step_Simulation_ID = "C_Project_WO_Step_Simulation_ID";
 
 	/**
-	 * Set Simulation Plan.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_SimulationPlan_ID (int C_SimulationPlan_ID);
-
-	/**
-	 * Get Simulation Plan.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_SimulationPlan_ID();
-
-	org.compiere.model.I_C_SimulationPlan getC_SimulationPlan();
-
-	void setC_SimulationPlan(org.compiere.model.I_C_SimulationPlan C_SimulationPlan);
-
-	ModelColumn<I_C_Project_WO_Step_Simulation, org.compiere.model.I_C_SimulationPlan> COLUMN_C_SimulationPlan_ID = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "C_SimulationPlan_ID", org.compiere.model.I_C_SimulationPlan.class);
-	String COLUMNNAME_C_SimulationPlan_ID = "C_SimulationPlan_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -166,6 +141,31 @@ public interface I_C_Project_WO_Step_Simulation
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Simulation Plan.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_SimulationPlan_ID (int C_SimulationPlan_ID);
+
+	/**
+	 * Get Simulation Plan.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_SimulationPlan_ID();
+
+	org.compiere.model.I_C_SimulationPlan getC_SimulationPlan();
+
+	void setC_SimulationPlan(org.compiere.model.I_C_SimulationPlan C_SimulationPlan);
+
+	ModelColumn<I_C_Project_WO_Step_Simulation, org.compiere.model.I_C_SimulationPlan> COLUMN_C_SimulationPlan_ID = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "C_SimulationPlan_ID", org.compiere.model.I_C_SimulationPlan.class);
+	String COLUMNNAME_C_SimulationPlan_ID = "C_SimulationPlan_ID";
 
 	/**
 	 * Set Date End.

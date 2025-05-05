@@ -1,13 +1,11 @@
 package de.metas.invoicecandidate.spi;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -35,7 +33,6 @@ import lombok.NonNull;
  * Result of {@link IInvoiceCandidateHandler#createCandidatesFor(InvoiceCandidateGenerateRequest)}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class InvoiceCandidateGenerateResult
 {

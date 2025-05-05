@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.status.RStatusId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -47,10 +48,10 @@ public class ProjectData
 	@NonNull
 	CurrencyId currencyId;
 
-	@Nullable
+	@NonNull
 	String name;
 
-	@Nullable
+	@NonNull
 	String value;
 
 	@Builder.Default
@@ -79,6 +80,9 @@ public class ProjectData
 
 	@Nullable
 	ProjectCategory projectCategory;
+
+	@NonNull
+	RequestStatusCategoryId requestStatusCategoryId;
 
 	@Nullable
 	RStatusId projectStatusId;

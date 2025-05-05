@@ -33,6 +33,7 @@ import de.metas.common.rest_api.v1.payment.JsonPaymentAllocationLine;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -124,7 +125,7 @@ public class JsonPaymentService
 		if (!bankAccountIdOptional.isPresent())
 		{
 			return ResponseEntity.unprocessableEntity().body(String.format(
-					"Cannot find Bank Account for org-bpartner-id: %s, currency: %s and account: %s",
+					"Cannot find Bank Account for for the org-bpartner of org-id: %s, currency: %s and account: %s",
 					orgBPartnerIdOptional.get().getRepoId(), jsonInboundPaymentInfo.getCurrencyCode(), jsonInboundPaymentInfo.getTargetIBAN()));
 		}
 
@@ -253,9 +254,14 @@ public class JsonPaymentService
 		return bpartnerPriceListServicesFacade.getBPartnerId(bPartnerIdentifierString, orgId);
 	}
 
+	@NonNull
 	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final OrgId orgId, final DocBaseAndSubType docType)
 	{
-		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier).docType(docType).orgId(orgId).build();
+		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier)
+				.docType(docType)
+				.orgId(orgId)
+				.docStatuses(DocStatus.completedOrClosedStatuses())
+				.build();
 		return invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery);
 	}
 

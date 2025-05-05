@@ -1,18 +1,18 @@
 package de.metas.ui.web.document.filter;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.engine.DocStatus;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -24,12 +24,12 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,6 +38,15 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 
 public class DocumentFilterParamTest
 {
+	private static DocumentFilterParam newParam(final Object value)
+	{
+		return DocumentFilterParam.builder()
+				.setFieldName("param")
+				.setOperator(Operator.EQUAL)
+				.setValue(value)
+				.build();
+	}
+
 	@Nested
 	public class equalsTest
 	{
@@ -83,15 +92,6 @@ public class DocumentFilterParamTest
 	@Nested
 	public class getValueAsCollection
 	{
-		private DocumentFilterParam newParam(final Object value)
-		{
-			return DocumentFilterParam.builder()
-					.setFieldName("param")
-					.setOperator(Operator.EQUAL)
-					.setValue(value)
-					.build();
-		}
-
 		@Test
 		public void fromNull()
 		{
@@ -150,5 +150,45 @@ public class DocumentFilterParamTest
 				test(StringLookupValue.of("id", "displayName"));
 			}
 		}
+	}
+
+	@Nested
+	public class getValueAsString
+	{
+		@Test
+		void from_null() {assertThat(newParam(null).getValueAsString()).isNull();}
+
+		@Test
+		void from_StringLookupValue() {assertThat(newParam(StringLookupValue.of("key", "name")).getValueAsString()).isEqualTo("key");}
+
+		@Test
+		void from_IntegerLookupValue() {assertThat(newParam(IntegerLookupValue.of(123, "name")).getValueAsString()).isEqualTo("123");}
+
+		@Test
+		void from_ReferenceListAwareEnum() {assertThat(newParam(DocStatus.Completed).getValueAsString()).isEqualTo(DocStatus.Completed.getCode());}
+	}
+
+	@Nested
+	public class getValueAsRefListOrNull
+	{
+		void assertDocStatusCompleted(final Object value)
+		{
+			assertThat(newParam(value).getValueAsRefListOrNull(DocStatus::ofCode)).isEqualTo(DocStatus.Completed);
+		}
+
+		@Test
+		void from_null() {assertThat(newParam(null).getValueAsRefListOrNull(DocStatus::ofCode)).isNull();}
+
+		@Test
+		void from_EmptyString() {assertThat(newParam("").getValueAsRefListOrNull(DocStatus::ofCode)).isNull();}
+
+		@Test
+		void from_String() {assertDocStatusCompleted(DocStatus.Completed.getCode());}
+
+		@Test
+		void from_StringLookupValue() {assertDocStatusCompleted(StringLookupValue.of(DocStatus.Completed.getCode(), "name"));}
+
+		@Test
+		void from_ReferenceListAwareEnum() {assertDocStatusCompleted(DocStatus.Completed);}
 	}
 }

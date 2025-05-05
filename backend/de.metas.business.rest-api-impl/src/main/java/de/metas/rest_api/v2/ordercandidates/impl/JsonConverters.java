@@ -1,6 +1,7 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -16,6 +17,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -34,9 +36,10 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
-import de.metas.quantity.Quantitys;
 import de.metas.project.ProjectId;
+import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.CurrencyService;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -148,6 +151,7 @@ public class JsonConverters
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 
 		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
+		final AuctionId auctionId = masterdataProvider.getAuctionId(request);
 
 		final UomId uomId;
 		if (!Check.isBlank(request.getUomCode()))
@@ -174,8 +178,9 @@ public class JsonConverters
 			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
 		}
 
-		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+		final DocBaseType docBaseType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocBaseType)
+				.map(DocBaseType::ofCode)
 				.orElse(null);
 
 		final String subType = Optional.ofNullable(request.getInvoiceDocType())
@@ -187,6 +192,8 @@ public class JsonConverters
 		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());
 
 		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
+
+		final SectionCodeId sectionCodeId = masterdataProvider.getSectionCodeId(orgId, request.getSectionCode());
 
 		return OLCandCreateRequest.builder()
 				//
@@ -208,7 +215,7 @@ public class JsonConverters
 				.dateRequired(request.getDateRequired())
 				.dateCandidate(request.getDateCandidate())
 				//
-				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseType, subType, orgId))
+				.docTypeInvoiceId(docBaseType != null ? docTypeService.getDocTypeId(docBaseType, subType, orgId) : null)
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
@@ -256,6 +263,8 @@ public class JsonConverters
 				.bpartnerName(request.getBpartnerName())
 				.email(request.getEmail())
 				.phone(request.getPhone())
+				.sectionCodeId(sectionCodeId)
+				.auctionId(auctionId)
 				;
 	}
 
@@ -363,7 +372,7 @@ public class JsonConverters
 				.handOverBPartner(toJson(orgCode, olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateCandidate(TimeUtil.asLocalDate(olCand.unbox().getDateCandidate(), SystemTime.zoneId()))
-				.dateOrdered(olCand.getDateDoc())
+				.dateOrdered(olCand.getDateOrdered())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//
@@ -384,6 +393,8 @@ public class JsonConverters
 
 				.description(olCand.unbox().getDescription())
 				.line(olCand.getLine())
+				.sectionCodeId(JsonMetasfreshId.ofOrNull(SectionCodeId.toRepoId(olCand.getSectionCodeId())))
+				.auctionId(JsonMetasfreshId.ofOrNull(AuctionId.toRepoId(olCand.getAuctionId())))
 				.build();
 	}
 

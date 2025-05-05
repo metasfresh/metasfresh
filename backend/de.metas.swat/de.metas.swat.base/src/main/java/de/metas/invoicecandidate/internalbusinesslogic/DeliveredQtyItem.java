@@ -6,11 +6,14 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -50,7 +53,7 @@ public class DeliveredQtyItem
 
 	/** Usually we ignore items where this is false; but sometimes we still need the items to exist none the less */
 	boolean completedOrClosed;
-	
+
 	@Builder
 	@JsonCreator
 	private DeliveredQtyItem(

@@ -6,10 +6,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
@@ -19,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -93,13 +98,14 @@ public class CampaignRepository
 				.collect(ImmutableMap.toImmutableMap(Campaign::getCampaignId, campaign -> campaign));
 	}
 
-	private static Campaign fromRecord(@NonNull final I_MKTG_Campaign campaignRecord)
+	public static Campaign fromRecord(@NonNull final I_MKTG_Campaign campaignRecord)
 	{
 		return Campaign.builder()
 				.name(campaignRecord.getName())
 				.remoteId(campaignRecord.getRemoteRecordId())
 				.platformId(PlatformId.ofRepoId(campaignRecord.getMKTG_Platform_ID()))
 				.campaignId(CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()))
+				.orgId(OrgId.ofRepoId(campaignRecord.getAD_Org_ID()))
 				.build();
 	}
 
@@ -109,6 +115,8 @@ public class CampaignRepository
 		{
 			return;
 		}
+
+		final Campaign campaign = getById(campaignId);
 
 		final ImmutableSet<ContactPersonId> alreadyAddedContactPersonIds = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
@@ -123,8 +131,9 @@ public class CampaignRepository
 		for(final ContactPersonId contactPersonId : contactPersonIdsToAdd)
 		{
 			final I_MKTG_Campaign_ContactPerson newAssociation = newInstance(I_MKTG_Campaign_ContactPerson.class);
-			newAssociation.setMKTG_Campaign_ID(campaignId.getRepoId());
+			newAssociation.setMKTG_Campaign_ID(campaign.getCampaignId().getRepoId());
 			newAssociation.setMKTG_ContactPerson_ID(contactPersonId.getRepoId());
+			newAssociation.setAD_Org_ID(campaign.getOrgId().getRepoId());
 			saveRecord(newAssociation);
 		}
 	}
@@ -191,6 +200,8 @@ public class CampaignRepository
 		campaignRecord.setName(campaign.getName());
 		campaignRecord.setRemoteRecordId(campaign.getRemoteId());
 		campaignRecord.setMKTG_Platform_ID(campaign.getPlatformId().getRepoId());
+		campaignRecord.setAD_Org_ID(campaign.getOrgId().getRepoId());
+
 		return campaignRecord;
 	}
 
@@ -227,5 +238,45 @@ public class CampaignRepository
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
 				.create()
 				.delete();
+	}
+
+	@NonNull
+	public Stream<Campaign> streamActiveCampaigns(@NonNull final PlatformId platformId, final boolean onlyWithRemoteId)
+	{
+		//dev-note: exclude campaigns which were deleted on remote platform
+		final IQueryFilter<I_MKTG_Campaign> deletedOnRemoteFilter = queryBL.createCompositeQueryFilter(I_MKTG_Campaign.class)
+				.addStringNotLikeFilter(I_MKTG_Campaign.COLUMN_LastSyncStatus, RemoteToLocalSyncResult.RemoteToLocalStatus.DELETED_ON_REMOTE_PLATFORM.name(), true);
+
+		final ICompositeQueryFilter<I_MKTG_Campaign> statusFilter = queryBL.createCompositeQueryFilter(I_MKTG_Campaign.class)
+				.setJoinOr()
+				.addFilter(deletedOnRemoteFilter)
+				.addEqualsFilter(I_MKTG_Campaign.COLUMN_LastSyncStatus, null);
+
+		final IQueryBuilder<I_MKTG_Campaign> queryBuilder = queryBL.createQueryBuilder(I_MKTG_Campaign.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign.COLUMNNAME_MKTG_Platform_ID, platformId.getRepoId())
+				.filter(statusFilter);
+
+		if (onlyWithRemoteId)
+		{
+			queryBuilder.addNotNull(I_MKTG_Campaign.COLUMNNAME_RemoteRecordId);
+		}
+		return queryBuilder
+				.create()
+				.iterateAndStream()
+				.map(CampaignRepository::fromRecord);
+	}
+
+	@NonNull
+	public List<Campaign> retrieveByPlatformAndRemoteIds(@NonNull final PlatformId platformId, @NonNull final Set<String> remoteIds)
+	{
+		return queryBL.createQueryBuilder(I_MKTG_Campaign.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_Campaign.COLUMNNAME_MKTG_Platform_ID, platformId.getRepoId())
+				.addInArrayFilter(I_MKTG_Campaign.COLUMNNAME_RemoteRecordId, remoteIds)
+				.create()
+				.iterateAndStream()
+				.map(CampaignRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

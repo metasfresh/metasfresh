@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes.api;
 import com.google.common.base.Predicates;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -30,7 +31,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	/**
 	 * Build ASI Description
 	 * <p>
-	 * e.g. - Product Values - Instance Values - SerNo = #123 - Lot = \u00ab123\u00bb - GuaranteeDate = 10/25/2003
+	 * e.g. - Product Values - Instance Values
 	 *
 	 * @param asi may be {@code null}; in that case, an empty string is returned
 	 */
@@ -84,7 +85,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 */
 	void cloneASI(Object to, Object from);
 
-	default I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet)
+	default I_M_AttributeSetInstance createASIFromAttributeSet(@NonNull final IAttributeSet attributeSet)
 	{
 		return createASIFromAttributeSet(attributeSet, Predicates.alwaysTrue());
 	}
@@ -94,7 +95,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 */
 	void cloneOrCreateASI(@Nullable Object to, @Nullable Object from);
 
-	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet, Predicate<I_M_Attribute> filter);
+	I_M_AttributeSetInstance createASIFromAttributeSet(@NonNull IAttributeSet attributeSet, Predicate<I_M_Attribute> filter);
 
 	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(ProductId productId, IAttributeSet attributeSet);
 
@@ -130,4 +131,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
 
 	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
+
+	String getAttributeValueOrNull(@NonNull AttributeCode attributeCode, @NonNull AttributeSetInstanceId asiId);
 }

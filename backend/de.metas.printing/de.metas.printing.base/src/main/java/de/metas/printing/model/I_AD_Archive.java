@@ -31,8 +31,9 @@ public interface I_AD_Archive extends de.metas.document.archive.model.I_AD_Archi
 	 */
 	//@formatter:off
 	// task 09417
-	String COLUMNNAME_IsDirectEnqueue = "IsDirectEnqueue";
+	@Override
 	void setIsDirectEnqueue(boolean IsDirectPrint);
+	@Override
 	boolean isDirectEnqueue();
 	//@formatter:on
 
@@ -41,10 +42,9 @@ public interface I_AD_Archive extends de.metas.document.archive.model.I_AD_Archi
 	 */
 	//@formatter:off
 	// task 09417
-	String COLUMNNAME_IsDirectProcessQueueItem = "IsDirectProcessQueueItem";
+	@Override
 	void setIsDirectProcessQueueItem (boolean IsDirectEnqueue);
+	@Override
 	boolean isDirectProcessQueueItem();
-	org.adempiere.model.ModelColumn<I_AD_Archive, Object> COLUMN_IsDirectProcessQueueItem = new org.adempiere.model.ModelColumn<I_AD_Archive, Object>(I_AD_Archive.class, "IsDirectProcessQueueItem", null);
 	//@formatter:on
-
 }

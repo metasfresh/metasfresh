@@ -1,6 +1,5 @@
 package org.compiere.apps.search;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.service.IADInfoWindowBL;
@@ -9,19 +8,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
 import org.compiere.model.I_AD_InfoWindow;
-import org.compiere.model.I_A_Asset;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_CashLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -34,34 +24,6 @@ import java.util.Properties;
  */
 public class InfoBuilder
 {
-	//
-	// Actions for standard/hardcoded Info windows
-	// NOTE: this action name will be also used for finding the window icon.
-	public static final String ACTION_InfoBPartner = "InfoBPartner";
-	public static final String ACTION_InfoProduct = "InfoProduct";
-	public static final String ACTION_InfoAsset = "InfoAsset";
-	public static final String ACTION_InfoMRP = "InfoMRP";
-	public static final String ACTION_InfoCRP = "InfoCRP";
-	public static final String ACTION_InfoOrder = "InfoOrder";
-	public static final String ACTION_InfoInvoice = "InfoInvoice";
-	public static final String ACTION_InfoInOut = "InfoInOut";
-	public static final String ACTION_InfoPayment = "InfoPayment";
-	public static final String ACTION_InfoCashLine = "InfoCashLine";
-
-	/** Map of TableName to IconName to be used */
-	public static final ImmutableMap<String, String> tableName2iconName = ImmutableMap.<String, String> builder()
-			.put(I_C_BPartner.Table_Name, ACTION_InfoBPartner)
-			.put(I_M_Product.Table_Name, ACTION_InfoProduct)
-			.put(I_A_Asset.Table_Name, ACTION_InfoAsset)
-			// .put(I_.Table_Name, ACTION_InfoMRP)
-			// .put(I_.Table_Name, ACTION_InfoCRP)
-			.put(I_C_Order.Table_Name, ACTION_InfoOrder)
-			.put(I_C_Invoice.Table_Name, ACTION_InfoInvoice)
-			.put(I_M_InOut.Table_Name, ACTION_InfoInOut)
-			.put(I_C_Payment.Table_Name, ACTION_InfoPayment)
-			.put(I_C_CashLine.Table_Name, ACTION_InfoCashLine)
-			.build();
-
 	public static InfoBuilder newBuilder()
 	{
 		return new InfoBuilder();
@@ -122,150 +84,6 @@ public class InfoBuilder
 				.setInfoWindow(infoWindow)
 				.build();
 	}
-
-	/**
-	 * Show BPartner Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 */
-	static void showBPartner(final Frame frame, final int WindowNo)
-	{
-		newBuilder()
-				.setParentFrame(frame)
-				.setWindowNo(WindowNo)
-				.setModal(false)
-				.setTableName(I_C_BPartner.Table_Name)
-				.buildAndShow();
-	} // showBPartner
-
-	/**
-	 * Show Asset Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 */
-	static void showAsset(final Frame frame, final int WindowNo)
-	{
-		newBuilder()
-				.setParentFrame(frame)
-				.setWindowNo(WindowNo)
-				.setModal(false)
-				.setTableName(I_A_Asset.Table_Name)
-				.buildAndShow();
-	} // showBPartner
-
-	/**
-	 * Show Product Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 */
-	static void showProduct(final Frame frame, final int WindowNo)
-	{
-		final Properties ctx = Env.getCtx();
-		final Map<String, Object> attributes = new HashMap<String, Object>();
-		attributes.put("M_Warehouse_ID", Env.getContextAsInt(ctx, WindowNo, "M_Warehouse_ID"));
-		attributes.put("M_PriceList_ID", Env.getContextAsInt(ctx, WindowNo, "M_PriceList_ID"));
-
-		newBuilder()
-				.setParentFrame(frame)
-				.setWindowNo(WindowNo)
-				.setModal(false)
-				.setTableName(I_M_Product.Table_Name)
-				.setAttributes(attributes)
-				.buildAndShow();
-	} // showProduct
-
-	/**
-	 * Show Order Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	static void showOrder(final Frame frame, final int WindowNo, final String value)
-	{
-		newBuilder()
-				.setParentFrame(frame)
-				.setWindowNo(WindowNo)
-				.setModal(false)
-				.setTableName(I_C_Order.Table_Name)
-				.setSearchValue(value)
-				.buildAndShow();
-	} // showOrder
-
-	/**
-	 * Show Invoice Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	static void showInvoice(final Frame frame, final int WindowNo, final String value)
-	{
-		newBuilder()
-				.setParentFrame(frame)
-				.setWindowNo(WindowNo)
-				.setModal(false)
-				.setTableName(I_C_Invoice.Table_Name)
-				.setSearchValue(value)
-				.buildAndShow();
-	} // showInvoice
-
-	/**
-	 * Show Shipment Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	static void showInOut(final Frame frame, final int WindowNo, final String value)
-	{
-		newBuilder()
-				.setParentFrame(frame)
-				.setWindowNo(WindowNo)
-				.setModal(false)
-				.setTableName(I_M_InOut.Table_Name)
-				.setSearchValue(value)
-				.buildAndShow();
-	} // showInOut
-
-	/**
-	 * Show Payment Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	static void showPayment(final Frame frame, final int WindowNo, final String value)
-	{
-		newBuilder()
-				.setParentFrame(frame)
-				.setWindowNo(WindowNo)
-				.setModal(false)
-				.setTableName(I_C_Payment.Table_Name)
-				.setSearchValue(value)
-				.buildAndShow();
-	} // showPayment
-
-	/**
-	 * Show Cash Line Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	static void showCashLine(final Frame frame, final int WindowNo, final String value)
-	{
-		newBuilder()
-				.setParentFrame(frame)
-				.setWindowNo(WindowNo)
-				.setModal(false)
-				.setTableName(I_C_CashLine.Table_Name)
-				.setSearchValue(value)
-				.buildAndShow();
-	} // showCashLine
 
 	//
 	//
@@ -372,54 +190,9 @@ public class InfoBuilder
 		final boolean multiSelection = isMultiSelection();
 		final String whereClause = getWhereClause();
 
-		final Info info;
-		if (tableName.equals("C_BPartner"))
-		{
-			final boolean isSOTrx = Env.isSOTrx(getCtx(), windowNo);
-			info = new InfoBPartner(parentFrame, modal, windowNo, value, isSOTrx, multiSelection, whereClause);
-		}
-		else if (tableName.equals("M_Product"))
-		{
-			final int m_Warehouse_ID = 0;
-			final int m_PriceList_ID = 0;
-			@SuppressWarnings("deprecation")
-			final InfoProduct infoProduct = new InfoProduct(parentFrame, modal, windowNo, m_Warehouse_ID, m_PriceList_ID, value, multiSelection, whereClause);
-			info = infoProduct;
-		}
-		else if (tableName.equals("C_Invoice"))
-		{
-			info = new InfoInvoice(parentFrame, modal, windowNo, value,
-					multiSelection, whereClause);
-		}
-		else if (tableName.equals("A_Asset"))
-		{
-			final int assetId = 0;
-			info = new InfoAsset(parentFrame, modal, windowNo, assetId, value, multiSelection, whereClause);
-		}
-		else if (tableName.equals("C_Order"))
-		{
-			info = new InfoOrder(parentFrame, modal, windowNo, value, multiSelection, whereClause);
-		}
-		else if (tableName.equals("M_InOut"))
-		{
-			info = new InfoInOut(parentFrame, modal, windowNo, value, multiSelection, whereClause);
-		}
-		else if (tableName.equals("C_Payment"))
-		{
-			info = new InfoPayment(parentFrame, modal, windowNo, value, multiSelection, whereClause);
-		}
-		else if (tableName.equals("C_CashLine"))
-		{
-			info = new InfoCashLine(parentFrame, modal, windowNo, value, multiSelection, whereClause);
-		}
-		else
-		{
-			info = new InfoGeneral(parentFrame, modal, windowNo, value,
+		final Info info = new InfoGeneral(parentFrame, modal, windowNo, value,
 					tableName, keyColumn,
 					multiSelection, whereClause);
-		}
-		//
-		Check.assumeNotNull(info, "info not null");
 
 		//
 		// Set icon if any
@@ -432,34 +205,21 @@ public class InfoBuilder
 		return info;
 	}
 
-	private final Properties getCtx()
+	private Properties getCtx()
 	{
 		return Env.getCtx();
 	}
 
 	/**
 	 * Sets the table name. It is also calling the {@link #setIconName(String)}.
-	 * 
-	 * @param tableName
 	 */
 	public InfoBuilder setTableName(final String tableName)
 	{
 		_tableName = tableName;
-
-		//
-		// Also set the icon name if available
-		if (_tableName != null)
-		{
-			final String iconName = tableName2iconName.get(_tableName);
-			if (iconName != null)
-			{
-				setIconName(iconName);
-			}
-		}
 		return this;
 	}
 
-	private final String getTableName()
+	private String getTableName()
 	{
 		return _tableName;
 	}
@@ -525,8 +285,7 @@ public class InfoBuilder
 			return _keyColumn;
 		}
 
-		final String keyColumn = getTableName() + "_ID";
-		return keyColumn;
+		return getTableName() + "_ID";
 	}
 
 	public InfoBuilder setSearchValue(final String value)
@@ -586,7 +345,7 @@ public class InfoBuilder
 		return this;
 	}
 
-	private final I_AD_InfoWindow getInfoWindow()
+	private I_AD_InfoWindow getInfoWindow()
 	{
 		if (_infoWindowDef != null)
 		{
@@ -610,7 +369,7 @@ public class InfoBuilder
 	{
 		if (Check.isEmpty(iconName, true))
 		{
-			return setIcon((Image)null);
+			return setIcon(null);
 		}
 		else
 		{
@@ -625,7 +384,7 @@ public class InfoBuilder
 		return this;
 	}
 
-	private final Image getIconImage()
+	private Image getIconImage()
 	{
 		return _iconImage;
 	}

@@ -22,20 +22,8 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
-import de.metas.business.BusinessTestHelper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.TimeUtil;
-
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
@@ -43,9 +31,22 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.material.MovementType;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * In this scenario we have two invoice candidates (also referencing two orders). The first ic has two iols, the 2nd ic has one iol.
@@ -124,7 +125,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(TEN, productId, HUNDRET, uomId);
 		{
 			final String inOutDocumentNo = "11";
-			inOut11 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
+			inOut11 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment);
 			iol111 = createInvoiceCandidateInOutLine(ic1, inOut11, qtysDelivered_10, inOutDocumentNo + "_1");
 			completeInOut(inOut11);
 		}
@@ -133,7 +134,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		final StockQtyAndUOMQty qtysDelivered_20 = StockQtyAndUOMQtys.create(TWENTY, productId, TWO_HUNDRET, uomId);
 		{
 			final String inOutDocumentNo = "12";
-			inOut12 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
+			inOut12 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment);
 			iol121 = createInvoiceCandidateInOutLine(ic1, inOut12, qtysDelivered_20, inOutDocumentNo + "_1");
 			completeInOut(inOut12);
 		}
@@ -144,7 +145,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		{
 
 			final String inOutDocumentNo = "21";
-			inOut21 = createInOut(ic2.getBill_BPartner_ID(), ic2.getC_Order_ID(), inOutDocumentNo);
+			inOut21 = createInOut(ic2.getBill_BPartner_ID(), ic2.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment);
 			iol211 = createInvoiceCandidateInOutLine(ic2, inOut21, qtysDelivered_50, inOutDocumentNo + "_1");
 			completeInOut(inOut21);
 		}
@@ -157,7 +158,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> ignored, final List<I_M_InOutLine> ignoredToo)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> ignored, final @NonNull List<I_M_InOutLine> ignoredToo)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 

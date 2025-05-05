@@ -22,12 +22,12 @@ package de.metas.storage;
  * #L%
  */
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Use {@link IStorageEngineService#getStorageEngine()} to get an instance.
@@ -42,7 +42,7 @@ public interface IStorageEngine
 	/**
 	 * Retrieve a <b>union</b> of all storage records that match the given {@code storageQueries}
 	 */
-	Set<IStorageRecord> retrieveStorageRecords(IContextAware context, Set<IStorageQuery> storageQueries);
+	List<IStorageRecord> retrieveStorageRecords(IContextAware context, List<IStorageQuery> storageQueries);
 
 	IStorageQuery newStorageQuery();
 
@@ -54,4 +54,5 @@ public interface IStorageEngine
 	 */
 	IAttributeSet getAttributeSet(I_M_AttributeSetInstance asi);
 
+	boolean anyMatch(@NonNull IContextAware context, @NonNull IStorageQuery storageQuery);
 }

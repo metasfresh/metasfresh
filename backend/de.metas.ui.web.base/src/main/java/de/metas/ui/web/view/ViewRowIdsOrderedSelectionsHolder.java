@@ -200,32 +200,37 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return viewEvaluationCtxSupplier.get();
 	}
 
-	public void updateChangedRows(@NonNull final Set<DocumentId> changedRowIds)
+	public void updateChangedRows(
+			@NonNull final Set<DocumentId> changedRowIds,
+			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
 	{
 		if (changedRowIds.isEmpty())
 		{
 			return;
 		}
 
-		computeCurrentSelectionsIfPresent(selections -> removeRowIdsNotMatchingFilters(selections, changedRowIds));
+		computeCurrentSelectionsIfPresent(selections -> addRemoveChangedRows(selections, changedRowIds, changesCollector));
 	}
 
-	private ViewRowIdsOrderedSelections removeRowIdsNotMatchingFilters(
+	private ViewRowIdsOrderedSelections addRemoveChangedRows(
 			@NonNull final ViewRowIdsOrderedSelections selections,
-			@NonNull final Set<DocumentId> rowIds)
+			@NonNull final Set<DocumentId> rowIds,
+			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
 	{
-		final ViewRowIdsOrderedSelection defaultSelectionBeforeFacetsFiltering = viewDataRepository.removeRowIdsNotMatchingFilters(
+		final ViewRowIdsOrderedSelection defaultSelectionBeforeFacetsFiltering = viewDataRepository.addRemoveChangedRows(
 				selections.getDefaultSelectionBeforeFacetsFiltering(),
 				filtersExcludingFacets,
-				rowIds);
+				rowIds,
+				changesCollector);
 
 		final ViewRowIdsOrderedSelection defaultSelection;
 		if (!facetFilters.isEmpty())
 		{
-			defaultSelection = viewDataRepository.removeRowIdsNotMatchingFilters(
+			defaultSelection = viewDataRepository.addRemoveChangedRows(
 					selections.getDefaultSelection(),
 					facetFilters,
-					rowIds);
+					rowIds,
+					changesCollector);
 		}
 		else
 		{

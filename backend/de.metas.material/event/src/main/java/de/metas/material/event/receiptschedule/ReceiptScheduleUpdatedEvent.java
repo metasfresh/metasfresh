@@ -58,6 +58,7 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	public ReceiptScheduleUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@JsonProperty("oldReceiptScheduleData") final OldReceiptScheduleData oldReceiptScheduleData,
 			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("orderedQuantityDelta") final BigDecimal orderedQuantityDelta,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
@@ -66,6 +67,7 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	{
 		super(eventDescriptor,
 				materialDescriptor,
+				oldReceiptScheduleData,
 				minMaxDescriptor,
 				reservedQuantity,
 				receiptScheduleId);

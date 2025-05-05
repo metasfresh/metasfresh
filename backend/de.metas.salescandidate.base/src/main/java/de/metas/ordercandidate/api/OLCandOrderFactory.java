@@ -5,9 +5,14 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.auction.Auction;
+import de.metas.auction.AuctionId;
+import de.metas.auction.AuctionService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
@@ -50,6 +55,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -149,9 +155,11 @@ class OLCandOrderFactory
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
+	private final AuctionService auctionService = SpringContextHolder.instance.getBean(AuctionService.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
@@ -165,6 +173,7 @@ class OLCandOrderFactory
 	private final ILoggable loggable;
 	private final int olCandProcessorId;
 	private final IOLCandListener olCandListeners;
+	private final OLCandAggregation aggregationInfo;
 
 	//
 	private I_C_Order order;
@@ -181,7 +190,8 @@ class OLCandOrderFactory
 			final int olCandProcessorId,
 			final UserId userInChargeId,
 			final ILoggable loggable,
-			final IOLCandListener olCandListeners)
+			final IOLCandListener olCandListeners,
+			final OLCandAggregation aggregationInfo)
 	{
 		this.orderDefaults = orderDefaults;
 		ctx = Env.getCtx();
@@ -192,7 +202,7 @@ class OLCandOrderFactory
 		this.olCandProcessorId = olCandProcessorId;
 
 		this.olCandListeners = olCandListeners;
-
+		this.aggregationInfo = aggregationInfo;
 	}
 
 	private I_C_Order newOrder(@NonNull final OLCand candidateOfGroup)
@@ -223,9 +233,9 @@ class OLCandOrderFactory
 					.setFrom(billBPartner);
 		}
 
-		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
-		order.setDateOrdered(dateDoc);
-		order.setDateAcct(dateDoc);
+		final Timestamp dateOrdered = TimeUtil.asTimestamp(candidateOfGroup.getDateOrdered());
+		order.setDateOrdered(dateOrdered);
+		order.setDateAcct(dateOrdered);
 
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
@@ -311,6 +321,14 @@ class OLCandOrderFactory
 		order.setBPartnerName(candidateOfGroup.getBpartnerName());
 		order.setEMail(candidateOfGroup.getEmail());
 		order.setPhone(candidateOfGroup.getPhone());
+		order.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(candidateOfGroup)));
+		final Auction auction = auctionService.getByIdOrNull(candidateOfGroup.getAuctionId());
+		if (auction != null)
+		{
+			order.setC_Auction_ID(AuctionId.toRepoId(auction.auctionId()));
+			order.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(auction.harvestingCalendarId()));
+			order.setHarvesting_Year_ID(YearId.toRepoId(auction.harvestingYearId()));
+		}
 
 		save(order);
 		return order;
@@ -432,10 +450,10 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-															.orderLineIds(orderLineIds)
-															.newGroupTemplate(createNewGroupTemplate(productId))
-															.groupCompensationOrderBy(orderLineGroup.getGroupCompensationOrderBy())
-															.build());
+				.orderLineIds(orderLineIds)
+				.newGroupTemplate(createNewGroupTemplate(productId))
+				.groupCompensationOrderBy(orderLineGroup.getGroupCompensationOrderBy())
+				.build());
 	}
 
 	@NonNull
@@ -507,7 +525,7 @@ class OLCandOrderFactory
 		//
 		// Quantity
 		{
-			final Quantity currentQty = Quantitys.create(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
+			final Quantity currentQty = Quantitys.of(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
 			final Quantity newQtyEntered = Quantitys.add(UOMConversionContext.of(candidate.getM_Product_ID()), currentQty, candidate.getQty());
 			currentOrderLine.setQtyEntered(newQtyEntered.toBigDecimal());
 
@@ -520,7 +538,7 @@ class OLCandOrderFactory
 		//
 		// Prices
 		{
-			currentOrderLine.setInvoicableQtyBasedOn(candidate.getInvoicableQtyBasedOn().getRecordString());
+			currentOrderLine.setInvoicableQtyBasedOn(candidate.getInvoicableQtyBasedOn().getCode());
 
 			currentOrderLine.setIsManualPrice(candidate.isManualPrice());
 			if (candidate.isManualPrice())
@@ -712,7 +730,23 @@ class OLCandOrderFactory
 		}
 	}
 
-	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
+	@Nullable
+	private SectionCodeId getSectionCodeId(@NonNull final OLCand groupRepOLCand)
+	{
+		if (aggregationInfo == null)
+		{
+			return null;
+		}
+
+		if (aggregationInfo.isSplitByDiscriminatorColumn(I_C_OLCand.COLUMNNAME_M_SectionCode_ID))
+		{
+			return groupRepOLCand.getSectionCodeId();
+		}
+
+		return null;
+	}
+
+	private void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
 	{
 		orderLine.setExternalSeqNo(candidate.getLine());
 
@@ -725,7 +759,7 @@ class OLCandOrderFactory
 		if (uomId != null)
 		{
 			orderLine.setC_UOM_BPartner_ID(uomId.getRepoId());
-			orderLine.setQtyEnteredInBPartnerUOM(olCand.getQtyEntered());
+			orderLine.setQtyEnteredInBPartnerUOM(olCandEffectiveValuesBL.getEffectiveQtyEntered(olCand));
 		}
 	}
 }

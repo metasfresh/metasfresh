@@ -211,6 +211,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	/**
+	 *
 	 */
 	private void updateHUAssignmentAndSave(final IHUAssignmentBuilder builder, final Object model, final I_M_HU topLevelHU, @Nullable final Boolean isTransferPackingMaterials)
 	{

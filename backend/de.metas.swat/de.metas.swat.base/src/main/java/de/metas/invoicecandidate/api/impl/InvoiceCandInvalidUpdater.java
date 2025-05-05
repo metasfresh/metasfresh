@@ -23,8 +23,10 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
@@ -41,6 +43,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -64,9 +67,9 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -302,6 +305,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update qtyOrdered. we need to be up to date for that factor
 		invoiceCandidateHandlerBL.setOrderedData(icRecord);
 
+		//update isInEffect flag
+		invoiceCandidateHandlerBL.setIsInEffect(icRecord);
+
 		// i.e. QtyOrdered's signum. Used at different places throughout this method
 		final BigDecimal factor;
 		if (icRecord.getQtyOrdered().signum() < 0)
@@ -353,6 +359,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			{
 				final PriceAndTax priceAndTax = invoiceCandidateHandlerBL.calculatePriceAndTax(icRecord);
 				IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
+
+				//In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.
+				//07814
+				// this code was in de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate.errorIfTaxNotFound and exeuted on **after** change - i.e. ineffective 
+				final Tax taxEffective = invoiceCandBL.getTaxEffective(icRecord);
+				if (taxEffective.isTaxNotFound())
+				{
+					icRecord.setIsError(true);
+				}
 			}
 			catch (final Exception ex)
 			{
@@ -363,7 +378,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(icRecord);
 
-		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, icRecord);
+		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(icRecord);
 
 		// 06539 add qty overdelivery to qty delivered
 		final org.compiere.model.I_C_OrderLine ol = icRecord.getC_OrderLine();
@@ -389,9 +404,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		invoiceCandBL.setInvoiceScheduleAmtStatus(ctx, icRecord);
 
+		invoiceCandidateHandlerBL.setWarehouseId(icRecord);
+		invoiceCandidateHandlerBL.setHarvestingDetails(icRecord);
+
 		//
 		// Save it
 		invoiceCandDAO.save(icRecord);
+
+		// in unit tests there might be no handler; don't bother in those cases
+		if (icRecord.getC_ILCandHandler_ID() > 0)
+		{
+			invoiceCandidateHandlerBL.postUpdate(icRecord);
+		}
 	}
 
 	/**
@@ -403,6 +427,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	{
 		if (orderLine == null)
 		{
+			final ImmutableList<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLForInvoiceCandidate(ic);
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciols.stream()
+														 .map(I_C_InvoiceCandidate_InOutLine::getC_InvoiceCandidate_InOutLine_ID)
+														 .collect(ImmutableList.toImmutableList()), ic.getC_Invoice_Candidate_ID()));
+
+			for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
+			{
+				final InOutLineId inOutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
+				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineByIdInTrx(inOutLineId);
+
+				Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
+			}
+
 			return; // nothing to do
 		}
 
@@ -418,6 +458,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
 				iciol.setC_Invoice_Candidate(ic);
 			}
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciol.getC_InvoiceCandidate_InOutLine_ID(), ic.getC_Invoice_Candidate_ID()));
+
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}
@@ -509,7 +554,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	@Override
-	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
+	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(@NonNull final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
 	{
 		assertNotExecuted();
 		icTagger.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds);

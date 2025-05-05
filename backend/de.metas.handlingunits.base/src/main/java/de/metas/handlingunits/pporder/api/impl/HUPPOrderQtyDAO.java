@@ -65,7 +65,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	}
 
 	@Override
-	public List<I_PP_Order_Qty> saveAll(@NonNull final Collection<CreateReceiptCandidateRequest> requests)
+	public ImmutableList<I_PP_Order_Qty> saveAll(@NonNull final Collection<CreateReceiptCandidateRequest> requests)
 	{
 		return requests.stream()
 				.map(this::save)
@@ -78,6 +78,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		final I_PP_Order_Qty record = newInstance(I_PP_Order_Qty.class);
 		record.setPP_Order_ID(request.getOrderId().getRepoId());
 		record.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(request.getOrderBOMLineId()));
+		record.setIsReceipt(true);
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
 		record.setM_Locator_ID(request.getLocatorId().getRepoId());
@@ -99,6 +100,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 
 		record.setPP_Order_ID(request.getOrderId().getRepoId());
 		record.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(request.getOrderBOMLineId()));
+		record.setIsReceipt(false);
 
 		record.setM_Locator_ID(LocatorId.toRepoId(request.getLocatorId()));
 		record.setM_HU_ID(request.getIssueFromHUId().getRepoId());
@@ -172,8 +174,13 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	{
 		return retrieveOrderQtys(ppOrderId)
 				.stream()
-				.filter(cand -> cand.getPP_Order_BOMLine_ID() <= 0)
+				.filter(HUPPOrderQtyDAO::isFinishedGoodsReceipt)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static boolean isFinishedGoodsReceipt(@NonNull final I_PP_Order_Qty ppOrderQty)
+	{
+		return ppOrderQty.getPP_Order_BOMLine_ID() <= 0;
 	}
 
 	@Override

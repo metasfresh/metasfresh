@@ -30,8 +30,8 @@ import de.metas.rest_api.v1.invoice.SalesInvoicePaymentStatusResponse;
 import de.metas.rest_api.v1.invoice.impl.SalesInvoicePaymentStatusRepository.PaymentStatusQuery;
 import de.metas.util.Check;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -59,13 +59,13 @@ public class SalesInvoicePaymentStatusRestController
 		this.salesInvoicePaymentStatusRepository = salesInvoicePaymentStatusRepository;
 	}
 
-	@ApiOperation(value = "Gets regular sales invoice(s) for the given org and document number prefix, together with their payment status.", notes = "Does *not* get sales credit memos and all kinds of purchase invoices.")
+	@Operation(summary = "Gets regular sales invoice(s) for the given org and document number prefix, together with their payment status.", description = "Does *not* get sales credit memos and all kinds of purchase invoices.")
 	@GetMapping("{orgCode}/{invoiceDocumentNoPrefix}")
 	public ResponseEntity<SalesInvoicePaymentStatusResponse> retrievePaymentStatus(
-			@ApiParam(required = true, value = "Organisation for which we retrieve the payment status.<br>Either `AD_Org.Value` or the GLN of a location of the org's business partner.") //
+			@Parameter(required = true, description = "Organisation for which we retrieve the payment status.<br>Either `AD_Org.Value` or the GLN of a location of the org's business partner.") //
 			@PathVariable("orgCode") final String orgCode,
 
-			@ApiParam(required = true, value = "Invoice document number prefix of the invoice(s) for which we retrieve the payment status") //
+			@Parameter(required = true, description = "Invoice document number prefix of the invoice(s) for which we retrieve the payment status") //
 			@PathVariable("invoiceDocumentNoPrefix") final String invoiceDocumentNoPrefix)
 	{
 		final PaymentStatusQuery query = PaymentStatusQuery
@@ -84,16 +84,16 @@ public class SalesInvoicePaymentStatusRestController
 		}
 	}
 
-	@ApiOperation(value = "Gets regular sales invoice(s) for the given org and invoice date range, together with their payment status.",  notes = "Does *not* get sales credit memos and all kinds of purchase invoices.")
+	@Operation(summary = "Gets regular sales invoice(s) for the given org and invoice date range, together with their payment status.",  description = "Does *not* get sales credit memos and all kinds of purchase invoices.")
 	@GetMapping("{orgCode}")
 	public ResponseEntity<SalesInvoicePaymentStatusResponse> retrievePaymentStatus(
-			@ApiParam(required = true, value = "Organisation for which we retrieve the payment status.<br>Either `AD_Org.Value` or the GLN of a location of the org's business partner.") //
+			@Parameter(required = true, description = "Organisation for which we retrieve the payment status.<br>Either `AD_Org.Value` or the GLN of a location of the org's business partner.") //
 			@PathVariable("orgCode") final String orgCode,
 
-			@ApiParam(required = true, example = "2019-02-01", value = "Return the status for invoices that have `C_Invoice.DateInvoiced` greater </b>or equal</b> to the given date at 00:00") //
+			@Parameter(required = true, example = "2019-02-01", description = "Return the status for invoices that have `C_Invoice.DateInvoiced` greater </b>or equal</b> to the given date at 00:00") //
 			@RequestParam("startDateIncl") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate startDate,
 
-			@ApiParam(required = true, example = "2019-03-01", value = "Return the status for invoices that have `C_Invoice.DateInvoiced` less than the given date at 00:00") //
+			@Parameter(required = true, example = "2019-03-01", description = "Return the status for invoices that have `C_Invoice.DateInvoiced` less than the given date at 00:00") //
 			@RequestParam("endDateExcl") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate)
 	{
 		if (Check.isEmpty(orgCode, true) || startDate == null || endDate == null)

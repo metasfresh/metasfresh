@@ -1,30 +1,27 @@
 package de.metas.business;
 
-import static de.metas.util.Check.assumeNotNull;
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.organization.OrgId;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static de.metas.util.Check.assumeNotNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -134,6 +131,6 @@ public class TestInvoice
 
 	public int getLineRepoId(final int index)
 	{
-		return testInvoiceLines.get(index).getInvoiceLineId().getRepoId();
+		return testInvoiceLines.get(index).getInvoiceAndLineId().getRepoId();
 	}
 }

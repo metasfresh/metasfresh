@@ -1,8 +1,11 @@
 package org.eevolution.model.validator;
 
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -12,7 +15,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.ProductBOMVersionsId;
@@ -21,7 +23,6 @@ import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.callout.PP_Product_BOM_TabCallout;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
-import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
 
 /*
  * #%L
@@ -48,11 +49,16 @@ import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
 @Interceptor(I_PP_Product_BOM.class)
 public class PP_Product_BOM
 {
+	private final static AdMessageKey UOM_ID_MUST_BE_EACH_IF_SEQ_NO_IS_SET = AdMessageKey.of("org.eevolution.model.validator.UOM_ID_MUST_BE_EACH_IF_SEQ_NO_IS_SET");
+
 	private final IProductBOMBL bomService = Services.get(IProductBOMBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	private final ProductBOMVersionsDAO bomVersionsDAO;
 	private final ProductBOMService productBOMService;
+
+	private static final AdMessageKey MSG_BOM_VERSIONS_NOT_MATCH = AdMessageKey.of("PP_Product_BOMVersions_BOM_Doesnt_Match");
+	private static final AdMessageKey MSG_VALID_TO_BEFORE_VALID_FROM = AdMessageKey.of("PP_Product_BOMVersions_ValidTo_Before_ValidFrom");
 
 	public PP_Product_BOM(
 			@NonNull final ProductBOMVersionsDAO bomVersionsDAO,
@@ -66,7 +72,6 @@ public class PP_Product_BOM
 	public void init(final IModelValidationEngine engine)
 	{
 		CopyRecordFactory.enableForTableName(I_PP_Product_BOM.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_PP_Product_BOM.Table_Name, PP_Product_BOM_POCopyRecordSupport.class);
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Product_BOM(bomVersionsDAO));
 		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_PP_Product_BOM.Table_Name, PP_Product_BOM_TabCallout.class);
@@ -91,7 +96,7 @@ public class PP_Product_BOM
 
 		if (productId != bomVersions.getM_Product_ID())
 		{
-			throw new AdempiereException(AdMessageKey.of("PP_Product_BOMVersions_BOM_Doesnt_Match"))
+			throw new AdempiereException(MSG_BOM_VERSIONS_NOT_MATCH)
 					.markAsUserValidationError()
 					.appendParametersToMessage()
 					.setParameter("PP_Product_BOM", bom)
@@ -109,4 +114,28 @@ public class PP_Product_BOM
 		productPlanningDAO.retrieveProductPlanningForBomVersions(productBOMVersionsId)
 				.forEach(productPlanning -> productBOMService.verifyBOMAssignment(productPlanning, productBom));
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Product_BOM.COLUMNNAME_SerialNo_Sequence_ID, I_PP_Product_BOM.COLUMNNAME_C_UOM_ID })
+	public void validateSeqNo(final I_PP_Product_BOM productBom)
+	{
+		if (DocSequenceId.ofRepoIdOrNull(productBom.getSerialNo_Sequence_ID()) != null
+				&& !UomId.ofRepoId(productBom.getC_UOM_ID()).isEach())
+		{
+			throw new AdempiereException(UOM_ID_MUST_BE_EACH_IF_SEQ_NO_IS_SET);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Product_BOM.COLUMNNAME_ValidFrom, I_PP_Product_BOM.COLUMNNAME_ValidTo })
+	public void preventBOMVersionsOverlapping(final I_PP_Product_BOM productBom)
+	{
+		if (productBom.getValidTo() != null && productBom.getValidTo().before(productBom.getValidFrom()))
+		{
+			throw new AdempiereException(MSG_VALID_TO_BEFORE_VALID_FROM);
+		}
+
+		productBOMService.assertNoOverlapping(productBom);
+	}
+
 }

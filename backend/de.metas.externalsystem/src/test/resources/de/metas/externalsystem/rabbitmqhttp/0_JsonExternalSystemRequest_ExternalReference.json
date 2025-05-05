@@ -8,7 +8,7 @@
   "externalSystemConfigId": 1,
   "parameters": {
     "RoutingKey": "routingKey",
-    "JsonExternalReferenceLookupRequest": "{\"systemName\":\"ALBERTA\",\"items\":[{\"type\":\"BPartnerLocation\",\"id\":\"ref_1\"}]}",
+    "JsonExternalReferenceLookupRequest": "{\"systemName\":\"ALBERTA\",\"items\":[{\"type\":\"BPartnerLocation\",\"externalReference\":\"ref_1\"}]}",
     "RemoteURL": "remoteURL",
     "RabbitMQAuthToken": "authToken"
   },

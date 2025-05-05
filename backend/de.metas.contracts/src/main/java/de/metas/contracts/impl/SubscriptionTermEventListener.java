@@ -1,16 +1,9 @@
 package de.metas.contracts.impl;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -21,6 +14,14 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+
+import java.util.List;
+
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CopyPrice;
 
 /*
  * #%L
@@ -47,7 +48,6 @@ import lombok.NonNull;
 public class SubscriptionTermEventListener extends FallbackFlatrateTermEventListener
 {
 	public static final String TYPE_CONDITIONS_SUBSCRIPTION = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription;
-
 	private static final String MSG_TERM_ERROR_DELIVERY_ALREADY_HAS_SHIPMENT_SCHED_0P = "Term_Error_Delivery_Already_Has_Shipment_Sched";
 
 	@Override
@@ -74,7 +74,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			@NonNull final I_C_Flatrate_Term predecessor)
 	{
 		final I_C_Flatrate_Conditions conditions = next.getC_Flatrate_Conditions();
-		if (X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice.equals(conditions.getOnFlatrateTermExtend()))
+		if (ONFLATRATETERMEXTEND_CalculatePrice.equals(conditions.getOnFlatrateTermExtend()))
 		{
 			final IPricingResult pricingInfo = FlatrateTermPricing.builder()
 					.termRelatedProductId(ProductId.ofRepoIdOrNull(next.getM_Product_ID()))
@@ -90,7 +90,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			next.setC_TaxCategory_ID(TaxCategoryId.toRepoId(pricingInfo.getTaxCategoryId()));
 			next.setIsTaxIncluded(pricingInfo.isTaxIncluded());
 		}
-		else if (X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CopyPrice.equals(conditions.getOnFlatrateTermExtend()))
+		else if (ONFLATRATETERMEXTEND_CopyPrice.equals(conditions.getOnFlatrateTermExtend()))
 		{
 			next.setPriceActual(predecessor.getPriceActual());
 			next.setC_Currency_ID(predecessor.getC_Currency_ID());

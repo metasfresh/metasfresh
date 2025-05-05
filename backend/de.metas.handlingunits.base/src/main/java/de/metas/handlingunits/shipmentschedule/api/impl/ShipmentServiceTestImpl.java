@@ -58,6 +58,10 @@ public class ShipmentServiceTestImpl implements IShipmentService
 		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
 	}
 
+	/**
+	 * Always creates shipments synchronously and directly.
+	 * Ignores {@link GenerateShipmentsForSchedulesRequest#isWaitForShipments()}.
+	 */
 	@NonNull
 	@VisibleForTesting
 	public Set<InOutId> generateShipmentsForScheduleIds(@NonNull final GenerateShipmentsForSchedulesRequest request)
@@ -68,9 +72,11 @@ public class ShipmentServiceTestImpl implements IShipmentService
 				.createShipmentSchedulesWithHU(shipmentSchedules,
 											   request.getQuantityTypeToUse(),
 											   request.isOnTheFlyPickToPackingInstructions(),
-											   ImmutableMap.of());
+											   ImmutableMap.of(),
+											   true  /* backwards compatibility: true - fail if no picked HUs found*/
+				);
 
-		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(request.getIsShipDateToday());
+		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(request.getIsShipDateToday(), null);
 
 		return Services.get(IHUShipmentScheduleBL.class)
 				.createInOutProducerFromShipmentSchedule()

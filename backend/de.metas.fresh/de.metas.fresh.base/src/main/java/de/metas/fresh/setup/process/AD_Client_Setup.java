@@ -141,7 +141,7 @@ public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParam
 
 			for (final ProcessInfoParameter para : getParametersAsArray())
 			{
-				if (para.getParameter() == null)
+				if (para.getParameter() == null && !PARAM_Logo_ID.equalsIgnoreCase(para.getParameterName()))
 				{
 					continue;
 				}

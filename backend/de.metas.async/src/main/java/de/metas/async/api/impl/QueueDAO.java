@@ -25,11 +25,7 @@ package de.metas.async.api.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IWorkPackageQuery;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.model.I_C_Queue_Processor_Assign;
-import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.*;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -51,17 +47,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import javax.annotation.Nullable;
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class QueueDAO extends AbstractQueueDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(QueueDAO.class);
+	private static final Logger logger = LogManager.getLogger(QueueDAO.class);
 
 	public QueueDAO()
 	{
@@ -138,7 +130,7 @@ public class QueueDAO extends AbstractQueueDAO
 
 	@Override
 	@NonNull
-	protected <T> T retrieveItem(final I_C_Queue_Element element, final Class<T> clazz, final String trxName)
+	protected <T> T retrieveItem(@NonNull final I_C_Queue_Element element, @NonNull final Class<T> clazz, @Nullable final String trxName)
 	{
 		final int adTableId = element.getAD_Table_ID();
 		final int recordId = element.getRecord_ID();

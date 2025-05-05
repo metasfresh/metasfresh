@@ -24,8 +24,8 @@ package de.metas.workflow.execution;
 
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workflow.Workflow;
 import de.metas.workflow.service.IADWorkflowDAO;
 import lombok.NonNull;
@@ -35,7 +35,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluator;
 import org.slf4j.Logger;
 
@@ -77,8 +76,8 @@ public class DocWorkflowManager
 		for (final Workflow workflow : workflows)
 		{
 			//	We have a Document Workflow
-			final String logic = workflow.getDocValueWorkflowTriggerLogic();
-			if (Check.isBlank(logic))
+			final String logic = StringUtils.trimBlankToNull(workflow.getDocValueWorkflowTriggerLogic());
+			if (logic == null)
 			{
 				log.error("Workflow has no Logic - {}", workflow);
 				continue;
@@ -119,14 +118,12 @@ public class DocWorkflowManager
 				.setRecord(document.get_Table_ID(), document.get_ID())
 				.build();
 
-		final WorkflowExecutionResult result = WorkflowExecutor.builder()
-				.workflow(workflow)
+		WorkflowExecutor.builder()
 				.clientId(pi.getClientId())
-				.adLanguage(Env.getADLanguageOrBaseLanguage())
-				.documentRef(pi.getRecordRefOrNull())
+				.documentRef(pi.getRecordRefNotNull())
 				.userId(pi.getUserId())
 				.build()
-				.start();
+				.start(workflow.getId());
 
 		countStarted.incrementAndGet();
 	}
@@ -138,7 +135,7 @@ public class DocWorkflowManager
 	 */
 	private boolean isSQLStartLogicMatches(final Workflow workflow, final PO document)
 	{
-		String logic = workflow.getDocValueWorkflowTriggerLogic();
+		String logic = StringUtils.trimBlankToOptional(workflow.getDocValueWorkflowTriggerLogic()).orElseThrow();
 		logic = logic.substring(4);        //	"SQL="
 		//
 		final String tableName = document.get_TableName();

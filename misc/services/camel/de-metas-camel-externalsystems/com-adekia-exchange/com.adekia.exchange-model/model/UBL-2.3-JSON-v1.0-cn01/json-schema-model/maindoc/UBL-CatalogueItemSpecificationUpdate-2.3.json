@@ -1,0 +1,215 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "json-schema-model/maindoc/UBL-CatalogueItemSpecificationUpdate-2.3.json",
+  "description": "\n  Library:           OASIS Universal Business Language (UBL) 2.3 OS\n                     http://docs.oasis-open.org/ubl/os-UBL-2.3/\n  Release Date:      15 June 2021\n  Module:            json-schema-model/maindoc/UBL-CatalogueItemSpecificationUpdate-2.3.json\n  Generated on:      2021-12-15 21:56z\n  Copyright (c) OASIS Open 2021. All Rights Reserved.\n\n\n  OASIS takes no position regarding the validity or scope of any \n  intellectual property or other rights that might be claimed to pertain \n  to the implementation or use of the technology described in this \n  document or the extent to which any license under such rights \n  might or might not be available; neither does it represent that it has \n  made any effort to identify any such rights. Information on OASIS's \n  procedures with respect to rights in OASIS specifications can be \n  found at the OASIS website. Copies of claims of rights made \n  available for publication and any assurances of licenses to be made \n  available, or the result of an attempt made to obtain a general \n  license or permission for the use of such proprietary rights by \n  implementors or users of this specification, can be obtained from \n  the OASIS Executive Director.\n\n  OASIS invites any interested party to bring to its attention any \n  copyrights, patents or patent applications, or other proprietary \n  rights which may cover technology that may be required to \n  implement this specification. Please address the information to the \n  OASIS Executive Director.\n  \n  This document and translations of it may be copied and furnished to \n  others, and derivative works that comment on or otherwise explain \n  it or assist in its implementation may be prepared, copied, \n  published and distributed, in whole or in part, without restriction of \n  any kind, provided that the above copyright notice and this \n  paragraph are included on all such copies and derivative works. \n  However, this document itself may not be modified in any way, \n  such as by removing the copyright notice or references to OASIS, \n  except as needed for the purpose of developing OASIS \n  specifications, in which case the procedures for copyrights defined \n  in the OASIS Intellectual Property Rights document must be \n  followed, or as required to translate it into languages other than \n  English. \n\n  The limited permissions granted above are perpetual and will not be \n  revoked by OASIS or its successors or assigns. \n\n  This document and the information contained herein is provided on \n  an \"AS IS\" basis and OASIS DISCLAIMS ALL WARRANTIES, \n  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY \n  WARRANTY THAT THE USE OF THE INFORMATION HEREIN \n  WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED \n  WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A \n  PARTICULAR PURPOSE.    \n",
+  "required": [
+    "CatalogueItemSpecificationUpdate"
+    ],
+  "properties": {
+    "_D": {
+      "description": "Document ABIE XML namespace string",
+      "type": "string"
+      },
+    "_A": {
+      "description": "Library ABIE XML namespace string (for ASBIEs)",
+      "type": "string"
+      },
+    "_B": {
+      "description": "BBIE XML namespace string",
+      "type": "string"
+      },
+    "_E": {
+      "description": "Extension scaffolding XML namespace string",
+      "type": "string"
+      },
+    "CatalogueItemSpecificationUpdate": {
+      "description": "A document used to update information (e.g., technical descriptions and properties) about Items in an existing Catalogue.",
+      "$ref": "#/definitions/CatalogueItemSpecificationUpdate"
+      }
+    },
+  "additionalProperties": false,
+  "type": "object",
+  "definitions": {
+    "CatalogueItemSpecificationUpdate": {
+      "title": "Catalogue Item Specification Update. Details",
+      "description": "A document used to update information (e.g., technical descriptions and properties) about Items in an existing Catalogue.",
+      "required": [
+        "ID",
+        "IssueDate",
+        "RelatedCatalogueReference",
+        "ProviderParty",
+        "ReceiverParty",
+        "CatalogueItemSpecificationUpdateLine"
+        ],
+      "properties": {
+
+        "UBLExtensions": {
+          "title": "UBLExtensions",
+          "description": "An optional set of extensions to the committee model",
+          "items": { 
+            "$ref": "../common/UBL-CommonExtensionComponents-2.3.json#/definitions/UBLExtensions" },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+
+        "UBLVersionID": {
+          "title": "Catalogue Item Specification Update. UBL Version Identifier. Identifier",
+          "description": "Identifies the earliest version of the UBL 2 schema for this document type that defines all of the elements that might be encountered in the current instance.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UBLVersionID"
+          },
+        "CustomizationID": {
+          "title": "Catalogue Item Specification Update. Customization Identifier. Identifier",
+          "description": "Identifies a user-defined customization of UBL for a specific use.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CustomizationID"
+          },
+        "ProfileID": {
+          "title": "Catalogue Item Specification Update. Profile Identifier. Identifier",
+          "description": "Identifies a user-defined profile of the subset of UBL being used.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileID"
+          },
+        "ProfileExecutionID": {
+          "title": "Catalogue Item Specification Update. Profile Execution Identifier. Identifier",
+          "description": "Identifies an instance of executing a profile, to associate all transactions in a collaboration.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileExecutionID"
+          },
+        "ID": {
+          "title": "Catalogue Item Specification Update. Identifier",
+          "description": "An identifier for this document, assigned by the sender.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ID"
+          },
+        "UUID": {
+          "title": "Catalogue Item Specification Update. UUID. Identifier",
+          "description": "A universally unique identifier for an instance of this document.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UUID"
+          },
+        "Name": {
+          "title": "Catalogue Item Specification Update. Name",
+          "description": "Text, assigned by the sender, that identifies this document to business users.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/Name"
+          },
+        "IssueDate": {
+          "title": "Catalogue Item Specification Update. Issue Date. Date",
+          "description": "The date, assigned by the sender, on which this document was issued.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueDate"
+          },
+        "IssueTime": {
+          "title": "Catalogue Item Specification Update. Issue Time. Time",
+          "description": "The time, assigned by the sender, at which this document was issued.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueTime"
+          },
+        "RevisionDate": {
+          "title": "Catalogue Item Specification Update. Revision Date. Date",
+          "description": "The date, assigned by the seller, on which the Catalogue was revised.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/RevisionDate"
+          },
+        "RevisionTime": {
+          "title": "Catalogue Item Specification Update. Revision Time. Time",
+          "description": "The time, assigned by the seller, at which the Catalogue was revised.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/RevisionTime"
+          },
+        "Note": {
+          "title": "Catalogue Item Specification Update. Note. Text",
+          "description": "Free-form text pertinent to this document, conveying information that is not contained explicitly in other structures.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/Note"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "Description": {
+          "title": "Catalogue Item Specification Update. Description. Text",
+          "description": "Textual description of the document instance.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/Description"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "VersionID": {
+          "title": "Catalogue Item Specification Update. Version. Identifier",
+          "description": "Identifies the current version of the Catalogue.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/VersionID"
+          },
+        "LineCountNumeric": {
+          "title": "Catalogue Item Specification Update. Line Count. Numeric",
+          "description": "The number of Catalogue Item Specification Update Lines in this document.",
+          "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/LineCountNumeric"
+          },
+        "ValidityPeriod": {
+          "title": "Catalogue Item Specification Update. Validity_ Period. Period",
+          "description": "A period, assigned by the seller, during which the information in the Catalogue Revision is effective. This may be given as start and end dates or as a duration.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ValidityPeriod"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "RelatedCatalogueReference": {
+          "title": "Catalogue Item Specification Update. Related_ Catalogue Reference. Catalogue Reference",
+          "description": "A reference to the Catalogue being updated.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/RelatedCatalogueReference"
+          },
+        "ReferencedContract": {
+          "title": "Catalogue Item Specification Update. Referenced_ Contract. Contract",
+          "description": "A contract or framework agreement with which the Catalogue is associated.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ReferencedContract"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "Signature": {
+          "title": "Catalogue Item Specification Update. Signature",
+          "description": "A signature applied to this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/Signature"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "ProviderParty": {
+          "title": "Catalogue Item Specification Update. Provider_ Party. Party",
+          "description": "The party sending the Catalogue Item Specification Update.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ProviderParty"
+          },
+        "ReceiverParty": {
+          "title": "Catalogue Item Specification Update. Receiver_ Party. Party",
+          "description": "The party receiving the Catalogue Item Specification Update.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ReceiverParty"
+          },
+        "SellerSupplierParty": {
+          "title": "Catalogue Item Specification Update. Seller_ Supplier Party. Supplier Party",
+          "description": "The seller.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/SellerSupplierParty"
+          },
+        "ContractorCustomerParty": {
+          "title": "Catalogue Item Specification Update. Contractor_ Customer Party. Customer Party",
+          "description": "The customer party responsible for the contracts with which the Catalogue is associated.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ContractorCustomerParty"
+          },
+        "TradingTerms": {
+          "title": "Catalogue Item Specification Update. Trading Terms",
+          "description": "The trading terms associated with the Catalogue.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/TradingTerms"
+          },
+        "DefaultLanguage": {
+          "title": "Catalogue Item Specification Update. Default_ Language. Language",
+          "description": "The default language for the item specifications.",
+          "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/DefaultLanguage"
+          },
+        "CatalogueItemSpecificationUpdateLine": {
+          "title": "Catalogue Item Specification Update. Catalogue Item Specification Update Line",
+          "description": "One or more lines in the Catalogue Item Specification Update, each line updating a specific catalogue item.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/CatalogueItemSpecificationUpdateLine"
+            },
+          "minItems": 1,
+          "type": "array"
+          }
+        },
+      "additionalProperties": false,
+      "type": "object"
+      }
+    }
+  }

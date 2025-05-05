@@ -1,5 +1,6 @@
 package de.metas.ui.web.pporder.process;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -9,7 +10,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderConstants;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.X_PP_Order;
 
 import java.util.Objects;
 
@@ -52,9 +52,10 @@ public class WEBUI_PP_Order_IssueReceipt_Launcher extends JavaProcess implements
 		}
 
 		final I_PP_Order ppOrder = context.getSelectedModel(I_PP_Order.class);
-		if (!X_PP_Order.DOCSTATUS_Completed.equals(ppOrder.getDocStatus()))
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
+		if(!docStatus.isCompletedOrClosed())
 		{
-			return ProcessPreconditionsResolution.reject("not completed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not completed/closed");
 		}
 
 		return ProcessPreconditionsResolution.accept();

@@ -25,14 +25,19 @@ package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.ConnectionDetails;
 import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.apache.camel.Predicate;
 
 import java.util.Map;
+
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
 
 @UtilityClass
 public class ExportPPOrderHelper
@@ -77,5 +82,36 @@ public class ExportPPOrderHelper
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	@NonNull
+	public JsonExternalSystemLeichMehlPluFileConfigs getPluFileConfigs(@NonNull final Map<String, String> params)
+	{
+		final String pluFileConfigs = params.get(ExternalSystemConstants.PARAM_PLU_FILE_CONFIG);
+		if (Check.isBlank(pluFileConfigs))
+		{
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PLU_FILE_CONFIG);
+		}
+
+		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+
+		try
+		{
+			return mapper.readValue(pluFileConfigs, JsonExternalSystemLeichMehlPluFileConfigs.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	@NonNull
+	public Predicate isPluFileExportAuditEnabled()
+	{
+		return exchange -> {
+			final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
+
+			return (context.isPluFileExportAuditEnabled());
+		};
 	}
 }

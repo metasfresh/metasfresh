@@ -1,20 +1,21 @@
 package de.metas.contracts.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import de.metas.contracts.impl.FlatrateTransitionService;
+import de.metas.contracts.impl.FlatrateTransitionRepository;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -58,10 +59,10 @@ public class C_Flatrate_ConditionsTest
 		conditions.setC_Flatrate_Transition(transition);
 		save(conditions);
 
+		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsRepository());
+
 		assertThatExceptionOfType(AdempiereException.class)
-				.isThrownBy(() -> {
-					C_Flatrate_Conditions.INSTANCE.onTransitionChange(conditions);
-				})
+				.isThrownBy(() -> flatrateConditions.onTransitionChange(conditions))
 				.withMessageContaining(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P.toAD_Message())
 				.withNoCause();
 	}
@@ -70,9 +71,9 @@ public class C_Flatrate_ConditionsTest
 	public void prohibitVoidAndClose()
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
-		assertThatThrownBy(() -> {
-			C_Flatrate_Conditions.INSTANCE.prohibitVoidAndClose(conditions);
-		}).hasMessage(MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P.toAD_Message());
+		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsRepository());
+
+		assertThatThrownBy(() -> flatrateConditions.prohibitVoidAndClose(conditions)).hasMessage(MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P.toAD_Message());
 	}
 
 	@Test
@@ -82,9 +83,9 @@ public class C_Flatrate_ConditionsTest
 		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
 		save(conditions);
 
-		assertThatThrownBy(() -> {
-			C_Flatrate_Conditions.INSTANCE.beforeComplete(conditions);
-		}).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P.toAD_Message());
+		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsRepository());
+
+		assertThatThrownBy(() -> flatrateConditions.beforeComplete(conditions)).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P.toAD_Message());
 	}
 
 	@Test
@@ -99,9 +100,9 @@ public class C_Flatrate_ConditionsTest
 		subscriptionTerm.setC_Flatrate_Conditions(conditions);
 		save(subscriptionTerm);
 
-		assertThatThrownBy(() -> {
-			C_Flatrate_Conditions.INSTANCE.beforeReactivate(conditions);
-		}).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P.toAD_Message());
+		final C_Flatrate_Conditions flatrateConditions = new C_Flatrate_Conditions(new FlatrateTransitionService(new FlatrateTransitionRepository()), new ModularContractSettingsRepository());
+
+		assertThatThrownBy(() -> flatrateConditions.beforeReactivate(conditions)).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P.toAD_Message());
 	}
 
 }

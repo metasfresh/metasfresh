@@ -1,5 +1,7 @@
 package de.metas.distribution.ddorder.lowlevel;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -168,6 +170,20 @@ public class DDOrderLowLevelDAO
 	public void save(@NonNull final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlternative)
 	{
 		saveRecord(ddOrderLineOrAlternative);
+	}
+
+	@NonNull
+	public ImmutableList<I_DD_OrderLine> getLinesByIds(@NonNull final ImmutableSet<DDOrderLineId> ddOrderLineIds)
+	{
+		if (ddOrderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, ddOrderLineIds)
+				.create()
+				.listImmutable(I_DD_OrderLine.class);
 	}
 
 	@NonNull

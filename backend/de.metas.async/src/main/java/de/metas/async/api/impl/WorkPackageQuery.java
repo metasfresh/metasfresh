@@ -80,7 +80,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param readyForProcessing the readyForProcessing to set
 	 */
-	public WorkPackageQuery setReadyForProcessing(final Boolean readyForProcessing)
+	public WorkPackageQuery setReadyForProcessing(final boolean readyForProcessing)
 	{
 		this.readyForProcessing = readyForProcessing;
 		return this;
@@ -100,9 +100,10 @@ public class WorkPackageQuery implements IWorkPackageQuery
 	/**
 	 * @param error the error to set
 	 */
-	public void setError(final Boolean error)
+	public WorkPackageQuery setError(final Boolean error)
 	{
 		this.error = error;
+		return this;
 	}
 
 	/*
@@ -137,10 +138,8 @@ public class WorkPackageQuery implements IWorkPackageQuery
 		return packageProcessorIds;
 	}
 
-	/**
-	 * @param packageProcessorIds the packageProcessorIds to set
-	 */
-	public void setPackageProcessorIds(@Nullable final Set<QueuePackageProcessorId> packageProcessorIds)
+
+	public WorkPackageQuery setPackageProcessorIds(@Nullable final Set<QueuePackageProcessorId> packageProcessorIds)
 	{
 		if (packageProcessorIds != null)
 		{
@@ -148,6 +147,7 @@ public class WorkPackageQuery implements IWorkPackageQuery
 		}
 
 		this.packageProcessorIds = packageProcessorIds;
+		return this;
 	}
 
 	/*
@@ -161,12 +161,10 @@ public class WorkPackageQuery implements IWorkPackageQuery
 		return priorityFrom;
 	}
 
-	/**
-	 * @param priorityFrom the priorityFrom to set
-	 */
-	public void setPriorityFrom(final String priorityFrom)
+	public WorkPackageQuery setPriorityFrom(final String priorityFrom)
 	{
 		this.priorityFrom = priorityFrom;
+		return this;
 	}
 
 	@Override

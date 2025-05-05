@@ -21,10 +21,11 @@
  */
 package de.metas.ui.web.session;
 
-import java.io.Serializable;
-import java.util.Map;
-import java.util.Properties;
-
+import com.google.common.base.MoreObjects;
+import de.metas.i18n.Language;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,12 +33,9 @@ import org.compiere.model.I_AD_Preference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.i18n.Language;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  *
@@ -316,7 +314,7 @@ public final class UserPreference implements Serializable
 	public boolean isPropertyBool(final String key)
 	{
 		final String value = getProperty(key);
-		return DisplayType.toBoolean(value, false);
+		return DisplayType.toBooleanNonNull(value, false);
 	}
 
 	public void updateContext(final Properties ctx)

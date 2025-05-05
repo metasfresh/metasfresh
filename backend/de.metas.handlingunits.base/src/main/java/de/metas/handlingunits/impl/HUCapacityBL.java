@@ -22,14 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -40,18 +32,22 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.impl.UOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 public class HUCapacityBL implements IHUCapacityBL
 {
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Override
 	public Capacity getCapacity(
@@ -117,7 +113,7 @@ public class HUCapacityBL implements IHUCapacityBL
 
 		final BigDecimal qtyToUse;
 		final I_C_UOM uomToUse;
-		if(uomDAO.isUOMForTUs(UomId.ofRepoId(uom.getC_UOM_ID())))
+		if(UOMDAO.isUOMForTUs(uom))
 		{
 			qtyToUse = piipQty;
 			uomToUse = piipUOM;

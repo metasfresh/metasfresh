@@ -4,6 +4,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery.Aggregate;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -19,6 +20,7 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
@@ -146,5 +148,14 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	public void save(@NonNull final I_PP_Cost_Collector cc)
 	{
 		saveRecord(cc);
+	}
+
+	@Override
+	public Stream<I_PP_Cost_Collector> stream(@NonNull final IQueryFilter<I_PP_Cost_Collector> filter)
+	{
+		return queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+				.filter(filter)
+				.create()
+				.iterateAndStream();
 	}
 }

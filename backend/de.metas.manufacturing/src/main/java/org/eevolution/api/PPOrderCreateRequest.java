@@ -57,6 +57,7 @@ public class PPOrderCreateRequest
 	@Nullable ProductPlanningId productPlanningId;
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
 	@NonNull ResourceId plantId;
+	@Nullable ResourceId workstationId;
 	@NonNull WarehouseId warehouseId;
 	@Nullable UserId plannerId;
 
@@ -87,6 +88,7 @@ public class PPOrderCreateRequest
 			@Nullable final ProductPlanningId productPlanningId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId,
 			@NonNull final ResourceId plantId,
+			@Nullable final ResourceId workstationId,
 			@NonNull final WarehouseId warehouseId,
 			@Nullable final UserId plannerId,
 			//
@@ -116,6 +118,7 @@ public class PPOrderCreateRequest
 		this.productPlanningId = productPlanningId;
 		this.materialDispoGroupId = materialDispoGroupId;
 		this.plantId = plantId;
+		this.workstationId = workstationId;
 		this.warehouseId = warehouseId;
 		this.plannerId = plannerId;
 

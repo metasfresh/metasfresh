@@ -1,22 +1,8 @@
-package de.metas.purchasecandidate.process;
-
-import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.purchasecandidate.PurchaseCandidateId;
-import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
-import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
-import de.metas.util.Services;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-
 /*
  * #%L
  * de.metas.purchasecandidate.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,19 +20,41 @@ import org.compiere.util.Env;
  * #L%
  */
 
+package de.metas.purchasecandidate.process;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
+import de.metas.util.Services;
+import org.compiere.model.X_C_DocType;
+
 public class C_PurchaseCandiate_Create_Requisitions
 		extends C_PurchaseCandiate_Create_PurchaseOrders
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final DocTypeId reqDocTypeId = docTypeDAO.getDocTypeId(
-			DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
-					.docSubType(X_C_DocType.DOCSUBTYPE_Requisition)
-					.adClientId(Env.getClientId().getRepoId())
-					.build());
+	private DocTypeId _reqDocTypeId;
 
 	protected void createPurchaseOrders(final ImmutableSet<PurchaseCandidateId> purchaseCandidateIds)
 	{
-		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds, reqDocTypeId);
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds, getReqDocTypeId());
+	}
+
+	private DocTypeId getReqDocTypeId()
+	{
+		DocTypeId reqDocTypeId = this._reqDocTypeId;
+		if (reqDocTypeId == null)
+		{
+			reqDocTypeId = this._reqDocTypeId = docTypeDAO.getDocTypeId(
+					DocTypeQuery.builder()
+							.docBaseType(DocBaseType.PurchaseOrder)
+							.docSubType(X_C_DocType.DOCSUBTYPE_Requisition)
+							.adClientId(getClientId().getRepoId())
+							.build());
+		}
+		return reqDocTypeId;
 	}
 }

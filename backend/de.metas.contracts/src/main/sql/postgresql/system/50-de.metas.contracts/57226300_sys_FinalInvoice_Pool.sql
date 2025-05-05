@@ -1,0 +1,15 @@
+-- 2024-04-23T19:04:14.535Z
+INSERT INTO C_DocType_Invoicing_Pool (AD_Client_ID,AD_Org_ID,C_DocType_Invoicing_Pool_ID,Created,CreatedBy,IsActive,IsOnDistinctICTypes,IsSOTrx,Name,Negative_Amt_C_DocType_ID,Positive_Amt_C_DocType_ID,Updated,UpdatedBy) VALUES (1000000,1000000,540002,TO_TIMESTAMP('2024-04-23 22:04:14.52','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Final Invoice',541122,541121,TO_TIMESTAMP('2024-04-23 22:04:14.52','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+
+
+
+
+-- 2024-04-23T19:06:57.996Z
+UPDATE C_DocType SET C_DocType_Invoicing_Pool_ID=540002,Updated=TO_TIMESTAMP('2024-04-23 22:06:57.996','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541121
+;
+
+-- 2024-04-23T19:07:02.748Z
+UPDATE C_DocType SET C_DocType_Invoicing_Pool_ID=540002,Updated=TO_TIMESTAMP('2024-04-23 22:07:02.748','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541122
+;

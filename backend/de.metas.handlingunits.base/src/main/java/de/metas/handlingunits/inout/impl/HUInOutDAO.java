@@ -161,7 +161,7 @@ public class HUInOutDAO implements IHUInOutDAO
 	public I_M_InOutLine retrieveCompletedReceiptLineOrNull(final I_M_HU hu)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		final AttributeId receiptInOutLineAttributeId = attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_ReceiptInOutLine_ID);
+		final AttributeId receiptInOutLineAttributeId = attributeDAO.getAttributeIdByCode(HUAttributeConstants.ATTR_ReceiptInOutLine_ID);
 
 		final I_M_HU_Attribute huAttrReceiptInOutLine = huAttributesDAO.retrieveAttribute(hu, receiptInOutLineAttributeId);
 		if (huAttrReceiptInOutLine == null

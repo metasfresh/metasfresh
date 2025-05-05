@@ -32,6 +32,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceId;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,7 +43,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Repository
 class ResourceRepository
@@ -110,6 +114,22 @@ class ResourceRepository
 		return getResourcesMap().getGroupIdsByResourceIds(resourceIds);
 	}
 
+	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+	{
+		return getResourcesMap().getResourceIdsByUserId(userId);
+	}
+
+	@NonNull
+	public Optional<ResourceId> getResourceIdByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_S_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstIdOnlyOptional(ResourceId::ofRepoId);
+	}
+
 	private ResourcesMap getResourcesMap()
 	{
 		return cache.getOrLoad(0, this::retrieveResourcesMap);
@@ -140,9 +160,36 @@ class ResourceRepository
 				.description(record.getDescription())
 				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
 				.resourceTypeId(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
+				.manufacturingResourceType(ManufacturingResourceType.ofNullableCode(record.getManufacturingResourceType()))
 				.responsibleId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
 				.internalName(record.getInternalName())
+				.humanResourceTestGroupId(HumanResourceTestGroupId.ofRepoIdOrNull(record.getS_HumanResourceTestGroup_ID()))
+				.workplaceId(WorkplaceId.ofRepoIdOrNull(record.getC_Workplace_ID()))
 				.build();
+	}
+
+	public ResourceTypeId getResourceTypeIdByResourceId(final ResourceId resourceId)
+	{
+		return getResourcesMap().getById(resourceId).getResourceTypeId();
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(final ImmutableSet<ResourceTypeId> resourceTypeIds)
+	{
+		if (resourceTypeIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return getResourcesMap()
+				.streamAllActive()
+				.filter(resource -> resourceTypeIds.contains(resource.getResourceTypeId()))
+				.map(Resource::getResourceId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public ImmutableSet<ResourceId> getActivePlantIds()
+	{
+		return getResourcesMap().getActivePlantIds();
 	}
 
 	//
@@ -153,18 +200,13 @@ class ResourceRepository
 
 	private static final class ResourcesMap
 	{
-		private final ImmutableList<Resource> allActive;
+		@Getter private final ImmutableList<Resource> allActive;
 		private final ImmutableMap<ResourceId, Resource> byId;
 
 		ResourcesMap(final List<Resource> list)
 		{
 			this.allActive = list.stream().filter(Resource::isActive).collect(ImmutableList.toImmutableList());
 			this.byId = Maps.uniqueIndex(list, Resource::getResourceId);
-		}
-
-		public ImmutableList<Resource> getAllActive()
-		{
-			return allActive;
 		}
 
 		public Resource getById(@NonNull final ResourceId id)
@@ -179,10 +221,15 @@ class ResourceRepository
 
 		public ImmutableSet<ResourceId> getActiveResourceIdsByResourceTypeId(@NonNull final ResourceTypeId resourceTypeId)
 		{
-			return allActive.stream()
+			return streamAllActive()
 					.filter(resource -> ResourceTypeId.equals(resource.getResourceTypeId(), resourceTypeId))
 					.map(Resource::getResourceId)
 					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		public Stream<Resource> streamAllActive()
+		{
+			return allActive.stream();
 		}
 
 		public ImmutableSet<ResourceId> getActiveResourceIdsByGroupIds(final Set<ResourceGroupId> groupIds)
@@ -192,7 +239,7 @@ class ResourceRepository
 				return ImmutableSet.of();
 			}
 
-			return allActive.stream()
+			return streamAllActive()
 					.filter(resource -> groupIds.contains(resource.getResourceGroupId()))
 					.map(Resource::getResourceId)
 					.collect(ImmutableSet.toImmutableSet());
@@ -204,6 +251,7 @@ class ResourceRepository
 					.map(byId::get)
 					.filter(Objects::nonNull)
 					.map(Resource::getResourceGroupId)
+					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
 		}
 
@@ -214,5 +262,22 @@ class ResourceRepository
 					.filter(Objects::nonNull)
 					.collect(ImmutableList.toImmutableList());
 		}
+
+		public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+		{
+			return streamAllActive()
+					.filter(resource -> UserId.equals(resource.getResponsibleId(), userId))
+					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		public ImmutableSet<ResourceId> getActivePlantIds()
+		{
+			return streamAllActive()
+					.filter(resource -> resource.isActive() && resource.isPlant())
+					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
 	}
 }

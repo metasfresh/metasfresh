@@ -1,15 +1,11 @@
 package de.metas.rfq;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.rfq.event.IRfQEventDispacher;
 import de.metas.rfq.exceptions.NoRfQLinesFoundException;
 import de.metas.rfq.exceptions.RfQDocumentClosedException;
@@ -20,6 +16,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.X_C_RfQ;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 /*
  * #%L
@@ -51,7 +48,7 @@ class RfQDocumentHandler implements DocumentHandler
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
 
-	private static final I_C_RfQ extractRfQ(final DocumentTableFields docFields)
+	private static I_C_RfQ extractRfQ(final DocumentTableFields docFields)
 	{
 		return InterfaceWrapperHelper.create(docFields, I_C_RfQ.class);
 	}
@@ -69,10 +66,10 @@ class RfQDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
 	{
 		final I_C_RfQ rfcRecord = extractRfQ(docFields);
-		return TimeUtil.asLocalDate(rfcRecord.getCreated());
+		return InstantAndOrgId.ofTimestamp(rfcRecord.getCreated(), OrgId.ofRepoId(rfcRecord.getAD_Org_ID()));
 	}
 
 	@Override
@@ -88,19 +85,7 @@ class RfQDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public BigDecimal getApprovalAmt(final DocumentTableFields docFields)
-	{
-		return BigDecimal.ZERO;
-	}
-
-	@Override
-	public File createPDF(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_C_RfQ rfq = extractRfQ(docFields);
 
@@ -153,24 +138,7 @@ class RfQDocumentHandler implements DocumentHandler
 		// Make sure everything was saved
 		InterfaceWrapperHelper.save(rfq);
 
-		return rfq.getDocStatus();
-	}
-
-	@Override
-	public void approveIt(final DocumentTableFields docFields)
-	{
-	}
-
-	@Override
-	public void rejectIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void voidIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
+		return DocStatus.ofCode(rfq.getDocStatus());
 	}
 
 	@Override
@@ -239,18 +207,6 @@ class RfQDocumentHandler implements DocumentHandler
 
 		// Make sure it's saved
 		InterfaceWrapperHelper.save(rfq);
-	}
-
-	@Override
-	public void reverseCorrectIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void reverseAccrualIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

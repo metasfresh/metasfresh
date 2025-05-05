@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.project;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.project.ProjectId;
 import org.compiere.model.I_C_Project;
 
 public class C_Project_StepDefData extends StepDefData<I_C_Project>
+		implements StepDefDataGetIdAware<ProjectId, I_C_Project>
 {
 	public C_Project_StepDefData()
 	{
 		super(I_C_Project.class);
+	}
+
+	@Override
+	public ProjectId extractIdFromRecord(final I_C_Project record)
+	{
+		return ProjectId.ofRepoId(record.getC_Project_ID());
 	}
 }

@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerLocationId;

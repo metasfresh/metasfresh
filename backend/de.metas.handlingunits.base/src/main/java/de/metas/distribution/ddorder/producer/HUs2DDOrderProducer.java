@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -40,7 +41,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
@@ -222,7 +222,7 @@ public class HUs2DDOrderProducer
 		docTypeDO_ID = Services.get(IDocTypeDAO.class)
 				.getDocTypeIdOrNull(
 						DocTypeQuery.builder()
-								.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+								.docBaseType(DocBaseType.DistributionOrder)
 								.adClientId(Env.getAD_Client_ID())
 								.adOrgId(orgId.getRepoId())
 								.build());

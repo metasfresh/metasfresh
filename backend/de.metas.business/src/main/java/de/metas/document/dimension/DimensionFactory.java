@@ -31,5 +31,7 @@ public interface DimensionFactory<T>
 	@NonNull
 	Dimension getFromRecord(@NonNull T record);
 
-	void updateRecord(T record, Dimension from);
+	void updateRecord(@NonNull T record, @NonNull Dimension from);
+
+	void updateRecordUserElements(@NonNull T record, @NonNull Dimension from);
 }

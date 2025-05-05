@@ -24,6 +24,7 @@ package de.metas.distribution.ddorder.process;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -38,6 +39,7 @@ import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -54,7 +56,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -69,7 +70,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @implSpec Task http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29
+ * @implSpec Task <a href="http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29">...</a>
  */
 public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 {
@@ -115,6 +116,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		final IStorageEngine storageEngine = storageEngineService.getStorageEngine();
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
+		storageQuery.addBPartnerId(null);
 		storageQuery.addWarehouseId(warehouseId);
 		final Map<ArrayKey, RawMaterialsReturnDDOrderLineCandidate> key2candidate = new HashMap<>();
 
@@ -230,7 +232,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		final int shipperId = candidate.getDD_NetworkDistributionLine().getM_Shipper_ID();
 		final OrgId orgId = candidate.getOrgId();
 		final BPartnerLocationId orgBPLocationId = candidate.getOrgBPLocationId();
-		final int salesRepId = candidate.getPlanner_ID();
+		final UserId salesRepId = candidate.getPlannerId();
 		final WarehouseId warehouseInTrasitId = candidate.getInTransitWarehouseId();
 		final ResourceId rawMaterialsPlantId = candidate.getRawMaterialsPlantId();
 
@@ -239,10 +241,10 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrder.setPP_Plant_ID(ResourceId.toRepoId(rawMaterialsPlantId));
 		ddOrder.setC_BPartner_ID(orgBPLocationId != null ? orgBPLocationId.getBpartnerId().getRepoId() : -1);
 		ddOrder.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(orgBPLocationId));
-		ddOrder.setSalesRep_ID(salesRepId);
+		ddOrder.setSalesRep_ID(UserId.toRepoId(salesRepId));
 
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+				.docBaseType(DocBaseType.DistributionOrder)
 				.adClientId(ddOrder.getAD_Client_ID())
 				.adOrgId(ddOrder.getAD_Org_ID())
 				.build();

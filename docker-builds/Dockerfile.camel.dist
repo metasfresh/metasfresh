@@ -1,0 +1,11 @@
+ARG REFNAME=local
+FROM metasfresh/metas-mvn-camel:$REFNAME as camel
+
+COPY docker-builds/mvn/settings.xml /root/.m2/
+
+WORKDIR /camel/de-metas-camel-externalsystems/dist
+
+ARG VERSION=10.0.0-local
+RUN mvn versions:set -DnewVersion=$VERSION
+
+CMD mvn clean deploy

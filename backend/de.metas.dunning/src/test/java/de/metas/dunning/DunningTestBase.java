@@ -27,10 +27,10 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
@@ -50,10 +50,17 @@ import de.metas.dunning.spi.impl.MockedCloseableIterator;
 import de.metas.dunning.spi.impl.MockedDunnableSource;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.impl.PlainInvoiceBL;
+import de.metas.letter.BoilerPlateRepository;
+import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
@@ -61,7 +68,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import de.metas.location.impl.DummyDocumentLocationBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -80,6 +86,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 
 public class DunningTestBase
@@ -105,7 +112,8 @@ public class DunningTestBase
 
 	protected CurrencyId currencyEUR;
 	protected CurrencyId currencyCHF;
-	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);
+	protected IDunningBL dunningBL;
+	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Before
 	public final void beforeTest()
@@ -123,6 +131,7 @@ public class DunningTestBase
 		db = dao.getDB();
 
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
+		SpringContextHolder.registerJUnitBean(new BoilerPlateRepository());
 
 		//
 		invoiceBL = new PlainInvoiceBL();
@@ -132,6 +141,7 @@ public class DunningTestBase
 
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
+		dunningBL = Services.get(IDunningBL.class);
 
 		MockedCloseableIterator.clear();
 
@@ -217,7 +227,9 @@ public class DunningTestBase
 	protected PlainDunningContext createPlainDunningContext(Date dunningDate, I_C_DunningLevel dunningLevel)
 	{
 		final PlainDunningContext dunningContext = createPlainDunningContext();
-		dunningContext.setDunningDate(dunningDate);
+		dunningContext.setDunningDate(Optional.ofNullable(dunningDate)
+				.map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
+				.orElse(null));
 		dunningContext.setDunningLevel(dunningLevel);
 		return dunningContext;
 	}
@@ -277,6 +289,14 @@ public class DunningTestBase
 		return level;
 	}
 
+	@NonNull
+	protected OrgInfo createOrgInfo()
+	{
+		return orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+				.orgId(OrgId.MAIN)
+				.build());
+	}
+
 	public MockedDunnableSource getMockedDunnableSource(final IDunningContext context)
 	{
 		final MockedDunnableSourceFactory factory = (MockedDunnableSourceFactory)context.getDunningConfig().getDunnableSourceFactory();
@@ -291,4 +311,5 @@ public class DunningTestBase
 		final MockedDunnableSource source = getMockedDunnableSource(context);
 		return source.getDunnableDocList();
 	}
+
 }

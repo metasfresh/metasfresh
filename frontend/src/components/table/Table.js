@@ -3,16 +3,21 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import { ARROW_DOWN_KEY, ARROW_UP_KEY } from '../../constants/Constants';
-import { componentPropTypes, handleCopy } from '../../utils/tableHelpers';
+import {
+  componentPropTypes,
+  handleCopy,
+  isShowCommentsMarker,
+} from '../../utils/tableHelpers';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
 import Spinner from '../app/SpinnerOverlay';
+import { connect } from 'react-redux';
 
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-export default class Table extends PureComponent {
+class Table extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -130,7 +135,7 @@ export default class Table extends PureComponent {
   handleClick = (e, item) => {
     const { keyProperty, selected, onSelect, onDeselect, featureType } =
       this.props;
-    const disableMultiSel = featureType === 'SEARCH' ? true : false;
+    const disableMultiSel = featureType === 'SEARCH';
     const id = item[keyProperty];
 
     this.clearMultiSelectionStartIdx();
@@ -343,6 +348,7 @@ export default class Table extends PureComponent {
       supportOpenRecord,
       focusOnFieldName,
       modalVisible,
+      isModal,
       isGerman,
       activeSort,
       page,
@@ -360,6 +366,7 @@ export default class Table extends PureComponent {
       updatePropertyValue,
       tableId,
       onFastInlineEdit,
+      isShowComments,
     } = this.props;
     const { listenOnKeys } = this.state;
 
@@ -397,11 +404,13 @@ export default class Table extends PureComponent {
           item,
           focusOnFieldName,
           modalVisible,
+          isModal,
           isGerman,
           activeSort,
           updatePropertyValue,
           tableId,
           listenOnKeys,
+          isShowComments,
         }}
         cols={columns}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
@@ -565,4 +574,15 @@ Table.propTypes = {
   onRightClick: PropTypes.func.isRequired,
   handleSelect: PropTypes.func.isRequired,
   rowRefs: PropTypes.object.isRequired,
+  isShowComments: PropTypes.bool,
 };
+
+const mapStateToProps = (state) => {
+  return {
+    isShowComments: isShowCommentsMarker(state),
+  };
+};
+
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  Table
+);

@@ -349,6 +349,29 @@ public interface I_EDI_cctop_invoic_v
     public static final String COLUMNNAME_EDI_cctop_invoic_v_ID = "EDI_cctop_invoic_v_ID";
 
 	/**
+	 * Set EDI Desadv-Nr..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEDIDesadvDocumentNo (String EDIDesadvDocumentNo);
+
+	/**
+	 * Get EDI Desadv-Nr..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public String getEDIDesadvDocumentNo();
+
+	/** Column definition for EDIDesadvDocumentNo */
+	public static final org.adempiere.model.ModelColumn<I_EDI_cctop_invoic_v, Object> COLUMN_EDIDesadvDocumentNo = new org.adempiere.model.ModelColumn<>(I_EDI_cctop_invoic_v.class, "EDIDesadvDocumentNo", null);
+	/** Column name EDIDesadvDocumentNo */
+	public static final String COLUMNNAME_EDIDesadvDocumentNo = "EDIDesadvDocumentNo";
+
+	/**
 	 * Set Summe Gesamt.
 	 * Summe über Alles zu diesem Beleg
 	 *

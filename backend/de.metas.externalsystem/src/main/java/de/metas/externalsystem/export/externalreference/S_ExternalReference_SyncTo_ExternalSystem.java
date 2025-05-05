@@ -102,7 +102,7 @@ public abstract class S_ExternalReference_SyncTo_ExternalSystem extends JavaProc
 	@NonNull
 	private Iterator<I_S_ExternalReference> getSelectedExternalReferenceRecords()
 	{
-		final IQueryBuilder<I_S_ExternalReference> externalReferenceQuery = retrieveSelectedRecordsQueryBuilder(I_S_ExternalReference.class);
+		final IQueryBuilder<I_S_ExternalReference> externalReferenceQuery = retrieveActiveSelectedRecordsQueryBuilder(I_S_ExternalReference.class);
 
 		return externalReferenceQuery
 				.create()

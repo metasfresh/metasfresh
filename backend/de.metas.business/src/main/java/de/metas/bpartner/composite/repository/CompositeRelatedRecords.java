@@ -15,6 +15,7 @@ import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
@@ -73,6 +74,10 @@ class CompositeRelatedRecords
 	@Builder.Default
 	ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> recordRef2LogEntries = ImmutableListMultimap.of();
 
+	@NonNull
+	@Builder.Default
+	ImmutableListMultimap<BPartnerId, I_C_BPartner_CreditLimit> bpartnerId2CreditLimits = ImmutableListMultimap.of();
+
 	public ImmutableList<I_C_BPartner_Location> getBPartnerLocationsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return bpartnerId2BPartnerLocations.get(bpartnerId);
@@ -90,5 +95,11 @@ class CompositeRelatedRecords
 	public ImmutableList<I_C_BP_BankAccount> getBankAccountsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return bpartnerId2BankAccounts.get(bpartnerId);
+	}
+
+	@NonNull
+	public ImmutableList<I_C_BPartner_CreditLimit> getCreditLimitsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return bpartnerId2CreditLimits.get(bpartnerId);
 	}
 }

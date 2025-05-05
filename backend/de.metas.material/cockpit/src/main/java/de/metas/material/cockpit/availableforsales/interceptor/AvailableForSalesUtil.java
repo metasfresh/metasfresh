@@ -20,7 +20,6 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesResult.Quant
 import de.metas.material.cockpit.availableforsales.AvailableForSalesService;
 import de.metas.material.cockpit.availableforsales.EnqueueAvailableForSalesRequest;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -47,7 +46,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -463,8 +463,8 @@ public class AvailableForSalesUtil
 		// Because QtyEntered is what the user can see.. (who knows, QtyOrdered might even be zero in some cases)
 		final ProductId productId = ProductId.ofRepoId(salesOrderLineRecord.getM_Product_ID());
 
-		final Quantity qtyToBeShippedInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.create(quantities.getQtyToBeShipped(), productId), salesOrderLineRecord);
-		final Quantity qtyOnHandInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.create(quantities.getQtyOnHandStock(), productId), salesOrderLineRecord);
+		final Quantity qtyToBeShippedInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.of(quantities.getQtyToBeShipped(), productId), salesOrderLineRecord);
+		final Quantity qtyOnHandInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.of(quantities.getQtyOnHandStock(), productId), salesOrderLineRecord);
 
 		// QtyToBeShippedInOrderLineUOM includes the salesOrderLineRecord.getQtyEntered().
 		// We subtract it again to make it comparable with the orderLine's qtyOrdered.

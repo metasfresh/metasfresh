@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,7 +38,7 @@ import java.util.List;
 @Value
 public class JsonPurchaseCandidateRequest
 {
-	@ApiModelProperty(position = 10, required = true)
+	@Schema(required = true)
 	List<JsonPurchaseCandidateReference> purchaseCandidates;
 
 	@Builder

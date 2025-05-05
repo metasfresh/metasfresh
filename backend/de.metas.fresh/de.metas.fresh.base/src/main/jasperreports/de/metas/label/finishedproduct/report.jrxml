@@ -19,9 +19,9 @@
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
+	<parameter name="M_HU_ID" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT * FROM report.cu_product_label($P{AD_PInstance_ID})
+		<![CDATA[SELECT * FROM report.cu_product_label($P{M_HU_ID})
 ORDER BY value
 ;]]>
 	</queryString>

@@ -3,9 +3,15 @@ import {
   setProcessPending,
   setProcessSaved,
 } from './AppActions';
-import { buildURL, openInNewTab } from '../utils';
+import { parseToDisplay } from '../utils/documentListHelper';
+import { findViewByViewId } from '../reducers/viewHandler';
+import { buildURL, getQueryString, openInNewTab } from '../utils';
 import history from '../services/History';
-import { setIncludedView, unsetIncludedView } from './ViewActions';
+import {
+  closeViewModal,
+  setIncludedView,
+  unsetIncludedView,
+} from './ViewActions';
 import { getTableId } from '../reducers/tables';
 import { updateTableSelection } from './TableActions';
 import {
@@ -16,22 +22,22 @@ import {
   openRawModal,
   toggleOverlay,
 } from './WindowActions';
+import { CLOSE_PROCESS_MODAL } from '../constants/ActionTypes';
 import {
   getProcessData,
   getProcessFileUrl,
   getProcessLayout,
   startProcess,
 } from '../api/process';
-import { parseToDisplay } from '../utils/documentListHelper';
-import { findViewByViewId } from '../reducers/viewHandler';
-import { CLOSE_PROCESS_MODAL } from '../constants/ActionTypes';
 
-export const handleProcessResponse = (
+export const handleProcessResponse = ({
   response,
   processId,
   pinstanceId,
-  parentId
-) => {
+  parentId,
+  contextWindowId,
+  contextViewId,
+}) => {
   return async (dispatch) => {
     const { error, summary, action } = response.data;
 
@@ -77,6 +83,17 @@ export const handleProcessResponse = (
                 openRawModal({ windowId, viewId, profileId: action.profileId })
               );
             }
+            break;
+          }
+          case 'closeView': {
+            await dispatch(
+              closeViewModal({
+                windowId: contextWindowId,
+                viewId: contextViewId,
+                modalVisible: true,
+                closeAction: 'DONE',
+              })
+            );
             break;
           }
           case 'openReport': {
@@ -162,8 +179,16 @@ export const handleProcessResponse = (
 
             break;
           }
+          case 'newRecord': {
+            const { stopHere } = handleProcessResponse_newRecord(action);
+            if (stopHere) {
+              return;
+            }
+            break;
+          }
           default: {
             console.warn('Unhandled action', action);
+            break;
           }
         }
       }
@@ -179,6 +204,30 @@ export const handleProcessResponse = (
       }
     }
   };
+};
+
+const handleProcessResponse_newRecord = (action) => {
+  //console.log('handleProcessResponse_newRecord', { action });
+
+  const { windowId, fieldValues, targetTab } = action;
+  let urlPath = `/window/${windowId}/NEW`;
+  const urlQueryString = getQueryString(fieldValues ?? {});
+  if (urlQueryString) {
+    urlPath += '?' + urlQueryString;
+  }
+
+  if (targetTab === 'NEW_TAB') {
+    const newBrowserTab = window.open(urlPath, '_blank');
+    newBrowserTab.focus();
+    return { stopHere: false };
+  } else if (targetTab === 'SAME_TAB' || !targetTab) {
+    window.open(urlPath, '_self');
+    return { stopHere: true };
+  } else {
+    console.warn(`Unknown targetTab '${targetTab}'. Opening in same tab.`);
+    window.open(urlPath, '_self');
+    return { stopHere: true };
+  }
 };
 
 export const createProcess = ({
@@ -245,7 +294,14 @@ export const createProcess = ({
           const parentId = parentView ? parentView.windowId : documentType;
 
           await dispatch(
-            handleProcessResponse(response, processId, pinstanceId, parentId)
+            handleProcessResponse({
+              response,
+              processId,
+              pinstanceId,
+              parentId,
+              contextWindowId: parentId,
+              contextViewId: viewId,
+            })
           );
         } catch (error) {
           await dispatch(closeModal());

@@ -10,12 +10,12 @@ package de.metas.calendar.standard.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,6 +24,7 @@ package de.metas.calendar.standard.impl;
 
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.YearId;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -58,6 +59,13 @@ public class CalendarBLTest
 	{
 		//noinspection deprecation
 		return TimeUtil.getDay(year, month, day);
+	}
+
+	private YearId createYear()
+	{
+		final I_C_Year year1 = db.newInstance(I_C_Year.class);
+		db.save(year1);
+		return YearId.ofRepoId(year1.getC_Year_ID());
 	}
 
 	@Test
@@ -286,16 +294,15 @@ public class CalendarBLTest
 	public void testGetLastDayOfYear()
 	{
 		// first year
-		final I_C_Year year1 = db.newInstance(I_C_Year.class);
-		db.save(year1);
+		final YearId yearId1 = createYear();
 
 		final I_C_Period period1 = db.newInstance(I_C_Period.class);
 		period1.setStartDate(date(2013, 1, 1));
 		period1.setEndDate(date(2013, 5, 5));
-		period1.setC_Year_ID(year1.getC_Year_ID());
+		period1.setC_Year_ID(yearId1.getRepoId());
 		db.save(period1);
 
-		final Timestamp lastDayOfYear = Services.get(ICalendarBL.class).getLastDayOfYear(year1);
+		final Timestamp lastDayOfYear = Services.get(ICalendarBL.class).getLastDayOfYear(yearId1);
 		assertThat(lastDayOfYear).as("Wrong last day of year").isEqualTo(date(2013, 5, 5));
 	}
 
@@ -303,16 +310,15 @@ public class CalendarBLTest
 	public void testGetFirstDayOfYear()
 	{
 		// first year
-		final I_C_Year year1 = db.newInstance(I_C_Year.class);
-		db.save(year1);
+		final YearId yearId1 = createYear();
 
 		final I_C_Period period1 = db.newInstance(I_C_Period.class);
 		period1.setStartDate(date(2013, 1, 1));
 		period1.setEndDate(date(2013, 5, 5));
-		period1.setC_Year_ID(year1.getC_Year_ID());
+		period1.setC_Year_ID(yearId1.getRepoId());
 		db.save(period1);
 
-		final Timestamp firstDayOfYear = Services.get(ICalendarBL.class).getFirstDayOfYear(year1);
+		final Timestamp firstDayOfYear = Services.get(ICalendarBL.class).getFirstDayOfYear(yearId1);
 		assertThat(firstDayOfYear).as("Wrong last day of year").isEqualTo(date(2013, 1, 1));
 	}
 }

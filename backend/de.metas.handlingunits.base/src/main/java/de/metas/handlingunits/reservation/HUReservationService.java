@@ -95,6 +95,7 @@ public class HUReservationService
 
 	private static final String SYSCONFIG_AllowSqlWhenFilteringHUAttributes = "de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.AllowSqlWhenFilteringHUAttributes";
 
+	private static final String SYSCONFIG_ConsiderAttributes = "de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService.ConsiderAttributes";
 	private final ImmutableSet<DocStatus> docStatusesThatAllowReservation = ImmutableSet.of(
 			DocStatus.Drafted,
 			DocStatus.InProgress,
@@ -311,9 +312,22 @@ public class HUReservationService
 				.map(HUReservation::getReservedQtySum);
 	}
 
+	@NonNull
+	public Optional<HUReservation> getByDocumentRef(
+			@NonNull final HUReservationDocRef documentRef,
+			@Nullable final ImmutableSet<HuId> onlyHuIds)
+	{
+		if (onlyHuIds == null)
+		{
+			return getByDocumentRef(documentRef);
+		}
+		return huReservationRepository.getByDocumentRef(documentRef, onlyHuIds);
+	}
+
+	@NonNull
 	public Optional<HUReservation> getByDocumentRef(@NonNull final HUReservationDocRef documentRef)
 	{
-		return huReservationRepository.getByDocumentRef(documentRef);
+		return huReservationRepository.getByDocumentRef(documentRef, ImmutableSet.of());
 	}
 
 	public ImmutableSet<HuId> getVHUIdsByDocumentRef(@NonNull final HUReservationDocRef documentRef)
@@ -348,7 +362,7 @@ public class HUReservationService
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 
 		// ASI
-		if (asiId != null)
+		if (asiId != null && isConsiderAttributes())
 		{
 			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(asiId);
 
@@ -382,6 +396,11 @@ public class HUReservationService
 			@NonNull final Set<HuId> vhuIds)
 	{
 		huReservationRepository.transferReservation(ImmutableSet.of(from), to, vhuIds);
+	}
+
+	public boolean isConsiderAttributes()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_ConsiderAttributes, true);
 	}
 
 	public void transferReservation(

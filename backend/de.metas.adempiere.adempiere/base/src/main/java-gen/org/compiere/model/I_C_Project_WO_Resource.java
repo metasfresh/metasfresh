@@ -56,20 +56,20 @@ public interface I_C_Project_WO_Resource
 	 * Assign resource from
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAssignDateFrom (java.sql.Timestamp AssignDateFrom);
+	void setAssignDateFrom (@Nullable java.sql.Timestamp AssignDateFrom);
 
 	/**
 	 * Get Assign From.
 	 * Assign resource from
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getAssignDateFrom();
+	@Nullable java.sql.Timestamp getAssignDateFrom();
 
 	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_AssignDateFrom = new ModelColumn<>(I_C_Project_WO_Resource.class, "AssignDateFrom", null);
 	String COLUMNNAME_AssignDateFrom = "AssignDateFrom";
@@ -79,20 +79,20 @@ public interface I_C_Project_WO_Resource
 	 * Assign resource until
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAssignDateTo (java.sql.Timestamp AssignDateTo);
+	void setAssignDateTo (@Nullable java.sql.Timestamp AssignDateTo);
 
 	/**
 	 * Get Assign To.
 	 * Assign resource until
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getAssignDateTo();
+	@Nullable java.sql.Timestamp getAssignDateTo();
 
 	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_AssignDateTo = new ModelColumn<>(I_C_Project_WO_Resource.class, "AssignDateTo", null);
 	String COLUMNNAME_AssignDateTo = "AssignDateTo";
@@ -368,6 +368,48 @@ public interface I_C_Project_WO_Resource
 	String COLUMNNAME_IsAllDay = "IsAllDay";
 
 	/**
+	 * Set Resolved hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setResolvedHours (int ResolvedHours);
+
+	/**
+	 * Get Resolved hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getResolvedHours();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_ResolvedHours = new ModelColumn<>(I_C_Project_WO_Resource.class, "ResolvedHours", null);
+	String COLUMNNAME_ResolvedHours = "ResolvedHours";
+
+	/**
+	 * Set Resource Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setResourceType (java.lang.String ResourceType);
+
+	/**
+	 * Get Resource Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getResourceType();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_ResourceType = new ModelColumn<>(I_C_Project_WO_Resource.class, "ResourceType", null);
+	String COLUMNNAME_ResourceType = "ResourceType";
+
+	/**
 	 * Set Resource.
 	 * Resource
 	 *
@@ -413,6 +455,56 @@ public interface I_C_Project_WO_Resource
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set TARGET person hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setWOPlannedPersonDurationHours (@Nullable BigDecimal WOPlannedPersonDurationHours);
+
+	/**
+	 * Get TARGET person hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getWOPlannedPersonDurationHours();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_WOPlannedPersonDurationHours = new ModelColumn<>(I_C_Project_WO_Resource.class, "WOPlannedPersonDurationHours", null);
+	String COLUMNNAME_WOPlannedPersonDurationHours = "WOPlannedPersonDurationHours";
+
+	/**
+	 * Set TARGET facility hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setWOPlannedResourceDurationHours (@Nullable BigDecimal WOPlannedResourceDurationHours);
+
+	/**
+	 * Get TARGET facility hours.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getWOPlannedResourceDurationHours();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_WOPlannedResourceDurationHours = new ModelColumn<>(I_C_Project_WO_Resource.class, "WOPlannedResourceDurationHours", null);
+	String COLUMNNAME_WOPlannedResourceDurationHours = "WOPlannedResourceDurationHours";
 
 	/**
 	 * Set Test facility group.

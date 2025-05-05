@@ -23,17 +23,17 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.order.IOrderBL;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -329,8 +329,7 @@ public class MRMA extends X_M_RMA implements IDocument
 		MRMALine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		for (MRMALine line : lines)
@@ -585,9 +584,7 @@ public class MRMA extends X_M_RMA implements IDocument
 
 	/**
 	 * 	Copy Lines From other RMA
-	 *	@param otherRMA
 	 *	@param counter set counter info
-	 *	@param setOrder set order link
 	 *	@return number of lines copied
 	 */
 	public int copyLinesFrom (MRMA otherRMA, boolean counter)
@@ -829,9 +826,9 @@ public class MRMA extends X_M_RMA implements IDocument
 	}	//	getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getCreated());
+		return InstantAndOrgId.ofTimestamp(getCreated(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
     /**

@@ -48,10 +48,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class HUStorageEngine implements IStorageEngine
 {
@@ -87,10 +85,20 @@ public class HUStorageEngine implements IStorageEngine
 		return createHUStorageRecords(context, huStorages);
 	}
 
-	@Override
-	public Set<IStorageRecord> retrieveStorageRecords(
+	public boolean anyMatch(
 			@NonNull final IContextAware context,
-			@NonNull final Set<IStorageQuery> storageQueries)
+			@NonNull final IStorageQuery storageQuery)
+	{
+		return HUStorageQuery.cast(storageQuery)
+				.createQueryBuilder_for_M_HU_Storages(context)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public List<IStorageRecord> retrieveStorageRecords(
+			@NonNull final IContextAware context,
+			@NonNull final List<IStorageQuery> storageQueries)
 	{
 		Check.assumeNotEmpty(storageQueries, "storageQueries not empty");
 
@@ -101,7 +109,7 @@ public class HUStorageEngine implements IStorageEngine
 
 		IQuery<I_M_HU_Storage> queryAgg = null;
 		int queriesCount = 0;
-		final Set<IStorageRecord> storageRecords = new HashSet<>();
+		final ArrayList<IStorageRecord> storageRecords = new ArrayList<>();
 
 		for (final IStorageQuery storageQuery : storageQueries)
 		{

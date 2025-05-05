@@ -22,25 +22,19 @@ package de.metas.inoutcandidate.agg.key.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import lombok.NonNull;
-import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
-
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 
-/**
- * AggregationKey value handler for Invoice Candidates in Material Tracking
- *
- * @author al
- */
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class HUShipmentScheduleKeyValueHandler implements IAggregationKeyValueHandler<ShipmentScheduleWithHU>
 {
 	private static final String VERSION = "1";
@@ -51,6 +45,7 @@ public class HUShipmentScheduleKeyValueHandler implements IAggregationKeyValueHa
 		final List<Object> values = new ArrayList<>();
 
 		values.add(VERSION);
+		values.add(schedWithHU.getSplitId());
 
 		final I_M_HU vhu = schedWithHU.getVHU();
 		values.addAll(getValues(vhu));
@@ -64,7 +59,7 @@ public class HUShipmentScheduleKeyValueHandler implements IAggregationKeyValueHa
 		return values;
 	}
 
-	private final List<Object> getValues(final I_M_HU hu)
+	private List<Object> getValues(@Nullable final I_M_HU hu)
 	{
 		if (hu == null)
 		{

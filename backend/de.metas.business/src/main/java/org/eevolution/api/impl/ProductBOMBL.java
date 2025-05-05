@@ -24,9 +24,17 @@ package org.eevolution.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.product.UpdateProductRequest;
 import de.metas.quantity.Quantity;
@@ -35,9 +43,12 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -45,13 +56,13 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.IProductLowLevelUpdater;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMQtys;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.api.QtyCalculationsBOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -59,7 +70,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class ProductBOMBL implements IProductBOMBL
 {
@@ -68,6 +83,12 @@ public class ProductBOMBL implements IProductBOMBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+
+	private static final Logger logger = LogManager.getLogger(ProductBOMBL.class);
+
 
 	@Override
 	public boolean isValidFromTo(final I_PP_Product_BOM productBOM, final Date date)
@@ -107,15 +128,9 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
-	public int calculateProductLowestLevel(final ProductId productId)
+	public void checkCycles(final ProductId productId)
 	{
-		return ProductLowLevelCalculator.newInstance().getLowLevel(productId);
-	}
-
-	@Override
-	public IProductLowLevelUpdater updateProductLowLevels()
-	{
-		return new ProductLowLevelUpdater();
+		ProductBOMCycleDetection.newInstance().checkCycles(productId);
 	}
 
 	@Override
@@ -273,7 +288,7 @@ public class ProductBOMBL implements IProductBOMBL
 		{
 			final ProductId finishedGoodProductId = ProductId.ofRepoId(finishGood.getM_Product_ID());
 
-			bomDAO.getDefaultBOM(finishedGoodProductId, bomType)
+			bomDAO.getByProductIdAndType(finishedGoodProductId, ImmutableSet.of(bomType))
 					.ifPresent(bom -> boms.put(ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID()), bom));
 		}
 
@@ -324,5 +339,108 @@ public class ProductBOMBL implements IProductBOMBL
 				.uom(uomDAO.getById(productBOMLine.getC_UOM_ID()))
 				//
 				.build();
+	}
+
+	@Override
+	public Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull final I_PP_Product_BOMLine bomLine)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> ProductBOMDAO.extractIssuingToleranceSpec(bomLine),
+				() -> productBL.getIssuingToleranceSpec(ProductId.ofRepoId(bomLine.getM_Product_ID()))
+		);
+	}
+
+	@Override
+	public void verifyDefaultBOMProduct(@NonNull final ProductId productId)
+	{
+		verifyDefaultBOMProduct(productDAO.getById(productId));
+	}
+
+	private void verifyDefaultBOMProduct(@NonNull final I_M_Product product)
+	{
+		try
+		{
+			trxManager.runInThreadInheritedTrx(() -> checkProductById(product));
+		}
+		catch (final Exception ex)
+		{
+			product.setIsVerified(false);
+			save(product);
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	private void checkProductById(@NonNull final I_M_Product product)
+	{
+		if (!product.isBOM())
+		{
+			logger.info("Product is not a BOM");
+			// No BOM - should not happen, but no problem
+			return;
+		}
+
+		// Check this level
+		checkProductBOMCyclesAndMarkAsVerified(product);
+
+		// Get Default BOM from this product
+		final I_PP_Product_BOM bom = bomDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.orElseThrow(() -> {
+					final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(AdMessageKey.of("NO_Default_PP_Product_BOM_For_Product"),
+																					  product.getValue() + "_" + product.getName());
+
+					return new AdempiereException(errorMsg);
+				});
+
+		// Check All BOM Lines
+		for (final I_PP_Product_BOMLine tbomline : bomDAO.retrieveLines(bom))
+		{
+			final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
+			final I_M_Product bomLineProduct = productBL.getById(productId);
+			checkProductBOMCyclesAndMarkAsVerified(bomLineProduct);
+
+		}
+	}
+
+	private void checkProductBOMCyclesAndMarkAsVerified(final I_M_Product product)
+	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		checkCycles(productId);
+		product.setIsVerified(true);
+		save(product);
+	}
+
+
+	@Override
+	public Optional<ProductBOM> retrieveValidProductBOM(@NonNull final ProductBOMRequest request)
+	{
+		return bomDAO.retrieveValidProductBOM(request);
+	}
+
+	@Override
+	public Map<ProductDescriptor, Quantity> calculateRequiredQtyInStockUOMForComponents(@NonNull final Quantity qty, @NonNull final ProductBOM productBOM)
+	{
+		final Map<ProductDescriptor, Quantity> result = new HashMap<>();
+
+		final ProductId productId = ProductId.ofRepoId(productBOM.getProductDescriptor().getProductId());
+		final Quantity qtyInBomUom = uomConversionBL.convertQuantityTo(qty, productId, productBOM.getUomId());
+
+		for (final I_PP_Product_BOMLine component : productBOM.getComponents())
+		{
+			final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(component.getM_Product_ID(), AttributesKey.NONE, component.getM_AttributeSetInstance_ID());
+			final ProductId componentProductId = ProductId.ofRepoId(component.getM_Product_ID());
+			final I_C_UOM componentUOM = uomDAO.getById(component.getC_UOM_ID());
+			final Quantity componentQty = Quantity.of(computeQtyRequired(component, productId, qtyInBomUom.toBigDecimal()), componentUOM);
+			final Quantity componentQtyInStockUOM = uomConversionBL.convertToProductUOM(componentQty, ProductId.ofRepoId(component.getM_Product_ID()));
+			result.merge(productDescriptor, componentQtyInStockUOM, Quantity::add);
+
+			if (productBOM.getComponentsProductBOMs().containsKey(productDescriptor))
+			{
+				final ProductBOM componentProductBOM = productBOM.getComponentsProductBOMs().get(productDescriptor);
+				final Quantity componentQtyInBomUom = uomConversionBL.convertQuantityTo(componentQtyInStockUOM, componentProductId, componentProductBOM.getUomId());
+				calculateRequiredQtyInStockUOMForComponents(componentQtyInBomUom, componentProductBOM).forEach((key, value) -> result.merge(key, value, Quantity::add));
+			}
+		}
+
+		return result;
 	}
 }

@@ -271,11 +271,11 @@ import java.util.Set;
 		}
 		catch (final Exception e)
 		{
-			throw  appendAndLogHowtoDisableMessage(e, pointcut);
+			throw appendHowtoDisableMessage(e, pointcut);
 		}
 	}
 
-	private static AdempiereException appendAndLogHowtoDisableMessage(
+	private static AdempiereException appendHowtoDisableMessage(
 			@NonNull final Exception e,
 			@NonNull final Pointcut pointcut)
 	{
@@ -286,7 +286,6 @@ import java.util.Set;
 		{
 			final String howtoDisableMsg = AnnotatedModelInterceptorDisabler.createHowtoDisableMessage(pointcut);
 
-			logger.error(howtoDisableMsg, e);
 			ae.setParameter(parameterName, howtoDisableMsg);
 		}
 		return ae;

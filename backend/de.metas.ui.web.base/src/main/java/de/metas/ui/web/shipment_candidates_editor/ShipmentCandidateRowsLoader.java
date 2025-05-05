@@ -155,7 +155,7 @@ final class ShipmentCandidateRowsLoader
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(record);
 
-		final boolean catchWeight = shipmentScheduleBL.isCatchWeight(record);
+		final boolean catchWeight = record.isCatchWeight();
 		final BigDecimal qtyToDeliverCatchOverride = extractQtyToDeliverCatchOverride(record);
 
 		final PackingInfo packingInfo = extractPackingInfo(record);

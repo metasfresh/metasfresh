@@ -127,6 +127,8 @@ class PasswordGeneratorTest
 				mkAttribute(AttributeConstants.RouterMAC4);
 				mkAttribute(AttributeConstants.RouterMAC5);
 				mkAttribute(AttributeConstants.RouterMAC6);
+				mkAttribute(AttributeConstants.RouterMAC7);
+				mkAttribute(AttributeConstants.RouterMAC8);
 				mkAttribute(AttributeConstants.ATTR_LotNumber);
 				mkAttribute(AttributeConstants.ATTR_SerialNo);
 				mkAttribute(AttributeConstants.ATTR_BestBeforeDate);

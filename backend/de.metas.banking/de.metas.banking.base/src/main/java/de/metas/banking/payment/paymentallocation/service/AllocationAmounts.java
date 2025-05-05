@@ -1,22 +1,19 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import de.metas.invoice.InvoiceAmtMultiplier;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.base.MoreObjects;
-
+import de.metas.common.util.CoalesceUtil;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.function.Function;
 
 /*
  * #%L

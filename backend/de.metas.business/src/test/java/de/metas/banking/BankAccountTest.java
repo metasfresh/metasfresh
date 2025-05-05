@@ -32,7 +32,8 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.adempiere.model.InterfaceWrapperHelper.*;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.*;
 
 public class BankAccountTest
@@ -120,6 +121,7 @@ public class BankAccountTest
 
 		bankAccount.setQR_IBAN(qr_iban);
 		bankAccount.setC_Currency_ID(currencyId.getRepoId());
+		bankAccount.setC_BPartner_ID(10);
 
 		save(bankAccount);
 

@@ -62,7 +62,7 @@ import java.util.Optional;
 @Service
 public class OrderService
 {
-	private final static transient Logger logger = LogManager.getLogger(OrderService.class);
+	private final static Logger logger = LogManager.getLogger(OrderService.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -104,9 +104,9 @@ public class OrderService
 			throw new AdempiereException("Wrong currency: " + request.getCurrencyCode());
 		}
 
-		final BankAccountId targetBankAccount = paymentService.determineInboundBankAccountId(orgId, currencyId, request.getTargetIBAN())
+		final BankAccountId targetBankAccount = paymentService.determineOrgBPartnerBankAccountId(orgId, currencyId, request.getTargetIBAN())
 				.orElseThrow(() -> new AdempiereException(String.format(
-						"Cannot find Bank Account for org-id: %s, currency: %s and iban: %s", orgId, currencyId, request.getTargetIBAN())));
+						"Cannot find Bank Account for the org-bpartner of org-id: %s, currency-id: %s and iban: %s", orgId.getRepoId(), currencyId.getRepoId(), request.getTargetIBAN())));
 
 		final ExternalIdentifier bPartnerExternalIdentifier = ExternalIdentifier.of(request.getBpartnerIdentifier());
 		final BPartnerId bPartnerId = jsonRetrieverService.resolveBPartnerExternalIdentifier(bPartnerExternalIdentifier, orgId)

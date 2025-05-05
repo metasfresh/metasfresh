@@ -23,8 +23,6 @@
 package de.metas.handlingunits.movement.api.impl;
 
 import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimaps;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
 import de.metas.handlingunits.HuId;
@@ -46,6 +44,7 @@ import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
@@ -66,6 +65,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -97,8 +97,8 @@ public class HUMovementBL implements IHUMovementBL
 		final OrgId orgId = OrgId.ofRepoId(movementLine.getAD_Org_ID());
 		final ProductId productId = ProductId.ofRepoId(movementLine.getM_Product_ID());
 
-		final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
-		final ActivityId productActivityId = productAcctDAO.retrieveActivityForAcct(clientId, orgId, productId);
+		final IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
+		final ActivityId productActivityId = productActivityProvider.getActivityForAcct(clientId, orgId, productId);
 
 		movementLine.setC_ActivityFrom_ID(ActivityId.toRepoId(productActivityId));
 		movementLine.setC_Activity_ID(ActivityId.toRepoId(productActivityId));
@@ -127,20 +127,20 @@ public class HUMovementBL implements IHUMovementBL
 	}
 
 	@Override
-	public HUMovementGeneratorResult moveHUsToWarehouse(@NonNull final List<I_M_HU> hus, @NonNull final WarehouseId warehouseToId)
+	public HUMovementGeneratorResult moveHUsToWarehouse(@NonNull final Collection<I_M_HU> hus, @NonNull final WarehouseId warehouseToId)
 	{
 		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 		return moveHUsToLocator(hus, locatorToId);
 	}
 
 	@Override
-	public HUMovementGeneratorResult moveHUs(@NonNull final HUMovementGenerateRequest request)
+	public void moveHUs(@NonNull final HUMovementGenerateRequest request)
 	{
-		return new HUMovementGenerator(request).createMovement();
+		new HUMovementGenerator(request).createMovement();
 	}
 
 	@Override
-	public HUMovementGeneratorResult moveHUsToLocator(@NonNull final List<I_M_HU> hus, @NonNull final LocatorId toLocatorId)
+	public HUMovementGeneratorResult moveHUsToLocator(@NonNull final Collection<I_M_HU> hus, @NonNull final LocatorId toLocatorId)
 	{
 		if (hus.isEmpty())
 		{
@@ -153,9 +153,14 @@ public class HUMovementBL implements IHUMovementBL
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						IHandlingUnitsBL::extractLocatorId,
 						hu -> HuId.ofRepoId(hu.getM_HU_ID())));
-		Multimaps.index(hus, IHandlingUnitsBL::extractLocatorId);
 		for (final LocatorId fromLocatorId : huIdsByLocatorId.keySet())
 		{
+			// Skip HUs that are already at target locator
+			if (LocatorId.equals(fromLocatorId, toLocatorId))
+			{
+				continue;
+			}
+
 			final HUMovementGenerateRequest request = HUMovementGenerateRequest.builder()
 					.fromLocatorId(fromLocatorId)
 					.toLocatorId(toLocatorId)
@@ -232,7 +237,7 @@ public class HUMovementBL implements IHUMovementBL
 		final SourceHUsService sourceHuService = SourceHUsService.get();
 
 		//
-		// Make sure hu's current locator is the locator from which we need to move
+		// Make sure HU's current locator is the locator from which we need to move
 		// final int huLocatorIdOld = hu.getM_Locator_ID();
 		final LocatorId locatorFromId = IHandlingUnitsBL.extractLocatorId(hu);
 

@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,12 +43,11 @@ import java.util.List;
  * Helper class used for grouping given TUs and build LUs from them.
  *
  * @author tsa
- *
  */
 public class LULoader
 {
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	
+
 	private final IHUContext huContext;
 
 	private final List<LULoaderInstance> luInstances = new ArrayList<>();
@@ -63,7 +62,7 @@ public class LULoader
 
 	/**
 	 * Add given Transport Unit (TU) to a Loading Unit (LU).
-	 *
+	 * <p>
 	 * If there already exists an LU which accepts the given TU then the TU will be added to that LU. If not, a new LU will be created.
 	 *
 	 * @param tuHU may not be {@code null}
@@ -99,7 +98,7 @@ public class LULoader
 
 	/**
 	 * Create a new LU instance which is able to accept our TU.
-	 *
+	 * <p>
 	 * This instance will be automatically enqueued to our current LU instances.
 	 *
 	 * @param tuHU
@@ -140,5 +139,10 @@ public class LULoader
 		}
 
 		return luHUs;
+	}
+
+	public void close()
+	{
+		luInstances.forEach(LULoaderInstance::close);
 	}
 }

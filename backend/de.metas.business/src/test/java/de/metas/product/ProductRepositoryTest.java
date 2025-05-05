@@ -32,6 +32,7 @@ import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_AD_OrgInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,8 +55,9 @@ class ProductRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		productRepository = new ProductRepository();
+		productRepository = ProductRepository.newInstanceForUnitTesting();
 		createOrg();
+		createProductCategory();
 	}
 
 	@Test
@@ -68,6 +70,7 @@ class ProductRepositoryTest
 		productRecord.setValue("productNo");
 		productRecord.setName("productName");
 		productRecord.setProductType("ITEM");
+		productRecord.setM_Product_Category_ID(ProductCategoryId.toRepoId(defaultProductCategoryId));
 		saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
@@ -91,6 +94,7 @@ class ProductRepositoryTest
 		productRecord1.setValue("productNo1");
 		productRecord1.setName("productName1");
 		productRecord1.setProductType("ITEM");
+		productRecord1.setM_Product_Category_ID(ProductCategoryId.toRepoId(defaultProductCategoryId));
 
 		saveRecord(productRecord1);
 
@@ -103,6 +107,7 @@ class ProductRepositoryTest
 		productRecord2.setValue("productNo2");
 		productRecord2.setName("productName2");
 		productRecord2.setProductType("ITEM");
+		productRecord2.setM_Product_Category_ID(ProductCategoryId.toRepoId(defaultProductCategoryId));
 
 		saveRecord(productRecord2);
 
@@ -234,5 +239,13 @@ class ProductRepositoryTest
 		orgInfo.setAD_Org_ID(ORG_ID.getRepoId());
 		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_Letzte4Stellen);
 		save(orgInfo);
+	}
+
+	private void createProductCategory()
+	{
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		category.setM_Product_Category_ID(ProductCategoryId.toRepoId(defaultProductCategoryId));
+		category.setName("name");
+		save(category);
 	}
 }

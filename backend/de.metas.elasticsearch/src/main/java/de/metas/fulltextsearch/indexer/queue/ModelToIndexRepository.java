@@ -142,7 +142,7 @@ public class ModelToIndexRepository
 		return ModelToIndex.builder()
 				.ftsConfigId(FTSConfigId.ofRepoId(record.getES_FTS_Config_ID()))
 				.eventType(ModelToIndexEventType.ofCode(record.getEventType()))
-				.sourceModelRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
+				.sourceModelRef(TableRecordReference.ofOrNull(record.getAD_Table_ID(), record.getRecord_ID()))
 				.build();
 	}
 

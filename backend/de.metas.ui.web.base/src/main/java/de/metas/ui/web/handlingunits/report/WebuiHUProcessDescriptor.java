@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.report;
 
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -45,12 +46,10 @@ import lombok.Value;
 @Builder
 class WebuiHUProcessDescriptor
 {
-	@NonNull
-	private ProcessDescriptor processDescriptor;
+	@NonNull ProcessDescriptor processDescriptor;
 
 	@NonNull
-	@Getter(AccessLevel.NONE)
-	private HUProcessDescriptor huProcessDescriptor;
+	@Getter(AccessLevel.NONE) HUProcessDescriptor huProcessDescriptor;
 
 	public ProcessId getProcessId()
 	{
@@ -75,11 +74,11 @@ class WebuiHUProcessDescriptor
 				.processCaption(processDescriptor.getCaption())
 				.processDescription(processDescriptor.getDescription())
 				.displayPlace(DisplayPlace.ViewQuickActions)
-				.preconditionsResolutionSupplier(() -> ProcessPreconditionsResolution.accept())
+				.preconditionsResolutionSupplier(ProcessPreconditionsResolution::accept)
 				.build();
 	}
 
-	public boolean appliesToHUUnitType(final String huUnitType)
+	public boolean appliesToHUUnitType(final HuUnitType huUnitType)
 	{
 		return huProcessDescriptor.appliesToHUUnitType(huUnitType);
 	}

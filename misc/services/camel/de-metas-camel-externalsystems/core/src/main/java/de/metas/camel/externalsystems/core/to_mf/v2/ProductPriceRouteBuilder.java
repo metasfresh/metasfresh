@@ -26,6 +26,7 @@ import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
 import de.metas.camel.externalsystems.common.v2.ProductPriceUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.UpsertProductPriceList;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
+import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;

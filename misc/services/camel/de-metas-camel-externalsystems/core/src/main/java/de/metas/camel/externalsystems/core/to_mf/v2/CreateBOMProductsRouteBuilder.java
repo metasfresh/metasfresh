@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.v2.BOMUpsertCamelRequest;
+import de.metas.camel.externalsystems.common.v2.VerifyBOMCamelRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.rest_api.v2.bom.JsonBOMCreateRequest;
 import org.apache.camel.Exchange;
@@ -32,7 +33,9 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PRODUCT_IDENTIFIER;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BOM_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_VERIFY_BOM_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -67,5 +70,27 @@ public class CreateBOMProductsRouteBuilder extends RouteBuilder
 				.toD("{{metasfresh.upsert-bom-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
+
+		from(direct(MF_VERIFY_BOM_V2_CAMEL_URI))
+				.routeId(MF_VERIFY_BOM_V2_CAMEL_URI)
+				.streamCaching()
+				.process(exchange -> {
+					final Object request = exchange.getIn().getBody();
+					if (!(request instanceof VerifyBOMCamelRequest))
+					{
+						throw new RuntimeCamelException("The route " + MF_VERIFY_BOM_V2_CAMEL_URI + " requires the body to be instanceof VerifyBOMCamelRequest V2."
+																+ " However, it is " + (request == null ? "null" : request.getClass().getName()));
+					}
+
+					final VerifyBOMCamelRequest verifyBOMCamelRequest = (VerifyBOMCamelRequest)request;
+
+					exchange.getIn().setHeader(HEADER_ORG_CODE, verifyBOMCamelRequest.getOrgCode());
+					exchange.getIn().setHeader(HEADER_PRODUCT_IDENTIFIER, verifyBOMCamelRequest.getProductIdentifier());
+
+					exchange.getIn().setBody(null);
+				})
+				.removeHeaders("CamelHttp*")
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.toD("{{metasfresh.upsert-bom-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}/verify/${header." + HEADER_PRODUCT_IDENTIFIER + "}");
 	}
 }

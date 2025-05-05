@@ -3,7 +3,6 @@ package de.metas.notification.impl;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.IRoleNotificationsConfigRepository;
-import de.metas.notification.IUserNotificationsConfigRepository;
 import de.metas.notification.NotificationSenderTemplate;
 import de.metas.notification.RoleNotificationsConfig;
 import de.metas.notification.UserNotificationRequest;
@@ -14,6 +13,7 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -112,7 +112,8 @@ public class NotificationBL implements INotificationBL
 	@Override
 	public UserNotificationsConfig getUserNotificationsConfig(final UserId adUserId)
 	{
-		return Services.get(IUserNotificationsConfigRepository.class).getByUserId(adUserId);
+		//to avoid cyclic dependency
+		return SpringContextHolder.instance.getBean(UserNotificationsConfigService.class).getByUserId(adUserId);
 	}
 
 	@Override

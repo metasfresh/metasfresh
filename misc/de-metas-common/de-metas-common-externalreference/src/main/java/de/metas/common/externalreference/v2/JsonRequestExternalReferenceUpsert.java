@@ -26,27 +26,30 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.externalsystem.JsonExternalSystemName;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Value
 @JsonDeserialize(builder = JsonRequestExternalReferenceUpsert.JsonRequestExternalReferenceUpsertBuilder.class)
 public class JsonRequestExternalReferenceUpsert
 {
-	@ApiModelProperty(required = true, value = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+	@Schema(requiredMode = REQUIRED, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	@NonNull
 	JsonExternalSystemName systemName;
 
+	@Schema(requiredMode = REQUIRED)
 	@NonNull
-	JsonExternalReferenceItem externalReferenceItem;
+	JsonExternalReferenceRequestItem externalReferenceItem;
 
 	@JsonCreator
 	@Builder
 	public JsonRequestExternalReferenceUpsert(
 			@JsonProperty("systemName") @NonNull final JsonExternalSystemName systemName,
-			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceItem externalReferenceItem)
+			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceRequestItem externalReferenceItem)
 	{
 		this.systemName = systemName;
 		this.externalReferenceItem = externalReferenceItem;

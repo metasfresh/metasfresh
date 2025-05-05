@@ -44,6 +44,8 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.workflow.WFDurationUnit;
@@ -76,7 +78,6 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -96,6 +97,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	// Services
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 	/**
 	 * Just Prepared Flag
@@ -299,6 +301,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 					.qtyRejectedToAdd(qtys.getRejectedQty())
 					.date(TimeUtil.asZonedDateTime(getMovementDate()))
 					.asiId(AttributeSetInstanceId.ofRepoIdOrNone(getM_AttributeSetInstance_ID()))
+					.roundToScaleQuantity(ppOrderBL.getRoundingToScale(PPOrderId.ofRepoId(getPP_Order_ID())).orElse(null))
 					.build());
 		}
 		else if (costCollectorType.isMaterialReceipt())
@@ -323,7 +326,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 
 		//
-		final Quantity movementQtyInStockingUOM = costCollectorBL.getMovementQtyInStockingUOM(this);
+		final Quantity movementQtyInStockingUOM = costCollectorBL.getMovementQtyInStockingUOM(this)
+				.negateIf(X_M_Transaction.MOVEMENTTYPE_WorkOrderMinus.equals(mtrxMovementType));
 		final MTransaction mtrx = new MTransaction(getCtx(),
 				getAD_Org_ID(),
 				mtrxMovementType,
@@ -530,9 +534,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	}
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getMovementDate());
+		return InstantAndOrgId.ofTimestamp(getMovementDate(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	@Override

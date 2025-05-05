@@ -57,7 +57,6 @@ public final class DetailId implements Comparable<DetailId>
 		return new DetailId(PREFIX_AD_TAB_ID, adTabId.getRepoId());
 	}
 
-
 	public static DetailId fromPrefixAndId(final String prefix, final int id)
 	{
 		return new DetailId(prefix, id);
@@ -134,11 +133,12 @@ public final class DetailId implements Comparable<DetailId>
 
 	public String getTableAlias()
 	{
-		if (_tableAlias == null)
+		String tableAlias = this._tableAlias;
+		if (tableAlias == null)
 		{
-			_tableAlias = "d" + idInt;
+			tableAlias = this._tableAlias = "d" + idInt;
 		}
-		return _tableAlias;
+		return tableAlias;
 	}
 
 	@Nullable

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -15,8 +16,11 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inventory.HUAggregationType;
@@ -38,14 +42,18 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
@@ -55,11 +63,13 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -114,6 +124,12 @@ public class InventoryRepository
 		return getInventoryLineRecordById(inventoryLine.getId());
 	}
 
+	private ImmutableSet getInventoryLinesByIDs(@Nullable final Set<InventoryLineId> inventoryLineIds)
+	{
+		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
+	}
 	private HashMap<InventoryLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@Nullable final Set<InventoryLineId> inventoryLineIds)
 	{
 		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
@@ -229,12 +245,16 @@ public class InventoryRepository
 
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLineRecord.getM_Locator_ID());
 
+		final I_C_UOM uom = uomsRepo.getById(inventoryLineRecord.getC_UOM_ID());
+
 		final InventoryLineBuilder lineBuilder = InventoryLine.builder()
 				.id(extractInventoryLineIdOrNull(inventoryLineRecord))
 				.orgId(OrgId.ofRepoId(inventoryLineRecord.getAD_Org_ID()))
 				.locatorId(locatorId)
 				.productId(ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID()))
 				.asiId(asiId)
+				.qtyCountFixed(Quantity.of(inventoryLineRecord.getQtyCount(), uom))
+				.qtyBookFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom))
 				.storageAttributesKey(storageAttributesKey);
 
 		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
@@ -310,6 +330,7 @@ public class InventoryRepository
 
 		return InventoryLineHU.builder()
 				.huId(HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID()))
+				.huQRCode(HUQRCode.fromNullableGlobalQRCodeJsonString(inventoryLineRecord.getRenderedQRCode()))
 				.qtyInternalUse(qtyInternalUse)
 				.qtyBook(qtyBook)
 				.qtyCount(qtyCount)
@@ -364,6 +385,7 @@ public class InventoryRepository
 				.qtyBook(qtyBookConv)
 				.qtyCount(qtyCountConv)
 				.huId(HuId.ofRepoIdOrNull(inventoryLineHURecord.getM_HU_ID()))
+				.huQRCode(HUQRCode.fromNullableGlobalQRCodeJsonString(inventoryLineHURecord.getRenderedQRCode()))
 				.build();
 	}
 
@@ -439,10 +461,11 @@ public class InventoryRepository
 		final HUAggregationType huAggregationType = inventoryLine.getHuAggregationType();
 		lineRecord.setHUAggregationType(HUAggregationType.toCodeOrNull(huAggregationType));
 
-		final HuId huId = inventoryLine.isSingleHUAggregation()
-				? inventoryLine.getSingleLineHU().getHuId()
-				: null;
+		final InventoryLineHU singleLineHU = inventoryLine.isSingleHUAggregation() ? inventoryLine.getSingleLineHU() : null;
+		final HuId huId = singleLineHU != null ? singleLineHU.getHuId() : null;
+		final HUQRCode huQRCode = singleLineHU != null ? singleLineHU.getHuQRCode() : null;
 		lineRecord.setM_HU_ID(HuId.toRepoId(huId));
+		lineRecord.setRenderedQRCode(huQRCode != null ? huQRCode.toGlobalQRCodeString() : null);
 		// lineRecord.setM_HU_PI_Item_Product(null); // TODO
 		// lineRecord.setQtyTU(BigDecimal.ZERO); // TODO
 
@@ -556,13 +579,14 @@ public class InventoryRepository
 	}
 
 	private static void updateInventoryLineHURecord(
-			@NonNull I_M_InventoryLine_HU record,
+			@NonNull final I_M_InventoryLine_HU record,
 			@NonNull final InventoryLineHU fromLineHU)
 	{
 		// record.setAD_Org_ID(orgId.getRepoId());
 		// record.setM_InventoryLine_ID(lineId.getRepoId());
 
 		record.setM_HU_ID(HuId.toRepoId(fromLineHU.getHuId()));
+		record.setRenderedQRCode(fromLineHU.getHuQRCode() != null ? fromLineHU.getHuQRCode().toGlobalQRCodeString() : null);
 
 		updateInventoryLineHURecordQuantities(record, fromLineHU);
 	}
@@ -659,6 +683,7 @@ public class InventoryRepository
 		inventoryRecord.setDocAction(IDocument.ACTION_Complete);
 		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(request.getMovementDate()));
 		inventoryRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		inventoryRecord.setM_Picking_Job_ID(PickingJobId.toRepoId(request.getPickingJobId()));
 
 		inventoryRecord.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
 		inventoryRecord.setDescription(StringUtils.trimBlankToNull(request.getDescription()));
@@ -695,6 +720,7 @@ public class InventoryRepository
 		inventoryLineRecord.setQtyCount(request.getQtyCount().toBigDecimal());
 		inventoryLineRecord.setC_UOM_ID(uomId.getRepoId());
 		inventoryLineRecord.setIsCounted(true);
+		inventoryLineRecord.setModular_Flatrate_Term_ID(FlatrateTermId.toRepoId(request.getModularContractId()));
 
 		inventoryLineRecord.setM_Locator_ID(request.getLocatorId().getRepoId());
 
@@ -716,4 +742,81 @@ public class InventoryRepository
 
 		return toInventory(inventory);
 	}
+
+	public Set<I_M_InventoryLine> retrieveAllLinesForHU(final @NonNull IContextAware ctxAware, @NonNull final HuId huId)
+	{
+		final List<I_M_HU> includedHUs = huDAO.retrieveIncludedHUs(huDAO.getById(huId));
+
+		final ImmutableSet<HuId> includedHUIds = includedHUs.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<HuId> huIds = ImmutableSet.<HuId>builder()
+				.addAll(includedHUIds)
+				.add(huId)
+				.build();
+
+		final ImmutableSet<InventoryLineId> linesViaHUId = queryBL.createQueryBuilder(I_M_InventoryLine.class)
+				.addInArrayFilter(I_M_InventoryLine.COLUMNNAME_M_HU_ID, huIds)
+				.create()
+				.listIds(InventoryLineId::ofRepoId);
+
+		final ImmutableSet<InventoryLineId> linesViaHUInventoryLine = queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
+				.addInArrayFilter(I_M_InventoryLine_HU.COLUMNNAME_M_HU_ID, huIds)
+				.andCollect(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_ID, I_M_InventoryLine.class)
+				.create()
+				.listIds(InventoryLineId::ofRepoId);
+
+		final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
+				.setJoinOr()
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, huIds)
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, huIds)
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, huIds);
+
+		final ImmutableSet<InventoryLineId> linesViaHUAssignment = queryBL.createQueryBuilder(I_M_HU_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(org.compiere.model.I_M_InventoryLine.class))
+				.filter(filter)
+				.create()
+				.stream()
+				.map(huAssignment -> TableRecordReference.ofReferenced(huAssignment))
+				.sorted(Comparator.comparing(TableRecordReference::getRecord_ID))
+				.distinct()
+				.map(ref -> ref.getModel(ctxAware, I_M_InventoryLine.class))
+				.map(line -> InventoryLineId.ofRepoId(line.getM_InventoryLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<InventoryLineId> inventoryLineIds = ImmutableSet.<InventoryLineId>builder()
+				.addAll(linesViaHUId)
+				.addAll(linesViaHUInventoryLine)
+				.addAll(linesViaHUAssignment)
+				.build();
+
+		return getInventoryLinesByIDs(inventoryLineIds);
+	}
+
+	public Set<InventoryId> getIdsByHUIdsAndDocTypeId(@NonNull final Set<HuId> huIds, @NonNull final DocTypeId docTypeId)
+	{
+		if(huIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final IQuery<I_M_InventoryLine> huFilter = queryBL.createQueryBuilder(de.metas.handlingunits.model.I_M_InventoryLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(de.metas.handlingunits.model.I_M_InventoryLine.COLUMNNAME_M_HU_ID, huIds)
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_Inventory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Inventory.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.addEqualsFilter(I_M_Inventory.COLUMNNAME_C_DocType_ID, docTypeId)
+				.addInSubQueryFilter(I_M_Inventory.COLUMNNAME_M_Inventory_ID,
+									 I_M_InventoryLine.COLUMNNAME_M_Inventory_ID,
+									 huFilter)
+				.create()
+				.listIds(InventoryId::ofRepoId);
+	}
 }
+

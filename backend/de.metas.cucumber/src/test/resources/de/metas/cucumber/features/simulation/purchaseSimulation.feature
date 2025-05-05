@@ -1,10 +1,11 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: create purchase simulation
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
-    And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
   @Id:S0171.200
@@ -49,11 +50,11 @@ Feature: create purchase simulation
     When create and process 'simulated demand' for:
       | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
       | o_1                   | ol_1                      |
-    Then after not more than 30s, the MD_Candidate table has only the following records
+    Then after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.simulated |
       | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | -100 | -100                   | true          |
       | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100  | 0                      | true          |
-    And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
+    And after not more than 60s, C_PurchaseCandidate found for orderLine ol_1
       | Identifier |
       | pc_1       |
     And delete C_OrderLine identified by ol_1, but keep its id into identifierIds table

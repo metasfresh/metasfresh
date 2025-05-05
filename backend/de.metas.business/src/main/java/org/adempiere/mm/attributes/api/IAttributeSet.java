@@ -22,14 +22,7 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Date;
-
-import javax.annotation.Nullable;
-
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -39,7 +32,12 @@ import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.TimeUtil;
 
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Date;
 
 /**
  * Goal of this interface: get an instance from an attribute set instance, one can use in a storage context.
@@ -54,10 +52,14 @@ public interface IAttributeSet
 	Collection<I_M_Attribute> getAttributes();
 
 	/**
-	 * @return true if the given attribute is available for getting/setting
+	 * @return true if the given attribute is available for getting/setting.<br>
+	 * Note that the attribute's value might still be {@code null}!
 	 */
 	boolean hasAttribute(AttributeCode attributeCode);
 
+	/**
+	 * @see #hasAttribute(AttributeCode)
+	 */
 	default boolean hasAttribute(@NonNull final String attributeKey)
 	{
 		return hasAttribute(AttributeCode.ofString(attributeKey));
@@ -196,25 +198,16 @@ public interface IAttributeSet
 	}
 
 	@Nullable
-	default LocalDateTime getValueAsLocalDateTime(final @NonNull String attributeKey)
-	{
-		return TimeUtil.asLocalDateTime(getValueAsDate(attributeKey));
-	}
-
-	@Nullable
 	default LocalDate getValueAsLocalDate(final AttributeCode attributeCode)
 	{
 		return TimeUtil.asLocalDate(getValueAsDate(attributeCode));
 	}
 
 	@Nullable
-	default LocalDate getValueAsLocalDate(final @NonNull String attributeKey)
-	{
-		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
-	}
+	String getValueAsString(AttributeCode attributeCode);
 
 	@Nullable
-	String getValueAsString(AttributeCode attributeCode);
+	String getValueAsStringOrNull(AttributeCode attributeCode);
 
 	@Nullable
 	default String getValueAsString(@NonNull final String attributeKey)

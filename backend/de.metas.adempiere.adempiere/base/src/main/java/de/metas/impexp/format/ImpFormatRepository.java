@@ -1,7 +1,10 @@
 package de.metas.impexp.format;
 
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ImpFormat;
@@ -42,6 +45,7 @@ import java.util.Objects;
 @Repository
 public class ImpFormatRepository
 {
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ImportTableDescriptorRepository importTableDescriptorRepo;
 
 	public ImpFormatRepository(@NonNull final ImportTableDescriptorRepository importTableDescriptorRepo)
@@ -91,7 +95,8 @@ public class ImpFormatRepository
 
 	private ImpFormatColumn toImpFormatRowOrNull(final I_AD_ImpFormat_Row rowRecord)
 	{
-		final I_AD_Column adColumn = rowRecord.getAD_Column();
+		final AdColumnId adColumnId = AdColumnId.ofRepoId(rowRecord.getAD_Column_ID());
+		final MinimalColumnInfo adColumn = adTableDAO.getMinimalColumnInfo(adColumnId);
 		if (!adColumn.isActive())
 		{
 			return null;

@@ -25,29 +25,19 @@ package org.adempiere.ad.dao.impl;
 import com.google.common.collect.ImmutableMap;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
-import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IInSubQueryFilterClause;
-import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.ICompositeQueryFilterBase;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryBuilderDAO;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -62,7 +52,7 @@ import java.util.Properties;
 	private String trxName;
 
 	private QueryBuilderOrderByClause<T> orderByBuilder;
-	private final ICompositeQueryFilter<T> filters;
+	private final CompositeQueryFilter<T> filters;
 
 	private PInstanceId onlySelectionId;
 	private QueryLimit limit = QueryLimit.NO_LIMIT;
@@ -92,9 +82,7 @@ import java.util.Properties;
 		this.modelKeyColumnName = null; // lazy
 
 		this.modelTableName = InterfaceWrapperHelper.getTableName(modelClass, tableName);
-
-		final IQueryBL factory = Services.get(IQueryBL.class);
-		filters = factory.createCompositeQueryFilter(this.modelTableName); // always use the tableName we just fetched because it might be that modelClass is not providing a tableName.
+		this.filters = new CompositeQueryFilter<>(this.modelTableName);
 	}
 
 	private QueryBuilder(final QueryBuilder<T> from)
@@ -111,6 +99,22 @@ import java.util.Properties;
 		this.contextClientQueryFilter = from.contextClientQueryFilter != null ? from.contextClientQueryFilter.copy() : null;
 
 		this.options = from.options == null ? null : new HashMap<>(from.options);
+
+		this.contextClientQueryFilter = (ContextClientQueryFilter<T>)this.filters.getFilters()
+				.stream()
+				.filter(ContextClientQueryFilter.class::isInstance)
+				.map(ContextClientQueryFilter.class::cast)
+				.findAny()
+				.orElse(null);
+	}
+
+	/**
+	 * @implNote toString() which includes the generated SQL, convenient for debugging and hovering on variables
+	 */
+	@Override
+	public String toString()
+	{
+		return create().toString(); // shows the generated SQL
 	}
 
 	@Override
@@ -154,7 +158,7 @@ import java.util.Properties;
 	}
 
 	@Override
-	public IQueryBuilder<T> filter(final IQueryFilter<T> filter)
+	public IQueryBuilder<T> filter(final @NonNull IQueryFilter<T> filter)
 	{
 
 		if (filter instanceof ContextClientQueryFilter)
@@ -188,6 +192,7 @@ import java.util.Properties;
 	}
 
 	@Override
+	@Deprecated
 	public IQueryBuilder<T> filterByClientId()
 	{
 		if (contextClientQueryFilter != null)
@@ -197,6 +202,12 @@ import java.util.Properties;
 		}
 
 		return filter(new ContextClientQueryFilter<>(ctx));
+	}
+
+	@Override
+	public ICompositeQueryFilterBase<T> compositeFiltersBase()
+	{
+		return filters;
 	}
 
 	@Override
@@ -231,6 +242,12 @@ import java.util.Properties;
 	public Class<T> getModelClass()
 	{
 		return modelClass;
+	}
+
+	@Override
+	public IQueryBuilder<T> self()
+	{
+		return this;
 	}
 
 	@Override
@@ -333,143 +350,7 @@ import java.util.Properties;
 	}
 
 	@Override
-	public <ST> IQueryBuilder<T> addInSubQueryFilter(final String columnName, final String subQueryColumnName, final IQuery<ST> subQuery)
-	{
-		filters.addInSubQueryFilter(columnName, subQueryColumnName, subQuery);
-		return this;
-	}
-
-	@Override
-	public <ST> IQueryBuilder<T> addNotInSubQueryFilter(final String columnName, final String subQueryColumnName, final IQuery<ST> subQuery)
-	{
-		filters.addNotInSubQueryFilter(columnName, subQueryColumnName, subQuery);
-		return this;
-	}
-
-	@Override
-	public <ST> IQueryBuilder<T> addInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery)
-	{
-		final String columnName = column.getColumnName();
-		final String subQueryColumnName = subQueryColumn.getColumnName();
-		return addInSubQueryFilter(columnName, subQueryColumnName, subQuery);
-	}
-
-	@Override
-	public <ST> IQueryBuilder<T> addNotInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery)
-	{
-		filters.addNotInSubQueryFilter(column, subQueryColumn, subQuery);
-		return this;
-	}
-
-	@Override
-	public IInSubQueryFilterClause<T, IQueryBuilder<T>> addInSubQueryFilter()
-	{
-		return new InSubQueryFilterClause<>(getModelTableName(), this, this::filter);
-	}
-
-	@Override
-	public <ST> IQueryBuilder<T> addInSubQueryFilter(final String columnName, final IQueryFilterModifier modifier, final String subQueryColumnName, final IQuery<ST> subQuery)
-	{
-		filters.addInSubQueryFilter(columnName, modifier, subQueryColumnName, subQuery);
-		return this;
-	}
-
-	@Override
-	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final String columnName, final Collection<V> values)
-	{
-		filters.addInArrayOrAllFilter(columnName, values);
-		return this;
-	}
-
-	@Override
-	public <V> IQueryBuilder<T> addInArrayFilter(final String columnName, final Collection<V> values)
-	{
-		filters.addInArrayFilter(columnName, values);
-		return this;
-	}
-
-	@Override
-	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final Collection<V> values)
-	{
-		filters.addInArrayOrAllFilter(column, values);
-		return this;
-	}
-
-	@Override
-	public <V> IQueryBuilder<T> addInArrayFilter(final ModelColumn<T, ?> column, final Collection<V> values)
-	{
-		filters.addInArrayFilter(column, values);
-		return this;
-	}
-
-	@Override
-	public <V extends RepoIdAware> IQueryBuilder<T> addInArrayFilter(@NonNull final String columnName, @NonNull final InSetPredicate<V> values)
-	{
-		filters.addInArrayFilter(columnName, values);
-		return this;
-	}
-
-	@Override
-	public <V> IQueryBuilder<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values)
-	{
-		filters.addNotInArrayFilter(column, values);
-		return this;
-	}
-
-	@Override
-	public <V> IQueryBuilder<T> addNotInArrayFilter(String columnName, Collection<V> values)
-	{
-		filters.addNotInArrayFilter(columnName, values);
-		return this;
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final String columnName, final V... values)
-	{
-		filters.addInArrayOrAllFilter(columnName, values);
-		return this;
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <V> IQueryBuilder<T> addInArrayFilter(final String columnName, final V... values)
-	{
-		filters.addInArrayFilter(columnName, values);
-		return this;
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <V> IQueryBuilder<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final V... values)
-	{
-		filters.addInArrayOrAllFilter(column, values);
-		return this;
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <V> IQueryBuilder<T> addInArrayFilter(final ModelColumn<T, ?> column, final V... values)
-	{
-		filters.addInArrayFilter(column, values);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addOnlyActiveRecordsFilter()
-	{
-		filters.addOnlyActiveRecordsFilter();
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addOnlyContextClient(final Properties ctx)
-	{
-		filters.addOnlyContextClient(ctx);
-		return this;
-	}
-
-	@Override
+	@Deprecated
 	public IQueryBuilder<T> addOnlyContextClient()
 	{
 		final Properties ctx = getCtx();
@@ -482,104 +363,6 @@ import java.util.Properties;
 	{
 		final Properties ctx = getCtx();
 		filters.addOnlyContextClientOrSystem(ctx);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addCompareFilter(final String columnName, final Operator operator, final Object value)
-	{
-		filters.addCompareFilter(columnName, operator, value);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addCompareFilter(final ModelColumn<T, ?> column, final Operator operator, final Object value)
-	{
-		filters.addCompareFilter(column, operator, value);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addCompareFilter(final String columnName, final Operator operator, final Object value, final IQueryFilterModifier modifier)
-	{
-		filters.addCompareFilter(columnName, operator, value, modifier);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addCompareFilter(final ModelColumn<T, ?> column, final Operator operator, final Object value, final IQueryFilterModifier modifier)
-	{
-		filters.addCompareFilter(column, operator, value, modifier);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addEqualsFilter(final String columnName, @Nullable final Object value)
-	{
-		filters.addEqualsFilter(columnName, value);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addEqualsFilter(final ModelColumn<T, ?> column, final Object value)
-	{
-		filters.addEqualsFilter(column, value);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addEqualsFilter(final String columnName, final Object value, final IQueryFilterModifier modifier)
-	{
-		filters.addEqualsFilter(columnName, value, modifier);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addEqualsFilter(final ModelColumn<T, ?> column, final Object value, final IQueryFilterModifier modifier)
-	{
-		filters.addEqualsFilter(column, value, modifier);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addStringLikeFilter(final String columnname, final String substring, final boolean ignoreCase)
-	{
-		filters.addStringLikeFilter(columnname, substring, ignoreCase);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addCoalesceEqualsFilter(final Object value, final String... columnNames)
-	{
-		filters.addCoalesceEqualsFilter(value, columnNames);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addNotEqualsFilter(final String columnName, final Object value)
-	{
-		filters.addNotEqualsFilter(columnName, value);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addNotEqualsFilter(final ModelColumn<T, ?> column, final Object value)
-	{
-		filters.addNotEqualsFilter(column, value);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addNotNull(final String columnName)
-	{
-		filters.addNotNull(columnName);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addNotNull(final ModelColumn<T, ?> column)
-	{
-		filters.addNotNull(column);
 		return this;
 	}
 
@@ -654,75 +437,5 @@ import java.util.Properties;
 				this,
 				collectOnColumnName,
 				targetModelType);
-	}
-
-	@Override
-	public IQueryBuilder<T> addBetweenFilter(ModelColumn<T, ?> column, Object valueFrom, Object valueTo, IQueryFilterModifier modifier)
-	{
-		filters.addBetweenFilter(column, valueFrom, valueTo, modifier);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addBetweenFilter(String columnName, Object valueFrom, Object valueTo, IQueryFilterModifier modifier)
-	{
-		filters.addBetweenFilter(columnName, valueFrom, valueTo, modifier);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addBetweenFilter(ModelColumn<T, ?> column, Object valueFrom, Object valueTo)
-	{
-		filters.addBetweenFilter(column, valueFrom, valueTo);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addBetweenFilter(String columnName, Object valueFrom, Object valueTo)
-	{
-		filters.addBetweenFilter(columnName, valueFrom, valueTo);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addEndsWithQueryFilter(String columnName, String endsWithString)
-	{
-		filters.addEndsWithQueryFilter(columnName, endsWithString);
-		return this;
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addCompositeQueryFilter()
-	{
-		return filters.addCompositeQueryFilter();
-	}
-
-	@Override
-	public IQueryBuilder<T> addValidFromToMatchesFilter(final ModelColumn<T, ?> validFromColumn, final ModelColumn<T, ?> validToColumn, final Date dateToMatch)
-	{
-		filters.addValidFromToMatchesFilter(validFromColumn, validToColumn, dateToMatch);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addIntervalIntersection(
-			@NonNull final String lowerBoundColumnName,
-			@NonNull final String upperBoundColumnName,
-			@Nullable final ZonedDateTime lowerBoundValue,
-			@Nullable final ZonedDateTime upperBoundValue)
-	{
-		filters.addIntervalIntersection(lowerBoundColumnName, upperBoundColumnName, lowerBoundValue, upperBoundValue);
-		return this;
-	}
-
-	@Override
-	public IQueryBuilder<T> addIntervalIntersection(
-			@NonNull final String lowerBoundColumnName,
-			@NonNull final String upperBoundColumnName,
-			@Nullable final Instant lowerBoundValue,
-			@Nullable final Instant upperBoundValue)
-	{
-		filters.addIntervalIntersection(lowerBoundColumnName, upperBoundColumnName, lowerBoundValue, upperBoundValue);
-		return this;
 	}
 }

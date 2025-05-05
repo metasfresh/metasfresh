@@ -6,7 +6,7 @@ import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
 
 import BarcodeScannerComponent from '../../../../components/BarcodeScannerComponent';
-import { parseQRCodeString } from '../../../../utils/huQRCodes';
+import { parseQRCodeString } from '../../../../utils/qrCode/hu';
 import { trl } from '../../../../utils/translations';
 
 const ManufacturingReceiptScanScreen = () => {

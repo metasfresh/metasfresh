@@ -1,0 +1,16 @@
+-- 2022-08-31T19:11:29.294Z
+/* DDL */ SELECT public.db_alter_table('AD_Column','ALTER TABLE public.AD_Column ADD COLUMN Filter_Val_Rule_ID NUMERIC(10)')
+;
+
+-- 2022-08-31T19:11:29.800Z
+ALTER TABLE AD_Column ADD CONSTRAINT FilterValRule_ADColumn FOREIGN KEY (Filter_Val_Rule_ID) REFERENCES public.AD_Val_Rule DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2022-08-31T19:16:50.974Z
+/* DDL */ SELECT public.db_alter_table('AD_Field','ALTER TABLE public.AD_Field ADD COLUMN Filter_Val_Rule_ID NUMERIC(10)')
+;
+
+-- 2022-08-31T19:16:51.131Z
+ALTER TABLE AD_Field ADD CONSTRAINT FilterValRule_ADField FOREIGN KEY (Filter_Val_Rule_ID) REFERENCES public.AD_Val_Rule DEFERRABLE INITIALLY DEFERRED
+;
+

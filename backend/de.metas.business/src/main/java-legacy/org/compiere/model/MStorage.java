@@ -16,14 +16,11 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Properties;
-
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -34,11 +31,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Inventory Storage Model
@@ -64,7 +63,7 @@ public class MStorage extends X_M_Storage
 	 * @return existing or null
 	 */
 	public static MStorage get(final Properties ctx, final int M_Locator_ID,
-			final int M_Product_ID, final int M_AttributeSetInstance_ID, final String trxName)
+			final int M_Product_ID, final int M_AttributeSetInstance_ID, @Nullable final String trxName)
 	{
 		MStorage retValue = null;
 		String sql = "SELECT * FROM M_Storage "
@@ -208,7 +207,6 @@ public class MStorage extends X_M_Storage
 	 * @param M_AttributeSetInstance_ID instance
 	 * @param M_AttributeSet_ID attribute set
 	 * @param allAttributeInstances if true, all attribute set instances
-	 * @param minGuaranteeDate optional minimum guarantee date if all attribute instances
 	 * @param FiFo first in-first-out
 	 * @param trxName transaction
 	 * @return existing - ordered by location priority (desc) and/or guarantee date
@@ -218,11 +216,11 @@ public class MStorage extends X_M_Storage
 	@Deprecated
 	public static MStorage[] getWarehouse(final Properties ctx, final int M_Warehouse_ID,
 			final int M_Product_ID, final int M_AttributeSetInstance_ID, final int M_AttributeSet_ID,
-			final boolean allAttributeInstances, final Timestamp minGuaranteeDate,
+			final boolean allAttributeInstances,
 			final boolean FiFo, final String trxName)
 	{
 		return getWarehouse(ctx, M_Warehouse_ID, M_Product_ID, M_AttributeSetInstance_ID,
-				minGuaranteeDate, FiFo, false, 0, trxName);
+				FiFo, false, 0, trxName);
 	}
 
 	/**
@@ -232,7 +230,6 @@ public class MStorage extends X_M_Storage
 	 * @param M_Warehouse_ID ignore if M_Locator_ID > 0
 	 * @param M_Product_ID product
 	 * @param M_AttributeSetInstance_ID instance id, 0 to retrieve all instance
-	 * @param minGuaranteeDate optional minimum guarantee date if all attribute instances
 	 * @param FiFo first in-first-out
 	 * @param positiveOnly if true, only return storage records with qtyOnHand > 0
 	 * @param M_Locator_ID optional locator id
@@ -240,7 +237,7 @@ public class MStorage extends X_M_Storage
 	 * @return existing - ordered by location priority (desc) and/or guarantee date
 	 */
 	public static MStorage[] getWarehouse(final Properties ctx, final int M_Warehouse_ID,
-			final int M_Product_ID, final int M_AttributeSetInstance_ID, final Timestamp minGuaranteeDate,
+			final int M_Product_ID, final int M_AttributeSetInstance_ID,
 			final boolean FiFo, final boolean positiveOnly, final int M_Locator_ID, final String trxName)
 	{
 		if (M_Warehouse_ID == 0 && M_Locator_ID == 0 || M_Product_ID == 0)
@@ -310,26 +307,13 @@ public class MStorage extends X_M_Storage
 			{
 				sql += " AND s.QtyOnHand <> 0 ";
 			}
-			if (minGuaranteeDate != null)
-			{
-				sql += "AND (asi.GuaranteeDate IS NULL OR asi.GuaranteeDate>?) ";
-				sql += "ORDER BY l.PriorityNo DESC, " +
-						"asi.GuaranteeDate, M_AttributeSetInstance_ID";
-				if (!FiFo)
-				{
-					sql += " DESC";
-				}
-				sql += ", s.QtyOnHand DESC";
-			}
-			else
-			{
+
 				sql += "ORDER BY l.PriorityNo DESC, l.M_Locator_ID, s.M_AttributeSetInstance_ID";
 				if (!FiFo)
 				{
 					sql += " DESC";
 				}
 				sql += ", s.QtyOnHand DESC";
-			}
 		}
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -341,10 +325,6 @@ public class MStorage extends X_M_Storage
 			if (!allAttributeInstances)
 			{
 				pstmt.setInt(3, M_AttributeSetInstance_ID);
-			}
-			else if (minGuaranteeDate != null)
-			{
-				pstmt.setTimestamp(3, minGuaranteeDate);
 			}
 			rs = pstmt.executeQuery();
 			while (rs.next())
@@ -419,9 +399,7 @@ public class MStorage extends X_M_Storage
 	 * @param diffQtyOnHand add on hand
 	 * @param diffQtyReserved add reserved
 	 * @param diffQtyOrdered add order
-	 * @param loggable <b>may not be null!</b> used to log the fail-reason in case this method returns <code>false</code>.
 	 * @param trxName transaction
-	 * @return true if updated
 	 */
 	public static void add(final Properties ctx,
 			final int M_Warehouse_ID,

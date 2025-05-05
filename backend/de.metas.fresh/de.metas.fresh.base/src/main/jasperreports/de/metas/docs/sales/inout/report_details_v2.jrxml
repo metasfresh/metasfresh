@@ -48,6 +48,9 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	<field name="stdprecision" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="stdprecision"/>
 	</field>
+	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
+	</field>
 	<field name="linenetamt" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="linenetamt"/>
 	</field>
@@ -56,9 +59,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	</field>
 	<field name="isdiscountprinted" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="isdiscountprinted"/>
-	</field>
-	<field name="qtypattern" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
 	<field name="description" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
@@ -86,6 +86,12 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	</field>
 	<field name="iscampaignprice" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="iscampaignprice"/>
+	</field>
+	<field name="qtyordered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qtyordered"/>
+	</field>
+	<field name="orderuomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="orderuomsymbol"/>
 	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
@@ -379,7 +385,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 ) && $F{description} != null ]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 ) && $F{description} != null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="316" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="105a6bab-3742-4710-abee-4a6655280e72"/>
 				<box rightPadding="3">

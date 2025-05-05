@@ -1,10 +1,11 @@
 package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
-import com.lowagie.text.Document;
-import com.lowagie.text.pdf.BadPdfFormatException;
-import com.lowagie.text.pdf.PdfCopy;
-import com.lowagie.text.pdf.PdfReader;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.pdf.BadPdfFormatException;
+import com.itextpdf.text.pdf.PdfCopy;
+import com.itextpdf.text.pdf.PdfReader;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;

@@ -23,7 +23,7 @@
 package de.metas.project.workorder.callout;
 
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectStepRepository;
+import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -36,8 +36,9 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.time.Duration;
 import java.time.Instant;
+
+import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
 
 @Callout(I_C_Project_WO_Step.class)
 @TabCallout(I_C_Project_WO_Step.class)
@@ -45,8 +46,6 @@ import java.time.Instant;
 public class C_Project_WO_Step implements ITabCallout
 {
 	private final WOProjectStepRepository woProjectStepRepository;
-
-	private static final Duration DEFAULT_DURATION = Duration.ofDays(1);
 
 	public C_Project_WO_Step(final WOProjectStepRepository woProjectStepRepository) {this.woProjectStepRepository = woProjectStepRepository;}
 

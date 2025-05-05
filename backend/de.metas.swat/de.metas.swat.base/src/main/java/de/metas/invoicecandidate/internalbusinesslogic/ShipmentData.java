@@ -1,26 +1,21 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -49,9 +44,6 @@ public class ShipmentData
 {
 	ProductId productId;
 
-	@JsonIgnore
-	boolean empty;
-
 	Quantity qtyInStockUom;
 
 	Quantity qtyNominal;
@@ -70,7 +62,6 @@ public class ShipmentData
 			@JsonProperty("deliveredQtyItems") @Singular List<DeliveredQtyItem> deliveredQtyItems)
 	{
 		this.productId = productId;
-		this.empty = deliveredQtyItems.isEmpty();
 		this.qtyInStockUom = qtyInStockUom;
 		this.qtyNominal = qtyNominal;
 		this.qtyCatch = qtyCatch;
@@ -79,11 +70,7 @@ public class ShipmentData
 
 	public StockQtyAndUOMQty computeInvoicableQtyDelivered(@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 	{
-		if(empty)
-		{
-			return StockQtyAndUOMQtys.createZero(productId, getQtyNominal().getUomId());
-		}
-		Quantity deliveredInUom;
+		final Quantity deliveredInUom;
 		switch (invoicableQtyBasedOn)
 		{
 			case CatchWeight:

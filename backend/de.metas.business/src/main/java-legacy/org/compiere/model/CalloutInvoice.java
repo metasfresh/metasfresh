@@ -37,6 +37,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -169,7 +170,7 @@ public class CalloutInvoice extends CalloutEngine
 					if (docTypeId > 0)
 					{
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-						final I_C_DocType invoiceDocType = docTypeDAO.getById(docTypeId);
+						final I_C_DocType invoiceDocType = docTypeDAO.getRecordById(docTypeId);
 
 						final String docBaseType = invoiceDocType.getDocBaseType();
 
@@ -285,7 +286,7 @@ public class CalloutInvoice extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		final I_C_PaymentTerm paymentTerm = Services.get(IPaymentTermRepository.class).getById(paymentTermId);
+		final I_C_PaymentTerm paymentTerm = Services.get(IPaymentTermRepository.class).getRecordById(paymentTermId);
 
 		// TODO: Fix in next step (refactoring: Move the apply method from MPaymentTerm to a BL)
 		final MPaymentTerm pt = InterfaceWrapperHelper.getPO(paymentTerm);
@@ -524,12 +525,15 @@ public class CalloutInvoice extends CalloutEngine
 
 		log.debug("Warehouse={}", warehouseID);
 
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(invoiceLine.getC_VAT_Code_ID());
+
 		//
 		final int taxID = Tax.get(ctx, productID, chargeID, billDate,
 								  shipDate, orgID, warehouseID,
 								  billBPartnerLocationID,
 								  shipBPartnerLocationID,
-								  invoice.isSOTrx());
+								  invoice.isSOTrx(),
+				vatCodeId);
 
 		log.debug("Tax ID={}", taxID);
 
@@ -770,7 +774,7 @@ public class CalloutInvoice extends CalloutEngine
 				{
 
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
-					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt());
+					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt()).getTaxAmount();
 					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}

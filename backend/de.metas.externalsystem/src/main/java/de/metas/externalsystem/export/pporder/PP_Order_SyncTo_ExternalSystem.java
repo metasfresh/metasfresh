@@ -35,13 +35,10 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
-import java.util.Iterator;
 
 public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
@@ -73,6 +70,11 @@ public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess impleme
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
+		if (context.isMoreThanOneSelected())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
 		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
 		{
 			return ProcessPreconditionsResolution.reject();
@@ -86,28 +88,13 @@ public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess impleme
 	{
 		addLog("Calling with params: externalSystemChildConfigId: {}", getExternalSystemChildConfigId());
 
-		final Iterator<I_PP_Order> ppOrderIterator = getSelectedPPOrderRecords();
-
 		final IExternalSystemChildConfigId externalSystemChildConfigId = getExternalSystemChildConfigId();
 
-		while (ppOrderIterator.hasNext())
-		{
-			final TableRecordReference ppOrderRecordRef = TableRecordReference.of(ppOrderIterator.next());
+		final TableRecordReference ppOrderRecordRef = TableRecordReference.of(getTable_ID(), getRecord_ID());
 
-			getExportPPOrderToExternalSystem().exportToExternalSystem(externalSystemChildConfigId, ppOrderRecordRef, getPinstanceId());
-		}
+		getExportPPOrderToExternalSystem().exportToExternalSystem(externalSystemChildConfigId, ppOrderRecordRef, getPinstanceId());
 
 		return JavaProcess.MSG_OK;
-	}
-
-	@NonNull
-	private Iterator<I_PP_Order> getSelectedPPOrderRecords()
-	{
-		final IQueryBuilder<I_PP_Order> ppOrderQuery = retrieveSelectedRecordsQueryBuilder(I_PP_Order.class);
-
-		return ppOrderQuery
-				.create()
-				.iterate(I_PP_Order.class);
 	}
 
 	protected abstract ExternalSystemType getExternalSystemType();

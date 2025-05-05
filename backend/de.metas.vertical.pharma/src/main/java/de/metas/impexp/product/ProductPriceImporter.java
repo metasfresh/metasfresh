@@ -3,6 +3,7 @@
  */
 package de.metas.impexp.product;
 
+import de.metas.pricing.PriceListVersionId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -61,7 +62,7 @@ class ProductPriceImporter
 					|| request.getPrice().signum() > 0)
 			{
 				final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).getCreatePriceListVersion(request);
-				ProductPrices.createProductPriceOrUpdateExistentOne(request, plv);
+				ProductPrices.createProductPriceOrUpdateExistentOne(request, PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID()));
 			}
 			
 		}

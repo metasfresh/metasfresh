@@ -218,7 +218,7 @@ public final class CachedStringExpression implements ICachedStringExpression
 				{
 					if (failIfNotFound)
 					{
-						throw new ExpressionEvaluationException("@NotFound@: " + parameterName);
+						throw ExpressionEvaluationException.newWithTranslatableMessage("@NotFound@: " + parameterName);
 					}
 
 					continue;

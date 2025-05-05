@@ -1,47 +1,7 @@
 package de.metas.inoutcandidate.expectations;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.mm.attributes.api.impl.AttributeInstanceExpectation;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.test.AbstractExpectation;
-import org.adempiere.util.test.ErrorMessage;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Product;
-
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.product.ProductId;
@@ -53,6 +13,25 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.impl.AttributeInstanceExpectation;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.test.AbstractExpectation;
+import org.adempiere.util.test.ErrorMessage;
+import org.assertj.core.api.Assertions;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class InOutLineExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {
@@ -68,6 +47,7 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 	private Boolean inDispute;
 	private Boolean packagingmaterial;
 	private final List<AttributeInstanceExpectation<InOutLineExpectation<ParentExpectationType>>> attributeInstanceExpectations = new ArrayList<>();
+	private Dimension dimension;
 
 	public InOutLineExpectation(final ParentExpectationType parent, final IContextAware context)
 	{
@@ -142,6 +122,14 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 			assertEquals(message.expect("PackagingMaterial"), packagingmaterial, inoutLine.isPackagingMaterial());
 		}
 
+		if (dimension != null)
+		{
+			Assertions.assertThat(new InOutLineDimensionFactory().getFromRecord(inoutLine))
+					.as(message.expect("Dimension").toString())
+					.usingRecursiveComparison()
+					.isEqualTo(dimension);
+		}
+
 		return this;
 	}
 
@@ -162,8 +150,6 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 
 	/**
 	 * Populate model which values from this expectation
-	 *
-	 * @param inoutLine
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void populateModel(final I_M_InOutLine inoutLine)
@@ -190,6 +176,11 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 		}
 		inoutLine.setQualityDiscountPercent(qualityDiscountPercent);
 		inoutLine.setQualityNote(qualityNote);
+
+		if (dimension != null)
+		{
+			new InOutLineDimensionFactory().updateRecord(inoutLine, dimension);
+		}
 	}
 
 	public ProductId getProductId()
@@ -295,6 +286,12 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 	public InOutLineExpectation<ParentExpectationType> attribute(final I_M_Attribute attribute, final LocalDate valueDate)
 	{
 		newAttributeExpectation().attribute(attribute).valueDate(valueDate);
+		return this;
+	}
+
+	public InOutLineExpectation<ParentExpectationType> dimension(final Dimension dimension)
+	{
+		this.dimension = dimension;
 		return this;
 	}
 

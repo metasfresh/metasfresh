@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCategory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1084149038L;
+	private static final long serialVersionUID = 1595874167L;
 
     /** Standard Constructor */
     public X_C_TaxCategory (final Properties ctx, final int C_TaxCategory_ID, @Nullable final String trxName)
@@ -35,6 +35,18 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	}
 
 	@Override
+	public void setCommodityCode (final @Nullable java.lang.String CommodityCode)
+	{
+		set_Value (COLUMNNAME_CommodityCode, CommodityCode);
+	}
+
+	@Override
+	public java.lang.String getCommodityCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_CommodityCode);
+	}
+
+	@Override
 	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
 	{
 		if (C_TaxCategory_ID < 1) 
@@ -47,18 +59,6 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	public int getC_TaxCategory_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
-	}
-
-	@Override
-	public void setCommodityCode (final @Nullable java.lang.String CommodityCode)
-	{
-		set_Value (COLUMNNAME_CommodityCode, CommodityCode);
-	}
-
-	@Override
-	public java.lang.String getCommodityCode() 
-	{
-		return get_ValueAsString(COLUMNNAME_CommodityCode);
 	}
 
 	@Override
@@ -83,6 +83,18 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	public java.lang.String getInternalName() 
 	{
 		return get_ValueAsString(COLUMNNAME_InternalName);
+	}
+
+	@Override
+	public void setIsManualTax (final boolean IsManualTax)
+	{
+		set_Value (COLUMNNAME_IsManualTax, IsManualTax);
+	}
+
+	@Override
+	public boolean isManualTax() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManualTax);
 	}
 
 	@Override
@@ -114,6 +126,8 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	public static final String PRODUCTTYPE_Online = "O";
 	/** FreightCost = F */
 	public static final String PRODUCTTYPE_FreightCost = "F";
+	/** Nahrung = N */
+	public static final String PRODUCTTYPE_Nahrung = "N";
 	@Override
 	public void setProductType (final @Nullable java.lang.String ProductType)
 	{

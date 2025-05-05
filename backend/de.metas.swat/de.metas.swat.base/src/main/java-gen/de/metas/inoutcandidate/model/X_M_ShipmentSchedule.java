@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 941054265L;
+	private static final long serialVersionUID = 1043342538L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -180,6 +180,17 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setBlockedBPartner (final boolean BlockedBPartner)
+	{
+		throw new IllegalArgumentException ("BlockedBPartner is virtual column");	}
+
+	@Override
+	public boolean isBlockedBPartner() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_BlockedBPartner);
+	}
+
+	@Override
 	public void setBPartnerAddress (final java.lang.String BPartnerAddress)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPartnerAddress, BPartnerAddress);
@@ -243,6 +254,21 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getCatch_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
+	}
+
+	@Override
+	public void setC_BPartner2_ID (final int C_BPartner2_ID)
+	{
+		if (C_BPartner2_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner2_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
+	}
+
+	@Override
+	public int getC_BPartner2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
 	}
 
 	@Override
@@ -467,6 +493,21 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getC_OrderLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
+	}
+
+	@Override
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
 	@Override
@@ -746,6 +787,24 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
 	/** CallOrder = CAO */
 	public static final String DOCSUBTYPE_CallOrder = "CAO";
+	/** InterimInvoice = II */
+	public static final String DOCSUBTYPE_InterimInvoice = "II";
+	/** Withholding = WH */
+	public static final String DOCSUBTYPE_Withholding = "WH";
+	/** InternalVendorInvoice = IVI */
+	public static final String DOCSUBTYPE_InternalVendorInvoice = "IVI";
+	/** Delivery Instruction = DI */
+	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
+	/** InventoryShortageDocument = ISD */
+	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
+	/** InventoryOverageDocument = IOD */
+	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
+	/** CorrectionInvoice = CI */
+	public static final String DOCSUBTYPE_CorrectionInvoice = "CI";
+	/** Provision = PRV */
+	public static final String DOCSUBTYPE_Provision = "PRV";
+	/** ProFormaSO = PF */
+	public static final String DOCSUBTYPE_ProFormaSO = "PF";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -809,6 +868,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public boolean isBPartnerAddress_Override() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBPartnerAddress_Override);
+	}
+
+	@Override
+	public void setIsCatchWeight (final boolean IsCatchWeight)
+	{
+		set_Value (COLUMNNAME_IsCatchWeight, IsCatchWeight);
+	}
+
+	@Override
+	public boolean isCatchWeight() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeight);
 	}
 
 	@Override
@@ -967,21 +1038,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public void setM_HU_PI_Version_ID (final int M_HU_PI_Version_ID)
-	{
-		if (M_HU_PI_Version_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_PI_Version_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_HU_PI_Version_ID, M_HU_PI_Version_ID);
-	}
-
-	@Override
-	public int getM_HU_PI_Version_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Version_ID);
-	}
-
-	@Override
 	public de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_IolCandHandler_ID, de.metas.inoutcandidate.model.I_M_IolCandHandler.class);
@@ -1021,6 +1077,33 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_SectionCode getM_SectionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
+	}
+
+	@Override
+	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
+	}
+
+	@Override
+	public void setM_SectionCode_ID (final int M_SectionCode_ID)
+	{
+		if (M_SectionCode_ID < 1) 
+			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+	}
+
+	@Override
+	public int getM_SectionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
 
 	@Override
@@ -1161,15 +1244,15 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public void setPackDescription (final @Nullable java.lang.String PackDescription)
+	public void setPhysicalClearanceDate (final @Nullable java.sql.Timestamp PhysicalClearanceDate)
 	{
-		set_Value (COLUMNNAME_PackDescription, PackDescription);
+		set_Value (COLUMNNAME_PhysicalClearanceDate, PhysicalClearanceDate);
 	}
 
 	@Override
-	public java.lang.String getPackDescription() 
+	public java.sql.Timestamp getPhysicalClearanceDate() 
 	{
-		return get_ValueAsString(COLUMNNAME_PackDescription);
+		return get_ValueAsTimestamp(COLUMNNAME_PhysicalClearanceDate);
 	}
 
 	@Override
@@ -1354,18 +1437,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public void setQtyItemCapacity (final @Nullable BigDecimal QtyItemCapacity)
-	{
-		throw new IllegalArgumentException ("QtyItemCapacity is virtual column");	}
-
-	@Override
-	public BigDecimal getQtyItemCapacity() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setQtyOnHand (final @Nullable BigDecimal QtyOnHand)
 	{
 		set_Value (COLUMNNAME_QtyOnHand, QtyOnHand);
@@ -1401,19 +1472,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public BigDecimal getQtyOrdered_Calculated() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_Calculated);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setQtyOrdered_LU (final BigDecimal QtyOrdered_LU)
-	{
-		set_Value (COLUMNNAME_QtyOrdered_LU, QtyOrdered_LU);
-	}
-
-	@Override
-	public BigDecimal getQtyOrdered_LU() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_LU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -1518,32 +1576,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public BigDecimal getQtyToDeliver_OverrideFulfilled() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver_OverrideFulfilled);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setQtyTU_Calculated (final @Nullable BigDecimal QtyTU_Calculated)
-	{
-		set_Value (COLUMNNAME_QtyTU_Calculated, QtyTU_Calculated);
-	}
-
-	@Override
-	public BigDecimal getQtyTU_Calculated() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU_Calculated);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setQtyTU_Override (final @Nullable BigDecimal QtyTU_Override)
-	{
-		set_Value (COLUMNNAME_QtyTU_Override, QtyTU_Override);
-	}
-
-	@Override
-	public BigDecimal getQtyTU_Override() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

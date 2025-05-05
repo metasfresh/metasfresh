@@ -1,29 +1,24 @@
 package de.metas.payment.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.invoice.interceptor.C_Invoice;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
-import de.metas.payment.processor.PaymentProcessorService;
-import de.metas.payment.reservation.PaymentReservationCaptureRepository;
-import de.metas.payment.reservation.PaymentReservationRepository;
-import de.metas.payment.reservation.PaymentReservationService;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -47,12 +42,12 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -114,11 +109,18 @@ public class PaymentBLTest
 			order.setProcessed(true);
 			saveRecord(order);
 
+			final InvoiceDocBaseType docBaseType = InvoiceDocBaseType.CustomerInvoice;
+			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+			docType.setDocBaseType(docBaseType.getCode());
+			docType.setIsSOTrx(docBaseType.isSales());
+			saveRecord(docType);
+
 			invoice = newInstance(I_C_Invoice.class);
 			invoice.setAD_Org_ID(1);
 			invoice.setC_Currency_ID(currencyEUR.getRepoId());
 			invoice.setGrandTotal(new BigDecimal("50.0"));
-			invoice.setIsSOTrx(true);
+			invoice.setC_DocType_ID(docType.getC_DocType_ID());
+			invoice.setIsSOTrx(docType.isSOTrx());
 			invoice.setProcessed(true);
 			saveRecord(invoice);
 		}
@@ -261,7 +263,7 @@ public class PaymentBLTest
 			// Called manually because we can't test properly with "creditMemoAdjusted" true
 			paymentBL.onPayAmtChange(payment, /* creditMemoAdjusted */false);
 
-			Assertions.assertTrue(new BigDecimal("120.0").compareTo(payment.getPayAmt()) == 0, "Incorrect payment amount in CHF");
+			Assertions.assertEquals(0, new BigDecimal("120.0").compareTo(payment.getPayAmt()), "Incorrect payment amount in CHF");
 
 			payment.setC_Invoice_ID(0);
 			payment.setC_Order_ID(order.getC_Order_ID());
@@ -282,6 +284,7 @@ public class PaymentBLTest
 		public void noCurrencyConversionDefined()
 		{
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setDateTrx(SystemTime.asDayTimestamp());
 			payment.setAD_Org_ID(1);
 			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
@@ -315,7 +318,7 @@ public class PaymentBLTest
 		}
 
 		@Test
-		public void reveral_failIf_DocStatusIsNotReversed()
+		public void reversal_failIf_DocStatusIsNotReversed()
 		{
 			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
 			// payment.setDocStatus(DocStatus.Reversed.getCode());
@@ -325,7 +328,7 @@ public class PaymentBLTest
 		}
 
 		@Test
-		public void reveral_failIf_ReversalIdDoesNotMatch()
+		public void reversal_failIf_ReversalIdDoesNotMatch()
 		{
 			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
 			payment.setDocStatus(DocStatus.Reversed.getCode());
@@ -335,7 +338,7 @@ public class PaymentBLTest
 		}
 
 		@Test
-		public void reveral()
+		public void reversal()
 		{
 			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
 
@@ -347,6 +350,8 @@ public class PaymentBLTest
 			assertThat(payment.getC_BankStatementLine_ID()).isLessThanOrEqualTo(0);
 			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
 			assertThat(payment.getReversal_ID()).isEqualTo(123);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isLessThanOrEqualTo(0);
 
 			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
 			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
@@ -364,6 +369,8 @@ public class PaymentBLTest
 			assertThat(payment.getC_BankStatement_ID()).isEqualTo(1);
 			assertThat(payment.getC_BankStatementLine_ID()).isEqualTo(2);
 			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isLessThanOrEqualTo(0);
 
 			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
 			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
@@ -382,6 +389,8 @@ public class PaymentBLTest
 			assertThat(payment.getC_BankStatement_ID()).isEqualTo(1);
 			assertThat(payment.getC_BankStatementLine_ID()).isEqualTo(2);
 			assertThat(payment.getC_BankStatementLine_Ref_ID()).isEqualTo(3);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isLessThanOrEqualTo(0);
 
 			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
 			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
@@ -399,6 +408,24 @@ public class PaymentBLTest
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Payment with DocumentNo=");
 		}
+
+		@Test
+		public void glJournalLine()
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.glJournalLine(SAPGLJournalLineId.ofRepoId(1, 2));
+
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
+			assertThat(payment.isReconciled()).isTrue();
+			assertThat(payment.getC_BankStatement_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getC_BankStatementLine_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReconciledBy_SAP_GLJournal_ID()).isEqualTo(1);
+			assertThat(payment.getReconciledBy_SAP_GLJournalLine_ID()).isEqualTo(2);
+
+			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
+			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
+		}
+
 	}
 
 	@Nested
@@ -493,32 +520,23 @@ public class PaymentBLTest
 	{
 		private I_C_DocType prepayDocType;
 		private I_C_DocType salesOrderDocType;
-		private C_Invoice c_invoiceInterceptor;
 
 		@BeforeEach
 		void beforeEach()
 		{
 			AdempiereTestHelper.get().init();
 
-			prepayDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
-			salesOrderDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
-
-			final @NonNull PaymentReservationRepository reservationsRepo = new PaymentReservationRepository();
-			final @NonNull PaymentReservationCaptureRepository capturesRepo = new PaymentReservationCaptureRepository();
-			final @NonNull PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.empty());
-			c_invoiceInterceptor = new C_Invoice(
-					new PaymentReservationService(reservationsRepo, capturesRepo, paymentProcessors),
-					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
+			prepayDocType = createDocType(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
+			salesOrderDocType = createDocType(DocBaseType.SalesOrder, null);
 		}
 
-		@SuppressWarnings("ConstantConditions")
 		@NonNull
 		protected I_C_DocType createDocType(
-				@NonNull final String baseType,
+				@NonNull final DocBaseType baseType,
 				@Nullable final String subType)
 		{
 			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
-			docType.setDocBaseType(baseType);
+			docType.setDocBaseType(baseType.getCode());
 			docType.setDocSubType(subType);
 			saveRecord(docType);
 			return docType;
@@ -582,7 +600,6 @@ public class PaymentBLTest
 			Assertions.assertFalse(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
 		}
 
-		@SuppressWarnings("ConstantConditions")
 		@NonNull
 		private I_C_Payment createPayment(@Nullable final ExternalId externalOrderId)
 		{
@@ -593,7 +610,6 @@ public class PaymentBLTest
 			return payment;
 		}
 
-		@SuppressWarnings("ConstantConditions")
 		@NonNull
 		private de.metas.adempiere.model.I_C_Order createSalesOrder(
 				@Nullable final ExternalId externalOrderId,

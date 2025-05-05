@@ -22,13 +22,15 @@
 
 package de.metas.project.callout;
 
-import de.metas.project.service.ProjectRepository;
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.project.ProjectTypeId;
+import de.metas.project.service.ProjectService;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Component;
 
@@ -36,12 +38,12 @@ import org.springframework.stereotype.Component;
 @Callout(I_C_Project.class)
 public class C_Project
 {
-	private final ProjectRepository projectRepository;
+	@NonNull
+	private final ProjectService projectService;
 
-	public C_Project(
-			@NonNull final ProjectRepository projectRepository)
+	public C_Project(@NonNull final ProjectService projectService)
 	{
-		this.projectRepository = projectRepository;
+		this.projectService = projectService;
 
 		// register ourselves
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -52,6 +54,26 @@ public class C_Project
 	@CalloutMethod(columnNames = I_C_Project.COLUMNNAME_C_ProjectType_ID)
 	public void onC_ProjectType_ID(@NonNull final I_C_Project projectRecord)
 	{
-		projectRepository.updateFromProjectType(projectRecord);
+		updateFromProjectType(projectRecord);
+	}
+
+	private void updateFromProjectType(@NonNull final I_C_Project projectRecord)
+	{
+		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
+		if (projectTypeId == null)
+		{
+			return;
+		}
+
+		final String projectValue = projectService.getNextProjectValue(projectTypeId);
+		if (projectValue != null)
+		{
+			projectRecord.setValue(projectValue);
+		}
+
+		if (Check.isEmpty(projectRecord.getName()))
+		{
+			projectRecord.setName(projectValue != null ? projectValue : ".");
+		}
 	}
 }

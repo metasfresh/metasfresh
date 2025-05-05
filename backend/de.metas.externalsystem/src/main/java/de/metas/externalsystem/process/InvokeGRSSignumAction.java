@@ -109,10 +109,8 @@ public class InvokeGRSSignumAction extends AlterExternalSystemServiceStatusActio
 	}
 
 	@Override
-	protected String getOrgCode()
+	protected String getOrgCode(@NonNull final ExternalSystemParentConfig config)
 	{
-		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
-
 		return orgDAO.getById(config.getOrgId()).getValue();
 	}
 

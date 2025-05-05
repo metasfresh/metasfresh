@@ -1,50 +1,60 @@
-de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.adjacent=[ {
-  "byIds" : { }
-} ]
+de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.adjacent=[
+  {
+    "byIds": { }
+  }
+]
 
 
-de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.included=[ {
-  "byIds" : {
-    "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))" : {
-      "approved" : "UNKNOWN",
-      "projectResourceIdsPair" : {
-        "projectResourceId1" : 1,
-        "projectResourceId2" : 2
-      },
-      "status" : "CONFLICT"
+de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.included=[
+  {
+    "byIds": {
+      "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))": {
+        "approved": null,
+        "projectResourceIdsPair": {
+          "projectResourceId1": 1,
+          "projectResourceId2": 2
+        },
+        "status": "CONFLICT"
+      }
     }
   }
-} ]
+]
 
 
-de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.including=[ {
-  "byIds" : {
-    "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))" : {
-      "approved" : "UNKNOWN",
-      "projectResourceIdsPair" : {
-        "projectResourceId1" : 1,
-        "projectResourceId2" : 2
-      },
-      "status" : "CONFLICT"
+de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.including=[
+  {
+    "byIds": {
+      "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))": {
+        "approved": null,
+        "projectResourceIdsPair": {
+          "projectResourceId1": 1,
+          "projectResourceId2": 2
+        },
+        "status": "CONFLICT"
+      }
     }
   }
-} ]
+]
 
 
-de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.intersecting=[ {
-  "byIds" : {
-    "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))" : {
-      "approved" : "UNKNOWN",
-      "projectResourceIdsPair" : {
-        "projectResourceId1" : 1,
-        "projectResourceId2" : 2
-      },
-      "status" : "CONFLICT"
+de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.intersecting=[
+  {
+    "byIds": {
+      "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))": {
+        "approved": null,
+        "projectResourceIdsPair": {
+          "projectResourceId1": 1,
+          "projectResourceId2": 2
+        },
+        "status": "CONFLICT"
+      }
     }
   }
-} ]
+]
 
 
-de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.notIntersecting=[ {
-  "byIds" : { }
-} ]
+de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.notIntersecting=[
+  {
+    "byIds": { }
+  }
+]

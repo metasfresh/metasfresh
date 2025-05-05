@@ -17,16 +17,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.ISequenceDAO;
@@ -37,10 +31,12 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 
-import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Persistent Table Model
@@ -321,76 +317,6 @@ public class MTable extends X_AD_Table
 
 		return success;
 	}	// afterSave
-
-	/**
-	 * Get SQL Create
-	 *
-	 * @return create table DDL
-	 */
-	public String getSQLCreate()
-	{
-		final MColumn[] columns = getColumns(true);
-
-		final StringBuilder sqlColumns = new StringBuilder();
-		final StringBuilder sqlConstraints = new StringBuilder();
-		boolean hasPK = false;
-		boolean hasParents = false;
-		for (final MColumn column : columns)
-		{
-			final String colSQL = column.getSQLDDL();
-			if (Check.isBlank(colSQL))
-			{
-				continue; // virtual column
-			}
-
-			if (sqlColumns.length() > 0)
-			{
-				sqlColumns.append("\n\t, ");
-			}
-			else
-			{
-				sqlColumns.append("\n\t  ");
-			}
-			sqlColumns.append(column.getSQLDDL());
-
-			if (column.isKey())
-			{
-				hasPK = true;
-			}
-			if (column.isParent())
-			{
-				hasParents = true;
-			}
-
-			final String constraint = column.getSQLConstraint(getTableName());
-			if (!Check.isBlank(constraint))
-			{
-				sqlConstraints.append("\n\t, ").append(constraint);
-			}
-		}
-
-		final StringBuilder sql = new StringBuilder(MigrationScriptFileLoggerHolder.DDL_PREFIX + "CREATE TABLE ")
-				.append("public.") // schema
-				.append(getTableName())
-				.append(" (")
-				.append(sqlColumns);
-
-		// Multi Column PK
-		if (!hasPK && hasParents)
-		{
-			final String cols = Stream.of(columns)
-					.filter(I_AD_Column::isParent)
-					.map(I_AD_Column::getColumnName)
-					.collect(Collectors.joining(", "));
-
-			sql.append("\n\t, CONSTRAINT ").append(getTableName()).append("_Key PRIMARY KEY (").append(cols).append(")");
-		}
-
-		sql.append(sqlConstraints)
-				.append("\n)");
-
-		return sql.toString();
-	}	// getSQLCreate
 
 	public Query createQuery(String whereClause, String trxName)
 	{

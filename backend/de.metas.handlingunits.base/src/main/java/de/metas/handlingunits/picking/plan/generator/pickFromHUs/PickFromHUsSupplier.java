@@ -65,6 +65,11 @@ public class PickFromHUsSupplier
 		this.fallbackLotNumberToHUValue = fallbackLotNumberToHUValue;
 	}
 
+	public boolean hasEligiblePickFromHUs(@NonNull final PickFromHUsGetRequest request)
+	{
+		return !getEligiblePickFromHUs(request).isEmpty();
+	}
+
 	public ImmutableList<PickFromHU> getEligiblePickFromHUs(@NonNull final PickFromHUsGetRequest request)
 	{
 		final LinkedHashMap<HuId, PickFromHU> pickFromHUs = new LinkedHashMap<>();
@@ -127,7 +132,7 @@ public class PickFromHUsSupplier
 	private ImmutableSet<HuId> getVHUIdsAlreadyReserved(@NonNull final PickFromHUsGetRequest request)
 	{
 		return request.getReservationRef()
-				.flatMap(huReservationService::getByDocumentRef)
+				.flatMap(reservationRef -> huReservationService.getByDocumentRef(reservationRef, request.getOnlyHuIds()))
 				.map(HUReservation::getVhuIds)
 				.orElseGet(ImmutableSet::of);
 	}
@@ -138,13 +143,12 @@ public class PickFromHUsSupplier
 		final IHUQueryBuilder vhuQuery = handlingUnitsDAO
 				.createHUQueryBuilder()
 				.setOnlyTopLevelHUs(false)
-				.addPIVersionToInclude(HuPackingInstructionsVersionId.VIRTUAL)
 				.addOnlyInLocatorIds(Check.assumeNotEmpty(request.getPickFromLocatorIds(), "no pick from locators set: {}", request))
 				.addOnlyWithProductId(request.getProductId())
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.setExcludeReserved();
 
-		if(request.isEnforceMandatoryAttributesOnPicking())
+		if (request.isEnforceMandatoryAttributesOnPicking())
 		{
 			final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(request.getProductId());
 			for (final I_M_Attribute attribute : attributesMandatoryOnPicking)
@@ -162,6 +166,15 @@ public class PickFromHUsSupplier
 			vhuQuery.allowSqlWhenFilteringAttributes(huReservationService.isAllowSqlWhenFilteringHUAttributes());
 		}
 
+		if (request.getOnlyHuIds() != null)
+		{
+			vhuQuery.addOnlyHUIds(request.getOnlyHuIds());
+		}
+		else
+		{
+			vhuQuery.addPIVersionToInclude(HuPackingInstructionsVersionId.VIRTUAL);
+		}
+
 		final ImmutableSet<HuId> result = vhuQuery.listIds();
 		warmUpCacheForHuIds(result);
 		return result;
@@ -172,7 +185,7 @@ public class PickFromHUsSupplier
 		husCache.warmUpCacheForHuIds(huIds);
 		huReservationService.warmup(huIds);
 	}
-	
+
 	private PickFromHU withAlternatives(
 			@NonNull final PickFromHU pickFromHU,
 			@NonNull final ProductId productId,
@@ -187,7 +200,7 @@ public class PickFromHUsSupplier
 		return AlternativePickFromKey.of(pickFromHU.getLocatorId(), pickFromHU.getTopLevelHUId(), productId);
 	}
 
-	private Comparator<PickFromHU> getAllocationOrder(@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
+	public static Comparator<PickFromHU> getAllocationOrder(@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
 	{
 		return Comparator.
 				<PickFromHU>comparingInt(pickFromHU -> pickFromHU.isHuReservedForThisLine() ? 0 : 1) // consider reserved HU first

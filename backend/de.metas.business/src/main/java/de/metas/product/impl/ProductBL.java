@@ -7,6 +7,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -15,6 +16,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -23,24 +25,28 @@ import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMPrecision;
+import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
-import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -70,6 +76,8 @@ public final class ProductBL implements IProductBL
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -81,6 +89,12 @@ public final class ProductBL implements IProductBL
 	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
 	{
 		return productsRepo.getByIdInTrx(productId);
+	}
+
+	@Override
+	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIds(productIds);
 	}
 
 	@Override
@@ -148,6 +162,7 @@ public final class ProductBL implements IProductBL
 	/**
 	 * @return UOM used for Product's Weight; never return null
 	 */
+	@Override
 	public I_C_UOM getWeightUOM(final I_M_Product product)
 	{
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram
@@ -380,6 +395,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@NonNull
 	public String getProductValueAndName(@Nullable final ProductId productId)
 	{
 		if (productId == null)
@@ -426,7 +442,7 @@ public final class ProductBL implements IProductBL
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						product -> ProductId.ofRepoId(product.getM_Product_ID()),
-						product -> product.getValue()));
+						I_M_Product::getValue));
 	}
 
 	@Override
@@ -443,27 +459,14 @@ public final class ProductBL implements IProductBL
 	@Override
 	public Optional<UomId> getCatchUOMId(@NonNull final ProductId productId)
 	{
-		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
-		final ImmutableSet<UomId> catchUomIds = uomConversionsRepo.getProductConversions(productId)
-				.getCatchUomIds();
-
-		final List<I_C_UOM> catchUOMs = uomsRepo.getByIds(catchUomIds);
-
-		final ImmutableList<UomId> catchWeightUomIds = catchUOMs.stream()
-				.filter(uom -> uom.isActive())
-				.filter(uom -> X_C_UOM.UOMTYPE_Weigth.equals(uom.getUOMType()))
+		final ImmutableSet<UomId> catchUomIds = uomConversionDAO.getProductConversions(productId).getCatchUomIds();
+		return uomsRepo.getByIds(catchUomIds)
+				.stream()
+				.filter(I_C_UOM::isActive)
+				.filter(uom -> UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight())
 				.map(uom -> UomId.ofRepoId(uom.getC_UOM_ID()))
 				.sorted()
-				.collect(ImmutableList.toImmutableList());
-
-		if (catchWeightUomIds.isEmpty())
-		{
-			return Optional.empty();
-		}
-		else
-		{
-			return Optional.of(catchWeightUomIds.get(0));
-		}
+				.findFirst();
 	}
 
 	@Override
@@ -488,8 +491,7 @@ public final class ProductBL implements IProductBL
 			return TranslatableStrings.anyLanguage("<" + productId + ">");
 		}
 
-		return InterfaceWrapperHelper.getModelTranslationMap(product)
-				.getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName());
+		return getProductNameTrl(product);
 	}
 
 	@Override
@@ -508,13 +510,9 @@ public final class ProductBL implements IProductBL
 
 	@Nullable
 	@Override
-	public I_M_AttributeSet getProductMasterDataSchemaOrNull(final ProductId productId)
+	public I_M_AttributeSet getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = productsRepo.getById(productId);
-
-		final int attributeSetRepoId = product.getM_AttributeSet_ID();
-
-		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
+		final AttributeSetId attributeSetId = getMasterDataSchemaAttributeSetId(productId);
 		if (attributeSetId.isNone())
 		{
 			return null;
@@ -523,12 +521,23 @@ public final class ProductBL implements IProductBL
 		return attributesRepo.getAttributeSetById(attributeSetId);
 	}
 
+	@NonNull
+	@Override
+	public AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+
+		final int attributeSetRepoId = product.getM_AttributeSet_ID();
+
+		return AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
+	}
+
 	@Override
 	public ImmutableList<String> retrieveSupplierApprovalNorms(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = productsRepo.getById(productId);
 
-		if(!product.isRequiresSupplierApproval())
+		if (!product.isRequiresSupplierApproval())
 		{
 			return ImmutableList.of();
 		}
@@ -550,5 +559,57 @@ public final class ProductBL implements IProductBL
 
 		return productRecord.getDiscontinuedFrom() == null
 				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
+	}
+
+	@Override
+	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
+	{
+		return productsRepo.getIssuingToleranceSpec(productId);
+	}
+
+	@Override
+	@NonNull
+	public ITranslatableString getProductNameTrl(@NonNull final I_M_Product product)
+	{
+		return InterfaceWrapperHelper.getModelTranslationMap(product)
+				.getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName());
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIdsInTrx(productIds);
+	}
+
+	@Override
+	public Optional<ClearanceStatus> getInitialClearanceStatus(@NonNull final ProductId productId)
+	{
+		return ClearanceStatus.optionalOfNullableCode(productsRepo.getById(productId).getHUClearanceStatus());
+	}
+
+	@Override
+	public boolean isProductUsed(@NonNull final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_M_InOutLine.class)
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch();
 	}
 }

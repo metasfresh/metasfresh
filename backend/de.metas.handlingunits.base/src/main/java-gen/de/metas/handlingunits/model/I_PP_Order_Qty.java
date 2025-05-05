@@ -52,28 +52,6 @@ public interface I_PP_Order_Qty
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -99,6 +77,28 @@ public interface I_PP_Order_Qty
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -120,6 +120,29 @@ public interface I_PP_Order_Qty
 
 	ModelColumn<I_PP_Order_Qty, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_Order_Qty.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Receipt.
+	 * This is a sales transaction (receipt)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReceipt (boolean IsReceipt);
+
+	/**
+	 * Get Receipt.
+	 * This is a sales transaction (receipt)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReceipt();
+
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_IsReceipt = new ModelColumn<>(I_PP_Order_Qty.class, "IsReceipt", null);
+	String COLUMNNAME_IsReceipt = "IsReceipt";
 
 	/**
 	 * Set Handling Unit.
@@ -169,6 +192,29 @@ public interface I_PP_Order_Qty
 	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
+	 * Set Date.
+	 * Date a product was moved in or out of inventory
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMovementDate (java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Date.
+	 * Date a product was moved in or out of inventory
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getMovementDate();
+
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_MovementDate = new ModelColumn<>(I_PP_Order_Qty.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
+
+	/**
 	 * Set Picking candidate.
 	 *
 	 * <br>Type: Search
@@ -216,27 +262,31 @@ public interface I_PP_Order_Qty
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Set New LU.
+	 * New Loading Unit
 	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setMovementDate (java.sql.Timestamp MovementDate);
+	void setNew_LU_ID (int New_LU_ID);
 
 	/**
-	 * Get Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Get New LU.
+	 * New Loading Unit
 	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getMovementDate();
+	int getNew_LU_ID();
 
-	ModelColumn<I_PP_Order_Qty, Object> COLUMN_MovementDate = new ModelColumn<>(I_PP_Order_Qty.class, "MovementDate", null);
-	String COLUMNNAME_MovementDate = "MovementDate";
+	@Nullable de.metas.handlingunits.model.I_M_HU getNew_LU();
+
+	void setNew_LU(@Nullable de.metas.handlingunits.model.I_M_HU New_LU);
+
+	ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_HU> COLUMN_New_LU_ID = new ModelColumn<>(I_PP_Order_Qty.class, "New_LU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_New_LU_ID = "New_LU_ID";
 
 	/**
 	 * Set Manufacturing Cost Collector.

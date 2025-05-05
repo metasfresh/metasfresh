@@ -69,6 +69,9 @@ public class TaxQuery
 	@Nullable
 	CountryId shippingCountryId;
 
+	@Nullable
+	VatCodeId vatCodeId;
+
 	@Builder
 	public TaxQuery(
 			@NonNull final OrgId orgId,
@@ -79,7 +82,8 @@ public class TaxQuery
 			@NonNull final SOTrx soTrx,
 			@Nullable final TaxCategoryId taxCategoryId,
 			@Nullable final BPartnerId bPartnerId,
-			@Nullable final CountryId shippingCountryId)
+			@Nullable final CountryId shippingCountryId,
+			@Nullable final VatCodeId vatCodeId)
 	{
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;
@@ -88,6 +92,7 @@ public class TaxQuery
 		this.bPartnerLocationId = bPartnerLocationId;
 		this.soTrx = soTrx;
 		this.taxCategoryId = taxCategoryId;
+		this.vatCodeId = vatCodeId;
 
 		if (bPartnerLocationId != null)
 		{

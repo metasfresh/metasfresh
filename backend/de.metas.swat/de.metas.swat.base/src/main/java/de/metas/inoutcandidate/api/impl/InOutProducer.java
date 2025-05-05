@@ -5,15 +5,19 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.forex.ForexContractRef;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.event.InOutUserNotificationsProducer;
+import de.metas.inout.impl.InOutDAO;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -39,7 +43,6 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,15 +51,16 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.HashSet;
@@ -109,6 +113,8 @@ public class InOutProducer implements IInOutProducer
 
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 
 	private static final String DYNATTR_HeaderAggregationKey = InOutProducer.class.getName() + "#HeaderAggregationKey";
@@ -122,6 +128,8 @@ public class InOutProducer implements IInOutProducer
 
 	@NonNull
 	private final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
+	@Nullable private final ForexContractRef forexContractRef;
+	@Nullable private final DeliveryPlanningId deliveryPlanningId;
 
 	@Nullable // can be null between two InOuts
 	private I_M_InOut _currentReceipt = null;
@@ -130,12 +138,9 @@ public class InOutProducer implements IInOutProducer
 	private I_M_ReceiptSchedule previousReceiptSchedule = null;
 	private final Set<Integer> _currentOrderIds = new HashSet<>();
 
-	/**
-	 * Calls {@link #InOutProducer(InOutGenerateResult, boolean, ReceiptMovementDateRule, Map)} with <code> ReceiptMovementDateRule.CURRENT_DATE && externalInfoByScheduleId = null</code>.
-	 */
 	public InOutProducer(final InOutGenerateResult result, final boolean complete)
 	{
-		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null);
+		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null, null, null);
 	}
 
 	/**
@@ -143,16 +148,20 @@ public class InOutProducer implements IInOutProducer
 	 *                         else if {@code ReceiptMovementDateRule#EXTERNAL_DATE_IF_AVAIL} then the MovementDate will be taken from {@code externalInfoByReceiptScheduleId} if available
 	 *                         else if {@code ReceiptMovementDateRule#ORDER_DATE_PROMISED} then the date will be the DatePromised value of the receipt schedule's C_Order.
 	 */
-	protected InOutProducer(@NonNull final InOutGenerateResult result,
+	protected InOutProducer(
+			@NonNull final InOutGenerateResult result,
 			final boolean complete,
 			@NonNull final ReceiptMovementDateRule movementDateRule,
-			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId)
+			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId,
+			@Nullable final ForexContractRef forexContractRef,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		this.result = result;
 		this.complete = complete;
 		this.movementDateRule = movementDateRule;
-
-		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesceNotNull(externalInfoByReceiptScheduleId, ImmutableMap.of());
+		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesceNotNull(externalInfoByReceiptScheduleId, ImmutableMap::of);
+		this.forexContractRef = forexContractRef;
+		this.deliveryPlanningId = deliveryPlanningId;
 	}
 
 	@Override
@@ -254,8 +263,6 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 * @param previousReceiptSchedule
-	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
 	 */
 	// package level because of JUnit tests
@@ -458,40 +465,30 @@ public class InOutProducer implements IInOutProducer
 
 		final I_M_InOut receiptHeader = InterfaceWrapperHelper.create(ctx, I_M_InOut.class, trxName);
 		receiptHeader.setAD_Org_ID(rs.getAD_Org_ID());
+		receiptHeader.setM_SectionCode_ID(rs.getM_SectionCode_ID());
 		receiptHeader.setC_Project_ID(rs.getC_Project_ID()); // going to set this to null later, in case there are lines with different projects
 
-		//
 		// Document Type
 		{
 			receiptHeader.setMovementType(X_M_InOut.MOVEMENTTYPE_VendorReceipts);
 			receiptHeader.setIsSOTrx(false);
-
-			// this is the doctype of the sched's source record (e.g. "Bestellung")
-			// receiptHeader.setC_DocType_ID(rs.getC_DocType_ID());
-			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-					.adClientId(rs.getAD_Client_ID())
-					.adOrgId(rs.getAD_Org_ID())
-					.build();
-			final int receiptDocTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
-			receiptHeader.setC_DocType_ID(receiptDocTypeId);
+			receiptHeader.setC_DocType_ID(getReceiptDoctypeID(rs));
 		}
 
 		//
 		// BPartner, Location & Contact
 		{
-			final int bpartnerId = receiptScheduleBL.getC_BPartner_Effective_ID(rs);
+			final BPartnerId bpartnerId = receiptScheduleBL.getBPartnerEffectiveId(rs);
 			final int bpartnerLocationId = receiptScheduleBL.getC_BPartner_Location_Effective_ID(rs);
 			final BPartnerContactId bpartnerContactId = receiptScheduleBL.getBPartnerContactID(rs);
 
 			InOutDocumentLocationAdapterFactory
 					.locationAdapter(receiptHeader)
 					.setFrom(DocumentLocation.builder()
-									 .bpartnerId(BPartnerId.ofRepoId(bpartnerId))
-									 .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
-									 .contactId(bpartnerContactId)
-									 .build());
+							.bpartnerId(bpartnerId)
+							.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
+							.contactId(bpartnerContactId)
+							.build());
 		}
 
 		//
@@ -500,10 +497,11 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setDateOrdered(rs.getDateOrdered());
 
 			final Timestamp movementDate = getMovementDate(rs, ctx);
+			final Timestamp dateAcct = getDateAcct(rs,ctx);
 
 			receiptHeader.setDateReceived(getExternalReceivedDate(rs));
 			receiptHeader.setMovementDate(movementDate);
-			receiptHeader.setDateAcct(movementDate);
+			receiptHeader.setDateAcct(dateAcct);
 		}
 
 		//
@@ -524,22 +522,27 @@ public class InOutProducer implements IInOutProducer
 		// DropShip informations (08402)
 		final I_C_Order order = rs.getC_Order();
 
-		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
-		if (order != null && propagateToMInOut)
+		if(order != null)
 		{
-			receiptHeader.setEMail(order.getEMail());
 			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
-		}
-		if (order != null && order.isDropShip())
-		{
-			receiptHeader.setIsDropShip(true);
-			InOutDocumentLocationAdapterFactory
-					.deliveryLocationAdapter(receiptHeader)
-					.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
-		}
-		else
-		{
-			receiptHeader.setIsDropShip(false);
+			receiptHeader.setPOReference(order.getPOReference());
+
+			final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
+			if (propagateToMInOut)
+			{
+				receiptHeader.setEMail(order.getEMail());
+			}
+			if (order.isDropShip())
+			{
+				receiptHeader.setIsDropShip(true);
+				InOutDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(receiptHeader)
+						.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
+			}
+			else
+			{
+				receiptHeader.setIsDropShip(false);
+			}
 		}
 
 		//external id
@@ -548,10 +551,37 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setExternalResourceURL(getExternalResourceURL(rs));
 		}
 
+		InOutDAO.updateRecordFromForeignContractRef(receiptHeader, forexContractRef);
+		receiptHeader.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
+
+		receiptHeader.setPOReference(rs.getPOReference());
+
 		//
 		// Save & Return
 		InterfaceWrapperHelper.save(receiptHeader);
 		return receiptHeader;
+	}
+
+	private int getReceiptDoctypeID(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		// allow specific receipt doctype from order first
+		final I_C_Order order = receiptSchedule.getC_Order();
+		if (order != null && order.getC_Order_ID() > 0)
+		{
+			final I_C_DocType orderDoctype = docTypeDAO.getRecordById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+			if (orderDoctype.getC_DocTypeShipment_ID() > 0)
+			{
+				return orderDoctype.getC_DocTypeShipment_ID();
+			}
+		}
+
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(DocBaseType.MaterialReceipt)
+				.adClientId(receiptSchedule.getAD_Client_ID())
+				.adOrgId(receiptSchedule.getAD_Org_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**
@@ -572,7 +602,8 @@ public class InOutProducer implements IInOutProducer
 	{
 		final I_M_InOut inout = getCurrentReceipt();
 
-		//
+		line.setM_SectionCode_ID(rs.getM_SectionCode_ID());
+
 		// Product & ASI
 		line.setM_Product_ID(rs.getM_Product_ID());
 		final I_M_AttributeSetInstance rsASI = receiptScheduleBL.getM_AttributeSetInstance_Effective(rs);
@@ -620,14 +651,14 @@ public class InOutProducer implements IInOutProducer
 
 		//
 		// Order Line Link
+		line.setC_Order_ID(rs.getC_Order_ID());
 		line.setC_OrderLine_ID(rs.getC_OrderLine_ID());
 
 		//
 		// Contract
 		line.setC_Flatrate_Term_ID(rs.getC_Flatrate_Term_ID());
 
-		final Dimension receiptScheduleDimension = dimensionService.getFromRecord(rs);
-		dimensionService.updateRecord(line, receiptScheduleDimension);
+		dimensionService.updateRecord(line, dimensionService.getFromRecord(rs));
 	}
 
 	/**
@@ -677,6 +708,21 @@ public class InOutProducer implements IInOutProducer
 		return Env.getDate(context);
 	}
 
+	@NonNull
+	private Timestamp getExternalDateAcct(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
+	{
+		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
+		final ReceiptScheduleExternalInfo externalInfo = externalInfoByReceiptScheduleId.get(receiptScheduleId);
+
+		if (externalInfo != null && externalInfo.getDateAcct() != null)
+		{
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(receiptSchedule.getAD_Org_ID()));
+			return TimeUtil.asTimestamp(externalInfo.getDateAcct(), timeZone);
+		}
+
+		return Env.getDate(context);
+	}
+
 	@Nullable
 	private Timestamp getExternalReceivedDate(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
@@ -710,23 +756,39 @@ public class InOutProducer implements IInOutProducer
 
 	private Timestamp getMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
-		final Timestamp movementDate;
-
-		switch (this.movementDateRule)
+		return movementDateRule.map(new ReceiptMovementDateRule.CaseMapper<Timestamp>()
 		{
-			case ORDER_DATE_PROMISED:
-				movementDate = getPromisedDate(receiptSchedule, context);
-				break;
-			case EXTERNAL_DATE_IF_AVAIL:
-				movementDate = getExternalMovementDate(receiptSchedule, context);
-				break;
-			case CURRENT_DATE:
-				// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
-				movementDate = Env.getDate(context);
-				break;
-			default:
-				throw new AdempiereException("Unknown ReceiptMovementDateRule!");
-		}
-		return movementDate;
+			@Override
+			public Timestamp orderDatePromised() {return getPromisedDate(receiptSchedule, context);}
+
+			@Override
+			public Timestamp externalDateIfAvailable() {return getExternalMovementDate(receiptSchedule, context);}
+
+			// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
+			@Override
+			public Timestamp currentDate() {return Env.getDate(context);}
+
+			@Override
+			public Timestamp fixedDate(@NonNull final Instant fixedDate) {return Timestamp.from(fixedDate);}
+		});
+	}
+
+	private Timestamp getDateAcct (@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
+	{
+		return movementDateRule.map(new ReceiptMovementDateRule.CaseMapper<Timestamp>()
+		{
+			@Override
+			public Timestamp orderDatePromised() {return getPromisedDate(receiptSchedule, context);}
+
+			@Override
+			public Timestamp externalDateIfAvailable() {return getExternalDateAcct(receiptSchedule, context);}
+
+			// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
+			@Override
+			public Timestamp currentDate() {return Env.getDate(context);}
+
+			@Override
+			public Timestamp fixedDate(@NonNull final Instant fixedDate) {return Timestamp.from(fixedDate);}
+		});
 	}
 }

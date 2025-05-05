@@ -23,7 +23,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  */
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
@@ -45,12 +44,14 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -71,24 +72,25 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnableAdapter;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Takes {@link IQualityInvoiceLineGroup}s and creates {@link I_C_Invoice_Candidate}s.
  *
  * @author tsa
- *
  */
 public class InvoiceCandidateWriter
 {
 	// Services
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final transient IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -100,10 +102,12 @@ public class InvoiceCandidateWriter
 	private int invoiceDocTypeId = -1;
 	/**
 	 * Original invoice candidates that need to be cleared when a new invoice candidate is created by this builder.
-	 *
+	 * <p>
 	 * NOTE: please don't use this object in other scope then clearing. If you want more invoicing informations, please take them from {@link #_vendorInvoicingInfo}.
 	 */
 	private List<I_C_Invoice_Candidate> _invoiceCandidatesToClear;
+	
+	@Nullable
 	private QualityInvoiceLineGroupByTypeComparator groupsSorter;
 
 	// Current Status:
@@ -146,8 +150,6 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * Sets the original invoice candidates that need to be cleared when a new invoice candidate is created by this builder
-	 *
-	 * @param invoiceCandidatesToClear
 	 */
 	public InvoiceCandidateWriter setInvoiceCandidatesToClear(final List<I_C_Invoice_Candidate> invoiceCandidatesToClear)
 	{
@@ -157,10 +159,8 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * Sets which group types will be accepted and saved.
-	 *
+	 * <p>
 	 * Also, the {@link IQualityInvoiceLineGroup}s will be sorted exactly by the order of given types.
-	 *
-	 * @param types
 	 */
 	public InvoiceCandidateWriter setQualityInvoiceLineGroupTypes(final List<QualityInvoiceLineGroupType> types)
 	{
@@ -177,8 +177,6 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * Sets C_DocType_ID to be used when invoice will be created
-	 *
-	 * @param invoiceDocTypeId
 	 */
 	public void setInvoiceDocType_ID(final int invoiceDocTypeId)
 	{
@@ -193,10 +191,8 @@ public class InvoiceCandidateWriter
 		return new ArrayList<>(_createdInvoiceCandidates);
 	}
 
-	private void addToCreatedInvoiceCandidates(final I_C_Invoice_Candidate invoiceCandidate)
+	private void addToCreatedInvoiceCandidates(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		Check.assumeNotNull(invoiceCandidate, "invoiceCandidate not null");
-
 		final boolean newIc = InterfaceWrapperHelper.isNew(invoiceCandidate);
 
 		//
@@ -248,13 +244,13 @@ public class InvoiceCandidateWriter
 	/**
 	 * @return vendor invoicing info; never return null
 	 */
-	private final IVendorInvoicingInfo getVendorInvoicingInfo()
+	private IVendorInvoicingInfo getVendorInvoicingInfo()
 	{
 		Check.assumeNotNull(_vendorInvoicingInfo, "_vendorInvoicingInfo not null");
 		return _vendorInvoicingInfo;
 	}
 
-	private final IContextAware getContext()
+	private IContextAware getContext()
 	{
 		return _context;
 	}
@@ -346,7 +342,6 @@ public class InvoiceCandidateWriter
 	/**
 	 * Creates invoice candidate
 	 *
-	 * @param qualityInvoiceLineGroup
 	 * @return invoice candidate; never returns <code>null</code>
 	 */
 	private I_C_Invoice_Candidate createInvoiceCandidate(@NonNull final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
@@ -473,9 +468,8 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * If there are any preexisting ICs to be come obsolete because of our new
-	 *
-	 * @param qualityInvoiceLineGroup
-	 * @task http://dewiki908/mediawiki/index.php/09655_Karottenabrechnung_mehrfache_Zeilen_%28105150975301%29
+	 * <p>
+	 * task http://dewiki908/mediawiki/index.php/09655_Karottenabrechnung_mehrfache_Zeilen_%28105150975301%29
 	 */
 	private void deleteExistingInvoiceCandidates(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
 	{
@@ -588,14 +582,13 @@ public class InvoiceCandidateWriter
 	}
 
 	/**
-	 *
 	 * @param invoiceCandidate
 	 * @task 07442
 	 */
 	@VisibleForTesting
 	protected void setC_Activity_ID(final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
+		final ActivityId activityId = productActivityProvider.getActivityForAcct(
 				ClientId.ofRepoId(invoiceCandidate.getAD_Client_ID()),
 				OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID()),
 				ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()));
@@ -614,6 +607,7 @@ public class InvoiceCandidateWriter
 		final BPartnerLocationAndCaptureId billToLocation = InvoiceCandidateLocationAdapterFactory
 				.billLocationAdapter(ic)
 				.getBPartnerLocationAndCaptureId();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
 
 		final TaxId taxID = taxBL.getTaxNotNull(
 				ic,
@@ -623,7 +617,8 @@ public class InvoiceCandidateWriter
 				OrgId.ofRepoId(ic.getAD_Org_ID()),
 				(WarehouseId)null,
 				billToLocation, // shipPartnerLocation TODO
-				SOTrx.PURCHASE);
+				SOTrx.PURCHASE,
+				vatCodeId);
 		ic.setC_Tax_ID(taxID.getRepoId());
 	}
 }

@@ -19,6 +19,7 @@ export const fetchCalendarEntries = ({
   onlyResourceIds = null,
   onlyProjectId = null,
   onlyCustomerId = null,
+  onlyResponsibleId = null,
   startDate = null,
   endDate = null,
 }) => {
@@ -28,6 +29,7 @@ export const fetchCalendarEntries = ({
     onlyResourceIds,
     onlyProjectId,
     onlyCustomerId,
+    onlyResponsibleId,
     startDate,
     endDate,
   };
@@ -110,4 +112,25 @@ export const fetchConflicts = ({
     )
     .then(extractAxiosResponseData)
     .then(({ conflicts }) => conflicts.map(converters.fromAPIConflict));
+};
+
+export const getSimulationOptimizerStatus = ({ simulationId }) => {
+  return axios
+    .get(buildURL(`${API_URL}/simulations/optimizer`, { simulationId }))
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPISimulationOptimizerStatus);
+};
+
+export const startSimulationOptimizer = ({ simulationId }) => {
+  return axios
+    .post(buildURL(`${API_URL}/simulations/optimizer/start`, { simulationId }))
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPISimulationOptimizerStatus);
+};
+
+export const stopSimulationOptimizer = ({ simulationId }) => {
+  return axios
+    .post(buildURL(`${API_URL}/simulations/optimizer/stop`, { simulationId }))
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPISimulationOptimizerStatus);
 };

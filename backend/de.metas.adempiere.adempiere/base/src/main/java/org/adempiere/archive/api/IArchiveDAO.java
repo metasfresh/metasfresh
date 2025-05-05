@@ -26,9 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
@@ -36,7 +34,6 @@ import org.compiere.model.I_AD_Archive;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 /**
  * Archive related DAO
@@ -46,6 +43,8 @@ import java.util.stream.Stream;
  */
 public interface IArchiveDAO extends ISingletonService
 {
+	I_AD_Archive getArchiveRecordById(@NonNull ArchiveId id);
+
 	/**
 	 * Retrieves all archive records for context's AD_Client_ID by using given whereClause. Records will be ordered by Created.
 	 *
@@ -79,8 +78,6 @@ public interface IArchiveDAO extends ISingletonService
 	<T> T retrieveReferencedModel(I_AD_Archive archive, Class<T> modelClass);
 
 	I_AD_Archive retrieveArchive(ArchiveId archiveId);
-
-	<T> Stream<AdArchive> streamArchivesForFilter(IQueryFilter<T> outboundLogFilter, Class<T> objectClass);
 
 	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
 

@@ -23,9 +23,12 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.AsyncBatchId;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.impl.FlatrateTermOverlapCriteria;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -33,8 +36,11 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderLineId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -45,13 +51,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -60,26 +66,28 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IFlatrateDAO extends ISingletonService
 {
 	I_C_Flatrate_Term getById(final int flatrateTermId);
 
-	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_DataEntry dataEntry);
+	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull I_C_Flatrate_DataEntry dataEntry);
 
 	/**
 	 * Retrieves I_C_Invoice_Clearing_Alloc records that have the given invoiceCand as their <code>C_Invoice_Candidate_ID</code> OR <code>C_Invoice_Cand_ToClear_ID</code>.
 	 */
-	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Invoice_Candidate invoiceCand);
+	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull I_C_Invoice_Candidate invoiceCand);
 
 	/**
 	 * Like {@link #retrieveClearingAllocs(I_C_Invoice_Candidate)}, but also returns inactive records.
 	 */
-	List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(I_C_Invoice_Candidate invoiceCand);
+	List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(@NonNull I_C_Invoice_Candidate invoiceCand);
 
-	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_Term term);
+	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull I_C_Flatrate_Term term);
 
 	List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(I_C_Flatrate_Conditions conditions);
 
@@ -100,14 +108,14 @@ public interface IFlatrateDAO extends ISingletonService
 	/**
 	 * Retrieves the dataEntry that matches the given params and has IsSimulation=N.
 	 */
-	I_C_Flatrate_DataEntry retrieveDataEntryOrNull(I_C_Flatrate_Term flatrateTerm, I_C_Period period, String dataEntryType, I_C_UOM uom);
+	I_C_Flatrate_DataEntry retrieveDataEntryOrNull(I_C_Flatrate_Term flatrateTerm, I_C_Period period, String dataEntryType, @NonNull UomId uomId);
 
 	I_C_Flatrate_DataEntry retrieveDataEntryOrNull(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Retrieved data entries that have the given term and uom, have type = 'IP' and have a period that lies at least partially withing the given dateFrom and dateTo.
 	 */
-	List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(I_C_Flatrate_Term term, Timestamp dateFrom, Timestamp dateTo, UomId uomId);
+	List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(I_C_Flatrate_Term term, LocalDateAndOrgId dateFrom, LocalDateAndOrgId dateTo, UomId uomId);
 
 	/**
 	 * @param term          mandatory; the term whose data entries are returned
@@ -134,13 +142,22 @@ public interface IFlatrateDAO extends ISingletonService
 
 	I_C_Flatrate_Term getById(@NonNull FlatrateTermId flatrateTermId);
 
+	@NonNull
+	ImmutableMap<FlatrateTermId, I_C_Flatrate_Term> getByIds(@NonNull Set<FlatrateTermId> flatrateTermIds);
+
 	/**
 	 * This method calls {@link #retrieveTerms(Properties, OrgId, int, Timestamp, int, int, int, String)} using the given invoice candidates values as parameters.
 	 */
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Invoice_Candidate ic);
 
+	/**
+	 * Note: Terms that have the Type_Conditions FlatFee, HoldingFee or Subscription are *not* returned.
+	 */
 	List<I_C_Flatrate_Term> retrieveTerms(Properties ctx, @NonNull OrgId orgId, int bill_BPartner_ID, Timestamp dateOrdered, int m_Product_Category_ID, int m_Product_ID, int c_Charge_ID, String trxName);
 
+	/**
+	 * Note: Terms that have the Type_Conditions FlatFee, HoldingFee or Subscription are *not* returned.
+	 */
 	List<I_C_Flatrate_Term> retrieveTerms(TermsQuery query);
 
 	I_C_Flatrate_Conditions getConditionsById(ConditionsId flatrateConditionsId);
@@ -149,12 +166,20 @@ public interface IFlatrateDAO extends ISingletonService
 
 	I_C_Invoice_Candidate retrieveInvoiceCandidate(I_C_Flatrate_Term term);
 
+	boolean hasOverlappingTerms(FlatrateTermOverlapCriteria flatrateTermOverlapCriteria);
+
 	Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
 			@NonNull BPartnerId bPartnerId,
 			@NonNull Instant date,
 			@NonNull OrgId orgId);
 
 	boolean bpartnerHasExistingRunningTerms(@NonNull final I_C_Flatrate_Term flatrateTerm);
+
+	I_C_Flatrate_Term retrieveFirstFlatrateTerm(@NonNull I_C_Invoice invoice);
+
+	boolean isExistsModularOrInterimContract(@NonNull IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter);
+
+	boolean isDefinitiveInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
 
 	@Value
 	@Builder
@@ -188,8 +213,6 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_M_Product> retrieveHoldingFeeProducts(I_C_Flatrate_Conditions c_Flatrate_Conditions);
 
-	List<I_C_UOM> retrieveUOMs(Properties ctx, I_C_Flatrate_Term flatrateTerm, String trxName);
-
 	/**
 	 * For the given <bold>simulated</bold> dataEntry, this method updates the ActualQty values of all other data Entries that have the same C_Flatrate_Term_ID, C_Period_ID and Type.
 	 */
@@ -215,6 +238,9 @@ public interface IFlatrateDAO extends ISingletonService
 	 * Retrieve all active {@link I_C_Flatrate_Conditions} of context tenant.
 	 */
 	List<I_C_Flatrate_Conditions> retrieveConditions(Properties ctx);
+
+	@NonNull
+	ImmutableMap<ConditionsId, I_C_Flatrate_Conditions> getTermConditionsByIds(@NonNull Set<ConditionsId> conditionsIds);
 
 	int getFlatrateConditionsIdByName(String name);
 
@@ -250,4 +276,30 @@ public interface IFlatrateDAO extends ISingletonService
 	I_C_Flatrate_Conditions getConditionsById(int flatrateConditionsId);
 
 	List<I_C_Flatrate_Term> retrieveTerms(BPartnerId bPartnerId, OrgId orgId, TypeConditions typeConditions);
+
+	@NonNull
+	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
+
+	@NonNull
+	ImmutableList<I_C_Flatrate_Term> getModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
+
+	IQuery<I_C_Flatrate_Term> createInterimContractQuery(@NonNull IQueryFilter<I_C_Flatrate_Term> contractFilter);
+
+	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+
+	ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsForDropShipPartnerAndProductCategory(@NonNull BPartnerId bPartnerId, @NonNull ProductCategoryId productCategoryId);
+
+	@NonNull
+	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
+
+	ImmutableSet<FlatrateTermId> getReadyForDefinitiveInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
+
+	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	boolean isInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+
+	@NonNull
+	ImmutableSet<FlatrateTermId> getReadyForFinalInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
 }

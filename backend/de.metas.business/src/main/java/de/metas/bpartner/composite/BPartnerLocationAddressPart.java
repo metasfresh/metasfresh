@@ -35,8 +35,7 @@ import java.util.Objects;
 @Builder
 public class BPartnerLocationAddressPart
 {
-	@With
-	@Nullable LocationId existingLocationId;
+	@Nullable @With LocationId existingLocationId;
 	@Nullable String address1;
 	@Nullable String address2;
 	@Nullable String address3;
@@ -47,6 +46,7 @@ public class BPartnerLocationAddressPart
 	@Nullable String region;
 	@Nullable String district;
 	@Nullable String countryCode;
+	@Nullable String countryName;
 
 	public static boolean equals(@Nullable final BPartnerLocationAddressPart o1, @Nullable final BPartnerLocationAddressPart o2)
 	{
@@ -65,6 +65,7 @@ public class BPartnerLocationAddressPart
 				&& Check.isBlank(city)
 				&& Check.isBlank(region)
 				&& Check.isBlank(district)
-				&& Check.isBlank(countryCode);
+				&& Check.isBlank(countryCode)
+				&& Check.isBlank(countryName);
 	}
 }

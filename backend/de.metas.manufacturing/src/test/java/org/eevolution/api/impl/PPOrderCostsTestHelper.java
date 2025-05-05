@@ -26,6 +26,7 @@ import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostTypeId;
@@ -72,7 +73,7 @@ public class PPOrderCostsTestHelper
 {
 	public final IUOMConversionDAO uomConversionDAO;
 
-	public final ClientId clientId = ClientId.ofRepoId(1);
+	public final ClientId clientId = ClientId.METASFRESH;
 
 	public final I_C_UOM uomEach;
 	public final UomId uomEachId;
@@ -108,7 +109,7 @@ public class PPOrderCostsTestHelper
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
-		final CostElementRepository costElementRepo = new CostElementRepository();
+		final CostElementRepository costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		SpringContextHolder.registerJUnitBean(ICurrentCostsRepository.class, new CurrentCostsRepository(costElementRepo));
 		SpringContextHolder.registerJUnitBean(ICostElementRepository.class, costElementRepo);
 
@@ -166,6 +167,8 @@ public class PPOrderCostsTestHelper
 			ppOrderNode.setValue("activity1");
 			ppOrderNode.setS_Resource_ID(BusinessTestHelper.createManufacturingResource("workstation1", uomSeconds).getRepoId());
 			ppOrderNode.setC_UOM_ID(uomSeconds.getC_UOM_ID());
+			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
+			ppOrderNode.setName("Name");
 			ppOrderNode.setDocStatus(PPOrderRoutingActivityStatus.NOT_STARTED.getDocStatus());
 			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
 			ppOrderNode.setName("Name");

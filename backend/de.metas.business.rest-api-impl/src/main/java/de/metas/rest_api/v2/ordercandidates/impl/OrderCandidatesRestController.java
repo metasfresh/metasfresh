@@ -2,16 +2,20 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.Profiles;
+import de.metas.auction.AuctionService;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Services;
@@ -65,6 +69,8 @@ public class OrderCandidatesRestController
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final OrderCandidateRestControllerService orderCandidateRestControllerService;
 	private final JsonRetrieverService jsonRetrieverService;
+	private final SectionCodeService sectionCodeService;
+	private final AuctionService auctionService;
 
 	private PermissionServiceFactory permissionServiceFactory;
 
@@ -72,12 +78,16 @@ public class OrderCandidatesRestController
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService)
+			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService,
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final AuctionService auctionService)
 	{
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.orderCandidateRestControllerService = orderCandidateRestControllerService;
+		this.sectionCodeService = sectionCodeService;
+		this.auctionService = auctionService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
@@ -93,6 +103,7 @@ public class OrderCandidatesRestController
 		return createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request));
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PostMapping(PATH_BULK)
 	public ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidates(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
@@ -105,6 +116,8 @@ public class OrderCandidatesRestController
 					.bpartnerRestController(bpartnerRestController)
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
+					.sectionCodeService(sectionCodeService)
+					.auctionService(auctionService)
 					.build();
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -124,6 +137,7 @@ public class OrderCandidatesRestController
 		}
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PutMapping(PATH_PROCESS)
 	public ResponseEntity<JsonProcessCompositeResponse> processOLCands(@RequestBody @NonNull final JsonOLCandProcessRequest request)
 	{

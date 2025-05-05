@@ -22,14 +22,14 @@ package de.metas.handlingunits;
  * #L%
  */
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 public interface IHUAndItemsDAO
 {
@@ -44,7 +44,9 @@ public interface IHUAndItemsDAO
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
 
-	/** @return parent M_HU_ID or -1 */
+	/**
+	 * @return parent M_HU_ID or -1
+	 */
 	int retrieveParentId(@Nullable I_M_HU hu);
 
 	I_M_HU_Item retrieveParentItem(I_M_HU hu);
@@ -61,13 +63,12 @@ public interface IHUAndItemsDAO
 	 *
 	 * @return the found item type or {@code null}.
 	 */
-	I_M_HU_Item retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
+	Optional<I_M_HU_Item> retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	/**
 	 * Creates and saves {@link I_M_HU_Item}
 	 *
 	 * @return created HU item
-	 *
 	 * @see IHandlingUnitsDAO#createHUItem(I_M_HU, I_M_HU_PI_Item)
 	 */
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);

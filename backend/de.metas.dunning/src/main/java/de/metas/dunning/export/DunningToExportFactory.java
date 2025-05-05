@@ -1,24 +1,12 @@
 package de.metas.dunning.export;
 
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.dunning.DunningDocId;
@@ -30,11 +18,22 @@ import de.metas.dunning_gateway.spi.model.DunningId;
 import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.dunning_gateway.spi.model.MetasfreshVersion;
 import de.metas.dunning_gateway.spi.model.Money;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.SoftwareVersion;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -95,6 +94,7 @@ public class DunningToExportFactory
 			final DunningToExport dunningToExport = DunningToExport
 					.builder()
 					.id(DunningId.ofRepoId(dunningDocId.getRepoId()))
+					.invoiceId(InvoiceId.ofRepoId(dunnedInvoiceRecord.getC_Invoice_ID()))
 					.alreadyPaidAmount(allocatedMoney)
 					.amount(grandTotal)
 					.dunningAttachments(createDunningAttachments(dunningDocId))

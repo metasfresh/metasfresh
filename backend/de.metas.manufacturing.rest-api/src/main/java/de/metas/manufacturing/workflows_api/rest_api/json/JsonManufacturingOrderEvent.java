@@ -28,6 +28,7 @@ public class JsonManufacturingOrderEvent
 	{
 		@NonNull String issueStepId;
 		@NonNull String huQRCode;
+		@Nullable BigDecimal huWeightGrossBeforeIssue;
 		@NonNull BigDecimal qtyIssued;
 		@Nullable BigDecimal qtyRejected;
 		@Nullable String qtyRejectedReasonCode;

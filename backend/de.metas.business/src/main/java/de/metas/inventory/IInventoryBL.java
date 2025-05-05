@@ -1,13 +1,13 @@
 package de.metas.inventory;
 
-import java.util.List;
-
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
-
 import de.metas.document.engine.DocStatus;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
+
+import java.util.List;
 
 /**
  * @author ad
@@ -45,4 +45,13 @@ public interface IInventoryBL extends ISingletonService
 	void assignToInventoryCounters(List<I_M_InventoryLine> inventoryLines, int numberOfCounters);
 
 	void setDefaultInternalChargeId(I_M_InventoryLine inventoryLine);
+
+	void markInventoryLinesAsCounted(@NonNull InventoryId inventoryId);
+
+	@NonNull
+	I_M_Inventory getById(@NonNull InventoryId inventoryId);
+
+	@NonNull I_M_InventoryLine getLineById(@NonNull InventoryLineId inventoryLineId);
+
+	boolean isReversal(@NonNull I_M_Inventory inventory);
 }

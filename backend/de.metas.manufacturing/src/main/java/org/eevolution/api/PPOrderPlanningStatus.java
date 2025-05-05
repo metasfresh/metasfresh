@@ -1,12 +1,16 @@
 package org.eevolution.api;
 
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.X_PP_Order;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -30,6 +34,8 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+@RequiredArgsConstructor
+@Getter
 public enum PPOrderPlanningStatus implements ReferenceListAwareEnum
 {
 	PLANNING(X_PP_Order.PLANNINGSTATUS_Planning), //
@@ -41,13 +47,7 @@ public enum PPOrderPlanningStatus implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<PPOrderPlanningStatus> index = ReferenceListAwareEnums.index(values());
 
-	@Getter
-	private final String code;
-
-	PPOrderPlanningStatus(final String code)
-	{
-		this.code = code;
-	}
+	@NonNull private final String code;
 
 	@Nullable
 	public static PPOrderPlanningStatus ofNullableCode(@Nullable final String code)
@@ -55,7 +55,27 @@ public enum PPOrderPlanningStatus implements ReferenceListAwareEnum
 		return index.ofNullableCode(code);
 	}
 
-	public static PPOrderPlanningStatus ofCode(@NonNull final String code) { return index.ofCode(code); }
+	public static PPOrderPlanningStatus ofCode(@NonNull final String code) {return index.ofCode(code);}
 
-	public boolean isComplete() { return COMPLETE.equals(this); }
+	public static PPOrderPlanningStatus of(@NonNull PPOrderTargetPlanningStatus targetPlanningStatus)
+	{
+		switch (targetPlanningStatus)
+		{
+			case REVIEW:
+				return REVIEW;
+			case COMPLETE:
+				return COMPLETE;
+			default:
+				throw new AdempiereException("Unknown target: " + targetPlanningStatus);
+		}
+	}
+
+	public boolean isReview() {return REVIEW.equals(this);}
+
+	public boolean isComplete() {return COMPLETE.equals(this);}
+
+	public static boolean equals(@Nullable PPOrderPlanningStatus status1, @Nullable PPOrderPlanningStatus status2)
+	{
+		return Objects.equals(status1, status2);
+	}
 }

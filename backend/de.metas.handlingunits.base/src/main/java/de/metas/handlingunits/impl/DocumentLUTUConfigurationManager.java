@@ -123,7 +123,7 @@ public final class DocumentLUTUConfigurationManager<T> implements IDocumentLUTUC
 	public void updateLUTUConfigurationFromModel(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		final T documentLine = getDocumentLine();
-		handler.updateLUTUConfigurationFromPPOrder(lutuConfiguration, documentLine);
+		handler.updateLUTUConfigurationFromDocumentLine(lutuConfiguration, documentLine);
 	}
 
 	@Override

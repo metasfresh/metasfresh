@@ -22,16 +22,16 @@
 
 package de.metas.project.workorder.callout;
 
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
 import de.metas.project.budget.BudgetProjectService;
-import de.metas.project.workorder.WOProject;
-import de.metas.project.workorder.WOProjectService;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectService;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceType;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
@@ -50,15 +50,16 @@ import java.time.Instant;
 import java.time.temporal.TemporalUnit;
 import java.util.Optional;
 
+import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
+
 @Callout(I_C_Project_WO_Resource.class)
 @Component
 public class C_Project_WO_Resource
 {
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ResourceService resourceService;
 	private final WOProjectService woProjectService;
 	private final BudgetProjectService budgetProjectService;
-
-	private static final Duration DEFAULT_DURATION = Duration.ofHours(1);
 
 	public C_Project_WO_Resource(
 			final ResourceService resourceService,
@@ -83,7 +84,8 @@ public class C_Project_WO_Resource
 		if (resourceId != null)
 		{
 			final ResourceType resourceType = resourceService.getResourceTypeByResourceId(resourceId);
-			woResource.setDurationUnit(WFDurationUnit.ofTemporalUnit(resourceType.getDurationUnit()).getCode());
+			final TemporalUnit durationUnit = uomDAO.getTemporalUnitByUomId(resourceType.getDurationUomId());
+			woResource.setDurationUnit(WFDurationUnit.ofTemporalUnit(durationUnit).getCode());
 		}
 
 		updateDuration(woResource);
@@ -135,8 +137,7 @@ public class C_Project_WO_Resource
 			return BigDecimal.ZERO;
 		}
 
-		final OrgId orgId = OrgId.ofRepoId(woResource.getAD_Org_ID());
-		final Instant dateTo = TimeUtil.asInstant(woResource.getAssignDateTo(), orgId);
+		final Instant dateTo = TimeUtil.asInstant(woResource.getAssignDateTo());
 		if (dateTo == null)
 		{
 			return BigDecimal.ZERO;
@@ -168,12 +169,12 @@ public class C_Project_WO_Resource
 
 		final ProjectId woProjectId = ProjectId.ofRepoId(woResource.getC_Project_ID());
 		final WOProject woProject = woProjectService.getById(woProjectId);
-		if (woProject.getParentProjectId() == null)
+		if (woProject.getProjectParentId() == null)
 		{
 			return Optional.empty();
 		}
 
-		final BudgetProject budgetProject = budgetProjectService.getById(woProject.getParentProjectId()).orElse(null);
+		final BudgetProject budgetProject = budgetProjectService.getById(woProject.getProjectParentId()).orElse(null);
 		if (budgetProject == null)
 		{
 			return Optional.empty();

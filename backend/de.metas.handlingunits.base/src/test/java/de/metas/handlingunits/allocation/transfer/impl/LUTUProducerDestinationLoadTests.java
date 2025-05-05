@@ -1,40 +1,17 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import static de.metas.business.BusinessTestHelper.createBPartner;
-import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
-import static de.metas.business.BusinessTestHelper.createLocator;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.function.Consumer;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.StaticHUAssert;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
+import de.metas.handlingunits.expectations.HUsExpectation;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_LUTU_Configuration;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
@@ -51,18 +28,18 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUXmlConverter;
-import de.metas.handlingunits.StaticHUAssert;
-import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
-import de.metas.handlingunits.expectations.HUsExpectation;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.handlingunits.model.X_M_HU_LUTU_Configuration;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.function.Consumer;
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 /**
  * Note the "load" means "to create HUs and load qty into them from somewhere else". It's not about performance and stuff.
@@ -94,11 +71,8 @@ public class LUTUProducerDestinationLoadTests
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 
-		lutuProducer.setLUPI(null);
-		lutuProducer.setLUItemPI(null);
+		lutuProducer.setNoLU();
 		lutuProducer.setTUPI(data.piTU_IFCO);
-		lutuProducer.setMaxLUs(0);
-		lutuProducer.setCreateTUsForRemainingQty(true);
 
 		// one IFCO can hold 40kg tomatoes
 		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("35"), data.helper.uomKg);
@@ -219,8 +193,8 @@ public class LUTUProducerDestinationLoadTests
 	 * <li>one IFCO can hold 40 kg of tomatoes
 	 * </ul>
 	 * Verify that the loader produces one LU with 200 kg tomatoes and an aggregated HU that contains both an item-storage with the 200kg tomatoes and one packing material item with packaging material "IFCO" and a quantity of 5.
-	 * 
-	 * @task https://github.com/metasfresh/metasfresh/issues/460
+	 *
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/460">issue</a>
 	 */
 	@Test
 	public void testAggregateSingleLUFullyLoaded()
@@ -232,7 +206,7 @@ public class LUTUProducerDestinationLoadTests
 
 	/**
 	 * Verifies the creation of an aggregate HU with a non-int storage value.
-	 * Related to issue https://github.com/metasfresh/metasfresh/issues/1237, but this even worked before the issue came up.
+	 * Related to <a href="https://github.com/metasfresh/metasfresh/issues/1237">issue</a>, but this even worked before the issue came up.
 	 */
 	@Test
 	public void testAggregateSingleLUFullyLoaded_non_int()
@@ -429,9 +403,7 @@ public class LUTUProducerDestinationLoadTests
 	 * 
 	 * @param cuQty the overall qty of tomatoes per fully loaded LU.
 	 * @param expectedFullLUsCount expected number of LUs that are fully loaded with 5 IFCOs (aggregated) and 200kg of tomatoes
-	 * @param lastExpectation
 	 * @param tuCapacityOverride optional, may be {@code null}.
-	 *            If set, then call {@link LUTUProducerDestination#addCUPerTU(org.compiere.model.I_M_Product, BigDecimal, org.compiere.model.I_C_UOM)} to explicitly set a capacity.
 	 *            If not set, then expect the LUTUProducerDestination to get the capacity from the PI.
 	 */
 	private void performTest(final int cuQty,
@@ -524,10 +496,7 @@ public class LUTUProducerDestinationLoadTests
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 
 		lutuProducer.setTUPI(data.piTruckUnlimitedCapacity); // it's important to note that this PI was set up with unlimited capacity
-		lutuProducer.setLUPI(null);
-		lutuProducer.setLUItemPI(null);
-		lutuProducer.setMaxLUs(0);
-		lutuProducer.setCreateTUsForRemainingQty(true);
+		lutuProducer.setNoLU();
 
 		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("999999"), data.helper.uomKg);
 		final List<I_M_HU> huTruck = lutuProducer.getCreatedHUs();
@@ -550,8 +519,8 @@ public class LUTUProducerDestinationLoadTests
 
 	/**
 	 * Verifies that the loader will not try to create an aggregate HU for the case of a CU that shall be put right onto an LU.
-	 * 
-	 * @task https://github.com/metasfresh/metasfresh/issues/1194
+	 *
+	 * @implSpec task <a href="https://github.com/metasfresh/metasfresh/issues/1194">issue</a>
 	 */
 	@Test
 	public void testLoadCUonLU()
@@ -573,7 +542,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuConfiguration.setM_Product_ID(data.helper.pSalad.getM_Product_ID()); // differs from real world
 		lutuConfiguration.setC_UOM_ID(data.helper.uomEach.getC_UOM_ID());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
-		lutuConfiguration.setQtyCU(new BigDecimal("252"));
+		lutuConfiguration.setQtyCUsPerTU(new BigDecimal("252"));
 		lutuConfiguration.setHUStatus(X_M_HU_LUTU_Configuration.HUSTATUS_Planning);
 		lutuConfiguration.setM_Locator_ID(l.getM_Locator_ID());
 		lutuConfiguration.setC_BPartner_ID(bpartner.getC_BPartner_ID());

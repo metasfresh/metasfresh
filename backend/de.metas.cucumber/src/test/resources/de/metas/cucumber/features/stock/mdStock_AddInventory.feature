@@ -1,13 +1,14 @@
 @from:cucumber
 @topic:stock
+@ghActions:run_on_executor7
 Feature: stock changes accordingly
   As a user
   I want stock to be updated properly if inventory is changed
   So that the QTY is always correct
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh initially has no MD_Stock data
+    Given infrastructure and metasfresh are running
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And no product with value 'product_value222' exists
     And metasfresh contains M_Products:
       | Identifier | Name               |
@@ -24,11 +25,11 @@ Feature: stock changes accordingly
       | 21                            | 11                        | 222                     | PCE          | 10       | 0       |
       | 22                            | 12                        | 222                     | PCE          | 16       | 10      |
     When the inventory identified by 11 is completed
-    Then after not more than 60 seconds metasfresh has MD_Stock data
+    Then after not more than 120 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 10        |
 
     And the inventory identified by 12 is completed
-    And after not more than 60 seconds metasfresh has MD_Stock data
+    And after not more than 120 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 16        |

@@ -6,7 +6,6 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.location.IDocumentLocationBL;
-import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -22,7 +21,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
-import de.metas.tax.api.Tax;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -54,7 +53,6 @@ public class C_Invoice_Candidate
 
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 
 	private final AttachmentEntryService attachmentEntryService;
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
@@ -71,6 +69,7 @@ public class C_Invoice_Candidate
 		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
+		
 		this.attachmentEntryService = attachmentEntryService;
 		this.documentLocationBL = documentLocationBL;
 	}
@@ -80,8 +79,9 @@ public class C_Invoice_Candidate
 			ifColumnsChanged = {
 					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
-	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override })
+	public void updateInvoiceCandidateDirectly(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 		{
@@ -96,6 +96,22 @@ public class C_Invoice_Candidate
 			{
 				invoiceCandidateHandlerBL.setDeliveredData(icRecord);
 			}
+
+			if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override))
+					&& (icRecord.getQtyToInvoiceInUOM_Override() != null))
+			{
+				final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(icRecord.getInvoicableQtyBasedOn());
+				if (InvoicableQtyBasedOn.NominalWeight.equals(invoicableQtyBasedOn))
+				{
+					icRecord.setQtyToInvoice_Override(null);
+				}
+			}
+			else if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
+					&& (icRecord.getQtyToInvoice_Override() != null))
+			{
+				icRecord.setQtyToInvoiceInUOM_Override(null);
+			}
+
 			final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 			invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 		}
@@ -223,15 +239,13 @@ public class C_Invoice_Candidate
 
 	/**
 	 * For new invoice candidates, this method sets the <code>C_Order_ID</code>, if the referenced record is either a <code>C_OrderLine_ID</code> or a <code>M_InOutLine_ID</code>.
-	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateOrderId(final I_C_Invoice_Candidate ic)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		if (adTableDAO.retrieveTableId(org.compiere.model.I_M_InOutLine.Table_Name) == ic.getAD_Table_ID())
+		if (adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name) == ic.getAD_Table_ID())
 		{
 			final I_M_InOutLine iol = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(ic), ic.getRecord_ID(), I_M_InOutLine.class, InterfaceWrapperHelper.getTrxName(ic));
 			ic.setC_Order_ID(iol.getM_InOut().getC_Order_ID());
@@ -240,7 +254,7 @@ public class C_Invoice_Candidate
 		{
 			final I_C_OrderLine ol = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(ic), ic.getRecord_ID(), I_C_OrderLine.class, InterfaceWrapperHelper.getTrxName(ic));
 			ic.setC_Order_ID(ol.getC_Order_ID());
-
+			ic.setC_OrderSO_ID(ol.getC_OrderSO_ID());
 		}
 	}
 
@@ -257,7 +271,7 @@ public class C_Invoice_Candidate
 	public void updateCapturedLocationsAndRenderedAddresses(final I_C_Invoice_Candidate ic)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(ic))
-		{
+		{ // at this point the fix/update of Bill_Location_Value_ID is coming too late for the IC's header aggregation key!
 			InvoiceCandidateLocationsUpdater.builder()
 					.documentLocationBL(documentLocationBL)
 					.record(ic)
@@ -354,11 +368,9 @@ public class C_Invoice_Candidate
 
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
-	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
-	public void scheduleRecreate(final I_C_Invoice_Candidate ic)
+	public void scheduleRecreate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		//
 		// Skip recreation scheduling if we were asked to avoid that
@@ -425,32 +437,18 @@ public class C_Invoice_Candidate
 			return; // nothing to do
 		}
 
-		if (InterfaceWrapperHelper.isNew(ic) || ic.getC_Invoice_Candidate_ID() <= 0)
-		{
-			aggregationBL.setHeaderAggregationKey(ic);
-			return;
-		}
+		// This shall be done later by IInvoiceCandInvalidUpdater. 
+		// Otherwise we might have concurrent access to I_C_Invoice_Candidate_HeaderAggregation and DBUniqueConstraintExceptions
+		// if (InterfaceWrapperHelper.isNew(ic) || ic.getC_Invoice_Candidate_ID() <= 0)
+		// {
+		// 	aggregationBL.setHeaderAggregationKey(ic);
+		// 	return;
+		// }
 
 		invoiceCandDAO.invalidateCand(ic);
 	}
 
-
-	/**
-	 * In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.
-	 * <p>
-	 * Task 07814
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
-	public void errorIfTaxNotFound(final I_C_Invoice_Candidate candidate)
-	{
-		final Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(candidate);
-
-		if (taxEffective.isTaxNotFound())
-		{
-			candidate.setIsError(true);
-		}
-	}
-
+	
 	@ModelChange( //
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
 			ifColumnsChanged = {

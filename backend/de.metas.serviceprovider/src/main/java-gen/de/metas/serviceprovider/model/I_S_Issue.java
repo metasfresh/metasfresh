@@ -120,6 +120,28 @@ public interface I_S_Issue
 	String COLUMNNAME_BudgetedEffort = "BudgetedEffort";
 
 	/**
+	 * Set Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Activity_ID();
+
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
@@ -232,6 +254,27 @@ public interface I_S_Issue
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Effort aggregation key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEffortAggregationKey (@Nullable java.lang.String EffortAggregationKey);
+
+	/**
+	 * Get Effort aggregation key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEffortAggregationKey();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_EffortAggregationKey = new ModelColumn<>(I_S_Issue.class, "EffortAggregationKey", null);
+	String COLUMNNAME_EffortAggregationKey = "EffortAggregationKey";
+
+	/**
 	 * Set Effort delivery platform.
 	 *
 	 * <br>Type: String
@@ -317,6 +360,27 @@ public interface I_S_Issue
 
 	ModelColumn<I_S_Issue, Object> COLUMN_ExternalIssueNo = new ModelColumn<>(I_S_Issue.class, "ExternalIssueNo", null);
 	String COLUMNNAME_ExternalIssueNo = "ExternalIssueNo";
+
+	/**
+	 * Set Externally updated at.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternallyUpdatedAt (@Nullable java.sql.Timestamp ExternallyUpdatedAt);
+
+	/**
+	 * Get Externally updated at.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getExternallyUpdatedAt();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_ExternallyUpdatedAt = new ModelColumn<>(I_S_Issue.class, "ExternallyUpdatedAt", null);
+	String COLUMNNAME_ExternallyUpdatedAt = "ExternallyUpdatedAt";
 
 	/**
 	 * Set hasInternalEffortIssue.
@@ -692,6 +756,29 @@ public interface I_S_Issue
 	String COLUMNNAME_InvoicedDate = "InvoicedDate";
 
 	/**
+	 * Set Error message.
+	 * Error that occured while metasfresh tried to invoice this record.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoicingErrorMsg (@Nullable java.lang.String InvoicingErrorMsg);
+
+	/**
+	 * Get Error message.
+	 * Error that occured while metasfresh tried to invoice this record.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoicingErrorMsg();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_InvoicingErrorMsg = new ModelColumn<>(I_S_Issue.class, "InvoicingErrorMsg", null);
+	String COLUMNNAME_InvoicingErrorMsg = "InvoicingErrorMsg";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -757,6 +844,27 @@ public interface I_S_Issue
 
 	ModelColumn<I_S_Issue, Object> COLUMN_IsEffortIssue = new ModelColumn<>(I_S_Issue.class, "IsEffortIssue", null);
 	String COLUMNNAME_IsEffortIssue = "IsEffortIssue";
+
+	/**
+	 * Set Invoicing error.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoicingError (boolean IsInvoicingError);
+
+	/**
+	 * Get Invoicing error.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoicingError();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_IsInvoicingError = new ModelColumn<>(I_S_Issue.class, "IsInvoicingError", null);
+	String COLUMNNAME_IsInvoicingError = "IsInvoicingError";
 
 	/**
 	 * Set Issue effort (H:mm).

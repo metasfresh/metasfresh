@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_SimulationPlan extends org.compiere.model.PO implements I_C_SimulationPlan, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1259421364L;
+	private static final long serialVersionUID = 2049592044L;
 
     /** Standard Constructor */
     public X_C_SimulationPlan (final Properties ctx, final int C_SimulationPlan_ID, @Nullable final String trxName)
@@ -103,6 +103,18 @@ public class X_C_SimulationPlan extends org.compiere.model.PO implements I_C_Sim
 	public java.lang.String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
+	}
+
+	@Override
+	public void setIsMainSimulation (final boolean IsMainSimulation)
+	{
+		set_Value (COLUMNNAME_IsMainSimulation, IsMainSimulation);
+	}
+
+	@Override
+	public boolean isMainSimulation() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMainSimulation);
 	}
 
 	@Override

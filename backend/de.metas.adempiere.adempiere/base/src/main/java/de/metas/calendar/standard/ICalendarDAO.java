@@ -22,6 +22,7 @@
 
 package de.metas.calendar.standard;
 
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -30,9 +31,9 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_NonBusinessDay;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_Inventory;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
@@ -43,15 +44,15 @@ public interface ICalendarDAO extends ISingletonService
 	 */
 	List<I_C_Period> retrievePeriods(Properties ctx, I_C_Year year, String trxName);
 
-	List<I_C_Period> retrievePeriods(Properties ctx, I_C_Calendar cal, Timestamp begin, Timestamp end, String trxName);
+	List<I_C_Period> retrievePeriods(Properties ctx, I_C_Calendar cal, LocalDateAndOrgId begin, LocalDateAndOrgId end, String trxName);
 
 	List<I_C_Year> retrieveYearsOfCalendar(I_C_Calendar calendar);
 
-	I_C_Period retrieveFirstPeriodOfTheYear(I_C_Year year);
+	I_C_Period retrieveFirstPeriodOfTheYear(@NonNull YearId yearId);
 
-	I_C_Period retrieveLastPeriodOfTheYear(I_C_Year year);
+	I_C_Period retrieveLastPeriodOfTheYear(@NonNull YearId yearId);
 
-	I_C_Period findByCalendar(Timestamp date, @NonNull CalendarId calendarId);
+	I_C_Period findByCalendar(LocalDateAndOrgId date, @NonNull CalendarId calendarId);
 
 	/**
 	 * Period of the year for given calendar and date
@@ -60,7 +61,7 @@ public interface ICalendarDAO extends ISingletonService
 	 * @deprecated
 	 */
 	@Deprecated
-	I_C_Period findByCalendar(Properties ctx, Timestamp date, int calendarId, String trxName);
+	I_C_Period findByCalendar(Properties ctx, LocalDateAndOrgId date, int calendarId, String trxName);
 
 	CalendarNonBusinessDays getCalendarNonBusinessDays(final CalendarId calendarId);
 
@@ -75,4 +76,6 @@ public interface ICalendarDAO extends ISingletonService
 	 * @throws AdempiereException if no default calendar is found
 	 */
 	@NonNull I_C_Calendar getDefaultCalendar(@NonNull final OrgId orgId);
+
+	@NonNull I_C_Calendar getById(@NonNull CalendarId calendarId);
 }

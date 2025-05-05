@@ -22,14 +22,14 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-
-import java.util.Date;
-import java.util.Properties;
-
+import de.metas.dunning.interfaces.I_C_DunningLevel;
+import de.metas.organization.LocalDateAndOrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
-import de.metas.dunning.interfaces.I_C_DunningLevel;
+import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.Properties;
 
 public class PlainDunningContext extends AbstractDunningContext
 {
@@ -37,8 +37,11 @@ public class PlainDunningContext extends AbstractDunningContext
 	private final Properties ctx;
 	private final ITrxRunConfig trxRunConfig;
 	
-	private Date dunningDate;
+	private LocalDateAndOrgId dunningDate;
 	private I_C_DunningLevel dunningLevel;
+
+	@Nullable
+	private final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery;
 
 	public PlainDunningContext(final Properties ctx, final ITrxRunConfig trxRunConfig)
 	{
@@ -46,6 +49,7 @@ public class PlainDunningContext extends AbstractDunningContext
 		this.ctx = ctx;
 		this.trxRunConfig = trxRunConfig;
 		this.dunningConfig = new DunningConfig();
+		this.recomputeDunningCandidatesQuery = null;
 	}
 
 	@Override
@@ -73,7 +77,8 @@ public class PlainDunningContext extends AbstractDunningContext
 	}
 
 	@Override
-	public Date getDunningDate()
+	@Nullable
+	public LocalDateAndOrgId getDunningDate()
 	{
 		return dunningDate;
 	}
@@ -88,7 +93,7 @@ public class PlainDunningContext extends AbstractDunningContext
 		this.dunningLevel = dunningLevel;
 	}
 
-	public void setDunningDate(Date dunningDate)
+	public void setDunningDate(@Nullable LocalDateAndOrgId dunningDate)
 	{
 		this.dunningDate = dunningDate;
 	}
@@ -97,5 +102,12 @@ public class PlainDunningContext extends AbstractDunningContext
 	public ITrxRunConfig getTrxRunnerConfig()
 	{
 		return trxRunConfig;
+	}
+
+	@Nullable
+	@Override
+	public RecomputeDunningCandidatesQuery getRecomputeDunningCandidatesQuery()
+	{
+		return recomputeDunningCandidatesQuery;
 	}
 }

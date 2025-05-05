@@ -10,7 +10,6 @@ import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IInOutPackageDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
@@ -173,7 +172,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
 
 		// services
-		final IInOutPackageDAO inOutPackageDAO = Services.get(IInOutPackageDAO.class);
+		final InOutPackageRepository inOutPackageRepository = SpringContextHolder.instance.getBean(InOutPackageRepository.class);
 		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 
 		//
@@ -194,7 +193,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			// Create M_Packages
 			final List<CreatePackagesRequest> createPackagesRequestList = buildCreatePackageRequest(shipperId, request);
 
-			final List<I_M_Package> mPackages = inOutPackageDAO.createM_Packages(createPackagesRequestList);
+			final List<I_M_Package> mPackages = inOutPackageRepository.createM_Packages(createPackagesRequestList);
 			result.addAll(mPackages);
 
 			//

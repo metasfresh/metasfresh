@@ -3,11 +3,17 @@ package de.metas.global_qrcodes;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.io.BaseEncoding;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 @Value
 @Builder
@@ -44,10 +50,22 @@ public class GlobalQRCode
 				.build();
 	}
 
+	@Nullable
 	@JsonCreator
+	public static GlobalQRCode ofNullableString(@Nullable final String string)
+	{
+		return StringUtils.trimBlankToNullAndMap(string, GlobalQRCode::ofString);
+	}
+
 	public static GlobalQRCode ofString(@NonNull final String string)
 	{
 		return parse(string).orThrow();
+	}
+
+	public static GlobalQRCode ofBase64Encoded(@NonNull final String string)
+	{
+		final byte[] bytes = BaseEncoding.base64().decode(string);
+		return ofString(new String(bytes, StandardCharsets.UTF_8));
 	}
 
 	public static GlobalQRCodeParseResult parse(@NonNull final String string)
@@ -115,5 +133,10 @@ public class GlobalQRCode
 	public String getAsString()
 	{
 		return type.toJson() + SEPARATOR + version + SEPARATOR + payloadAsJson;
+	}
+
+	public static boolean equals(@Nullable GlobalQRCode o1, @Nullable GlobalQRCode o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

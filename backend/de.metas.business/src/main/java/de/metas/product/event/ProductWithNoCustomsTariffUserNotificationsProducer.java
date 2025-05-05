@@ -1,19 +1,9 @@
 package de.metas.product.event;
 
-import java.util.Collection;
-import java.util.List;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -21,6 +11,14 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -53,7 +51,9 @@ public class ProductWithNoCustomsTariffUserNotificationsProducer
 		return new ProductWithNoCustomsTariffUserNotificationsProducer();
 	}
 
-	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
+	/**
+	 * Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously
+	 */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.product.UserNotifications")
 			.type(Type.DISTRIBUTED)
@@ -73,8 +73,8 @@ public class ProductWithNoCustomsTariffUserNotificationsProducer
 		}
 
 		postNotifications(productIds.stream()
-				.map(this::createUserNotification)
-				.collect(ImmutableList.toImmutableList()));
+								  .map(this::createUserNotification)
+								  .collect(ImmutableList.toImmutableList()));
 
 		return this;
 	}

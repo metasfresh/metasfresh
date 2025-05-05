@@ -22,19 +22,17 @@ package org.adempiere.appdict.validation.spi;
  * #L%
  */
 
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Util;
 
 import java.lang.reflect.Method;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.util.Check;
 
 public abstract class AbstractADValidator<T> implements IADValidator<T>
 {
 	protected Method validateJavaMethodName(final String classname, final Class<?> parentClass, final String methodName)
 	{
-		Class<?> clazz = validateJavaClassname(classname, parentClass);
-		for (Method m : clazz.getMethods())
+		final Class<?> clazz = Util.validateJavaClassname(classname, parentClass);
+		for (final Method m : clazz.getMethods())
 		{
 			if (methodName.equals(m.getName()))
 			{
@@ -43,38 +41,5 @@ public abstract class AbstractADValidator<T> implements IADValidator<T>
 		}
 
 		throw new AdempiereException("Method '" + methodName + "' not found in " + clazz);
-	}
-
-	protected Class<?> validateJavaClassname(final String classname, final Class<?> parentClass)
-	{
-		if (Check.isEmpty(classname, true))
-		{
-			throw new AdempiereException("no classname specified");
-		}
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		if (cl == null)
-		{
-			cl = getClass().getClassLoader();
-		}
-
-		final Class<?> clazz;
-		try
-		{
-			clazz = cl.loadClass(classname);
-		}
-		catch (ClassNotFoundException e)
-		{
-			throw new AdempiereException("Classname not found: " + classname, e);
-		}
-
-		if (parentClass != null)
-		{
-			if (!parentClass.isAssignableFrom(clazz))
-			{
-				throw new AdempiereException("Class " + clazz + " is not assignable from " + parentClass);
-			}
-		}
-
-		return clazz;
 	}
 }

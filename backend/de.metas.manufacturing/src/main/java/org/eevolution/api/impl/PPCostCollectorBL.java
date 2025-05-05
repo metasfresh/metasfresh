@@ -23,6 +23,7 @@ package org.eevolution.api.impl;
  */
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -51,7 +52,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.BOMComponentIssueMethod;
@@ -164,9 +164,13 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	 *
 	 * @return Component Issue, Mix Variance or Method Change Variance
 	 */
-	private static CostCollectorType extractCostCollectorTypeToUseForComponentIssue(final I_PP_Order_BOMLine orderBOMLine)
+	private static CostCollectorType extractCostCollectorTypeToUseForComponentIssue(
+			@NonNull final I_PP_Order_BOMLine orderBOMLine,
+			@NonNull final ProductId productId)
 	{
-		if (PPOrderUtil.isMethodChangeVariance(orderBOMLine))
+		final ProductId bomLineProductId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+
+		if (!ProductId.equals(productId, bomLineProductId) || PPOrderUtil.isMethodChangeVariance(orderBOMLine))
 		{
 			return CostCollectorType.MethodChangeVariance;
 		}
@@ -184,9 +188,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	public I_PP_Cost_Collector createIssue(final ComponentIssueCreateRequest request)
 	{
 		final I_PP_Order_BOMLine orderBOMLine = request.getOrderBOMLine();
-		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		final ProductId productId = request.getProductId();
 		final I_C_UOM bomLineUOM = ppOrderBOMBL.getBOMLineUOM(orderBOMLine);
-		final CostCollectorType costCollectorType = extractCostCollectorTypeToUseForComponentIssue(orderBOMLine);
+		final CostCollectorType costCollectorType = extractCostCollectorTypeToUseForComponentIssue(orderBOMLine, productId);
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 		//
 		final I_PP_Order order = orderBOMLine.getPP_Order();
@@ -558,7 +562,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		final I_PP_Order ppOrder = request.getOrder();
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector)
+				.docBaseType(DocBaseType.ManufacturingCostCollector)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())
 				.build());

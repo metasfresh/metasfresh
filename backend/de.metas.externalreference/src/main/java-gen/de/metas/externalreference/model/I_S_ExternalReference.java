@@ -188,6 +188,27 @@ public interface I_S_ExternalReference
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Read Only In Metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadOnlyInMetasfresh (boolean IsReadOnlyInMetasfresh);
+
+	/**
+	 * Get Read Only In Metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadOnlyInMetasfresh();
+
+	ModelColumn<I_S_ExternalReference, Object> COLUMN_IsReadOnlyInMetasfresh = new ModelColumn<>(I_S_ExternalReference.class, "IsReadOnlyInMetasfresh", null);
+	String COLUMNNAME_IsReadOnlyInMetasfresh = "IsReadOnlyInMetasfresh";
+
+	/**
 	 * Set Record ID.
 	 * Direct internal record ID
 	 *

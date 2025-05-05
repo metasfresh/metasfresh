@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { forEach, get } from 'lodash';
 
 import { connectWS, disconnectWS } from '../utils/websockets';
-import { getTabRequest, getRowsData } from '../api';
+import { getRowsData, getTabRequest } from '../api';
 import { getTab } from '../utils';
 
 import { getTableId } from '../reducers/tables';
@@ -13,17 +13,22 @@ import {
   attachFileAction,
   clearMasterData,
   fireUpdateData,
+  openModal,
+  patchWindow,
   sortTab,
   updateTabLayout,
 } from '../actions/WindowActions';
 import {
   deleteTable,
-  updateTabTableData,
   updateTabRowsData,
+  updateTabTableData,
 } from '../actions/TableActions';
 
 import MasterWindow from '../components/app/MasterWindow';
 import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
+import { fetchTopActions } from '../actions/Actions';
+
+import history from '../services/History';
 
 /**
  * @file Class based component.
@@ -47,6 +52,8 @@ class MasterWindowContainer extends PureComponent {
         this.onWebsocketEvent(msg);
       });
     }
+
+    this.handleURLParams();
   }
 
   componentDidMount() {
@@ -66,14 +73,16 @@ class MasterWindowContainer extends PureComponent {
   }
 
   async onWebsocketEvent(event) {
-    const { includedTabsInfo, stale } = event;
+    const { includedTabsInfo, stale, activeTabStaled } = event;
 
     const activeTab = includedTabsInfo
       ? Object.values(includedTabsInfo).find((tabInfo) =>
           this.isActiveTab(tabInfo.tabId)
         )
       : null;
+    //console.log('onWebsocketEvent', { event, activeTab });
 
+    //
     // Document header got staled
     if (stale) {
       const { params, fireUpdateData } = this.props;
@@ -84,24 +93,76 @@ class MasterWindowContainer extends PureComponent {
       });
     }
 
+    //
     // Active included tab got staled
-    if (activeTab) {
-      // Full tab got staled
-      if (activeTab.stale) {
-        this.refreshActiveTab();
-      }
-      // Some included rows got staled
-      else {
-        // if `staleRowIds` is empty, we'll just query for all rows and update what changed
-        // This can happen when adding a new product via the `Add new` modal.
-        const { staleRowIds } = activeTab;
-
-        await this.getTabRows(activeTab.tabId, staleRowIds).then((res) => {
+    if (activeTabStaled || activeTab?.stale) {
+      this.refreshActiveTab();
+    }
+    // Some included rows got staled
+    else if (activeTab) {
+      // if `staleRowIds` is empty, we'll just query for all rows and update what changed
+      // This can happen when adding a new product via the `Add new` modal.
+      await this.getTabRows(activeTab.tabId, activeTab.staleRowIds).then(
+        (res) => {
           this.mergeDataIntoIncludedTab(res);
+        }
+      );
+    }
+  }
+
+  /** Handle URL search params and get rid of them */
+  handleURLParams = () => {
+    const {
+      master: { layout },
+    } = this.props;
+
+    // Do nothing until layout & data are loaded
+    if (!isLayoutLoaded(layout)) {
+      return;
+    }
+
+    const {
+      location: { pathname, search },
+      params: { windowId, docId },
+      openModal,
+      patchWindow,
+    } = this.props;
+    const urlParams = new URLSearchParams(search);
+
+    let doRemoveURLParams = false;
+    for (const fieldName of urlParams.keys()) {
+      const field = getFieldFromLayout(layout, fieldName);
+      if (!field) {
+        console.warn(`Field ${fieldName} not found`);
+        continue;
+      }
+
+      doRemoveURLParams = true;
+
+      const value = urlParams.get(fieldName);
+      if (value === 'NEW' && field.newRecordWindowId) {
+        openModal({
+          title: field.newRecordCaption,
+          windowId: field.newRecordWindowId,
+          modalType: 'window',
+          dataId: 'NEW',
+          triggerField: field.field,
+        });
+      } else {
+        patchWindow({
+          windowId,
+          documentId: docId,
+          fieldName,
+          value,
         });
       }
     }
-  }
+
+    if (doRemoveURLParams) {
+      //console.log('Replacing URL with: ', pathname);
+      history.replace(pathname);
+    }
+  };
 
   getTabRows(tabId, rows) {
     const {
@@ -119,8 +180,13 @@ class MasterWindowContainer extends PureComponent {
 
   isActiveTab(tabId) {
     const { master } = this.props;
+    const activeTab = master.layout.activeTab;
+    if (!activeTab) {
+      console.log('No active activeTab found', { master });
+      return false;
+    }
 
-    return tabId === master.layout.activeTab;
+    return tabId === activeTab;
   }
 
   mergeDataIntoIncludedTab({ response, tabId }) {
@@ -175,6 +241,7 @@ class MasterWindowContainer extends PureComponent {
       params: { windowId, docId },
       updateTabTableData,
       updateTabLayout,
+      fetchTopActions,
     } = this.props;
 
     const activeTabId = master.layout.activeTab;
@@ -193,11 +260,13 @@ class MasterWindowContainer extends PureComponent {
 
     updateTabLayout(windowId, activeTabId)
       .then(() => {
-        getTabRequest(activeTabId, windowId, docId, orderBy).then((rows) =>
+        getTabRequest(activeTabId, windowId, docId, orderBy).then(({ rows }) =>
           updateTabTableData(tableId, rows)
         );
       })
       .catch((error) => error);
+
+    fetchTopActions({ windowId, tabId: activeTabId, docId });
   };
 
   deleteTabsTables = () => {
@@ -231,21 +300,18 @@ class MasterWindowContainer extends PureComponent {
       master,
       params: { windowId, docId },
     } = this.props;
-    const orderBy = (asc ? '+' : '-') + field;
-    const dataId = master.docId;
-    const activeTabId = master.layout.activeTab;
 
-    if (!activeTabId) {
+    const activeTabId = master.layout.activeTab;
+    if (tabId !== activeTabId) {
       return;
     }
-    const tableId = getTableId({
-      windowId,
-      docId,
-      tabId: activeTabId,
-    });
 
-    sortTab('master', tabId, field, asc);
-    getTabRequest(tabId, windowId, dataId, orderBy).then((rows) => {
+    const orderBy = (asc ? '+' : '-') + field;
+    const dataId = master.docId;
+    const tableId = getTableId({ windowId, docId, tabId });
+
+    sortTab({ scope: 'master', windowId, docId, tabId, field, asc });
+    getTabRequest(tabId, windowId, dataId, orderBy).then(({ rows }) => {
       updateTabTableData(tableId, rows);
     });
   };
@@ -300,17 +366,20 @@ MasterWindowContainer.propTypes = {
   includedView: PropTypes.any,
   processStatus: PropTypes.any,
   enableTutorial: PropTypes.any,
-  location: PropTypes.any,
+  location: PropTypes.object,
   clearMasterData: PropTypes.func.isRequired,
   addNotification: PropTypes.func.isRequired,
   attachFileAction: PropTypes.func.isRequired,
   fireUpdateData: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
+  patchWindow: PropTypes.func.isRequired,
   sortTab: PropTypes.func.isRequired,
   updateTabRowsData: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
   updateTabTableData: PropTypes.func.isRequired,
   updateTabLayout: PropTypes.func.isRequired,
   updateLastBackPage: PropTypes.func.isRequired,
+  fetchTopActions: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -333,10 +402,53 @@ export default connect(mapStateToProps, {
   attachFileAction,
   clearMasterData,
   fireUpdateData,
+  openModal,
+  patchWindow,
   sortTab,
   updateTabRowsData,
   updateTabTableData,
   deleteTable,
   updateTabLayout,
   updateLastBackPage,
+  fetchTopActions,
 })(MasterWindowContainer);
+
+//
+//
+//
+
+const isLayoutLoaded = (layout) => {
+  return !!layout?.windowId;
+};
+
+const getFieldFromLayout = (layout, fieldName) => {
+  for (const section of layout.sections ?? []) {
+    // console.log('section', section);
+
+    for (const column of section.columns ?? []) {
+      // console.log('column', column);
+
+      for (const elementGroup of column.elementGroups ?? []) {
+        // console.log('elementGroup', elementGroup);
+
+        for (const elementLine of elementGroup.elementsLine ?? []) {
+          // console.log('elementLine', elementLine);
+
+          for (const element of elementLine.elements ?? []) {
+            // console.log('element', element);
+
+            for (const field of element?.fields ?? []) {
+              // console.log('field', field);
+
+              if (field.field === fieldName) {
+                return field;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null; // not found
+};

@@ -30,6 +30,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.acct</groupId>
+			<artifactId>de.metas.acct.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>de.metas.manufacturing.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.servicerepair</groupId>
 			<artifactId>de.metas.servicerepair.webui</artifactId>
 			<version>${metasfresh.version}</version>
@@ -42,11 +54,41 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.forex</groupId>
+			<artifactId>de.metas.forex.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.deliveryplanning</groupId>
+			<artifactId>de.metas.deliveryplanning.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.invoice</groupId>
+			<artifactId>de.metas.invoice.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
 		<!-- logging -->
 		<!-- logstash-logback-encoder and janino are related to https://github.com/metasfresh/metasfresh/issues/1504 -->
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.postfinance</groupId>
+			<artifactId>de.metas.postfinance.webui</artifactId>
+			<version>${metasfresh.version}</version>
 		</dependency>
 	</dependencies>
 

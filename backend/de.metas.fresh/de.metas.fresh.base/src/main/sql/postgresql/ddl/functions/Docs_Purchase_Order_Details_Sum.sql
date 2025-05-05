@@ -5,7 +5,8 @@ RETURNS TABLE
 (
 	nonhulines numeric,
 	grandtotal numeric,
-	iso_code character varying,
+	iso_code character,
+    cursymbol character varying,
 	isprinttax character(1),
 	ishuline boolean,
 	taxbaseamt numeric,
@@ -22,7 +23,8 @@ SELECT
 		WHERE ot.C_Order_ID = o.C_Order_ID and ot.IsPackagingTax = 'N'
 	) NonHULines,
 	GrandTotal,
-	COALESCE(cur.cursymbol,cur.iso_code) AS iso_code,
+	cur.iso_code AS iso_code,
+    cur.cursymbol AS cursymbol,
 	isPrintTax,
 	isHULine,
 	sum.TaxBaseAmt,

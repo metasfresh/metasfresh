@@ -20,6 +20,7 @@ import * as api from '../../api/applications';
 import { populateApplications } from '../../actions/ApplicationsActions';
 import { toastError } from '../../utils/toast';
 import { getIsLoggedInFromState } from '../../reducers/appHandler';
+import { putSettingsAction } from '../../reducers/settings';
 
 const ApplicationRoot = () => {
   const auth = useAuth();
@@ -48,6 +49,14 @@ const ApplicationRoot = () => {
           dispatch(populateApplications({ applications }));
         })
         .catch((axiosError) => toastError({ axiosError }));
+    }
+  }, [isLoggedIn]);
+  useEffect(() => {
+    if (isLoggedIn) {
+      api
+        .getSettings()
+        .then((map) => dispatch(putSettingsAction(map)))
+        .catch((axiosError) => console.log('Failed to fetch settings', { axiosError }));
     }
   }, [isLoggedIn]);
 

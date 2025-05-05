@@ -1,15 +1,15 @@
 package de.metas.currency.impl;
 
-import java.time.LocalDate;
-import java.util.Comparator;
-
-import org.adempiere.service.ClientId;
-
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.Objects;
 
 /*
  * #%L
@@ -21,12 +21,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +35,7 @@ import lombok.Value;
 
 @Value
 @Builder
-final class CurrencyConversionTypeRouting
+class CurrencyConversionTypeRouting
 {
 	@NonNull
 	ClientId clientId;
@@ -44,7 +44,7 @@ final class CurrencyConversionTypeRouting
 	OrgId orgId;
 
 	@NonNull
-	LocalDate validFrom;
+	Instant validFrom;
 
 	@NonNull
 	CurrencyConversionTypeId conversionTypeId;
@@ -52,7 +52,7 @@ final class CurrencyConversionTypeRouting
 	public boolean isMatching(
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
-			@NonNull final LocalDate date)
+			@NonNull final Instant date)
 	{
 		return (this.clientId.isSystem() || ClientId.equals(this.clientId, clientId))
 				&& (this.orgId.isAny() || OrgId.equals(this.orgId, orgId))
@@ -61,7 +61,20 @@ final class CurrencyConversionTypeRouting
 
 	public static Comparator<CurrencyConversionTypeRouting> moreSpecificFirstComparator()
 	{
-		return (routing1, routing2) -> routing1.isMoreSpecificThan(routing2) ? -1 : 0;
+		return (routing1, routing2) -> {
+			if (Objects.equals(routing1, routing2))
+			{
+				return 0;
+			}
+			else if (routing1.isMoreSpecificThan(routing2))
+			{
+				return -1;
+			}
+			else
+			{
+				return +1;
+			}
+		};
 	}
 
 	public boolean isMoreSpecificThan(@NonNull final CurrencyConversionTypeRouting other)

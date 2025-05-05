@@ -62,6 +62,25 @@ public class CoalesceUtil
 		return value1 != null ? value1 : (value2 != null ? value2.get() : null);
 	}
 
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final Supplier<T> value2Supplier)
+	{
+		if (value1 != null)
+		{
+			return value1;
+		}
+		else
+		{
+			final T value2 = value2Supplier.get();
+			if (value2 == null)
+			{
+				throw new NullPointerException("At least one of value1 or value2 has to be not-null");
+			}
+
+			return value2;
+		}
+	}
+
 	/**
 	 * @return first not null value from list
 	 * @see #coalesce(Object...)
@@ -137,6 +156,7 @@ public class CoalesceUtil
 				"At least one of the given suppliers={} has to return not-null", (Object[])values);
 	}
 
+	@SuppressWarnings("unused")
 	@SafeVarargs
 	@NonNull
 	public static <T> Optional<T> optionalOfFirstNonNullSupplied(@Nullable final Supplier<T>... values)
@@ -144,7 +164,26 @@ public class CoalesceUtil
 		return Optional.ofNullable(coalesceSuppliers(values));
 	}
 
-	
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T value1, @Nullable final T value2)
+	{
+		return Optional.ofNullable(coalesce(value1, value2));
+	}
+
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
+	{
+		return Optional.ofNullable(coalesce(value1, value2, value3));
+	}
+
+	@SuppressWarnings("unused")
+	@SafeVarargs
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T... values)
+	{
+		return Optional.ofNullable(coalesce(values));
+	}
+
 	@SafeVarargs
 	@Nullable
 	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)
@@ -232,14 +271,14 @@ public class CoalesceUtil
 	@SafeVarargs
 	public int firstGreaterThanZeroIntegerSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
-		if (suppliers == null || suppliers.length == 0)
+		if (suppliers == null)
 		{
 			return 0;
 		}
 		for (final Supplier<Integer> supplier : suppliers)
 		{
 			final Integer value = supplier.get();
-			if (value > 0)
+			if (value != null && value > 0)
 			{
 				return value;
 			}
@@ -259,52 +298,66 @@ public class CoalesceUtil
 	@Nullable
 	public String firstNotBlank(@Nullable final String... values)
 	{
-		if(values == null || values.length == 0)
+		if (values == null || values.length == 0)
 		{
 			return null;
 		}
 
 		for (final String value : values)
 		{
-			if (value != null && EmptyUtil.isNotBlank(value))
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm != null)
 			{
-				return value.trim();
+				return valueNorm;
 			}
 		}
 
 		return null;
 	}
 
+	@Nullable
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
-		if(valueSuppliers == null || valueSuppliers.length == 0)
+		if (valueSuppliers == null || valueSuppliers.length == 0)
 		{
 			return null;
 		}
 
 		for (final Supplier<String> valueSupplier : valueSuppliers)
 		{
-			if(valueSupplier == null)
+			if (valueSupplier == null)
 			{
 				continue;
 			}
 
 			final String value = valueSupplier.get();
-			if (value != null && EmptyUtil.isNotBlank(value))
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm != null)
 			{
-				return value.trim();
+				return valueNorm;
 			}
 		}
 
 		return null;
 	}
 
+	public boolean isAllNotNulls(final Object... values)
+	{
+		for (final Object value : values)
+		{
+			if (value == null)
+			{
+				return false;
+			}
+		}
 
+		return true;
+	}
 
 	public int countNotNulls(@Nullable final Object... values)
 	{
-		if (values == null || values.length <= 0)
+		if (values == null || values.length == 0)
 		{
 			return 0;
 		}

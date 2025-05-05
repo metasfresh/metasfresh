@@ -1,7 +1,10 @@
 package de.metas.material.planning.impl;
 
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.resource.ManufacturingResourceType;
 import de.metas.util.Services;
@@ -10,11 +13,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,12 +29,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ProductPlanningDAO_findPlantTest
 {
-	/** service under test */
+	/**
+	 * service under test
+	 */
 	private ProductPlanningDAO productPlanningDAO;
 	private IContextAware context;
 
 	@BeforeEach
-	public void init()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -41,10 +46,10 @@ public class ProductPlanningDAO_findPlantTest
 
 	/**
 	 * Case: warehouse has a Plant configured, no product planning defined.
-	 *
+	 * <p>
 	 * Expectation: plant from warehouse shall be taken.
 	 *
-	 * Task http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29">task</a>
 	 */
 	@Test
 	public void findPlant_WarehouseWithPlant()
@@ -66,10 +71,10 @@ public class ProductPlanningDAO_findPlantTest
 
 	/**
 	 * Case: warehouse has a Plant configured, we also have a valid product planning configured.
-	 *
+	 * <p>
 	 * Expectation: plant from warehouse shall be taken.
 	 *
-	 * Task http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29">task</a>
 	 */
 	@Test
 	public void findPlant_WarehouseWithPlant_ValidProductPlanning()
@@ -91,10 +96,10 @@ public class ProductPlanningDAO_findPlantTest
 
 	/**
 	 * Case: warehouse has NO Plant configured, there is no product planning
-	 *
+	 * <p>
 	 * Expectation: exception shall be thrown.
 	 *
-	 * Task http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29">task</a>
 	 */
 	@Test
 	public void findPlant_WarehouseWithoutPlant_NoProductPlanning()
@@ -109,10 +114,10 @@ public class ProductPlanningDAO_findPlantTest
 
 	/**
 	 * Case: warehouse has NO Plant configured, we also have a valid product planning configured.
-	 *
+	 * <p>
 	 * Expectation: plant from product planning shall be taken.
 	 *
-	 * Task http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/07900_Ressource_not_set_in_MRP_Info_%28102098673699%29">task</a>
 	 */
 	@Test
 	public void findPlant_WarehouseWithoutPlant_ValidProductPlanning()
@@ -120,7 +125,7 @@ public class ProductPlanningDAO_findPlantTest
 		final I_M_Warehouse warehouse = createWarehouse("Warehouse", null);
 		final I_AD_Org org = createOrg("org");
 		final I_M_Product product = createProduct();
-		final I_PP_Product_Planning productPlanning = createProductPlanningWithPlant(org, warehouse, product);
+		final ProductPlanning productPlanning = createProductPlanningWithPlant(org, warehouse, product);
 
 		final ResourceId plantIdActual = productPlanningDAO.findPlantId(
 				org.getAD_Org_ID(),
@@ -128,8 +133,7 @@ public class ProductPlanningDAO_findPlantTest
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None);
 
-		assertThat(plantIdActual).as("plant").isNotNull();
-		assertThat(plantIdActual.getRepoId()).isEqualTo(productPlanning.getS_Resource_ID());
+		assertThat(plantIdActual).isEqualTo(productPlanning.getPlantId());
 	}
 
 	@Test
@@ -147,8 +151,8 @@ public class ProductPlanningDAO_findPlantTest
 				warehouse,
 				product.getM_Product_ID(),
 				AttributeConstants.M_AttributeSetInstance_ID_None))
-						//
-						.isInstanceOf(NoPlantForWarehouseException.class);
+				//
+				.isInstanceOf(NoPlantForWarehouseException.class);
 	}
 
 	@Test
@@ -157,8 +161,8 @@ public class ProductPlanningDAO_findPlantTest
 		final I_M_Warehouse warehouse = createWarehouse("Warehouse", null);
 		final I_AD_Org org = createOrg("org");
 		final I_M_Product product = createProduct();
-		final I_PP_Product_Planning productPlanning = createProductPlanningWithPlant(org, warehouse, product);
-		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanning.getS_Resource_ID());
+		final ProductPlanning productPlanning = createProductPlanningWithPlant(org, warehouse, product);
+		final ResourceId plantId = productPlanning.getPlantId();
 
 		// create some more product planning records, but with same plant and without any plant
 		createProductPlanning(org, warehouse, product, plantId);
@@ -220,26 +224,22 @@ public class ProductPlanningDAO_findPlantTest
 
 	private final AtomicInteger createProductPlanningWithPlant_NextPlantNo = new AtomicInteger(1);
 
-	private I_PP_Product_Planning createProductPlanningWithPlant(final I_AD_Org org, final I_M_Warehouse warehouse, final I_M_Product product)
+	private ProductPlanning createProductPlanningWithPlant(final I_AD_Org org, final I_M_Warehouse warehouse, final I_M_Product product)
 	{
 		final int plantNo = createProductPlanningWithPlant_NextPlantNo.getAndIncrement();
 		final ResourceId plantId = createPlant("Plant_From_ProductPlanning_" + plantNo);
 		return createProductPlanning(org, warehouse, product, plantId);
 	}
 
-	private I_PP_Product_Planning createProductPlanning(final I_AD_Org org, final I_M_Warehouse warehouse, final I_M_Product product, @Nullable final ResourceId plantId)
+	private ProductPlanning createProductPlanning(final I_AD_Org org, final I_M_Warehouse warehouse, final I_M_Product product, @Nullable final ResourceId plantId)
 	{
-		final I_PP_Product_Planning pp = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class, context);
-		pp.setIsAttributeDependant(false);
-		pp.setAD_Org_ID(org.getAD_Org_ID());
-		pp.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		pp.setM_Product_ID(product.getM_Product_ID());
-		if (plantId != null)
-		{
-			pp.setS_Resource_ID(plantId.getRepoId());
-		}
-		InterfaceWrapperHelper.save(pp);
-		return pp;
+		return productPlanningDAO.save(ProductPlanning.builder()
+				.isAttributeDependant(false)
+				.orgId(OrgId.ofRepoIdOrAny(org.getAD_Org_ID()))
+				.warehouseId(warehouse != null ? WarehouseId.ofRepoIdOrNull(warehouse.getM_Warehouse_ID()) : null)
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.plantId(plantId)
+				.build());
 	}
 
 }

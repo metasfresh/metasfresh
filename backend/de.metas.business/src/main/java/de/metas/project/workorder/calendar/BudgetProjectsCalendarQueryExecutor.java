@@ -15,6 +15,7 @@ import de.metas.project.budget.BudgetProjectResourcesCollection;
 import de.metas.project.budget.BudgetProjectService;
 import de.metas.project.budget.BudgetProjectSimulationPlan;
 import de.metas.project.budget.BudgetProjectSimulationService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.resource.ResourceGroupId;
 import de.metas.resource.ResourceService;
 import de.metas.util.InSetPredicate;
@@ -74,7 +75,7 @@ class BudgetProjectsCalendarQueryExecutor
 		final ImmutableMap<ProjectId, BudgetProject> budgetProjects = Maps.uniqueIndex(
 				budgetProjectService.queryAllActiveProjects(resourceGroupIds, projectIds),
 				BudgetProject::getProjectId);
-		if(budgetProjects.isEmpty())
+		if (budgetProjects.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -115,14 +116,14 @@ class BudgetProjectsCalendarQueryExecutor
 					continue;
 				}
 
-				final ResourceId resourceId = calendarResourceId.toRepoIdOrNull(ResourceId.class);
-				if (resourceId != null)
+				final ResourceIdAndType resourceIdAndType = ResourceIdAndType.ofCalendarResourceIdOrNull(calendarResourceId);
+				if (resourceIdAndType != null)
 				{
-					resourceIdsSet.add(resourceId);
+					resourceIdsSet.add(resourceIdAndType.getResourceId());
 					continue;
 				}
 
-				final ResourceGroupId resourceGroupId = calendarResourceId.toRepoIdOrNull(ResourceGroupId.class);
+				final ResourceGroupId resourceGroupId = calendarResourceId.toResourceGroupIdOrNull();
 				if (resourceGroupId != null)
 				{
 					resourceGroupIdsSet.add(resourceGroupId);

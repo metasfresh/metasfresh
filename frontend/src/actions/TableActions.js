@@ -140,6 +140,7 @@ export function clearTableData(id) {
  * @summary Used to set the flag to enable/disable table navigation. Used by some widgets (like attributes)
  *
  * @param {string} id - table id
+ * @param {boolean} active
  */
 export function setTableNavigation(id, active) {
   return {
@@ -177,6 +178,7 @@ export function createTableData(rawData) {
     // of entries as otherwise we're just passing references to frozen objects
     columns: rawData.elements ? cloneDeep(rawData.elements) : undefined,
     rows: rawData.result ? cloneDeep(rawData.result) : undefined,
+    orderBys: rawData.orderBys,
     defaultOrderBys: rawData.defaultOrderBys
       ? rawData.defaultOrderBys
       : undefined,
@@ -421,6 +423,13 @@ export function updateGridTableData({
     }
 
     return Promise.resolve(false);
+  };
+}
+
+export function partialUpdateGridTableRows({ tableId, rowsToUpdate }) {
+  return {
+    type: types.PARTIAL_UPDATE_TABLE_DATA,
+    payload: { tableId, rowsToUpdate },
   };
 }
 

@@ -2,13 +2,13 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.IOrgDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -68,16 +68,16 @@ class DistributionWorkflowLaunchersProvider
 	private WorkflowLauncher toExistingWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
 	{
 		return WorkflowLauncher.builder()
-				.applicationId(DistributionMobileApplication.HANDLER_ID)
+				.applicationId(DistributionMobileApplication.APPLICATION_ID)
 				.caption(computeCaption(ddOrderReference))
-				.startedWFProcessId(WFProcessId.ofIdPart(DistributionMobileApplication.HANDLER_ID, ddOrderReference.getDdOrderId()))
+				.startedWFProcessId(WFProcessId.ofIdPart(DistributionMobileApplication.APPLICATION_ID, ddOrderReference.getDdOrderId()))
 				.build();
 	}
 
 	private WorkflowLauncher toNewWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
 	{
 		return WorkflowLauncher.builder()
-				.applicationId(DistributionMobileApplication.HANDLER_ID)
+				.applicationId(DistributionMobileApplication.APPLICATION_ID)
 				.caption(computeCaption(ddOrderReference))
 				.wfParameters(DistributionWFProcessStartParams.builder()
 						.ddOrderId(ddOrderReference.getDdOrderId())
@@ -86,15 +86,17 @@ class DistributionWorkflowLaunchersProvider
 				.build();
 	}
 
-	private ITranslatableString computeCaption(@NonNull final DDOrderReference ddOrderReference)
+	private WorkflowLauncherCaption computeCaption(@NonNull final DDOrderReference ddOrderReference)
 	{
-		return TranslatableStrings.builder()
-				.append(warehouseBL.getWarehouseName(ddOrderReference.getFromWarehouseId()))
-				.append(" > ")
-				.append(warehouseBL.getWarehouseName(ddOrderReference.getToWarehouseId()))
-				.append(" | ")
-				.appendDateTime(ddOrderReference.getDatePromised().toZonedDateTime(orgDAO::getTimeZone))
-				.build();
+		return WorkflowLauncherCaption.of(
+				TranslatableStrings.builder()
+						.append(warehouseBL.getWarehouseName(ddOrderReference.getFromWarehouseId()))
+						.append(" > ")
+						.append(warehouseBL.getWarehouseName(ddOrderReference.getToWarehouseId()))
+						.append(" | ")
+						.appendDateTime(ddOrderReference.getDatePromised().toZonedDateTime(orgDAO::getTimeZone))
+						.build()
+		);
 	}
 
 }

@@ -59,7 +59,7 @@ class WEBUI_PP_Order_ChangePlanningStatus_Template extends WEBUI_PP_Order_Templa
 	@Override
 	protected String doIt()
 	{
-		huPPOrderBL.processPlanning(targetPlanningStatus, getView().getPpOrderId());
+		huPPOrderBL.processPlanning(getView().getPpOrderId(), targetPlanningStatus);
 		return MSG_OK;
 	}
 

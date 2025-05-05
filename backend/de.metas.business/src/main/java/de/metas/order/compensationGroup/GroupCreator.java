@@ -68,7 +68,7 @@ public final class GroupCreator
 			return build().createGroup(null, orderId, conditionsId);
 		}
 
-		public void recreateGroup(@NonNull final Group group) { build().recreateGroup(group); }
+		public void recreateGroup(@NonNull final Group group) {build().recreateGroup(group);}
 	}
 
 	public Group createGroup(

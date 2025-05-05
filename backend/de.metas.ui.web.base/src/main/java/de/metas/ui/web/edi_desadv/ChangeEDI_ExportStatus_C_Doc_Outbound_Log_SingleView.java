@@ -22,9 +22,9 @@
 
 package de.metas.ui.web.edi_desadv;
 
+import de.metas.document.archive.DocOutboundLogId;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
-import de.metas.edi.model.DocOutboundLogId;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.process.IProcessDefaultParameter;

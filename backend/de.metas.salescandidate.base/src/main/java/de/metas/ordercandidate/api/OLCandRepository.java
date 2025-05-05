@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -20,6 +21,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -78,16 +80,21 @@ public class OLCandRepository
 		final OLCandFactory olCandFactory = new OLCandFactory();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.callInThreadInheritedTrx(() -> requests.stream()
-				.map(this::createAndSaveOLCandRecord)
-				.map(olCandFactory::toOLCand)
-				.collect(ImmutableList.toImmutableList()));
+		return trxManager.callInThreadInheritedTrx(
+				() -> {
+					final ImmutableList.Builder<OLCand> result = ImmutableList.builder();
+					for(final OLCandCreateRequest request: requests)
+					{ // using for-loop because if one request fails, it's very hard to debug
+						final I_C_OLCand olCandRecord = createAndSaveOLCandRecord(request);
+						final OLCand olCand = olCandFactory.toOLCand(olCandRecord);
+						result.add(olCand);
+					}
+					return result.build();
+				});
 	}
 
 	public OLCand create(@NonNull final OLCandCreateRequest request)
 	{
-		Check.assumeNotNull(request, "request is not null");
-
 		final OLCandFactory olCandFactory = new OLCandFactory();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -319,6 +326,9 @@ public class OLCandRepository
 		{
 			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
 		}
+
+		olCandPO.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getSectionCodeId()));
+		olCandPO.setC_Auction_ID(AuctionId.toRepoId(request.getAuctionId()));
 
 		saveRecord(olCandWithIssuesInterface);
 

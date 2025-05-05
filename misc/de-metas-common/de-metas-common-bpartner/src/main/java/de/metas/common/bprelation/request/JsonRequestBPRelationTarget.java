@@ -24,10 +24,9 @@ package de.metas.common.bprelation.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v1.SwaggerDocConstants;
 import de.metas.common.bprelation.JsonBPRelationRole;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import de.metas.common.rest_api.v1.SwaggerDocConstants;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,53 +34,52 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@ApiModel
+@Schema
 public class JsonRequestBPRelationTarget
 {
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String", //
-			value = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
+	@Schema(minLength = 1,
+			description = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
 	String targetBpartnerIdentifier;
 	//not needed when bp lookup by GLN
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	String targetLocationIdentifier;
 
-	@ApiModelProperty
+	@Schema
 	@NonNull String name;
 
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	String description;
 	
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	String externalId;
 	
-	@ApiModelProperty
+	@Schema
 	JsonBPRelationRole role;
 
 	//following if left null, will be defaulted when creating, or left unchanged if updating
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	Boolean billTo;
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	Boolean fetchedFrom;
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	Boolean handOverLocation;
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	Boolean payFrom;
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	Boolean remitTo;
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	Boolean shipTo;
 
-	@ApiModelProperty
+	@Schema
 	@Nullable
 	Boolean active;
 

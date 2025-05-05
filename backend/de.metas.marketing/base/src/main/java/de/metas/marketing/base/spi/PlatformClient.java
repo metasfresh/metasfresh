@@ -1,12 +1,15 @@
 package de.metas.marketing.base.spi;
 
-import java.util.List;
-
 import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.CampaignConfig;
+import de.metas.marketing.base.model.CampaignToUpsertPage;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonToUpsertPage;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
-import de.metas.marketing.base.model.RemoteToLocalSyncResult;
+import de.metas.marketing.base.model.PageDescriptor;
 import lombok.NonNull;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -32,15 +35,18 @@ import lombok.NonNull;
 
 public interface PlatformClient
 {
-	List<LocalToRemoteSyncResult> syncCampaignsLocalToRemote(List<Campaign> campaigns);
+	CampaignConfig getCampaignConfig();
 
-	List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(Campaign campaign, List<ContactPerson> contactPersons);
+	CampaignToUpsertPage getCampaignToUpsertPage(PageDescriptor pageDescriptor);
 
-	List<RemoteToLocalSyncResult> syncContactPersonsRemoteToLocal(Campaign campaign, List<ContactPerson> contactPersons);
+	Optional<LocalToRemoteSyncResult> upsertCampaign(Campaign campaign);
 
-	List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(List<Campaign> campaigns);
+	ContactPersonToUpsertPage getContactPersonToUpsertPage(Campaign campaign, PageDescriptor pageDescriptor);
 
-	void sendEmailActivationForm(
-			@NonNull String formId,
-			@NonNull String email);
+	Optional<LocalToRemoteSyncResult> upsertContact(Campaign campaign, ContactPerson contactPerson);
+
+	default void sendEmailActivationForm(@NonNull String formId, @NonNull String email)
+	{
+		throw new UnsupportedOperationException();
+	}
 }

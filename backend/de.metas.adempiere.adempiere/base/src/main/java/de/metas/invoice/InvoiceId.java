@@ -30,6 +30,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,17 +44,17 @@ public class InvoiceId implements RepoIdAware
 		return new InvoiceId(repoId);
 	}
 
+	@Nullable
 	public static InvoiceId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new InvoiceId(repoId) : null;
 	}
 
 	@NonNull
-	public static Optional<InvoiceId> ofRepoIdOptional(final int repoId)
+	public static Optional<InvoiceId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
-
 
 	int repoId;
 
@@ -69,12 +70,12 @@ public class InvoiceId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final InvoiceId invoiceId)
+	public static int toRepoId(@Nullable final InvoiceId invoiceId)
 	{
 		return toRepoIdOr(invoiceId, -1);
 	}
 
-	public static int toRepoIdOr(final InvoiceId invoiceId, final int defaultValue)
+	public static int toRepoIdOr(@Nullable final InvoiceId invoiceId, final int defaultValue)
 	{
 		return invoiceId != null ? invoiceId.getRepoId() : defaultValue;
 	}
@@ -98,4 +99,6 @@ public class InvoiceId implements RepoIdAware
 
 		return ids.stream().map(InvoiceId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
+
+	public static boolean equals(@Nullable final InvoiceId id1, @Nullable final InvoiceId id2) {return Objects.equals(id1, id2);}
 }

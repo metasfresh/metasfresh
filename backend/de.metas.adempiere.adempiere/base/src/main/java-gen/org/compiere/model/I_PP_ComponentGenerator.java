@@ -6,6 +6,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for PP_ComponentGenerator
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_PP_ComponentGenerator 
 {
 
@@ -28,18 +29,18 @@ public interface I_PP_ComponentGenerator
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set AD_JavaClass.
+	 * Set Java Class.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setAD_JavaClass_ID (int AD_JavaClass_ID);
 
 	/**
-	 * Get AD_JavaClass.
+	 * Get Java Class.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -74,7 +75,7 @@ public interface I_PP_ComponentGenerator
 	 * Set Sequence.
 	 * Document Sequence
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -84,7 +85,7 @@ public interface I_PP_ComponentGenerator
 	 * Get Sequence.
 	 * Document Sequence
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -123,6 +124,27 @@ public interface I_PP_ComponentGenerator
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_PP_ComponentGenerator, Object> COLUMN_Description = new ModelColumn<>(I_PP_ComponentGenerator.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -149,7 +171,7 @@ public interface I_PP_ComponentGenerator
 	 * Set Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -159,7 +181,7 @@ public interface I_PP_ComponentGenerator
 	 * Get Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -168,7 +190,7 @@ public interface I_PP_ComponentGenerator
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set PP_ComponentGenerator.
+	 * Set Component Generator.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -177,7 +199,7 @@ public interface I_PP_ComponentGenerator
 	void setPP_ComponentGenerator_ID (int PP_ComponentGenerator_ID);
 
 	/**
-	 * Get PP_ComponentGenerator.
+	 * Get Component Generator.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

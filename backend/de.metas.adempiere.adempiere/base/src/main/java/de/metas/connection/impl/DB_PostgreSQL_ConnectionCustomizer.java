@@ -22,29 +22,26 @@ package de.metas.connection.impl;
  * #L%
  */
 
-import java.sql.Connection;
-
-import org.slf4j.Logger;
-
 import com.mchange.v2.c3p0.AbstractConnectionCustomizer;
-
 import de.metas.connection.IConnectionCustomizerService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.slf4j.Logger;
+
+import java.sql.Connection;
 
 /**
  * Use this class to add specific behavior to c3p0 connection handling.
  *
  * Added for task 04006.
  *
- * @author ts
- * @see http://www.mchange.com/projects/c3p0/#connection_customizers
+ * see <a href="http://www.mchange.com/projects/c3p0/#connection_customizers">...</a>
  */
 public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustomizer
 {
 
 	private static final String CLIENTINFO_ApplicationName = "ApplicationName";
-	private static Logger log = LogManager.getLogger(DB_PostgreSQL_ConnectionCustomizer.class);
+	private static final Logger log = LogManager.getLogger(DB_PostgreSQL_ConnectionCustomizer.class);
 
 	/**
 	 * When a new connection is acquired from the underlying postgres JDBC driver, this method sets the connections log limit to "WARNING".
@@ -54,7 +51,7 @@ public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustom
 	 * Added for task 04006.
 	 */
 	@Override
-	public void onAcquire(Connection c, String parentDataSourceIdentityToken) throws Exception
+	public void onAcquire(final Connection c, final String parentDataSourceIdentityToken) throws Exception
 	{
 		log.debug("Attempting to set client_min_messages=WARNING for pooled connection: {} ", c);
 		c.prepareStatement("SET client_min_messages=WARNING").execute();
@@ -63,14 +60,14 @@ public class DB_PostgreSQL_ConnectionCustomizer extends AbstractConnectionCustom
 	}
 
 	@Override
-	public void onCheckIn(Connection c, String parentDataSourceIdentityToken) throws Exception
+	public void onCheckIn(final Connection c, final String parentDataSourceIdentityToken) throws Exception
 	{
 		// NOTE: it's much more efficient to reset the ApplicationName here because this method is called in another thread
 		c.setClientInfo(CLIENTINFO_ApplicationName, "metasfresh/returned-to-pool"); // task 08353
 	}
 
 	@Override
-	public void onCheckOut(Connection c, String parentDataSourceIdentityToken) throws Exception
+	public void onCheckOut(final Connection c, final String parentDataSourceIdentityToken) throws Exception
 	{
 		// NOTE: it's much more efficient to reset the ApplicationName here because this method is called in another thread
 		c.setClientInfo(CLIENTINFO_ApplicationName, "metasfresh/checked-out-from-pool"); // task 08353

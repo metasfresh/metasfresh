@@ -28,7 +28,13 @@ package de.metas.util.lang;
  *     <li>ofRepoId(int)</li>
  *     <li>ofRepoIdOrNull(int)</li>
  * </ul>
+ * Note that instances of RepoIdAware can be used in query-filters, instead of integers. 
+ * metasfresh will unbox them by calling {@link #getRepoId()}.
  */
+import lombok.NonNull;
+
+import java.util.function.Function;
+
 public interface RepoIdAware extends Comparable<RepoIdAware>
 {
 	int getRepoId();
@@ -37,5 +43,9 @@ public interface RepoIdAware extends Comparable<RepoIdAware>
 	default int compareTo(final RepoIdAware other)
 	{
 		return getRepoId() - other.getRepoId();
+	}
+
+	default <T> T map(@NonNull final Function<Integer, T> mappingFunction) {
+		return mappingFunction.apply(getRepoId());
 	}
 }

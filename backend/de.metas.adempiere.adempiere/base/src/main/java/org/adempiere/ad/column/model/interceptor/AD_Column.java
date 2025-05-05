@@ -1,5 +1,6 @@
 package org.adempiere.ad.column.model.interceptor;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.security.impl.ParsedSql;
@@ -15,6 +16,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
@@ -102,7 +104,8 @@ public class AD_Column
 					+ "\n 1. To reference context table name, always use the right case, e.g. C_Invoice instead of c_invoice"
 					+ "\n 2. If in your sub-query you need to join again the context table name, consider using @JoinTableNameOrAliasIncludingDot@ to reference the context table name. Pls search for examples."
 					+ "\n 3. If you think this validation is not correct, feel free to temporary deactivate this check.", ex)
-					.setParameter("Test SQL", sql);
+					.setParameter("Test SQL", sql)
+					.appendParametersToMessage();
 		}
 		finally
 		{
@@ -141,14 +144,14 @@ public class AD_Column
 			try
 			{
 				final String ctxTableName = getTableName(column);
-				lookupInfo = MLookupFactory.getLookupInfo(
+				lookupInfo = MLookupFactory.newInstance().getLookupInfo(
 						Integer.MAX_VALUE, // WindowNo
 						adReferenceId,
 						ctxTableName, // ctxTableName
 						column.getColumnName(), // ctxColumnName
-						column.getAD_Reference_Value_ID(),
+						ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID()),
 						column.isParent(), // IsParent,
-						column.getAD_Val_Rule_ID() //AD_Val_Rule_ID
+						AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID()) //AD_Val_Rule_ID
 				);
 			}
 			catch (final Exception ex)
@@ -229,4 +232,48 @@ public class AD_Column
 	{
 		return tableDAO.retrieveTableName(AdTableId.ofRepoId(adColumn.getAD_Table_ID()));
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_AD_Column.COLUMNNAME_ColumnName, I_AD_Column.COLUMNNAME_AD_Reference_ID })
+	public void onBeforeSave_assertColumnNameValid(final I_AD_Column adColumn)
+	{
+		assertColumnNameValid(adColumn.getColumnName(), adColumn.getAD_Reference_ID());
+	}
+
+	private void assertColumnNameValid(@NonNull final String columnName, final int displayType)
+	{
+		if (DisplayType.isID(displayType) && displayType != DisplayType.Account)
+		{
+			if (!columnName.endsWith("_ID")
+					&& !columnName.equals("CreatedBy")
+					&& !columnName.equals("UpdatedBy"))
+			{
+				throw new AdempiereException("Lookup or ID columns shall have the name ending with `_ID`");
+			}
+
+			if (displayType == DisplayType.Locator && !columnName.contains("Locator"))
+			{
+				throw new AdempiereException("A Locator column name must contain the term `Locator`.");
+			}
+		}
+		else if (displayType == DisplayType.Account)
+		{
+			if (!columnName.endsWith("_Acct"))
+			{
+				throw new AdempiereException("Account columns shall have the name ending with `_Acct`");
+			}
+		}
+		else
+		{
+			if (columnName.endsWith("_ID"))
+			{
+				throw new AdempiereException("Ending a non lookup column wiht `_ID` is might be misleading");
+			}
+			if (columnName.endsWith("_Acct"))
+			{
+				throw new AdempiereException("Ending a non Account column wiht `_Acct` is might be misleading");
+			}
+		}
+	}
+
 }

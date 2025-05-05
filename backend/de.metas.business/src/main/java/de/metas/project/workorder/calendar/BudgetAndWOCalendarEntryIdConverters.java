@@ -3,7 +3,7 @@ package de.metas.project.workorder.calendar;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.project.budget.BudgetProjectResourceId;
-import de.metas.project.workorder.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;

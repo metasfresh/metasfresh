@@ -1,15 +1,15 @@
 package de.metas.project.workorder.conflicts;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.test.SnapshotFunctionFactory;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import de.metas.project.workorder.resource.ResourceIdAndType;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -17,24 +17,12 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(SnapshotExtension.class)
 public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 {
-	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
+	@SuppressWarnings("unused") private Expect expect;
 
 	private static final SimulationPlanId SIMULATION1 = SimulationPlanId.ofRepoId(1);
 	private static final WOProjectResourceId PR1 = WOProjectResourceId.ofRepoId(1, 1);
@@ -42,9 +30,9 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 
 	private static final Instant refInstant = LocalDate.parse("2022-06-01").atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant();
 
-	static Instant instant(int day) {return refInstant.plus(day - 1, ChronoUnit.DAYS);}
+	static Instant instant(final int day) {return refInstant.plus(day - 1, ChronoUnit.DAYS);}
 
-	static CalendarDateRange allDay(int startDay, int endDay)
+	static CalendarDateRange allDay(final int startDay, final int endDay)
 	{
 		return CalendarDateRange.builder()
 				.startDate(instant(startDay))
@@ -53,10 +41,10 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 				.build();
 	}
 
-	ResourceAllocation alloc(int startDay, int endDay, @Nullable SimulationPlanId simulationId, WOProjectResourceId projectResourceId)
+	ResourceAllocation alloc(final int startDay, final int endDay, @Nullable final SimulationPlanId simulationId, final WOProjectResourceId projectResourceId)
 	{
 		return ResourceAllocation.builder()
-				.resourceId(ResourceId.ofRepoId(1))
+				.resourceId(ResourceIdAndType.machine(ResourceId.ofRepoId(1)))
 				.projectResourceId(projectResourceId)
 				.appliedSimulationId(simulationId)
 				.dateRange(allDay(startDay, endDay))
@@ -64,8 +52,8 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 	}
 
 	ResourceAllocations allocations(
-			@Nullable SimulationPlanId simulationId,
-			ResourceAllocation... allocations)
+			@Nullable final SimulationPlanId simulationId,
+			final ResourceAllocation... allocations)
 	{
 		return ResourceAllocations.of(simulationId, ImmutableList.copyOf(allocations));
 	}
@@ -103,7 +91,7 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 				alloc(2, 5, SIMULATION1, PR2))
 				.findSimulationOnlyConflicts(actualConflicts);
 		System.out.println("simulationOnlyConflicts: " + simulationOnlyConflicts);
-		expect(simulationOnlyConflicts).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(simulationOnlyConflicts);
 	}
 
 	@Test
@@ -120,7 +108,7 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 				alloc(4, 5, SIMULATION1, PR2))
 				.findSimulationOnlyConflicts(actualConflicts);
 		System.out.println("simulationOnlyConflicts: " + simulationOnlyConflicts);
-		expect(simulationOnlyConflicts).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(simulationOnlyConflicts);
 	}
 
 	@Test
@@ -137,7 +125,7 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 				alloc(2, 4, SIMULATION1, PR2))
 				.findSimulationOnlyConflicts(actualConflicts);
 		System.out.println("simulationOnlyConflicts: " + simulationOnlyConflicts);
-		expect(simulationOnlyConflicts).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(simulationOnlyConflicts);
 	}
 
 	@Test

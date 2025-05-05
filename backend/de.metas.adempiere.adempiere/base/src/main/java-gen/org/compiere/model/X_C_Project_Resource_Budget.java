@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Project_Resource_Budget extends org.compiere.model.PO implements I_C_Project_Resource_Budget, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 38105313L;
+	private static final long serialVersionUID = 1429055759L;
 
     /** Standard Constructor */
     public X_C_Project_Resource_Budget (final Properties ctx, final int C_Project_Resource_Budget_ID, @Nullable final String trxName)
@@ -129,6 +129,18 @@ public class X_C_Project_Resource_Budget extends org.compiere.model.PO implement
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	@Override

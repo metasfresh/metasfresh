@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report" uuid="d94ecfcb-c255-4111-8642-5cd76e75639e">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -34,7 +35,7 @@
 	<title>
 		<band height="9" splitType="Stretch">
 			<line>
-				<reportElement uuid="86e172bf-f86a-4b86-b605-e75e84a3ce47" key="line-1" mode="Opaque" x="57" y="5" width="488" height="1" forecolor="#000000"/>
+				<reportElement key="line-1" mode="Opaque" x="57" y="5" width="488" height="1" forecolor="#000000" uuid="86e172bf-f86a-4b86-b605-e75e84a3ce47"/>
 			</line>
 		</band>
 	</title>
@@ -47,7 +48,7 @@
 	<detail>
 		<band height="11">
 			<textField isBlankWhenNull="false">
-				<reportElement uuid="784a73d7-4763-414d-9e65-40c278d63247" key="textField-2" mode="Transparent" x="59" y="0" width="183" height="11"/>
+				<reportElement key="textField-2" mode="Transparent" x="59" y="0" width="183" height="11" uuid="784a73d7-4763-414d-9e65-40c278d63247"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -55,12 +56,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="8" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{totalsum}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="87f02c05-d602-42de-b08b-d1df5e033b5a" key="textField-3" mode="Transparent" x="277" y="0" width="35" height="11"/>
+				<reportElement key="textField-3" mode="Transparent" x="288" y="0" width="30" height="11" uuid="87f02c05-d602-42de-b08b-d1df5e033b5a"/>
 				<box leftPadding="2">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -68,12 +69,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="8" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="eb02e48c-0dee-488c-bbe1-74aece72b309" key="textField-1" mode="Transparent" x="500" y="0" width="45" height="11"/>
+				<reportElement key="textField-1" mode="Transparent" x="501" y="0" width="45" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -81,12 +82,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{totalamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="eb02e48c-0dee-488c-bbe1-74aece72b309" key="textField-1" mode="Transparent" x="451" y="0" width="50" height="11"/>
+				<reportElement key="textField-1" mode="Transparent" x="450" y="0" width="52" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -94,12 +95,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{feeamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement uuid="eb02e48c-0dee-488c-bbe1-74aece72b309" key="textField-1" mode="Transparent" x="412" y="0" width="39" height="11"/>
+				<reportElement key="textField-1" mode="Transparent" x="411" y="0" width="39" height="11" uuid="eb02e48c-0dee-488c-bbe1-74aece72b309"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -107,12 +108,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{openamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="371" y="0" width="41" height="11"/>
+				<reportElement key="textField-13" mode="Transparent" x="373" y="0" width="38" height="11" uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -120,12 +121,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{paidamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
-				<reportElement uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91" key="textField-13" mode="Transparent" x="322" y="0" width="48" height="11"/>
+				<reportElement key="textField-13" mode="Transparent" x="319" y="0" width="54" height="11" uuid="f9756491-f6c9-4e5f-84e1-8053519b3b91"/>
 				<box rightPadding="1">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -133,7 +134,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" fontName="Arial" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>
@@ -148,13 +149,13 @@
 	<lastPageFooter>
 		<band height="3">
 			<line>
-				<reportElement uuid="cc10db8e-d8be-42ad-b952-f54ca98e3963" mode="Opaque" x="57" y="0" width="488" height="1"/>
+				<reportElement mode="Opaque" x="57" y="0" width="488" height="1" uuid="cc10db8e-d8be-42ad-b952-f54ca98e3963"/>
 				<graphicElement>
 					<pen lineStyle="Solid"/>
 				</graphicElement>
 			</line>
 			<line>
-				<reportElement uuid="60ae7bef-9bdf-4074-b1ca-a50fccf7e5b7" mode="Opaque" x="57" y="2" width="488" height="1"/>
+				<reportElement mode="Opaque" x="57" y="2" width="488" height="1" uuid="60ae7bef-9bdf-4074-b1ca-a50fccf7e5b7"/>
 				<graphicElement>
 					<pen lineStyle="Solid"/>
 				</graphicElement>

@@ -163,12 +163,12 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
-	
+
 	public OrgInfo getOrgInfoByIdInTrx(final OrgId adOrgId)
 	{
 		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	@NonNull
 	private OrgInfo retrieveOrgInfo(@NonNull final OrgId orgId, final String trxName)
 	{
@@ -338,6 +338,7 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	@NonNull
 	public ZoneId getTimeZone(@NonNull final OrgId orgId)
 	{
 		if (!orgId.isRegular())
@@ -384,6 +385,13 @@ public class OrgDAO implements IOrgDAO
 
 		return orgInfo.isAutoInvoiceFlatrateTerms();
 
+	}
+
+	@Override
+	@NonNull
+	public String getOrgCode(@NonNull final OrgId orgId)
+	{
+		return getById(orgId).getValue();
 	}
 
 }

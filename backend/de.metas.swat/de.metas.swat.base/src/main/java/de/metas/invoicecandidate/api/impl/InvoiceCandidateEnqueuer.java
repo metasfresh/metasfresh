@@ -14,11 +14,12 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
-import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -28,13 +29,16 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -47,6 +51,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  */
 /* package */class InvoiceCandidateEnqueuer implements IInvoiceCandidateEnqueuer
 {
+	private final static Logger logger = LogManager.getLogger(InvoiceCandidateEnqueuer.class);
+	
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_QtyToInvoice");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_ApprovalForInvoicing");
 	private static final AdMessageKey MSG_IncompleteGroupsFound_1P = AdMessageKey.of("InvoiceCandEnqueuer_IncompleteGroupsFound");
@@ -64,14 +70,14 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private Boolean _failOnChanges = null;
 	private boolean _failOnInvoiceCandidateError = false; // "false" for backward compatibility
 	private BigDecimal _totalNetAmtToInvoiceChecksum;
-	private IInvoicingParams _invoicingParams;
+	private InvoicingParams _invoicingParams;
 	private I_C_Async_Batch _asyncBatch = null;
 	private IWorkpackagePrioStrategy _priority = null;
 
 	private boolean setWorkpackageADPInstanceCreatorId = true;
 
 	@Override
-	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Set<InvoiceCandidateId> invoiceCandidateIds)
+	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
 
@@ -80,7 +86,34 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		setWorkpackageADPInstanceCreatorId = false;
 		_failOnInvoiceCandidateError = true;
 
+		prepareSelection(invoiceCandidatesSelectionId);
 		return enqueueSelection(invoiceCandidatesSelectionId);
+	}
+
+	@Override
+	public void prepareSelection(@NonNull final PInstanceId pInstanceId)
+	{
+		// Here we just need the "set" of ICs (in no particular order) and prepare them one by one.
+		// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
+		final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pInstanceId);
+
+		// Create invoice candidates changes checker.
+		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
+		icChangesChecker.setBeforeChanges(unorderedICs);
+
+		// make sure that we don't have a ton of ICs being updated by the app-Server while we do our own updates over here
+		// otherwise, we can easly run into DB-deadloacks
+		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
+
+		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
+		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
+
+		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
+
+		//
+		// Make sure there are no changes in amounts or relevant fields (if that is required)
+		icChangesChecker.assertNoChanges(unorderedICs);
+
 	}
 
 	@Override
@@ -104,34 +137,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
-		final Iterable<I_C_Invoice_Candidate> invoiceCandidates = retrieveSelection(pinstanceId);
-
-		//
-		// Create invoice candidates changes checker.
-		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
-		icChangesChecker.setBeforeChanges(invoiceCandidates);
-
-		//
-		// Prepare
-		prepareSelectionForEnqueueing(pinstanceId);
-		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
-		// * the ones which are in our selection, we will updated right now (see below)
-		// * the other ones will be updated later, asynchronously
-
-		//
-		// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
-		// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
-		invoiceCandBL.updateInvalid()
-				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.setLockedBy(icLock)
-				.setTaggedWithAnyTag()
-				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
-				.update();
-
-		//
-		// Make sure there are no changes in amounts or relevant fields (if that is required)
-		icChangesChecker.assertNoChanges(invoiceCandidates);
-
 		//
 		// Create workpackages.
 		// NOTE: loading them again after we made sure that they are fairly up to date.
@@ -149,14 +154,20 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecksum = new ICNetAmtToInvoiceChecker();
 
-		for (final I_C_Invoice_Candidate icRecord : invoiceCandidates)
+		//
+		// now we get the ICs to enqueue, and we assume that their ordering is "stable".
+		// I.e. even if someone changes some values, that's nothing to bother us here
+		final Iterator<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForSelectionStableOrdering(pinstanceId);
+
+		while (invoiceCandidates.hasNext())
 		{
+			final I_C_Invoice_Candidate icRecord = invoiceCandidates.next();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				// Fail if the invoice candidate has issues
 				if (isFailOnInvoiceCandidateError() && icRecord.isError())
 				{
-					throw new AdempiereException(icRecord.getErrorMsg())
+					throw new AdempiereException(Check.assumeNotNull(icRecord.getErrorMsg(), "At this point, the errorMsg can't be null; icRecord={}", icRecord))
 							.setParameter("invoiceCandidate", icRecord);
 				}
 
@@ -176,9 +187,9 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				final IWorkpackagePrioStrategy priorityToUse;
 				if (_priority == null)
 				{
-					if (!Check.isEmpty(icRecord.getPriority()))
+					if (Check.isNotBlank(icRecord.getPriority()))
 					{
-						priorityToUse = ConstantWorkpackagePrio.fromString(icRecord.getPriority());
+						priorityToUse = ConstantWorkpackagePrio.fromString(Check.assumeNotNull(icRecord.getPriority(), ""));
 					}
 					else
 					{
@@ -205,7 +216,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// If no workpackages were created, display error message that no selection was made (07666)
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
-			throw new AdempiereException("@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
+			throw new AdempiereException(MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P);
 		}
 
 		//
@@ -256,7 +267,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		return true;
 	}
 
-	private void prepareSelectionForEnqueueing(final PInstanceId selectionId)
+	private void updateSelectionBeforeEnqueueing(@NonNull final PInstanceId selectionId)
 	{
 		//
 		// Check incomplete compensation groups
@@ -275,7 +286,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
 		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
 		// This is critical because we assume that dateInvoiced is *implicitly* part of the aggregation key, so different values would fail the invoicing
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 		final LocalDate paramDateInvoiced = invoicingParams.getDateInvoiced();
 		if (paramDateInvoiced != null)
 		{
@@ -293,16 +304,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		//
 		// Update POReference (task 07978)
-		final String poReference = invoicingParams.getPOReference();
-		if (!Check.isEmpty(poReference, true))
+		final String poReference = invoicingParams.getPoReference();
+		if (Check.isNotBlank(poReference))
 		{
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
-		}
-
-		// issue https://github.com/metasfresh/metasfresh/issues/3809
-		if (invoicingParams.isSupplementMissingPaymentTermIds())
-		{
-			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
 
 		//
@@ -314,13 +319,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	/**
 	 * NOTE: we designed this method for the case of enqueuing a big number of invoice candidates.
 	 */
-	private Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
+	private Iterable<I_C_Invoice_Candidate> retrieveSelection(@NonNull final PInstanceId pinstanceId)
 	{
-		return () -> {
-			final Properties ctx = getCtx();
-			trxManager.assertThreadInheritedTrxExists();
-			return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
-		};
+		return () -> invoiceCandDAO.retrieveIcForSelection(pinstanceId,
+														   PlainContextAware.newWithThreadInheritedTrx(getCtx()));
 	}
 
 	@Override
@@ -356,13 +358,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setInvoicingParams(IInvoicingParams invoicingParams)
+	public IInvoiceCandidateEnqueuer setInvoicingParams(final InvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;
 	}
 
-	private IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
 		Check.assumeNotNull(_invoicingParams, "invoicingParams not null");
 		return _invoicingParams;
@@ -401,7 +403,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum)
+	public IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(final BigDecimal totalNetAmtToInvoiceChecksum)
 	{
 		this._totalNetAmtToInvoiceChecksum = totalNetAmtToInvoiceChecksum;
 		return this;

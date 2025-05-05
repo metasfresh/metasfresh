@@ -3,19 +3,9 @@
  */
 package de.metas.printing;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import com.lowagie.text.Document;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
-
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.client.engine.PrintablePDF;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
@@ -23,6 +13,14 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class PrintPackagePDFBuilder
 {
@@ -43,6 +41,8 @@ public class PrintPackagePDFBuilder
 		{
 			return null;
 		}
+
+
 		final InputStream in = new ByteArrayInputStream(data);
 		final PrintablePDF printable = new PrintablePDF(in);
 		return printable;

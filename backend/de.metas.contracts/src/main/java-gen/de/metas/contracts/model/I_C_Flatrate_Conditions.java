@@ -1,8 +1,9 @@
 package de.metas.contracts.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Flatrate_Conditions
  *  @author metasfresh (generated) 
@@ -94,7 +95,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
-	 * Set C_Flatrate_Matching_IncludedT.
+	 * Set Flatrate Matching.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -105,7 +106,7 @@ public interface I_C_Flatrate_Conditions
 	void setC_Flatrate_Matching_IncludedT (@Nullable java.lang.String C_Flatrate_Matching_IncludedT);
 
 	/**
-	 * Get C_Flatrate_Matching_IncludedT.
+	 * Get Flatrate Matching.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -117,8 +118,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_Flatrate_Matching_IncludedT = "C_Flatrate_Matching_IncludedT";
 
 	/**
-	 * Set Vertragsverlängerung/-übergang.
-	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 * Set Contract Transition.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -127,8 +127,7 @@ public interface I_C_Flatrate_Conditions
 	void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID);
 
 	/**
-	 * Get Vertragsverlängerung/-übergang.
-	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 * Get Contract Transition.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -150,7 +149,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_HierarchyCommissionSettings_ID (int C_HierarchyCommissionSettings_ID);
+	void setC_HierarchyCommissionSettings_ID(int C_HierarchyCommissionSettings_ID);
 
 	/**
 	 * Get Hierarchy commission settings.
@@ -163,6 +162,27 @@ public interface I_C_Flatrate_Conditions
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_HierarchyCommissionSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_HierarchyCommissionSettings_ID", null);
 	String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
+
+	/**
+	 * Set Clearing Base.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setClearingAmtBaseOn(@Nullable java.lang.String ClearingAmtBaseOn);
+
+	/**
+	 * Get Clearing Base.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getClearingAmtBaseOn();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_ClearingAmtBaseOn = new ModelColumn<>(I_C_Flatrate_Conditions.class, "ClearingAmtBaseOn", null);
+	String COLUMNNAME_ClearingAmtBaseOn = "ClearingAmtBaseOn";
 
 	/**
 	 * Set License fee settings.
@@ -207,102 +227,6 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Abo-Rabatt.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
-
-	/**
-	 * Get Abo-Rabatt.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_SubscrDiscount_ID();
-
-	@Nullable de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount();
-
-	void setC_SubscrDiscount(@Nullable de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount);
-
-	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
-	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
-
-
-	/**
-	 * Set Basis für Verrechnungs-Zahlbetrag.
-	 * Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setClearingAmtBaseOn (@Nullable java.lang.String ClearingAmtBaseOn);
-
-	/**
-	 * Get Basis für Verrechnungs-Zahlbetrag.
-	 * Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getClearingAmtBaseOn();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_ClearingAmtBaseOn = new ModelColumn<>(I_C_Flatrate_Conditions.class, "ClearingAmtBaseOn", null);
-	String COLUMNNAME_ClearingAmtBaseOn = "ClearingAmtBaseOn";
-
-	/**
-	 * Set Prefinancing Settings.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Prefinancing_Settings_ID (int C_Prefinancing_Settings_ID);
-
-	/**
-	 * Get Prefinancing Settings.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Prefinancing_Settings_ID();
-
-	@Nullable org.compiere.model.I_C_Prefinancing_Settings getC_Prefinancing_Settings();
-
-	void setC_Prefinancing_Settings(@Nullable org.compiere.model.I_C_Prefinancing_Settings C_Prefinancing_Settings);
-
-	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Prefinancing_Settings> COLUMN_C_Prefinancing_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Prefinancing_Settings_ID", org.compiere.model.I_C_Prefinancing_Settings.class);
-	String COLUMNNAME_C_Prefinancing_Settings_ID = "C_Prefinancing_Settings_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -328,13 +252,60 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Abo-Rabatt.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_SubscrDiscount_ID(int C_SubscrDiscount_ID);
+
+	/**
+	 * Get Abo-Rabatt.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_SubscrDiscount_ID();
+
+	@Nullable de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount();
+
+	void setC_SubscrDiscount(@Nullable de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount);
+
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
+	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID(int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	void setDescription(@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -343,7 +314,8 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	@Nullable
+	java.lang.String getDescription();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Description = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -393,8 +365,8 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Rechnungsstellung.
-	 * "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 * Set Invoice Rule.
+	 * Frequency and method of invoicing
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -403,8 +375,8 @@ public interface I_C_Flatrate_Conditions
 	void setInvoiceRule (java.lang.String InvoiceRule);
 
 	/**
-	 * Get Rechnungsstellung.
-	 * "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 * Get Invoice Rule.
+	 * Frequency and method of invoicing
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -439,8 +411,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Gegenüberstellung mit erbr. Leist..
-	 * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
+	 * Set Cleat with actual Amount.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -449,8 +420,7 @@ public interface I_C_Flatrate_Conditions
 	void setIsClosingWithActualSum (boolean IsClosingWithActualSum);
 
 	/**
-	 * Get Gegenüberstellung mit erbr. Leist..
-	 * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
+	 * Get Cleat with actual Amount.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -462,8 +432,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsClosingWithActualSum = "IsClosingWithActualSum";
 
 	/**
-	 * Set Abschlusskorrektur vorsehen.
-	 * Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
+	 * Set Clearing with Correction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -472,8 +441,7 @@ public interface I_C_Flatrate_Conditions
 	void setIsClosingWithCorrectionSum (boolean IsClosingWithCorrectionSum);
 
 	/**
-	 * Get Abschlusskorrektur vorsehen.
-	 * Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
+	 * Get Clearing with Correction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -485,8 +453,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsClosingWithCorrectionSum = "IsClosingWithCorrectionSum";
 
 	/**
-	 * Set Verrechung erst nach Abschlusskorrektur.
-	 * Legt fest, ob Nach- bzw. Rückzahlungen erst nach Erfassung der Abschlusskorrektur in Rechnung zu stellen sind
+	 * Set Clearing after Correction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -495,8 +462,7 @@ public interface I_C_Flatrate_Conditions
 	void setIsCorrectionAmtAtClosing (boolean IsCorrectionAmtAtClosing);
 
 	/**
-	 * Get Verrechung erst nach Abschlusskorrektur.
-	 * Legt fest, ob Nach- bzw. Rückzahlungen erst nach Erfassung der Abschlusskorrektur in Rechnung zu stellen sind
+	 * Get Clearing after Correction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -508,7 +474,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsCorrectionAmtAtClosing = "IsCorrectionAmtAtClosing";
 
 	/**
-	 * Set Keine Rechnungserstellung.
+	 * Set No Invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -517,7 +483,7 @@ public interface I_C_Flatrate_Conditions
 	void setIsCreateNoInvoice (boolean IsCreateNoInvoice);
 
 	/**
-	 * Get Keine Rechnungserstellung.
+	 * Get No Invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -529,8 +495,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsCreateNoInvoice = "IsCreateNoInvoice";
 
 	/**
-	 * Set Gratis.
-	 * Es wird unabhängig vom gewählten Preissystem ein Rabatt von 100% gewährt
+	 * Set Free of Charge.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -539,8 +504,7 @@ public interface I_C_Flatrate_Conditions
 	void setIsFreeOfCharge (boolean IsFreeOfCharge);
 
 	/**
-	 * Get Gratis.
-	 * Es wird unabhängig vom gewählten Preissystem ein Rabatt von 100% gewährt
+	 * Get Free of Charge.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -594,6 +558,73 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
+	 * Set Maximum Corridor.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMargin_Max (BigDecimal Margin_Max);
+
+	/**
+	 * Get Maximum Corridor.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMargin_Max();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
+	String COLUMNNAME_Margin_Max = "Margin_Max";
+
+	/**
+	 * Set Minimum Corridor.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMargin_Min (BigDecimal Margin_Min);
+
+	/**
+	 * Get Minimum Corridor.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMargin_Min();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
+	String COLUMNNAME_Margin_Min = "Margin_Min";
+
+	/**
+	 * Set Modular Contract Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Settings_ID (int ModCntr_Settings_ID);
+
+	/**
+	 * Get Modular Contract Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Settings_ID();
+
+	@Nullable de.metas.contracts.model.I_ModCntr_Settings getModCntr_Settings();
+
+	void setModCntr_Settings(@Nullable de.metas.contracts.model.I_ModCntr_Settings ModCntr_Settings);
+
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_ModCntr_Settings> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "ModCntr_Settings_ID", de.metas.contracts.model.I_ModCntr_Settings.class);
+	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
+
+	/**
 	 * Set Pricing System.
 	 *
 	 * <br>Type: Search
@@ -614,8 +645,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
-	 * Set Produkt für Verrechnung.
-	 * Produkt, unter dem ggf. die Differenz zu tatsächlich erbrachten Leistungen in Rechnung gestellt wird.
+	 * Set Clearing Product.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -624,8 +654,7 @@ public interface I_C_Flatrate_Conditions
 	void setM_Product_Actual_ID (int M_Product_Actual_ID);
 
 	/**
-	 * Get Produkt für Verrechnung.
-	 * Produkt, unter dem ggf. die Differenz zu tatsächlich erbrachten Leistungen in Rechnung gestellt wird.
+	 * Get Clearing Product.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -636,8 +665,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_M_Product_Actual_ID = "M_Product_Actual_ID";
 
 	/**
-	 * Set Produkt für Abschlusskorrektur.
-	 * Produkt, unter dem ggf. die Differenz zu den in der Abschlusskorrektur gemeldeten Mengen in Rechnung gestellt wird.
+	 * Set Correction Product.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -646,8 +674,7 @@ public interface I_C_Flatrate_Conditions
 	void setM_Product_Correction_ID (int M_Product_Correction_ID);
 
 	/**
-	 * Get Produkt für Abschlusskorrektur.
-	 * Produkt, unter dem ggf. die Differenz zu den in der Abschlusskorrektur gemeldeten Mengen in Rechnung gestellt wird.
+	 * Get Correction Product.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -658,18 +685,16 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_M_Product_Correction_ID = "M_Product_Correction_ID";
 
 	/**
-	 * Set Produkt für pauschale Berechnung.
-	 * Produkt, unter dem die pauschal abzurechnenden Leistungen in Rechnung gestellt werden
+	 * Set Flatrate Product.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_Flatrate_ID (int M_Product_Flatrate_ID);
+	void setM_Product_Flatrate_ID(int M_Product_Flatrate_ID);
 
 	/**
-	 * Get Produkt für pauschale Berechnung.
-	 * Produkt, unter dem die pauschal abzurechnenden Leistungen in Rechnung gestellt werden
+	 * Get Flatrate Product.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -680,16 +705,16 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_M_Product_Flatrate_ID = "M_Product_Flatrate_ID";
 
 	/**
-	 * Set Lagerkonferenz.
+	 * Set Quality Inspection Conference.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_QualityInsp_LagerKonf_ID (int M_QualityInsp_LagerKonf_ID);
+	void setM_QualityInsp_LagerKonf_ID(int M_QualityInsp_LagerKonf_ID);
 
 	/**
-	 * Get Lagerkonferenz.
+	 * Get Quality Inspection Conference.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -699,48 +724,6 @@ public interface I_C_Flatrate_Conditions
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_M_QualityInsp_LagerKonf_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "M_QualityInsp_LagerKonf_ID", null);
 	String COLUMNNAME_M_QualityInsp_LagerKonf_ID = "M_QualityInsp_LagerKonf_ID";
-
-	/**
-	 * Set Korridor - Überschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMargin_Max (BigDecimal Margin_Max);
-
-	/**
-	 * Get Korridor - Überschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMargin_Max();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
-	String COLUMNNAME_Margin_Max = "Margin_Max";
-
-	/**
-	 * Set Korridor - Unterschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMargin_Min (BigDecimal Margin_Min);
-
-	/**
-	 * Get Korridor - Unterschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMargin_Min();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
-	String COLUMNNAME_Margin_Min = "Margin_Min";
 
 	/**
 	 * Set Name.
@@ -785,8 +768,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_OnFlatrateTermExtend = "OnFlatrateTermExtend";
 
 	/**
-	 * Set Drucktext.
-	 * Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
+	 * Set Print Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -795,8 +777,7 @@ public interface I_C_Flatrate_Conditions
 	void setPrintName (@Nullable java.lang.String PrintName);
 
 	/**
-	 * Get Drucktext.
-	 * Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
+	 * Get Print Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -850,7 +831,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Verrechnungsmodus.
+	 * Set Clearing Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -859,7 +840,7 @@ public interface I_C_Flatrate_Conditions
 	void setType_Clearing (java.lang.String Type_Clearing);
 
 	/**
-	 * Get Verrechnungsmodus.
+	 * Get Clearing Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -871,7 +852,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_Type_Clearing = "Type_Clearing";
 
 	/**
-	 * Set Vertragsart.
+	 * Set Contract Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -880,7 +861,7 @@ public interface I_C_Flatrate_Conditions
 	void setType_Conditions (java.lang.String Type_Conditions);
 
 	/**
-	 * Get Vertragsart.
+	 * Get Contract Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -892,8 +873,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_Type_Conditions = "Type_Conditions";
 
 	/**
-	 * Set Verrechnungsart.
-	 * Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
+	 * Set Flatrate Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -902,8 +882,7 @@ public interface I_C_Flatrate_Conditions
 	void setType_Flatrate (java.lang.String Type_Flatrate);
 
 	/**
-	 * Get Verrechnungsart.
-	 * Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
+	 * Get Flatrate Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -913,29 +892,6 @@ public interface I_C_Flatrate_Conditions
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Flatrate = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Flatrate", null);
 	String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
-
-	/**
-	 * Set Einheiten-Typ.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setUOMType (java.lang.String UOMType);
-
-	/**
-	 * Get Einheiten-Typ.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getUOMType();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_UOMType = new ModelColumn<>(I_C_Flatrate_Conditions.class, "UOMType", null);
-	String COLUMNNAME_UOMType = "UOMType";
 
 	/**
 	 * Get Updated.

@@ -22,26 +22,25 @@
 
 package de.metas;
 
+import au.com.origin.snapshots.Expect;
+
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 class CreatedUpdatedInfoTest
 {
+	private Expect expect;
 	private static final ZonedDateTime CREATED = LocalDate.of(2019, Month.MARCH, 8)
 			.atTime(13, 20, 42, 2)
 			.atZone(ZoneId.of("+01:00"));
@@ -50,18 +49,6 @@ class CreatedUpdatedInfoTest
 			.atTime(14, 20, 42, 2)
 			.atZone(ZoneId.of("+01:00"));
 
-	@BeforeAll
-	static void init()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
-
 	@Test
 	void createNew_updated()
 	{
@@ -69,7 +56,7 @@ class CreatedUpdatedInfoTest
 				.createNew(UserId.ofRepoId(10), CREATED)
 				.updated(UserId.ofRepoId(20), UPDATED);
 
-		expect(createdUpdatedInfo).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(createdUpdatedInfo);
 	}
 
 	@Test

@@ -105,9 +105,9 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Schedule given item to be enqueued in a transaction level workpackage which will be submitted when the transaction is committed.
-	 *
+	 * <p>
 	 * The transaction is extracted from item, using {@link #extractTrxNameFromItem(Object)}.
-	 *
+	 * <p>
 	 * If item has no transaction, a workpackage with given item will be automatically created and enqueued to be processed.
 	 */
 	public final void schedule(@NonNull final ItemType item)
@@ -146,7 +146,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Checks if given item is eligible for scheduling.
-	 *
+	 * <p>
 	 * To be implemented by extending classes in order to avoid some items to be scheduled. By default this method accepts any item.
 	 *
 	 * @return true if given item shall be scheduled
@@ -162,7 +162,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 * <b>Important:</b> this method is called for each item and the parameter names for different items need have different names! Otherwise, there will be an exception.
 	 *
 	 * @return an empty map. Overwrite as required
-	 * task https://github.com/metasfresh/metasfresh/issues/409
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/409">https://github.com/metasfresh/metasfresh/issues/409</a>
 	 */
 	protected Map<String, Object> extractParametersFromItem(final ItemType item)
 	{
@@ -171,7 +171,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Extract and return the context to be used from given item.
-	 *
+	 * <p>
 	 * The context is used to create the internal {@link IWorkPackageBuilder}.
 	 *
 	 * @return ctx; shall never be <code>null</code>
@@ -190,9 +190,10 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 *
 	 * @return model to be enqueued or <code>null</code> if no model shall be enqueued.
 	 */
+	@Nullable
 	protected abstract Object extractModelToEnqueueFromItem(final Collector collector, final ItemType item);
 
-	public Optional<AsyncBatchId> extractAsyncBatchFromItem(final Collector collector, final ItemType item)
+	protected Optional<AsyncBatchId> extractAsyncBatchFromItem(final Collector collector, final ItemType item)
 	{
 		return Optional.empty();
 	}
@@ -281,7 +282,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		private Collector(
 				final Properties ctx,
 				final boolean createOneWorkpackagePerModel,
-				final UserId userIdInCharge,
+				@Nullable final UserId userIdInCharge,
 				final boolean createOneWorkpackagePerAsyncBatch)
 		{
 			this.ctx = ctx;
@@ -446,6 +447,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			return InterfaceWrapperHelper.getTrxName(item);
 		}
 
+		@Nullable
 		@Override
 		protected Object extractModelToEnqueueFromItem(final Collector collector, final ModelType item)
 		{

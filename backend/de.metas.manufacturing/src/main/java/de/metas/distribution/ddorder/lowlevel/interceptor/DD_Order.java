@@ -22,13 +22,13 @@ package de.metas.distribution.ddorder.lowlevel.interceptor;
  * #L%
  */
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.ModelValidator;
@@ -49,8 +49,6 @@ class DD_Order
 	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_DD_Order.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_DD_Order.Table_Name, DDOrderPOCopyRecordSupport.class);
-		CopyRecordFactory.registerCopyRecordSupport(I_DD_OrderLine.Table_Name, DDOrderLinePOCopyRecordSupport.class);
 	}
 
 	/**

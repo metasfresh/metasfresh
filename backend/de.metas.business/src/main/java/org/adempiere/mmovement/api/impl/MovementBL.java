@@ -22,6 +22,10 @@ package org.adempiere.mmovement.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -41,6 +45,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mmovement.MovementId;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -52,9 +57,10 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 public class MovementBL implements IMovementBL
 {
@@ -70,10 +76,10 @@ public class MovementBL implements IMovementBL
 	public DocTypeId getDocTypeId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialMovement)
-				.adClientId(clientAndOrgId.getClientId().getRepoId())
-				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
-				.build());
+											   .docBaseType(DocBaseType.MaterialMovement)
+											   .adClientId(clientAndOrgId.getClientId().getRepoId())
+											   .adOrgId(clientAndOrgId.getOrgId().getRepoId())
+											   .build());
 	}
 
 	@Override
@@ -114,7 +120,7 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void setC_Activities(final I_M_MovementLine movementLine)
 	{
-		final ActivityId productActivityId = Services.get(IProductActivityProvider.class).retrieveActivityForAcct(
+		final ActivityId productActivityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
 				ClientId.ofRepoId(movementLine.getAD_Client_ID()),
 				OrgId.ofRepoId(movementLine.getAD_Org_ID()),
 				ProductId.ofRepoId(movementLine.getM_Product_ID()));
@@ -186,5 +192,27 @@ public class MovementBL implements IMovementBL
 	public void save(@NonNull final I_M_MovementLine movementLine)
 	{
 		movementDAO.save(movementLine);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_MovementLine> retrieveLines(@NonNull final MovementId movementId)
+	{
+		return movementDAO.retrieveLines(movementId);
+	}
+
+	@Override
+	@NonNull
+	public Map<DDOrderLineId, List<I_M_MovementLine>> retrieveCompletedMovementLinesForDDOrderLines(@NonNull final ImmutableSet<DDOrderLineId> ddOrderLineIds)
+	{
+		return movementDAO.retrieveCompletedMovementLinesForDDOrderLines(ddOrderLineIds);
+	}
+
+	@NonNull
+	public Quantity getMovementQty(@NonNull final I_M_MovementLine movementLine)
+	{
+		final BigDecimal movementQtyValue = movementLine.getMovementQty();
+		final I_C_UOM movementQtyUOM = getC_UOM(movementLine);
+		return Quantity.of(movementQtyValue, movementQtyUOM);
 	}
 }

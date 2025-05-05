@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Locked HUs can not be picked
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-31T13:30:13+01:00[Europe/Berlin]
 
     And destroy existing M_HUs
@@ -48,13 +50,13 @@ Feature: Locked HUs can not be picked
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | huProduct_inventory       | 2022-03-20T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |
     And complete inventory with inventoryIdentifier 'huProduct_inventory'
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | huProduct_inventoryLine       | createdCU          |
 
@@ -62,7 +64,7 @@ Feature: Locked HUs can not be picked
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU           | 10    | huProductTU                        | createdTU                 | newCreatedCU              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | createdTU          | huProductTU                            |
 
@@ -92,7 +94,7 @@ Feature: Locked HUs can not be picked
 
     And the order identified by order_1 is completed
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -100,7 +102,7 @@ Feature: Locked HUs can not be picked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_1                            | shipment_1            | CO            |
     And validate M_ShipmentSchedule_QtyPicked:
@@ -125,7 +127,7 @@ Feature: Locked HUs can not be picked
 
     And the order identified by order_1 is completed
 
-    When after not more than 30s, M_ShipmentSchedules are found:
+    When after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_2      | ol_1                      | N             |
 
@@ -153,7 +155,7 @@ Feature: Locked HUs can not be picked
 
     And the order identified by order_1 is completed
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_3      | ol_1                      | N             |
 

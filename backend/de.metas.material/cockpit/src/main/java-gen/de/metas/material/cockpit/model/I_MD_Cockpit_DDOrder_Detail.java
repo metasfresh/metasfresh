@@ -1,7 +1,8 @@
 package de.metas.material.cockpit.model;
 
-import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
+
+import java.math.BigDecimal;
 
 /** Generated Interface for MD_Cockpit_DDOrder_Detail
  *  @author metasfresh (generated) 

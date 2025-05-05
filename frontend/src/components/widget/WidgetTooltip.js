@@ -1,58 +1,27 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
-import { Manager, Reference, Popper } from 'react-popper';
+import { Manager, Popper, Reference } from 'react-popper';
 
 import iconHelp from '../../assets/images/tooltip-help.png';
 import iconText from '../../assets/images/tooltip-text.png';
 
-/**
- * @file Class based component.
- * @module WidgetTooltip
- * @extends Component
- */
 class WidgetTooltip extends PureComponent {
-  /**
-   * @method widgetTooltipToggle
-   * @summary Alternative method to open dropdown, in case of disabled opening
-   * on focus.
-   */
   handleClick = () => {
-    const { onToggle, fieldName } = this.props;
-
-    onToggle(fieldName);
+    const { onToggle } = this.props;
+    onToggle(null); // toggle popup
   };
 
-  /**
-   * @method handleClickOutside
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   handleClickOutside() {
-    const { fieldName, onToggle, isToggled } = this.props;
+    const { onToggle, isToggled } = this.props;
 
     if (isToggled) {
-      onToggle(fieldName, false);
+      onToggle(false);
     }
   }
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   */
   render() {
-    const { isToggled, widget, data } = this.props;
-    const modifiers = {
-      preventOverflow: {
-        enabled: false,
-        boundariesElement: 'viewport',
-        escapeWithReference: true,
-      },
-      flip: {
-        enabled: true,
-        boundariesElement: 'viewport',
-      },
-    };
+    const { isToggled, iconName } = this.props;
 
     return (
       <Manager>
@@ -60,52 +29,56 @@ class WidgetTooltip extends PureComponent {
           <Reference>
             {({ ref }) => (
               <img
-                src={widget.tooltipIconName === 'text' ? iconText : iconHelp}
+                src={iconName === 'text' ? iconText : iconHelp}
                 onClick={this.handleClick}
                 ref={ref}
+                alt="icon"
               />
             )}
           </Reference>
-          {isToggled && (
-            <Popper
-              placement="right-start"
-              modifiers={modifiers}
-              outOfBoundaries={true}
-            >
-              {({ ref, style, placement }) => (
-                <div
-                  ref={ref}
-                  style={style}
-                  data-placement={placement}
-                  className="tooltip-content"
-                  modifiers={modifiers}
-                >
-                  <span>{data.value}</span>
-                </div>
-              )}
-            </Popper>
-          )}
+          {isToggled && this.renderPopper()}
         </div>
       </Manager>
     );
   }
+
+  renderPopper = () => {
+    const { text } = this.props;
+
+    return (
+      <Popper
+        placement="right-start"
+        modifiers={[
+          {
+            name: 'flip',
+            enabled: true,
+            options: {
+              rootBoundary: 'viewport',
+            },
+          },
+        ]}
+        outOfBoundaries={true}
+      >
+        {({ ref, style, placement }) => (
+          <div
+            ref={ref}
+            style={style}
+            data-placement={placement}
+            className="tooltip-content"
+          >
+            <span>{text || ''}</span>
+          </div>
+        )}
+      </Popper>
+    );
+  };
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} widget
- * @prop {*} data
- * @prop {string} [fieldName]
- * @prop {bool} isToggled
- * @prop {func} [onToggle]
- * @todo Check props. Which proptype? Required or optional?
- */
 WidgetTooltip.propTypes = {
-  widget: PropTypes.any.isRequired,
-  data: PropTypes.any.isRequired,
-  fieldName: PropTypes.string,
+  iconName: PropTypes.string,
+  text: PropTypes.string,
   isToggled: PropTypes.bool.isRequired,
-  onToggle: PropTypes.func,
+  onToggle: PropTypes.func.isRequired,
 };
 
 export default onClickOutside(WidgetTooltip);

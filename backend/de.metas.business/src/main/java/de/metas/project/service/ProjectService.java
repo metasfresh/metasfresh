@@ -22,26 +22,40 @@
 
 package de.metas.project.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.document.DocumentSequenceInfo;
+import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.project.ProjectAndLineId;
+import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
+import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.project.RequestStatusCategoryId;
 import de.metas.project.service.listeners.CompositeProjectStatusListener;
 import de.metas.project.service.listeners.ProjectStatusListener;
 import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Project;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,22 +63,41 @@ import java.util.Optional;
 public class ProjectService
 {
 	private static final Logger logger = LogManager.getLogger(ProjectService.class);
+
+	private final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
+
 	private final ProjectTypeRepository projectTypeRepository;
 	private final ProjectRepository projectRepository;
 	private final ProjectLineRepository projectLineRepository;
+	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final CompositeProjectStatusListener projectStatusListeners;
 
 	public ProjectService(
 			@NonNull final ProjectTypeRepository projectTypeRepository,
 			@NonNull final ProjectRepository projectRepository,
 			@NonNull final ProjectLineRepository projectLineRepository,
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
 			@NonNull final Optional<List<ProjectStatusListener>> projectStatusListeners)
 	{
 		this.projectTypeRepository = projectTypeRepository;
 		this.projectRepository = projectRepository;
 		this.projectLineRepository = projectLineRepository;
+		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.projectStatusListeners = CompositeProjectStatusListener.ofList(projectStatusListeners.orElseGet(ImmutableList::of));
 		logger.info("projectClosedListeners: {}", projectStatusListeners);
+	}
+
+	@VisibleForTesting
+	public static ProjectService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProjectService(
+				new ProjectTypeRepository(),
+				new ProjectRepository(),
+				new ProjectLineRepository(),
+				new DocumentNoBuilderFactory(Optional.empty()),
+				Optional.empty());
+
 	}
 
 	public I_C_Project getRecordById(@NonNull final ProjectId id)
@@ -105,6 +138,9 @@ public class ProjectService
 				request.getOrgId());
 
 		projectDataBuilder.projectTypeId(projectTypeId);
+		final RequestStatusCategoryId requestStatusCategoryId = projectTypeRepository.getById(projectTypeId).getRequestStatusCategoryId();
+		projectDataBuilder.requestStatusCategoryId(requestStatusCategoryId);
+		setFromProjectType(projectDataBuilder, projectTypeId);
 
 		final ProjectId projectId = projectRepository.create(projectDataBuilder.build()).getId();
 
@@ -186,4 +222,61 @@ public class ProjectService
 		projectStatusListeners.onAfterUnClose(projectRecord);
 	}
 
+	private void setFromProjectType(
+			@NonNull final ProjectData.ProjectDataBuilder projectDataBuilder,
+			@NonNull final ProjectTypeId projectTypeId)
+	{
+		final String projectValue = getNextProjectValue(projectTypeId);
+
+		if (Check.isBlank(projectValue))
+		{
+			throw new AdempiereException("Could not compute C_Project.Value for projectTypeId: " + projectTypeId);
+		}
+
+		projectDataBuilder.value(projectValue);
+		projectDataBuilder.name(projectValue);
+	}
+
+	@Nullable
+	public ProjectCategory getProjectCategoryFromProjectType(@NonNull final ProjectTypeId projectTypeId)
+	{
+		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
+		return projectType.getProjectCategory();
+	}
+
+	@Nullable
+	public String getNextProjectValue(@NonNull final ProjectTypeId projectTypeId)
+	{
+		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
+		final DocSequenceId docSequenceId = projectType.getDocSequenceId();
+
+		if (docSequenceId == null)
+		{
+			return null;
+		}
+
+		final DocumentSequenceInfo documentSequenceInfo = documentSequenceDAO.retriveDocumentSequenceInfo(docSequenceId);
+
+		if (documentSequenceInfo == null)
+		{
+			return null;
+		}
+
+		return documentNoBuilderFactory.createDocumentNoBuilder()
+				.setDocumentSequenceInfo(documentSequenceInfo)
+				.setClientId(projectType.getClientAndOrgId().getClientId())
+				.setFailOnError(false)
+				.build();
+	}
+
+	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId projectTypeId)
+	{
+		return projectTypeRepository.getById(projectTypeId);
+	}
+
+	public Optional<UserId> getProjectManagerByProjectId(@NonNull final ProjectId projectId)
+	{
+		final I_C_Project project = getRecordById(projectId);
+		return Optional.ofNullable(UserId.ofRepoIdOrNullIfSystem(project.getSalesRep_ID()));
+	}
 }

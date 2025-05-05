@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -27,10 +28,11 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class HUPIAttributesDAO implements IHUPIAttributesDAO
 {
@@ -39,9 +41,8 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 	/**
 	 * Retrieve all direct attributes, including those who are not active for current PI Version.
 	 *
-	 * @param version
 	 * @return list of attributes
-	 * @see #retrieveDirectPIAttributes(I_M_HU_PI_Version)
+	 * @see #retrieveDirectPIAttributes(Properties, HuPackingInstructionsVersionId)
 	 */
 	public PIAttributes retrieveDirectPIAttributes(final HuPackingInstructionsId piId)
 	{
@@ -50,14 +51,14 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 	}
 
 	@Cached(cacheName = I_M_HU_PI_Attribute.Table_Name + "#by#" + I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID)
-	/* package */PIAttributes retrieveDirectPIAttributes(
+		/* package */PIAttributes retrieveDirectPIAttributes(
 			@CacheCtx final Properties ctx,
 			final HuPackingInstructionsVersionId piVersionId)
 	{
 		final IQueryBuilder<I_M_HU_PI_Attribute> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_PI_Attribute.class, ctx, ITrx.TRXNAME_None);
 
-		queryBuilder.filter(new EqualsQueryFilter<I_M_HU_PI_Attribute>(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, piVersionId));
+		queryBuilder.filter(new EqualsQueryFilter<>(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, piVersionId));
 
 		queryBuilder.orderBy()
 				.addColumn(I_M_HU_PI_Attribute.COLUMNNAME_SeqNo, Direction.Ascending, Nulls.Last)
@@ -107,8 +108,8 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		{
 			return PIAttributes.EMPTY;
 		}
-		
-		List<I_M_HU_PI_Attribute> piAttributesList = loadByIdsOutOfTrx(piAttributeIds, I_M_HU_PI_Attribute.class);
+
+		final List<I_M_HU_PI_Attribute> piAttributesList = loadByIdsOutOfTrx(piAttributeIds, I_M_HU_PI_Attribute.class);
 		return PIAttributes.of(piAttributesList);
 	}
 
@@ -159,5 +160,16 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMN_M_HU_PI_Version_ID, versionId)
 				.create()
 				.delete();
+	}
+
+	@Override
+	@Nullable
+	public I_M_HU_PI_Attribute getById(@Nullable final HuPackingInstructionsAttributeId huPIAttributeId)
+	{
+		if (huPIAttributeId == null)
+		{
+			return null;
+		}
+		return InterfaceWrapperHelper.load(huPIAttributeId, I_M_HU_PI_Attribute.class);
 	}
 }

@@ -45,6 +45,8 @@ import java.util.Set;
 
 public interface IReceiptScheduleDAO extends ISingletonService
 {
+	<T extends I_M_ReceiptSchedule> T getById(@NonNull ReceiptScheduleId id, @NonNull Class<T> modelClass);
+
 	/**
 	 * Retrieve an iterator over receipt schedules fetched by query.
 	 * <p>

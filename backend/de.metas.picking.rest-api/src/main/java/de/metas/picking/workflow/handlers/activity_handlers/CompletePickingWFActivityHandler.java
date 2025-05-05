@@ -24,6 +24,7 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupportUtil;
@@ -65,9 +66,8 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 			final @NonNull JsonOpts jsonOpts)
 	{
 		return UserConfirmationSupportUtil.createUIComponent(
-				UserConfirmationSupportUtil.UIComponentProps.builder()
+				UserConfirmationSupportUtil.UIComponentProps.builderFrom(wfActivity)
 						.question("Are you sure?")
-						.confirmed(wfActivity.getStatus().isCompleted())
 						.build());
 	}
 
@@ -86,9 +86,10 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 	@Override
 	public WFProcess userConfirmed(final UserConfirmationRequest request)
 	{
-		final WFProcess wfProcess = request.getWfProcess();
 		request.getWfActivity().getWfActivityType().assertExpected(HANDLED_ACTIVITY_TYPE);
-
-		return wfProcess.mapDocument(pickingJobRestService::complete);
+		return PickingMobileApplication.mapPickingJob(
+				request.getWfProcess(),
+				pickingJobRestService::complete
+		);
 	}
 }

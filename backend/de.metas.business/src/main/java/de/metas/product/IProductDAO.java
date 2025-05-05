@@ -1,6 +1,8 @@
 package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
@@ -11,7 +13,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -24,7 +25,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.isEmpty;
 
@@ -78,7 +79,6 @@ public interface IProductDAO extends ISingletonService
 	/**
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
 	 * or if there is no pendant in the given <code>org</code>.
-	 * task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
 	@Nullable
 	ProductId retrieveMappedProductIdOrNull(ProductId productId, OrgId orgId);
@@ -106,7 +106,7 @@ public interface IProductDAO extends ISingletonService
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
-	
+
 	void clearIndividualMasterDataFromProduct(ProductId productId);
 
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
@@ -117,6 +117,10 @@ public interface IProductDAO extends ISingletonService
 
 	@Nullable
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
+
+	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
+
+	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
 
 	@Value
 	class ProductQuery
@@ -151,8 +155,8 @@ public interface IProductDAO extends ISingletonService
 			this.value = value;
 			this.externalId = externalId;
 			this.orgId = orgId;
-			this.includeAnyOrg = coalesce(includeAnyOrg, false);
-			this.outOfTrx = coalesce(outOfTrx, false);
+			this.includeAnyOrg = coalesceNotNull(includeAnyOrg, false);
+			this.outOfTrx = coalesceNotNull(outOfTrx, false);
 		}
 	}
 
@@ -166,6 +170,8 @@ public interface IProductDAO extends ISingletonService
 
 	@Nullable
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
+
+	ImmutableSet<ProductAndCategoryId> retrieveProductAndCategoryIdsByProductIds(@NonNull Set<ProductId> productIds);
 
 	ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(ProductId productId);
 
@@ -199,7 +205,13 @@ public interface IProductDAO extends ISingletonService
 
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
 
-	int getGuaranteeMonthsInDays(ProductId productId);
-
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
+
+	/**
+	 * @return {@code true} if product is used in orders, invoices, shipments or cost-details.
+	 */
+	boolean isProductUsed(ProductId productId);
+
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

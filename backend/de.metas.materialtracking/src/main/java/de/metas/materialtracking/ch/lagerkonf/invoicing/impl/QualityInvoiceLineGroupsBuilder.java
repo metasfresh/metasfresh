@@ -1,47 +1,6 @@
 package de.metas.materialtracking.ch.lagerkonf.invoicing.impl;
 
-import static java.math.BigDecimal.ONE;
-
-/*
- * #%L
- * de.metas.materialtracking
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
@@ -77,10 +36,27 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.math.BigDecimal.ONE;
 
 /**
  * Takes an {@link IQualityInspectionOrder} and creates {@link IQualityInvoiceLineGroup}s.
- *
+ * <p>
  * Before you start using it you need to configure this builder:
  * <ul>
  * <li>{@link #setPricingContext(IPricingContext)} - set pricing context to be used when calculating the prices
@@ -88,10 +64,10 @@ import lombok.NonNull;
  * </ul>
  *
  * To generate the {@link IQualityInvoiceLineGroup}s you need to call: {@link #create()}.
- *
+ * <p>
  * To get the results you need to call: {@link #getCreatedInvoiceLineGroups()}.
- *
- * See https://drive.google.com/file/d/0B-AaY-YNDnR5b045VGJsdVhRUGc/view
+ * <p>
+ * See <a href="https://drive.google.com/file/d/0B-AaY-YNDnR5b045VGJsdVhRUGc/view">https://drive.google.com/file/d/0B-AaY-YNDnR5b045VGJsdVhRUGc/view</a>
  *
  * @author tsa
  *
@@ -112,7 +88,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	private IVendorReceipt<?> _receiptFromVendor;
 	private IPricingContext _pricingContext;
 
-	private static final transient Logger logger = LogManager.getLogger(QualityInvoiceLineGroupsBuilder.class);
+	private static final Logger logger = LogManager.getLogger(QualityInvoiceLineGroupsBuilder.class);
 
 	// Result
 	private final List<IQualityInvoiceLineGroup> _createdInvoiceLineGroups = new ArrayList<>();
@@ -213,7 +189,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return _pricingContext;
 	}
 
-	private final IQualityInspectionLinesCollection getQualityInspectionLinesCollection()
+	private IQualityInspectionLinesCollection getQualityInspectionLinesCollection()
 	{
 		if (_qiLines == null)
 		{
@@ -372,8 +348,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Creates <b>one</b> "Auslagerung per..." record with the date of the qualityInspectionOrder and the full quantity that was received so far.
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/09668_Karotten_Frisch_L%C3%B6sung_ohne_Qualit%C3%A4tslagerausgleich_%28103397626711%29
 	 */
 	private void createQualityInvoiceLineGroups_RegularOrdersSimplified()
 	{
@@ -735,10 +709,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	}
 
 	/**
-	 *
-	 * @param feeItem
 	 * @param firstItem indicates if this is the first fee-item. If it is, then the method will prepend a details line that is about the total produced goods (without By-Products).
-	 * @return
 	 */
 	private IQualityInvoiceLineGroup createQualityInvoiceLineGroup_AditionalFees(
 			final IInvoicingItem feeItem,
@@ -858,9 +829,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Applies for Main Product, Co-Product and By-Product
-	 *
-	 * @param producedMaterial
-	 * @return
 	 */
 	private IQualityInvoiceLineGroup createQualityInvoiceLineGroup_ProducedMaterial(
 			final IQualityInspectionLine producedMaterial,
@@ -1030,12 +998,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	 * Creates and returns a single QualityInvoiceLine that references the given <code>productionOrder</code>.
 	 * <p>
 	 * Note: we also return a line if there is no QualityAdjustment to be invoiced, in order to keep track of every single regular PP_Order.
-	 * TODO cleanup javadoc
-	 *
-	 * @param productionOrder
-	 * @param overallAvgProducedQtyPerTU
-	 * @param labelToUse
-	 * @return
 	 */
 	@VisibleForTesting
 	private QualityInvoiceLine createQualityInvoiceLineDetail_RegularOrder(
@@ -1089,9 +1051,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Checks if our config has a QualityAdjustment for the given date.
-	 *
-	 * @param dateOfProduction
-	 * @return
 	 */
 	private boolean isInvoiceRegularOrderForDate(final Timestamp dateOfProduction)
 	{
@@ -1110,20 +1069,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		}
 		return true;
 	}
-
-	// private QualityInvoiceLine createDetailLineForRegularOrder(
-	// final Timestamp date,
-	// final I_C_UOM uom,
-	// final IHandlingUnitsInfo currentRawHUInfo,
-	// final BigDecimal qty,
-	// final String labelToUse)
-	// {
-	// // Detail
-	//
-	// final QualityInvoiceLine detail = createDetailForSingleRegularOrder(uom, currentRawHUInfo, qty, labelToUse);
-	//
-	// return detail;
-	// }
 
 	private QualityInvoiceLine createDetailForSingleRegularOrder(
 			@NonNull final I_C_UOM uom,
@@ -1218,11 +1163,8 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 	/**
 	 * Creates an {@link QualityInvoiceLine} instance.
-	 *
+	 * <p>
 	 * Product, Qty, UOM are copied from given {@link IQualityInspectionLine}.
-	 *
-	 * @param qiLine
-	 * @return
 	 */
 	private QualityInvoiceLine createQualityInvoiceLine(final IQualityInspectionLine qiLine)
 	{

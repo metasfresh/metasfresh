@@ -18,35 +18,41 @@ import java.util.List;
 public class JsonRawMaterialsIssueLine
 {
 	@NonNull String productName;
+	@NonNull String productValue;
 	@NonNull String uom;
+	@NonNull List<JsonHazardSymbol> hazardSymbols;
+	@NonNull List<JsonAllergen> allergens;
 
 	boolean isWeightable;
 	@NonNull BigDecimal qtyToIssue;
 	@Nullable BigDecimal qtyToIssueMin;
 	@Nullable BigDecimal qtyToIssueMax;
-	@Nullable BigDecimal qtyToIssueTolerancePerc;
+	@Nullable JsonQtyToleranceSpec qtyToIssueTolerance;
+	@Nullable String userInstructions;
 
 	@NonNull BigDecimal qtyIssued;
-
+	int seqNo;
 	@NonNull List<JsonRawMaterialsIssueLineStep> steps;
 
-	public static JsonRawMaterialsIssueLine of(
-			final RawMaterialsIssueLine from,
-			final JsonOpts jsonOpts)
+	public static JsonRawMaterialsIssueLineBuilder builderFrom(
+			@NonNull final RawMaterialsIssueLine from,
+			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
-				.productName(from.getProductName().translate(jsonOpts.getAdLanguage()))
+				.productName(from.getProductValueAndProductName().translate(jsonOpts.getAdLanguage()))
+				.productValue(from.getProductValue())
 				.uom(from.getQtyToIssue().getUOMSymbol())
 				.isWeightable(from.isWeightable())
 				.qtyToIssue(from.getQtyToIssue().toBigDecimal())
 				.qtyToIssueMin(from.getQtyToIssueMin().map(qty -> qty.toBigDecimal()).orElse(null))
 				.qtyToIssueMax(from.getQtyToIssueMax().map(qty -> qty.toBigDecimal()).orElse(null))
-				.qtyToIssueTolerancePerc(from.getQtyToIssueTolerance() != null ? from.getQtyToIssueTolerance().toBigDecimal() : null)
+				.qtyToIssueTolerance(JsonQtyToleranceSpec.ofNullable(from.getIssuingToleranceSpec()))
 				.qtyIssued(from.getQtyIssued().toBigDecimal())
+				.userInstructions(from.getUserInstructions())
+				.seqNo(from.getSeqNo())
 				.steps(from.getSteps()
 						.stream()
 						.map(step -> JsonRawMaterialsIssueLineStep.of(step, jsonOpts))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+						.collect(ImmutableList.toImmutableList()));
 	}
 }

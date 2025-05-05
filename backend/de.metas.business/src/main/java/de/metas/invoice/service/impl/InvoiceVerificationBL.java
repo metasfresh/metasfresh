@@ -28,8 +28,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.invoice.InvoiceVerificationSetId;
 import de.metas.invoice.InvoiceVerificationSetLineId;
@@ -51,6 +51,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -171,7 +172,7 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(setLine.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-		final I_C_InvoiceLine invoiceLine = invoiceDAO.retrieveLineById(InvoiceLineId.ofRepoId(invoiceId, setLine.getC_InvoiceLine_ID()));
+		final I_C_InvoiceLine invoiceLine = invoiceDAO.retrieveLineById(InvoiceAndLineId.ofRepoId(invoiceId, setLine.getC_InvoiceLine_ID()));
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 
@@ -187,6 +188,7 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 				.taxCategoryId(getTaxCategoryId(invoice, invoiceLine, taxCountryId))
 				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
 				.dateOfInterest(CoalesceUtil.coalesce(dateOfInterestOverride, setLine.getRelevantDate()))
+				.vatCodeId(VatCodeId.ofRepoIdOrNull(invoiceLine.getC_VAT_Code_ID()))
 				.build();
 
 		final PlainStringLoggable loggable = Loggables.newPlainStringLoggable();

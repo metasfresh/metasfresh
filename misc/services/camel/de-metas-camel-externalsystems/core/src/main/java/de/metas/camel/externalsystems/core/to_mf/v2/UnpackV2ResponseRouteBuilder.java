@@ -21,6 +21,7 @@ public class UnpackV2ResponseRouteBuilder extends EndpointRouteBuilder
 		//@formatter:off
 		from(direct(UNPACK_V2_API_RESPONSE))
 				.routeId(UNPACK_V2_API_RESPONSE)
+				.streamCaching()
 				.doTry()
 				  .unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonApiResponse.class))
 				  .process(UnpackV2ResponseRouteBuilder::extractResponseContent).id(UNPACK_V2_API_RESPONSE_PROCESSOR_ID)

@@ -25,12 +25,16 @@ package de.metas.payment.api.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.FixedConversionRate;
@@ -40,6 +44,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -49,6 +54,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
@@ -59,6 +65,7 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -83,7 +90,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -112,6 +118,9 @@ public class PaymentBL implements IPaymentBL
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
+	private static final AdMessageKey MSG_PaymentDocTypeInvoiceInconsistent = AdMessageKey.of("PaymentDocTypeInvoiceInconsistent");
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -175,11 +184,12 @@ public class PaymentBL implements IPaymentBL
 
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
-		final LocalDate ConvDate = TimeUtil.asLocalDate(payment.getDateTrx());
+		final Instant ConvDate = payment.getDateTrx().toInstant();
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
 
+		// Get Currency Rate
 		if (currencyId != null
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
@@ -294,7 +304,7 @@ public class PaymentBL implements IPaymentBL
 		// Get Currency Info
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
-		final LocalDate convDate = TimeUtil.asLocalDate(payment.getDateTrx());
+		final Instant convDate = payment.getDateTrx() != null ? payment.getDateTrx().toInstant() : SystemTime.asInstant();
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
@@ -526,6 +536,27 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
+	public void scheduleUpdateIsAllocated(@NonNull final PaymentId paymentId)
+	{
+		trxManager.accumulateAndProcessAfterCommit(
+				"paymentBL.scheduleUpdateIsAllocated",
+				ImmutableSet.of(paymentId),
+				this::testAllocated);
+	}
+
+	private void testAllocated(final List<PaymentId> paymentIds)
+	{
+		paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds))
+				.forEach(payment -> {
+					final boolean updated = testAllocation(payment);
+					if (updated)
+					{
+						paymentDAO.save(payment);
+					}
+				});
+	}
+
+	@Override
 	public void testAllocation(@NonNull final PaymentId paymentId)
 	{
 		final I_C_Payment payment = getById(paymentId);
@@ -618,7 +649,7 @@ public class PaymentBL implements IPaymentBL
 			@NonNull final I_C_Payment payment,
 			@NonNull final Money writeOffAmt,
 			@NonNull final Instant writeOffDate,
-			@Nullable String description)
+			@Nullable final String description)
 	{
 		Check.assume(writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {}", writeOffAmt);
 
@@ -656,9 +687,12 @@ public class PaymentBL implements IPaymentBL
 		{
 			return;
 		}
-		final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()));
+		final I_C_DocType docType = docTypeDAO.getRecordById(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()));
 		paymentDAO.updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), docType);
 	}
+
+	@Override
+	public void markNotReconciled(@NonNull final PaymentId paymentId) {markNotReconciled(ImmutableSet.of(paymentId));}
 
 	@Override
 	public void markNotReconciled(
@@ -687,11 +721,15 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void markReconciled(
-			@NonNull final Collection<PaymentReconcileRequest> requests)
+	public void markReconciled(@NonNull final PaymentReconcileRequest request)
 	{
-		final Collection<I_C_Payment> preloadedPayments = ImmutableList.of();
-		markReconciled(requests, preloadedPayments);
+		markReconciled(ImmutableList.of(request), ImmutableList.of());
+	}
+
+	@Override
+	public void markReconciled(@NonNull final Collection<PaymentReconcileRequest> requests)
+	{
+		markReconciled(requests, ImmutableList.of());
 	}
 
 	@Override
@@ -747,20 +785,22 @@ public class PaymentBL implements IPaymentBL
 					.appendParametersToMessage();
 		}
 
-		payment.setIsReconciled(true);
-
 		final PaymentReconcileReference.Type type = reconcileRef.getType();
+		final BankStatementId bankStatementId = reconcileRef.getBankStatementId();
+		final BankStatementLineId bankStatementLineId = reconcileRef.getBankStatementLineId();
+		final BankStatementLineRefId bankStatementLineRefId = reconcileRef.getBankStatementLineRefId();
+		final SAPGLJournalLineId glJournalLineId = reconcileRef.getGlJournalLineId();
+		final SAPGLJournalId glJournalId = glJournalLineId != null ? glJournalLineId.getGlJournalId() : null;
 		if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE.equals(type))
 		{
-			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
-			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
-			payment.setC_BankStatementLine_Ref_ID(-1);
+			Check.assumeNotNull(bankStatementId, "bankStatementId is set in {}", reconcileRef);
+			Check.assumeNotNull(bankStatementLineId, "bankStatementLineId is set in {}", reconcileRef);
 		}
 		else if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE_REF.equals(type))
 		{
-			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
-			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
-			payment.setC_BankStatementLine_Ref_ID(reconcileRef.getBankStatementLineRefId().getRepoId());
+			Check.assumeNotNull(bankStatementId, "bankStatementId is set in {}", reconcileRef);
+			Check.assumeNotNull(bankStatementLineId, "bankStatementLineId is set in {}", reconcileRef);
+			Check.assumeNotNull(bankStatementLineRefId, "bankStatementLineRefId is set in {}", reconcileRef);
 		}
 		else if (PaymentReconcileReference.Type.REVERSAL.equals(type))
 		{
@@ -775,15 +815,23 @@ public class PaymentBL implements IPaymentBL
 			{
 				throw new AdempiereException("Payment shall be reversed by `" + reconcileRef.getReversalId() + "` but it was reversed by `" + reversalId + "`: " + payment);
 			}
-
-			payment.setC_BankStatement_ID(-1);
-			payment.setC_BankStatementLine_ID(-1);
-			payment.setC_BankStatementLine_Ref_ID(-1);
+		}
+		else if (PaymentReconcileReference.Type.GL_Journal.equals(type))
+		{
+			Check.assumeNotNull(glJournalId, "glJournalId is set in {}", reconcileRef);
+			Check.assumeNotNull(glJournalLineId, "glJournalLineId is set in {}", reconcileRef);
 		}
 		else
 		{
 			throw new AdempiereException("Unknown reconciliation type: " + type);
 		}
+
+		payment.setIsReconciled(true);
+		payment.setC_BankStatement_ID(BankStatementId.toRepoId(bankStatementId));
+		payment.setC_BankStatementLine_ID(BankStatementLineId.toRepoId(bankStatementLineId));
+		payment.setC_BankStatementLine_Ref_ID(BankStatementLineRefId.toRepoId(bankStatementLineRefId));
+		payment.setReconciledBy_SAP_GLJournal_ID(SAPGLJournalId.toRepoId(glJournalId));
+		payment.setReconciledBy_SAP_GLJournalLine_ID(SAPGLJournalLineId.toRepoId(glJournalLineId));
 
 		paymentDAO.save(payment);
 	}
@@ -791,6 +839,11 @@ public class PaymentBL implements IPaymentBL
 	@VisibleForTesting
 	static PaymentReconcileReference extractPaymentReconcileReference(final I_C_Payment payment)
 	{
+		if (!payment.isReconciled())
+		{
+			throw new AdempiereException("Payment is not reconciled");
+		}
+
 		try
 		{
 			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
@@ -800,17 +853,29 @@ public class PaymentBL implements IPaymentBL
 				return PaymentReconcileReference.reversal(reversalId);
 			}
 
-			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
-			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
-			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
-			if (bankStatementLineRefId == null)
+			final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(payment.getC_BankStatement_ID());
+			if (bankStatementId != null)
 			{
-				return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
+				final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
+				final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
+				if (bankStatementLineRefId == null)
+				{
+					return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
+				}
+				else
+				{
+					return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+				}
 			}
-			else
+
+			final SAPGLJournalId glJournalId = SAPGLJournalId.ofRepoIdOrNull(payment.getReconciledBy_SAP_GLJournal_ID());
+			if (glJournalId != null)
 			{
-				return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+				final SAPGLJournalLineId glJournalLineId = SAPGLJournalLineId.ofRepoId(glJournalId, payment.getReconciledBy_SAP_GLJournalLine_ID());
+				return PaymentReconcileReference.glJournalLine(glJournalLineId);
 			}
+
+			throw new AdempiereException("Cannot determine de reconciling document");
 		}
 		catch (final Exception ex)
 		{
@@ -847,10 +912,9 @@ public class PaymentBL implements IPaymentBL
 	{
 		final PaymentCurrencyContext paymentCurrencyContext = PaymentCurrencyContext.ofPaymentRecord(payment);
 		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(payment.getDateAcct()),
+				InstantAndOrgId.ofTimestamp(payment.getDateAcct(), OrgId.ofRepoId(payment.getAD_Org_ID())),
 				paymentCurrencyContext.getCurrencyConversionTypeId(),
-				ClientId.ofRepoId(payment.getAD_Client_ID()),
-				OrgId.ofRepoId(payment.getAD_Org_ID()));
+				ClientId.ofRepoId(payment.getAD_Client_ID()));
 
 		final FixedConversionRate fixedConversionRate = paymentCurrencyContext.toFixedConversionRateOrNull();
 		if (fixedConversionRate != null)
@@ -874,7 +938,7 @@ public class PaymentBL implements IPaymentBL
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
 		// Invoice
-		final I_C_Invoice invoice = InvoiceId.ofRepoIdOptional(payment.getC_Invoice_ID())
+		final I_C_Invoice invoice = InvoiceId.optionalOfRepoId(payment.getC_Invoice_ID())
 				.map(invoiceBL::getById)
 				.orElse(null);
 
@@ -883,7 +947,7 @@ public class PaymentBL implements IPaymentBL
 			// task: 07564 the SOtrx flags don't match, but that's OK *if* the invoice i a credit memo (either for the vendor or customer side)
 			if (!invoiceBL.isCreditMemo(invoice))
 			{
-				throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
+				throw new AdempiereException(MSG_PaymentDocTypeInvoiceInconsistent);
 			}
 		}
 
@@ -903,7 +967,41 @@ public class PaymentBL implements IPaymentBL
 
 		if (order.isSOTrx() != docType.isSOTrx())
 		{
-			throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
+			throw new AdempiereException(MSG_PaymentDocTypeInvoiceInconsistent);
 		}
+	}
+
+	@Override
+	@NonNull
+	public Optional<SectionCodeId> determineSectionCodeId(@NonNull final I_C_Payment payment)
+	{
+		final Set<InvoiceId> invoiceIdsFromAllocationLines = allocationDAO.retrieveAllPaymentAllocationLines(PaymentId.ofRepoId(payment.getC_Payment_ID()))
+				.stream()
+				//note: excluding deallocated lines
+				.filter(allocationLine -> allocationLine.getReversalLine_ID() <= 0)
+				.map(I_C_AllocationLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Set<Integer> sectionCodeIds = invoiceDAO.getByIdsInTrx(invoiceIdsFromAllocationLines)
+				.stream()
+				.map(I_C_Invoice::getM_SectionCode_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (sectionCodeIds.size() != 1)
+		{
+			return Optional.empty();
+		}
+
+		final SectionCodeId singleSectionCodeId = SectionCodeId.ofRepoIdOrNull(sectionCodeIds.iterator().next());
+
+		return Optional.ofNullable(singleSectionCodeId);
+	}
+
+	@NonNull
+	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
+	{
+		return paymentDAO.getCurrencyConversionTypeId(paymentId);
 	}
 }

@@ -1,12 +1,12 @@
 package de.metas.notification;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.email.EMail;
-import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
@@ -17,6 +17,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
+import de.metas.notification.impl.UserNotificationsConfigService;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
 import de.metas.process.AdProcessId;
@@ -54,6 +55,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 /*
@@ -87,6 +89,7 @@ public class NotificationSenderTemplate
 	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
 	private final IRoleNotificationsConfigRepository roleNotificationsConfigRepository = Services.get(IRoleNotificationsConfigRepository.class);
+	private final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
@@ -94,6 +97,7 @@ public class NotificationSenderTemplate
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final UserGroupRepository userGroupRepository = SpringContextHolder.instance.getBean(UserGroupRepository.class);
+	final UserNotificationsConfigService userNotificationsConfigService = SpringContextHolder.instance.getBean(UserNotificationsConfigService.class);
 
 	private IRecordTextProvider recordTextProvider = NullRecordTextProvider.instance;
 
@@ -137,7 +141,7 @@ public class NotificationSenderTemplate
 					.flatMap(this::explodeByEffectiveNotificationsConfigs)
 					.forEach(this::send0);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			logger.error("Failed to send notification: {}", request, ex);
 		}
@@ -204,11 +208,23 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isAllRolesContainingGroup())
 		{
-			final Set<RoleId> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(recipient.getNotificationGroupName());
-			return roleIds.stream()
+			final NotificationGroupName notificationGroupName = recipient.getNotificationGroupName();
+			final Set<RoleId> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(notificationGroupName);
+			final AtomicBoolean anyUserMatch = new AtomicBoolean(false);
+			final Stream<Recipient> recipientStream = roleIds.stream()
 					.flatMap(roleId -> rolesRepo.retrieveUserIdsForRoleId(roleId)
 							.stream()
+							.peek(userId -> anyUserMatch.set(true))
 							.map(userId -> Recipient.userAndRole(userId, roleId)));
+			return anyUserMatch.get() ? recipientStream : getDeadletterUserStream(notificationGroupName);
+		}
+		else if (recipient.isOrgUsersContainingGroup())
+		{
+			final NotificationGroupName notificationGroupName = recipient.getNotificationGroupName();
+			final List<UserId> userIds = userNotificationsConfigService.getByNotificationGroupAndOrgId(notificationGroupName, recipient.getOrgId());
+			return userIds.isEmpty() ?
+					getDeadletterUserStream(notificationGroupName) :
+					userIds.stream().map(Recipient::user);
 		}
 		else if (recipient.isGroup())
 		{
@@ -222,6 +238,16 @@ public class NotificationSenderTemplate
 		{
 			throw new AdempiereException("Recipient type not supported: " + recipient);
 		}
+	}
+
+	private Stream<Recipient> getDeadletterUserStream(@NonNull final NotificationGroupName notificationGroupName)
+	{
+		final UserId deadletterUserId = notificationGroupNamesRepo.getDeadletterUserId(notificationGroupName);
+		if (deadletterUserId != null)
+		{
+			return Stream.of(Recipient.user(deadletterUserId));
+		}
+		return Stream.empty();
 	}
 
 	private Stream<UserNotificationRequest> explodeByEffectiveNotificationsConfigs(final UserNotificationRequest request)
@@ -282,13 +308,10 @@ public class NotificationSenderTemplate
 		{
 			return targetRecordAction.getAdWindowId();
 		}
-		if (targetRecordAction.getRecord() == null)
-		{
-			return Optional.empty();
-		}
 
-		final RecordWindowFinder recordWindowFinder = RecordWindowFinder.newInstance(targetRecordAction.getRecord());
-		return recordWindowFinder.findAdWindowId();
+		return RecordWindowFinder.newInstance(targetRecordAction.getRecord())
+				.checkRecordPresentInWindow()
+				.findAdWindowId();
 	}
 
 	private String extractSubjectText(final UserNotificationRequest request)
@@ -357,14 +380,15 @@ public class NotificationSenderTemplate
 		}
 		else if (recipient.isUser())
 		{
-
-			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId());
+			notificationsConfig = notificationsService.getUserNotificationsConfig(recipient.getUserId())
+					.deriveWithEMailCustomType(request.getEMailCustomType());
 
 			if (recipient.isRoleIdSet())
 			{
 				final RoleNotificationsConfig roleNotificationsConfig = notificationsService.getRoleNotificationsConfig(recipient.getRoleId());
 				notificationsConfig = notificationsConfig.deriveWithNotificationGroups(roleNotificationsConfig.getNotificationGroups());
 			}
+
 		}
 		else
 		{
@@ -441,12 +465,7 @@ public class NotificationSenderTemplate
 
 		final boolean html = true;
 		final String content = extractMailContent(request);
-
-		String subject = extractSubjectText(request);
-		if (Check.isEmpty(subject, true))
-		{
-			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
-		}
+		final String subject = extractMailSubject(request);
 
 		final EMail mail = mailService.createEMail(
 				mailbox,
@@ -466,10 +485,24 @@ public class NotificationSenderTemplate
 				notificationsConfig.getOrgId(),
 				(AdProcessId)null,  // AD_Process_ID
 				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
-				(EMailCustomType)null);  // customType
+				notificationsConfig.getEMailCustomType());  // customType
 	}
 
-	private String extractMailContent(final UserNotificationRequest request)
+	@VisibleForTesting
+	String extractMailSubject(final UserNotificationRequest request)
+	{
+		final String subject = extractSubjectText(request);
+
+		if (Check.isEmpty(subject, true))
+		{
+			return extractSubjectFromContent(extractContentText(request, /* html */false));
+		}
+
+		return subject;
+	}
+
+	@VisibleForTesting
+	String extractMailContent(final UserNotificationRequest request)
 	{
 		final body htmlBody = new body();
 		final String htmlBodyString = extractContentText(request, /* html */true);

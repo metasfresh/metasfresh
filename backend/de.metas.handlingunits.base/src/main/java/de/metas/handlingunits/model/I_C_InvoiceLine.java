@@ -22,24 +22,6 @@ package de.metas.handlingunits.model;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
 public interface I_C_InvoiceLine extends de.metas.adempiere.model.I_C_InvoiceLine
 {
-
-	// @formatter:off
-	public static final String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
-	public BigDecimal getQtyEnteredTU();
-	public void setQtyEnteredTU(BigDecimal QtyEnteredTU);
-	// @formatter:on
-	
-	// @formatter:off
-	public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
-	public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
-	public int getM_HU_PI_Item_Product_ID();
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException;
-	// @formatter:on
-
 }

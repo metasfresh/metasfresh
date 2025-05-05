@@ -1,20 +1,18 @@
 package de.metas.bpartner.service;
 
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_BPartner_Stats;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_BPartner_Stats;
 
 /**
- * Service used to update {@link I_C_BPartner_Stats#COLUMN_TotalOpenBalance}, {@link I_C_BPartner_Stats#COLUMN_SO_CreditUsed}, {@link I_C_BPartner_Stats#COLUMN_ActualLifeTimeValue} and {@link I_C_BPartner_Stats#COLUMN_SOCreditStatus}
+ * Service used to update {@link I_C_BPartner_Stats#COLUMNNAME_OpenItems}, {@link I_C_BPartner_Stats#COLUMN_SO_CreditUsed}, {@link I_C_BPartner_Stats#COLUMN_ActualLifeTimeValue} and {@link I_C_BPartner_Stats#COLUMN_SOCreditStatus}
  *
  * @author tsa
  *
@@ -31,7 +29,7 @@ public interface IBPartnerStatisticsUpdater extends ISingletonService
 		final ImmutableSet<Integer> bpartnerIds;
 
 		/**
-		 * This flag decides if {@link IBPartnerStatsBL#resetCreditStatusFromBPGroup(org.compiere.model.I_C_BPartner)} will also be invoked
+		 * This flag decides if BPartnerStatsService#resetCreditStatusFromBPGroup(I_C_BPartner) will also be invoked
 		 */
 		final boolean alsoResetCreditStatusFromBPGroup;
 

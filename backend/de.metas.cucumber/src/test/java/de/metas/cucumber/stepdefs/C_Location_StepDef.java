@@ -22,12 +22,15 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.Check;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 
@@ -43,10 +46,14 @@ public class C_Location_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Location_StepDefData locationTable;
+	private final AD_Org_StepDefData orgTable;
 
-	public C_Location_StepDef(@NonNull final C_Location_StepDefData locationTable)
+	public C_Location_StepDef(
+			@NonNull final C_Location_StepDefData locationTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.locationTable = locationTable;
+		this.orgTable = orgTable;
 	}
 
 	@And("metasfresh contains C_Location:")
@@ -76,6 +83,13 @@ public class C_Location_StepDef
 			location.setCity(city);
 			location.setRegionName(regionName);
 			location.setIsActive(isActive);
+
+			final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Location.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orgIdentifier))
+			{
+				final I_AD_Org org = orgTable.get(orgIdentifier);
+				location.setAD_Org_ID(org.getAD_Org_ID());
+			}
 
 			InterfaceWrapperHelper.saveRecord(location);
 

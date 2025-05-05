@@ -29,8 +29,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.shipping.v1.JsonProduct;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -40,45 +39,43 @@ import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@ApiModel(description = "Single receipt candidate; basically this tells the logistics provider to expect a particular delivery item from a vendor.\n"
+@Schema(description = "Single receipt candidate; basically this tells the logistics provider to expect a particular delivery item from a vendor.\n"
 		+ "It translates to a particular `M_ReceiptSchedule` record in metasfresh.")
 @Value
 public class JsonResponseReceiptCandidate
 {
-	@ApiModelProperty(position = 10, required = true)
+	@Schema(required = true)
 	JsonMetasfreshId id;
 
-	@ApiModelProperty(position = 30, required = true)
+	@Schema(required = true)
 	String orgCode;
 
-	@ApiModelProperty(position = 40,
-			value = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
+	@Schema(description = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String orderDocumentNo;
 
-	@ApiModelProperty(position = 50)
+	@Schema
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String poReference;
 
-	@ApiModelProperty(position = 60,
-			value = "If there is a purchase order, then this is the number of overall exportable items from that order.\n"
+	@Schema(description = "If there is a purchase order, then this is the number of overall exportable items from that order.\n"
 					+ "Useful if due to `limit`, not all items of one order are exported in one invocation.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Integer numberOfItemsWithSameOrderId;
 
-	@ApiModelProperty(position = 70)
+	@Schema
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	LocalDateTime dateOrdered;
 
-	@ApiModelProperty(position = 80, required = true)
+	@Schema(required = true)
 	JsonProduct product;
 
-	@ApiModelProperty(position = 90)
+	@Schema
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonAttributeSetInstance attributeSetInstance;
 
-	@ApiModelProperty(position = 100, required = true,
-			value = "The shipment schedule's quantity to deliver, possibly in different UOMs")
+	@Schema(required = true,
+			description = "The shipment schedule's quantity to deliver, possibly in different UOMs")
 	List<JsonQuantity> quantities;
 
 	@JsonCreator

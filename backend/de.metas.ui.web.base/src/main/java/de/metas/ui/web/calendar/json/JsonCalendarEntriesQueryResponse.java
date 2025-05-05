@@ -46,6 +46,7 @@ public class JsonCalendarEntriesQueryResponse
 		@Nullable List<JSONLookupValue> onlyResources;
 		@Nullable JSONLookupValue onlyProject;
 		@Nullable JSONLookupValue onlyCustomer;
+		@Nullable JSONLookupValue onlyResponsible;
 	}
 
 	@NonNull ResolvedQuery query;

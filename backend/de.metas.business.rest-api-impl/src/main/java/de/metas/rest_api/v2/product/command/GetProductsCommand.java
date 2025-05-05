@@ -46,8 +46,10 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.rest_api.v2.product.ProductsServicesFacade;
+import de.metas.sectionCode.SectionCode;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -90,7 +92,7 @@ public class GetProductsCommand
 	@NonNull
 	private final ExternalSystemService externalSystemService;
 	@NonNull
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 
 	@NonNull
 	private final String adLanguage;
@@ -116,7 +118,7 @@ public class GetProductsCommand
 			@NonNull final ProductsServicesFacade servicesFacade,
 			@NonNull final AlbertaProductService albertaProductService,
 			@NonNull final ExternalSystemService externalSystemService,
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final String adLanguage,
 			@Nullable final Instant since,
 			@Nullable final String orgCode,
@@ -127,7 +129,7 @@ public class GetProductsCommand
 		this.servicesFacade = servicesFacade;
 		this.albertaProductService = albertaProductService;
 		this.externalSystemService = externalSystemService;
-		this.productRestService = productRestService;
+		this.externalIdentifierResolver = externalIdentifierResolver;
 		this.adLanguage = adLanguage;
 		this.since = CoalesceUtil.coalesceNotNull(since, DEFAULT_SINCE);
 		this.orgCode = orgCode;
@@ -210,6 +212,11 @@ public class GetProductsCommand
 				? TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId)
 				: null;
 
+		final String sectionCode = SectionCodeId.optionalOfRepoId(productRecord.getM_SectionCode_ID())
+				.map(servicesFacade::getSectionCode)
+				.map(SectionCode::getValue)
+				.orElse(null);
+
 		return JsonProduct.builder()
 				.id(JsonMetasfreshId.of(productId.getRepoId()))
 				.externalId(productRecord.getExternalId())
@@ -225,6 +232,8 @@ public class GetProductsCommand
 				.discontinuedFrom(discontinuedFrom)
 				.bpartners(productBPartners.get(productId))
 				.albertaProductInfo(getJsonAlbertaProductInfoFor(productId))
+				.sectionCode(sectionCode)
+				.sapProductHierarchy(productRecord.getSAP_ProductHierarchy())
 				.build();
 	}
 
@@ -423,7 +432,7 @@ public class GetProductsCommand
 		{
 			Check.assumeNotNull(productIdentifier, "ProductIdentifier must be set in case of single export!");
 
-			final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, RestUtils.retrieveOrgIdOrDefault(orgCode))
+			final ProductId productId = externalIdentifierResolver.resolveProductExternalIdentifier(productIdentifier, RestUtils.retrieveOrgIdOrDefault(orgCode))
 					.orElseThrow(() -> new AdempiereException("Fail to resolve product external identifier")
 							.appendParametersToMessage()
 							.setParameter("ExternalIdentifier", productIdentifier));

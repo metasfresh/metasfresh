@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
@@ -23,10 +24,10 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import java.util.Collection;
@@ -177,11 +178,11 @@ public class UnProcessPickingCandidatesAndRestoreSourceHUsCommand
 			return;
 		}
 
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 		final Properties ctx = Env.getCtx();
-		final String currentStatusTrl = adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, huStatus);
-		final String pickedStatusTrl = adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Picked)
-				+ ", " + adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Active);
+		final String currentStatusTrl = adReferenceService.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, huStatus);
+		final String pickedStatusTrl = adReferenceService.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Picked)
+				+ ", " + adReferenceService.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Active);
 		throw new AdempiereException(MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P, hu.getValue(), currentStatusTrl, pickedStatusTrl);
 	}
 

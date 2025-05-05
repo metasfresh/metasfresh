@@ -28,18 +28,29 @@ import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.JsonBOMUtil;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMsRouteContext;
+import de.metas.camel.externalsystems.grssignum.from_grs.helper.JsonRequestHelper;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOMAdditionalInfo;
+import de.metas.common.product.v2.JsonQualityAttribute;
+import de.metas.common.product.v2.request.JsonRequestAllergenItem;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
+import de.metas.common.product.v2.request.JsonRequestUpsertProductAllergen;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUSION_FROM_PURCHASE_REASON;
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUSION_FROM_SALES_REASON;
 
 public class PushProductProcessor implements Processor
 {
@@ -60,7 +71,8 @@ public class PushProductProcessor implements Processor
 	}
 
 	@NonNull
-	private ProductUpsertCamelRequest getProductUpsertCamelRequest(@NonNull final JsonBOM jsonBOM){
+	private ProductUpsertCamelRequest getProductUpsertCamelRequest(@NonNull final JsonBOM jsonBOM)
+	{
 
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
@@ -74,6 +86,23 @@ public class PushProductProcessor implements Processor
 		requestProduct.setGtin(jsonBOM.getGtin());
 
 		requestProduct.setBpartnerProductItems(ImmutableList.of(getBPartnerProductUpsertRequest(jsonBOM)));
+		requestProduct.setProductAllergens(getUpsertAllergenRequest(jsonBOM));
+
+		final ImmutableList.Builder<JsonQualityAttribute> qualityAttributeLabelBuilder = JsonRequestHelper.initQualityAttributeLabelList(jsonBOM);
+
+		getSingleAdditionalInfo(jsonBOM)
+				.ifPresent(additionalInfo -> {
+					requestProduct.setGuaranteeMonths(additionalInfo.getGuaranteeMonthsAsString());
+					requestProduct.setWarehouseTemperature(additionalInfo.getWarehouseTemperature());
+
+					Optional.ofNullable(additionalInfo.getGtin()).ifPresent(requestProduct::setGtin);
+					Optional.ofNullable(additionalInfo.getAgricultureOrigin())
+							.filter(Check::isNotBlank)
+							.map(JsonRequestHelper::getQualityLabelForAgricultureOrigin)
+							.ifPresent(qualityAttributeLabelBuilder::add);
+				});
+
+		requestProduct.setQualityAttributes(JsonRequestHelper.getQualityAttributeRequest(qualityAttributeLabelBuilder.build()));
 
 		final JsonRequestProductUpsertItem productUpsertItem = JsonRequestProductUpsertItem.builder()
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBOM.getProductId()))
@@ -94,16 +123,49 @@ public class PushProductProcessor implements Processor
 	@NonNull
 	private JsonRequestBPartnerProductUpsert getBPartnerProductUpsertRequest(@NonNull final JsonBOM jsonBOM)
 	{
-		if(Check.isBlank(jsonBOM.getBPartnerMetasfreshId()))
+		if (Check.isBlank(jsonBOM.getBPartnerMetasfreshId()))
 		{
 			throw new RuntimeException("Missing mandatory METASFRESHID! JsonBOM.ARTNRID=" + jsonBOM.getProductId());
 		}
 
-		final JsonRequestBPartnerProductUpsert requestBPartnerProductUpsert = new JsonRequestBPartnerProductUpsert();
+		final JsonRequestBPartnerProductUpsert upsertRequest = new JsonRequestBPartnerProductUpsert();
 
-		requestBPartnerProductUpsert.setBpartnerIdentifier(jsonBOM.getBPartnerMetasfreshId());
-		requestBPartnerProductUpsert.setActive(true);
+		upsertRequest.setBpartnerIdentifier(jsonBOM.getBPartnerMetasfreshId());
+		upsertRequest.setActive(jsonBOM.isActive());
 
-		return requestBPartnerProductUpsert;
+		upsertRequest.setExcludedFromSales(!jsonBOM.isActive());
+		upsertRequest.setExclusionFromSalesReason(upsertRequest.getExcludedFromSales() ? EXCLUSION_FROM_SALES_REASON : null);
+
+		upsertRequest.setExcludedFromPurchase(!jsonBOM.isActive());
+		upsertRequest.setExclusionFromPurchaseReason(upsertRequest.getExcludedFromPurchase() ? EXCLUSION_FROM_PURCHASE_REASON : null);
+
+		return upsertRequest;
+	}
+
+	@NonNull
+	private JsonRequestUpsertProductAllergen getUpsertAllergenRequest(@NonNull final JsonBOM jsonBOM)
+	{
+		if (jsonBOM.getAllergens() == null)
+		{
+			return JsonRequestHelper.getAllergenUpsertRequest(ImmutableList.of());
+		}
+
+		final List<JsonRequestAllergenItem> allergenItemList = jsonBOM.getAllergens()
+				.stream()
+				.map(allergen -> JsonRequestAllergenItem.builder()
+						.identifier(ExternalIdentifierFormat.asExternalIdentifier(String.valueOf(allergen.getId())))
+						.name(allergen.getName())
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonRequestHelper.getAllergenUpsertRequest(allergenItemList);
+	}
+
+	@NonNull
+	private static Optional<JsonBOMAdditionalInfo> getSingleAdditionalInfo(@NonNull final JsonBOM bom)
+	{
+		return Optional.ofNullable(bom.getAdditionalInfos())
+				.filter(additionalInfoList -> additionalInfoList.size() == 1)
+				.map(singleElementList -> singleElementList.get(0));
 	}
 }

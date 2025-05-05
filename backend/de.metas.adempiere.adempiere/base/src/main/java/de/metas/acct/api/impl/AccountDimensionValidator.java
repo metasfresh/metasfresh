@@ -22,17 +22,6 @@ package de.metas.acct.api.impl;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.util.NumberUtils;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.X_C_AcctSchema_Element;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -43,8 +32,17 @@ import de.metas.acct.api.AcctSchemaValidCombinationOptions;
 import de.metas.acct.api.IAccountDimensionValidator;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_ValidCombination;
+
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 /* package */class AccountDimensionValidator implements IAccountDimensionValidator
 {
@@ -172,11 +170,9 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * @param accountDimension
-	 * @param elementType      see {@link X_C_AcctSchema_Element}.ELEMENTTYPE_*
 	 * @return segment's value (ID)
 	 */
-	private final Object getSegmentValue(final AccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
+	private Object getSegmentValue(final AccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
 	{
 		Check.assumeNotNull(elementType, "elementType not null");
 
@@ -228,6 +224,14 @@ import lombok.NonNull;
 		{
 			return accountDimension.getC_Activity_ID();
 		}
+		else if (elementType.equals(AcctSchemaElementType.SalesOrder))
+		{
+			return accountDimension.getSalesOrderId();
+		}
+		else if (elementType.equals(AcctSchemaElementType.SectionCode))
+		{
+			return accountDimension.getM_SectionCode_ID();
+		}
 		else if (elementType.equals(AcctSchemaElementType.UserList1))
 		{
 			return accountDimension.getUser1_ID();
@@ -235,6 +239,14 @@ import lombok.NonNull;
 		else if (elementType.equals(AcctSchemaElementType.UserList2))
 		{
 			return accountDimension.getUser2_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementNumber1))
+		{
+			return accountDimension.getUserElementNumber1();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementNumber2))
+		{
+			return accountDimension.getUserElementNumber2();
 		}
 		else if (elementType.equals(AcctSchemaElementType.UserElementString1))
 		{
@@ -263,6 +275,22 @@ import lombok.NonNull;
 		else if (elementType.equals(AcctSchemaElementType.UserElementString7))
 		{
 			return accountDimension.getUserElementString7();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementDate1))
+		{
+			return accountDimension.getUserElementDate1();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementDate2))
+		{
+			return accountDimension.getUserElementDate2();
+		}
+		else if (elementType.equals(AcctSchemaElementType.HarvestingCalendar))
+		{
+			return accountDimension.getC_Harvesting_Calendar_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.HarvestingYear))
+		{
+			return accountDimension.getHarvesting_Year_ID();
 		}
 		else
 		{

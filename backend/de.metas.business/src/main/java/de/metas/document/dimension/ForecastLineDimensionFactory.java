@@ -22,7 +22,7 @@
 
 package de.metas.document.dimension;
 
-import de.metas.mforecast.interceptors.M_ForecastLine;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import lombok.NonNull;
@@ -46,6 +46,7 @@ public class ForecastLineDimensionFactory implements DimensionFactory<I_M_Foreca
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -57,11 +58,18 @@ public class ForecastLineDimensionFactory implements DimensionFactory<I_M_Foreca
 	}
 
 	@Override
-	public void updateRecord(final I_M_ForecastLine record, final Dimension from)
+	public void updateRecord(@NonNull final I_M_ForecastLine record, @NonNull final Dimension from)
 	{
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
+		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+
+		updateRecordUserElements(record, from);
+	}
+	@Override
+	public void updateRecordUserElements(@NonNull final I_M_ForecastLine record, @NonNull final Dimension from)
+	{
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

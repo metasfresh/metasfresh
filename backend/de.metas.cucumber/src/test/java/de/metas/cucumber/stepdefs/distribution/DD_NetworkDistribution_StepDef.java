@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,9 +23,11 @@
 package de.metas.cucumber.stepdefs.distribution;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_DD_NetworkDistribution;
 
@@ -37,6 +39,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 public class DD_NetworkDistribution_StepDef
 {
 	private final DD_NetworkDistribution_StepDefData ddNetworkTable;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public DD_NetworkDistribution_StepDef(@NonNull final DD_NetworkDistribution_StepDefData ddNetworkTable)
 	{
@@ -63,6 +66,25 @@ public class DD_NetworkDistribution_StepDef
 
 			final String ddNetworkIdentifier = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID + "." + TABLECOLUMN_IDENTIFIER);
 			ddNetworkTable.put(ddNetworkIdentifier, ddNetwork);
+		}
+	}
+
+	@And("load DD_NetworkDistribution:")
+	public void load_DD_NetworkDistribution(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String value = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistribution.COLUMNNAME_Value);
+
+			final I_DD_NetworkDistribution warehouseRecord = queryBL.createQueryBuilder(I_DD_NetworkDistribution.class)
+					.addEqualsFilter(I_DD_NetworkDistribution.COLUMNNAME_Value, value)
+					.create()
+					.firstOnlyNotNull(I_DD_NetworkDistribution.class);
+
+			final String networkDistributionIdentifier = DataTableUtil.extractStringForColumnName(row, I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			ddNetworkTable.putOrReplace(networkDistributionIdentifier, warehouseRecord);
 		}
 	}
 }

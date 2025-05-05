@@ -768,5 +768,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		{
 			DB.close(pstmt);
 		}
+		DB.executeUpdateAndThrowExceptionOnFail(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pInstanceId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }

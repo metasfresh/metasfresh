@@ -24,7 +24,9 @@ package de.metas.project.budget;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.StringUtils;
 import de.metas.money.CurrencyId;
@@ -37,17 +39,26 @@ import de.metas.resource.ResourceGroupId;
 import de.metas.uom.UomId;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Project_Resource_Budget;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class BudgetProjectResourceRepository
@@ -56,18 +67,39 @@ public class BudgetProjectResourceRepository
 
 	public static final boolean IsAllDay_TRUE = true;
 
+	@NonNull
 	public BudgetProjectResources getByProjectId(@NonNull final ProjectId projectId)
 	{
-		final ImmutableList<BudgetProjectResource> budgets = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+		return BudgetProjectResources.builder()
+				.projectId(projectId)
+				.budgets(getResourcesAsListByProjectId(projectId))
+				.build();
+	}
+
+	@NonNull
+	public Map<ResourceId, BudgetProjectResource> getByProjectIdAndResourceIds(
+			@NonNull final ProjectId projectId,
+			@NonNull final Collection<ResourceId> resourceIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
+				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_ID, resourceIds)
+				.stream()
+				.map(BudgetProjectResourceRepository::fromRecord)
+				.collect(ImmutableMap.toImmutableMap(BudgetProjectResource::getResourceId, Function.identity()));
+	}
+
+	@NonNull
+	public ImmutableList<BudgetProjectResource> getResourcesAsListByProjectId(@NonNull final ProjectId projectId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
 				.stream()
 				.map(BudgetProjectResourceRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
-
-		return BudgetProjectResources.builder()
-				.projectId(projectId)
-				.budgets(budgets)
-				.build();
 	}
 
 	public BudgetProjectResourcesCollection getByProjectIds(@NonNull final Set<ProjectId> projectIds)
@@ -78,6 +110,7 @@ public class BudgetProjectResourceRepository
 		}
 
 		final ImmutableListMultimap<ProjectId, BudgetProjectResource> budgetsByProjectId = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectIds)
 				.stream()
 				.map(BudgetProjectResourceRepository::fromRecord)
@@ -91,6 +124,7 @@ public class BudgetProjectResourceRepository
 				.collect(BudgetProjectResourcesCollection.collect());
 	}
 
+	@NonNull
 	public static BudgetProjectResource fromRecord(@NonNull final I_C_Project_Resource_Budget record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
@@ -98,18 +132,21 @@ public class BudgetProjectResourceRepository
 
 		return BudgetProjectResource.builder()
 				.id(extractBudgetProjectResourceId(record))
-				.resourceGroupId(ResourceGroupId.ofRepoId(record.getS_Resource_Group_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
 				.resourceId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
 				.durationUomId(durationUomId)
-				.plannedDuration(Quantitys.create(record.getPlannedDuration(), durationUomId))
+				.plannedDuration(Quantitys.of(record.getPlannedDuration(), durationUomId))
 				.plannedAmount(Money.of(record.getPlannedAmt(), currencyId))
 				.pricePerDurationUnit(Money.of(record.getPricePerTimeUOM(), currencyId))
 				.dateRange(CalendarDateRange.builder()
-						.startDate(record.getDateStartPlan().toInstant())
-						.endDate(record.getDateFinishPlan().toInstant())
-						.allDay(IsAllDay_TRUE)
-						.build())
+								   .startDate(record.getDateStartPlan().toInstant())
+								   .endDate(record.getDateFinishPlan().toInstant())
+								   .allDay(IsAllDay_TRUE)
+								   .build())
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
+				.externalId(ExternalId.ofOrNull(record.getExternalId()))
+				.isActive(record.isActive())
 				.build();
 	}
 
@@ -133,6 +170,7 @@ public class BudgetProjectResourceRepository
 			@NonNull final CurrencyId newCurrencyId)
 	{
 		queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
 				.forEach(record -> updateRecordAndSave(record, newOrgId, newCurrencyId));
 	}
@@ -144,7 +182,7 @@ public class BudgetProjectResourceRepository
 	{
 		record.setAD_Org_ID(newOrgId.getRepoId());
 		record.setC_Currency_ID(newCurrencyId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(record);
+		saveRecord(record);
 	}
 
 	public void updateProjectResourcesByIds(
@@ -157,6 +195,7 @@ public class BudgetProjectResourceRepository
 		}
 
 		queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_Resource_Budget_ID, projectResourceIds)
 				.forEach(record -> {
 					final BudgetProjectResource projectResource = fromRecord(record);
@@ -164,7 +203,7 @@ public class BudgetProjectResourceRepository
 					if (!Objects.equals(projectResource, projectResourceChanged))
 					{
 						updateRecord(record, projectResourceChanged);
-						InterfaceWrapperHelper.saveRecord(record);
+						saveRecord(record);
 					}
 				});
 	}
@@ -185,6 +224,7 @@ public class BudgetProjectResourceRepository
 
 		final ImmutableList<Integer> projectRepoIdsEffective = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_Group_ID, resourceGroupIds)
 				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectIds)
 				.create()
@@ -192,5 +232,82 @@ public class BudgetProjectResourceRepository
 
 		final ImmutableSet<ProjectId> projectIdsEffective = ProjectId.ofRepoIds(projectRepoIdsEffective);
 		return InSetPredicate.only(projectIdsEffective);
+	}
+
+	@NonNull
+	public List<BudgetProjectResource> updateAll(@NonNull final List<BudgetProjectResource> budgetProjectResourceList)
+	{
+		final Set<Integer> projectResourceIds = budgetProjectResourceList.stream()
+				.map(BudgetProjectResource::getId)
+				.map(BudgetProjectResourceId::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<I_C_Project_Resource_Budget> resourceRecordList = InterfaceWrapperHelper.loadByIds(projectResourceIds, I_C_Project_Resource_Budget.class);
+
+		final Map<Integer, I_C_Project_Resource_Budget> budgetResourceId2Resource = Maps.uniqueIndex(resourceRecordList,
+																									 I_C_Project_Resource_Budget::getC_Project_Resource_Budget_ID);
+
+		final ImmutableList.Builder<BudgetProjectResource> savedResources = ImmutableList.builder();
+
+		for (final BudgetProjectResource budgetProjectResource : budgetProjectResourceList)
+		{
+			final I_C_Project_Resource_Budget resourceRecord = budgetResourceId2Resource.get(budgetProjectResource.getId().getRepoId());
+
+			if (resourceRecord == null)
+			{
+				throw new AdempiereException("Missing C_Project_Resource_Budget for repoId:" + budgetProjectResource.getId());
+			}
+
+			resourceRecord.setIsActive(budgetProjectResource.getIsActive());
+			resourceRecord.setC_Project_ID(ProjectId.toRepoId(budgetProjectResource.getProjectId()));
+			resourceRecord.setS_Resource_ID(ResourceId.toRepoId(budgetProjectResource.getResourceId()));
+			resourceRecord.setS_Resource_Group_ID(ResourceGroupId.toRepoId(budgetProjectResource.getResourceGroupId()));
+			resourceRecord.setDateFinishPlan(TimeUtil.asTimestamp(budgetProjectResource.getDateRange().getEndDate()));
+			resourceRecord.setDateStartPlan(TimeUtil.asTimestamp(budgetProjectResource.getDateRange().getStartDate()));
+			resourceRecord.setC_Currency_ID(CurrencyId.toRepoId(budgetProjectResource.getCurrencyId()));
+			resourceRecord.setDescription(budgetProjectResource.getDescription());
+			resourceRecord.setPlannedAmt(budgetProjectResource.getPlannedAmount().toBigDecimal());
+			resourceRecord.setPlannedDuration(budgetProjectResource.getPlannedDuration().toBigDecimal());
+			resourceRecord.setPricePerTimeUOM(budgetProjectResource.getPricePerDurationUnit().toBigDecimal());
+			resourceRecord.setExternalId(ExternalId.toValue(budgetProjectResource.getExternalId()));
+			resourceRecord.setC_UOM_Time_ID(UomId.toRepoId(budgetProjectResource.getDurationUomId()));
+
+			saveRecord(resourceRecord);
+
+			savedResources.add(fromRecord(resourceRecord));
+		}
+
+		return savedResources.build();
+	}
+
+	@NonNull
+	public List<BudgetProjectResource> createAll(@NonNull final List<CreateBudgetProjectResourceRequest> createBudgetProjectResourceRequestList)
+	{
+		final ImmutableList.Builder<BudgetProjectResource> savedResources = ImmutableList.builder();
+
+		for (final CreateBudgetProjectResourceRequest createBudgetProjectResourceRequest : createBudgetProjectResourceRequestList)
+		{
+			final I_C_Project_Resource_Budget resourceRecord = InterfaceWrapperHelper.newInstance(I_C_Project_Resource_Budget.class);
+
+			resourceRecord.setIsActive(createBudgetProjectResourceRequest.getIsActive());
+			resourceRecord.setC_Project_ID(ProjectId.toRepoId(createBudgetProjectResourceRequest.getProjectId()));
+			resourceRecord.setS_Resource_ID(ResourceId.toRepoId(createBudgetProjectResourceRequest.getResourceId()));
+			resourceRecord.setS_Resource_Group_ID(ResourceGroupId.toRepoId(createBudgetProjectResourceRequest.getResourceGroupId()));
+			resourceRecord.setDateFinishPlan(TimeUtil.asTimestamp(createBudgetProjectResourceRequest.getDateRange().getEndDate()));
+			resourceRecord.setDateStartPlan(TimeUtil.asTimestamp(createBudgetProjectResourceRequest.getDateRange().getStartDate()));
+			resourceRecord.setC_Currency_ID(CurrencyId.toRepoId(createBudgetProjectResourceRequest.getCurrencyId()));
+			resourceRecord.setDescription(createBudgetProjectResourceRequest.getDescription());
+			resourceRecord.setPlannedAmt(createBudgetProjectResourceRequest.getPlannedAmount().toBigDecimal());
+			resourceRecord.setPlannedDuration(createBudgetProjectResourceRequest.getPlannedDuration().toBigDecimal());
+			resourceRecord.setPricePerTimeUOM(createBudgetProjectResourceRequest.getPricePerDurationUnit().toBigDecimal());
+			resourceRecord.setExternalId(ExternalId.toValue(createBudgetProjectResourceRequest.getExternalId()));
+			resourceRecord.setC_UOM_Time_ID(UomId.toRepoId(createBudgetProjectResourceRequest.getDurationUomId()));
+
+			saveRecord(resourceRecord);
+
+			savedResources.add(fromRecord(resourceRecord));
+		}
+
+		return savedResources.build();
 	}
 }

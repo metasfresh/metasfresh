@@ -53,6 +53,19 @@ public class Optionals
 		return Optional.empty();
 	}
 
+	public static <T> Optional<T> firstPresentOfSuppliers(
+			@NonNull final Supplier<Optional<T>> supplier1,
+			@NonNull final Supplier<Optional<T>> supplier2)
+	{
+		final Optional<T> value1 = supplier1.get();
+		if (value1 != null && value1.isPresent())
+		{
+			return value1;
+		}
+
+		return supplier2.get();
+	}
+
 	/**
 	 * To be used until we upgrade to Java9 where we have Optional.stream
 	 */

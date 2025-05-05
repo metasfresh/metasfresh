@@ -22,7 +22,6 @@
 
 package de.metas.security.permissions.record_access;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.security.Principal;
@@ -34,25 +33,25 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.table.TableRecordIdDescriptor;
+import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_User_Record_Access;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Repository
 public class RecordAccessRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
+	private final ITableRecordIdDAO tableRecordIdDAO = Services.get(ITableRecordIdDAO.class);
+	
 	private final CCache<Integer, ImmutableSet<String>> handledTableNamesCache = CCache.<Integer, ImmutableSet<String>>builder()
 			.tableName(I_AD_User_Record_Access.Table_Name)
 			.initialCapacity(1)
@@ -66,9 +65,11 @@ public class RecordAccessRepository
 
 	private ImmutableSet<String> retrieveHandledTableNames()
 	{
-		final String sql = "SELECT DISTINCT t.TableName FROM " + I_AD_User_Record_Access.Table_Name + " a "
-				+ " INNER JOIN " + I_AD_Table.Table_Name + " t on t.AD_Table_ID=a.AD_Table_ID";
-		final List<String> tableNames = DB.retrieveRows(sql, ImmutableList.of(), rs -> rs.getString(1));
+		final ImmutableSet<String> tableNames = tableRecordIdDAO.getTableRecordIdReferences(I_AD_User_Record_Access.Table_Name)
+				.stream()
+				.map(TableRecordIdDescriptor::getTargetTableName)
+				.collect(ImmutableSet.toImmutableSet());
+
 		return ImmutableSet.copyOf(tableNames);
 	}
 

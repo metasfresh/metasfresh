@@ -23,10 +23,10 @@
 package de.metas.material.cockpit.availableforsales;
 
 import com.google.common.base.MoreObjects;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import org.compiere.model.I_MD_Available_For_Sales;
 
 import javax.annotation.Nullable;

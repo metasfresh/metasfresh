@@ -1,13 +1,14 @@
 package de.metas.costing;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -19,12 +20,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,17 +34,19 @@ import lombok.NonNull;
 
 public interface ICostDetailService
 {
+	CostDetail updateDateAcct(@NonNull CostDetail costDetail, @NonNull Instant newDateAcct);
+
 	boolean hasCostDetailsForProductId(ProductId productId);
 
-	Optional<CostDetail> getExistingCostDetail(CostDetailCreateRequest request);
-
-	Stream<CostDetail> streamAllCostDetailsAfter(CostDetail costDetail);
+	List<CostDetail> getExistingCostDetails(CostDetailCreateRequest request);
 
 	List<CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 
 	List<CostDetail> getAllForDocumentAndAcctSchemaId(CostingDocumentRef documentRef, AcctSchemaId acctSchemaId);
 
 	CostDetailCreateResult toCostDetailCreateResult(CostDetail costDetail);
+
+	CostDetailCreateResultsList toCostDetailCreateResultsList(Collection<CostDetail> costDetails);
 
 	CostSegmentAndElement extractCostSegmentAndElement(CostDetail costDetail);
 
@@ -65,4 +68,5 @@ public interface ICostDetailService
 
 	void delete(CostDetail costDetail);
 
+	Stream<CostDetail> stream(@NonNull CostDetailQuery query);
 }

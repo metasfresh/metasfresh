@@ -100,4 +100,12 @@ public class BudgetProjectResources
 				.orElseThrow(() -> new AdempiereException("No budget found for " + id));
 	}
 
+	@NonNull
+	public Optional<BudgetProjectResource> findBudget(@NonNull final ResourceId resourceId)
+	{
+		return budgets.stream()
+				.filter(budgetProjectResource -> budgetProjectResource.getResourceId() != null)
+				.filter(budgetProjectResource -> budgetProjectResource.getResourceId().equals(resourceId))
+				.findFirst();
+	}
 }

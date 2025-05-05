@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1718911885L;
+	private static final long serialVersionUID = -792729881L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (final Properties ctx, final int C_Flatrate_Term_ID, @Nullable final String trxName)
@@ -276,29 +276,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class);
-	}
-
-	@Override
-	public void setC_Flatrate_Transition(final de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class, C_Flatrate_Transition);
-	}
-
-	@Override
-	public void setC_Flatrate_Transition_ID (final int C_Flatrate_Transition_ID)
-	{
-		throw new IllegalArgumentException ("C_Flatrate_Transition_ID is virtual column");	}
-
-	@Override
-	public int getC_Flatrate_Transition_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Transition_ID);
-	}
-
-	@Override
 	public de.metas.contracts.model.I_C_Flatrate_Term getC_FlatrateTerm_Next()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_FlatrateTerm_Next_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
@@ -326,152 +303,26 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order_Term()
+	public de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class);
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class);
 	}
 
 	@Override
-	public void setC_Order_Term(final org.compiere.model.I_C_Order C_Order_Term)
+	public void setC_Flatrate_Transition(final de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class, C_Order_Term);
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class, C_Flatrate_Transition);
 	}
 
 	@Override
-	public void setC_Order_Term_ID (final int C_Order_Term_ID)
+	public void setC_Flatrate_Transition_ID (final int C_Flatrate_Transition_ID)
 	{
-		if (C_Order_Term_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, C_Order_Term_ID);
-	}
+		throw new IllegalArgumentException ("C_Flatrate_Transition_ID is virtual column");	}
 
 	@Override
-	public int getC_Order_Term_ID() 
+	public int getC_Flatrate_Transition_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Order_Term_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Order getC_Order_TermChange()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_TermChange_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order_TermChange(final org.compiere.model.I_C_Order C_Order_TermChange)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_TermChange_ID, org.compiere.model.I_C_Order.class, C_Order_TermChange);
-	}
-
-	@Override
-	public void setC_Order_TermChange_ID (final int C_Order_TermChange_ID)
-	{
-		throw new IllegalArgumentException ("C_Order_TermChange_ID is virtual column");	}
-
-	@Override
-	public int getC_Order_TermChange_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Order_TermChange_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLine_Term_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setC_OrderLine_Term(final org.compiere.model.I_C_OrderLine C_OrderLine_Term)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLine_Term_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine_Term);
-	}
-
-	@Override
-	public void setC_OrderLine_Term_ID (final int C_OrderLine_Term_ID)
-	{
-		if (C_OrderLine_Term_ID < 1) 
-			set_Value (COLUMNNAME_C_OrderLine_Term_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_OrderLine_Term_ID, C_OrderLine_Term_ID);
-	}
-
-	@Override
-	public int getC_OrderLine_Term_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_OrderLine_Term_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLine_TermChange_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setC_OrderLine_TermChange(final org.compiere.model.I_C_OrderLine C_OrderLine_TermChange)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLine_TermChange_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine_TermChange);
-	}
-
-	@Override
-	public void setC_OrderLine_TermChange_ID (final int C_OrderLine_TermChange_ID)
-	{
-		if (C_OrderLine_TermChange_ID < 1) 
-			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, C_OrderLine_TermChange_ID);
-	}
-
-	@Override
-	public int getC_OrderLine_TermChange_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_OrderLine_TermChange_ID);
-	}
-
-	@Override
-	public void setC_RfQResponseLine_ID (final int C_RfQResponseLine_ID)
-	{
-		if (C_RfQResponseLine_ID < 1) 
-			set_Value (COLUMNNAME_C_RfQResponseLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_RfQResponseLine_ID, C_RfQResponseLine_ID);
-	}
-
-	@Override
-	public int getC_RfQResponseLine_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_RfQResponseLine_ID);
-	}
-
-	@Override
-	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
-	{
-		if (C_TaxCategory_ID < 1) 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
-	}
-
-	@Override
-	public int getC_TaxCategory_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
-	}
-
-	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
-	{
-		if (C_UOM_ID < 1) 
-			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
-	}
-
-	@Override
-	public int getC_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Transition_ID);
 	}
 
 	@Override
@@ -484,6 +335,33 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public java.lang.String getChangeOrCancelTerm() 
 	{
 		return get_ValueAsString(COLUMNNAME_ChangeOrCancelTerm);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Calendar getC_Harvesting_Calendar()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar(final org.compiere.model.I_C_Calendar C_Harvesting_Calendar)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Harvesting_Calendar);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar_ID (final int C_Harvesting_Calendar_ID)
+	{
+		if (C_Harvesting_Calendar_ID < 1) 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, C_Harvesting_Calendar_ID);
+	}
+
+	@Override
+	public int getC_Harvesting_Calendar_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
 	}
 
 	/** 
@@ -515,6 +393,140 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public java.lang.String getContractStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_ContractStatus);
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_TermChange_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine_TermChange(final org.compiere.model.I_C_OrderLine C_OrderLine_TermChange)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_TermChange_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine_TermChange);
+	}
+
+	@Override
+	public void setC_OrderLine_TermChange_ID (final int C_OrderLine_TermChange_ID)
+	{
+		if (C_OrderLine_TermChange_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, C_OrderLine_TermChange_ID);
+	}
+
+	@Override
+	public int getC_OrderLine_TermChange_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderLine_TermChange_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_Term_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine_Term(final org.compiere.model.I_C_OrderLine C_OrderLine_Term)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_Term_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine_Term);
+	}
+
+	@Override
+	public void setC_OrderLine_Term_ID (final int C_OrderLine_Term_ID)
+	{
+		if (C_OrderLine_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLine_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLine_Term_ID, C_OrderLine_Term_ID);
+	}
+
+	@Override
+	public int getC_OrderLine_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderLine_Term_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order_TermChange()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_TermChange_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order_TermChange(final org.compiere.model.I_C_Order C_Order_TermChange)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_TermChange_ID, org.compiere.model.I_C_Order.class, C_Order_TermChange);
+	}
+
+	@Override
+	public void setC_Order_TermChange_ID (final int C_Order_TermChange_ID)
+	{
+		throw new IllegalArgumentException ("C_Order_TermChange_ID is virtual column");	}
+
+	@Override
+	public int getC_Order_TermChange_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_TermChange_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order_Term()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order_Term(final org.compiere.model.I_C_Order C_Order_Term)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class, C_Order_Term);
+	}
+
+	@Override
+	public void setC_Order_Term_ID (final int C_Order_Term_ID)
+	{
+		if (C_Order_Term_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, C_Order_Term_ID);
+	}
+
+	@Override
+	public int getC_Order_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_Term_ID);
+	}
+
+	@Override
+	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+	}
+
+	@Override
+	public int getC_TaxCategory_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override
@@ -784,6 +796,33 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
+	public org.compiere.model.I_C_Year getHarvesting_Year()
+	{
+		return get_ValueAsPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setHarvesting_Year(final org.compiere.model.I_C_Year Harvesting_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class, Harvesting_Year);
+	}
+
+	@Override
+	public void setHarvesting_Year_ID (final int Harvesting_Year_ID)
+	{
+		if (Harvesting_Year_ID < 1) 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, null);
+		else 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, Harvesting_Year_ID);
+	}
+
+	@Override
+	public int getHarvesting_Year_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
+	}
+
+	@Override
 	public void setIsAutoRenew (final boolean IsAutoRenew)
 	{
 		set_Value (COLUMNNAME_IsAutoRenew, IsAutoRenew);
@@ -830,6 +869,18 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
+	public void setIsReadyForDefinitiveInvoice (final boolean IsReadyForDefinitiveInvoice)
+	{
+		set_Value (COLUMNNAME_IsReadyForDefinitiveInvoice, IsReadyForDefinitiveInvoice);
+	}
+
+	@Override
+	public boolean isReadyForDefinitiveInvoice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReadyForDefinitiveInvoice);
+	}
+
+	@Override
 	public void setIsSimulation (final boolean IsSimulation)
 	{
 		set_Value (COLUMNNAME_IsSimulation, IsSimulation);
@@ -851,63 +902,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public boolean isTaxIncluded() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsTaxIncluded);
-	}
-
-	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
-	}
-
-	@Override
-	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
-	}
-
-	@Override
-	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
-	{
-		if (M_AttributeSetInstance_ID < 0) 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
-	}
-
-	@Override
-	public int getM_AttributeSetInstance_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
-	}
-
-	@Override
-	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
-	{
-		if (M_PricingSystem_ID < 1) 
-			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_PricingSystem_ID, M_PricingSystem_ID);
-	}
-
-	@Override
-	public int getM_PricingSystem_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_PricingSystem_ID);
-	}
-
-	@Override
-	public void setM_Product_ID (final int M_Product_ID)
-	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
-	}
-
-	@Override
-	public int getM_Product_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	@Override
@@ -947,6 +941,90 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public int getM_AttributeSetInstance_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public de.metas.contracts.model.I_C_Flatrate_Term getModular_Flatrate_Term()
+	{
+		return get_ValueAsPO(COLUMNNAME_Modular_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public void setModular_Flatrate_Term(final de.metas.contracts.model.I_C_Flatrate_Term Modular_Flatrate_Term)
+	{
+		set_ValueFromPO(COLUMNNAME_Modular_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, Modular_Flatrate_Term);
+	}
+
+	@Override
+	public void setModular_Flatrate_Term_ID (final int Modular_Flatrate_Term_ID)
+	{
+		if (Modular_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getModular_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
+	{
+		if (M_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, M_PricingSystem_ID);
+	}
+
+	@Override
+	public int getM_PricingSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_PricingSystem_ID);
+	}
+
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+	}
+
+	@Override
+	public int getM_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
 	public void setNote (final @Nullable java.lang.String Note)
 	{
 		set_Value (COLUMNNAME_Note, Note);
@@ -981,21 +1059,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedQtyPerUnit);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setPMM_Product_ID (final int PMM_Product_ID)
-	{
-		if (PMM_Product_ID < 1) 
-			set_Value (COLUMNNAME_PMM_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_PMM_Product_ID, PMM_Product_ID);
-	}
-
-	@Override
-	public int getPMM_Product_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PMM_Product_ID);
 	}
 
 	@Override
@@ -1045,19 +1108,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
-	}
-
-	@Override
-	public void setQtyPlanned_NextYear (final BigDecimal QtyPlanned_NextYear)
-	{
-		set_Value (COLUMNNAME_QtyPlanned_NextYear, QtyPlanned_NextYear);
-	}
-
-	@Override
-	public BigDecimal getQtyPlanned_NextYear() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPlanned_NextYear);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1145,24 +1195,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TERMINATIONREASON_IncorrectlyRecorded = "Err";
 	/** OrgChange = Os */
 	public static final String TERMINATIONREASON_OrgChange = "Os";
-	/** DoubleEntry = De */
-	public static final String TERMINATIONREASON_DoubleEntry = "De";
-	/** PoliticalReasons = Po */
-	public static final String TERMINATIONREASON_PoliticalReasons = "Po";
-	/** RealEstateSold = Iv */
-	public static final String TERMINATIONREASON_RealEstateSold = "Iv";
-	/** AddressUnknown = Ua */
-	public static final String TERMINATIONREASON_AddressUnknown = "Ua";
-	/** Deceased = Ve */
-	public static final String TERMINATIONREASON_Deceased = "Ve";
-	/** NotPaid = Ng */
-	public static final String TERMINATIONREASON_NotPaid = "Ng";
-	/** Complaint = Re */
-	public static final String TERMINATIONREASON_Complaint = "Re";
-	/** DueToAge = Al */
-	public static final String TERMINATIONREASON_DueToAge = "Al";
-	/** Termination = Ku */
-	public static final String TERMINATIONREASON_Termination = "Ku";
 	@Override
 	public void setTerminationReason (final @Nullable java.lang.String TerminationReason)
 	{
@@ -1200,8 +1232,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TYPE_CONDITIONS_MarginCommission = "MarginCommission";
 	/** Mediated commission = MediatedCommission */
 	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
+	/** LicenseFee = LicenseFee */
+	public static final String TYPE_CONDITIONS_LicenseFee = "LicenseFee";
 	/** CallOrder = CallOrder */
 	public static final String TYPE_CONDITIONS_CallOrder = "CallOrder";
+	/** InterimInvoice = InterimInvoice */
+	public static final String TYPE_CONDITIONS_InterimInvoice = "InterimInvoice";
+	/** ModularContract = ModularContract */
+	public static final String TYPE_CONDITIONS_ModularContract = "ModularContract";
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{
@@ -1223,6 +1261,8 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TYPE_FLATRATE_NONE = "NONE";
 	/** Corridor_Percent = LIPE */
 	public static final String TYPE_FLATRATE_Corridor_Percent = "LIPE";
+	/** Reported Quantity = RPTD */
+	public static final String TYPE_FLATRATE_ReportedQuantity = "RPTD";
 	@Override
 	public void setType_Flatrate (final @Nullable java.lang.String Type_Flatrate)
 	{
@@ -1232,25 +1272,5 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public java.lang.String getType_Flatrate() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type_Flatrate);
-	}
-
-	/** 
-	 * UOMType AD_Reference_ID=540262
-	 * Reference name: UOM Type Flatrate
-	 */
-	public static final int UOMTYPE_AD_Reference_ID=540262;
-	/** Gesundheitswesen = HC */
-	public static final String UOMTYPE_Gesundheitswesen = "HC";
-	/** Abrechnungsgenauigkeit = TD */
-	public static final String UOMTYPE_Abrechnungsgenauigkeit = "TD";
-	@Override
-	public void setUOMType (final @Nullable java.lang.String UOMType)
-	{
-		throw new IllegalArgumentException ("UOMType is virtual column");	}
-
-	@Override
-	public java.lang.String getUOMType() 
-	{
-		return get_ValueAsString(COLUMNNAME_UOMType);
 	}
 }

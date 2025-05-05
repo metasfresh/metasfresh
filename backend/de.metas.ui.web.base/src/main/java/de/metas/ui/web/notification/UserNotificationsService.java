@@ -10,11 +10,11 @@ import de.metas.notification.UserNotificationUtils;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
 import de.metas.ui.web.session.json.WebuiSessionId;
-import de.metas.websocket.sender.WebsocketSender;
-import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
@@ -86,13 +86,12 @@ public class UserNotificationsService
 		logger.trace("Enabling for sessionId={}, adUserId={}, jsonOptions={}", sessionId, adUserId, jsonOptions);
 
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId, k -> UserNotificationsQueue.builder()
-
 				.userId(adUserId)
 				.jsonOptions(jsonOptions)
 				.notificationsRepo(Services.get(INotificationRepository.class))
 				.websocketSender(websocketSender)
 				.build());
-
+		notificationsQueue.setLanguage(jsonOptions.getAdLanguage()); // just to make sure in case user changed his language, we use his/her last option
 		notificationsQueue.addActiveSessionId(sessionId);
 
 		subscribeToEventTopicsIfNeeded();

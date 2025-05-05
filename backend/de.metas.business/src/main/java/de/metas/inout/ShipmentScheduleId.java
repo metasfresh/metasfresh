@@ -30,6 +30,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -93,5 +94,12 @@ public class ShipmentScheduleId implements RepoIdAware
 	public TableRecordReference toTableRecordReference()
 	{
 		return TableRecordReference.of(M_SHIPMENT_SCHEDULE_TABLE_NAME, getRepoId());
+	}
+
+	public static boolean equals(@Nullable final ShipmentScheduleId id1, @Nullable final ShipmentScheduleId id2) {return Objects.equals(id1, id2);}
+
+	public static TableRecordReferenceSet toTableRecordReferenceSet(@NonNull final Collection<ShipmentScheduleId> ids)
+	{
+		return TableRecordReferenceSet.of(M_SHIPMENT_SCHEDULE_TABLE_NAME, ids);
 	}
 }

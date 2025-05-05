@@ -24,6 +24,7 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
@@ -42,6 +43,7 @@ import de.metas.util.Services;
 
 public class CountryAttributeGenerator extends AbstractAttributeValueGenerator
 {
+	private final int c_countryTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Country.Table_Name);
 
 	@Override
 	public String getAttributeValueType()
@@ -53,15 +55,15 @@ public class CountryAttributeGenerator extends AbstractAttributeValueGenerator
 	 * @return <code>false</code>, because "country" is a List attribute.
 	 */
 	@Override
-	public boolean canGenerateValue(Properties ctx, IAttributeSet attributeSet, I_M_Attribute attribute)
+	public boolean canGenerateValue(final Properties ctx, final IAttributeSet attributeSet, final I_M_Attribute attribute)
 	{
 		return false;
 	}
 
 	@Override
-	public AttributeListValue generateAttributeValue(Properties ctx, int tableId, int recordId, boolean isSOTrx, String trxName)
+	public AttributeListValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, final boolean isSOTrx, final String trxName)
 	{
-		Check.assume(I_C_Country.Table_ID == tableId, "Wrong table.");
+		Check.assume( c_countryTableId == tableId, "Wrong table.");
 		final I_C_Country country = InterfaceWrapperHelper.create(ctx, recordId, I_C_Country.class, trxName);
 
 		final AttributeId attributeId = Services.get(ICountryAttributeDAO.class).retrieveCountryAttributeId(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));

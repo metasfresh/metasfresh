@@ -1,0 +1,61 @@
+{
+  "orderId": 11111,
+  "orgCode": "orgCode",
+  "documentNo": 630000,
+  "description": null,
+  "dateOrdered": "2022-05-01T21:00Z[UTC]",
+  "datePromised": "2022-05-03T21:00Z[UTC]",
+  "dateStartSchedule": "2022-05-01T21:00Z[UTC]",
+  "finishGoodProduct": {
+    "productNo": "P002737",
+    "name": "MainProduct",
+    "description": null,
+    "packageSize": null,
+    "weight": 0.25,
+    "documentNote": null,
+    "commodityNumberValue": null,
+    "stocked": true
+  },
+  "qtyToProduce": {
+    "qty": 1,
+    "uomCode": "PCE"
+  },
+  "productId": 22222,
+  "bpartnerId": 33333,
+  "components": [
+    {
+      "componentType": "CO",
+      "product": {
+        "productNo": "P002736",
+        "name": "Component1",
+        "description": null,
+        "packageSize": null,
+        "weight": 1.0,
+        "documentNote": null,
+        "commodityNumberValue": null,
+        "stocked": true
+      },
+      "qty": {
+        "qty": 0.12221,
+        "uomCode": "KGM"
+      }
+    },
+    {
+      "componentType": "CO",
+      "product": {
+        "productNo": "P002732",
+        "name": "Component2",
+        "description": null,
+        "packageSize": null,
+        "weight": 1.0,
+        "documentNote": null,
+        "commodityNumberValue": null,
+        "stocked": true
+      },
+      "qty": {
+        "qty": 0.16668,
+        "uomCode": "KGM"
+      }
+    }
+  ]
+}

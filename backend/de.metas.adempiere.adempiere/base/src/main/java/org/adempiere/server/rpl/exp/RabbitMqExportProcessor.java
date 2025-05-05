@@ -32,14 +32,18 @@ import org.compiere.model.X_EXP_ProcessorParameter;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.w3c.dom.Document;
 
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
@@ -131,7 +135,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		template.setExchange(exchangeName);
 		RabbitAdmin admin = new RabbitAdmin(template.getConnectionFactory());
 		Queue queue = new Queue(routingKey, isDurableQueue);
-		TopicExchange exchange = new TopicExchange(exchangeName, isDurableQueue, false);
+		DirectExchange exchange = new DirectExchange(exchangeName, isDurableQueue, false);
 		admin.declareExchange(exchange);
 		admin.declareQueue(queue);
 		// queue name and routing key are the same

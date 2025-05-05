@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;

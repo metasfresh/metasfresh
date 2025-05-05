@@ -22,9 +22,12 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.FlatrateTransitionId;
 import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
+import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
@@ -35,14 +38,14 @@ import org.adempiere.warehouse.WarehouseId;
 
 public class StepDefConstants
 {
-	public static final String TABLECOLUMN_IDENTIFIER = "Identifier";
+	public static final String TABLECOLUMN_IDENTIFIER = StepDefDataIdentifier.SUFFIX;
 	public static final String CODE = "Code";
 	public static final String METASFRESH_VALUE = "metasfresh";
 
 	public static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(540008);
 	public static final ResourceId PLANT_ID = ResourceId.ofRepoId(540011);
 	public static final ResourceId TEST_PLANT_ID = ResourceId.ofRepoId(540006);
-	public static final WorkflowId WORKFLOW_ID = WorkflowId.ofRepoId(540075);
+	public static final PPRoutingId WORKFLOW_ID = PPRoutingId.ofRepoId(540075);
 	public static final LocatorId LOCATOR_ID = LocatorId.ofRepoId(WAREHOUSE_ID, 540007);
 	public static final DocTypeId DOC_TYPE_ID_MMI = DocTypeId.ofRepoId(1000023);
 	public static final OrgId ORG_ID = OrgId.MAIN;
@@ -53,4 +56,12 @@ public class StepDefConstants
 	public static final UomId PCE_UOM_ID = UomId.ofRepoId(100);
 	public static final String HU_ATTR_LOT_NUMBER = "Lot-Nummer";
 	public static final int MANAGEMENT_CREDIT_LIMIT_TYPE_ID = 540001;
+
+	public static final BPartnerId METASFRESH_AG_BPARTNER_ID = BPartnerId.ofRepoId(2155894);
+	public static final BPartnerLocationId METASFRESH_AG_BPARTNER_LOCATION_ID = BPartnerLocationId.ofRepoId(METASFRESH_AG_BPARTNER_ID, 2202690);
+
+	public static final String ORG_CODE = "orgCode";
+	public static final String CURRENCY_CODE = "currencyCode";
+	public static final String EXTENDED_PROPS = "ExtendedProps";
 }
+

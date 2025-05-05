@@ -22,27 +22,23 @@
 
 package de.metas.common.bprelation.response;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.bprelation.JsonBPRelationRole;
-import org.junit.jupiter.api.BeforeAll;
+import de.metas.common.rest_api.common.JsonExternalId;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 class JsonResponseBPRelationTest
 {
 	private final ObjectMapper mapper = new ObjectMapper();
-
-	@BeforeAll
-	public static void beforeAll()
-	{
-		start();
-	}
+	private Expect expect;
 
 	@Test
 	public void serializeDeserializeTest() throws IOException
@@ -72,7 +68,7 @@ class JsonResponseBPRelationTest
 		final JsonResponseBPRelationComposite result = mapper.readValue(str, JsonResponseBPRelationComposite.class);
 		assertThat(result).isEqualTo(item);
 
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 }

@@ -9,7 +9,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -68,10 +68,11 @@ public class InvoiceCandidateRecordService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final InvoiceCandidateBuilder result = InvoiceCandidate.builder();
+		final InvoiceCandidate.InvoiceCandidateBuilder result = InvoiceCandidate.builder();
 
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -94,6 +95,10 @@ public class InvoiceCandidateRecordService
 				.product(new InvoiceCandidateProduct(productId, stocked))
 				.invoiceRule(invoiceCandBL.getInvoiceRule(icRecord));
 
+		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override))
+		{
+			result.qtyToInvoiceOverrideInUom(icRecord.getQtyToInvoiceInUOM_Override());
+		}
 		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
 		{
 			final BigDecimal qtyToInvoiceOverrideInStockUom =                //
@@ -105,7 +110,7 @@ public class InvoiceCandidateRecordService
 
 		// purchase specialities
 		Optional<Percent> qualityDiscountOverride = Optional.empty();
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(icRecord.getInvoicableQtyBasedOn());
 		if (soTrx.isPurchase())
 		{
 			if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
@@ -287,15 +292,15 @@ public class InvoiceCandidateRecordService
 				.stream()
 				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
 				.reduce(BigDecimal::add)
-				.map(qtyPickedStockUOMSum -> Quantitys.create(qtyPickedStockUOMSum, stockUomId))
-				.orElseGet(() -> Quantitys.create(BigDecimal.ZERO, stockUomId));
+				.map(qtyPickedStockUOMSum -> Quantitys.of(qtyPickedStockUOMSum, stockUomId))
+				.orElseGet(() -> Quantitys.of(BigDecimal.ZERO, stockUomId));
 
-		final Quantity qtyPickedInUOM = Quantitys.create(qtyPickedStockUOM, UOMConversionContext.of(productId), icUomId);
+		final Quantity qtyPickedInUOM = Quantitys.of(qtyPickedStockUOM, UOMConversionContext.of(productId), icUomId);
 
 		final Quantity qtyPickedCatch = qtyPickedRecords
 				.stream()
 				.filter(qtyPickedRecord -> qtyPickedRecord.getQtyDeliveredCatch() != null && qtyPickedRecord.getCatch_UOM_ID() > 0)
-				.map(qtyPickedRecord -> Quantitys.create(qtyPickedRecord.getQtyDeliveredCatch(), UomId.ofRepoId(qtyPickedRecord.getCatch_UOM_ID())))
+				.map(qtyPickedRecord -> Quantitys.of(qtyPickedRecord.getQtyDeliveredCatch(), UomId.ofRepoId(qtyPickedRecord.getCatch_UOM_ID())))
 				.reduce(Quantity::add)
 				.filter(qtyPickedCatchSum -> qtyPickedCatchSum.toBigDecimal().signum() != 0)
 				.orElse(null);

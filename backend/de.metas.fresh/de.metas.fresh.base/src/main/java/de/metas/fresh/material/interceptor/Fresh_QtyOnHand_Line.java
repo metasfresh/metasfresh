@@ -1,5 +1,6 @@
 package de.metas.fresh.material.interceptor;
 
+import de.metas.fresh.freshQtyOnHand.FreshQtyOnHandId;
 import de.metas.fresh.freshQtyOnHand.api.IFreshQtyOnHandDAO;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
@@ -65,13 +66,16 @@ public class Fresh_QtyOnHand_Line
 		this.materialEventService = materialEventService;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE },
 			ifColumnsChanged = I_Fresh_QtyOnHand_Line.COLUMNNAME_SeqNo)
 	public void createAndFireStockCountEvents(
 			@NonNull final I_Fresh_QtyOnHand_Line line,
 			@NonNull final ModelChangeType timing)
 	{
-		final boolean createDeletedEvent = timing.isDelete() || ModelChangeUtil.isJustDeactivatedOrUnProcessed(timing);
+		final FreshQtyOnHandId freshQtyOnHandId = FreshQtyOnHandId.ofRepoId(line.getFresh_QtyOnHand_ID());
+		final I_Fresh_QtyOnHand freshQtyOnHandRecord = freshQtyOnHandDAO.getById(freshQtyOnHandId);
+
+		final boolean createDeletedEvent = timing.isDelete() || ModelChangeUtil.isJustDeactivated(line) || !freshQtyOnHandRecord.isProcessed();
 
 		final List<AbstractStockEstimateEvent> events = new ArrayList<>();
 

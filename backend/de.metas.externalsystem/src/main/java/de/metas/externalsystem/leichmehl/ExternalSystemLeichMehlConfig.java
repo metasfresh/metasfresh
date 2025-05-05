@@ -28,10 +28,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-
 @Value
 public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 {
@@ -53,8 +49,7 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 	@NonNull
 	String tcpHost;
 
-	@NonNull
-	List<ExternalSystemLeichMehlConfigProductMapping> externalSystemLeichMehlConfigProductMappingList;
+	boolean pluFileExportAuditEnabled;
 
 	@Builder
 	public ExternalSystemLeichMehlConfig(
@@ -64,7 +59,7 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 			@NonNull final String productBaseFolderName,
 			@NonNull final Integer tcpPort,
 			@NonNull final String tcpHost,
-			@NonNull final List<ExternalSystemLeichMehlConfigProductMapping> externalSystemLeichMehlConfigProductMappingList)
+			final boolean pluFileExportAuditEnabled)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -72,24 +67,11 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 		this.productBaseFolderName = productBaseFolderName;
 		this.tcpPort = tcpPort;
 		this.tcpHost = tcpHost;
-		this.externalSystemLeichMehlConfigProductMappingList = externalSystemLeichMehlConfigProductMappingList;
+		this.pluFileExportAuditEnabled = pluFileExportAuditEnabled;
 	}
 
 	public static ExternalSystemLeichMehlConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		return (ExternalSystemLeichMehlConfig)childConfig;
-	}
-
-	public boolean isProductMappingEmpty()
-	{
-		return externalSystemLeichMehlConfigProductMappingList.isEmpty();
-	}
-
-	@NonNull
-	public Optional<ExternalSystemLeichMehlConfigProductMapping> findMappingForQuery(@NonNull final LeichMehlProductMappingQuery query)
-	{
-		return externalSystemLeichMehlConfigProductMappingList.stream()
-				.filter(productMapping -> productMapping.isMatchingQuery(query))
-				.min(Comparator.comparing(ExternalSystemLeichMehlConfigProductMapping::getSeqNo));
 	}
 }

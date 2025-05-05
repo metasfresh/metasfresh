@@ -7,6 +7,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
@@ -15,10 +16,11 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
-import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -26,20 +28,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 
 /*
  * #%L
@@ -111,13 +109,13 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		final BankAccountId bpBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
 		final BankAccount bankAccount = services.getBankAccountById(bpBankAccountId);
-		final String bankAccountName = bankAccount.getAccountName();
-		if (Check.isNotBlank(bankAccountName))
+		final String bankAccountName = StringUtils.trimBlankToNull(bankAccount.getAccountName());
+		if (bankAccountName != null)
 		{
-			documentInfo.append(bankAccountName.trim());
+			documentInfo.append(bankAccountName);
 		}
 
-		if (documentInfo.length() > 0)
+		if (!documentInfo.isEmpty())
 		{
 			documentInfo.append(" ");
 		}
@@ -134,10 +132,10 @@ public class BankStatementDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
 	{
-		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
-		return TimeUtil.asLocalDate(bankStatement.getStatementDate());
+		final I_C_BankStatement record = extractBankStatement(docFields);
+		return InstantAndOrgId.ofTimestamp(record.getStatementDate(), OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
 	@Override
@@ -167,18 +165,18 @@ public class BankStatementDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String prepareIt(final DocumentTableFields docFields)
+	public DocStatus prepareIt(final DocumentTableFields docFields)
 	{
 		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
 
 		// Std Period open?
-		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
 		if (lines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 		// Lines
 		BigDecimal total = BigDecimal.ZERO;
@@ -215,15 +213,15 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		bankStatement.setStatementDifference(total);
 		bankStatement.setEndingBalance(bankStatement.getBeginningBalance().add(total));
-		MPeriod.testPeriodOpen(Env.getCtx(), minDate, X_C_DocType.DOCBASETYPE_BankStatement, 0);
-		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, X_C_DocType.DOCBASETYPE_BankStatement, 0);
+		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 		bankStatement.setDocAction(IDocument.ACTION_Complete);
-		return IDocument.STATUS_InProgress;
+		return DocStatus.InProgress;
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
 
@@ -239,32 +237,6 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final HashSet<PaymentId> consideredPaymentIds = extractCurrentPaymentIds(lines);
 		for (final I_C_BankStatementLine line : lines)
 		{
-			//
-			// Cash/bank transfer
-			if (line.getC_BP_BankAccountTo_ID() > 0)
-			{
-				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
-				if (linkedBankStatementLineId != null)
-				{
-					final I_C_BankStatementLine lineFrom = services.getBankStatementLineById(linkedBankStatementLineId);
-					if (lineFrom.getLink_BankStatementLine_ID() > 0
-							&& lineFrom.getLink_BankStatementLine_ID() != line.getC_BankStatementLine_ID())
-					{
-						throw new AdempiereException("Bank Statement Line is allocated to another line"); // TODO: translate
-					}
-
-					final boolean sameCurrency = lineFrom.getC_Currency_ID() == line.getC_Currency_ID();
-					if (sameCurrency && lineFrom.getTrxAmt().negate().compareTo(line.getTrxAmt()) != 0)
-					{
-						throw new AdempiereException("Transfer amount differs"); // TODO: translate
-					}
-
-					lineFrom.setC_BP_BankAccountTo_ID(bankStatement.getC_BP_BankAccount_ID());
-					lineFrom.setLink_BankStatementLine_ID(line.getC_BankStatementLine_ID());
-					services.save(lineFrom);
-				}
-			}
-
 			services.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line, consideredPaymentIds);
 
 			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
@@ -283,7 +255,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		services.markBankStatementLinesAsProcessed(bankStatementId);
 
 		bankStatement.setDocAction(IDocument.ACTION_Close);
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	private HashSet<PaymentId> extractCurrentPaymentIds(final List<I_C_BankStatementLine> lines)
@@ -325,7 +297,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final List<PaymentReconcileRequest> lineRefRequests = services
 				.getBankStatementLineReferences(bankStatementLineIds)
 				.stream()
-				.map(lineRef -> extractPaymentReconcileRequest(lineRef))
+				.map(BankStatementDocumentHandler::extractPaymentReconcileRequest)
 				.collect(ImmutableList.toImmutableList());
 
 		requests.addAll(lineRefRequests);
@@ -388,14 +360,14 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		}
 		else
 		{
-			MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+			MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 			services.deleteFactsForBankStatement(bankStatement);
 		}
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
 
-		services.unlinkPaymentsAndDeleteReferences(lines);
+		services.unreconcile(lines);
 
 		//
 		// Set lines to 0
@@ -411,19 +383,6 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				line.setBankFeeAmt(BigDecimal.ZERO);
 				line.setChargeAmt(BigDecimal.ZERO);
 				line.setInterestAmt(BigDecimal.ZERO);
-
-				//
-				// Cash/bank transfer
-				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
-				if (linkedBankStatementLineId != null)
-				{
-					final I_C_BankStatementLine lineFrom = services.getBankStatementLineById(linkedBankStatementLineId);
-					if (lineFrom.getLink_BankStatementLine_ID() == line.getC_BankStatementLine_ID())
-					{
-						lineFrom.setLink_BankStatementLine_ID(-1);
-						services.save(lineFrom);
-					}
-				}
 
 				services.save(line);
 			}
@@ -459,12 +418,6 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		}
 		description += ")";
 		return description;
-	}
-
-	@Override
-	public void reactivateIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	private static void addDescription(final I_C_BankStatement bankStatement, final String description)

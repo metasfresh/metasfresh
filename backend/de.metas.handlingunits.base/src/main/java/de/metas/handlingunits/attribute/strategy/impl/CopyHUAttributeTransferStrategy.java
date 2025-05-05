@@ -22,12 +22,10 @@ package de.metas.handlingunits.attribute.strategy.impl;
  * #L%
  */
 
-
-import org.compiere.model.I_M_Attribute;
-
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
+import org.compiere.model.I_M_Attribute;
 
 public final class CopyHUAttributeTransferStrategy implements IHUAttributeTransferStrategy
 {

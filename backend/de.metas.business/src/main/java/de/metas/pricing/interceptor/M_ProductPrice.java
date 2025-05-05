@@ -1,9 +1,9 @@
 package de.metas.pricing.interceptor;
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.pricing.M_ProductPrice_POCopyRecordSupport;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.tax.api.TaxCategoryId;
@@ -14,7 +14,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -45,7 +44,7 @@ import java.util.Optional;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- * @task Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
+ * @implSpec Prevent users from creating duplicate main prices <a href="https://github.com/metasfresh/metasfresh/issues/2510">2510</a>
  */
 @Interceptor(I_M_ProductPrice.class)
 @Component
@@ -65,7 +64,6 @@ public class M_ProductPrice
 	public void init(final IModelValidationEngine engine)
 	{
 		CopyRecordFactory.enableForTableName(I_M_ProductPrice.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_M_ProductPrice.Table_Name, M_ProductPrice_POCopyRecordSupport.class);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })

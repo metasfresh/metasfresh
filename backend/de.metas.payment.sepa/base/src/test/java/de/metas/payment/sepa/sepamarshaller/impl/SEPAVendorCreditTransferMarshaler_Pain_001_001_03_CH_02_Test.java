@@ -130,19 +130,49 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter wheter we do batch or not.
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter if we do batch or not.
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
-		final Set<String> endToEndIds = xmlDocument.getCstmrCdtTrfInitn().getPmtInf()
-				.stream()
-				.flatMap(pmtInf -> pmtInf.getCdtTrfTxInf().stream())
-				.map(CreditTransferTransactionInformation10CH::getPmtId)
-				.map(PaymentIdentification1::getEndToEndId)
-				.collect(Collectors.toSet());
-		assertThat(endToEndIds).containsExactlyInAnyOrder("ENDTOENDID-1", "ENDTOENDID-2", "ENDTOENDID-3");
+
+		// if no batch, it would be 3..
+		// assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(3);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
 	}
+
+	@Test
+	public void createDocument_batch_with_QR_IBAN() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport(
+				"org", // SEPA_CreditorName
+				"12345", // SEPA_CreditorIdentifier
+				"INGBNL2A" // bic
+		);
+		createSEPAExportLineQRVersion(sepaExport,
+									  "001",// SEPA_MandateRefNo
+									  "NL31INGB0000000044",// IBAN
+									  "INGBNL2A", // BIC
+									  new BigDecimal("100"), // amount
+									  eur, "210000000003139471430009017");
+
+		createSEPAExportLineQRVersion(sepaExport,
+									  "002", // SEPA_MandateRefNo
+									  "NL31INGB0000000044", // IBAN
+									  "INGBNL2A",// BIC
+									  new BigDecimal("40"), // amount
+									  chf, "210000000003139471430009017");
+
+		// invoke the method under test
+		xmlDocument = xmlGenerator.createDocument(sepaExport);
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("140");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("2");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
+	}
+
 
 	@Test
 	public void createDocument_batch_noCollectiveTransfer_noRef() throws Exception
@@ -181,7 +211,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter wheter we do batch or not.
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter if we do batch or not.
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
 		final Set<String> endToEndIds = xmlDocument.getCstmrCdtTrfInitn().getPmtInf()
 				.stream()
@@ -190,7 +220,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				.map(PaymentIdentification1::getEndToEndId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		assertThat(endToEndIds).containsExactlyInAnyOrder(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.NOTPROVIDED_VALUE);
+		assertThat(endToEndIds).containsExactlyInAnyOrder(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.NOTPROVIDED_GENERAL);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
@@ -235,7 +265,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter wheter we do batch or not.
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter if we do batch or not.
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
 		final Set<String> endToEndIds = xmlDocument.getCstmrCdtTrfInitn().getPmtInf()
 				.stream()

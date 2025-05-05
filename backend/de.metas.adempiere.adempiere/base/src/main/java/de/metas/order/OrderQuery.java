@@ -22,7 +22,6 @@
 
 package de.metas.order;
 
-import de.metas.document.DocBaseAndSubType;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -38,15 +37,13 @@ public class OrderQuery
 	ExternalId externalId;
 	OrgId orgId;
 	String documentNo;
-	DocBaseAndSubType docType;
 
 	@Builder(toBuilder = true)
-	public OrderQuery(@Nullable final Integer orderId, @Nullable final ExternalId externalId, @NonNull final OrgId orgId, @Nullable final String documentNo, @Nullable final DocBaseAndSubType docType)
+	public OrderQuery(@Nullable final Integer orderId, @Nullable final ExternalId externalId, @NonNull final OrgId orgId, @Nullable final String documentNo)
 	{
 		this.orderId = orderId;
 		this.externalId = externalId;
 		this.orgId = orgId;
 		this.documentNo= documentNo;
-		this.docType = docType;
 	}
 }

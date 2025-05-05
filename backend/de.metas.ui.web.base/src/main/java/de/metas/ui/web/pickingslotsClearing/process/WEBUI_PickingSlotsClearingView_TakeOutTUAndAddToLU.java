@@ -139,7 +139,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU
 		HUTransformService.builder()
 				.emptyHUListener(EmptyHUListener.collectDestroyedHUIdsTo(huIdsDestroyedCollector))
 				.build()
-				.tuToExistingLU(tuOrAggregatedHU, qtyTU.toBigDecimal(), luHU);
+				.tuToExistingLU(tuOrAggregatedHU, qtyTU, luHU);
 
 		// Remove from picking slots all destroyed HUs
 		pickingCandidateService.inactivateForHUIds(huIdsDestroyedCollector);

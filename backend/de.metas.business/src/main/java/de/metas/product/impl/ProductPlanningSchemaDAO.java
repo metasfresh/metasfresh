@@ -22,36 +22,11 @@
 
 package de.metas.product.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.util.GuavaCollectors;
-import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Product_Planning;
-
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.OrgId;
 import de.metas.product.OnMaterialReceiptWithDestWarehouse;
-import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchema;
 import de.metas.product.ProductPlanningSchemaId;
 import de.metas.product.ProductPlanningSchemaSelector;
@@ -61,37 +36,39 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 
-import javax.annotation.Nullable;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-@UtilityClass
 final class ProductPlanningSchemaDAO
 {
-
-	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public static ProductPlanningSchema getById(@NonNull final ProductPlanningSchemaId schemaId)
+	public ProductPlanningSchema getById(@NonNull final ProductPlanningSchemaId schemaId)
 	{
 		final I_M_Product_PlanningSchema record = loadOutOfTrx(schemaId, I_M_Product_PlanningSchema.class);
 		if (record == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Product_PlanningSchema_ID@: " + schemaId);
 		}
-		return toProductPlanningSchema(record);
+		return fromRecord(record);
 	}
 
 	/**
 	 * Returns the Product Planning Schema entries with the given Product Planning Schema Selector and Org.
 	 */
 	@NonNull
-	public static ImmutableSet<ProductPlanningSchema> retrieveSchemasForSelectorAndOrg(
+	public ImmutableSet<ProductPlanningSchema> retrieveSchemasForSelectorAndOrg(
 			@NonNull final ProductPlanningSchemaSelector productPlanningSchemaSelector,
 			@NonNull final OrgId orgId)
 	{
-		return queryBL
-				.createQueryBuilder(I_M_Product_PlanningSchema.class)
+		return queryBL.createQueryBuilder(I_M_Product_PlanningSchema.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_M_Product_PlanningSchema.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
@@ -99,12 +76,12 @@ final class ProductPlanningSchemaDAO
 				.create()
 				.list()
 				.stream()
-				.map(ProductPlanningSchemaDAO::toProductPlanningSchema)
+				.map(ProductPlanningSchemaDAO::fromRecord)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
-	private static ProductPlanningSchema toProductPlanningSchema(@NonNull final I_M_Product_PlanningSchema record)
+	private static ProductPlanningSchema fromRecord(@NonNull final I_M_Product_PlanningSchema record)
 	{
 		return ProductPlanningSchema.builder()
 				.id(ProductPlanningSchemaId.ofRepoId(record.getM_Product_PlanningSchema_ID()))
@@ -124,7 +101,7 @@ final class ProductPlanningSchemaDAO
 				.build();
 	}
 
-	public static void save(@NonNull final ProductPlanningSchema schema)
+	public void save(@NonNull final ProductPlanningSchema schema)
 	{
 		final I_M_Product_PlanningSchema record;
 		if (schema.getId() != null)
@@ -153,60 +130,5 @@ final class ProductPlanningSchemaDAO
 		saveRecord(record);
 
 		schema.setId(ProductPlanningSchemaId.ofRepoId(record.getM_Product_PlanningSchema_ID()));
-	}
-
-	/**
-	 * @return All the active Product Planning entries that were created for the given planning schema
-	 */
-	public static List<I_PP_Product_Planning> retrieveProductPlanningsForSchemaId(
-			@NonNull final ProductPlanningSchemaId schemaId)
-	{
-		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_PlanningSchema_ID, schemaId)
-				.create()
-				.list();
-	}
-
-	/**
-	 * @return the product planning for the given product and schema if found, null otherwise.
-	 */
-	@Nullable
-	public static I_PP_Product_Planning retrievePlanningForProductAndSchema(
-			@NonNull final ProductId productId,
-			@NonNull final ProductPlanningSchemaId schemaId)
-	{
-		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_PlanningSchema_ID, schemaId)
-				.orderBy()
-				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo)
-				.endOrderBy()
-				.create()
-				.first();
-	}
-
-	/**
-	 * @return Products that don't have PP_ProductPlanning entries
-	 */
-	public static Stream<I_M_Product> streamProductsWithNoProductPlanningButWithSchemaSelector()
-	{
-		final IQueryBL queryBL = ProductPlanningSchemaDAO.queryBL;
-
-		final IQuery<I_PP_Product_Planning> existentProductPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.create();
-
-		return queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addNotInSubQueryFilter(I_M_Product.COLUMNNAME_M_Product_ID, I_PP_Product_Planning.COLUMNNAME_M_Product_ID, existentProductPlanning)
-				.addNotNull(I_M_Product.COLUMN_M_ProductPlanningSchema_Selector)
-				.create()
-				.iterateAndStream();
 	}
 }

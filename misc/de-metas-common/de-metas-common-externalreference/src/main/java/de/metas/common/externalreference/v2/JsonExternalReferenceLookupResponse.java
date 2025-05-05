@@ -36,12 +36,12 @@ import java.util.List;
 @Value
 public class JsonExternalReferenceLookupResponse
 {
-	List<JsonExternalReferenceItem> items;
+	List<JsonExternalReferenceResponseItem> items;
 
 	@JsonCreator
 	@Builder
 	public JsonExternalReferenceLookupResponse(
-			@JsonProperty("items") @NonNull @Singular final List<JsonExternalReferenceItem> items)
+			@JsonProperty("items") @NonNull @Singular final List<JsonExternalReferenceResponseItem> items)
 	{
 		this.items = items;
 	}

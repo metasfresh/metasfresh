@@ -29,6 +29,18 @@ public interface LeichMehlConstants
 	String XML_ELEMENT_RI = "ri";
 	String XML_ELEMENT_RECV_PLU = "recvPLU";
 
-	String XML_PROPERTY_PLU_FILE_ENCODING_VALUE = "Windows-1252";
+	String XML_PROPERTY_FILE_ENCODING_VALUE = "Windows-1252";
 	String XML_PROPERTY_VALUE_YES = "yes";
+
+	String NODE_ATTRIBUTE_TYPE = "xsi:type";
+	String NODE_ATTRIBUTE_NAME = "name";
+
+	String ELEMENT_TAG_PRINT_OBJECTS = "printObjects";
+	String ELEMENT_TAG_PRINT_OBJECT = "printObject";
+
+	String ATTRIBUTE_TARGET_ELEMENT_DATA = "data";
+	String ATTRIBUTE_TARGET_ELEMENT_FORMAT = "format";
+	String ATTRIBUTE_TARGET_ELEMENT_TEMPLATE = "template";
+
+	String AD_PINSTANCE_TABLE_NAME = "AD_PInstance";
 }

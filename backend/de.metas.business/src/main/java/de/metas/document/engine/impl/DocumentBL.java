@@ -1,8 +1,8 @@
 package de.metas.document.engine.impl;
 
-import java.time.LocalDate;
-import java.util.Properties;
-
+import de.metas.document.engine.IDocument;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.util.Services;
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -14,8 +14,7 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 
-import de.metas.document.engine.IDocument;
-import de.metas.util.Services;
+import java.util.Properties;
 
 public final class DocumentBL extends AbstractDocumentBL
 {
@@ -79,12 +78,7 @@ public final class DocumentBL extends AbstractDocumentBL
 			return false;
 		}
 
-		if (!IDocument.class.isAssignableFrom(clazz))
-		{
-			return false;
-		}
-
-		return true;
+		return IDocument.class.isAssignableFrom(clazz);
 	}
 
 	@Override
@@ -159,7 +153,7 @@ public final class DocumentBL extends AbstractDocumentBL
 	}
 
 	@Override
-	public LocalDate getDocumentDate(Properties ctx, int adTableID, int recordId)
+	public InstantAndOrgId getDocumentDate(Properties ctx, int adTableID, int recordId)
 	{
 		final Object model = retrieveModelOrNull(ctx, adTableID, recordId);
 		return getDocumentDate(model);

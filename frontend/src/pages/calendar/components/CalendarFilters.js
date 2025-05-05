@@ -20,6 +20,10 @@ CalendarFilters.propTypes = {
 };
 
 const convertResolvedQueryToItemData = (resolvedQuery) => {
+  if (!resolvedQuery) {
+    return [];
+  }
+
   const result = [];
 
   if (resolvedQuery.onlyResources && resolvedQuery.onlyResources.length > 0) {
@@ -34,6 +38,10 @@ const convertResolvedQueryToItemData = (resolvedQuery) => {
 
   if (resolvedQuery.onlyCustomer) {
     result.push(resolvedQuery.onlyCustomer);
+  }
+
+  if (resolvedQuery.onlyResponsible) {
+    result.push(resolvedQuery.onlyResponsible);
   }
 
   return result;

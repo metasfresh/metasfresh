@@ -96,4 +96,6 @@ public interface ICountryDAO extends ISingletonService
 	ITranslatableString getCountryNameById(CountryId countryId);
 
 	Optional<CurrencyId> getCountryCurrencyId(CountryId countryId);
+
+	boolean isEnforceCorrectionInvoice(CountryId countryId);
 }

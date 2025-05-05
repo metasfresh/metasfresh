@@ -34,6 +34,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import static de.metas.ui.web.window.datatypes.json.DateTimeConverters.fromObjectToInstant;
+
 /**
  * A helper class to precisely control how {@link java.time.ZonedDateTime}s are serialized/deserialized from/to JSON.
  */
@@ -76,5 +78,5 @@ public class JsonDateTime
 	@Deprecated
 	public String toString() {return toJson();}
 
-	public Instant toInstant() {return DateTimeConverters.fromObjectToInstant(string);}
+	public Instant toInstant() {return fromObjectToInstant(string);}
 }

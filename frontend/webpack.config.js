@@ -72,7 +72,7 @@ if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
 module.exports = {
   mode: 'development',
   bail: true,
-  devtool: 'eval-cheap-source-map',
+  devtool: 'source-map',
   entry: entries,
   output: {
     path: '/',

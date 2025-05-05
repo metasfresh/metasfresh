@@ -10,29 +10,28 @@ package de.metas.dunning.invoice.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.dunning.api.IDunnableDoc;
+import de.metas.dunning.api.impl.DunnableDoc;
+import de.metas.organization.LocalDateAndOrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 
-import de.metas.dunning.api.IDunnableDoc;
-import de.metas.dunning.api.impl.DunnableDoc;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
 
 public class DunnableDocBuilder
 {
@@ -47,10 +46,14 @@ public class DunnableDocBuilder
 	private int C_Currency_ID = -1;
 	private BigDecimal totalAmt;
 	private BigDecimal openAmt;
-	private Date dueDate;
-	private Date graceDate;
+	private LocalDateAndOrgId dueDate;
+	private LocalDateAndOrgId graceDate;
 	private int daysDue;
 	private boolean isInDispute;
+	private int M_SectionCode_ID = -1;
+
+	@Nullable
+	private String poReference;
 
 	public DunnableDocBuilder()
 	{
@@ -64,17 +67,17 @@ public class DunnableDocBuilder
 
 	public IDunnableDoc create()
 	{
-		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName, record_id,
-				documentNo, // FRESH-504: DocumentNo
-				AD_Client_ID, AD_Org_ID,
-				C_BPartner_ID, C_BPartner_Location_ID, Contact_ID,
-				C_Currency_ID, totalAmt, openAmt,
-				dueDate,
-				graceDate,
-				daysDue,
-				isInDispute);
-
-		return dunnableDoc;
+		return new DunnableDoc(tableName, record_id,
+							   documentNo, // FRESH-504: DocumentNo
+							   AD_Client_ID, AD_Org_ID,
+							   C_BPartner_ID, C_BPartner_Location_ID, Contact_ID,
+							   C_Currency_ID, totalAmt, openAmt,
+							   dueDate,
+							   graceDate,
+							   daysDue,
+							   M_SectionCode_ID,
+				isInDispute,
+				poReference);
 	}
 
 	public IDunnableDoc createAndAppend(List<IDunnableDoc> list)
@@ -102,7 +105,7 @@ public class DunnableDocBuilder
 		this.record_id = InterfaceWrapperHelper.getId(model);
 		return this;
 	}
-	
+
 	/**
 	 * FRESH-504: DocuemntNo is also needed
 	 * @param documentNo
@@ -113,7 +116,7 @@ public class DunnableDocBuilder
 		this.documentNo = documentNo;
 		return this;
 	}
-	
+
 
 	public DunnableDocBuilder setAD_Client_ID(int adClientId)
 	{
@@ -163,13 +166,13 @@ public class DunnableDocBuilder
 		return this;
 	}
 
-	public DunnableDocBuilder setDueDate(Date dueDate)
+	public DunnableDocBuilder setDueDate(LocalDateAndOrgId dueDate)
 	{
 		this.dueDate = dueDate;
 		return this;
 	}
 
-	public DunnableDocBuilder setGraceDate(Date graceDate)
+	public DunnableDocBuilder setGraceDate(LocalDateAndOrgId graceDate)
 	{
 		this.graceDate = graceDate;
 		return this;
@@ -184,6 +187,18 @@ public class DunnableDocBuilder
 	public DunnableDocBuilder setInDispute(boolean isInDispute)
 	{
 		this.isInDispute = isInDispute;
+		return this;
+	}
+
+	public DunnableDocBuilder setM_SectionCode_ID(int m_SectionCode_ID)
+	{
+		M_SectionCode_ID = m_SectionCode_ID;
+		return this;
+	}
+
+	public DunnableDocBuilder setPoReference(@Nullable final String poReference)
+	{
+		this.poReference = poReference;
 		return this;
 	}
 }

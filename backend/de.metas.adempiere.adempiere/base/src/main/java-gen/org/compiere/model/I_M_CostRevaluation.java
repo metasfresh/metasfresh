@@ -80,7 +80,7 @@ public interface I_M_CostRevaluation
 	 * Set Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -90,7 +90,7 @@ public interface I_M_CostRevaluation
 	 * Get Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -258,6 +258,33 @@ public interface I_M_CostRevaluation
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostElement_ID (int M_CostElement_ID);
+
+	/**
+	 * Get Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostElement_ID();
+
+	org.compiere.model.I_M_CostElement getM_CostElement();
+
+	void setM_CostElement(org.compiere.model.I_M_CostElement M_CostElement);
+
+	ModelColumn<I_M_CostRevaluation, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_M_CostRevaluation.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
+
+	/**
 	 * Set Cost Revaluation.
 	 *
 	 * <br>Type: ID
@@ -277,6 +304,49 @@ public interface I_M_CostRevaluation
 
 	ModelColumn<I_M_CostRevaluation, Object> COLUMN_M_CostRevaluation_ID = new ModelColumn<>(I_M_CostRevaluation.class, "M_CostRevaluation_ID", null);
 	String COLUMNNAME_M_CostRevaluation_ID = "M_CostRevaluation_ID";
+
+	/**
+	 * Set Posting status.
+	 * Posting status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPosted (boolean Posted);
+
+	/**
+	 * Get Posting status.
+	 * Posting status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPosted();
+
+	ModelColumn<I_M_CostRevaluation, Object> COLUMN_Posted = new ModelColumn<>(I_M_CostRevaluation.class, "Posted", null);
+	String COLUMNNAME_Posted = "Posted";
+
+	/**
+	 * Set Posting Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPostingError_Issue_ID (int PostingError_Issue_ID);
+
+	/**
+	 * Get Posting Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPostingError_Issue_ID();
+
+	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**
 	 * Set Processed.

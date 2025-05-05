@@ -3,8 +3,9 @@ package org.adempiere.inout.util;
 import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.cockpit.stock.StockRepository;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,30 +35,26 @@ import java.util.List;
 @Service
 public class ShipmentScheduleQtyOnHandStorageFactory
 {
-	private final StockRepository stockRepository;
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleQtyOnHandStorageFactory.class);
+	private final List<IShipmentScheduleQtyOnHandProvider> providers;
 
-	public ShipmentScheduleQtyOnHandStorageFactory(@NonNull final StockRepository stockRepository)
+	public ShipmentScheduleQtyOnHandStorageFactory(@NonNull final List<IShipmentScheduleQtyOnHandProvider> providers)
 	{
-		this.stockRepository = stockRepository;
+		logger.info("Providers: {}", providers);
+		this.providers = providers;
 	}
 
-	public final ShipmentScheduleQtyOnHandStorage ofShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		return new ShipmentScheduleQtyOnHandStorage(ImmutableList.of(shipmentSchedule), stockRepository);
-	}
-
-	public final ShipmentScheduleQtyOnHandStorage ofOlAndScheds(@NonNull final List<OlAndSched> lines)
+	public final ShipmentScheduleQtyOnHandStorageHolder getHolderForOlAndSched(@NonNull final List<OlAndSched> lines)
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = lines
 				.stream()
 				.map(OlAndSched::getSched)
 				.collect(ImmutableList.toImmutableList());
 
-		return new ShipmentScheduleQtyOnHandStorage(shipmentSchedules, stockRepository);
+		final ImmutableList<IShipmentScheduleQtyOnHandStorage> shipmentScheduleQtyOnHandStorages = providers.stream()
+				.map(provider -> provider.getStorageFor(shipmentSchedules))
+				.collect(ImmutableList.toImmutableList());
+		return ShipmentScheduleQtyOnHandStorageHolder.of(shipmentScheduleQtyOnHandStorages);
 	}
 
-	public final ShipmentScheduleQtyOnHandStorage ofShipmentSchedules(@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
-	{
-		return new ShipmentScheduleQtyOnHandStorage(shipmentSchedules, stockRepository);
-	}
 }

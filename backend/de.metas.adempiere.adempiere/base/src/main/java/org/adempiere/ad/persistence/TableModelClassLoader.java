@@ -35,7 +35,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Phase;
 import org.compiere.model.I_C_Task;
 import org.compiere.model.MAccount;
-import org.compiere.model.MGLCategory;
 import org.compiere.model.MKCategory;
 import org.compiere.model.MRequestCategory;
 import org.compiere.model.MTree_Base;
@@ -54,7 +53,6 @@ import java.util.concurrent.ExecutionException;
  * Class responsible for loading model classes by given Table Name.
  *
  * @author tsa
- *
  */
 public class TableModelClassLoader
 {
@@ -84,14 +82,20 @@ public class TableModelClassLoader
 	 */
 	private final LoadingCache<Class<?>, Constructor<?>> class2resultSetConstructor;
 
-	/** Packages for Model Classes */
+	/**
+	 * Packages for Model Classes
+	 */
 	private static final String[] s_packages = new String[] {
 			"org.compiere.model", "org.compiere.wf",
 			"org.compiere.report", // teo_sarca BF[3133032]
 			"org.compiere.print", "org.compiere.impexp",
-			"compiere.model",			// globalqss allow compatibility with other plugins
-			"adempiere.model",			// Extensions
+			"compiere.model",            // globalqss allow compatibility with other plugins
+			"adempiere.model",            // Extensions
 			"org.adempiere.model"
+	};
+	private static final String[] import_packages = new String[] {
+			"org.compiere.model.",
+			"de.metas.contracts.model"
 	};
 
 	@VisibleForTesting
@@ -132,7 +136,6 @@ public class TableModelClassLoader
 		specialTableName2className.put("AD_Element", M_Element.class.getName());
 		specialTableName2className.put("AD_Tree", MTree_Base.class.getName());
 		specialTableName2className.put("R_Category", MRequestCategory.class.getName());
-		specialTableName2className.put("GL_Category", MGLCategory.class.getName());
 		specialTableName2className.put("K_Category", MKCategory.class.getName());
 		specialTableName2className.put("C_ValidCombination", MAccount.class.getName());
 		specialTableName2className.put("C_Phase", I_C_Phase.class.getName());
@@ -175,7 +178,7 @@ public class TableModelClassLoader
 		}
 
 		return modelClass;
-	}	// getClass
+	}    // getClass
 
 	private final Class<?> findModelClassByTableName(final String tableName)
 	{
@@ -187,10 +190,13 @@ public class TableModelClassLoader
 		// Import Tables (Name conflict)
 		if (tableName.startsWith("I_"))
 		{
-			final Class<?> clazz = loadModelClassForClassname("org.compiere.model.X_" + tableName);
-			if (clazz != null)
+			for (final String pkg : import_packages)
 			{
-				return clazz;
+				final Class<?> clazz = loadModelClassForClassname(pkg + ".X_" + tableName);
+				if (clazz != null)
+				{
+					return clazz;
+				}
 			}
 
 			log.warn("No class for import table: {}", tableName);
@@ -237,10 +243,10 @@ public class TableModelClassLoader
 			if (index < 3)
 			{
 				className = className.substring(index + 1);
-			/*
-			 * DELETEME: this part is useless - teo_sarca, [ 1648850 ] else { String prefix = className.substring(0,index); if (prefix.equals("Fact")) // keep custom prefix className =
-			 * className.substring(index+1); }
-			 */
+				/*
+				 * DELETEME: this part is useless - teo_sarca, [ 1648850 ] else { String prefix = className.substring(0,index); if (prefix.equals("Fact")) // keep custom prefix className =
+				 * className.substring(index+1); }
+				 */
 			}
 		}
 		// Remove underlines

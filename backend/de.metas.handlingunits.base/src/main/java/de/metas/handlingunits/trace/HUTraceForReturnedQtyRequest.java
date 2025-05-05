@@ -27,6 +27,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.inout.InOutId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -64,5 +65,5 @@ public class HUTraceForReturnedQtyRequest
 	ProductId productId;
 
 	@NonNull
-	BigDecimal qty;
+	Quantity qty;
 }

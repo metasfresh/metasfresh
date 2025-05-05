@@ -22,34 +22,34 @@
 
 package de.metas.common.bprelation;
 
-import de.pentabyte.springfox.ApiEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(enumAsRef = true, description = "JsonBPRelationRole: \n" +
+		"* `MainProducer` - Hauptlieferant\n" +
+		"* `Hospital` - Krankenhaus / Hostpital\n" +
+		"* `PhysicianDoctor` - Arzt / Doctor\n" +
+		"* `GeneralPractitioner` - Hausarzt / General practitioner\n" +
+		"* `HealthInsurance` - Krankenkasse / Health Insurance\n" +
+		"* `NursingHome` - Pflegeheim / Nursing home\n" +
+		"* `Caregiver` - Betreuer / Caregiver\n" +
+		"* `CareTaker` - Patientenkontakt / Caretaker\n" +
+		"* `PreferredPharmacy` - Wunschapotheke / Preferred Pharmacy\n" +
+		"* `NursingService` - Pflegedienst / Nursing service\n" +
+		"* `Payer` - Payer / Payer\n" +
+		"* `Pharmacy` - Apotheke / Pharmacy\n" +
+		"")
 public enum JsonBPRelationRole
 {
-	@ApiEnum("Hauptlieferant")
 	MainProducer,
-	@ApiEnum("Krankenhaus / Hostpital")
 	Hospital,
-	@ApiEnum("Arzt / Doctor")
 	PhysicianDoctor,
-	@ApiEnum("Hausarzt / General practitioner")
 	GeneralPractitioner,
-	@ApiEnum("Krankenkasse / Health Insurance")
 	HealthInsurance,
-	@ApiEnum("Pflegeheim / Nursing home")
 	NursingHome,
-	@ApiEnum("Betreuer / Caregiver")
 	Caregiver,
-	
-	@ApiEnum("Patientenkontakt / Caretaker")
 	CareTaker,
-	
-	@ApiEnum("Wunschapotheke / Preferred Pharmacy")
 	PreferredPharmacy,
-	@ApiEnum("Pflegedienst / Nursing service")
 	NursingService,
-	@ApiEnum("Payer / Payer")
 	Payer,
-	@ApiEnum("Apotheke / Pharmacy")
 	Pharmacy
 }

@@ -29,7 +29,6 @@ import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_AD_Column;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -255,8 +254,7 @@ public class WebuiDocumentReferencesService
 			if (keyColumnName != null)
 			{
 				final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-				final I_AD_Column idColumn = adTableDAO.retrieveColumn(tableName, keyColumnName);
-				return idColumn.isGenericZoomOrigin();
+				return adTableDAO.getMinimalColumnInfo(tableName, keyColumnName).isGenericZoomOrigin();
 			}
 			return false;
 		}

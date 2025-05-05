@@ -66,10 +66,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private static final String CONFIG_UseNativeConverter = "org.compiere.db.DB_PostgreSQL.UseNativeConverter";
 	private static final String CONFIG_UseNativeConverter_DefaultValue = "true";
 
-	private static final String CONFIG_CheckoutTimeout_SwingClient = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
-
-	private static final String CONFIG_UnreturnedConnectionTimeoutMillis = "db.postgresql.unreturnedConnectionTimeoutMillis";
-	private static final Duration CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue = Duration.ofHours(2);
+	/**
+	 * This is usually set by starting metasfresh with something like {@code -Ddb.postgresql.unreturnedConnectionTimeoutMillis=28800000} to e.g. set the timeout to 8h
+	 */
+	private static final String SYSTEM_PROPERTY_UnreturnedConnectionTimeoutMillis = "db.postgresql.unreturnedConnectionTimeoutMillis";
+	private static final Duration SYSTEM_PROPERTY_UnreturnedConnectionTimeoutMillis_DefaultValue = Duration.ofHours(2);
 
 	/**
 	 * Statement Converter for external use (i.e. returned by {@link #getConvert()}.
@@ -108,11 +109,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private transient ComboPooledDataSource _dataSource = null;
 	private transient volatile boolean _dataSourceInitialized = false;
 	private final Object _dataSourceLock = new Object();
-
-	/** Cached Database Name */
-	private String m_dbName = null;
-
-	// private String m_userName = null;
 
 	/** Connection String (the last one about we were asked) */
 	private String m_connectionURL;
@@ -270,10 +266,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	@Override
 	public String getCatalog()
 	{
-		if (m_dbName != null)
-		{
-			return m_dbName;
-		}
 		// log.error("Database Name not set (yet) - call getConnectionURL first");
 		return null;
 	}	// getCatalog
@@ -578,30 +570,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			cpds.setPassword(connection.getDbPwd());
 			cpds.setPreferredTestQuery(DEFAULT_CONN_TEST_SQL);
 			cpds.setIdleConnectionTestPeriod(1200);
-			// cpds.setTestConnectionOnCheckin(true);
-			// cpds.setTestConnectionOnCheckout(true);
+
 			cpds.setAcquireRetryAttempts(2);
 
-			// if (Ini.isSwingClient())
-			// {
-			// 	// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
-			// 	cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout_SwingClient, 20 * 1000));
-			//
-			// 	cpds.setInitialPoolSize(1);
-			// 	cpds.setMinPoolSize(1);
-			// 	cpds.setMaxPoolSize(20);
-			// 	cpds.setMaxIdleTimeExcessConnections(1200);
-			// 	cpds.setMaxIdleTime(900);
-			// }
-			// else
-			// {
-				// these are set in c3p0.properties files
-				// cpds.setInitialPoolSize(10);
-				// cpds.setMinPoolSize(5);
-				// cpds.setMaxPoolSize(150);
 				cpds.setMaxIdleTimeExcessConnections(1200);
 				cpds.setMaxIdleTime(1200);
-			// }
 
 			//
 			// Timeout unreturned connections
@@ -630,8 +603,8 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private static Duration getUnreturnedConnectionTimeout()
 	{
 		return Duration.ofMillis(SystemUtils.getSystemProperty(
-				CONFIG_UnreturnedConnectionTimeoutMillis,
-				(int)CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue.toMillis()));
+				SYSTEM_PROPERTY_UnreturnedConnectionTimeoutMillis,
+				(int)SYSTEM_PROPERTY_UnreturnedConnectionTimeoutMillis_DefaultValue.toMillis()));
 	}
 
 	private final void closeDataSource()
@@ -663,10 +636,9 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	 * @param dbUid user
 	 * @param dbPwd password
 	 * @return connection
-	 * @throws SQLException
 	 */
 	@Override
-	public Connection getDriverConnection(String dbUrl, String dbUid, String dbPwd)
+	public Connection getDriverConnection(final String dbUrl, final String dbUid, final String dbPwd)
 			throws SQLException
 	{
 		getDriver();
@@ -687,13 +659,13 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	/**
 	 * Check and generate an alternative SQL
 	 *
-	 * @reExNo number of re-execution
-	 * @msg previous execution error message
-	 * @sql previous executed SQL
+	 * @param reExNo number of re-execution
+	 * @param msg previous execution error message
+	 * @param sql previous executed SQL
 	 * @return String, the alternative SQL, null if no alternative
 	 */
 	@Override
-	public String getAlternativeSQL(int reExNo, String msg, String sql)
+	public String getAlternativeSQL(final int reExNo, final String msg, final String sql)
 	{
 		return null; // do not do re-execution of alternative SQL
 	}
@@ -701,13 +673,13 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	/**
 	 * Get constraint type associated with the index
 	 *
-	 * @tableName table name
-	 * @IXName Index name
+	 * @param tableName table name
+	 * @param IXName Index name
 	 * @return String[0] = 0: do not know, 1: Primary Key 2: Foreign Key
 	 *         String[1] - String[n] = Constraint Name
 	 */
 	@Override
-	public String getConstraintType(Connection conn, String tableName, String IXName)
+	public String getConstraintType(final Connection conn, final String tableName, final String IXName)
 	{
 		if (IXName == null || IXName.length() == 0)
 		{
@@ -727,11 +699,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	/**
 	 * Check if DBMS support the sql statement
 	 *
-	 * @sql SQL statement
+	 * @param sql SQL statement
 	 * @return true: yes
 	 */
 	@Override
-	public boolean isSupported(String sql)
+	public boolean isSupported(final String sql)
 	{
 		return true;
 		// jz temp, modify later
@@ -804,14 +776,14 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		return sb.toString();
 	}
 
-	private final boolean hasSequence(final String dbSequenceName, final String trxName)
+	private boolean hasSequence(final String dbSequenceName, final String trxName)
 	{
 		final int cnt = DB.getSQLValueEx(trxName, "SELECT COUNT(*) FROM pg_class WHERE UPPER(relname)=? AND relkind='S'", dbSequenceName.toUpperCase());
 		return cnt > 0;
 	}
 
 	@Override
-	public boolean createSequence(String dbSequenceName, int increment, int minvalue, int maxvalue, int start, String trxName)
+	public boolean createSequence(final String dbSequenceName, final int increment, final int minvalue, final int maxvalue, final int start, final String trxName)
 	{
 		Check.assumeNotEmpty(dbSequenceName, "dbSequenceName not empty");
 
@@ -875,10 +847,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/**
 	 * Implemented using the limit and offset feature. use 1 base index for start and end parameter
-	 *
-	 * @param sql
-	 * @param start
-	 * @param end
 	 */
 	@Override
 	public String addPagingSQL(String sql, int start, int end)
@@ -897,7 +865,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	}
 
 	@Override
-	public String getSQLDataType(int displayType, String columnName, int fieldLength)
+	public String getSQLDataType(final int displayType, final String columnName, final int fieldLength)
 	{
 		if (columnName.equals("EntityType")
 				|| columnName.equals("AD_Language"))

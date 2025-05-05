@@ -29,7 +29,7 @@ const IssueAdjustmentScanScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
-      qtyCaption={trl('general.QtyToPick')}
+      qtyTargetCaption={trl('general.QtyToPick')}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
       scaleDevice={scaleDevice}

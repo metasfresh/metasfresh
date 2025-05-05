@@ -1,7 +1,0 @@
-{
-  "connectionDetails": {
-    "tcpPort": 445,
-    "tcpHost": "Host"
-  },
-  "payload": "<?xml version=\"1.0\" encoding=\"Windows-1252\" standalone=\"yes\"?>\n<ri>\n    <recvPLU><student>\r\n    <id>101</id>\r\n    <firstname>firstname</firstname>\r\n    <lastname>lastname</lastname>\r\n</student></recvPLU>\n</ri>\n"
-}

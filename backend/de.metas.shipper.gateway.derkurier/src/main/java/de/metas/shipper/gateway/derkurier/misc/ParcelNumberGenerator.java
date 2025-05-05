@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import org.apache.commons.lang.StringUtils;
+
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;

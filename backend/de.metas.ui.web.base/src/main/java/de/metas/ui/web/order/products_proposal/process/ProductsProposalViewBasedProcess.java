@@ -1,12 +1,6 @@
 package de.metas.ui.web.order.products_proposal.process;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
@@ -18,6 +12,11 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /*
  * #%L
@@ -84,7 +83,7 @@ public abstract class ProductsProposalViewBasedProcess extends ViewBasedProcessT
 		afterCloseOpenView(getInitialViewId());
 	}
 
-	private final void closeAllViewsExcludingInitialView()
+	private void closeAllViewsExcludingInitialView()
 	{
 		IView currentView = getView();
 		while (currentView != null && currentView.getParentViewId() != null)
@@ -93,7 +92,7 @@ public abstract class ProductsProposalViewBasedProcess extends ViewBasedProcessT
 			{
 				viewsRepo.closeView(currentView.getViewId(), ViewCloseAction.CANCEL);
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				logger.warn("Failed closing view {}. Ignored", currentView, ex);
 			}
@@ -111,4 +110,11 @@ public abstract class ProductsProposalViewBasedProcess extends ViewBasedProcessT
 				.build());
 	}
 
+	protected final void afterCloseOpenViewInNewTab(@NonNull final ViewId viewId)
+	{
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
+											   .viewId(viewId.toJson())
+											   .target(ViewOpenTarget.NewBrowserTab)
+											   .build());
+	}
 }

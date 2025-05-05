@@ -1,0 +1,28 @@
+.draggable-widget-body:has(> .urls-chart) {
+  align-items: start !important;
+}
+
+
+.urls-chart {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 10px;
+
+  .item {
+    overflow-wrap: break-word;
+  }
+}
+
+
+.board-sidenav {
+  .draggable-widget {
+    display: block !important;
+
+    .urls-chart {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+  }
+}

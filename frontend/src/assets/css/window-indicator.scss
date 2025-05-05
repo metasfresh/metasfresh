@@ -1,0 +1,97 @@
+.window-indicator-container {
+  .bar {
+    height: 2px;
+  }
+
+  .saved {
+    animation-name: indicator-saving;
+    animation-duration: 2s;
+  }
+
+  .pending {
+    background-color: #D0D2CE;
+    animation-name: indicator-pending;
+    animation-duration: 1s;
+  }
+
+  .error {
+    animation-name: indicator-error;
+    animation-duration: 2s;
+    width: 100%;
+    background-color: $brand-font-color-danger;
+  }
+
+  .message-bar {
+    display: flex;
+    background-color: white;
+
+    .text {
+      flex-grow: 10;
+      color: $brand-font-color-danger;
+      height: 1.25em;
+      overflow: hidden;
+      white-space:nowrap;
+      text-overflow: ellipsis;
+    }
+    .copy-button {
+      flex-grow: 0;
+      visibility: hidden;
+    }
+  }
+
+  .message-bar-empty {
+    background-color: transparent !important;
+    background-image: linear-gradient(to bottom, white, transparent) !important;
+  }
+
+  :hover .copy-button {
+    visibility: visible;
+  }
+}
+
+@keyframes indicator-pending {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 30%;
+  }
+}
+
+@keyframes indicator-saving {
+  0% {
+    width: 30%;
+    background-color: #ADADAD;
+  }
+  60% {
+    width: 100%;
+    background-color: #ADADAD;
+  }
+  85% {
+    width: 100%;
+    background-color: $brand-success-color;
+  }
+  100% {
+    width: 0%;
+    background-color: transparent;
+  }
+}
+
+@keyframes indicator-error {
+  0% {
+    width: 30%;
+    background-color: #ADADAD;
+  }
+  60% {
+    width: 100%;
+    background-color: #ADADAD;
+  }
+  85% {
+    width: 100%;
+    background-color: $brand-font-color-danger;
+  }
+  100% {
+    width: 100%;
+    background-color: $brand-font-color-danger;
+  }
+}

@@ -26,9 +26,14 @@ import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
@@ -48,7 +53,7 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.nio.file.Path;
 
-import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.XML_PROPERTY_PLU_FILE_ENCODING_VALUE;
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.XML_PROPERTY_FILE_ENCODING_VALUE;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.XML_PROPERTY_VALUE_YES;
 
 @UtilityClass
@@ -58,14 +63,18 @@ public class XMLUtil
 	public static Document readFromPath(@NonNull final Path path) throws ParserConfigurationException, IOException, SAXException
 	{
 		final InputStream inputStream = new FileInputStream(path.toFile());
-		final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, XML_PROPERTY_PLU_FILE_ENCODING_VALUE);
+		final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, XML_PROPERTY_FILE_ENCODING_VALUE);
 
 		final BufferedReader reader = new BufferedReader(inputStreamReader);
 		final InputSource input = new InputSource(reader);
 
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		final DocumentBuilder builder = factory.newDocumentBuilder();
-		return builder.parse(input);
+		final Document document = builder.parse(input);
+		//dev-note: ensure that the document hierarchy isn't affected by any extra white spaces or new lines within nodes.
+		document.getDocumentElement().normalize();
+
+		return document;
 	}
 
 	@NonNull
@@ -90,7 +99,7 @@ public class XMLUtil
 
 		final Marshaller marshaller = jaxbContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		marshaller.setProperty(Marshaller.JAXB_ENCODING, XML_PROPERTY_PLU_FILE_ENCODING_VALUE);
+		marshaller.setProperty(Marshaller.JAXB_ENCODING, XML_PROPERTY_FILE_ENCODING_VALUE);
 
 		final CharacterEscapeHandler escapeHandler = NoEscapeHandler.INSTANCE;
 		marshaller.setProperty("com.sun.xml.bind.characterEscapeHandler", escapeHandler);
@@ -100,5 +109,40 @@ public class XMLUtil
 		marshaller.marshal(object, sw);
 
 		return sw.toString();
+	}
+
+	public static boolean hasAttribute(
+			@NonNull final Node node,
+			@NonNull final String attributeName,
+			@NonNull final String matchingValue)
+	{
+		final NamedNodeMap namedNodeMap = node.getAttributes();
+
+		final Node attributeNode = namedNodeMap.getNamedItem(attributeName);
+		if (attributeNode == null || attributeNode.getNodeValue() == null)
+		{
+			return false;
+		}
+
+		return matchingValue.equals(attributeNode.getNodeValue());
+	}
+
+	@Nullable
+	public static Element getElementByTag(@NonNull final Node node, @NonNull final String tagName)
+	{
+		final Element element = node instanceof Document
+				? ((Document)node).getDocumentElement()
+				: (Element)node;
+
+		final NodeList nodeList = element.getElementsByTagName(tagName);
+
+		if (nodeList.getLength() == 0)
+		{
+			return null;
+		}
+
+		final Node childNode = nodeList.item(0);
+
+		return (Element)childNode;
 	}
 }

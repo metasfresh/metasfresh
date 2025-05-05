@@ -31,10 +31,10 @@ class CalendarDateRangeTest
 	}
 
 	@Test
-	void check_toRange_returns_a_closed_interval()
+	void check_toRange_returns_a_closedOpen_interval()
 	{
 		assertThat(allDay(1, 2).toRange())
-				.isEqualTo(Range.closed(instant(1), instant(2)));
+				.isEqualTo(Range.closedOpen(instant(1), instant(2)));
 	}
 
 	@Nested
@@ -98,27 +98,27 @@ class CalendarDateRangeTest
 	}
 
 	@Nested
-	class isConnectedTo
+	class isOverlappingWith_start_end
 	{
 		@Test
-		void notIntersecting() {assertThat(allDay(2, 3).isConnectedTo(instant(4), instant(5))).isFalse();}
+		void notIntersecting() {assertThat(allDay(2, 3).isOverlappingWith(instant(4), instant(5))).isFalse();}
 
 		@Test
-		void adjacent() {assertThat(allDay(2, 3).isConnectedTo(instant(3), instant(4))).isTrue();}
+		void adjacent() {assertThat(allDay(2, 3).isOverlappingWith(instant(3), instant(4))).isFalse();}
 
 		@Test
-		void intersecting() {assertThat(allDay(2, 4).isConnectedTo(instant(3), instant(5))).isTrue();}
+		void intersecting() {assertThat(allDay(2, 4).isOverlappingWith(instant(3), instant(5))).isTrue();}
 
 		@Test
-		void including() {assertThat(allDay(2, 10).isConnectedTo(instant(3), instant(5))).isTrue();}
+		void including() {assertThat(allDay(2, 10).isOverlappingWith(instant(3), instant(5))).isTrue();}
 
 		@Test
-		void included() {assertThat(allDay(2, 10).isConnectedTo(instant(1), instant(11))).isTrue();}
+		void included() {assertThat(allDay(2, 10).isOverlappingWith(instant(1), instant(11))).isTrue();}
 
 	}
 
 	@Nested
-	class isOverlappingWith
+	class isOverlappingWith_calendarDateRange
 	{
 		@Test
 		void notIntersecting() {assertThat(allDay(2, 3).isOverlappingWith(allDay(4, 5))).isFalse();}

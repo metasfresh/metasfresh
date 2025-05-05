@@ -89,6 +89,11 @@ public class OrderGroupCompensationUtils
 		return isGeneratedLine(groupSchemaLineId);
 	}
 
+	public static boolean isManualLine(final I_C_OrderLine orderLine)
+	{
+		return orderLine.isGroupCompensationLine() && !isGeneratedLine(orderLine);
+	}
+
 	@Nullable
 	public static GroupTemplateLineId extractGroupTemplateLineId(@NonNull final I_C_OrderLine orderLine)
 	{

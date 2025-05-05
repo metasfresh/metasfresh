@@ -8,9 +8,7 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.JComponent;
-import javax.swing.JSplitPane;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.UIResource;
@@ -47,8 +45,11 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
  */
 public class AdempiereSplitPaneUI extends BasicSplitPaneUI
 {
-	/** the UI Class ID to bind this UI to */
-	public static final String uiClassID = AdempierePLAF.getUIClassID(JSplitPane.class, "SplitPaneUI");
+	/**
+	 * The UI Class ID to bind this UI to
+	 * See {@link JSplitPane#getUIClassID()}.
+	 */
+	public static final String uiClassID = "SplitPaneUI";
 
 	public static final String CLIENT_PROPERTY_ApplyTabbedPaneTopGap = org.adempiere.plaf.AdempiereSplitPaneUI.class.getName() + ".ApplyTabbedPaneGap";
 

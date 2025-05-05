@@ -22,6 +22,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -33,7 +34,8 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ESRRegularLineMatcherTest extends ESRTestBase
 {
@@ -64,10 +66,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -95,10 +97,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
@@ -145,10 +147,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
@@ -196,10 +198,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
@@ -247,10 +249,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
@@ -291,10 +293,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -319,10 +321,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -350,10 +352,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -379,10 +381,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-888888-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-888888-0",
+				currencyEUR);
 
 		final String esrNoForPostFinanceUser = "010599310";
 
@@ -409,10 +411,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-888888-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-888888-0",
+				currencyEUR);
 
 		final String renderedEsrNoForPostFinanceUser = "01-059931-0";
 		final String unRenderedEsrNoForPostFinanceUser = "010599310";
@@ -440,10 +442,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-888888-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-888888-0",
+				currencyEUR);
 
 		final String esrNoForPostFinanceUser = "01-0599310";
 
@@ -455,7 +457,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 
 		assertThatThrownBy(() -> esrImportBL.loadAndEvaluateESRImportStream(esrImportFile,
-																			new ByteArrayInputStream(esrImportLineText.getBytes())))
+				new ByteArrayInputStream(esrImportLineText.getBytes())))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("01-0599310 contains three '-' separated parts");
 
@@ -471,10 +473,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-888888-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-888888-0",
+				currencyEUR);
 
 		final String esrNoForPostFinanceUser = "088888880";
 
@@ -508,10 +510,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -528,14 +530,15 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		partner.setValue("partner1");
 		save(partner);
 
-		final I_C_DocType type = newInstance(I_C_DocType.class);
-		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
-		save(type);
+		final I_C_DocType docTypeAPC = newInstance(I_C_DocType.class);
+		docTypeAPC.setDocBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
+		save(docTypeAPC);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo("000120686");
-		invoice.setC_DocType_ID(type.getC_DocType_ID());
+		invoice.setC_DocType_ID(docTypeAPC.getC_DocType_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		save(invoice);
 
 		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class);
@@ -545,8 +548,12 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		save(esrReferenceNumberDocument);
 
+		final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class, contextProvider);
+		allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
+		save(allocHdr);
 		I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
-		allocAmt.setWriteOffAmt(new BigDecimal(10.0));
+		allocAmt.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
+		allocAmt.setWriteOffAmt(new BigDecimal("10.0"));
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
@@ -570,10 +577,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 getAD_Org().getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				getAD_Org().getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -589,7 +596,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(org);
 
 		I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
-		allocAmt.setWriteOffAmt(new BigDecimal(10.0));
+		allocAmt.setWriteOffAmt(new BigDecimal("10.0"));
 		// allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
@@ -613,10 +620,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 org.getAD_Org_ID(),
-															 Env.getAD_User_ID(getCtx()),
-															 "01-059931-0",
-															 currencyEUR);
+				org.getAD_Org_ID(),
+				Env.getAD_User_ID(getCtx()),
+				"01-059931-0",
+				currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -631,16 +638,17 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 
-		final I_C_DocType type = newInstance(I_C_DocType.class);
-		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
-		save(type);
+		final I_C_DocType docTypeAPC = newInstance(I_C_DocType.class);
+		docTypeAPC.setDocBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
+		save(docTypeAPC);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo("000120686");
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
-		invoice.setC_DocType_ID(type.getC_DocType_ID());
+		invoice.setC_DocType_ID(docTypeAPC.getC_DocType_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		save(invoice);
 
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
@@ -655,8 +663,12 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 		save(esrReferenceNumberDocument);
 
-		I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
-		allocAmt.setWriteOffAmt(new BigDecimal(10.0));
+		final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class, contextProvider);
+		allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
+		save(allocHdr);
+		final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
+		allocAmt.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
+		allocAmt.setWriteOffAmt(new BigDecimal("10.0"));
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 

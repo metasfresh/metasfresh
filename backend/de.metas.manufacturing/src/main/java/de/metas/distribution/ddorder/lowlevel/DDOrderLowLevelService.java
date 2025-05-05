@@ -22,7 +22,10 @@ package de.metas.distribution.ddorder.lowlevel;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -36,17 +39,22 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mmovement.MovementId;
+import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
+import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -58,6 +66,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 @Service
 public class DDOrderLowLevelService
@@ -69,6 +79,8 @@ public class DDOrderLowLevelService
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IMovementBL movementBL = Services.get(IMovementBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public DDOrderLowLevelService(
 			@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO,
@@ -97,7 +109,7 @@ public class DDOrderLowLevelService
 				.subtract(qtyDelivered) // minus: Qty that we already moved (so it's there, on hand)
 				.subtract(qtyInTransit); // minus: Qty that left source locator but did not arrived yet to target locator
 
-		return Quantitys.create(qtyToShipBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
+		return Quantitys.of(qtyToShipBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
 	}
 
 	public void completeDDOrderIfNeeded(final I_DD_Order ddOrder)
@@ -135,19 +147,13 @@ public class DDOrderLowLevelService
 	}
 
 	@Nullable
-	public Resource getPlantTo(final I_DD_OrderLine ddOrderLine)
+	public ResourceId getPlantTo(final I_DD_OrderLine ddOrderLine)
 	{
-		final ResourceId plantToId = ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
-		if(plantToId == null)
-		{
-			return null;
-		}
-
-		return resourceService.getResourceById(plantToId);
+		return ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
 	}
 
 	@Nullable
-	public Resource findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
+	public ResourceId findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
 	{
 		Check.assumeNotNull(ddOrderLine, LiberoException.class, "ddOrderLine not null");
 
@@ -166,12 +172,11 @@ public class DDOrderLowLevelService
 
 		try
 		{
-			final ResourceId plantId = productPlanningDAO.findPlantId(
+			return productPlanningDAO.findPlantId(
 					adOrgId,
 					warehouseFrom,
 					ddOrderLine.getM_Product_ID(),
 					ddOrderLine.getM_AttributeSetInstance_ID());
-			return resourceService.getResourceById(plantId);
 		}
 		catch (final NoPlantForWarehouseException e)
 		{
@@ -224,8 +229,8 @@ public class DDOrderLowLevelService
 	}
 
 	private void processDraftDDOrders(final IQueryBuilder<I_DD_OrderLine> ddOrderLinesQuery,
-			final int currentPlantId,
-			final IProcessor<I_DD_Order> ddOrderProcessor)
+									  final int currentPlantId,
+									  final IProcessor<I_DD_Order> ddOrderProcessor)
 	{
 		logger.debug("PP_Plant_ID: {}", currentPlantId);
 		logger.debug("Processor: {}", ddOrderProcessor);
@@ -352,5 +357,43 @@ public class DDOrderLowLevelService
 	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
 	{
 		ddOrderLowLevelDAO.deleteOrders(deleteOrdersQuery);
+	}
+
+	public void updateQtyDeliveredFromMovement(@NonNull final MovementId movementId)
+	{
+		final ImmutableSet<DDOrderLineId> ddOrderLineIds = movementBL.retrieveLines(movementId)
+				.stream()
+				.map(I_M_MovementLine::getDD_OrderLine_ID)
+				.map(DDOrderLineId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableMap<DDOrderLineId, I_DD_OrderLine> lineId2Record = ddOrderLowLevelDAO.getLinesByIds(ddOrderLineIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> DDOrderLineId.ofRepoId(record.getDD_Order_ID()),
+						Function.identity()));
+
+		movementBL.retrieveCompletedMovementLinesForDDOrderLines(ddOrderLineIds)
+				.forEach((ddOrderLineId, movementLines) -> {
+
+					final I_C_UOM uom = movementBL.getC_UOM(movementLines.get(0));
+					final Quantity qtyDelivered = movementLines
+							.stream()
+							.map(movementBL::getMovementQty)
+							.reduce(Quantity.zero(uom), Quantity::add);
+
+					final I_DD_OrderLine orderLine = lineId2Record.get(ddOrderLineId);
+
+					final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+					final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
+					final UomId ddOrderLineUOMId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+
+					final Quantity qtyDeliveredInStockUOM = uomConversionBL.convertQuantityTo(qtyDelivered, uomConversionCtx, ddOrderLineUOMId);
+
+					orderLine.setQtyDelivered(qtyDeliveredInStockUOM.toBigDecimal());
+
+					ddOrderLowLevelDAO.save(orderLine);
+				});
 	}
 }

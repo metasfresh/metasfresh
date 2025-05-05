@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.core.authorization;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
@@ -31,10 +30,13 @@ import de.metas.camel.externalsystems.core.CustomRouteController;
 import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
 import de.metas.common.externalsystem.JsonExternalSystemMessagePayload;
+import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 import static de.metas.camel.externalsystems.core.CoreConstants.CUSTOM_FROM_MF_ROUTE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -75,11 +77,12 @@ public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 				.routeId(CUSTOM_MESSAGE_FROM_MF_ROUTE_ID)
 				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
 				.streamCaching()
+				.log("Invoked!")
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemMessage.class))
 				.process(this::processCustomMessage);
 	}
 
-	private void processCustomMessage(@NonNull final Exchange exchange) throws JsonProcessingException
+	private void processCustomMessage(@NonNull final Exchange exchange) throws IOException
 	{
 		final JsonExternalSystemMessage message = exchange.getIn().getBody(JsonExternalSystemMessage.class);
 
@@ -95,12 +98,14 @@ public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 		}
 	}
 
-	private void handleAuthorizationMessage(@NonNull final JsonExternalSystemMessage authorizationMessage) throws JsonProcessingException
+	private void handleAuthorizationMessage(@NonNull final JsonExternalSystemMessage authorizationMessage) throws IOException
 	{
 		final JsonExternalSystemMessagePayload messagePayload = JsonObjectMapperHolder.sharedJsonObjectMapper()
 				.readValue(authorizationMessage.getPayload(), JsonExternalSystemMessagePayload.class);
 
 		authProvider.setAuthToken(messagePayload.getAuthToken());
+
+		log.info("Received from MF: API AuthToken: {}", StringUtils.maskString(messagePayload.getAuthToken()));
 
 		customRouteController.startAllRoutes();
 	}

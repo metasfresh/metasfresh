@@ -3,15 +3,23 @@ ARG REFNAME=local
 FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 FROM metasfresh/metas-app:$REFNAME as app
 
-RUN yum update -y && yum -y install nc postgresql && yum -y clean all && rm -rf /var/cache
+FROM eclipse-temurin:17.0.7_7-jdk as runtime
 
-ARG VERSION
-ENV VERSION=$VERSION
+RUN apt-get -y update && apt-get -y install locales netcat postgresql-client && rm -rf /var/lib/apt/lists/*
 
-RUN touch local_settings.properties && ln -s /opt/metasfresh/local_settings.properties /root/local_settings.properties
-RUN mkdir /opt/metasfresh/dist && echo "build.version=$VERSION" > /opt/metasfresh/dist/build-info.properties
-# /backend/metasfresh-dist/dist/target/build-info/build-info.properties
+RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
+ENV TZ=Europe/Berlin
 
-RUN mv metasfresh-app.jar metasfresh_server.jar
+WORKDIR /opt/metasfresh
 
-COPY --from=backend /backend/metasfresh-dist/dist/target/dist ./dist/
+RUN mkdir heapdump
+
+COPY --from=app /opt/metasfresh .
+
+COPY --from=backend /backend/metasfresh-dist/dist/target/dist/install dist/install/
+COPY --from=backend /backend/metasfresh-dist/dist/target/dist/sql dist/sql/
+
+RUN touch local_settings.properties \
+    && ln -s /opt/metasfresh/local_settings.properties /root/local_settings.properties \
+    && cp META-INF/build-info.properties dist/

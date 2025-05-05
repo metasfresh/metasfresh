@@ -1,10 +1,10 @@
 package de.metas.marketing.base.model;
 
-import javax.annotation.Nullable;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -80,7 +80,9 @@ public class LocalToRemoteSyncResult implements SyncResult
 		INSERTED_ON_REMOTE,
 		UPDATED_ON_REMOTE,
 		UPSERTED_ON_REMOTE,
-		DELETED_ON_REMOTE, UNCHANGED, ERROR;
+		DELETED_ON_REMOTE,
+		UNCHANGED,
+		ERROR;
 	}
 
 	LocalToRemoteStatus localToRemoteStatus;

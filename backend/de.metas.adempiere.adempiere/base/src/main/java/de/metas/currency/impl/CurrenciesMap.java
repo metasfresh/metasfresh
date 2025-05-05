@@ -69,7 +69,7 @@ final class CurrenciesMap
 		final Currency currency = currenciesByCode.get(currencyCode);
 		if (currency == null)
 		{
-			throw new AdempiereException("@NotFound@ @ISO_Code@: " + currencyCode);
+			throw new AdempiereException("@NotFound@ @C_Currency_ID@ @ISO_Code@: " + currencyCode);
 		}
 		return currency;
 	}

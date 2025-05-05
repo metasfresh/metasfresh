@@ -1,9 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -53,7 +52,8 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Anschrift-Text abw..
+	 * Set User address note.
+	 * Bezeichnet die letztendlich verwendete Lieferanschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -62,7 +62,8 @@ public interface I_M_Packageable_V
 	void setBPartnerAddress_Override (@Nullable java.lang.String BPartnerAddress_Override);
 
 	/**
-	 * Get Anschrift-Text abw..
+	 * Get User address note.
+	 * Bezeichnet die letztendlich verwendete Lieferanschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -74,7 +75,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
 
 	/**
-	 * Set BPartner location name.
+	 * Set Business Partner Location Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -83,7 +84,7 @@ public interface I_M_Packageable_V
 	void setBPartnerLocationName (@Nullable java.lang.String BPartnerLocationName);
 
 	/**
-	 * Get BPartner location name.
+	 * Get Business Partner Location Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -137,6 +138,28 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_BPartnerValue = new ModelColumn<>(I_M_Packageable_V.class, "BPartnerValue", null);
 	String COLUMNNAME_BPartnerValue = "BPartnerValue";
+
+	/**
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCatch_UOM_ID();
+
+	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
 	 * Set Business Partner .
@@ -203,8 +226,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Auftragsposition.
-	 * Auftragsposition
+	 * Set Sales Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -213,8 +235,7 @@ public interface I_M_Packageable_V
 	void setC_OrderLineSO_ID (int C_OrderLineSO_ID);
 
 	/**
-	 * Get Auftragsposition.
-	 * Auftragsposition
+	 * Get Sales Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -230,8 +251,8 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
 
 	/**
-	 * Set Auftrag.
-	 * Auftrag
+	 * Set Order.
+	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -240,8 +261,8 @@ public interface I_M_Packageable_V
 	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
-	 * Get Auftrag.
-	 * Auftrag
+	 * Get Order.
+	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -255,28 +276,6 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_M_Packageable_V.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Created.
@@ -302,6 +301,28 @@ public interface I_M_Packageable_V
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Date.
@@ -394,8 +415,8 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
-	 * Set Frachtkostenberechnung.
-	 * Methode zur Berechnung von Frachtkosten
+	 * Set Freight Cost Rule.
+	 * Method for charging Freight
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -404,8 +425,8 @@ public interface I_M_Packageable_V
 	void setFreightCostRule (@Nullable java.lang.String FreightCostRule);
 
 	/**
-	 * Get Frachtkostenberechnung.
-	 * Methode zur Berechnung von Frachtkosten
+	 * Get Freight Cost Rule.
+	 * Method for charging Freight
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -415,6 +436,46 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_FreightCostRule = new ModelColumn<>(I_M_Packageable_V.class, "FreightCostRule", null);
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
+
+	/**
+	 * Set unloading address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_ID (int HandOver_Location_ID);
+
+	/**
+	 * Get unloading address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_ID();
+
+	String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
+
+	/**
+	 * Set Handover partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Partner_ID (int HandOver_Partner_ID);
+
+	/**
+	 * Get Handover partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Partner_ID();
+
+	String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
 
 	/**
 	 * Set Active.
@@ -438,6 +499,27 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Packageable_V.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Catch Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsCatchWeight (boolean IsCatchWeight);
+
+	/**
+	 * Get Catch Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isCatchWeight();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsCatchWeight = new ModelColumn<>(I_M_Packageable_V.class, "IsCatchWeight", null);
+	String COLUMNNAME_IsCatchWeight = "IsCatchWeight";
 
 	/**
 	 * Set Displayed.
@@ -761,7 +843,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_PreparationDate = "PreparationDate";
 
 	/**
-	 * Set Priorität.
+	 * Set Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -771,7 +853,7 @@ public interface I_M_Packageable_V
 	void setPriorityRule (@Nullable java.lang.String PriorityRule);
 
 	/**
-	 * Get Priorität.
+	 * Get Priority.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -784,8 +866,8 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_PriorityRule = "PriorityRule";
 
 	/**
-	 * Set Produktname.
-	 * Name des Produktes
+	 * Set Product Name.
+	 * Name of the Product
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -794,8 +876,8 @@ public interface I_M_Packageable_V
 	void setProductName (@Nullable java.lang.String ProductName);
 
 	/**
-	 * Get Produktname.
-	 * Name des Produktes
+	 * Get Product Name.
+	 * Name of the Product
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -807,8 +889,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_ProductName = "ProductName";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Gelieferte Menge
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -817,8 +898,7 @@ public interface I_M_Packageable_V
 	void setQtyDelivered (@Nullable BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Gelieferte Menge
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -853,7 +933,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Menge kommissioniert und geliefert.
+	 * Set Qty Picked And Delivered.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -862,7 +942,7 @@ public interface I_M_Packageable_V
 	void setQtyPickedAndDelivered (@Nullable BigDecimal QtyPickedAndDelivered);
 
 	/**
-	 * Get Menge kommissioniert und geliefert.
+	 * Get Qty Picked And Delivered.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -874,7 +954,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_QtyPickedAndDelivered = "QtyPickedAndDelivered";
 
 	/**
-	 * Set Qty Picked.
+	 * Set Qty Picked Not (yet) Delivered.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -883,7 +963,7 @@ public interface I_M_Packageable_V
 	void setQtyPickedNotDelivered (@Nullable BigDecimal QtyPickedNotDelivered);
 
 	/**
-	 * Get Qty Picked.
+	 * Get Qty Picked Not (yet) Delivered.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -895,7 +975,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_QtyPickedNotDelivered = "QtyPickedNotDelivered";
 
 	/**
-	 * Set Menge kommissioniert oder geliefert.
+	 * Set Qty Picked or Delivered.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -904,7 +984,7 @@ public interface I_M_Packageable_V
 	void setQtyPickedOrDelivered (@Nullable BigDecimal QtyPickedOrDelivered);
 
 	/**
-	 * Get Menge kommissioniert oder geliefert.
+	 * Get Qty Picked or Delivered.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -937,7 +1017,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_QtyPickedPlanned = "QtyPickedPlanned";
 
 	/**
-	 * Set Ausliefermenge.
+	 * Set Quantity to Deliver.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -946,7 +1026,7 @@ public interface I_M_Packageable_V
 	void setQtyToDeliver (@Nullable BigDecimal QtyToDeliver);
 
 	/**
-	 * Get Ausliefermenge.
+	 * Get Quantity to Deliver.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -956,6 +1036,27 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyToDeliver = new ModelColumn<>(I_M_Packageable_V.class, "QtyToDeliver", null);
 	String COLUMNNAME_QtyToDeliver = "QtyToDeliver";
+
+	/**
+	 * Set Setup Place No..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSetup_Place_No (int Setup_Place_No);
+
+	/**
+	 * Get Setup Place No..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSetup_Place_No();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_Setup_Place_No = new ModelColumn<>(I_M_Packageable_V.class, "Setup_Place_No", null);
+	String COLUMNNAME_Setup_Place_No = "Setup_Place_No";
 
 	/**
 	 * Set Best Before Policy.
@@ -1025,8 +1126,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Lager.
-	 * Lagerbezeichnung
+	 * Set Warehouse Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1035,8 +1135,7 @@ public interface I_M_Packageable_V
 	void setWarehouseName (@Nullable java.lang.String WarehouseName);
 
 	/**
-	 * Get Lager.
-	 * Lagerbezeichnung
+	 * Get Warehouse Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

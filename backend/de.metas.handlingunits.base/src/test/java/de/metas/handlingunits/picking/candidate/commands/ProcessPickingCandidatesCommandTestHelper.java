@@ -14,6 +14,7 @@ import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -51,6 +52,7 @@ class ProcessPickingCandidatesCommandTestHelper
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	public final HUTestHelper huTestHelper;
 	public final PickingCandidateRepository pickingCandidateRepository;
+	public final InventoryService inventoryService;
 
 	public final I_C_UOM uomEach;
 	public final LocatorId shipFromLocatorId;
@@ -60,6 +62,7 @@ class ProcessPickingCandidatesCommandTestHelper
 	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 		pickingCandidateRepository = new PickingCandidateRepository();
+		inventoryService = InventoryService.newInstanceForUnitTesting();
 
 		createDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
 		createDimensionSpec(HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);

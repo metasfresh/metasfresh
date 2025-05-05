@@ -54,6 +54,7 @@ public class PPOrderData
 	 * The {@link ResourceId} of the plant, as specified by the respective product planning record.
 	 */
 	ResourceId plantId;
+	@Nullable ResourceId workstationId;
 
 	WarehouseId warehouseId;
 
@@ -94,11 +95,15 @@ public class PPOrderData
 
 	HUPIItemProductId packingMaterialId;
 
+	String lotForLot;
+
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderData(
 			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId,
 			@JsonProperty("plantId") @NonNull final ResourceId plantId,
+			@JsonProperty("workstationId") @Nullable ResourceId workstationId,
 			@JsonProperty("warehouseId") @NonNull final WarehouseId warehouseId,
 			@JsonProperty("bpartnerId") @Nullable final BPartnerId bpartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
@@ -110,10 +115,12 @@ public class PPOrderData
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
 			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
-			@JsonProperty("packingMaterialId") @Nullable final HUPIItemProductId packingMaterialId)
+			@JsonProperty("packingMaterialId") @Nullable final HUPIItemProductId packingMaterialId,
+			@JsonProperty("lotForLot") final String lotForLot)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.plantId = plantId;
+		this.workstationId = workstationId;
 		this.warehouseId = warehouseId;
 		this.bpartnerId = bpartnerId;
 		this.productPlanningId = productPlanningId; // ok to be not set
@@ -126,6 +133,7 @@ public class PPOrderData
 		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 		this.materialDispoGroupId = materialDispoGroupId;
 		this.packingMaterialId = packingMaterialId;
+		this.lotForLot = lotForLot;
 	}
 
 	@JsonIgnore

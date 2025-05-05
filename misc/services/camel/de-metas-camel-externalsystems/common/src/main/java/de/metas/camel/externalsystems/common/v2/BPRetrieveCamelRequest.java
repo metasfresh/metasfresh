@@ -51,4 +51,15 @@ public class BPRetrieveCamelRequest
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@JsonProperty("adPInstanceId")
 	JsonMetasfreshId adPInstanceId;
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonProperty("orgCode")
+	String orgCode;
+
+	/**
+	 * If {@code true}, then make the metasfresh-API-call with that Http header {@code Cache-Control=no-cache}
+	 */
+	@JsonProperty("noCache")
+	boolean noCache;
 }

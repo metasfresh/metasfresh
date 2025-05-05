@@ -71,67 +71,6 @@ public class InvoiceCandDAOTest
 		invoiceCandDAO = new InvoiceCandDAO();
 	}
 
-	@Test
-	public void updateMissingPaymentTermIds()
-	{
-		// create two ICs without a payment term; those shall be updated by the method under test
-		final I_C_Invoice_Candidate invoiceCandidateWithoutPaymentTerm1 = newInstance(I_C_Invoice_Candidate.class);
-		save(invoiceCandidateWithoutPaymentTerm1);
-
-		final I_C_Invoice_Candidate invoiceCandidateWithoutPaymentTerm2 = newInstance(I_C_Invoice_Candidate.class);
-		save(invoiceCandidateWithoutPaymentTerm2);
-
-		// Create two ICs with different payment terms.
-		// By virtue of it's lower C_Invoice_Candidate_ID, the first IC's payment term ID shall be set in the first two ICs we creates
-		final PaymentTermId paymentTermId1 = createPaymentTerm();
-		final I_C_Invoice_Candidate invoiceCandidateWithPaymentTerm1 = newInstance(I_C_Invoice_Candidate.class);
-		invoiceCandidateWithPaymentTerm1.setC_PaymentTerm_ID(paymentTermId1.getRepoId());
-		save(invoiceCandidateWithPaymentTerm1);
-
-		final PaymentTermId paymentTermId2 = createPaymentTerm();
-		final I_C_Invoice_Candidate invoiceCandidateWithPaymentTerm2 = newInstance(I_C_Invoice_Candidate.class);
-		invoiceCandidateWithPaymentTerm2.setC_PaymentTerm_ID(paymentTermId2.getRepoId());
-		save(invoiceCandidateWithPaymentTerm2);
-
-		final PInstanceId selectionId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
-				.create()
-				.createSelection();
-
-		// create an unrelated IC that also has no payment term; it shall be left untouched
-		final I_C_Invoice_Candidate unrelatedInvoiceCandidateWithoutPaymentTerm = newInstance(I_C_Invoice_Candidate.class);
-		save(unrelatedInvoiceCandidateWithoutPaymentTerm);
-
-		// invoke the method under test and refresh all ICs
-		invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
-
-		refreshAll(ImmutableList.of(
-				invoiceCandidateWithoutPaymentTerm1,
-				invoiceCandidateWithoutPaymentTerm2,
-				invoiceCandidateWithPaymentTerm1,
-				invoiceCandidateWithPaymentTerm2,
-				unrelatedInvoiceCandidateWithoutPaymentTerm));
-
-		// verify
-		assertThat(getPaymentTermId(invoiceCandidateWithoutPaymentTerm1)).isEqualTo(paymentTermId1);
-		assertThat(getPaymentTermId(invoiceCandidateWithoutPaymentTerm2)).isEqualTo(paymentTermId1);
-		assertThat(getPaymentTermId(invoiceCandidateWithPaymentTerm1)).isEqualTo(paymentTermId1);
-
-		assertThat(getPaymentTermId(invoiceCandidateWithPaymentTerm2))
-				.as("invoiceCandidateWithPaymentTerm2 shall be left unchanged because it already has a C_PaymentTerm_ID")
-				.isEqualTo(paymentTermId2);
-
-		assertThat(getPaymentTermId(unrelatedInvoiceCandidateWithoutPaymentTerm))
-				.as("unrelatedInvoiceCandidateWithoutPaymentTerm shall be left unchanged because it's not part of the selection")
-				.isNull();
-	}
-
-	private PaymentTermId createPaymentTerm()
-	{
-		final I_C_PaymentTerm record = newInstance(I_C_PaymentTerm.class);
-		saveRecord(record);
-		return PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
-	}
-
 	private PaymentTermId getPaymentTermId(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return CoalesceUtil.coalesceSuppliers(

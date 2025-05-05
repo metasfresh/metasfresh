@@ -34,22 +34,17 @@ import lombok.Value;
 @Builder
 public class CopyHUsResponse
 {
-	@NonNull
-	@Singular
-	ImmutableList<CopyHUsResponseItem> items;
+	@NonNull @Singular ImmutableList<CopyHUsResponseItem> items;
 
-	public CopyHUsResponseItem getSingleItem()
-	{
-		return CollectionUtils.singleElement(items);
-	}
+	public I_M_HU getSingleNewHU() {return getSingleItem().getNewHU();}
+
+	public CopyHUsResponseItem getSingleItem() {return CollectionUtils.singleElement(items);}
 
 	@Value
 	@Builder
 	public static class CopyHUsResponseItem
 	{
-		@NonNull
-		HuId oldHUId;
-		@NonNull
-		I_M_HU newHU;
+		@NonNull HuId oldHUId;
+		@NonNull I_M_HU newHU;
 	}
 }

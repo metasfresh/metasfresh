@@ -23,8 +23,8 @@
 package de.metas.rest_api.v2.pricing;
 
 import de.metas.common.externalreference.v2.JsonExternalReferenceCreateRequest;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
@@ -53,7 +53,7 @@ import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.pricing.command.SearchProductPricesCommand;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -85,7 +85,7 @@ public class ProductPriceRestService
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final ProductPriceRepository productPriceRepository;
 	private final PriceListRestService priceListRestService;
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade;
 	private final JsonRetrieverService jsonRetrieverService;
 
@@ -93,14 +93,14 @@ public class ProductPriceRestService
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final ProductPriceRepository productPriceRepository,
 			@NonNull final PriceListRestService priceListRestService,
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade,
 			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.productPriceRepository = productPriceRepository;
 		this.priceListRestService = priceListRestService;
-		this.productRestService = productRestService;
+		this.externalIdentifierResolver = externalIdentifierResolver;
 		this.bpartnerPriceListServicesFacade = bpartnerPriceListServicesFacade;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 	}
@@ -127,7 +127,7 @@ public class ProductPriceRestService
 	public JsonResponseProductPriceQuery productPriceSearch(@NonNull final JsonRequestProductPriceQuery request, @Nullable final String orgCode)
 	{
 		return SearchProductPricesCommand.builder()
-				.productRestService(productRestService)
+				.externalIdentifierResolver(externalIdentifierResolver)
 				.bpartnerPriceListServicesFacade(bpartnerPriceListServicesFacade)
 				.jsonRetrieverService(jsonRetrieverService)
 				.bpartnerIdentifier(ExternalIdentifier.of(request.getBpartnerIdentifier()))
@@ -388,7 +388,7 @@ public class ProductPriceRestService
 	}
 
 	@NonNull
-	private TaxCategoryId getTaxCategoryId(@NonNull final TaxCategory taxCategory)
+	public TaxCategoryId getTaxCategoryId(@NonNull final TaxCategory taxCategory)
 	{
 		return taxBL.getTaxCategoryIdByInternalName(taxCategory.getInternalName())
 				.orElseThrow(() -> new AdempiereException("No TaxCategory record found for the given TaxCategory type!")
@@ -406,12 +406,12 @@ public class ProductPriceRestService
 		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalProductPriceIdentifier.asExternalValueAndSystem();
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalReferenceValueAndSystem.getValue())
+				.externalReference(externalReferenceValueAndSystem.getValue())
 				.type(ProductPriceExternalReferenceType.PRODUCT_PRICE.getCode())
 				.build();
 
 		final JsonMetasfreshId jsonProductPriceId = JsonMetasfreshId.of(productPriceId.getRepoId());
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, jsonProductPriceId);
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.of(externalReferenceLookupItem, jsonProductPriceId);
 
 		final JsonExternalSystemName systemName = JsonExternalSystemName.of(externalReferenceValueAndSystem.getExternalSystem());
 		final JsonExternalReferenceCreateRequest externalReferenceCreateRequest = JsonExternalReferenceCreateRequest.builder()

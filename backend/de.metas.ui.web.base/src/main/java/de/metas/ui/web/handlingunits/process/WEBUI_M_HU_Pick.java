@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
@@ -16,7 +18,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.HURow;
-import de.metas.ui.web.pporder.util.ProcessPickingRequest;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
@@ -27,7 +28,9 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -57,6 +60,8 @@ import java.util.stream.Stream;
 
 public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
+
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, mandatory = true)
 	private PickingSlotId pickingSlotId;
 
@@ -110,6 +115,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		{
 			final PPOrderLinesView ppOrderView = (PPOrderLinesView)view;
 			return ppOrderView.getDocBaseType().isManufacturingOrder()
+					&& ppOrderView.getDocStatus().isCompleted()
 					? ProcessPreconditionsResolution.accept()
 					: ProcessPreconditionsResolution.rejectWithInternalReason("not needed for PPOrderLinesView view");
 		}
@@ -200,11 +206,9 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return MSG_OK;
 	}
 
-	private void pickHU(final HURow row)
+	private void pickHU(@NonNull final HURow row)
 	{
 		final HuId huId = row.getHuId();
-
-		final PPOrderLinesView ppOrderView = (PPOrderLinesView)getView();
 
 		final PickRequest pickRequest = PickRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
@@ -212,14 +216,21 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				.pickingSlotId(pickingSlotId)
 				.build();
 
-		final ProcessPickingRequest processPickingRequest = ProcessPickingRequest.builder()
-				.huIds(ImmutableSet.of(huId))
-				.ppOrderId(ppOrderView.getPpOrderId())
-				.shipmentScheduleId(shipmentScheduleId)
-				.isTakeWholeHU(isTakeWholeHU)
-				.build();
+		pickingCandidateService.pickHU(pickRequest);
 
-		WEBUI_PP_Order_ProcessHelper.pickAndProcessSingleHU(pickRequest, processPickingRequest);
+		final ProcessPickingRequest.ProcessPickingRequestBuilder pickingRequestBuilder = ProcessPickingRequest.builder()
+				.huIds(ImmutableSet.of(huId))
+				.shipmentScheduleId(shipmentScheduleId)
+				.shouldSplitHUIfOverDelivery(!isTakeWholeHU);
+
+		final IView view = getView();
+		if (view instanceof PPOrderLinesView)
+		{
+			final PPOrderLinesView ppOrderView = PPOrderLinesView.cast(view);
+			pickingRequestBuilder.ppOrderId(ppOrderView.getPpOrderId());
+		}
+
+		WEBUI_PP_Order_ProcessHelper.pickAndProcessSingleHU(pickRequest, pickingRequestBuilder.build());
 	}
 
 	@Override

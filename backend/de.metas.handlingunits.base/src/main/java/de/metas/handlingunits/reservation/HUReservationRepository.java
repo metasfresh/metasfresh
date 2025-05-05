@@ -11,7 +11,6 @@ import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
@@ -26,8 +25,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -77,9 +74,10 @@ public class HUReservationRepository
 			.tableName(I_M_HU_Reservation.Table_Name)
 			.build();
 
-	public Optional<HUReservation> getByDocumentRef(@NonNull final HUReservationDocRef documentRef)
+	public Optional<HUReservation> getByDocumentRef(
+			@NonNull final HUReservationDocRef documentRef,
+			@NonNull final ImmutableSet<HuId> onlyVHUIds)
 	{
-		final Set<HuId> onlyVHUIds = ImmutableSet.of();
 		final List<I_M_HU_Reservation> huReservationRecords = retrieveRecordsByDocumentRef(
 				ImmutableSet.of(documentRef),
 				onlyVHUIds);
@@ -189,7 +187,7 @@ public class HUReservationRepository
 				.documentRef(extractDocumentRef(record))
 				.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Customer_ID()))
 				.vhuId(HuId.ofRepoId(record.getVHU_ID()))
-				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
+				.qtyReserved(Quantitys.of(record.getQtyReserved(), uomId))
 				.build();
 	}
 

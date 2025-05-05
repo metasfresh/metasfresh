@@ -1,85 +1,79 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_NotificationGroup
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_NotificationGroup extends org.compiere.model.PO implements I_AD_NotificationGroup, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 615921059L;
+	private static final long serialVersionUID = 1837200981L;
 
     /** Standard Constructor */
-    public X_AD_NotificationGroup (Properties ctx, int AD_NotificationGroup_ID, String trxName)
+    public X_AD_NotificationGroup (final Properties ctx, final int AD_NotificationGroup_ID, @Nullable final String trxName)
     {
       super (ctx, AD_NotificationGroup_ID, trxName);
-      /** if (AD_NotificationGroup_ID == 0)
-        {
-			setAD_NotificationGroup_ID (0);
-			setEntityType (null);
-			setInternalName (null);
-			setName (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_NotificationGroup (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_NotificationGroup (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Notification group.
-		@param AD_NotificationGroup_ID Notification group	  */
+	/** Load Meta Data */
 	@Override
-	public void setAD_NotificationGroup_ID (int AD_NotificationGroup_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_NotificationGroup_ID (final int AD_NotificationGroup_ID)
 	{
 		if (AD_NotificationGroup_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_NotificationGroup_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_NotificationGroup_ID, Integer.valueOf(AD_NotificationGroup_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_NotificationGroup_ID, AD_NotificationGroup_ID);
 	}
 
-	/** Get Notification group.
-		@return Notification group	  */
 	@Override
-	public int getAD_NotificationGroup_ID () 
+	public int getAD_NotificationGroup_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_NotificationGroup_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_NotificationGroup_ID);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDeadletter_User_ID (final int Deadletter_User_ID)
+	{
+		if (Deadletter_User_ID < 1) 
+			set_Value (COLUMNNAME_Deadletter_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_Deadletter_User_ID, Deadletter_User_ID);
+	}
+
+	@Override
+	public int getDeadletter_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Deadletter_User_ID);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -87,61 +81,51 @@ public class X_AD_NotificationGroup extends org.compiere.model.PO implements I_A
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Interner Name.
-		@param InternalName 
-		Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public void setInternalName (java.lang.String InternalName)
+	public void setInternalName (final java.lang.String InternalName)
 	{
 		set_Value (COLUMNNAME_InternalName, InternalName);
 	}
 
-	/** Get Interner Name.
-		@return Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public java.lang.String getInternalName () 
+	public java.lang.String getInternalName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
+		return get_ValueAsString(COLUMNNAME_InternalName);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setIsNotifyOrgBPUsersOnly (final boolean IsNotifyOrgBPUsersOnly)
+	{
+		set_Value (COLUMNNAME_IsNotifyOrgBPUsersOnly, IsNotifyOrgBPUsersOnly);
+	}
+
+	@Override
+	public boolean isNotifyOrgBPUsersOnly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNotifyOrgBPUsersOnly);
+	}
+
+	@Override
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 }

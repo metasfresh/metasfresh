@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
@@ -19,7 +20,6 @@ public interface I_C_DocType
 
 	/**
 	 * Set Boiler Plate.
-	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -29,7 +29,6 @@ public interface I_C_DocType
 
 	/**
 	 * Get Boiler Plate.
-	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -124,6 +123,7 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
 
 	/**
+	 * Set Document Approval Strategy.
 	 * Set Document Type.
 	 * Document type or rules
 	 *
@@ -169,6 +169,60 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
 
 	/**
+	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
+
+	/**
+	 * Get Document Approval Strategy.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Doc_Approval_Strategy_ID();
+
+	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
+
+	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_C_DocType.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
+	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
+
+
+	/**
+	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocType_Invoicing_Pool_ID (int C_DocType_Invoicing_Pool_ID);
+
+	/**
+	 * Get Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocType_Invoicing_Pool_ID();
+
+	@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool getC_DocType_Invoicing_Pool();
+
+	void setC_DocType_Invoicing_Pool(@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool C_DocType_Invoicing_Pool);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_C_DocType_Invoicing_Pool> COLUMN_C_DocType_Invoicing_Pool_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_Invoicing_Pool_ID", org.compiere.model.I_C_DocType_Invoicing_Pool.class);
+	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
+
+	/**
 	 * Set Document Type for ProForma.
 	 * Document type used for pro forma invoices generated from this sales document
 	 *
@@ -211,6 +265,27 @@ public interface I_C_DocType
 	int getC_DocTypeShipment_ID();
 
 	String COLUMNNAME_C_DocTypeShipment_ID = "C_DocTypeShipment_ID";
+
+	/**
+	 * Set Completed Notification Text Snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompletedNotification_BoilerPlate_ID (int CompletedNotification_BoilerPlate_ID);
+
+	/**
+	 * Get Completed Notification Text Snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCompletedNotification_BoilerPlate_ID();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_CompletedNotification_BoilerPlate_ID = new ModelColumn<>(I_C_DocType.class, "CompletedNotification_BoilerPlate_ID", null);
+	String COLUMNNAME_CompletedNotification_BoilerPlate_ID = "CompletedNotification_BoilerPlate_ID";
 
 	/**
 	 * Get Created.
@@ -307,7 +382,7 @@ public interface I_C_DocType
 	String COLUMNNAME_DocBaseType = "DocBaseType";
 
 	/**
-	 * Set Nummernfolgen für Belege.
+	 * Set Document Sequence.
 	 * Document sequence determines the numbering of documents
 	 *
 	 * <br>Type: Table
@@ -317,7 +392,7 @@ public interface I_C_DocType
 	void setDocNoSequence_ID (int DocNoSequence_ID);
 
 	/**
-	 * Get Nummernfolgen für Belege.
+	 * Get Document Sequence.
 	 * Document sequence determines the numbering of documents
 	 *
 	 * <br>Type: Table
@@ -357,8 +432,8 @@ public interface I_C_DocType
 	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
-	 * Set Kopien.
-	 * Number of copies to be printed
+	 * Set Document Copies.
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -367,8 +442,8 @@ public interface I_C_DocType
 	void setDocumentCopies (int DocumentCopies);
 
 	/**
-	 * Get Kopien.
-	 * Number of copies to be printed
+	 * Get Document Copies.
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -380,8 +455,7 @@ public interface I_C_DocType
 	String COLUMNNAME_DocumentCopies = "DocumentCopies";
 
 	/**
-	 * Set Notiz / Zeilentext.
-	 * Additional information for a Document
+	 * Set Note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -390,8 +464,7 @@ public interface I_C_DocType
 	void setDocumentNote (@Nullable java.lang.String DocumentNote);
 
 	/**
-	 * Get Notiz / Zeilentext.
-	 * Additional information for a Document
+	 * Get Note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -403,9 +476,8 @@ public interface I_C_DocType
 	String COLUMNNAME_DocumentNote = "DocumentNote";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -414,9 +486,8 @@ public interface I_C_DocType
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -773,7 +844,7 @@ public interface I_C_DocType
 	String COLUMNNAME_IsPickQAConfirm = "IsPickQAConfirm";
 
 	/**
-	 * Set Bestätigung Versand/Wareneingang.
+	 * Set Ship/Receipt Confirmation.
 	 * Require Ship or Receipt Confirmation before processing
 	 *
 	 * <br>Type: YesNo
@@ -783,7 +854,7 @@ public interface I_C_DocType
 	void setIsShipConfirm (boolean IsShipConfirm);
 
 	/**
-	 * Get Bestätigung Versand/Wareneingang.
+	 * Get Ship/Receipt Confirmation.
 	 * Require Ship or Receipt Confirmation before processing
 	 *
 	 * <br>Type: YesNo
@@ -842,6 +913,73 @@ public interface I_C_DocType
 	String COLUMNNAME_IsSplitWhenDifference = "IsSplitWhenDifference";
 
 	/**
+	 * Set Lot No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLotNo_Sequence_ID (int LotNo_Sequence_ID);
+
+	/**
+	 * Get Lot No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLotNo_Sequence_ID();
+
+	@Nullable org.compiere.model.I_AD_Sequence getLotNo_Sequence();
+
+	void setLotNo_Sequence(@Nullable org.compiere.model.I_AD_Sequence LotNo_Sequence);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_AD_Sequence> COLUMN_LotNo_Sequence_ID = new ModelColumn<>(I_C_DocType.class, "LotNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+	String COLUMNNAME_LotNo_Sequence_ID = "LotNo_Sequence_ID";
+
+	/**
+	 * Set Mass generation text snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMass_Generate_Boilerplate_ID (int Mass_Generate_Boilerplate_ID);
+
+	/**
+	 * Get Mass generation text snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMass_Generate_Boilerplate_ID();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_Mass_Generate_Boilerplate_ID = new ModelColumn<>(I_C_DocType.class, "Mass_Generate_Boilerplate_ID", null);
+	String COLUMNNAME_Mass_Generate_Boilerplate_ID = "Mass_Generate_Boilerplate_ID";
+
+	/**
+	 * Set Mass generation line text snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMass_Generate_Line_Boilerplate_ID (int Mass_Generate_Line_Boilerplate_ID);
+
+	/**
+	 * Get Mass generation line text snippet.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMass_Generate_Line_Boilerplate_ID();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_Mass_Generate_Line_Boilerplate_ID = new ModelColumn<>(I_C_DocType.class, "Mass_Generate_Line_Boilerplate_ID", null);
+	String COLUMNNAME_Mass_Generate_Line_Boilerplate_ID = "Mass_Generate_Line_Boilerplate_ID";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -863,8 +1001,7 @@ public interface I_C_DocType
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Drucktext.
-	 * The label text to be printed on a document or correspondence.
+	 * Set Print Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -873,8 +1010,7 @@ public interface I_C_DocType
 	void setPrintName (java.lang.String PrintName);
 
 	/**
-	 * Get Drucktext.
-	 * The label text to be printed on a document or correspondence.
+	 * Get Print Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

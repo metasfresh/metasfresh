@@ -24,12 +24,21 @@ package de.metas.costrevaluation;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
+import lombok.NonNull;
 import org.compiere.model.I_M_CostRevaluation;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CostRevaluationDocumentHandlerProvider implements DocumentHandlerProvider
 {
+	private final CostRevaluationService costRevaluationService;
+
+	public CostRevaluationDocumentHandlerProvider(
+			@NonNull final CostRevaluationService costRevaluationService)
+	{
+		this.costRevaluationService = costRevaluationService;
+	}
+
 	@Override
 	public String getHandledTableName()
 	{
@@ -37,8 +46,8 @@ public class CostRevaluationDocumentHandlerProvider implements DocumentHandlerPr
 	}
 
 	@Override
-	public DocumentHandler provideForDocument(final Object model)
+	public DocumentHandler provideForDocument(final Object model_ignored)
 	{
-		return new CostRevaluationDocumentHandler();
+		return new CostRevaluationDocumentHandler(costRevaluationService);
 	}
 }

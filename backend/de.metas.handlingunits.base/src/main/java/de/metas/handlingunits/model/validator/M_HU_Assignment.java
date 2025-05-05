@@ -126,7 +126,7 @@ public class M_HU_Assignment
 		final Map<ArrayKey, Map<Integer, I_M_InOut>> uniqueSegment2inouts = new HashMap<>();
 		for (final I_M_InOut inout : inouts.values())
 		{
-			final I_C_DocType docTypeRecord = Services.get(IDocTypeDAO.class).getById(inout.getC_DocType_ID());
+			final I_C_DocType docTypeRecord = Services.get(IDocTypeDAO.class).getRecordById(inout.getC_DocType_ID());
 			// Create the unique segment where current inout shall be placed
 			final ArrayKey uniqueSegment = Util.mkKey(
 					inout.isSOTrx(), // Validation shall only take place if both InOuts are shipments or receipts

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -27,6 +28,7 @@ public class PickFromHUsGetRequest
 	@NonNull AttributeSetInstanceId asiId;
 	@NonNull ShipmentAllocationBestBeforePolicy bestBeforePolicy;
 	@NonNull Optional<HUReservationDocRef> reservationRef;
+	@Nullable ImmutableSet<HuId> onlyHuIds;
 
 	/**
 	 * If {@code true}, then check, which attributes are mandatory for the HUs' products. 
@@ -34,7 +36,7 @@ public class PickFromHUsGetRequest
 	 */
 	boolean enforceMandatoryAttributesOnPicking;
 	
-	@Builder
+	@Builder(toBuilder = true)
 	private PickFromHUsGetRequest(
 			@NonNull @Singular final ImmutableSet<LocatorId> pickFromLocatorIds,
 			@NonNull final ProductId productId,
@@ -42,7 +44,8 @@ public class PickFromHUsGetRequest
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy,
 			@NonNull final Optional<HUReservationDocRef> reservationRef, 
-			@Nullable final Boolean enforceMandatoryAttributesOnPicking)
+			@Nullable final Boolean enforceMandatoryAttributesOnPicking,
+			@Nullable final ImmutableSet<HuId> onlyHuIds)
 	{
 		Check.assumeNotEmpty(pickFromLocatorIds, "pickFromLocatorIds shall not be empty");
 
@@ -53,5 +56,6 @@ public class PickFromHUsGetRequest
 		this.bestBeforePolicy = bestBeforePolicy;
 		this.reservationRef = reservationRef;
 		this.enforceMandatoryAttributesOnPicking = CoalesceUtil.coalesceNotNull(enforceMandatoryAttributesOnPicking, false);
+		this.onlyHuIds = onlyHuIds;
 	}
 }

@@ -6,9 +6,14 @@ package de.metas.document.sequence;
 import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
 import de.metas.util.ISingletonService;
 
+import java.util.List;
+
 public interface IDocumentNoBuilderFactory extends ISingletonService
 {
 	IPreliminaryDocumentNoBuilder createPreliminaryDocumentNoBuilder();
+
+	void registerCountryIdProvider(ICountryIdProvider countryIdProvider);
+	List<ICountryIdProvider> getCountryIdProviders();
 
 	/**
 	 * Convenience method to create and prepare the builder for a given tableName.<br>

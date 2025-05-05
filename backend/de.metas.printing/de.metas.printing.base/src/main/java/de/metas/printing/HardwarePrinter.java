@@ -25,11 +25,14 @@ package de.metas.printing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.audit.data.ExternalSystemParentConfigId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 @Value
 public class HardwarePrinter
@@ -40,6 +43,8 @@ public class HardwarePrinter
 
 	OutputType outputType;
 
+	@Nullable ExternalSystemParentConfigId externalSystemParentConfigId;
+
 	ImmutableMap<HardwareTrayId, HardwareTray> trays;
 
 	@Builder
@@ -47,11 +52,13 @@ public class HardwarePrinter
 			@NonNull final HardwarePrinterId id,
 			@NonNull final String name,
 			@NonNull final OutputType outputType,
+			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
 			@Singular final ImmutableList<HardwareTray> trays)
 	{
 		this.id = id;
 		this.name = name;
 		this.outputType = outputType;
+		this.externalSystemParentConfigId = externalSystemParentConfigId;
 		this.trays = Maps.uniqueIndex(trays, HardwareTray::getId);
 	}
 

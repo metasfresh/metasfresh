@@ -24,6 +24,7 @@ package de.metas.invoice.interceptor;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -68,8 +69,7 @@ public class C_AllocationHdr
 		{
 			if (allocationLineRecord.getC_Invoice_ID() > 0)
 			{
-				final boolean ignoreProcessed = false;
-				invoiceBL.testAllocation(allocationLineRecord.getC_Invoice(), ignoreProcessed);
+				invoiceBL.testAllocated(InvoiceId.ofRepoId(allocationLineRecord.getC_Invoice_ID()));
 			}
 		}
 	}

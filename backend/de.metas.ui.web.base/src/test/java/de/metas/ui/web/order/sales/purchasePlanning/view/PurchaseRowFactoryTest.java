@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.temporal.ChronoUnit;
 
 import de.metas.common.util.time.SystemTime;
@@ -15,6 +16,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -153,7 +155,8 @@ public class PurchaseRowFactoryTest
 				.vendorProductNo("productNo")
 				.vendorProductName("productName")
 				.pricingConditions(PricingConditions.builder()
-						.build())
+										   .validFrom(TimeUtil.asInstant(Timestamp.valueOf("2017-01-01 10:10:10.0")))
+										   .build())
 				.build();
 	}
 

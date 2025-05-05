@@ -35,6 +35,7 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
 import de.metas.bpartner.service.CloneBPartnerRequest;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -170,7 +171,7 @@ public class OrgChangeCommand
 
 		final BPartnerId newBPartnerId = getOrCreateCounterpartBPartner(request, orgMappingId);
 
-		// gets the partner with all the active and inactive locations, users and bank accounts
+		// gets the partner with all the active and inactive locations, users, bank accounts & credit limits
 		BPartnerComposite destinationBPartnerComposite = bpCompositeRepo.getById(newBPartnerId);
 		{
 			destinationBPartnerComposite.getBpartner().setActive(true);
@@ -178,12 +179,14 @@ public class OrgChangeCommand
 			final List<BPartnerLocation> newLocations = getOrCreateLocations(bpartnerAndSubscriptions, destinationBPartnerComposite);
 			final List<BPartnerContact> newContacts = getOrCreateContacts(bpartnerAndSubscriptions, destinationBPartnerComposite);
 			final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(bpartnerAndSubscriptions, destinationBPartnerComposite);
+			final List<BPartnerCreditLimit> newBPCreditLimits = getOrCreateBPCreditLimits(bpartnerAndSubscriptions, destinationBPartnerComposite);
 
 			destinationBPartnerComposite = destinationBPartnerComposite.deepCopy()
 					.toBuilder()
 					.locations(newLocations)
 					.contacts(newContacts)
 					.bankAccounts(newBPBankAccounts)
+					.creditLimits(newBPCreditLimits)
 					.build();
 			bpCompositeRepo.save(destinationBPartnerComposite, false);
 		}
@@ -197,7 +200,7 @@ public class OrgChangeCommand
 
 		final OrgChangeHistoryId orgChangeHistoryId = orgChangeHistoryRepo.createOrgChangeHistory(request, orgMappingId, destinationBPartnerComposite);
 
-		createOrgSwitchRequest(orgChangeHistoryId);
+		createOrgSwitchRequests(orgChangeHistoryId);
 	}
 
 	private BPartnerId getOrCreateCounterpartBPartner(@NonNull final OrgChangeRequest orgChangeRequest, @NonNull final OrgMappingId orgMappingId)
@@ -229,7 +232,7 @@ public class OrgChangeCommand
 
 		bpartnerAndSubscriptions.getAllRunningSubscriptions()
 				.stream()
-				.map(FlatrateTerm::getFlatrateTermId)
+				.map(FlatrateTerm::getId)
 				.map(flatrateDAO::getById)
 				.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
 
@@ -694,6 +697,60 @@ public class OrgChangeCommand
 				.build();
 	}
 
+	@NonNull
+	private List<BPartnerCreditLimit> getOrCreateBPCreditLimits(
+			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
+	{
+		final List<BPartnerCreditLimit> sourceCreditLimits = orgChangeBPartnerComposite.getCreditLimits();
+
+		final List<BPartnerCreditLimit> existingCreditLimitsInDestinationPartner = destinationBPartnerComposite.getCreditLimits();
+
+		final List<BPartnerCreditLimit> updatedDestinationCreditLimits = new ArrayList<>();
+
+		for (final BPartnerCreditLimit sourceCreditLimit : sourceCreditLimits)
+		{
+			final OrgMappingId creditLimitOrgMappingId = orgMappingRepo.getCreateOrgMappingId(sourceCreditLimit);
+
+			sourceCreditLimit.setOrgMappingId(creditLimitOrgMappingId);
+
+			final BPartnerCreditLimit matchingCreditLimit_Updated = existingCreditLimitsInDestinationPartner.stream()
+					.filter(bpartnerCreditLimit -> OrgMappingId.equals(creditLimitOrgMappingId, bpartnerCreditLimit.getOrgMappingId()))
+					.findFirst()
+					.map(matchingCreditLimit -> matchingCreditLimit.toBuilder()
+							.amount(sourceCreditLimit.getAmount())
+							.creditLimitTypeId(sourceCreditLimit.getCreditLimitTypeId())
+							.dateFrom(sourceCreditLimit.getDateFrom())
+							.processed(sourceCreditLimit.isProcessed())
+							.active(true)
+							.build())
+					.orElse(null);
+
+			if (matchingCreditLimit_Updated != null)
+			{
+				loggable.addLog("Credit Limit {} from the existing partner {} was preserved.",
+								matchingCreditLimit_Updated,
+								destinationBPartnerComposite.getBpartner());
+
+				updatedDestinationCreditLimits.add(matchingCreditLimit_Updated);
+			}
+			else
+			{
+				final BPartnerCreditLimit newCreditLimit = sourceCreditLimit.toBuilder()
+						.id(null)
+						.active(true)
+						.build();
+
+				updatedDestinationCreditLimits.add(newCreditLimit);
+
+				loggable.addLog("Credit Limit {} was created for the destination partner {}.",
+								newCreditLimit,
+								destinationBPartnerComposite.getBpartner());
+			}
+		}
+		return updatedDestinationCreditLimits;
+	}
+
 	private void unmarkDefaultLocationsFromDestination(@NonNull final DefaultLocations sourceDefaultLocations,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
@@ -764,36 +821,48 @@ public class OrgChangeCommand
 		bpCompositeRepo.save(bPartnerComposite, false);
 	}
 
-	private void createOrgSwitchRequest(@NonNull final OrgChangeHistoryId orgChangeHistoryId)
+	private void createOrgSwitchRequests(@NonNull final OrgChangeHistoryId orgChangeHistoryId)
 	{
-		final RequestTypeId requestTypeId = requestTypeDAO.retrieveOrgChangeRequestTypeId();
 		final I_AD_OrgChange_History orgChangeHistoryRecord = orgChangeHistoryRepo.getOrgChangeHistoryById(orgChangeHistoryId);
 
-		final OrgId orgId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_OrgTo_ID());
+		final OrgId orgToId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_OrgTo_ID());
+		final BPartnerId orgToBPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_To_ID());
+		createOrgSwitchRequest(orgChangeHistoryRecord, orgToId, orgToBPartnerId);
 
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-		final ZonedDateTime requestDate = TimeUtil.asZonedDateTime(orgChangeHistoryRecord.getDate_OrgChange(), timeZone);
+		final OrgId orgFromId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_Org_From_ID());
+		final BPartnerId orgFromBPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_From_ID());
+		createOrgSwitchRequest(orgChangeHistoryRecord, orgFromId, orgFromBPartnerId);
+	}
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_To_ID());
+	private void createOrgSwitchRequest(@NonNull final I_AD_OrgChange_History orgChangeHistoryRecord, @NonNull final OrgId orgId, @NonNull final BPartnerId bPartnerId)
+	{
+		final RequestTypeId requestTypeId = requestTypeDAO.retrieveOrgChangeRequestTypeId();
 
-		final String summary = msgBL.getMsg(Env.getCtx(), MSG_OrgChangeSummary, new Object[] {
-				orgDAO.getById(orgChangeHistoryRecord.getAD_Org_From_ID()).getName(),
-				orgDAO.getById(orgChangeHistoryRecord.getAD_OrgTo_ID()).getName(),
-				TimeUtil.asDate(requestDate) });
+		final ZoneId orgTimeZone = orgDAO.getTimeZone(orgId);
+		final ZonedDateTime orgRequestDate = TimeUtil.asZonedDateTime(orgChangeHistoryRecord.getDate_OrgChange(), orgTimeZone);
+		final String orgSummary = getSummaryForOrg(orgChangeHistoryRecord, orgRequestDate);
 
-		final RequestCandidate requestCandidate = RequestCandidate.builder()
-				.summary(summary)
+		final RequestCandidate orgRequestCandidate = RequestCandidate.builder()
+				.summary(orgSummary)
 				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
 				.orgId(orgId)
 				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
 				.requestTypeId(requestTypeId)
 				.partnerId(bPartnerId)
-				.dateDelivered(requestDate)
-
+				.dateDelivered(orgRequestDate)
 				.build();
 
-		requestBL.createRequest(requestCandidate);
+		requestBL.createRequest(orgRequestCandidate);
+	}
 
+	private String getSummaryForOrg(
+			@NonNull final I_AD_OrgChange_History orgChangeHistoryRecord,
+			@NonNull final ZonedDateTime zonedDateTime)
+	{
+		return msgBL.getMsg(Env.getCtx(), MSG_OrgChangeSummary, new Object[] {
+				orgDAO.getById(orgChangeHistoryRecord.getAD_Org_From_ID()).getName(),
+				orgDAO.getById(orgChangeHistoryRecord.getAD_OrgTo_ID()).getName(),
+				TimeUtil.asDate(zonedDateTime) });
 	}
 
 	private void unmarkBillToDefaultContacts(final List<BPartnerContact> contacts)

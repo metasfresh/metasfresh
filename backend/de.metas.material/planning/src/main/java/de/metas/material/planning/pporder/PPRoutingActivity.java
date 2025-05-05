@@ -79,6 +79,9 @@ public class PPRoutingActivity
 	BPartnerId subcontractingVendorId;
 
 	boolean milestone;
+	@NonNull PPAlwaysAvailableToUser alwaysAvailableToUser;
+	@Nullable UserInstructions userInstructions;
+	@Nullable PPOrderTargetPlanningStatus targetPlanningStatus;
 
 	@NonNull @Default ImmutableSet<PPRoutingActivityId> nextActivityIds = ImmutableSet.of();
 

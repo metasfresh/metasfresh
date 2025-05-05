@@ -23,7 +23,7 @@
 package de.metas.material.cockpit.availableforsales;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;

@@ -1,5 +1,6 @@
 package de.metas.websocket.producers;
 
+import de.metas.websocket.WebsocketHeaders;
 import de.metas.websocket.WebsocketSubscriptionId;
 import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
@@ -54,5 +55,10 @@ public interface WebSocketProducer
 		 * @return events list (JSON friendly)
 		 */
 		List<?> produceEvents();
+	}
+
+	default void onNewSubscription(@NonNull final WebsocketSubscriptionId subscriptionId, @NonNull final WebsocketHeaders headers)
+	{
+		onNewSubscription(subscriptionId);
 	}
 }

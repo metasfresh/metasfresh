@@ -22,22 +22,17 @@ package de.metas.fresh.ordercheckup.printing.spi.impl;
  * #L%
  */
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
+import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.slf4j.Logger;
 
 /**
  * The job of this handler is

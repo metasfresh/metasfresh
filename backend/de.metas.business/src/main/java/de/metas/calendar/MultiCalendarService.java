@@ -120,4 +120,9 @@ public class MultiCalendarService
 				.orElse(CalendarEntryConflicts.EMPTY);
 	}
 
+	public void checkAllConflicts()
+	{
+		calendarConflictsServices.forEach(CalendarConflictsService::checkAllConflicts);
+	}
+
 }

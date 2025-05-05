@@ -55,7 +55,7 @@ public class ExternalProjectRepository
 				.create()
 				.list()
 				.stream()
-				.map(this::buildExternalProjectReference)
+				.map(ExternalProjectRepository::ofRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -65,24 +65,23 @@ public class ExternalProjectRepository
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, getExternalProjectRequest.getExternalSystem().getCode())
-
 				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalReference, getExternalProjectRequest.getExternalReference())
-
 				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalProjectOwner, getExternalProjectRequest.getExternalProjectOwner())
+				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_AD_Org_ID, getExternalProjectRequest.getOrgId())
 				.create()
 				.firstOnlyOptional(I_S_ExternalProjectReference.class)
-				.map(this::buildExternalProjectReference);
+				.map(ExternalProjectRepository::ofRecord);
 	}
 
 	@NonNull
 	public ExternalProjectReference getById(@NonNull final ExternalProjectReferenceId externalProjectReferenceId)
 	{
 		final I_S_ExternalProjectReference record = InterfaceWrapperHelper.load(externalProjectReferenceId, I_S_ExternalProjectReference.class);
-		return buildExternalProjectReference(record);
+		return ofRecord(record);
 	}
 
 	@NonNull
-	private ExternalProjectReference buildExternalProjectReference(@NonNull final I_S_ExternalProjectReference record)
+	private static ExternalProjectReference ofRecord(@NonNull final I_S_ExternalProjectReference record)
 	{
 		final Optional<ExternalProjectType> externalProjectType = ExternalProjectType.getTypeByValue(record.getProjectType());
 
@@ -101,6 +100,7 @@ public class ExternalProjectRepository
 				.externalProjectType(externalProjectType.get())
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
+				.externalProjectReferenceEffortId(ExternalProjectReferenceId.ofRepoIdOrNull(record.getS_ExternalProjectReference_Effort_ID()))
 				.build();
 	}
 }

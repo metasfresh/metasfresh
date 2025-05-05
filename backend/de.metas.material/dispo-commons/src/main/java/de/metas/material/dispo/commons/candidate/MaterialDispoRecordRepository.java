@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
@@ -77,9 +78,9 @@ public class MaterialDispoRecordRepository
 
 	@NonNull
 	@VisibleForTesting
-	public String getAllAsString()
+	public String getAllAsString(@NonNull final ProductId productId)
 	{
-		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveAllNotStockOrderedByDateAndSeqNo();
+		final List<Candidate> candidates = candidateRepositoryRetrieval.retrieveAllNotStockOrderedByDateAndSeqNoFor(productId);
 		return asString(null, candidates);
 	}
 

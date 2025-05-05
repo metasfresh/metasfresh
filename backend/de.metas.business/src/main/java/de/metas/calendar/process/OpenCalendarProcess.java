@@ -10,9 +10,12 @@ import de.metas.process.ProcessExecutionResult.CalendarToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.resource.ResourceGroupId;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_SimulationPlan;
@@ -78,7 +81,7 @@ public class OpenCalendarProcess extends JavaProcess implements IProcessPrecondi
 				return Optional.empty();
 			}
 
-			final CalendarResourceId calendarResourceId = CalendarResourceId.ofRepoId(resourceId);
+			final CalendarResourceId calendarResourceId = ResourceIdAndType.machine(resourceId).toCalendarResourceId();
 
 			return Optional.of(CalendarToOpen.builder().calendarResourceId(calendarResourceId.getAsString()).build());
 		}
@@ -90,7 +93,7 @@ public class OpenCalendarProcess extends JavaProcess implements IProcessPrecondi
 				return Optional.empty();
 			}
 
-			final CalendarResourceId calendarResourceId = CalendarResourceId.ofRepoId(resourceGroupId);
+			final CalendarResourceId calendarResourceId = CalendarResourceId.ofResourceGroupId(resourceGroupId);
 
 			return Optional.of(CalendarToOpen.builder().calendarResourceId(calendarResourceId.getAsString()).build());
 		}
@@ -103,6 +106,16 @@ public class OpenCalendarProcess extends JavaProcess implements IProcessPrecondi
 			}
 
 			return Optional.of(CalendarToOpen.builder().customerId(bpartnerId).build());
+		}
+		else if (I_AD_User.Table_Name.equals(tableName))
+		{
+			final UserId responsibleId = UserId.ofRepoIdOrNull(recordId);
+			if (responsibleId == null)
+			{
+				return Optional.empty();
+			}
+
+			return Optional.of(CalendarToOpen.builder().responsibleId(responsibleId).build());
 		}
 		else
 		{

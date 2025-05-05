@@ -22,120 +22,163 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
+@Jacksonized
 public class JsonWorkOrderProjectResponse
 {
 	@NonNull
-	@JsonProperty("projectId")
 	JsonMetasfreshId projectId;
 
 	@NonNull
-	@JsonProperty("value")
 	String value;
 
 	@NonNull
-	@JsonProperty("name")
 	String name;
 
 	@Nullable
-	@JsonProperty("projectTypeId")
+	JsonExternalId externalId;
+
+	@NonNull
 	JsonMetasfreshId projectTypeId;
 
 	@Nullable
-	@JsonProperty("priceListVersionId")
 	JsonMetasfreshId priceListVersionId;
 
-	@Nullable
-	@JsonProperty("currencyId")
-	JsonMetasfreshId currencyId;
+	@NonNull
+	String currencyCode;
 
 	@Nullable
-	@JsonProperty("salesRepId")
 	JsonMetasfreshId salesRepId;
 
 	@Nullable
-	@JsonProperty("description")
 	String description;
 
 	@Nullable
-	@JsonProperty("dateContract")
-	String dateContract;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate dateContract;
 
 	@Nullable
-	@JsonProperty("dateFinish")
-	String dateFinish;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate dateFinish;
 
 	@Nullable
-	@JsonProperty("bPartnerId")
-	JsonMetasfreshId bPartnerId;
+	JsonMetasfreshId bpartnerId;
 
 	@Nullable
-	@JsonProperty("projectReferenceExt")
 	String projectReferenceExt;
 
 	@Nullable
-	@JsonProperty("projectParentId")
 	JsonMetasfreshId projectParentId;
 
 	@NonNull
-	@JsonProperty("orgCode")
 	String orgCode;
 
 	@Nullable
-	@JsonProperty("isActive")
 	Boolean isActive;
 
 	@Nullable
-	@JsonProperty("steps")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate dateOfProvisionByBPartner;
+
+	@Nullable
+	String woOwner;
+
+	@Nullable
+	String poReference;
+
+	@Nullable
+	String bpartnerDepartment;
+
+	@Nullable
+	JsonMetasfreshId specialistConsultantId;
+
+	@Nullable
+	String internalPriority;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate bpartnerTargetDate;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate woProjectCreatedDate;
+
+	@Nullable
 	List<JsonWorkOrderStepResponse> steps;
 
-	@JsonCreator
+	@Nullable
+	List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest;
+
 	@Builder
+	@JsonCreator
 	public JsonWorkOrderProjectResponse(
-			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@NonNull @JsonProperty("value") final String value,
-			@NonNull @JsonProperty("name") final String name,
-			@NonNull @JsonProperty("projectTypeId") final JsonMetasfreshId projectTypeId,
-			@Nullable @JsonProperty("priceListVersionId") final JsonMetasfreshId priceListVersionId,
-			@Nullable @JsonProperty("currencyId") final JsonMetasfreshId currencyId,
-			@Nullable @JsonProperty("salesRepId") final JsonMetasfreshId salesRepId,
-			@Nullable @JsonProperty("description") final String description,
-			@Nullable @JsonProperty("dateContract") final String dateContract,
-			@Nullable @JsonProperty("dateFinish") final String dateFinish,
-			@Nullable @JsonProperty("bPartnerId") final JsonMetasfreshId bPartnerId,
-			@Nullable @JsonProperty("projectReferenceExt") final String projectReferenceExt,
-			@Nullable @JsonProperty("projectParentId") final JsonMetasfreshId projectParentId,
-			@NonNull @JsonProperty("orgCode") final String orgCode,
-			@Nullable @JsonProperty("isActive") final Boolean isActive,
-			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepResponse> steps)
+			@JsonProperty("projectId") @NonNull JsonMetasfreshId projectId,
+			@JsonProperty("value") @NonNull String value,
+			@JsonProperty("name") @NonNull String name,
+			@JsonProperty("externalId") @Nullable JsonExternalId externalId,
+			@JsonProperty("projectTypeId") @NonNull JsonMetasfreshId projectTypeId,
+			@JsonProperty("priceListVersionId") @Nullable JsonMetasfreshId priceListVersionId,
+			@JsonProperty("currencyCode") @NonNull String currencyCode,
+			@JsonProperty("salesRepId") @Nullable JsonMetasfreshId salesRepId,
+			@JsonProperty("description") @Nullable String description,
+			@JsonProperty("dateContract") LocalDate dateContract,
+			@JsonProperty("dateFinish") LocalDate dateFinish,
+			@JsonProperty("bpartnerId") @Nullable JsonMetasfreshId bpartnerId,
+			@JsonProperty("projectReferenceExt") @Nullable String projectReferenceExt,
+			@JsonProperty("projectParentId") @Nullable JsonMetasfreshId projectParentId,
+			@JsonProperty("orgCode") @NonNull String orgCode,
+			@JsonProperty("isActive") @Nullable Boolean isActive,
+			@JsonProperty("dateOfProvisionByBPartner") LocalDate dateOfProvisionByBPartner,
+			@JsonProperty("woOwner") @Nullable String woOwner,
+			@JsonProperty("poReference") @Nullable String poReference,
+			@JsonProperty("bpartnerDepartment") @Nullable String bpartnerDepartment,
+			@JsonProperty("specialistConsultantId") @Nullable JsonMetasfreshId specialistConsultantId,
+			@JsonProperty("internalPriority") @Nullable String internalPriority,
+			@JsonProperty("bpartnerTargetDate") LocalDate bpartnerTargetDate,
+			@JsonProperty("woProjectCreatedDate") LocalDate woProjectCreatedDate,
+			@JsonProperty("steps") @Nullable List<JsonWorkOrderStepResponse> steps,
+			@JsonProperty("objectsUnderTest") @Nullable List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest
+	)
 	{
 		this.projectId = projectId;
 		this.value = value;
 		this.name = name;
+		this.externalId = externalId;
 		this.projectTypeId = projectTypeId;
 		this.priceListVersionId = priceListVersionId;
-		this.currencyId = currencyId;
+		this.currencyCode = currencyCode;
 		this.salesRepId = salesRepId;
 		this.description = description;
 		this.dateContract = dateContract;
 		this.dateFinish = dateFinish;
-		this.bPartnerId = bPartnerId;
+		this.bpartnerId = bpartnerId;
+		this.bpartnerDepartment = bpartnerDepartment;
 		this.projectReferenceExt = projectReferenceExt;
 		this.projectParentId = projectParentId;
 		this.orgCode = orgCode;
 		this.isActive = isActive;
+		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
+		this.woOwner = woOwner;
+		this.poReference = poReference;
+		this.specialistConsultantId = specialistConsultantId;
+		this.internalPriority = internalPriority;
+		this.bpartnerTargetDate = bpartnerTargetDate;
+		this.woProjectCreatedDate = woProjectCreatedDate;
 		this.steps = steps;
+		this.objectsUnderTest = objectsUnderTest;
 	}
 }

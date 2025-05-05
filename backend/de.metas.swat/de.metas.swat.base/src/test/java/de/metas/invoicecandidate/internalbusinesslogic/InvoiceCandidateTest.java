@@ -1,15 +1,5 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.*;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
-import java.math.BigDecimal;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -21,6 +11,25 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.lang.Percent;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.CURRENCY_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.DELIVERY_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.HUNDRET;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.IC_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.NINE;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.NINETY;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.PRODUCT_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.STOCK_UOM_ID;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.createRequiredMasterdata;
+import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.loadJsonFixture;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -62,8 +71,8 @@ class InvoiceCandidateTest
 
 		final OrderedData orderedData = OrderedData.builder()
 				.orderFullyDelivered(false)
-				.qtyInStockUom(Quantitys.create(new BigDecimal("15"), STOCK_UOM_ID))
-				.qty(Quantitys.create(new BigDecimal("60"), DELIVERY_UOM_ID))
+				.qtyInStockUom(Quantitys.of(new BigDecimal("15"), STOCK_UOM_ID))
+				.qty(Quantitys.of(new BigDecimal("60"), DELIVERY_UOM_ID))
 				.build();
 
 		final DeliveredData deliveredData = DeliveredData.builder()
@@ -78,8 +87,8 @@ class InvoiceCandidateTest
 
 		final PickedData pickedData = PickedData.builder()
 				.productId(PRODUCT_ID)
-				.qtyPicked(Quantitys.create(BigDecimal.ZERO, STOCK_UOM_ID))
-				.qtyPickedInUOM(Quantitys.create(BigDecimal.ZERO, DELIVERY_UOM_ID))
+				.qtyPicked(Quantitys.of(BigDecimal.ZERO, STOCK_UOM_ID))
+				.qtyPickedInUOM(Quantitys.of(BigDecimal.ZERO, DELIVERY_UOM_ID))
 				.build();
 
 		final InvoicedData invoicedData = InvoicedData.builder()
@@ -109,14 +118,14 @@ class InvoiceCandidateTest
 	@Test
 	void sales_serialize_deserialize()
 	{
-		final Quantity shippedQtyInStockUom = Quantitys.create(TEN, STOCK_UOM_ID);
-		final Quantity shippedQtyNominal = Quantitys.create(new BigDecimal("40"), DELIVERY_UOM_ID);
-		final Quantity shippedQtyCatch = Quantitys.create(new BigDecimal("43"), DELIVERY_UOM_ID);
+		final Quantity shippedQtyInStockUom = Quantitys.of(TEN, STOCK_UOM_ID);
+		final Quantity shippedQtyNominal = Quantitys.of(new BigDecimal("40"), DELIVERY_UOM_ID);
+		final Quantity shippedQtyCatch = Quantitys.of(new BigDecimal("43"), DELIVERY_UOM_ID);
 
 		final OrderedData orderedData = OrderedData.builder()
 				.orderFullyDelivered(false)
-				.qtyInStockUom(Quantitys.create(new BigDecimal("15"), STOCK_UOM_ID))
-				.qty(Quantitys.create(new BigDecimal("60"), DELIVERY_UOM_ID))
+				.qtyInStockUom(Quantitys.of(new BigDecimal("15"), STOCK_UOM_ID))
+				.qty(Quantitys.of(new BigDecimal("60"), DELIVERY_UOM_ID))
 				.build();
 
 		final DeliveredData deliveredData = DeliveredData.builder()
@@ -135,8 +144,8 @@ class InvoiceCandidateTest
 
 		final PickedData pickedData = PickedData.builder()
 				.productId(PRODUCT_ID)
-				.qtyPicked(Quantitys.create(new BigDecimal("20"), STOCK_UOM_ID))
-				.qtyPickedInUOM(Quantitys.create(new BigDecimal("70"), DELIVERY_UOM_ID))
+				.qtyPicked(Quantitys.of(new BigDecimal("20"), STOCK_UOM_ID))
+				.qtyPickedInUOM(Quantitys.of(new BigDecimal("70"), DELIVERY_UOM_ID))
 				.build();
 
 		final InvoicedData invoicedData = InvoicedData.builder()
@@ -445,6 +454,32 @@ class InvoiceCandidateTest
 		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("11"); // qtyToInvoiceOverride
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+	}
+
+	@Test
+	void sales_afterDelivery_catchWeight_qtyToInvoiceUOM_Override()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withCatchWeight_withQtyToInvoiceUOM_Override");
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("46.879");
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("15");
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+	}
+
+	@Test
+	void sales_immediate_catchWeight_qtyToInvoiceUOM_Override()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_immediate_catchWeight_qtyToInvoiceUOM_Override");
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo("46.879");
+		assertThat(toInvoiceData.getQtysEffective().getUOMQtyNotNull().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("15");
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
 

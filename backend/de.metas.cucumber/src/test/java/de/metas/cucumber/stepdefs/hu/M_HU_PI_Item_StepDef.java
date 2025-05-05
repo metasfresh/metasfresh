@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -48,7 +48,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Ite
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_Qty;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_HU_PI_Item_StepDef
 {
@@ -57,15 +57,18 @@ public class M_HU_PI_Item_StepDef
 	private final M_HU_PI_StepDefData huPiTable;
 	private final M_HU_PI_Version_StepDefData huPiVersionTable;
 	private final M_HU_PI_Item_StepDefData huPiItemTable;
+	private final M_HU_PackingMaterial_StepDefData huPackingMaterialTable;
 
 	public M_HU_PI_Item_StepDef(
 			@NonNull final M_HU_PI_StepDefData huPiTable,
 			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable,
-			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable)
+			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable,
+			@NonNull final M_HU_PackingMaterial_StepDefData huPackingMaterialTable)
 	{
 		this.huPiTable = huPiTable;
 		this.huPiVersionTable = huPiVersionTable;
 		this.huPiItemTable = huPiItemTable;
+		this.huPackingMaterialTable = huPackingMaterialTable;
 	}
 
 	@And("metasfresh contains M_HU_PI_Item:")
@@ -83,7 +86,6 @@ public class M_HU_PI_Item_StepDef
 
 			final IQueryBuilder<I_M_HU_PI_Item> piItemQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
 					.addEqualsFilter(COLUMNNAME_M_HU_PI_Version_ID, huPiVersion.getM_HU_PI_Version_ID())
-					.addEqualsFilter(COLUMNNAME_Qty, qty)
 					.addEqualsFilter(COLUMNNAME_ItemType, itemType)
 					.addEqualsFilter(COLUMNNAME_IsActive, active);
 
@@ -111,6 +113,16 @@ public class M_HU_PI_Item_StepDef
 			{
 				final I_M_HU_PI huPi = huPiTable.get(includedHuPiIdentifier);
 				huPiItemRecord.setIncluded_HU_PI_ID(huPi.getM_HU_PI_ID());
+			}
+
+			final String huPackingMaterialIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(huPackingMaterialIdentifier))
+			{
+				final int huPackingMaterialId = DataTableUtil.nullToken2Null(huPackingMaterialIdentifier) == null
+						? -1
+						: huPackingMaterialTable.get(huPackingMaterialIdentifier).getM_HU_PackingMaterial_ID();
+
+				huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterialId);
 			}
 
 			saveRecord(huPiItemRecord);

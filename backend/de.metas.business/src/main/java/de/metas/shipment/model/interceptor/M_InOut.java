@@ -6,16 +6,21 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.logging.TableRecordMDC;
 import de.metas.shipment.repo.ShipmentDeclarationRepository;
 import de.metas.shipment.service.ShipmentDeclarationCreator;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
@@ -52,6 +57,8 @@ public class M_InOut
 	private final ShipmentDeclarationRepository shipmentDeclarationRepo;
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	public M_InOut(@NonNull final ShipmentDeclarationCreator shipmentDeclarationCreator,
 			@NonNull final ShipmentDeclarationRepository shipmentDeclarationRepo)
@@ -106,6 +113,18 @@ public class M_InOut
 				final ITranslatableString msg = msgBL.getTranslatableMsgText(ERR_ShipmentDeclaration);
 				throw new AdempiereException(msg).markAsUserValidationError();
 			}
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_M_InOut.COLUMNNAME_M_SectionCode_ID })
+	@CalloutMethod(columnNames = I_M_InOut.COLUMNNAME_M_SectionCode_ID)
+	public void updateSectionCode(@NonNull final I_M_InOut inout)
+	{
+		for (final I_M_InOutLine inOutLine : inOutDAO.retrieveLines(inout))
+		{
+			inOutLine.setM_SectionCode_ID(inout.getM_SectionCode_ID());
+			inOutDAO.save(inOutLine);
 		}
 	}
 }

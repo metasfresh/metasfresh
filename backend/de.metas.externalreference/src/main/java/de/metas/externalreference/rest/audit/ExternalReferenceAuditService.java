@@ -29,8 +29,8 @@ import de.metas.audit.data.IMasterDataExportAuditService;
 import de.metas.audit.data.service.DataExportAuditRequest;
 import de.metas.audit.data.service.DataExportAuditService;
 import de.metas.audit.data.service.GenericDataExportAuditRequest;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestController;
 import de.metas.process.PInstanceId;
@@ -82,17 +82,17 @@ public class ExternalReferenceAuditService implements IMasterDataExportAuditServ
 	}
 
 	private void auditExternalReference(
-			@NonNull final JsonExternalReferenceItem jsonExternalReferenceItem,
+			@NonNull final JsonExternalReferenceResponseItem jsonExternalReferenceRequestItem,
 			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
 			@Nullable final PInstanceId pInstanceId)
 	{
-		if (jsonExternalReferenceItem.getExternalReferenceId() == null)
+		if (jsonExternalReferenceRequestItem.getExternalReferenceId() == null)
 		{
 			return;
 		}
 
 		final DataExportAuditRequest jsonExternalReferenceItemRequest = DataExportAuditRequest.builder()
-				.tableRecordReference(TableRecordReference.of(I_S_ExternalReference.Table_Name, jsonExternalReferenceItem.getExternalReferenceId().getValue()))
+				.tableRecordReference(TableRecordReference.of(I_S_ExternalReference.Table_Name, jsonExternalReferenceRequestItem.getExternalReferenceId().getValue()))
 				.action(Action.Standalone)
 				.externalSystemConfigId(externalSystemParentConfigId)
 				.adPInstanceId(pInstanceId)

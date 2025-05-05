@@ -22,26 +22,23 @@ package org.eevolution.model.validator;
  * #L%
  */
 
-import java.util.List;
-
-import de.metas.product.IProductBL;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.ModelValidator;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IProductBOMBL;
-import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.I_PP_Product_BOMLine;
-
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.compiere.model.ModelValidator;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IProductBOMBL;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.impl.ProductBOMDAO;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Product_BOMLine;
+
+import java.util.List;
 
 @Validator(I_PP_Product_BOMLine.class)
 public class PP_Product_BOMLine
@@ -90,6 +87,8 @@ public class PP_Product_BOMLine
 		{
 			throw new LiberoException("@NoSuchVariantGroup@");
 		}
+
+		ProductBOMDAO.extractIssuingToleranceSpec(bomLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_PP_Order_BOMLine.COLUMNNAME_VariantGroup)
@@ -128,16 +127,10 @@ public class PP_Product_BOMLine
 		return true;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
-	public void updateProductLowestLevelCode(final I_PP_Product_BOMLine bomLine)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, skipIfCopying = true)
+	public void checkingBOMCycle(final I_PP_Product_BOMLine bomLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-		final I_M_Product product = Services.get(IProductBL.class).getById(productId);
-		final int lowLevel = Services.get(IProductBOMBL.class).calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-
-		product.setLowLevel(lowLevel); // update lowlevel
-		InterfaceWrapperHelper.save(product);
-
-		// TODO: if product's low level changed, we need to update the low level from all bom components where this product is in bom header.
+		Services.get(IProductBOMBL.class).checkCycles(productId);
 	}
 }

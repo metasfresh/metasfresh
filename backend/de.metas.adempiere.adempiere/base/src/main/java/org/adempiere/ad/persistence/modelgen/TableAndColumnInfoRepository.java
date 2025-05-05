@@ -32,6 +32,7 @@ import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.compiere.model.I_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
@@ -139,6 +140,7 @@ public class TableAndColumnInfoRepository
 				+ ", t.AccessLevel" // 21
 				+ ", c.IsLazyLoading" // 22
 				+ ", t.EntityType as TableEntityType"
+				+ ", c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn
 				+ " FROM AD_Column c "
 				+ " LEFT OUTER JOIN AD_Column_Trl ctrl on (ctrl.AD_Column_ID=c.AD_Column_ID AND ctrl.AD_Language='en_US')"
 				+ " INNER JOIN AD_Table t ON (t.AD_Table_ID=c.AD_Table_ID)"
@@ -183,6 +185,7 @@ public class TableAndColumnInfoRepository
 				final boolean IsKey = StringUtils.toBoolean(rs.getString(17));
 				final int seqNo = rs.getInt("SeqNo"); // i.e. 19
 				final boolean isIdentifier = StringUtils.toBoolean(rs.getString("IsIdentifier")); // i.e. 20
+				final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn)); // i.e. 21
 
 				if (tableInfoBuilder == null)
 				{
@@ -221,6 +224,7 @@ public class TableAndColumnInfoRepository
 						.lazyLoading(isLazyLoading)
 						.seqNo(seqNo)
 						.adTableId(adTableId)
+						.isRestAPICustomColumn(isRestAPICustomColumn)
 						.build();
 
 				columnName2columnInfos.put(columnInfo.getColumnName(), columnInfo);

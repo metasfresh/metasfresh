@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Prices rest controller
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-05-09T13:30:13+01:00[Europe/Berlin]
 
   Scenario: Search product prices available for BPartnerIdentifier&ProductIdentifier at given date
@@ -31,10 +33,10 @@ Feature: Prices rest controller
       | Identifier | Name         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | bpartner_1 | BPartnerName | N            | Y              | pricingSystem_1               |
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference   | ExternalReferenceType.Code | RecordId.Identifier |
-      | LeichUndMehl        | productExternalRef  | Product                    | product_1           |
-      | LeichUndMehl        | bpartnerExternalRef | BPartner                   | bpartner_1          |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference   | Type     | OPT.M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier |
+      | productExternalRef                | LeichUndMehl   | productExternalRef  | Product  | product_1                   |                              |
+      | bpartnerExternalRef               | LeichUndMehl   | bpartnerExternalRef | BPartner |                             | bpartner_1                   |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/prices/001/product/search' and fulfills with '200' status code
     """

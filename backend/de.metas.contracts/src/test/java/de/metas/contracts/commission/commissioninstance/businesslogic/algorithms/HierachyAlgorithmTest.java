@@ -27,7 +27,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -186,7 +186,7 @@ class HierachyAlgorithmTest
 				.orgId(orgId)
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
 				.timestamp(de.metas.common.util.time.SystemTime.asInstant())
-				.triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(10, 15)))
+				.triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceAndLineId.ofRepoId(10, 15)))
 				.triggerDocumentDate(LocalDate.of(2020, 03, 22))
 				.forecastedBasePoints(CommissionPoints.of("30.00"))
 				.invoiceableBasePoints(CommissionPoints.of("20.00"))
@@ -240,7 +240,7 @@ class HierachyAlgorithmTest
 				.instanceToUpdate(instance)
 				.newCommissionTriggerData(CommissionTriggerData.builder()
 												  .orgId(orgId)
-												  .triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(10, 15)))
+												  .triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceAndLineId.ofRepoId(10, 15)))
 												  .triggerType(CommissionTriggerType.SalesInvoice)
 												  .triggerDocumentDate(LocalDate.of(2020, 03, 21))
 												  .timestamp(Instant.now())

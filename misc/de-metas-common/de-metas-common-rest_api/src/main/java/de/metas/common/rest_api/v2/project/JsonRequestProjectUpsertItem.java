@@ -23,8 +23,7 @@
 package de.metas.common.rest_api.v2.project;
 
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -34,79 +33,79 @@ import java.time.LocalDate;
 @Getter
 @ToString
 @EqualsAndHashCode
-@ApiModel(description = "Contains the project to be upserted.")
+@Schema(description = "Contains the project to be upserted.")
 public class JsonRequestProjectUpsertItem
 {
-	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project.C_Project_ID`")
+	@Schema(description = "Corresponding to `C_Project.C_Project_ID`")
 	private JsonMetasfreshId projectId;
 
-	@ApiModelProperty(position = 20, value = "Corresponding to `C_Project.AD_Org_ID`", required = true)
+	@Schema(description = "Corresponding to `C_Project.AD_Org_ID`", required = true)
 	private JsonMetasfreshId orgId;
 
-	@ApiModelProperty(position = 30, value = "Corresponding to `C_Project.Name`", required = true)
+	@Schema(description = "Corresponding to `C_Project.Name`", required = true)
 	private String name;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to `C_Project.C_Currency_Id.Iso_Code`", required = true)
+	@Schema(description = "Corresponding to `C_Project.C_Currency_Id.Iso_Code`", required = true)
 	private String currencyCode;
 
-	@ApiModelProperty(position = 50, value = "Corresponding to `C_Project.Value`")
+	@Schema(description = "Corresponding to `C_Project.Value`")
 	private String value;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean valueSet;
 
-	@ApiModelProperty(position = 60, value = "Corresponding to `C_Project.Description`")
+	@Schema(description = "Corresponding to `C_Project.Description`")
 	private String description;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean descriptionSet;
 
-	@ApiModelProperty(position = 70, value = "Corresponding to `C_Project.C_Project_Parent_ID`")
+	@Schema(description = "Corresponding to `C_Project.C_Project_Parent_ID`")
 	private JsonMetasfreshId projectParentId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean projectParentIdSet;
 
-	@ApiModelProperty(position = 80, value = "Corresponding to `C_Project.C_ProjectType_ID`")
+	@Schema(description = "Corresponding to `C_Project.C_ProjectType_ID`")
 	private JsonMetasfreshId projectTypeId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean projectTypeIdSet;
 
-	@ApiModelProperty(position = 90, value = "Corresponding to `C_Project.R_Project_Status_ID`")
+	@Schema(description = "Corresponding to `C_Project.R_Project_Status_ID`")
 	private JsonMetasfreshId projectStatusId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean projectStatusIdSet;
 
-	@ApiModelProperty(position = 100, value = "Corresponding to `C_Project.C_BPartner_ID`")
+	@Schema(description = "Corresponding to `C_Project.C_BPartner_ID`")
 	private JsonMetasfreshId bpartnerId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean bpartnerIdSet;
 
-	@ApiModelProperty(position = 110, value = "Corresponding to `C_Project.SalesRep_ID`")
+	@Schema(description = "Corresponding to `C_Project.SalesRep_ID`")
 	private JsonMetasfreshId salesRepId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean salesRepIdSet;
 
-	@ApiModelProperty(position = 120, value = "Corresponding to `C_Project.DateContract`")
+	@Schema(description = "Corresponding to `C_Project.DateContract`")
 	private LocalDate dateContract;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean dateContractSet;
 
-	@ApiModelProperty(position = 130, value = "Corresponding to `C_Project.DateFinish`")
+	@Schema(description = "Corresponding to `C_Project.DateFinish`")
 	private LocalDate dateFinish;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean dateFinishSet;
 
-	@ApiModelProperty(position = 140, value = "Corresponding to `C_Project.isActive`")
+	@Schema(description = "Corresponding to `C_Project.isActive`")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
 	public void setValue(final String value)

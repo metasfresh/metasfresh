@@ -1,0 +1,30 @@
+{
+  "bPartnerRow": {
+    "partnerCode": "PARTNER_CODE05",
+    "section": "SCOD2",
+    "partnerCategory": "2",
+    "name1": "name",
+    "name2": "",
+    "searchTerm": "searchTerm",
+    "street": "street",
+    "street2": "street2",
+    "street3": "",
+    "street4": "",
+    "street5": "",
+    "postalCode": "11111",
+    "city": "TEST",
+    "countryKey": "DE",
+    "vatRegNo": "DE111111111",
+    "paymentMethod": "EO",
+    "salesIncoterms": "",
+    "salesIncoterms2": "",
+    "salesPaymentTerms": "AAAA",
+    "purchaseIncoterms": "",
+    "purchaseIncoterms2": "",
+    "purchasePaymentTerms": "AAAA",
+    "activeFlag": "X"
+  },
+  "orgCode": "orgCode",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2
+}

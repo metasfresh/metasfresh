@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "json-schema-legacy/maindoc/UBL-CertificateOfOrigin-2.3.json",
+  "description": "\n  Library:           OASIS Universal Business Language (UBL) 2.3 OS\n                     http://docs.oasis-open.org/ubl/os-UBL-2.3/\n  Release Date:      15 June 2021\n  Module:            json-schema-legacy/maindoc/UBL-CertificateOfOrigin-2.3.json\n  Generated on:      2021-12-15 21:56z\n  Copyright (c) OASIS Open 2021. All Rights Reserved.\n\n\n  OASIS takes no position regarding the validity or scope of any \n  intellectual property or other rights that might be claimed to pertain \n  to the implementation or use of the technology described in this \n  document or the extent to which any license under such rights \n  might or might not be available; neither does it represent that it has \n  made any effort to identify any such rights. Information on OASIS's \n  procedures with respect to rights in OASIS specifications can be \n  found at the OASIS website. Copies of claims of rights made \n  available for publication and any assurances of licenses to be made \n  available, or the result of an attempt made to obtain a general \n  license or permission for the use of such proprietary rights by \n  implementors or users of this specification, can be obtained from \n  the OASIS Executive Director.\n\n  OASIS invites any interested party to bring to its attention any \n  copyrights, patents or patent applications, or other proprietary \n  rights which may cover technology that may be required to \n  implement this specification. Please address the information to the \n  OASIS Executive Director.\n  \n  This document and translations of it may be copied and furnished to \n  others, and derivative works that comment on or otherwise explain \n  it or assist in its implementation may be prepared, copied, \n  published and distributed, in whole or in part, without restriction of \n  any kind, provided that the above copyright notice and this \n  paragraph are included on all such copies and derivative works. \n  However, this document itself may not be modified in any way, \n  such as by removing the copyright notice or references to OASIS, \n  except as needed for the purpose of developing OASIS \n  specifications, in which case the procedures for copyrights defined \n  in the OASIS Intellectual Property Rights document must be \n  followed, or as required to translate it into languages other than \n  English. \n\n  The limited permissions granted above are perpetual and will not be \n  revoked by OASIS or its successors or assigns. \n\n  This document and the information contained herein is provided on \n  an \"AS IS\" basis and OASIS DISCLAIMS ALL WARRANTIES, \n  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY \n  WARRANTY THAT THE USE OF THE INFORMATION HEREIN \n  WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED \n  WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A \n  PARTICULAR PURPOSE.    \n",
+  "required": [
+    "CertificateOfOrigin"
+    ],
+  "properties": {
+    "_D": {
+      "description": "Document ABIE XML namespace string",
+      "type": "string"
+      },
+    "_A": {
+      "description": "Library ABIE XML namespace string (for ASBIEs)",
+      "type": "string"
+      },
+    "_B": {
+      "description": "BBIE XML namespace string",
+      "type": "string"
+      },
+    "_E": {
+      "description": "Extension scaffolding XML namespace string",
+      "type": "string"
+      },
+    "CertificateOfOrigin": {
+      "description": "A document that describes the Certificate of Origin.",
+      "items": {
+        "$ref": "#/definitions/CertificateOfOrigin"
+        },
+      "maxItems": 1,
+      "minItems": 1,
+      "type": "array"
+      }
+    },
+  "additionalProperties": false,
+  "type": "object",
+  "definitions": {
+    "CertificateOfOrigin": {
+      "title": "Certificate Of Origin. Details",
+      "description": "A document that describes the Certificate of Origin.",
+      "required": [
+        "ID",
+        "CertificateOfOriginApplication",
+        "IssuerEndorsement"
+        ],
+      "properties": {
+
+        "UBLExtensions": {
+          "title": "UBLExtensions",
+          "description": "An optional set of extensions to the committee model",
+          "items": { 
+            "$ref": "../common/UBL-CommonExtensionComponents-2.3.json#/definitions/UBLExtensions" },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+
+        "UBLVersionID": {
+          "title": "Certificate Of Origin. UBL Version Identifier. Identifier",
+          "description": "Identifies the earliest version of the UBL 2 schema for this document type that defines all of the elements that might be encountered in the current instance.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UBLVersionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "CustomizationID": {
+          "title": "Certificate Of Origin. Customization Identifier. Identifier",
+          "description": "Identifies a user-defined customization of UBL for a specific use.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CustomizationID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ProfileID": {
+          "title": "Certificate Of Origin. Profile Identifier. Identifier",
+          "description": "Identifies a user-defined profile of the customization of UBL being used.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ProfileExecutionID": {
+          "title": "Certificate Of Origin. Profile Execution Identifier. Identifier",
+          "description": "Identifies an instance of executing a profile, to associate all transactions in a collaboration.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileExecutionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ID": {
+          "title": "Certificate Of Origin. Identifier",
+          "description": "An identifier for this document, assigned by the sender.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "UUID": {
+          "title": "Certificate Of Origin. UUID. Identifier",
+          "description": "A universally unique identifier for an instance of this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UUID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "IssueDate": {
+          "title": "Certificate Of Origin. Issue Date. Date",
+          "description": "The date, assigned by the sender, on which this document was issued.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueDate"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "IssueTime": {
+          "title": "Certificate Of Origin. Issue Time. Time",
+          "description": "The time, assigned by the sender, at which this document was issued.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueTime"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "Description": {
+          "title": "Certificate Of Origin. Description. Text",
+          "description": "Textual description of the document instance.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/Description"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "Note": {
+          "title": "Certificate Of Origin. Note. Text",
+          "description": "Free-form text pertinent to this document, conveying information that is not contained explicitly in other structures.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/Note"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "VersionID": {
+          "title": "Certificate Of Origin. Version. Identifier",
+          "description": "Identifies the version of this Certificate of Origin.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/VersionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "Signature": {
+          "title": "Certificate Of Origin. Signature",
+          "description": "A signature applied to this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/Signature"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "ExporterParty": {
+          "title": "Certificate Of Origin. Exporter_ Party. Party",
+          "description": "The Party who makes the export declaration, or on whose behalf the export declaration is made, and who is the owner of the goods or has similar right of disposal over them at the time when the declaration is accepted.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ExporterParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ImporterParty": {
+          "title": "Certificate Of Origin. Importer_ Party. Party",
+          "description": "The Party who makes an import declaration, or on whose behalf a Customs clearing agent or other authorized person makes an import declaration. This may include a person who has possession of the goods or to whom the goods are consigned.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ImporterParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "EndorserParty": {
+          "title": "Certificate Of Origin. Endorser Party",
+          "description": "The Party providing the endorsement.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/EndorserParty"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "CertificateOfOriginApplication": {
+          "title": "Certificate Of Origin. Certificate Of Origin Application",
+          "description": "Details of the application for a Certificate of Origin.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/CertificateOfOriginApplication"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "IssuerEndorsement": {
+          "title": "Certificate Of Origin. Issuer_ Endorsement. Endorsement",
+          "description": "Issuer Endorsement details.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/IssuerEndorsement"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "EmbassyEndorsement": {
+          "title": "Certificate Of Origin. Embassy_ Endorsement. Endorsement",
+          "description": "Embassy Endorsement details.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/EmbassyEndorsement"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "InsuranceEndorsement": {
+          "title": "Certificate Of Origin. Insurance_ Endorsement. Endorsement",
+          "description": "Insurance Endorsement details.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/InsuranceEndorsement"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          }
+        },
+      "additionalProperties": false,
+      "type": "object"
+      }
+    }
+  }

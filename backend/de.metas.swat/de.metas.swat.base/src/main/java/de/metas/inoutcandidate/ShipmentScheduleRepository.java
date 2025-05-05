@@ -29,10 +29,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -94,9 +94,15 @@ public class ShipmentScheduleRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final ModelCacheInvalidationService cacheInvalidationService;
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+	public ShipmentScheduleRepository(
+			@NonNull final ModelCacheInvalidationService cacheInvalidationService)
+	{
+		this.cacheInvalidationService = cacheInvalidationService;
+	}
 
 	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
@@ -244,7 +250,9 @@ public class ShipmentScheduleRepository
 				.numberOfItemsForSameShipment(record.getNrOfOLCandsWithSamePOReference())
 				.deliveredQuantity(shipmentScheduleBL.getQtyDelivered(record))
 				.exportStatus(APIExportStatus.ofCode(record.getExportStatus()))
-				.isProcessed(record.isProcessed());
+				.isProcessed(record.isProcessed())
+				.isClosed(record.isClosed())
+				.isDeliveryStop(record.isDeliveryStop());
 
 		if (record.getDateOrdered() != null)
 		{
@@ -271,7 +279,7 @@ public class ShipmentScheduleRepository
 
 		cacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRepoIdAwares(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	public void saveAll(@NonNull final ImmutableCollection<ShipmentSchedule> shipmentSchedules)
@@ -287,6 +295,12 @@ public class ShipmentScheduleRepository
 		final I_M_ShipmentSchedule record = load(shipmentSchedule.getId(), I_M_ShipmentSchedule.class);
 		record.setExportStatus(shipmentSchedule.getExportStatus().getCode()); // right now this is the only mutable property
 		saveRecord(record);
+	}
+
+	public ShipmentSchedule getById(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule record = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		return ofRecord(record);
 	}
 
 	public ImmutableMap<ShipmentScheduleId, ShipmentSchedule> getByIds(@NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)

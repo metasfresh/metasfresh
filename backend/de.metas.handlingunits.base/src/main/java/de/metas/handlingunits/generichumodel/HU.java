@@ -105,6 +105,9 @@ public class HU
 		}
 
 		final ImmutableList.Builder<HU> results = ImmutableList.builder();
+
+		results.add(hu);
+
 		for (final HU child : hu.getChildHUs())
 		{
 			final List<HU> recurseNext = recurseNext(child);
@@ -172,6 +175,6 @@ public class HU
 				.collect(ImmutableList.toImmutableList());
 
 		final BigDecimal qtyCU = allQuantities.get(allQuantities.size() / 2);
-		return Quantitys.create(qtyCU, productId);
+		return Quantitys.of(qtyCU, productId);
 	}
 }

@@ -1,7 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
@@ -35,11 +35,11 @@ public class SalesInvoiceLineDocumentId implements CommissionTriggerDocumentId
 		return (SalesInvoiceLineDocumentId)commissionTriggerDocInfo;
 	}
 
-	InvoiceLineId invoiceLineId;
+	InvoiceAndLineId invoiceAndLineId;
 
 	@Override
 	public RepoIdAware getRepoIdAware()
 	{
-		return invoiceLineId;
+		return invoiceAndLineId;
 	}
 }

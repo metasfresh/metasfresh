@@ -5,7 +5,7 @@ import de.metas.calendar.simulation.SimulationIdsPredicate;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.InSetPredicate;
 import de.metas.util.OptionalBoolean;

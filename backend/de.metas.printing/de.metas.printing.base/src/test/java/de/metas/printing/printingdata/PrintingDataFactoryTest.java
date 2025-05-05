@@ -35,10 +35,14 @@ import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,6 +83,9 @@ class PrintingDataFactoryTest
 	@EnumSource(Mode.class)
 	void createPrintingDataForQueueItem(@NonNull final Mode mode)
 	{
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+		SpringContextHolder.registerJUnitBean(workplaceService);
+
 		// given
 		final byte[] binaryPdfData = new PdfCollator()
 				.addPages(helper.getPdf("01"), 1, 3) // First 3 pages

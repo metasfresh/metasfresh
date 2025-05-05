@@ -1,6 +1,7 @@
 package de.metas.lang;
 
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -90,5 +91,21 @@ public enum SOTrx
 	public SOTrx invert()
 	{
 		return isSales() ? PURCHASE : SALES;
+	}
+
+	@NonNull
+	public static SOTrx ofNameNotNull(@NonNull final String soTrx)
+	{
+		try
+		{
+			return SOTrx.valueOf(soTrx);
+		}
+		catch (final Exception exception)
+		{
+			throw new AdempiereException("Invalid SOTrx!")
+					.appendParametersToMessage()
+					.setParameter("SOTrx", soTrx)
+					.setParameter("Known values", values());
+		}
 	}
 }

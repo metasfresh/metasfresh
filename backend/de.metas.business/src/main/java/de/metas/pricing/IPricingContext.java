@@ -100,7 +100,7 @@ public interface IPricingContext extends IContextAware
 	String getTrxName();
 
 	/**
-	 * If set, during pricing calculations, prices will be converted from {@link IPricingResult#getPrice_UOM_ID()} to {@link IPricingContext#getC_UOM_ID()}.
+	 * If set, during pricing calculations, prices will be converted from {@link IPricingResult#getPriceUomId()} ()} to {@link IPricingContext#getUomId()} .
 	 *
 	 * @return true if prices needs to be converted from Price UOM to context UOM
 	 */

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -53,12 +54,24 @@ import java.util.stream.StreamSupport;
  */
 
 /**
- * @author based on <a href="https://gist.github.com/JakeWharton/9734167">...</a>
+ * @author based on <a href="https://gist.github.com/JakeWharton/9734167">GIST</a>
  * @author metas-dev <dev@metasfresh.com>
  */
 @UtilityClass
 public final class GuavaCollectors
 {
+	public static <T> Collector<T, ?, ArrayList<T>> toArrayList()
+	{
+		return Collector.of(
+				ArrayList::new,
+				ArrayList::add,
+				(acc1, acc2) -> {
+					acc1.addAll(acc2);
+					return acc1;
+				},
+				Function.identity());
+	}
+
 	/**
 	 * Collect a stream of elements into an {@link ImmutableList}.
 	 */
@@ -257,6 +270,24 @@ public final class GuavaCollectors
 	}
 
 	/**
+	 * Collects to {@link LinkedHashMap}.
+	 * <p>
+	 * If duplicate key was found, the last provided item will be used.
+	 *
+	 * @return {@link LinkedHashMap} collector
+	 */
+	public static <K, V> Collector<V, ?, LinkedHashMap<K, V>> toLinkedHashMapByKey(final Function<? super V, ? extends K> keyMapper)
+	{
+		// NOTE: before changing the "duplicates" behavior please check the callers first!
+		return Collectors.toMap(
+				keyMapper,
+				value -> value,
+				(valuePrev, valueNow) -> valueNow, // keep last 
+				LinkedHashMap::new
+		);
+	}
+
+	/**
 	 * Collects to {@link ImmutableMap}.
 	 * <p>
 	 * If duplicate key was found, the first provided item will be used.
@@ -362,6 +393,24 @@ public final class GuavaCollectors
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
+	public static <T> Collector<T, ?, T> uniqueElementOrThrow(@NonNull final Function<Set<T>, ? extends RuntimeException> exceptionSupplier)
+	{
+		return Collector.<T, Set<T>, T>of(
+				LinkedHashSet::new,
+				Set::add,
+				(l, r) -> {
+					l.addAll(r);
+					return l;
+				},
+				set -> {
+					if (set.size() != 1)
+					{
+						throw exceptionSupplier.apply(set);
+					}
+					return set.iterator().next();
+				});
+	}
+
 	public static <T> Stream<List<T>> groupByAndStream(final Stream<T> stream, final Function<T, ?> classifier)
 	{
 		final boolean parallel = false;
@@ -425,4 +474,5 @@ public final class GuavaCollectors
 				ImmutableSet.toImmutableSet(),
 				set -> !set.isEmpty() ? Optional.of(set) : Optional.empty());
 	}
+
 }

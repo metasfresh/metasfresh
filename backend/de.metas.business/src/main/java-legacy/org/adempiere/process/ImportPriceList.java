@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import de.metas.pricing.PriceListVersionId;
 import org.compiere.model.I_I_PriceList;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -419,9 +420,7 @@ public class ImportPriceList extends JavaProcess
 				}
 				else
 				{
-					// M_ProductPrice
-					// I_M_ProductPrice pp = MProductPrice.get(getCtx(), pricelistversion.getM_PriceList_Version_ID(), imp.getM_Product_ID(), get_TrxName());
-					I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(pricelistversion, ProductId.ofRepoId(imp.getM_Product_ID()));
+					I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(PriceListVersionId.ofRepoId(pricelistversion.getM_PriceList_Version_ID()), ProductId.ofRepoId(imp.getM_Product_ID()));
 
 					final boolean isInsert;
 					if (pp != null)

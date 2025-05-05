@@ -1,9 +1,6 @@
 package de.metas.user;
 
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Language;
 import de.metas.util.Check;
@@ -11,6 +8,10 @@ import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Optional;
 
 /*
  * #%L
@@ -104,6 +105,17 @@ public class User
 				userLanguage == null || userLanguage.equals(language),
 				"If a userLanguage parameter is specified, it needs to be equal to the language paramter; this={}",
 				language);
+	}
+
+	@NonNull
+	public Optional<BPartnerContactId> getBPartnerContactId()
+	{
+		if (bpartnerId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(BPartnerContactId.of(bpartnerId, id));
 	}
 
 }

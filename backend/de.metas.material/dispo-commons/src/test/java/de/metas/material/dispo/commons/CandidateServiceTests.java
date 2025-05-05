@@ -14,6 +14,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.order.OrderLineRepository;
@@ -165,6 +166,7 @@ public class CandidateServiceTests
 
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
+				.withGroupId(MaterialDispoGroupId.ofInt(10))
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 												.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 												.withQuantity(BigDecimal.valueOf(10)))

@@ -46,6 +46,6 @@ public class JsonCalendarEntryAddRequest
 	@Nullable String description;
 
 	@NonNull JsonDateTime startDate;
-	@NonNull JsonDateTime endDate;
+	@Nullable JsonDateTime endDate;
 	boolean isAllDay;
 }

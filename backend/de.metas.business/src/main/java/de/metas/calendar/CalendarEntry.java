@@ -53,6 +53,7 @@ public class CalendarEntry
 	boolean editable;
 	@Nullable String color;
 	@Nullable URI url;
+	@Nullable String help;
 
 	public CalendarServiceId getCalendarServiceId() {return getEntryId().getCalendarServiceId();}
 

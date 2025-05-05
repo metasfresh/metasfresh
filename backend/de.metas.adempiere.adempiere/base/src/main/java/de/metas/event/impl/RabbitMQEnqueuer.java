@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,7 @@
 
 package de.metas.event.impl;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventEnqueuer;
@@ -67,7 +68,7 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 				event,
 				getMessagePostProcessor(topic));
 
-		logger.debug("Send event; topicName={}; event={}; type={}", topic.getName(), event, topic.getType());
+		logger.debug("Send event; topicName={}; event={}; type={}; timestamp={}, ThreadId={}", topic.getName(), event, topic.getType(), SystemTime.asTimestamp(), Thread.currentThread().getId());
 	}
 
 	@Override

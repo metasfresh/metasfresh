@@ -87,6 +87,7 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 					.adLanguage(Env.getAD_Language(getCtx()))
 					.translateHeaders(spreadsheetExportOptions.isTranslateHeaders())
 					.fieldDelimiter(spreadsheetExportOptions.getCsvFieldDelimiter())
+					.doNotQuoteRows(spreadsheetExportOptions.isDoNotQuoteRows())
 					.build();
 
 			spreadsheetExporterService.processDataFromSQL(sql, evalCtx, jdbcCSVExporter);

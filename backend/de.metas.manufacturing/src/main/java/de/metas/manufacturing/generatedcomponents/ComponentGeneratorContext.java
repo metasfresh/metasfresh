@@ -44,15 +44,15 @@ public class ComponentGeneratorContext
 	@NonNull
 	ImmutableAttributeSet existingAttributes;
 
+	@Builder.Default
+	@NonNull
+	ImmutableAttributeSet bomLineAttributes = ImmutableAttributeSet.EMPTY;
+
 	@NonNull
 	ComponentGeneratorParams parameters;
 
 	@NonNull
 	ClientId clientId;
-
-	@Builder.Default
-	@NonNull
-	ImmutableAttributeSet bomLineAttributes = ImmutableAttributeSet.EMPTY;
 
 	boolean overrideExistingValues;
 

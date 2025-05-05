@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
+import de.metas.pricing.PriceListVersionId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -25,9 +26,9 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 	{
 		Check.assumeInstanceOf(orderObj, I_C_Order.class, "orderObj not null");
 		final I_C_Order order = InterfaceWrapperHelper.create(orderObj, I_C_Order.class);
-		final I_M_PriceList_Version plv = Services.get(IOrderBL.class).getPriceListVersion(order);
+		final PriceListVersionId plvId = Services.get(IOrderBL.class).getPriceListVersion(order);
 
-		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plvId)
 				.setProductId(productId)
 				.onlyAttributePricing()
 				.onlyValidPrices(true)
@@ -38,7 +39,7 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 			final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(productPrice.getM_HU_PI_Item_Product_ID());
 			if (packingMaterialId != null)
 			{
-				return Services.get(IHUPIItemProductDAO.class).getById(packingMaterialId);
+				return Services.get(IHUPIItemProductDAO.class).getRecordById(packingMaterialId);
 			}
 		}
 

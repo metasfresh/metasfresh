@@ -2,7 +2,7 @@ package de.metas.project.workorder.conflicts;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import de.metas.calendar.simulation.SimulationPlanId;
-import de.metas.project.workorder.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;

@@ -103,7 +103,7 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Create the order line requests and return them
-		return InvoiceCandidateGenerateRequest.ofAll(orderLineHandlers, orderLines);
+		return InvoiceCandidateGenerateRequest.ofAll(orderLineHandlers, orderLines, request.getLockOwner());
 	}
 
 	/**

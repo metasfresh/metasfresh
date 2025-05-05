@@ -8,14 +8,17 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
@@ -25,6 +28,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +37,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import static de.metas.order.createFrom.po_from_so.impl.CreatePOLineFromSOLinesAggregationKeyBuilder.SYSCONFIG_GROUP_LINES_BY_PROMISED_DATE;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
 /*
@@ -67,6 +72,9 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private static final String MSG_PURCHASE_ORDER_CREATED = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseOrderCreated";
 	private final IContextAware context;
 	private final boolean p_IsDropShip;
+
+	@Nullable
+	private final TaxId p_taxId;
 	private static final Logger logger = LogManager.getLogger(CreatePOFromSOsAggregator.class);
 
 	@NonNull
@@ -78,6 +86,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
@@ -87,12 +96,14 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	public CreatePOFromSOsAggregator(
 			final IContextAware context,
 			final String purchaseQtySource,
-			@NonNull final PurchaseTypeEnum p_TypeOfPurchase)
+			@NonNull final PurchaseTypeEnum p_TypeOfPurchase,
+			@Nullable final TaxId p_taxId)
 	{
 		this.context = context;
 		this.p_IsDropShip = p_TypeOfPurchase.equals(PurchaseTypeEnum.DROPSHIP);
 		this.p_TypeOfPurchase = p_TypeOfPurchase;
 		this.purchaseQtySource = purchaseQtySource;
+		this.p_taxId = p_taxId;
 
 		dummyOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, context);
 		dummyOrder.setDocumentNo(CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP);
@@ -209,7 +220,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		CreatePOLineFromSOLinesAggregator orderLinesAggregator = orderKey2OrderLineAggregator.get(pruchaseOrder.getDocumentNo());
 		if (orderLinesAggregator == null)
 		{
-			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder, purchaseQtySource, p_TypeOfPurchase);
+			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder, purchaseQtySource, p_TypeOfPurchase, p_taxId);
 			orderLinesAggregator.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.INSTANCE);
 			orderLinesAggregator.setGroupsBufferSize(100);
 
@@ -280,7 +291,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		// FW dropship ad
 		if (PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase)
-				&& salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
+				&& salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() > 0)
 		{
 			purchaseOrder.setIsDropShip(true);
 			OrderDocumentLocationAdapterFactory
@@ -293,7 +304,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		{
 			purchaseOrder.setIsDropShip(p_IsDropShip);
 
-			if (salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
+			if (salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() > 0)
 			{
 				OrderDocumentLocationAdapterFactory
 						.deliveryLocationAdapter(purchaseOrder)
@@ -325,6 +336,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		purchaseOrder.setUser1_ID(salesOrder.getUser1_ID());
 		purchaseOrder.setUser2_ID(salesOrder.getUser2_ID());
 		purchaseOrder.setC_Currency_ID(salesOrder.getC_Currency_ID());
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_GROUP_LINES_BY_PROMISED_DATE, false, ClientAndOrgId.ofClientAndOrg(salesOrder.getAD_Client_ID(), salesOrder.getAD_Org_ID())))
+		{
+			purchaseOrder.setDatePromised(salesOrder.getDatePromised());
+		}
 		//
 
 		InterfaceWrapperHelper.save(purchaseOrder);

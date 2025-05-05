@@ -1,6 +1,5 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -12,6 +11,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
@@ -26,12 +27,14 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.user.User;
@@ -58,6 +61,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
@@ -89,7 +93,10 @@ import static java.math.BigDecimal.ZERO;
 public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	// Services
-	private static final transient IInventoryLine_HandlerDAO inventoryLineHandlerDAO = Services.get(IInventoryLine_HandlerDAO.class);
+	private static final IInventoryLine_HandlerDAO inventoryLineHandlerDAO = Services.get(IInventoryLine_HandlerDAO.class);
+
+	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	@Override
 	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
@@ -182,7 +189,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(ic, inventoryLine);
+		final PriceAndTax priceAndQty = updatePriceAndTaxAndUpdate(ic, inventoryLine);
 
 		//
 		// Description
@@ -197,17 +204,17 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Set C_Activity from Product (07442)
-		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+		final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(clientId, orgId, productId);
 		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		//
 		// Set C_Tax from Product (07442)
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
 		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
 		final Timestamp shipDate = inOut.getMovementDate();
 		final BPartnerLocationAndCaptureId inoutBPLocationId = InOutDocumentLocationAdapterFactory
 				.locationAdapter(inOut)
 				.getBPartnerLocationAndCaptureId();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ic,
@@ -217,7 +224,8 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				inoutBPLocationId, // shipC_BPartner_Location_ID
-				SOTrx.PURCHASE); // isSOTrx same as in vendor return
+				SOTrx.PURCHASE,
+				vatCodeId); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId.getRepoId());
 
 		//
@@ -250,12 +258,12 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		return ic;
 	}
 
-	private PriceAndTax calculatePriceAndQuantityAndUpdate(final I_C_Invoice_Candidate ic, final I_M_InventoryLine inventoryLine)
+	private PriceAndTax updatePriceAndTaxAndUpdate(@NonNull final I_C_Invoice_Candidate ic, final I_M_InventoryLine inventoryLine)
 	{
 		final org.compiere.model.I_M_InOutLine originInOutLine = inventoryLine.getM_InOutLine();
 		Check.assumeNotNull(originInOutLine, "InventoryLine {0} must have an origin inoutline set", inventoryLine);
 
-		return M_InOutLine_Handler.calculatePriceAndQuantityAndUpdate(ic, originInOutLine);
+		return M_InOutLine_Handler.calculatePriceAndTaxAndUpdate(ic, originInOutLine);
 	}
 
 	@Override
@@ -274,6 +282,16 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_M_InventoryLine inventoryLine = getM_InventoryLine(ic);
 		setBPartnerData(ic, inventoryLine);
+	}
+
+	@Override
+	public void setIsInEffect(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_M_InventoryLine inventoryLine = getM_InventoryLine(ic);
+
+		final DocStatus inventoryDocStatus = inventoryBL.getDocStatus(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
+
+		invoiceCandBL.computeIsInEffect(inventoryDocStatus, ic);
 	}
 
 	public static I_M_InventoryLine getM_InventoryLine(final I_C_Invoice_Candidate ic)
@@ -322,9 +340,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final User billUser = bPartnerBL
 					.retrieveContactOrNull(RetrieveContactRequest.builder()
-												   .bpartnerId(billLocationFromInOut.getBpartnerId())
-												   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
-												   .build());
+							.bpartnerId(billLocationFromInOut.getBpartnerId())
+							.bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+							.build());
 			final BPartnerContactId billBPContactId = billUser != null
 					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;

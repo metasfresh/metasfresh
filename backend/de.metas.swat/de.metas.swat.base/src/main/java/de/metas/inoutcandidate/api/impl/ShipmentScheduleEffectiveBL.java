@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inoutcandidate.api.impl;
 
 import de.metas.bpartner.BPartnerContactId;
@@ -12,6 +34,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.LocationId;
 import de.metas.order.DeliveryRule;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -22,19 +46,27 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 {
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 	@Override
 	public I_C_BPartner_Location getBPartnerLocation(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final BPartnerLocationId locationId = getBPartnerLocationId(sched);
-		return Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(locationId);
+		return bpartnerDAO.getBPartnerLocationByIdEvenInactive(locationId);
 	}
 
 	@Override
@@ -79,7 +111,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	public LocatorId getDefaultLocatorId(final I_M_ShipmentSchedule sched)
 	{
 		final WarehouseId warehouseId = getWarehouseId(sched);
-		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
+		return warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 	}
 
 	@Override
@@ -93,11 +125,17 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
+	public Quantity getQtyOnHand(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final I_C_UOM uom = productBL.getStockUOM(sched.getM_Product_ID());
+		return Quantity.of(sched.getQtyOnHand(), uom);
+	}
+
+	@Override
 	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 		final BPartnerId bpartnerId = getBPartnerId(sched);
-		return partnerDAO.getById(bpartnerId, I_C_BPartner.class);
+		return bpartnerDAO.getById(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override
@@ -193,10 +231,22 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public ZonedDateTime getDeliveryDate(final I_M_ShipmentSchedule sched)
 	{
-		return TimeUtil.asZonedDateTime(
-				CoalesceUtil.coalesceSuppliers(
-						sched::getDeliveryDate_Override,
-						sched::getDeliveryDate));
+		return getDeliveryDateAsTimestamp(sched)
+				.map(TimeUtil::asZonedDateTime)
+				.orElse(null);
+	}
+
+	@NonNull
+	public static Optional<LocalDate> getDeliveryDateAsLocalDate(final I_M_ShipmentSchedule sched)
+	{
+		return getDeliveryDateAsTimestamp(sched)
+				.map(ts -> ts.toLocalDateTime().toLocalDate());
+	}
+
+	@NonNull
+	public static Optional<Timestamp> getDeliveryDateAsTimestamp(final I_M_ShipmentSchedule sched)
+	{
+		return CoalesceUtil.optionalOfFirstNonNullSupplied(sched::getDeliveryDate_Override, sched::getDeliveryDate);
 	}
 
 	@Override

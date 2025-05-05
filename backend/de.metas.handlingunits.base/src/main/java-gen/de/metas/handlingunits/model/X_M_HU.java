@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 495636232L;
+	private static final long serialVersionUID = -975613490L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -65,18 +65,30 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
+	public void setClearanceDate (final @Nullable java.sql.Timestamp ClearanceDate)
+	{
+		set_Value (COLUMNNAME_ClearanceDate, ClearanceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getClearanceDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ClearanceDate);
+	}
+
+	@Override
 	public void setClearanceNote (final @Nullable java.lang.String ClearanceNote)
 	{
 		set_Value (COLUMNNAME_ClearanceNote, ClearanceNote);
 	}
 
 	@Override
-	public java.lang.String getClearanceNote()
+	public java.lang.String getClearanceNote() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClearanceNote);
 	}
 
-	/**
+	/** 
 	 * ClearanceStatus AD_Reference_ID=541540
 	 * Reference name: Clearance
 	 */
@@ -87,6 +99,8 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public static final String CLEARANCESTATUS_Locked = "L";
 	/** Quarantined = Q */
 	public static final String CLEARANCESTATUS_Quarantined = "Q";
+	/** Test Pending = P */
+	public static final String CLEARANCESTATUS_TestPending = "P";
 	@Override
 	public void setClearanceStatus (final @Nullable java.lang.String ClearanceStatus)
 	{
@@ -94,22 +108,49 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public java.lang.String getClearanceStatus()
+	public java.lang.String getClearanceStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClearanceStatus);
 	}
 
 	@Override
+	public de.metas.handlingunits.model.I_M_HU getClonedFrom_HU()
+	{
+		return get_ValueAsPO(COLUMNNAME_ClonedFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setClonedFrom_HU(final de.metas.handlingunits.model.I_M_HU ClonedFrom_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_ClonedFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, ClonedFrom_HU);
+	}
+
+	@Override
+	public void setClonedFrom_HU_ID (final int ClonedFrom_HU_ID)
+	{
+		if (ClonedFrom_HU_ID < 1) 
+			set_Value (COLUMNNAME_ClonedFrom_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_ClonedFrom_HU_ID, ClonedFrom_HU_ID);
+	}
+
+	@Override
+	public int getClonedFrom_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ClonedFrom_HU_ID);
+	}
+
+	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
-		if (C_Project_ID < 1)
+		if (C_Project_ID < 1) 
 			set_Value (COLUMNNAME_C_Project_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
 	}
 
 	@Override
-	public int getC_Project_ID()
+	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
@@ -164,6 +205,18 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public boolean isChildHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsChildHU);
+	}
+
+	@Override
+	public void setIsExternalProperty (final boolean IsExternalProperty)
+	{
+		set_Value (COLUMNNAME_IsExternalProperty, IsExternalProperty);
+	}
+
+	@Override
+	public boolean isExternalProperty() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExternalProperty);
 	}
 
 	@Override

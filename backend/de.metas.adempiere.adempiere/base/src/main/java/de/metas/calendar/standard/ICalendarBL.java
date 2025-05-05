@@ -58,9 +58,9 @@ public interface ICalendarBL extends ISingletonService
 
 	boolean isCalendarNoGaps(I_C_Calendar calendar);
 
-	Timestamp getLastDayOfYear(I_C_Year year);
+	Timestamp getLastDayOfYear(@NonNull YearId yearId);
 
-	Timestamp getFirstDayOfYear(I_C_Year year);
+	Timestamp getFirstDayOfYear(@NonNull YearId yearId);
 
 	/**
 	 * Make all the validation for a calendar so it can be properly used in transactions: <br>
@@ -69,6 +69,14 @@ public interface ICalendarBL extends ISingletonService
 	 * No overlap: for every C_Calendar and every point in time t, there may be at most one C_Period with StartDate <= t <= EndDate
 	 */
 	void checkCorrectCalendar(I_C_Calendar calendar);
+
+	/**
+	 * Make all the validation for a calendar so it can be properly used in transactions: <br>
+	 * Length: DatenEnd of the C_Year's last period must be one year after DateStart of the C_Year's first period No; <br>
+	 * Gaps: For every period A of a given calendar, there must be either another period B with B's StartDate being A's EndDate plus one day or no later period (within the same calendar!) at all; <br>
+	 * No overlap: for every C_Calendar and every point in time t, there may be at most one C_Period with StartDate <= t <= EndDate
+	 */
+	void checkCorrectCalendar(@NonNull CalendarId calendarId);
 
 	/**
 	 * Standard Period

@@ -1,5 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -76,7 +77,7 @@ public class Invoice440ToCrossVersionModelTool
 		final XmlPayloadBuilder payloadBuilder = XmlPayload.builder();
 
 		payloadBuilder.invoice(createXmlInvoice(payload.getInvoice()));
-
+		payloadBuilder.responseTimestamp(payload.getResponseTimestamp());
 		payloadBuilder.body(createXmlBody(payload.getBody()));
 
 		return payloadBuilder.build();

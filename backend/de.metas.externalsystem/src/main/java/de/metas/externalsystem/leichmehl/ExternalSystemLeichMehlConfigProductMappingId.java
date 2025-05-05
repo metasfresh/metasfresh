@@ -24,34 +24,30 @@ package de.metas.externalsystem.leichmehl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-public class ExternalSystemLeichMehlConfigProductMappingId implements IExternalSystemChildConfigId
+public class ExternalSystemLeichMehlConfigProductMappingId implements RepoIdAware
 {
 	int repoId;
 
-	@NonNull
-	ExternalSystemLeichMehlConfigId leichMehlConfigId;
-
 	@JsonCreator
 	@NonNull
-	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoId(@NonNull final ExternalSystemLeichMehlConfigId leichMehlConfigId, final int repoId)
+	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoId(final int repoId)
 	{
-		return new ExternalSystemLeichMehlConfigProductMappingId(leichMehlConfigId, repoId);
+		return new ExternalSystemLeichMehlConfigProductMappingId(repoId);
 	}
 
 	@Nullable
-	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoIdOrNull(@Nullable final ExternalSystemLeichMehlConfigId leichMehlConfigId, final int repoId)
+	public static ExternalSystemLeichMehlConfigProductMappingId ofRepoIdOrNull(final Integer repoId)
 	{
-		return leichMehlConfigId != null && repoId > 0 ? new ExternalSystemLeichMehlConfigProductMappingId(leichMehlConfigId, repoId) : null;
+		return repoId != null && repoId > 0 ? new ExternalSystemLeichMehlConfigProductMappingId(repoId) : null;
 	}
 
 	public static int toRepoId(@Nullable final ExternalSystemLeichMehlConfigProductMappingId configProductMappingId)
@@ -59,10 +55,9 @@ public class ExternalSystemLeichMehlConfigProductMappingId implements IExternalS
 		return configProductMappingId != null ? configProductMappingId.getRepoId() : -1;
 	}
 
-	private ExternalSystemLeichMehlConfigProductMappingId(final @NonNull ExternalSystemLeichMehlConfigId leichMehlConfigId, final int repoId)
+	private ExternalSystemLeichMehlConfigProductMappingId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_ExternalSystem_Config_LeichMehl_ProductMapping_ID);
-		this.leichMehlConfigId = leichMehlConfigId;
 	}
 
 	@Override
@@ -70,11 +65,5 @@ public class ExternalSystemLeichMehlConfigProductMappingId implements IExternalS
 	public int getRepoId()
 	{
 		return repoId;
-	}
-
-	@Override
-	public ExternalSystemType getType()
-	{
-		return ExternalSystemType.LeichUndMehl;
 	}
 }

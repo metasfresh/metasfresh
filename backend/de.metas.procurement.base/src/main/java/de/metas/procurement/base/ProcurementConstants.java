@@ -1,10 +1,9 @@
 package de.metas.procurement.base;
 
-import org.slf4j.Logger;
-
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import org.slf4j.Logger;
 
 /*
  * #%L

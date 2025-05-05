@@ -22,171 +22,44 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import de.metas.common.rest_api.common.JsonExternalId;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.SyncAdvise;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.List;
 
-@Getter
-@ToString
-@EqualsAndHashCode
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
+@Value
+@Schema
 public class JsonWorkOrderStepUpsertRequest
 {
-	@ApiModelProperty(required = true)
-	String name;
+	@Schema(description = "Corresponding to `C_Project_WO_Step.C_Project_ID`", required = true)
+	JsonMetasfreshId projectId;
 
-	String description;
+	@Schema(required = true)
+	List<JsonWorkOrderStepUpsertItemRequest> requestItems;
 
-	@ApiModelProperty(hidden = true)
-	boolean descriptionSet;
+	@Schema(description = "Default sync-advise\n" + READ_ONLY_SYNC_ADVISE_DOC)
+	SyncAdvise syncAdvise;
 
-	Integer seqNo;
-
-	@ApiModelProperty(hidden = true)
-	boolean seqNoSet;
-
-	@ApiModelProperty(required = true)
-	LocalDate dateStart;
-
-	@ApiModelProperty(hidden = true)
-	boolean dateStartSet;
-
-	@ApiModelProperty(required = true)
-	LocalDate dateEnd;
-
-	@ApiModelProperty(hidden = true)
-	boolean dateEndSet;
-
-	LocalDate woPartialReportDate;
-	@ApiModelProperty(hidden = true)
-	boolean woPartialReportDateSet;
-
-	private Integer woPlannedResourceDurationHours;
-	@ApiModelProperty(hidden = true)
-	boolean woPlannedResourceDurationHoursSet;
-
-	LocalDate deliveryDate;
-	@ApiModelProperty(hidden = true)
-	boolean deliveryDateSet;
-
-	LocalDate woTargetStartDate;
-	@ApiModelProperty(hidden = true)
-	boolean woTargetStartDateSet;
-
-	LocalDate woTargetEndDate;
-	@ApiModelProperty(hidden = true)
-	boolean woTargetEndDateSet;
-
-	Integer woPlannedPersonDurationHours;
-	@ApiModelProperty(hidden = true)
-	boolean woPlannedPersonDurationHoursSet;
-
-	Integer woStepStatus;
-	@ApiModelProperty(hidden = true)
-	boolean woStepStatusSet;
-
-	LocalDate woFindingsReleasedDate;
-	@ApiModelProperty(hidden = true)
-	boolean woFindingsReleasedDateSet;
-
-	LocalDate woFindingsCreatedDate;
-	@ApiModelProperty(hidden = true)
-	boolean woFindingsCreatedDateSet;
-	
-	@Setter
-	@ApiModelProperty(required = true)
-	JsonExternalId externalId;
-	
-	@Setter
-	@ApiModelProperty("Optional resource allocations that reference to this step")
-	List<JsonWorkOrderResourceUpsertRequest> resourceRequests = new ArrayList<>();
-	
-	public void setName(final String name)
+	@Builder
+	@Jacksonized
+	public JsonWorkOrderStepUpsertRequest(
+			@NonNull final JsonMetasfreshId projectId,
+			@Nullable @Singular final List<JsonWorkOrderStepUpsertItemRequest> requestItems,
+			@Nullable final SyncAdvise syncAdvise)
 	{
-		this.name = name;
-	}
-
-	public void setDescription(final String description)
-	{
-		this.description = description;
-		this.descriptionSet = true;
-	}
-
-	public void setSeqNo(final Integer seqNo)
-	{
-		this.seqNo = seqNo;
-		this.seqNoSet = true;
-	}
-
-	public void setDateStart(final LocalDate dateStart)
-	{
-		this.dateStart = dateStart;
-		this.dateStartSet = true;
-	}
-
-	public void setDateEnd(final LocalDate dateEnd)
-	{
-		this.dateEnd = dateEnd;
-		this.dateEndSet = true;
-	}
-
-	public void setWoPartialReportDate(final LocalDate woPartialReportDate)
-	{
-		this.woPartialReportDate = woPartialReportDate;
-		this.woPartialReportDateSet = true;
-	}
-
-	public void setWoPlannedResourceDurationHours(final Integer woPlannedResourceDurationHours)
-	{
-		this.woPlannedResourceDurationHours = woPlannedResourceDurationHours;
-		this.woPlannedResourceDurationHoursSet = true;
-	}
-
-	public void setDeliveryDate(final LocalDate deliveryDate)
-	{
-		this.deliveryDate = deliveryDate;
-		this.deliveryDateSet = true;
-	}
-
-	public void setWOTargetStartDate(final LocalDate woTargetStartDate)
-	{
-		this.woTargetStartDate = woTargetStartDate;
-		this.woTargetStartDateSet = true;
-	}
-
-	public void setWOTargetEndDate(final LocalDate woTargetEndDate)
-	{
-		this.woTargetEndDate = woTargetEndDate;
-		this.woTargetEndDateSet = true;
-	}
-
-	public void setWOPlannedPersonDurationHours(final Integer woPlannedPersonDurationHours)
-	{
-		this.woPlannedPersonDurationHours = woPlannedPersonDurationHours;
-		this.woPlannedPersonDurationHoursSet = true;
-	}
-
-	public void setWOStepStatus(final Integer woStepStatus)
-	{
-		this.woStepStatus = woStepStatus;
-		this.woStepStatusSet = true;
-	}
-
-	public void setWOFindingsReleasedDate(final LocalDate woFindingsReleasedDate)
-	{
-		this.woFindingsReleasedDate = woFindingsReleasedDate;
-		this.woFindingsReleasedDateSet = true;
-	}
-
-	public void setWOFindingsCreatedDate(final LocalDate woFindingsCreatedDate)
-	{
-		this.woFindingsCreatedDate = woFindingsCreatedDate;
-		this.woFindingsCreatedDateSet = true;
+		this.projectId = projectId;
+		this.requestItems = coalesce(requestItems, ImmutableList.of());
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

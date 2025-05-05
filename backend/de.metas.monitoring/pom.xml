@@ -13,7 +13,6 @@
     <version>10.0.0</version>
 
     <properties>
-        <elastic-apm.version>1.15.0</elastic-apm.version>
         <metasfresh.version>[1,10.0.0]</metasfresh.version>
     </properties>
 
@@ -30,12 +29,6 @@
         </dependency>
 
         <dependency>
-            <groupId>co.elastic.apm</groupId>
-            <artifactId>apm-agent-api</artifactId>
-            <version>${elastic-apm.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
@@ -49,6 +42,7 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+
     </dependencies>
 
 </project>

@@ -28,25 +28,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
-import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
-import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
-import de.metas.handlingunits.picking.job.service.PickingJobLockService;
-import de.metas.handlingunits.picking.job.service.PickingJobService;
-import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
-import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
-import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -54,8 +37,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
-import de.metas.inoutcandidate.lock.SqlShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
@@ -63,7 +44,6 @@ import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -78,7 +58,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -94,7 +73,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
 
@@ -120,33 +98,7 @@ public class ShipmentService implements IShipmentService
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			final PickingConfigRepositoryV2 pickingConfigRepo = new PickingConfigRepositoryV2();
-			final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
-			final PickingJobRepository pickingJobRepository = new PickingJobRepository();
-			final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
-			final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
-			final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-			final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
-			final PickingJobService pickingJobService = new PickingJobService(
-					pickingJobRepository,
-					new PickingJobLockService(new SqlShipmentScheduleLockRepository()),
-					pickingJobSlotService,
-					new PickingCandidateService(
-							new PickingConfigRepository(),
-							pickingCandidateRepository,
-							new HuId2SourceHUsService(new HUTraceRepository()),
-							huReservationService,
-							bpartnerBL
-					),
-					new PickingJobHUReservationService(huReservationService),
-					pickingConfigRepo,
-					new DefaultPickingJobLoaderSupportingServicesFactory(
-							pickingJobSlotService,
-							bpartnerBL,
-							new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService())
-					)
-			);
-			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository()), pickingJobService));
+			return new ShipmentServiceTestImpl(ShipmentScheduleWithHUService.newInstanceForUnitTesting());
 		}
 		else
 		{
@@ -159,6 +111,10 @@ public class ShipmentService implements IShipmentService
 		this.asyncBatchService = asyncBatchService;
 	}
 
+	/**
+	 * <b>Important:</b> if called with {@link GenerateShipmentsRequest#isWaitForShipments()} {@code false},<br/>
+	 * and there is already an unprocessed workpackage with the same shipment-schedules, the method will fail.<br/>
+	 */
 	@NonNull
 	public ShipmentScheduleEnqueuer.Result generateShipments(@NonNull final GenerateShipmentsRequest request)
 	{
@@ -169,18 +125,25 @@ public class ShipmentService implements IShipmentService
 					.setParameter("GenerateShipmentsRequest", request);
 		}
 
-		final Supplier<ShipmentScheduleEnqueuer.Result> generateShipmentsSupplier = () -> {
-			validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
-
+		if (request.isWaitForShipments())
+		{
+			// The thread will wait until the schedules are processed, because the next call might contain the same shipment schedules as the current one.
+			return asyncBatchService.executeBatch(() -> {
+				validateAsyncBatchAssignment(request.getScheduleIds(), request.getAsyncBatchId());
+				return enqueueShipmentSchedules(request);
+			}, request.getAsyncBatchId());
+		}
+		else
+		{
+			// Just enqueue the workpackages and move on
 			return enqueueShipmentSchedules(request);
-		};
-
-		// The process will wait until the schedules are processed because the next call might contain the same shipment schedules as the current one.
-		// In this case enqueing the same shipmentschedule will fail, because it requires an exclusive lock and the sched is still enqueued from the current lock
-		// See ShipmentScheduleEnqueuer.acquireLock(...)
-		return asyncBatchService.executeBatch(generateShipmentsSupplier, request.getAsyncBatchId());
+		}
 	}
 
+	/**
+	 * <b>Important:</b> if called with {@link GenerateShipmentsForSchedulesRequest#isWaitForShipments()} {@code false},<br/>
+	 * the warning from {@link #generateShipments(GenerateShipmentsRequest)} applies.
+	 */
 	@NonNull
 	public Set<InOutId> generateShipmentsForScheduleIds(@NonNull final GenerateShipmentsForSchedulesRequest request)
 	{
@@ -196,15 +159,20 @@ public class ShipmentService implements IShipmentService
 				.map(asyncBatchId -> {
 					final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = ImmutableSet.copyOf(asyncBatchId2ScheduleId.get(asyncBatchId));
 
-					final GenerateShipmentsRequest generateShipmentsRequest = toGenerateShipmentsRequest(
-							asyncBatchId,
-							shipmentScheduleIds,
-							request.getQuantityTypeToUse(), 
-							request.isOnTheFlyPickToPackingInstructions(), 
-							request.getIsCompleteShipment(), 
-							request.getIsShipDateToday());
-
-					generateShipments(generateShipmentsRequest);
+					generateShipments(
+							GenerateShipmentsRequest.builder()
+									.asyncBatchId(asyncBatchId)
+									.scheduleIds(shipmentScheduleIds)
+									.scheduleToExternalInfo(ImmutableMap.of())
+									.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
+									.quantityTypeToUse(request.getQuantityTypeToUse())
+									.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
+									.isShipDateToday(request.getIsShipDateToday())
+									.isCompleteShipment(request.getIsCompleteShipment())
+									.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
+									.waitForShipments(request.isWaitForShipments())
+									.build()
+					);
 
 					return retrieveInOutIdsByScheduleIds(shipmentScheduleIds);
 				})
@@ -292,7 +260,6 @@ public class ShipmentService implements IShipmentService
 		return shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(ids)
 				.values()
 				.stream()
-				.flatMap(List::stream)
 				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 				.map(InOutLineId::ofRepoIdOrNull)
 				.filter(Objects::nonNull)
@@ -328,6 +295,7 @@ public class ShipmentService implements IShipmentService
 				.quantityType(request.getQuantityTypeToUse())
 				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 				.completeShipments(request.getIsCompleteShipment())
+				.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
 				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
@@ -336,27 +304,6 @@ public class ShipmentService implements IShipmentService
 		return new ShipmentScheduleEnqueuer()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.createWorkpackages(workPackageParameters);
-	}
-
-	@NonNull
-	private static GenerateShipmentsRequest toGenerateShipmentsRequest(
-			@NonNull final AsyncBatchId asyncBatchId,
-			@NonNull final ImmutableSet<ShipmentScheduleId> scheduleIds,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
-			final boolean onTheFlyPickToPackingInstructions,
-			@NonNull final Boolean isCompleteShipment,
-			@Nullable final Boolean isShipDateToday)
-	{
-		return GenerateShipmentsRequest.builder()
-				.asyncBatchId(asyncBatchId)
-				.scheduleIds(scheduleIds)
-				.scheduleToExternalInfo(ImmutableMap.of())
-				.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
-				.quantityTypeToUse(quantityTypeToUse)
-				.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
-				.isShipDateToday(isShipDateToday)
-				.isCompleteShipment(isCompleteShipment)
-				.build();
 	}
 
 	@NonNull
@@ -481,11 +428,11 @@ public class ShipmentService implements IShipmentService
 						.setParameter("AsyncBatchId", asyncBatchId);
 			}
 
-			if(InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
+			if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
 			{
 				// not specified; -> let metasfresh decide
 				scheduleId2QtyShipped.put(scheduleId,
-										  shipmentScheduleBL.getQtyToDeliver(shipmentSchedule).toBigDecimal());
+						shipmentScheduleBL.getQtyToDeliver(shipmentSchedule).toBigDecimal());
 				continue;
 			}
 			else if (olCand.getQtyShipped().signum() <= 0)

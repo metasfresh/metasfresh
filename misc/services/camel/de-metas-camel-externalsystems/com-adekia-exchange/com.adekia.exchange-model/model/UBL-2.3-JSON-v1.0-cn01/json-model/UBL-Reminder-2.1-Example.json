@@ -1,0 +1,166 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:Reminder-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "Reminder":{
+ "UBLVersionID":{"_":"2.1"},
+ "ID":{"_":"12"},
+ "IssueDate":{"_":"2010-04-14"},
+ "AccountingSupplierParty":{
+  "Party":{
+   "EndpointID":{"_":"1234567890123",
+    "schemeID":"GLN",
+    "schemeAgencyID":"9"},
+   "PartyIdentification":[{
+    "ID":{"_":"Supp123",
+     "schemeID":"ZZZ"}
+   }],
+   "PartyName":[{
+    "Name":{"_":"Salescompany ltd."}
+   }],
+   "PostalAddress":{
+    "ID":{"_":"1231412341324",
+     "schemeID":"GLN",
+     "schemeAgencyID":"9"},
+    "Postbox":{"_":"5467"},
+    "StreetName":{"_":"Main street"},
+    "AdditionalStreetName":{"_":"Suite 123"},
+    "BuildingNumber":{"_":"1"},
+    "Department":{"_":"Revenue department"},
+    "CityName":{"_":"Big city"},
+    "PostalZone":{"_":"54321"},
+    "CountrySubentityCode":{"_":"RegionA"},
+    "Country":{
+     "IdentificationCode":{"_":"DK",
+      "listID":"ISO3166-1",
+      "listAgencyID":"6"}
+    }
+   },
+   "PartyTaxScheme":[{
+    "CompanyID":{"_":"DK12345",
+     "schemeID":"DKVAT",
+     "schemeAgencyID":"ZZZ"},
+    "TaxScheme":{
+     "ID":{"_":"VAT",
+      "schemeID":"UN/ECE 5153",
+      "schemeAgencyID":"6"}
+    }
+   }],
+   "PartyLegalEntity":[{
+    "RegistrationName":{"_":"The Sellercompany Incorporated"},
+    "CompanyID":{"_":"5402697509",
+     "schemeID":"CVR",
+     "schemeAgencyID":"ZZZ"},
+    "RegistrationAddress":{
+     "CityName":{"_":"Big city"},
+     "CountrySubentity":{"_":"RegionA"},
+     "Country":{
+      "IdentificationCode":{"_":"DK"}
+     }
+    }
+   }],
+   "Contact":{
+    "Telephone":{"_":"4621230"},
+    "Telefax":{"_":"4621231"},
+    "ElectronicMail":{"_":"antonio@salescompany.dk"}
+   },
+   "Person":[{
+    "FirstName":{"_":"Antonio"},
+    "FamilyName":{"_":"M"},
+    "MiddleName":{"_":"Salemacher"},
+    "JobTitle":{"_":"Sales manager"}
+   }]
+  }
+ },
+ "AccountingCustomerParty":{
+  "Party":{
+   "EndpointID":{"_":"1234567987654",
+    "schemeID":"GLN",
+    "schemeAgencyID":"9"},
+   "PartyIdentification":[{
+    "ID":{"_":"345KS5324",
+     "schemeID":"ZZZ"}
+   }],
+   "PartyName":[{
+    "Name":{"_":"Buyercompany ltd"}
+   }],
+   "PostalAddress":{
+    "ID":{"_":"1238764941386",
+     "schemeID":"GLN",
+     "schemeAgencyID":"9"},
+    "Postbox":{"_":"123"},
+    "StreetName":{"_":"Anystreet"},
+    "AdditionalStreetName":{"_":"Back door"},
+    "BuildingNumber":{"_":"8"},
+    "Department":{"_":"Accounting department"},
+    "CityName":{"_":"Anytown"},
+    "PostalZone":{"_":"101"},
+    "CountrySubentity":{"_":"RegionB"},
+    "Country":{
+     "IdentificationCode":{"_":"BE",
+      "listID":"ISO3166-1",
+      "listAgencyID":"6"}
+    }
+   },
+   "PartyTaxScheme":[{
+    "CompanyID":{"_":"BE54321",
+     "schemeID":"BEVAT",
+     "schemeAgencyID":"ZZZ"},
+    "TaxScheme":{
+     "ID":{"_":"VAT",
+      "schemeID":"UN/ECE 5153",
+      "schemeAgencyID":"6"}
+    }
+   }],
+   "PartyLegalEntity":[{
+    "RegistrationName":{"_":"The buyercompany inc."},
+    "CompanyID":{"_":"5645342123",
+     "schemeAgencyID":"ZZZ",
+     "schemeID":"ZZZ"},
+    "RegistrationAddress":{
+     "CityName":{"_":"Mainplace"},
+     "CountrySubentity":{"_":"RegionB"},
+     "Country":{
+      "IdentificationCode":{"_":"BE"}
+     }
+    }
+   }],
+   "Contact":{
+    "Telephone":{"_":"5121230"},
+    "Telefax":{"_":"5121231"},
+    "ElectronicMail":{"_":"john@buyercompany.eu"}
+   },
+   "Person":[{
+    "FirstName":{"_":"John"},
+    "FamilyName":{"_":"X"},
+    "MiddleName":{"_":"Doe"},
+    "JobTitle":{"_":"Purchasing manager"}
+   }]
+  }
+ },
+ "LegalMonetaryTotal":{
+  "LineExtensionAmount":{"_":1436.5,
+   "currencyID":"EUR"},
+  "TaxExclusiveAmount":{"_":1436.5,
+   "currencyID":"EUR"},
+  "TaxInclusiveAmount":{"_":1729,
+   "currencyID":"EUR"},
+  "AllowanceTotalAmount":{"_":100,
+   "currencyID":"EUR"},
+  "ChargeTotalAmount":{"_":100,
+   "currencyID":"EUR"},
+  "PrepaidAmount":{"_":1000,
+   "currencyID":"EUR"},
+  "PayableRoundingAmount":{"_":0.30,
+   "currencyID":"EUR"},
+  "PayableAmount":{"_":729,
+   "currencyID":"EUR"}
+ },
+ "ReminderLine":[{
+  "ID":{"_":"1"},
+  "BillingReference":[{
+   "InvoiceDocumentReference":{
+    "ID":{"_":"TOSL108"}
+   }
+  }]
+ }]
+}}

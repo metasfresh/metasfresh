@@ -2,7 +2,7 @@
  * #%L
  * de.metas.issue.tracking.github
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +22,9 @@
 
 package de.metas.issue.tracking.github.api.v3.service.rest;
 
-
-import java.time.Duration; 
 import ch.qos.logback.classic.Level;
 import de.metas.issue.tracking.github.api.v3.service.RateLimitService;
-import de.metas.issue.tracking.github.api.v3.service.rest.info.GetRequest;
+import de.metas.issue.tracking.github.api.v3.service.rest.info.Request;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -44,7 +42,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.Nullable;
 import java.net.URI;
+import java.time.Duration;
 
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.GITHUB_API_VERSION;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.GithubSysConfig.CONNECTION_TIMEOUT;
@@ -66,7 +66,7 @@ public class RestService
 		this.responseErrorHandler = responseErrorHandler;
 	}
 
-	public <T> ResponseEntity<T> performGet(@NonNull final GetRequest getRequest, final Class<T> clazz)
+	public <T> ResponseEntity<T> performGet(@NonNull final Request getRequest, final Class<T> clazz)
 	{
 		final URI resourceURI;
 
@@ -86,6 +86,35 @@ public class RestService
 		resourceURI = uriBuilder.build().encode().toUri();
 
 		return performWithRetry(resourceURI, HttpMethod.GET, request, clazz);
+	}
+
+	public <T> ResponseEntity<T> performPost(@NonNull final Request postRequest, @Nullable final Class<T> clazz)
+	{
+		final URI resourceURI;
+
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(postRequest.getBaseURL());
+
+		if (!Check.isEmpty(postRequest.getPathVariables()))
+		{
+			uriBuilder.pathSegment(postRequest.getPathVariables().toArray(new String[0]));
+		}
+
+		if (!Check.isEmpty(postRequest.getQueryParameters()))
+		{
+			uriBuilder.queryParams(postRequest.getQueryParameters());
+		}
+
+		final String requestBody = postRequest.getRequestBody();
+
+		final HttpHeaders httpHeaders = buildHttpHeaders(postRequest.getOAuthToken());
+
+		final HttpEntity<String> request = Check.isBlank(requestBody)
+				? new HttpEntity<>(httpHeaders)
+				: new HttpEntity<>(requestBody, httpHeaders);
+
+		resourceURI = uriBuilder.build().encode().toUri();
+
+		return performWithRetry(resourceURI, HttpMethod.POST, request, clazz);
 	}
 
 	private HttpHeaders buildHttpHeaders(final String oAuthToken)
@@ -133,7 +162,7 @@ public class RestService
 		return new RestTemplateBuilder()
 				.errorHandler(responseErrorHandler)
 				.setConnectTimeout(Duration.ofMillis(sysConfigBL.getIntValue(CONNECTION_TIMEOUT.getName(), CONNECTION_TIMEOUT.getDefaultValue())))
-				.setReadTimeout(Duration.ofMillis(sysConfigBL.getIntValue(READ_TIMEOUT.getName(),READ_TIMEOUT.getDefaultValue())))
+				.setReadTimeout(Duration.ofMillis(sysConfigBL.getIntValue(READ_TIMEOUT.getName(), READ_TIMEOUT.getDefaultValue())))
 				.build();
 	}
 }

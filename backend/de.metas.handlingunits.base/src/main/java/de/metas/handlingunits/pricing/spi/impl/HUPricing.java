@@ -1,14 +1,15 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.attributebased.impl.AttributePricing;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.ProductPriceQuery;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPriceQuery.ProductPriceQueryMatcher;
@@ -17,11 +18,9 @@ import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -36,15 +35,39 @@ import java.util.Optional;
  */
 public class HUPricing extends AttributePricing
 {
-	private static final transient Logger logger = LogManager.getLogger(HUPricing.class);
+	public static void install()
+	{
+		PriceListVersionConfiguration.setupHUPricing(
+				HUPricing::new,
+				HUPricing.HUPIItemProductMatcher_None
+		);
+
+		// Registers a default matcher to make sure that the AttributePricing ignores all product prices that have an M_HU_PI_Item_Product_ID set.
+		//
+		// From skype chat:
+		// <pre>
+		// [Dienstag, 4. Februar 2014 15:33] Cis:
+		//
+		// if the HU pricing rule (that runs first) doesn't find a match, the attribute pricing rule runs next and can find a wrong match, because it can't "see" the M_HU_PI_Item_Product
+		// more concretely: we have two rules:
+		// IFCO A, with Red
+		// IFCO B with Blue
+		//
+		// And we put a product in IFCO A with Blue
+		//
+		// HU pricing rule won't find a match,
+		// Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
+		//
+		// <pre>
+		// ..and that's why we register the filter here.
+		//
+		AttributePricing.registerDefaultMatcher(HUPricing.HUPIItemProductMatcher_None);
+	}
+
+	private static final Logger logger = LogManager.getLogger(HUPricing.class);
 
 	private static final String HUPIItemProductMatcher_NAME = "M_HU_PI_Item_Product_Matcher";
 	public static final IProductPriceQueryMatcher HUPIItemProductMatcher_None = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.isNull(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID));
-
-	/**
-	 * Matches any product price with a not-null M_HU_PI_Item_Product_ID.
-	 */
-	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, NotEqualsQueryFilter.of(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
 
 	@Override
 	protected Optional<I_M_ProductPrice> findMatchingProductPriceAttribute(final IPricingContext pricingCtx)
@@ -66,8 +89,8 @@ public class HUPricing extends AttributePricing
 		// task 09051: don't leave yet, because there might be a product price with just a M_HU_PI_Item_Product and no other attribute values and stuff to match
 
 		// Get the price list version, if any.
-		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
-		if (ctxPriceListVersion == null)
+		final PriceListVersionId ctxPriceListVersionId = pricingCtx.getPriceListVersionId();
+		if (ctxPriceListVersionId == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - return empty because no price list version found: {}", pricingCtx);
 			return Optional.empty();
@@ -83,7 +106,7 @@ public class HUPricing extends AttributePricing
 		}
 
 		final ProductId productId = pricingCtx.getProductId();
-		final I_M_ProductPrice productPrice = findMatchingProductPriceOrNull(ctxPriceListVersion, productId, attributeSetInstance, packingMaterialId);
+		final I_M_ProductPrice productPrice = findMatchingProductPriceOrNull(ctxPriceListVersionId, productId, attributeSetInstance, packingMaterialId);
 
 		if (productPrice == null)
 		{
@@ -95,14 +118,14 @@ public class HUPricing extends AttributePricing
 	}
 
 	private static I_M_ProductPrice findMatchingProductPriceOrNull(
-			@NonNull final I_M_PriceList_Version plv,
+			@NonNull final PriceListVersionId plvId,
 			@NonNull final ProductId productId,
 			@Nullable final I_M_AttributeSetInstance attributeSetInstance,
 			@NonNull final HUPIItemProductId packingMaterialId)
 	{
 		boolean noAttributeRelatedConditionSet = true;
 
-		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plv)
+		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plvId)
 				.setProductId(productId);
 
 		//match packing material if we have a real packing material
@@ -152,8 +175,8 @@ public class HUPricing extends AttributePricing
 	 */
 	@Override
 	protected void setResultForProductPriceAttribute(
-			final IPricingContext pricingCtx,
-			final IPricingResult result,
+			final @NonNull IPricingContext pricingCtx,
+			final @NonNull IPricingResult result,
 			@NonNull final org.compiere.model.I_M_ProductPrice productPrice)
 	{
 		super.setResultForProductPriceAttribute(pricingCtx, result, productPrice);
@@ -167,15 +190,15 @@ public class HUPricing extends AttributePricing
 	{
 		//
 		// Get the price list version, if any
-		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
-		if (ctxPriceListVersion == null)
+		final PriceListVersionId ctxPriceListVersionId = pricingCtx.getPriceListVersionId();
+		if (ctxPriceListVersionId == null)
 		{
 			return null;
 		}
 
 		//
 		// Get the default product price attribute, if any
-		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersion)
+		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersionId)
 						.setProductId(pricingCtx.getProductId())
 						.onlyAttributePricing()
 						.onlyValidPrices(true)
@@ -236,7 +259,7 @@ public class HUPricing extends AttributePricing
 		if (InterfaceWrapperHelper.hasModelColumnName(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID))
 		{
 			final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID);
-			return valueOverrideOrValue == null ? null : HUPIItemProductId.ofRepoIdOrNull(valueOverrideOrValue.intValue());
+			return valueOverrideOrValue == null ? null : HUPIItemProductId.ofRepoIdOrNull(valueOverrideOrValue);
 		}
 
 		return null;

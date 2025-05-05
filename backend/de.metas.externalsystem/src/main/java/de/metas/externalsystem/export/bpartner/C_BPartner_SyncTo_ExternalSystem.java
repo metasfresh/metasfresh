@@ -23,22 +23,21 @@
 package de.metas.externalsystem.export.bpartner;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
-import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -49,14 +48,7 @@ import java.util.Optional;
 
 public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private static final AdMessageKey MSG_RABBIT_MQ_SENT = AdMessageKey.of("RabbitMQ_Sent");
-
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
-	private final DataExportAuditRepository dataExportAuditRepository = SpringContextHolder.instance.getBean(DataExportAuditRepository.class);
-
-	private static final String PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID = "ExternalSystem_Config_RabbitMQ_HTTP_ID";
-	@Param(parameterName = PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID)
-	private int externalSystemConfigRabbitMQId;
 
 	@Nullable
 	@Override
@@ -102,9 +94,18 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 	{
 		addLog("Calling with params: externalSystemChildConfigId: {}", getExternalSystemChildConfigId());
 
-		final Iterator<I_C_BPartner> bPartnerIterator = getSelectedBPartnerRecords();
-
 		final IExternalSystemChildConfigId externalSystemChildConfigId = getExternalSystemChildConfigId();
+
+		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepo.getById(externalSystemChildConfigId);
+
+		if (!isExportAllowed(parentConfig.getChildConfig()))
+		{
+			throw new AdempiereException("Export is not allowed for configId!")
+					.appendParametersToMessage()
+					.setParameter("configId", externalSystemChildConfigId);
+		}
+
+		final Iterator<I_C_BPartner> bPartnerIterator = getSelectedBPartnerRecords();
 
 		while (bPartnerIterator.hasNext())
 		{
@@ -119,7 +120,7 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 	@NonNull
 	private Iterator<I_C_BPartner> getSelectedBPartnerRecords()
 	{
-		final IQueryBuilder<I_C_BPartner> bPartnerQuery = retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class);
+		final IQueryBuilder<I_C_BPartner> bPartnerQuery = retrieveActiveSelectedRecordsQueryBuilder(I_C_BPartner.class);
 
 		return bPartnerQuery
 				.create()
@@ -138,4 +139,6 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 	protected abstract String getExternalSystemParam();
 
 	protected abstract ExportToExternalSystemService getExportToBPartnerExternalSystem();
+
+	protected abstract boolean isExportAllowed(@NonNull IExternalSystemChildConfig childConfig);
 }

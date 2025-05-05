@@ -33,6 +33,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -106,7 +107,7 @@ public class C_BPartner_Product_StepDef
 
 		final String bpartnerProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-		bpartnerProductTable.put(bpartnerProductIdentifier, bPartnerProduct);
+		bpartnerProductTable.putOrReplace(bpartnerProductIdentifier, bPartnerProduct);
 	}
 
 	private void verifyBPartnerProductInfo(@NonNull final Map<String, String> row)
@@ -128,18 +129,28 @@ public class C_BPartner_Product_StepDef
 
 		final BPartnerProduct bPartnerProduct = bpartnerProductTable.get(bpartnerProductIdentifier);
 
-		assertThat(bPartnerProduct.getActive()).isEqualTo(isActive);
-		assertThat(bPartnerProduct.getSeqNo()).isEqualTo(seqNo);
-		assertThat(bPartnerProduct.getProductNo()).isEqualTo(productNo);
-		assertThat(bPartnerProduct.getDescription()).isEqualTo(description);
-		assertThat(bPartnerProduct.getCuEAN()).isEqualTo(ean);
-		assertThat(bPartnerProduct.getGtin()).isEqualTo(gtin);
-		assertThat(bPartnerProduct.getCustomerLabelName()).isEqualTo(customerLabelName);
-		assertThat(bPartnerProduct.getIngredients()).isEqualTo(ingredients);
-		assertThat(bPartnerProduct.getIsExcludedFromSales()).isEqualTo(isExcludedFromSale);
-		assertThat(bPartnerProduct.getExclusionFromSalesReason()).isEqualTo(exclusionFromSaleReason);
-		assertThat(bPartnerProduct.getIsExcludedFromPurchase()).isEqualTo(isExcludedFromPurchase);
-		assertThat(bPartnerProduct.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(bPartnerProduct.getActive()).isEqualTo(isActive);
+		softly.assertThat(bPartnerProduct.getSeqNo()).isEqualTo(seqNo);
+		softly.assertThat(bPartnerProduct.getProductNo()).isEqualTo(productNo);
+		softly.assertThat(bPartnerProduct.getDescription()).isEqualTo(description);
+		softly.assertThat(bPartnerProduct.getCuEAN()).isEqualTo(ean);
+		softly.assertThat(bPartnerProduct.getGtin()).isEqualTo(gtin);
+		softly.assertThat(bPartnerProduct.getCustomerLabelName()).isEqualTo(customerLabelName);
+		softly.assertThat(bPartnerProduct.getIngredients()).isEqualTo(ingredients);
+		softly.assertThat(bPartnerProduct.getIsExcludedFromSales()).isEqualTo(isExcludedFromSale);
+		softly.assertThat(bPartnerProduct.getExclusionFromSalesReason()).isEqualTo(exclusionFromSaleReason);
+		softly.assertThat(bPartnerProduct.getIsExcludedFromPurchase()).isEqualTo(isExcludedFromPurchase);
+		softly.assertThat(bPartnerProduct.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
+
+		final Boolean currentVendor = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor);
+		if (currentVendor != null)
+		{
+			softly.assertThat(bPartnerProduct.getCurrentVendor()).isEqualTo(currentVendor);
+		}
+
+		softly.assertAll();
 	}
 
 	private void createBPartnerProduct(@NonNull final Map<String, String> tableRow)
@@ -153,7 +164,7 @@ public class C_BPartner_Product_StepDef
 
 		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-		final Integer bPartnerId = bPartnerTable.getOptional(productIdentifier)
+		final Integer bPartnerId = bPartnerTable.getOptional(bPartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)
 				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
 

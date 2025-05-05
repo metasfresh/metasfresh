@@ -23,15 +23,21 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU_PI;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class M_HU_PI_StepDefData extends StepDefData<I_M_HU_PI>
+		implements StepDefDataGetIdAware<HuPackingInstructionsId, I_M_HU_PI>
 {
 	public M_HU_PI_StepDefData()
 	{
 		super(I_M_HU_PI.class);
 	}
+
+	@Override
+	public HuPackingInstructionsId extractIdFromRecord(final I_M_HU_PI record) {return HuPackingInstructionsId.ofRepoId(record.getM_HU_PI_ID());}
 }

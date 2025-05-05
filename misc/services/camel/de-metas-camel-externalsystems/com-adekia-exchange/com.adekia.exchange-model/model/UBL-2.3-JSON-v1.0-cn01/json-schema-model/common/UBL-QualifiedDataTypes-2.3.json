@@ -1,0 +1,88 @@
+{
+  "title": "json-schema-model/common/UBL-QualifiedDataTypes-2.3.json",
+  "description": "\n  Library:           OASIS Universal Business Language (UBL) 2.3 OS\n                     http://docs.oasis-open.org/ubl/os-UBL-2.3/\n  Release Date:      15 June 2021\n  Module:            json-schema-model/common/UBL-QualifiedDataTypes-2.3.json\n  Generated on:      2021-12-15 21:56z\n  Copyright (c) OASIS Open 2021. All Rights Reserved.\n\n\n  OASIS takes no position regarding the validity or scope of any \n  intellectual property or other rights that might be claimed to pertain \n  to the implementation or use of the technology described in this \n  document or the extent to which any license under such rights \n  might or might not be available; neither does it represent that it has \n  made any effort to identify any such rights. Information on OASIS's \n  procedures with respect to rights in OASIS specifications can be \n  found at the OASIS website. Copies of claims of rights made \n  available for publication and any assurances of licenses to be made \n  available, or the result of an attempt made to obtain a general \n  license or permission for the use of such proprietary rights by \n  implementors or users of this specification, can be obtained from \n  the OASIS Executive Director.\n\n  OASIS invites any interested party to bring to its attention any \n  copyrights, patents or patent applications, or other proprietary \n  rights which may cover technology that may be required to \n  implement this specification. Please address the information to the \n  OASIS Executive Director.\n  \n  This document and translations of it may be copied and furnished to \n  others, and derivative works that comment on or otherwise explain \n  it or assist in its implementation may be prepared, copied, \n  published and distributed, in whole or in part, without restriction of \n  any kind, provided that the above copyright notice and this \n  paragraph are included on all such copies and derivative works. \n  However, this document itself may not be modified in any way, \n  such as by removing the copyright notice or references to OASIS, \n  except as needed for the purpose of developing OASIS \n  specifications, in which case the procedures for copyrights defined \n  in the OASIS Intellectual Property Rights document must be \n  followed, or as required to translate it into languages other than \n  English. \n\n  The limited permissions granted above are perpetual and will not be \n  revoked by OASIS or its successors or assigns. \n\n  This document and the information contained herein is provided on \n  an \"AS IS\" basis and OASIS DISCLAIMS ALL WARRANTIES, \n  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY \n  WARRANTY THAT THE USE OF THE INFORMATION HEREIN \n  WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED \n  WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A \n  PARTICULAR PURPOSE.    \n",
+  "additionalProperties": false,
+  "type": "object",
+  "definitions": {
+    "AllowanceChargeReason_CodeType": {
+      "title": "Allowance Charge Reason_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "Channel_CodeType": {
+      "title": "Channel_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "Chip_CodeType": {
+      "title": "Chip_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "CountryIdentification_CodeType": {
+      "title": "Country Identification_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "Currency_CodeType": {
+      "title": "Currency_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "DocumentStatus_CodeType": {
+      "title": "Document Status_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "Language_CodeType": {
+      "title": "Language_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "LatitudeDirection_CodeType": {
+      "title": "Latitude Direction_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "LineStatus_CodeType": {
+      "title": "Line Status_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "LongitudeDirection_CodeType": {
+      "title": "Longitude Direction_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "Operator_CodeType": {
+      "title": "Operator_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "PackagingType_CodeType": {
+      "title": "Packaging Type_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "PaymentMeans_CodeType": {
+      "title": "Payment Means_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "ReceiptAdviceType_CodeType": {
+      "title": "Receipt Advice Type_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "SubstitutionStatus_CodeType": {
+      "title": "Substitution Status_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "TransportEquipmentType_CodeType": {
+      "title": "Transport Equipment Type_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "TransportMode_CodeType": {
+      "title": "Transport Mode_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "UnitOfMeasure_CodeType": {
+      "title": "Unit Of Measure_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "WeekDay_CodeType": {
+      "title": "Week Day_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      },
+    "WeighingMethod_CodeType": {
+      "title": "Weighing Method_ Code. Type",
+      "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+      }
+    }
+  }

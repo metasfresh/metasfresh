@@ -3,7 +3,7 @@ package de.metas.picking.model;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Config
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public interface I_M_Picking_Config 
@@ -138,6 +138,27 @@ public interface I_M_Picking_Config
 
 	ModelColumn<I_M_Picking_Config, Object> COLUMN_IsAutoProcess = new ModelColumn<>(I_M_Picking_Config.class, "IsAutoProcess", null);
 	String COLUMNNAME_IsAutoProcess = "IsAutoProcess";
+
+	/**
+	 * Set Forbid Aggregation of CUs for diff. orders.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsForbidAggCUsForDifferentOrders (boolean IsForbidAggCUsForDifferentOrders);
+
+	/**
+	 * Get Forbid Aggregation of CUs for diff. orders.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isForbidAggCUsForDifferentOrders();
+
+	ModelColumn<I_M_Picking_Config, Object> COLUMN_IsForbidAggCUsForDifferentOrders = new ModelColumn<>(I_M_Picking_Config.class, "IsForbidAggCUsForDifferentOrders", null);
+	String COLUMNNAME_IsForbidAggCUsForDifferentOrders = "IsForbidAggCUsForDifferentOrders";
 
 	/**
 	 * Set Picking configuration.

@@ -24,6 +24,7 @@ package de.metas.workflow.execution;
 
 import de.metas.error.AdIssueId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
@@ -62,4 +63,6 @@ class WFActivityState
 
 	@Nullable
 	private Instant endWaitTime;
+
+	public WFActivityId getIdNotNull() {return Check.assumeNotNull(id, "WF Activity is saved: {}", this);}
 }

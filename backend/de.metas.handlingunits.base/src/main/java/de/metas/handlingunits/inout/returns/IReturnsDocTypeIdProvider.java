@@ -22,8 +22,10 @@
 
 package de.metas.handlingunits.inout.returns;
 
+import de.metas.document.DocBaseType;
+
 @FunctionalInterface
 public interface IReturnsDocTypeIdProvider
 {
-	int getReturnsDocTypeId(String docBaseType, boolean isSOTrx, int adClientId, int adOrgId);
+	int getReturnsDocTypeId(DocBaseType docBaseType, boolean isSOTrx, int adClientId, int adOrgId);
 }

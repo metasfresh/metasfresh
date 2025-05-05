@@ -232,6 +232,27 @@ public interface I_C_Project_Resource_Budget
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalId (@Nullable java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalId();
+
+	ModelColumn<I_C_Project_Resource_Budget, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_Project_Resource_Budget.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

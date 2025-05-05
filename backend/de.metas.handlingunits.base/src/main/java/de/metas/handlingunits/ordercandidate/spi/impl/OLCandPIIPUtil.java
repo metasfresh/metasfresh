@@ -46,7 +46,7 @@ public class OLCandPIIPUtil
 
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(huPackingAware.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null
-				? hupiItemProductBL.getById(piItemProductId)
+				? hupiItemProductBL.getRecordById(piItemProductId)
 				: null;
 	}
 }

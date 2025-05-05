@@ -23,6 +23,7 @@
 package de.metas.handlingunits;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
@@ -35,19 +36,19 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -55,8 +56,11 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
@@ -84,6 +88,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU getByIdOutOfTrx(HuId huId);
 
 	I_M_HU getById(HuId huId);
+
+	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
+
+	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
 
 	ClientAndOrgId getClientAndOrgId(@NonNull HuId huId);
 
@@ -162,13 +170,23 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU_Item> retrieveItems(I_M_HU hu, HUItemType type);
 
+	@NonNull
 	I_M_HU_Item retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
+
+	Optional<I_M_HU_Item> retrieveItemIfExists(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item item);
 
 	List<I_M_HU> retrieveIncludedHUs(@NonNull I_M_HU hu);
 
+	List<I_M_HU> retrieveIncludedHUs(@NonNull HuId huId);
+
 	// Handling Unit PI Retrieval
+
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull HuPackingInstructionsId piId,
+			@Nullable String itemType,
+			@Nullable BPartnerId bpartnerId);
 
 	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
 
@@ -240,6 +258,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	@Nullable
 	I_M_HU_PI_Item retrieveDefaultParentPIItem(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
 
+	@NonNull
+	Optional<HuPackingInstructionsItemId> retrieveDefaultParentPIItemId(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
+
 	/**
 	 * Retrieves the default LU.
 	 *
@@ -260,13 +281,13 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	IHUQueryBuilder createHUQueryBuilder();
 
-	List<I_M_HU_Item> retrieveItemsNoCache(Collection<HuId> huIds);
+	List<I_M_HU_Item> retrieveAllItemsNoCache(Collection<HuId> huIds);
 
-	List<I_M_HU> retrieveIncludedHUsNoCache(Set<HuItemId> huItemIds);
+	List<I_M_HU> retrieveAllIncludedHUsNoCache(Set<HuItemId> huItemIds);
 
-	List<I_M_HU_Item_Storage> retrieveItemStoragesNoCache(Set<HuItemId> huItemIds);
+	List<I_M_HU_Item_Storage> retrieveAllItemStoragesNoCache(Set<HuItemId> huItemIds);
 
-	List<I_M_HU_Storage> retrieveStoragesNoCache(Set<HuId> huIds);
+	List<I_M_HU_Storage> retrieveAllStoragesNoCache(Set<HuId> huIds);
 
 	/**
 	 * Retrieve the packing materials of the given {@code hu}.<br>
@@ -297,22 +318,21 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(I_M_HU hu, I_M_HU_PI_Item piItem);
 
+	I_M_HU_Item retrieveAggregatedItem(I_M_HU hu);
+
 	/**
 	 * Retrieve the aggregated item of the given HU if it has one.
 	 *
 	 * @return the aggregated item or null.
 	 */
-	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu, I_M_HU_PI_Item piItem);
+	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu);
 
 	/**
 	 * Retrieve all the child HUs of the given item, both active and not active
 	 */
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
 
-	/**
-	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
-	 */
-	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
+	Set<LocatorId> getLocatorIds(List<I_M_HU> hus);
 
 	// TODO: replace it by getByIds
 	@Deprecated
@@ -320,8 +340,16 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	void setReservedByHUIds(final Set<HuId> huIds, boolean reserved);
 
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
+			@NonNull Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable BPartnerId bpartnerId);
+
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
 
 	void save(@NonNull I_M_HU_PI huPi);
+
+	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
+
+	<T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper);
 }

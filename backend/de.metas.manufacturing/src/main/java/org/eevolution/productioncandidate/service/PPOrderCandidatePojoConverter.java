@@ -41,14 +41,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -96,15 +96,13 @@ public class PPOrderCandidatePojoConverter
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
-	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public PPOrderCandidatePojoConverter(
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
@@ -136,8 +134,10 @@ public class PPOrderCandidatePojoConverter
 									 .qtyRequired(qtyEnteredInStockUOM.toBigDecimal())
 									 .qtyDelivered(qtyProcessedInStockUOM.toBigDecimal())
 									 .plantId(ResourceId.ofRepoId(ppOrderCandidateRecord.getS_Resource_ID()))
+									 .workstationId(ResourceId.ofRepoIdOrNull(ppOrderCandidateRecord.getWorkStation_ID()))
 									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderCandidateRecord))
 									 .packingMaterialId(HUPIItemProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_HU_PI_Item_Product_ID()))
+									 .lotForLot(ppOrderCandidateRecord.getIsLotForLot())
 									 .build())
 				.lines(toPPOrderLineCandidates(ppOrderCandidateRecord))
 				.build();

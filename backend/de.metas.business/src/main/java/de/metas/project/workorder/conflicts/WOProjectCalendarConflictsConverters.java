@@ -6,8 +6,8 @@ import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.conflicts.CalendarConflictChangesEvent;
 import de.metas.calendar.conflicts.CalendarEntryConflict;
 import de.metas.calendar.conflicts.CalendarEntryConflicts;
-import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.calendar.BudgetAndWOCalendarEntryIdConverters;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

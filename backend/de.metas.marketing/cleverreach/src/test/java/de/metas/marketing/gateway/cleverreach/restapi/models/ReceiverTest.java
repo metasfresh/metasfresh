@@ -3,6 +3,8 @@ package de.metas.marketing.gateway.cleverreach.restapi.models;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.JsonObjectMapperHolder;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,10 +47,6 @@ class ReceiverTest
 				.last_client("last_client")
 				.last_ip("last_ip")
 				.last_location("last_location")
-				.attribute("attributeKey1", "attributeValue")
-				.attribute("attributeKey2", "attributeValue")
-				.global_attribute("global_attributeKey1", "global_attributeValue")
-				.global_attribute("global_attributeKey2", "global_attributeValue")
 				.build();
 		final ObjectMapper objectMapper = new ObjectMapper();
 		final String jsonString = objectMapper.writeValueAsString(receiver);

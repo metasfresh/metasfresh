@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU_PI_Attribute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -87011726L;
+	private static final long serialVersionUID = 1974764962L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Attribute (final Properties ctx, final int M_HU_PI_Attribute_ID, @Nullable final String trxName)
@@ -137,6 +137,18 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	public boolean isReadOnly() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReadOnly);
+	}
+
+	@Override
+	public void setIsUnique (final boolean IsUnique)
+	{
+		set_Value (COLUMNNAME_IsUnique, IsUnique);
+	}
+
+	@Override
+	public boolean isUnique() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUnique);
 	}
 
 	@Override

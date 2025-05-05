@@ -1,17 +1,8 @@
 package de.metas.impexp.product;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product_Category;
-
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
@@ -23,6 +14,16 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product_Category;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -124,13 +125,15 @@ import lombok.experimental.UtilityClass;
 	}
 
 
-	public void assertPrices(@NonNull final I_I_Pharma_Product ifaProduct, @NonNull final PriceListId priceListId, @NonNull BigDecimal price)
+	public void assertPrices(@NonNull final I_I_Pharma_Product ifaProduct, @NonNull final PriceListId priceListId, @NonNull final BigDecimal price)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ifaProduct.getM_Product(), I_M_Product.class);
 		assertThat(product).isNotNull();
 
-		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersion(priceListId);
-		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
+		final Optional<PriceListVersionId> plvId = Services.get(IPriceListDAO.class).retrieveNewestPriceListVersionId(priceListId);
+		assertThat(plvId).isNotEmpty();
+
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plvId.get())
 				.setProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.retrieveDefault(I_M_ProductPrice.class);
 

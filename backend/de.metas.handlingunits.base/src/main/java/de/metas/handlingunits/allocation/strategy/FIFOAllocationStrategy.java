@@ -1,7 +1,5 @@
 package de.metas.handlingunits.allocation.strategy;
 
-import javax.annotation.Nullable;
-
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.impl.AllocationDirection;
@@ -14,6 +12,8 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.util.Check;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 class FIFOAllocationStrategy extends AbstractAllocationStrategy
 {
@@ -95,7 +95,7 @@ class FIFOAllocationStrategy extends AbstractAllocationStrategy
 		if (X_M_HU_Item.ITEMTYPE_HUAggregate.equals(item.getItemType()))
 		{
 			// if we are to create an HU below an HUAggregate item, then we always create a VHU.
-			includedHUDef = services.getVirtualPI(request.getHUContext().getCtx());
+			includedHUDef = services.getVirtualPI(request.getHuContext().getCtx());
 		}
 		else
 		{

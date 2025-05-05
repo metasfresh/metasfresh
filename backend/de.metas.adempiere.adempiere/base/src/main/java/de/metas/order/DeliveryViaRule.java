@@ -81,7 +81,7 @@ public enum DeliveryViaRule implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static String toCodeOrNull(final DeliveryViaRule type)
+	public static String toCodeOrNull(@Nullable final DeliveryViaRule type)
 	{
 		return type != null ? type.getCode() : null;
 	}

@@ -1,15 +1,13 @@
 package de.metas.security;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -38,7 +36,9 @@ public class RoleId implements RepoIdAware
 {
 	public static final RoleId SYSTEM = new RoleId(0);
 
-	/** Used by the reports service when it accesses the REST-API */
+	/**
+	 * Used by the reports service when it accesses the REST-API
+	 */
 	public static final RoleId JSON_REPORTS = new RoleId(540078);
 
 	@JsonCreator
@@ -93,13 +93,11 @@ public class RoleId implements RepoIdAware
 		return repoId;
 	}
 
-	public boolean isSystem()
-	{
-		return repoId == SYSTEM.repoId;
-	}
+	public boolean isSystem() {return isSystem(repoId);}
 
-	public boolean isRegular()
-	{
-		return !isSystem();
-	}
+	public static boolean isSystem(final int repoId) {return repoId == SYSTEM.repoId;}
+
+	public boolean isRegular() {return isRegular(repoId);}
+
+	public static boolean isRegular(final int repoId) {return !isSystem(repoId);}
 }

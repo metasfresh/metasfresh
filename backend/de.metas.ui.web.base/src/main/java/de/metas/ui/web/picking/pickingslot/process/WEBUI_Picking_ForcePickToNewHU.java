@@ -55,7 +55,7 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 
 		forcePick(getQtyToPack(), packToHuId);
 
-		printPickingLabel(packToHuId);
+		printPickingLabelIfAutoPrint(packToHuId);
 
 		invalidatePackablesView();
 		invalidatePickingSlotsView();

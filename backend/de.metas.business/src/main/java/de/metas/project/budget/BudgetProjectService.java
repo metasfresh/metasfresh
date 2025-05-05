@@ -33,7 +33,6 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
@@ -46,9 +45,9 @@ public class BudgetProjectService
 	private final BudgetProjectResourceRepository resourceBudgetRepository;
 
 	public BudgetProjectService(
-			final ResourceService resourceService,
-			final BudgetProjectRepository projectRepository,
-			final BudgetProjectResourceRepository resourceBudgetRepository)
+			@NonNull final ResourceService resourceService,
+			@NonNull final BudgetProjectRepository projectRepository,
+			@NonNull final BudgetProjectResourceRepository resourceBudgetRepository)
 	{
 		this.resourceService = resourceService;
 		this.projectRepository = projectRepository;
@@ -89,7 +88,7 @@ public class BudgetProjectService
 
 	public Optional<BudgetProject> getById(@NonNull final ProjectId projectId)
 	{
-		return projectRepository.getById(projectId);
+		return projectRepository.getOptionalById(projectId);
 	}
 
 	public void updateProjectResourcesByIds(

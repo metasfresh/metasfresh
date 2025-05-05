@@ -57,7 +57,7 @@ public class OrderLineRepository
 		return ofRecord(orderLineRecord);
 	}
 
-	public OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
+	public static OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final int warehouseRepoId = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> orderLineRecord.getM_Warehouse_ID(),
@@ -94,7 +94,7 @@ public class OrderLineRepository
 				.build();
 	}
 
-	private ProductPrice extractPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
+	private static ProductPrice extractPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// note that C_OrderLine C_Currency_ID and M_Product_ID are mandatory, so there won't be an NPE
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID());
@@ -109,7 +109,7 @@ public class OrderLineRepository
 				.build();
 	}
 
-	private Quantity extractQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
+	private static Quantity extractQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		return Services.get(IOrderLineBL.class).getQtyEntered(orderLineRecord);
 	}

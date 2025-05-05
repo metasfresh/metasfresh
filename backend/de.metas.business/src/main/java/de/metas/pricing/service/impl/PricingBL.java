@@ -305,6 +305,7 @@ public class PricingBL implements IPricingBL
 		{
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getPricingSystemId(),
+					pricingCtx.getPriceListId(),
 					pricingCtx.getCountryId(),
 					TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), timeZone),
 					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
@@ -462,10 +463,10 @@ public class PricingBL implements IPricingBL
 
 		//
 		// Set Price_UOM_ID (06942)
-		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
-		if (plv != null)
+		final PriceListVersionId plvId = pricingCtx.getPriceListVersionId();
+		if (plvId != null)
 		{
-			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
+			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plvId, productId);
 			if (productPrice == null)
 			{
 				final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);

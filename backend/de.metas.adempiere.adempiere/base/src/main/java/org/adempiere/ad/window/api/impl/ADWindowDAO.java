@@ -1,11 +1,36 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.adempiere.ad.window.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -21,10 +46,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.ad.window.api.UIElementGroupId;
 import org.adempiere.ad.window.api.WindowCopyRequest;
+import org.adempiere.ad.window.api.WindowCopyResult;
+import org.adempiere.ad.window.api.WindowCopyResult.TabCopyResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Field;
@@ -109,11 +135,13 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
+	@NonNull
 	public AdWindowId getWindowIdByInternalName(@NonNull final String internalName)
 	{
 		return windowIdsByInternalName.getOrLoad(internalName, this::retrieveWindowIdByInternalName);
 	}
 
+	@NonNull
 	private AdWindowId retrieveWindowIdByInternalName(@NonNull final String internalName)
 	{
 		Check.assumeNotEmpty(internalName, "internalName is not empty");
@@ -368,7 +396,7 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public void copyWindow(@NonNull final WindowCopyRequest request)
+	public WindowCopyResult copyWindow(@NonNull final WindowCopyRequest request)
 	{
 		final AdWindowId targetWindowId = request.getTargetWindowId();
 		final AdWindowId sourceWindowId = request.getSourceWindowId();
@@ -378,25 +406,34 @@ public class ADWindowDAO implements IADWindowDAO
 
 		logger.debug("Copying from: {} to: {}", sourceWindow, targetWindow);
 
+		final String targetEntityType = targetWindow.getEntityType();
+
 		copy()
 				.setSkipCalculatedColumns(true)
-				// skip it because other wise the MV will fill the name from the AD_Element of the original window and unique name constraint will be broken
+				// skip it because otherwise the MV will fill the name from the AD_Element of the original window and unique name constraint will be broken
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_AD_Element_ID)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Description)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Help)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_EntityType)
 				.setFrom(sourceWindow)
 				.setTo(targetWindow)
 				.copy();
 
 		targetWindow.setOverrides_Window_ID(request.isCustomizationWindow() ? sourceWindowId.getRepoId() : -1);
+		targetWindow.setEntityType(targetEntityType);
 
 		save(targetWindow);
 
-		copyWindowTrl(targetWindowId, sourceWindowId);
+		final List<TabCopyResult> tabsCopyResult = copyTabs(targetWindow, sourceWindow);
 
-		copyTabs(targetWindow, sourceWindow);
+		return WindowCopyResult.builder()
+				.sourceWindowId(sourceWindowId)
+				.targetWindowId(targetWindowId)
+				.targetEntityType(targetEntityType)
+				.tabs(tabsCopyResult)
+				.build();
 	}
 
 	private void copyWindowTrl(@NonNull final AdWindowId targetWindowId, @NonNull final AdWindowId sourceWindowId)
@@ -893,7 +930,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return copyTabToWindow(sourceTab, targetWindowId);
 	}
 
-	private void copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
+	private List<TabCopyResult> copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
 	{
 		final AdWindowId targetWindowId = AdWindowId.ofRepoId(targetWindow.getAD_Window_ID());
 		final Map<AdTableId, I_AD_Tab> existingTargetTabs = retrieveTabsQuery(targetWindowId)
@@ -905,6 +942,7 @@ public class ADWindowDAO implements IADWindowDAO
 		final CopyContext copyCtx = new CopyContext();
 
 		final ArrayList<ImmutablePair<I_AD_Tab, I_AD_Tab>> sourceAndTargetTabs = new ArrayList<>();
+		final ArrayList<TabCopyResult> result = new ArrayList<>();
 
 		for (final I_AD_Tab sourceTab : sourceTabs)
 		{
@@ -913,6 +951,10 @@ public class ADWindowDAO implements IADWindowDAO
 			final I_AD_Tab targetTab = copyTab_SkipUISections(copyCtx, targetWindow, existingTargetTab, sourceTab);
 
 			sourceAndTargetTabs.add(ImmutablePair.of(sourceTab, targetTab));
+			result.add(TabCopyResult.builder()
+					.sourceTabId(AdTabId.ofRepoId(sourceTab.getAD_Tab_ID()))
+					.targetTabId(AdTabId.ofRepoId(targetTab.getAD_Tab_ID()))
+					.build());
 		}
 
 		for (final ImmutablePair<I_AD_Tab, I_AD_Tab> sourceAndTargetTab : sourceAndTargetTabs)
@@ -922,6 +964,8 @@ public class ADWindowDAO implements IADWindowDAO
 
 			copyUISections(copyCtx, targetTab, sourceTab);
 		}
+
+		return result;
 	}
 
 	private I_AD_Tab copyTab_SkipUISections(
@@ -1241,5 +1285,31 @@ public class ADWindowDAO implements IADWindowDAO
 			default:
 				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
 		}
+	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(final AdTableId adTableId)
+	{
+		final List<AdWindowId> adWindowIds = queryBL.createQueryBuilder(I_AD_Tab.class)
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Table_ID, adTableId)
+				.create()
+				.listDistinct(I_AD_Tab.COLUMNNAME_AD_Window_ID, AdWindowId.class);
+		return ImmutableSet.copyOf(adWindowIds);
+	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds()
+	{
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(AdWindowId::ofRepoId);
+	}
+
+	@Override
+	public Optional<QuickInputConfigLayout> getQuickInputConfigLayout(final AdTabId adTabId)
+	{
+		final I_AD_Tab adTab = load(adTabId, I_AD_Tab.class);
+		return QuickInputConfigLayout.parse(adTab.getQuickInputLayout());
 	}
 }

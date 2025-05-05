@@ -22,9 +22,15 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import javax.annotation.Nullable;
 
@@ -33,6 +39,7 @@ import javax.annotation.Nullable;
 public class APIResponse
 {
 	@Nullable
+	@With
 	String content;
 
 	@Nullable
@@ -40,4 +47,18 @@ public class APIResponse
 
 	@Nullable
 	JsonMetasfreshId requestId;
+
+	public <T> T getContentAs(@NonNull final Class<T> type) throws JsonProcessingException
+	{
+		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+		return mapper.readValue(content, type);
+	}
+
+	public int getByJsonPathAsInt(@NonNull final String jsonPath) throws JsonProcessingException
+	{
+		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+		JsonNode rootNode = mapper.readTree(content);
+		JsonNode node = rootNode.at(jsonPath);
+		return node.asInt();
+	}
 }

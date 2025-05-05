@@ -32,12 +32,14 @@ import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.MultiCalendarService;
+import de.metas.calendar.plan_optimizer.SimulationOptimizerTaskExecutor;
+import de.metas.calendar.simulation.SimulationPlanCreateRequest;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.product.ResourceId;
+import de.metas.organization.IOrgDAO;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.resource.ResourceGroupId;
 import de.metas.ui.web.calendar.json.JsonCalendarConflict;
 import de.metas.ui.web.calendar.json.JsonCalendarConflictsQueryResponse;
@@ -52,6 +54,8 @@ import de.metas.ui.web.calendar.json.JsonDateTime;
 import de.metas.ui.web.calendar.json.JsonGetAvailableCalendarsResponse;
 import de.metas.ui.web.calendar.json.JsonGetAvailableSimulationsResponse;
 import de.metas.ui.web.calendar.json.JsonSimulationCreateRequest;
+import de.metas.ui.web.calendar.json.JsonSimulationOptimizerStatus;
+import de.metas.ui.web.calendar.json.JsonSimulationOptimizerStatusType;
 import de.metas.ui.web.calendar.json.JsonSimulationRef;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
@@ -59,13 +63,17 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
-import io.swagger.annotations.Api;
+import de.metas.util.Services;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_Resource_Group;
+import org.compiere.util.TimeUtil;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,39 +84,47 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-@Api
+@Tag(name = "CalendarRestController")
 @RestController
 @RequestMapping(WebConfig.ENDPOINT_ROOT + "/calendars")
 public class CalendarRestController
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final UserSession userSession;
 	private final MultiCalendarService calendarService;
 	private final SimulationPlanService simulationService;
+	private final SimulationOptimizerTaskExecutor simulationOptimizerTaskExecutor;
 
 	private final LookupDataSource bpartnerLookup;
 	private final LookupDataSource resourceLookup;
 	private final LookupDataSource resourceGroupLookup;
 	private final LookupDataSource projectLookup;
+	private final LookupDataSource projectResponsibleLookup;
 
 	public CalendarRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final MultiCalendarService calendarService,
-			@NonNull final SimulationPlanService simulationService)
+			@NonNull final SimulationPlanService simulationService,
+			@NonNull final SimulationOptimizerTaskExecutor simulationOptimizerTaskExecutor,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.userSession = userSession;
 		this.calendarService = calendarService;
 		this.simulationService = simulationService;
+		this.simulationOptimizerTaskExecutor = simulationOptimizerTaskExecutor;
 
-		this.bpartnerLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
-		this.resourceLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_S_Resource.Table_Name);
-		this.resourceGroupLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_S_Resource_Group.Table_Name);
-		this.projectLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
+		this.bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		this.resourceLookup = lookupDataSourceFactory.searchInTableLookup(I_S_Resource.Table_Name);
+		this.resourceGroupLookup = lookupDataSourceFactory.searchInTableLookup(I_S_Resource_Group.Table_Name);
+		this.projectLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		this.projectResponsibleLookup = lookupDataSourceFactory.searchInTableLookup(I_AD_User.Table_Name);
 	}
 
 	@GetMapping("/available")
@@ -174,6 +190,8 @@ public class CalendarRestController
 			result.onlyProjectId(query.getOnlyProjectId());
 
 			result.onlyCustomerId(query.getOnlyCustomerId());
+			result.onlyProjectResponsibleId(query.getOnlyResponsibleId());
+			result.skipAllocatedResources(query.isSkipAllocatedResources());
 		}
 
 		return result.build();
@@ -186,6 +204,7 @@ public class CalendarRestController
 				.onlyResources(toJSONLookupValueFromResourceIds(query.getResourceIds(), adLanguage))
 				.onlyProject(JSONLookupValue.ofNullableLookupValue(projectLookup.findById(query.getOnlyProjectId()), adLanguage))
 				.onlyCustomer(JSONLookupValue.ofNullableLookupValue(bpartnerLookup.findById(query.getOnlyCustomerId()), adLanguage))
+				.onlyResponsible(JSONLookupValue.ofNullableLookupValue(projectResponsibleLookup.findById(query.getOnlyProjectResponsibleId()), adLanguage))
 				.build();
 	}
 
@@ -206,13 +225,13 @@ public class CalendarRestController
 	@Nullable
 	private JSONLookupValue toJSONLookupValue(@NonNull final CalendarResourceId calendarResourceId, @NonNull final String adLanguage)
 	{
-		final ResourceId resourceId = calendarResourceId.toRepoIdOrNull(ResourceId.class);
-		if (resourceId != null)
+		final ResourceIdAndType resourceIdAndType = ResourceIdAndType.ofCalendarResourceIdOrNull(calendarResourceId);
+		if (resourceIdAndType != null)
 		{
-			return JSONLookupValue.ofNullableLookupValue(resourceLookup.findById(resourceId), adLanguage);
+			return JSONLookupValue.ofNullableLookupValue(resourceLookup.findById(resourceIdAndType.getResourceId()), adLanguage);
 		}
 
-		final ResourceGroupId resourceGroupId = calendarResourceId.toRepoIdOrNull(ResourceGroupId.class);
+		final ResourceGroupId resourceGroupId = calendarResourceId.toResourceGroupIdOrNull();
 		if (resourceGroupId != null)
 		{
 			return JSONLookupValue.ofNullableLookupValue(resourceGroupLookup.findById(resourceGroupId), adLanguage);
@@ -233,11 +252,9 @@ public class CalendarRestController
 				.resourceId(request.getResourceId())
 				.title(request.getTitle())
 				.description(request.getDescription())
-				.dateRange(CalendarDateRange.builder()
-						.startDate(request.getStartDate().toInstant())
-						.endDate(request.getEndDate().toInstant())
-						.allDay(request.isAllDay())
-						.build())
+				.dateRange(extractCalendarDateRange(request.getStartDate(),
+						request.getEndDate(),
+						request.isAllDay()))
 				.build());
 
 		return JsonCalendarEntryUpdateResult.ofChangedEntry(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
@@ -257,33 +274,12 @@ public class CalendarRestController
 				.resourceId(request.getResourceId())
 				.title(request.getTitle())
 				.description(request.getDescription())
-				.dateRange(extractDateRange(request))
+				.dateRange(extractCalendarDateRange(request.getStartDate(),
+						request.getEndDate(),
+						request.getIsAllDay()))
 				.build());
 
 		return JsonCalendarEntryUpdateResult.of(result, userSession.getTimeZone(), userSession.getAD_Language());
-	}
-
-	private static CalendarDateRange extractDateRange(final JsonCalendarEntryUpdateRequest request)
-	{
-		final JsonDateTime startDate = request.getStartDate();
-		final JsonDateTime endDate = request.getEndDate();
-		final Boolean isAllDay = request.getIsAllDay();
-		if (startDate != null && endDate != null && isAllDay != null)
-		{
-			return CalendarDateRange.builder()
-					.startDate(startDate.toInstant())
-					.endDate(endDate.toInstant())
-					.allDay(isAllDay)
-					.build();
-		}
-		else if (CoalesceUtil.countNotNulls(startDate, endDate, isAllDay) > 0)
-		{
-			throw new AdempiereException("Please specify startDate, endDate and isAllDay or don't specify any of those");
-		}
-		else
-		{
-			return null;
-		}
 	}
 
 	@DeleteMapping("/entries/{entryId}")
@@ -303,9 +299,12 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 
 		final SimulationPlanRef simulationRef = simulationService.createNewSimulation(
-				request.getName(),
-				request.getCopyFromSimulationId(),
-				userSession.getLoggedUserId());
+				SimulationPlanCreateRequest.builder()
+						.orgId(userSession.getOrgId())
+						.name(request.getName())
+						.copyFromSimulationId(request.getCopyFromSimulationId())
+						.responsibleUserId(userSession.getLoggedUserId())
+						.build());
 
 		return JsonSimulationRef.of(simulationRef);
 	}
@@ -352,6 +351,83 @@ public class CalendarRestController
 		return JsonCalendarConflictsQueryResponse.builder()
 				.conflicts(jsonConflicts)
 				.build();
+	}
+
+	@GetMapping("/checkAllConflicts")
+	public void checkConflicts()
+	{
+		userSession.assertLoggedIn();
+		calendarService.checkAllConflicts();
+	}
+
+	@NonNull
+	private CalendarDateRange extractCalendarDateRange(
+			@NonNull final JsonDateTime startDate,
+			@Nullable final JsonDateTime endDate,
+			final boolean isAllDay)
+	{
+		final Instant endDateToBeUsed;
+
+		if (endDate != null)
+		{
+			endDateToBeUsed = endDate.toInstant();
+		}
+		else if (isAllDay)
+		{
+			final ZoneId zoneId = orgDAO.getTimeZone(userSession.getOrgId());
+			endDateToBeUsed = TimeUtil.asEndOfDayInstant(startDate.toInstant().atZone(zoneId).toLocalDate(), zoneId);
+			Check.assumeNotNull(endDateToBeUsed, "Computed EndDate should not be missing!");
+		}
+		else
+		{
+			throw new AdempiereException("Missing mandatory endDate!");
+		}
+
+		return CalendarDateRange.builder()
+				.startDate(startDate.toInstant())
+				.endDate(endDateToBeUsed)
+				.allDay(isAllDay)
+				.build();
+	}
+
+	@GetMapping("/simulations/optimizer")
+	public JsonSimulationOptimizerStatus getSimulationOptimizerStatus(
+			@RequestParam(name = "simulationId") final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+		return getSimulationOptimizerStatus(simulationId);
+	}
+
+	private JsonSimulationOptimizerStatus getSimulationOptimizerStatus(final SimulationPlanId simulationId)
+	{
+		return JsonSimulationOptimizerStatus.builder()
+				.simulationId(simulationId)
+				.status(JsonSimulationOptimizerStatusType.ofIsRunningFlag(simulationOptimizerTaskExecutor.isRunning(simulationId)))
+				.build();
+	}
+
+	@PostMapping("/simulations/optimizer/start")
+	public JsonSimulationOptimizerStatus startSimulationOptimizer(
+			@RequestParam(name = "simulationId") final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+		simulationOptimizerTaskExecutor.start(simulationId);
+		return getSimulationOptimizerStatus(simulationId);
+	}
+
+	@PostMapping("/simulations/optimizer/stop")
+	public JsonSimulationOptimizerStatus stopSimulationOptimizer(
+			@RequestParam(name = "simulationId") final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofObject(simulationIdStr);
+		simulationOptimizerTaskExecutor.stop(simulationId);
+		return getSimulationOptimizerStatus(simulationId);
 	}
 
 }

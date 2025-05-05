@@ -98,6 +98,12 @@ public class UOMDAO implements IUOMDAO
 				.orElseThrow(() -> new AdempiereException("No UOM found for X12DE355=" + x12de355));
 	}
 
+	@NonNull
+	public Optional<UomId> getIdByX12DE355IfExists(@NonNull final X12DE355 x12de355)
+	{
+		return getUomIdByX12DE355IfExists(x12de355);
+	}
+	
 	private Optional<UomId> getUomIdByX12DE355IfExists(@NonNull final X12DE355 x12de355)
 	{
 		return uomIdsByX12DE355.getOrLoad(x12de355, this::retrieveUomIdByX12DE355);
@@ -191,8 +197,21 @@ public class UOMDAO implements IUOMDAO
 	@Override
 	public boolean isUOMForTUs(@NonNull final UomId uomId)
 	{
-		final X12DE355 x12de355 = getX12DE355ById(uomId);
+		final I_C_UOM uom = getById(uomId);
+		return isUOMForTUs(uom);
+	}
+
+	public static boolean isUOMForTUs(@NonNull final I_C_UOM uom)
+	{
+		final X12DE355 x12de355 = X12DE355.ofCode(uom.getX12DE355());
 		return X12DE355.COLI.equals(x12de355) || X12DE355.TU.equals(x12de355);
+	}
+
+	@Override
+	public boolean isUOMEach(@NonNull final UomId uomId)
+	{
+		final X12DE355 x12de355 = getX12DE355ById(uomId);
+		return X12DE355.EACH.equals(x12de355);
 	}
 
 	@Override
@@ -200,5 +219,22 @@ public class UOMDAO implements IUOMDAO
 	{
 		final I_C_UOM uom = getById(uomId);
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType());
+	}
+
+	@Override
+	public @NonNull Optional<I_C_UOM> getBySymbol(@NonNull final String uomSymbol)
+	{
+		return Optional.ofNullable(queryBL.createQueryBuilder(I_C_UOM.class)
+										   .addOnlyActiveRecordsFilter()
+										   .addEqualsFilter(I_C_UOM.COLUMNNAME_UOMSymbol, uomSymbol)
+										   .create()
+										   .firstOnlyOrNull(I_C_UOM.class));
+	}
+
+	@Override
+	public ITranslatableString getUOMSymbolById(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uom = getById(uomId);
+		return InterfaceWrapperHelper.getModelTranslationMap(uom).getColumnTrl(I_C_UOM.COLUMNNAME_UOMSymbol, uom.getUOMSymbol());
 	}
 }

@@ -22,7 +22,6 @@ package de.metas.activity.model.validator;
  * #L%
  */
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.interfaces.I_C_OrderLine;
@@ -30,6 +29,7 @@ import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -47,7 +47,7 @@ public class C_OrderLine
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
-	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -80,7 +80,7 @@ public class C_OrderLine
 		orderLine.setIsDiverse(productBL.isDiverse(productId));
 
 		// Activity
-		final ActivityId productActivityId = productAcctDAO.retrieveActivityForAcct(
+		final ActivityId productActivityId = productActivityProvider.getActivityForAcct(
 				ClientId.ofRepoId(orderLine.getAD_Client_ID()),
 				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 				productId);

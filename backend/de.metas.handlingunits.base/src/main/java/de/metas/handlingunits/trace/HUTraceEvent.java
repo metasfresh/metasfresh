@@ -4,13 +4,16 @@ import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
@@ -63,7 +66,8 @@ public class HUTraceEvent
 	ProductId productId;
 
 	@NonNull
-	BigDecimal qty;
+	Quantity qty;
+
 
 	@NonNull
 	String vhuStatus;
@@ -82,6 +86,8 @@ public class HUTraceEvent
 
 	int movementId;
 
+	InventoryId inventoryId;
+
 	int ppCostCollectorId;
 
 	int ppOrderId;
@@ -93,6 +99,8 @@ public class HUTraceEvent
 	Optional<DocTypeId> docTypeId = Optional.empty();
 
 	int huTrxLineId;
+
+	@Nullable String lotNumber;
 
 	public HUTraceEventQueryBuilder asQueryBuilder()
 	{
@@ -108,12 +116,14 @@ public class HUTraceEvent
 				.inOutId(inOutId)
 				.shipmentScheduleId(shipmentScheduleId)
 				.movementId(movementId)
+				.inventoryId(inventoryId)
 				.ppCostCollectorId(ppCostCollectorId)
 				.ppOrderId(ppOrderId)
 				.docStatus(docStatus)
 				.docTypeId(docTypeId)
 				.huTrxLineId(huTrxLineId)
-		        .vhuSourceId(vhuSourceId);
+		        .vhuSourceId(vhuSourceId)
+				.lotNumber(lotNumber);
 
 	}
 }

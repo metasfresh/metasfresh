@@ -1,8 +1,5 @@
 package de.metas.bpartner.product.stats;
 
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -10,6 +7,8 @@ import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Topic;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
 
 /*
  * #%L

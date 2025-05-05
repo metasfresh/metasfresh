@@ -88,7 +88,7 @@ import java.util.Optional;
 @Service
 public class CreatePurchaseCandidatesService
 {
-	private final static transient Logger logger = LogManager.getLogger(CreatePurchaseCandidatesService.class);
+	private final static Logger logger = LogManager.getLogger(CreatePurchaseCandidatesService.class);
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -174,7 +174,7 @@ public class CreatePurchaseCandidatesService
 				.poReference(request.getPoReference())
 				.externalPurchaseOrderUrl(request.getExternalPurchaseOrderUrl())
 				.productId(productId)
-				.warehouseId(warehouseService.getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
+				.warehouseId(warehouseService.resolveWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
 				.purchaseDatePromised(datePromised)
 				.purchaseDateOrdered(request.getPurchaseDateOrdered())
 				.vendorId(vendorId)
@@ -240,7 +240,7 @@ public class CreatePurchaseCandidatesService
 	{
 		return purchaseDatePromised != null ?
 				purchaseDatePromised :
-				SystemTime.asZonedDateTime(orgDAO.getTimeZone(orgId));
+				SystemTime.asZonedDateTimeAtEndOfDay(orgDAO.getTimeZone(orgId));
 	}
 
 	@NonNull

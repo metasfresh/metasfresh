@@ -22,72 +22,81 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 
 @Value
+@Builder
+@Jacksonized
 public class JsonWorkOrderStepResponse
 {
 	@NonNull
-	@JsonProperty("stepId")
 	JsonMetasfreshId stepId;
 
 	@NonNull
-	@JsonProperty("name")
 	String name;
 
 	@NonNull
-	@JsonProperty("projectId")
 	JsonMetasfreshId projectId;
 
 	@Nullable
-	@JsonProperty("description")
 	String description;
 
 	@NonNull
-	@JsonProperty("seqNo")
 	Integer seqNo;
 
 	@Nullable
-	@JsonProperty("dateStart")
-	String dateStart;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate dateStart;
 
 	@Nullable
-	@JsonProperty("dateEnd")
-	String dateEnd;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate dateEnd;
 
 	@Nullable
-	@JsonProperty("resources")
+	String externalId;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate woPartialReportDate;
+
+	@Nullable
+	Integer woPlannedResourceDurationHours;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate deliveryDate;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate woTargetStartDate;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate woTargetEndDate;
+
+	@Nullable
+	Integer woPlannedPersonDurationHours;
+
+	@Nullable
+	JsonWOStepStatus woStepStatus;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate woFindingsReleasedDate;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate woFindingsCreatedDate;
+
+	@Nullable
 	List<JsonWorkOrderResourceResponse> resources;
-	
-	@JsonCreator
-	@Builder
-	public JsonWorkOrderStepResponse(
-			@NonNull @JsonProperty("stepId") final JsonMetasfreshId stepId,
-			@NonNull @JsonProperty("name") final String name,
-			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@Nullable @JsonProperty("description") final String description,
-			@NonNull @JsonProperty("seqNo") final Integer seqNo,
-			@Nullable @JsonProperty("dateStart") final String dateStart,
-			@Nullable @JsonProperty("dateEnd") final String dateEnd,
-			@Singular @JsonProperty("resources") final List<JsonWorkOrderResourceResponse> resources
-	)
-	{
-		this.stepId = stepId;
-		this.name = name;
-		this.projectId = projectId;
-		this.description = description;
-		this.seqNo = seqNo;
-		this.dateStart = dateStart;
-		this.dateEnd = dateEnd;
-		this.resources = resources;
-	}
 }

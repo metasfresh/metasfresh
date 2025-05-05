@@ -113,7 +113,8 @@ public interface IOrgDAO extends ISingletonService
 	}
 
 	/** @return organization's time zone or system time zone; never returns null */
-	ZoneId getTimeZone(OrgId orgId);
+	@NonNull
+	ZoneId getTimeZone(@NonNull OrgId orgId);
 
     /**
      * @return true if the given org falls under the european One-Stop-Shop (OSS) regulations
@@ -127,4 +128,7 @@ public interface IOrgDAO extends ISingletonService
 	String getOrgName(@NonNull OrgId orgId);
 
 	boolean isAutoInvoiceFlatrateTerm(OrgId orgId);
+
+	@NonNull
+	String getOrgCode(@NonNull OrgId orgId);
 }

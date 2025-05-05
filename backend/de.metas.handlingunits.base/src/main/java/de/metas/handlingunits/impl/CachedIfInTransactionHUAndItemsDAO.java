@@ -22,12 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -36,12 +30,17 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * This implementation delegated to either {@link CachedHUAndItemsDAO} or directly to {@link HUAndItemsDAO}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 {
@@ -50,7 +49,7 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 
 	private final HUAndItemsDAO dbHUAndItemsDAO = HUAndItemsDAO.instance;
 
-	private final IHUAndItemsDAO getDelegate(final Object contextProvider)
+	private IHUAndItemsDAO getDelegate(final Object contextProvider)
 	{
 		final ITrx trx = extractAndValidateTrx(contextProvider);
 		if (trx == null)
@@ -75,7 +74,7 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 		return huAndItemsDAO;
 	}
 
-	private final ITrx extractAndValidateTrx(final Object contextProvider)
+	private ITrx extractAndValidateTrx(final Object contextProvider)
 	{
 		final String trxName = trxManager.getThreadInheritedTrxName();
 
@@ -153,7 +152,7 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 	}
 
 	@Override
-	public I_M_HU_Item retrieveItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	public Optional<I_M_HU_Item> retrieveItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
 		return getDelegate(hu).retrieveItem(hu, piItem);
 	}

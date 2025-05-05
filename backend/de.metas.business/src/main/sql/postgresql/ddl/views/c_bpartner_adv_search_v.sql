@@ -4,16 +4,22 @@ DROP VIEW IF EXISTS C_BPartner_Adv_Search_v
 CREATE OR REPLACE VIEW C_BPartner_Adv_Search_v AS
 SELECT bp.c_bpartner_id,
        bpl.c_bpartner_location_id,
-       COALESCE(u.ad_user_id, -1)                                                                           AS C_BP_Contact_ID,
+       COALESCE(u.ad_user_id, -1)                                                                                                            AS C_BP_Contact_ID,
        bp.value,
+       (SELECT ExternalReference
+        FROM S_ExternalReference
+        WHERE Type = 'BPartner'
+          AND ExternalSystem = 'Other'
+          AND referenced_ad_table_id = 291
+          AND record_id = bp.C_BPartner_ID)                                                                                                                      AS externalid,
        bp.iscompany,
        bp.name,
-       COALESCE(u.firstname, bp.firstname)                                                                  AS firstname,
-       COALESCE(u.lastname, bp.lastname)                                                                    AS lastname,
+       COALESCE(u.firstname, bp.firstname)                                                                                                                       AS firstname,
+       COALESCE(u.lastname, bp.lastname)                                                                                                                         AS lastname,
+       bp.companyname																																			 AS	companyname,
        l.address1,
        l.city,
        l.postal,
-       --
        bp.ad_client_id,
        bp.ad_org_id,
        bp.isactive,
@@ -35,4 +41,3 @@ FROM c_bpartner bp
      --
 WHERE bp.isactive = 'Y'
 ;
-

@@ -26,6 +26,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
 import static de.metas.salesorder.candidate.ProcessOLCandsWorkpackageEnqueuer.WP_PARAM_CLOSE_ORDER;
@@ -38,7 +39,7 @@ public class ProcessOLCandsWorkpackageProcessor extends WorkpackageProcessorAdap
 	private final AutoProcessingOLCandService autoProcessingOlCandService = SpringContextHolder.instance.getBean(AutoProcessingOLCandService.class);
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
 		final PInstanceId validOLCandIdsPInstance = getParameters().getParameterAsId(WP_PARAM_VALID_OLCANDIDS_SELECTIONID, PInstanceId.class);
 		Check.assumeNotNull(validOLCandIdsPInstance, "PInstance for olCandIds must be not null");

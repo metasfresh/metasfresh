@@ -1,8 +1,10 @@
 @from:cucumber
+@ghActions:run_on_executor4
 Feature: available for sales
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
@@ -34,13 +36,13 @@ Feature: available for sales
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 0              | 10             | -1002                           |
     When update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyOrdered |
       | ol_1                      | 20             |
-    Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    Then after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 0              | 20             | -1002                           |
 
@@ -74,7 +76,7 @@ Feature: available for sales
       | ol_1       | o_1                   | p_1                     | 10         |
       | ol_2       | o_1                   | p_2                     | 10         |
       | ol_3       | o_1                   | p_1                     | 10         |
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 0              | 20             | -1002                           |
       | p_2                     | 0              | 10             | -1002                           |
@@ -93,7 +95,7 @@ Feature: available for sales
     When update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1                      | lineASI                                  |
-    Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    Then after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 0              | 10             | lineASI                         |
       | p_2                     | 0              | 10             | -1002                           |
@@ -125,7 +127,7 @@ Feature: available for sales
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 0              | 10             | -1002                           |
     And metasfresh contains M_Inventories:
@@ -135,7 +137,7 @@ Feature: available for sales
       | M_InventoryLine_ID.Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | 21                            | 11                        | p_1                     | PCE          | 10       | 0       |
     And the inventory identified by 11 is completed
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 10             | 10             | -1002                           |
     And validate MD_AvailableForSales_Config
@@ -144,7 +146,7 @@ Feature: available for sales
     When update order
       | C_Order_ID.Identifier | OPT.PreparationDate |
       | o_1                   | 2022-04-17          |
-    Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    Then after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 10             | 0              | -1002                           |
 
@@ -175,16 +177,16 @@ Feature: available for sales
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 0              | 10             | -1002                           |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.PreparationDate_Override |
       | s_s_1                            | 2022-04-17                   |
-    Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
+    Then after not more than 60s, MD_Available_For_Sales table is empty for product: p_1
 
   @from:cucumber
   @Id:S0168.3_100
@@ -225,7 +227,7 @@ Feature: available for sales
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 0              | 10             | -1002                           |
 
@@ -234,18 +236,18 @@ Feature: available for sales
       | ExternalSystem_Config_ID.Identifier | OPT.JsonAvailableForSales                                                                                         |
       | config_1                            | {"productIdentifier": {"metasfreshId":999999,"externalReference":"stockProduct_reference_15062022_2"},"stock":-9} |
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
-    And after not more than 30s, M_InOut is found:
+    And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_1                            | s_1                   | CO            |
     And the shipment schedule identified by s_s_1 is processed after not more than 30 seconds
 
-    Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
+    Then after not more than 60s, MD_Available_For_Sales table is empty for product: p_1
     # note: the productIdentifier's metasfreshId doesn't matter; the step only evaluates the externalReference and stock.
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.JsonAvailableForSales                                                                                        |
@@ -303,7 +305,7 @@ Feature: available for sales
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
 
-    Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    Then after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 50             | 10             | -1002                           |
 
@@ -355,7 +357,7 @@ Feature: available for sales
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 50             | 10             | -1002                           |
 
@@ -373,7 +375,7 @@ Feature: available for sales
     When update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyOrdered |
       | ol_1                      | 20             |
-    Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    Then after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 50             | 20             | -1002                           |
 
@@ -435,11 +437,11 @@ Feature: available for sales
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 400            | 10             | -1002                           |
 
-    And after not more than 30s, RabbitMQ MF_TO_ExternalSystem queue has no messages for criteria:
+    And after not more than 60s, RabbitMQ MF_TO_ExternalSystem queue has no messages for criteria:
       | Command               | OPT.parameters.JsonAvailableForSales.ProductIdentifier |
       | Shopware6-exportStock | p_1                                                    |
 
@@ -447,11 +449,11 @@ Feature: available for sales
       | C_OrderLine_ID.Identifier | OPT.QtyOrdered |
       | ol_1                      | 20             |
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 400            | 20             | -1002                           |
 
-    Then after not more than 30s, RabbitMQ MF_TO_ExternalSystem queue has no messages for criteria:
+    Then after not more than 60s, RabbitMQ MF_TO_ExternalSystem queue has no messages for criteria:
       | Command               | OPT.parameters.JsonAvailableForSales.ProductIdentifier |
       | Shopware6-exportStock | p_1                                                    |
 
@@ -504,17 +506,17 @@ Feature: available for sales
       | ol_1       | o_1                   | p_1                     | 100        |
     And the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_14072022_4      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 100        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_14072022_4      | N               | 1     | N               | 1     | N               | 100   | 101                                | 1000006                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_14072022_4      | N               | 1     | N               | 1     | N               | 100         | 101                                | 1000006                      |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_14072022_4      | inOut_14072022_4      |
 
-    Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    Then after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 100            | 0              | -1002                           |
 
@@ -572,7 +574,7 @@ Feature: available for sales
       | 21                            | 11                        | p_1                     | PCE          | 50       | 0       |
     And the inventory identified by 11 is completed
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 50             | 0              | -1002                           |
 
@@ -589,17 +591,17 @@ Feature: available for sales
       | ol_1       | o_1                   | p_1                     | 100        |
     And the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_14072022_5      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 100        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_14072022_5      | N               | 1     | N               | 1     | N               | 100   | 101                                | 1000006                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_14072022_5      | N               | 1     | N               | 1     | N               | 100         | 101                                | 1000006                      |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_14072022_5      | inOut_14072022_5      |
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 150            | 0              | -1002                           |
 
@@ -609,7 +611,7 @@ Feature: available for sales
 
     And the material receipt identified by inOut_14072022_5 is reversed
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 50             | 0              | -1002                           |
 
@@ -661,7 +663,7 @@ Feature: available for sales
       | 21                            | 11                        | p_1                     | PCE          | 30       | 0       |
     And the inventory identified by 11 is completed
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 30             | 0              | -1002                           |
 
@@ -678,7 +680,7 @@ Feature: available for sales
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 30             | 10             | -1002                           |
 
@@ -687,18 +689,18 @@ Feature: available for sales
       | ExternalSystem_Config_ID.Identifier | OPT.JsonAvailableForSales                                                                                         |
       | config_1                            | {"productIdentifier": {"metasfreshId":999999,"externalReference":"stockProduct_reference_15072022_1"},"stock":18} |
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
-    And after not more than 30s, M_InOut is found:
+    And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_1                            | s_1                   | CO            |
     And the shipment schedule identified by s_s_1 is processed after not more than 30 seconds
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 20             | 0              | -1002                           |
 
@@ -709,14 +711,14 @@ Feature: available for sales
 
     And the shipment identified by s_1 is reversed
 
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
 
     # note: normally this is called by a scheduler
     And MD_Stock_Update_From_M_HUs process is called
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 30             | 10             | -1002                           |
 
@@ -768,7 +770,7 @@ Feature: available for sales
       | 21                            | 11                        | p_1                     | PCE          | 30       | 0       |
     And the inventory identified by 11 is completed
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 30             | 0              | -1002                           |
 
@@ -785,7 +787,7 @@ Feature: available for sales
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 30             | 10             | -1002                           |
 
@@ -794,18 +796,18 @@ Feature: available for sales
       | ExternalSystem_Config_ID.Identifier | OPT.JsonAvailableForSales                                                                                         |
       | config_1                            | {"productIdentifier": {"metasfreshId":999999,"externalReference":"stockProduct_reference_15072022_2"},"stock":18} |
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
-    And after not more than 30s, M_InOut is found:
+    And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_1                            | s_1                   | CO            |
     And the shipment schedule identified by s_s_1 is processed after not more than 30 seconds
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 20             | 0              | -1002                           |
 
@@ -816,14 +818,14 @@ Feature: available for sales
 
     And the shipment identified by s_1 is reactivated
 
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
 
     # note: normally this is called by a scheduler
     And MD_Stock_Update_From_M_HUs process is called
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 30             | 10             | -1002                           |
 
@@ -875,11 +877,11 @@ Feature: available for sales
       | 21                            | 11                        | p_1                     | PCE          | 100      | 0       |
     And the inventory identified by 11 is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | 21                            | createdCU_1        |
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 100            | 0              | -1002                           |
 
@@ -896,11 +898,11 @@ Feature: available for sales
       | 22                            | 12                        | p_1                     | PCE          | 10       | 0       |
     And the inventory identified by 12 is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | 22                            | createdCU_2        |
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 110            | 0              | -1002                           |
 
@@ -913,7 +915,7 @@ Feature: available for sales
       | M_HU_ID.Identifier | MovementDate         |
       | createdCU_1        | 2021-04-11T21:00:00Z |
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 10             | 0              | -1002                           |
 
@@ -965,7 +967,7 @@ Feature: available for sales
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
 
-    And after not more than 30s, MD_Available_For_Sales table contains only the following records:
+    And after not more than 60s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 0              | 10             | -1002                           |
 

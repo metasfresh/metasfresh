@@ -142,6 +142,9 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_AD_WF_Responsible")
 			//
 			.add("org.compiere.model.I_C_Element")
+			.add("org.compiere.model.I_C_ElementValue")
+			//
+			.add("org.eevolution.model.I_PP_Product_Planning")
 			//
 			.build();
 
@@ -225,6 +228,10 @@ public class ModelInterfaceGenerator
 		final List<ColumnInfo> columnInfos = tableInfo.getColumnInfos();
 		for (final ColumnInfo columnInfo : columnInfos)
 		{
+			if (columnInfo.isRestAPICustomColumn())
+			{
+				continue;
+			}
 			sb.append(createColumnMethods(columnInfo));
 		}
 
@@ -719,6 +726,8 @@ public class ModelInterfaceGenerator
 		{
 			reflections = new Reflections(new ConfigurationBuilder()
 					.setScanners(new ClassnameScanner())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
 					.addUrls(ClasspathHelper.forClassLoader()));
 		}
 		return reflections;

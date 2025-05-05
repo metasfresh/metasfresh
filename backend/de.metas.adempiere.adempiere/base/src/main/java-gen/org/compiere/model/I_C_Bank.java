@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Bank
  *  @author metasfresh (generated) 
@@ -238,6 +237,27 @@ public interface I_C_Bank
 
 	ModelColumn<I_C_Bank, Object> COLUMN_IsCashBank = new ModelColumn<>(I_C_Bank.class, "IsCashBank", null);
 	String COLUMNNAME_IsCashBank = "IsCashBank";
+
+	/**
+	 * Set Import As Summary Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsImportAsSingleSummaryLine (boolean IsImportAsSingleSummaryLine);
+
+	/**
+	 * Get Import As Summary Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isImportAsSingleSummaryLine();
+
+	ModelColumn<I_C_Bank, Object> COLUMN_IsImportAsSingleSummaryLine = new ModelColumn<>(I_C_Bank.class, "IsImportAsSingleSummaryLine", null);
+	String COLUMNNAME_IsImportAsSingleSummaryLine = "IsImportAsSingleSummaryLine";
 
 	/**
 	 * Set Own Bank.

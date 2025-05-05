@@ -61,29 +61,39 @@ public class DateIntervalIntersectionQueryFilter<T> implements IQueryFilter<T>, 
 	@Override
 	public boolean accept(@NonNull final T model)
 	{
-		final Range<Instant> range1 = range(
+		final Range<Instant> range1 = closedOpenRange(
 				TimeUtil.asInstant(lowerBoundColumnName.getValue(model)),
 				TimeUtil.asInstant(upperBoundColumnName.getValue(model)));
 
-		final Range<Instant> range2 = range(lowerBoundValue, upperBoundValue);
+		final Range<Instant> range2 = closedOpenRange(lowerBoundValue, upperBoundValue);
 
-		return range1.isConnected(range2);
+		return isOverlapping(range1, range2);
 	}
 
-	public static Range<Instant> range(@Nullable final Instant lowerBound, @Nullable final Instant upperBound)
+	public static Range<Instant> closedOpenRange(@Nullable final Instant lowerBound, @Nullable final Instant upperBound)
 	{
 		if (lowerBound == null)
 		{
 			return upperBound == null
 					? Range.all()
-					: Range.upTo(upperBound, BoundType.CLOSED);
+					: Range.upTo(upperBound, BoundType.OPEN);
 		}
 		else
 		{
 			return upperBound == null
 					? Range.downTo(lowerBound, BoundType.CLOSED)
-					: Range.closed(lowerBound, upperBound);
+					: Range.closedOpen(lowerBound, upperBound);
 		}
+	}
+
+	public static boolean isOverlapping(@NonNull final Range<Instant> range1, @NonNull final Range<Instant> range2)
+	{
+		if (!range1.isConnected(range2))
+		{
+			return false;
+		}
+
+		return !range1.intersection(range2).isEmpty();
 	}
 
 	@Deprecated
@@ -129,9 +139,9 @@ public class DateIntervalIntersectionQueryFilter<T> implements IQueryFilter<T>, 
 		{
 			sqlParams = Arrays.asList(lowerBoundValue, upperBoundValue);
 			sqlWhereClause = "NOT ISEMPTY("
-					+ "TSTZRANGE(" + lowerBoundColumnName.getColumnName() + ", " + upperBoundColumnName.getColumnName() + ", '[]')"
+					+ "TSTZRANGE(" + lowerBoundColumnName.getColumnName() + ", " + upperBoundColumnName.getColumnName() + ", '[)')"
 					+ " * "
-					+ "TSTZRANGE(?, ?, '[]')"
+					+ "TSTZRANGE(?, ?, '[)')"
 					+ ")";
 		}
 	}

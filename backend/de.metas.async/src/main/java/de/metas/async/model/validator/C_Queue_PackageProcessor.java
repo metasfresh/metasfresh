@@ -35,7 +35,7 @@ import org.compiere.model.ModelValidator;
 @Validator(I_C_Queue_PackageProcessor.class)
 public class C_Queue_PackageProcessor
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }
 			, ifColumnsChanged = I_C_Queue_PackageProcessor.COLUMNNAME_Classname)
 	public void validateClassname(@NonNull final I_C_Queue_PackageProcessor packageProcessor)
 	{

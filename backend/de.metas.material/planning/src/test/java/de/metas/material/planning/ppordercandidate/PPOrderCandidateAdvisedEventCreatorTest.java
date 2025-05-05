@@ -49,9 +49,9 @@ class PPOrderCandidateAdvisedEventCreatorTest
 	{
 		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.create("31", uomId))
+						.qtyToSupply(Quantitys.of("31", uomId))
 						.build(),
-				Quantitys.create("15", uomId)
+				Quantitys.of("15", uomId)
 		);
 
 		assertThat(materialRequests)
@@ -64,7 +64,7 @@ class PPOrderCandidateAdvisedEventCreatorTest
 	{
 		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.create("31", uomId))
+						.qtyToSupply(Quantitys.of("31", uomId))
 						.build(),
 				null
 		);
@@ -79,9 +79,9 @@ class PPOrderCandidateAdvisedEventCreatorTest
 	{
 		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.create("31", uomId))
+						.qtyToSupply(Quantitys.of("31", uomId))
 						.build(),
-				Quantitys.create("31", uomId)
+				Quantitys.of("31", uomId)
 		);
 
 		assertThat(materialRequests)
@@ -94,9 +94,9 @@ class PPOrderCandidateAdvisedEventCreatorTest
 	{
 		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.create("31", uomId))
+						.qtyToSupply(Quantitys.of("31", uomId))
 						.build(),
-				Quantitys.create("32", uomId)
+				Quantitys.of("32", uomId)
 		);
 
 		assertThat(materialRequests)
@@ -109,9 +109,9 @@ class PPOrderCandidateAdvisedEventCreatorTest
 	{
 		final ImmutableList<MaterialRequest> materialRequests = PPOrderCandidateAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
-						.qtyToSupply(Quantitys.create("31", uomId))
+						.qtyToSupply(Quantitys.of("31", uomId))
 						.build(),
-				Quantitys.createZero(uomId)
+				Quantitys.zero(uomId)
 		);
 
 		assertThat(materialRequests)

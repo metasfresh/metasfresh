@@ -1,10 +1,11 @@
 package de.metas.currency;
 
-import java.util.Map;
-
-import com.google.common.collect.ImmutableMap;
-
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -16,58 +17,52 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/**
- * Conversion Type
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public enum ConversionTypeMethod
+@AllArgsConstructor
+public enum ConversionTypeMethod implements ReferenceListAwareEnum
 {
-	Spot("S"), PeriodEnd("P"), Average("A"), Company("C");
+	Spot("S"),
+	PeriodEnd("P"),
+	Average("A"),
+	Company("C"),
+	ForeignExchangeContract("F"),
+	TaxReportingRate("T");
 
-	public static final ConversionTypeMethod forCode(final String code)
-	{
-		final ConversionTypeMethod type = _indexedByCode.get(code);
-		if (type == null)
-		{
-			throw new IllegalArgumentException("No enum constant found for code: " + code);
-		}
-		return type;
-	}
 
-	private static final Map<String, ConversionTypeMethod> _indexedByCode;
-	static
-	{
-		final ImmutableMap.Builder<String, ConversionTypeMethod> builder = ImmutableMap.builder();
-		for (final ConversionTypeMethod t : values())
-		{
-			builder.put(t.getCode(), t);
-		}
-		_indexedByCode = builder.build();
-	}
+	private static final ReferenceListAwareEnums.ValuesIndex<ConversionTypeMethod> index = ReferenceListAwareEnums.index(values());
 
+	@Getter
 	private final String code;
 
-	private ConversionTypeMethod(@NonNull final String code)
+	@NonNull
+	public static ConversionTypeMethod ofCode(@NonNull final String code)
 	{
-		this.code = code;
+		return index.ofCode(code);
 	}
 
-	public String getCode()
+	@NonNull
+	public static ConversionTypeMethod ofName(@NonNull final String name)
 	{
-		return code;
+		try
+		{
+			return ConversionTypeMethod.valueOf(name);
+		}
+		catch (final Throwable t)
+		{
+			throw new AdempiereException("No " + ConversionTypeMethod.class + " found for name: " + name)
+					.appendParametersToMessage()
+					.setParameter("AdditionalErrorMessage", t.getMessage());
+		}
 	}
 }

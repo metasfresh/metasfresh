@@ -22,11 +22,8 @@
 
 package de.metas.async.api;
 
-import de.metas.async.QueueWorkPackageId;
-
-import java.util.List;
-
+@FunctionalInterface
 public interface IEnqueueResult
 {
-	List<QueueWorkPackageId> getEnqueuedWorkPackageIds();
+	int getWorkpackageEnqueuedCount();
 }

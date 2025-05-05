@@ -73,7 +73,7 @@ public class API_Audit_Repeat extends JavaProcess implements IProcessPreconditio
 	@NonNull
 	private ApiRequestIterator getSelectedRequests()
 	{
-		final IQueryBuilder<I_API_Request_Audit> selectedApiRequestsQueryBuilder = retrieveSelectedRecordsQueryBuilder(I_API_Request_Audit.class);
+		final IQueryBuilder<I_API_Request_Audit> selectedApiRequestsQueryBuilder = retrieveActiveSelectedRecordsQueryBuilder(I_API_Request_Audit.class);
 
 		if (isOnlyWithError)
 		{

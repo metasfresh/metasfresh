@@ -2,13 +2,16 @@ package de.metas.inout.api.impl;
 
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.ICalendarDAO;
-import de.metas.inout.IInOutBL;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
 import de.metas.inout.api.MaterialBalanceConfig;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_Material_Balance_Detail;
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
+import de.metas.material.MovementType;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -26,6 +29,7 @@ import java.util.Properties;
 
 public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public void addLineToBalance(
@@ -50,7 +54,7 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 
 		// set qty based on SOTrx of the inout
 
-		final boolean isReturnMovementType = Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType());
+		final boolean isReturnMovementType = MovementType.isMaterialReturn(inout.getMovementType());
 
 		if (!isReturnMovementType)
 		{
@@ -92,6 +96,7 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 
 		final Timestamp movementDate = inout.getMovementDate();
 		newBalanceDetail.setMovementDate(movementDate);
+		final LocalDateAndOrgId movementDateAsLocalDate = LocalDateAndOrgId.ofTimestamp(movementDate, OrgId.ofRepoId(inout.getAD_Org_ID()), orgDAO::getTimeZone);
 
 		// set info from balance config
 
@@ -101,7 +106,8 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 		final String trxName = InterfaceWrapperHelper.getTrxName(line);
 		final CalendarId calendarId = balanceConfig.getCalendarId();
-		final I_C_Period period = calendarDAO.findByCalendar(ctx, movementDate, calendarId.getRepoId(), trxName);
+
+		final I_C_Period period = calendarDAO.findByCalendar(ctx, movementDateAsLocalDate, calendarId.getRepoId(), trxName);
 
 		newBalanceDetail.setC_Period(period);
 

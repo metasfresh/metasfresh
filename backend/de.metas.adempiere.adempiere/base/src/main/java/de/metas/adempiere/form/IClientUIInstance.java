@@ -176,8 +176,6 @@ public interface IClientUIInstance
 	 * <li>show it embedded in UI (e.g. ZK client)
 	 * <li>don't show it at all (e.g. server side)
 	 * </ul>
-	 *
-	 * @param url
 	 */
 	void showURL(final String url);
 
@@ -185,7 +183,7 @@ public interface IClientUIInstance
 	 * Disable server push
 	 *
 	 * @deprecated this method is implemented by legacy zk code only. Please avoid using it in any new code.
-	 * @task https://github.com/metasfresh/metasfresh/issues/1771
+	 * task https://github.com/metasfresh/metasfresh/issues/1771
 	 */
 	@Deprecated
 	void disableServerPush();

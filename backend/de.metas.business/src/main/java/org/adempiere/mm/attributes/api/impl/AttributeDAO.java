@@ -23,6 +23,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -141,6 +142,7 @@ public class AttributeDAO implements IAttributeDAO
 				.mandatoryOnReceipt(OptionalBoolean.ofNullableString(record.getMandatoryOnReceipt()))
 				.mandatoryOnPicking(OptionalBoolean.ofNullableString(record.getMandatoryOnPicking()))
 				.mandatoryOnShipment(OptionalBoolean.ofNullableString(record.getMandatoryOnShipment()))
+				.mandatoryOnManufacturing(OptionalBoolean.ofNullableString(record.getMandatoryOnManufacturing()))
 				.build();
 	}
 
@@ -241,7 +243,12 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final String value)
 	{
-		final AttributeCode attributeCode = AttributeCode.ofString(value);
+		return getAttributeDisplayNameByValue(AttributeCode.ofString(value));
+	}
+
+	@Override
+	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final AttributeCode attributeCode)
+	{
 		final Attribute attribute = getAttributesMap().getAttributeByCodeOrNull(attributeCode);
 		return attribute != null
 				? Optional.of(attribute.getDisplayName())
@@ -260,7 +267,7 @@ public class AttributeDAO implements IAttributeDAO
 
 	@Override
 	@NonNull
-	public AttributeId retrieveAttributeIdByValue(final AttributeCode attributeCode)
+	public AttributeId getAttributeIdByCode(final AttributeCode attributeCode)
 	{
 		return getAttributesMap().getAttributeIdByCode(attributeCode);
 	}
@@ -331,6 +338,24 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		final I_M_Attribute attribute = getAttributeById(attributeId);
 		return retrieveAttributeValues(attribute);
+	}
+
+	public List<AttributeListValue> retrieveAttributeValuesByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
+	{
+		if (attributeSetId.isNone())
+		{
+			return ImmutableList.of();
+		}
+		
+		final List<I_M_Attribute> attributeRecords = getAttributesByAttributeSetId(attributeSetId);
+		final ImmutableList.Builder<AttributeListValue> result = ImmutableList.builder();
+
+		for (final I_M_Attribute attributeRecord : attributeRecords)
+		{
+			final List<AttributeListValue> listValues = retrieveAttributeValues(attributeRecord);
+			result.addAll(listValues);
+		}
+		return result.build();
 	}
 
 	@Override
@@ -559,8 +584,8 @@ public class AttributeDAO implements IAttributeDAO
 		//
 		// 07708: Apply AD_Val_Rule when filtering attributes for current context
 		final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter;
-		final int adValRuleId = attribute.getAD_Val_Rule_ID();
-		if (adValRuleId > 0)
+		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(attribute.getAD_Val_Rule_ID());
+		if (adValRuleId != null)
 		{
 			validationRuleQueryFilter = new ValidationRuleQueryFilter<>(attribute, adValRuleId);
 		}
@@ -600,7 +625,7 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		final List<AttributeListValue> list = queryBuilder
-				.orderBy(I_M_AttributeValue.COLUMNNAME_Name) // task 06897: order attributes by name
+				.orderBy(I_M_AttributeValue.COLUMNNAME_Value) // order attributes by value, so we can have names like breakfast, lunch, dinner in their "temporal" order
 				.create()
 				.stream()
 				.map(AttributeDAO::toAttributeListValue)
@@ -704,16 +729,13 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public boolean deleteAttributeValueByCode(@NonNull final AttributeId attributeId, @Nullable final String value)
+	public void deleteAttributeValueByCode(@NonNull final AttributeId attributeId, @Nullable final String value)
 	{
-		final int deleteCount = queryBL
-				.createQueryBuilder(I_M_AttributeValue.class)
+		queryBL.createQueryBuilder(I_M_AttributeValue.class)
 				.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attributeId)
 				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, value)
 				.create()
 				.delete();
-
-		return deleteCount > 0;
 	}
 
 	@Override
@@ -784,15 +806,6 @@ public class AttributeDAO implements IAttributeDAO
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
-	}
-
-	@Override
-	public boolean areAttributeSetsEqual(@NonNull final AttributeSetInstanceId firstASIId, @NonNull final AttributeSetInstanceId secondASIId)
-	{
-		final ImmutableAttributeSet firstAttributeSet = getImmutableAttributeSetById(firstASIId);
-		final ImmutableAttributeSet secondAttributeSet = getImmutableAttributeSetById(secondASIId);
-
-		return firstAttributeSet.equals(secondAttributeSet);
 	}
 
 	@Override

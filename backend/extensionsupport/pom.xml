@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+	
+	<groupId>de.metas</groupId>
+    <artifactId>extensionsupport</artifactId>
+    <version>10.0.0</version>
+	
+    <properties>
+        <metasfresh.version>10.0.0</metasfresh.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util.web</artifactId>
+			<version>${metasfresh.version}</version>
+        </dependency>
+		<dependency>
+            <groupId>de.metas.business</groupId>
+            <artifactId>de.metas.business</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.marketing</groupId>
+            <artifactId>marketing-base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.business</groupId>
+            <artifactId>de.metas.business</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+        </dependency>
+    </dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+					<artifactSet>
+						<includes>
+							<include>de.metas.*</include>
+							<include>org.adempiere.*</include>
+							<include>org.compiere.*</include>
+						</includes>
+					</artifactSet>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	
+	<distributionManagement>
+		<repository>
+			<id>github-metasfresh-maven</id>
+			<name>GitHub metasfresh Maven Repository</name>
+			<url>https://maven.pkg.github.com/metasfresh/metasfresh</url>
+			<layout>default</layout>
+		</repository>
+	</distributionManagement>
+
+</project>

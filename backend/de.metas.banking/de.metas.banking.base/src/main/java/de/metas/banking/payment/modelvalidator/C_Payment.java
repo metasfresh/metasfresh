@@ -25,6 +25,7 @@ package de.metas.banking.payment.modelvalidator;
 import com.google.common.collect.ImmutableList;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.ICashStatementBL;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentReconcileReference;
@@ -36,7 +37,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
@@ -51,18 +51,15 @@ public class C_Payment
 {
 	private final IBankStatementBL bankStatementBL;
 	private final IPaymentBL paymentBL;
-	private final ISysConfigBL sysConfigBL;
 	private final ICashStatementBL cashStatementBL;
 
 	public C_Payment(
 			@NonNull final IBankStatementBL bankStatementBL,
 			@NonNull final IPaymentBL paymentBL,
-			@NonNull final ISysConfigBL sysConfigBL,
 			@NonNull final ICashStatementBL cashStatementBL)
 	{
 		this.bankStatementBL = bankStatementBL;
 		this.paymentBL = paymentBL;
-		this.sysConfigBL = sysConfigBL;
 		this.cashStatementBL = cashStatementBL;
 	}
 
@@ -128,11 +125,6 @@ public class C_Payment
 	public void createCashStatementLineIfNeeded(final I_C_Payment payment)
 	{
 		if (!paymentBL.isCashTrx(payment))
-		{
-			return;
-		}
-
-		if (!sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", true, payment.getAD_Client_ID()))
 		{
 			return;
 		}

@@ -22,23 +22,88 @@
 
 package de.metas.project.budget;
 
-import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectTypeId;
+import de.metas.user.UserId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
-import java.util.Set;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Optional;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class BudgetProject
 {
-	@NonNull ProjectId projectId;
-	@NonNull String name;
-	@NonNull OrgId orgId;
-	@NonNull CurrencyId currencyId;
+	@NonNull
+	ProjectId projectId;
+
+	@Nullable
+	ExternalId externalId;
+	
+	@NonNull
+	String name;
+
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	CurrencyId currencyId;
+
+	@NonNull
+	ProjectTypeId projectTypeId;
+
+	@NonNull
+	String value;
+
+	@Builder.Default
+	boolean isActive = true;
+
+	@Nullable
+	PriceListVersionId priceListVersionId;
+
+	@Nullable
+	String description;
+
+	@Nullable
+	ProjectId projectParentId;
+
+	@Nullable
+	String projectReferenceExt;
+
+	@Nullable
+	BPartnerId bPartnerId;
+
+	@Nullable
+	UserId salesRepId;
+
+	@Nullable
+	LocalDate dateContract;
+
+	@Nullable
+	LocalDate dateFinish;
+
+	@Nullable
+	String bpartnerDepartment;
+
+	@Nullable
+	UserId specialistConsultantID;
+
+	@Nullable
+	InternalPriority internalPriority;
+
+	@NonNull
+	public Optional<String> getExternalIdAsString()
+	{
+		return Optional.ofNullable(externalId)
+				.map(ExternalId::getValue);
+	}
 }
