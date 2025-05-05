@@ -10,6 +10,7 @@ import de.metas.quantity.UOMConversionRateProvider;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -75,6 +76,14 @@ public class ProductPrice
 		return toBuilder()
 				.money(Money.of(moneyAmount, getCurrencyId()))
 				.uomId(uomId)
+				.build();
+	}
+
+	public ProductPrice withMoney(@NonNull final Money money)
+	{
+		Check.assume(CurrencyId.equals(getCurrencyId(), money.getCurrencyId()), "Currency should be the same");
+		return toBuilder()
+				.money(money)
 				.build();
 	}
 

@@ -43,7 +43,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -65,11 +64,13 @@ public class ModularContractSettings
 	@Nullable ProductId processedProductId;
 	@Nullable ProductId coProductId;
 	@NonNull @Singular ImmutableList<ModuleConfig> moduleConfigs;
+	@NonNull @Singular ImmutableList<ModuleParentConfig> moduleParentConfigs;
 
 	@NonNull SOTrx soTrx;
 
 	@NonNull LocalDateAndOrgId storageCostStartDate;
 	int freeStorageCostDays;
+	int freeInterestDays;
 	int additionalInterestDays;
 
 	@NonNull Percent interestPercent;
@@ -118,6 +119,17 @@ public class ModularContractSettings
 	}
 
 	@NonNull
+	public ModuleConfig getModuleConfigByIdOrError(@NonNull final ModuleConfigAndSettingsId moduleConfigAndSettingsId)
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(config -> config.isMatching(moduleConfigAndSettingsId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No matching ModuleConfig found")
+						.setParameter("ID", moduleConfigAndSettingsId));
+	}
+
+	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
 	{
 		Check.assumeNotEmpty(computingMethodTypes, "ComputingMethodTypes shouldn't be empty");
@@ -139,6 +151,16 @@ public class ModularContractSettings
 	public boolean contains(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return moduleConfigs.stream().anyMatch(config -> config.isMatching(computingMethodType));
+	}
+
+	public boolean containsModuleParentConfig(@NonNull final ModuleConfig moduleConfig)
+	{
+		return moduleParentConfigs.stream().anyMatch(config -> config.isConfigFor(moduleConfig));
+	}
+
+	public List<ModuleParentConfig> getModuleParentConfigsByParentId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		return moduleParentConfigs.stream().filter(config -> config.isConfigWithParent(modularContractModuleId)).toList();
 	}
 
 	public long countMatching(@NonNull final ComputingMethodType computingMethodType, @NonNull final ProductId productId)

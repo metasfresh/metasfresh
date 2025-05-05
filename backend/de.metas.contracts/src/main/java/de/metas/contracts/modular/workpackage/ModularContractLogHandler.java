@@ -32,6 +32,7 @@ import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.contracts.modular.settings.ModuleParentConfig;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
@@ -114,27 +115,50 @@ class ModularContractLogHandler
 		}
 
 		final LogAction action = getLogAction(request);
-
 		for (final ModuleConfig moduleConfig : moduleConfigs)
 		{
-			final IModularContractLogHandler.CreateLogRequest createLogRequest = IModularContractLogHandler.CreateLogRequest
-					.builder()
-					.handleLogsRequest(request)
-					.modularContractSettings(settings)
-					.productName(moduleConfig.getName())
-					.moduleConfig(moduleConfig)
-					.typeId(moduleConfig.getModularContractTypeId())
-					.build();
-
-			if (handler.applies(createLogRequest))
+			if (settings.containsModuleParentConfig(moduleConfig))
 			{
-				switch (action)
+				for (final ModuleParentConfig parentConfig : settings.getModuleParentConfigs())
 				{
-					case CREATE -> createLogs(handler, createLogRequest);
-					case REVERSE -> reverseLogs(handler, createLogRequest);
-					case RECOMPUTE -> recreateLogs(handler, createLogRequest);
-					default -> throw new AdempiereException("Unknown action: " + action);
+					if(parentConfig.isConfigFor(moduleConfig))
+					{
+						final IModularContractLogHandler.CreateLogRequest createLogRequest = IModularContractLogHandler.CreateLogRequest
+								.builder()
+								.handleLogsRequest(request)
+								.modularContractSettings(settings)
+								.moduleConfig(moduleConfig)
+								.parentModuleConfig(settings.getModuleConfigByIdOrError(parentConfig.getModuleParentConfigId()))
+								.build();
+
+						handleLogs(handler, action, createLogRequest);
+					}
 				}
+			}
+			else
+			{
+				final IModularContractLogHandler.CreateLogRequest createLogRequest = IModularContractLogHandler.CreateLogRequest
+						.builder()
+						.handleLogsRequest(request)
+						.modularContractSettings(settings)
+						.moduleConfig(moduleConfig)
+						.build();
+
+				handleLogs(handler, action, createLogRequest);
+			}
+		}
+	}
+
+	private void handleLogs(final @NonNull IModularContractLogHandler handler, final LogAction action, final IModularContractLogHandler.CreateLogRequest createLogRequest)
+	{
+		if (handler.applies(createLogRequest))
+		{
+			switch (action)
+			{
+				case CREATE -> createLogs(handler, createLogRequest);
+				case REVERSE -> reverseLogs(handler, createLogRequest);
+				case RECOMPUTE -> recreateLogs(handler, createLogRequest);
+				default -> throw new AdempiereException("Unknown action: " + action);
 			}
 		}
 	}
