@@ -36,6 +36,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatementLine_StepDefData;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatement_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -104,6 +105,7 @@ public class C_Payment_StepDef
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BankStatementLine_StepDefData bankStatementLineTable;
 	private final C_Invoice_StepDefData invoiceTable;
+	private final C_DocType_StepDefData docTypeTable;
 	private final TestContext testContext;
 
 	public C_Payment_StepDef(
@@ -114,6 +116,7 @@ public class C_Payment_StepDef
 			@NonNull final C_BankStatement_StepDefData bankStatementTable,
 			@NonNull final C_BankStatementLine_StepDefData bankStatementLineTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_DocType_StepDefData docTypeTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bpartnerTable = bpartnerTable;
@@ -123,6 +126,7 @@ public class C_Payment_StepDef
 		this.bankStatementTable = bankStatementTable;
 		this.bankStatementLineTable = bankStatementLineTable;
 		this.invoiceTable = invoiceTable;
+		this.docTypeTable = docTypeTable;
 		this.testContext = testContext;
 	}
 
@@ -217,6 +221,14 @@ public class C_Payment_StepDef
 			if (payAmt != null)
 			{
 				softly.assertThat(payment.getPayAmt()).isEqualByComparingTo(payAmt);
+			}
+
+			final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_DocType_ID);
+			if (Check.isNotBlank(docTypeIdentifier))
+			{
+				final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+
+				softly.assertThat(payment.getC_DocType_ID()).isEqualTo(docTypeRecord.getC_DocType_ID());
 			}
 
 			final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_DiscountAmt);

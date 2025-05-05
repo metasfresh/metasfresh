@@ -151,6 +151,43 @@ public class AllocatePayments_StepDef
 				.build();
 	}
 
+	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
+	public void allocate_credit_memo_to_invoice(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> rows = table.asMaps();
+
+		final ImmutableList.Builder<PayableDocument> invoicesCollector = ImmutableList.builder();
+
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			invoicesCollector.add(buildPayableDocument(invoiceIdentifier));
+
+			final String creditMemoIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.CreditMemo." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (creditMemoIdentifier != null)
+			{
+				invoicesCollector.add(buildPayableDocument(creditMemoIdentifier));
+			}
+
+			final String purchaseInvoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Purchase." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (purchaseInvoiceIdentifier != null)
+			{
+				invoicesCollector.add(buildPayableDocument(purchaseInvoiceIdentifier));
+			}
+		}
+
+		final List<PayableDocument> payableDocuments = invoicesCollector.build();
+
+		PaymentAllocationBuilder.newBuilder()
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.defaultDateTrx(LocalDate.now())
+				.payableDocuments(payableDocuments)
+				.allowPartialAllocations(true)
+				.allowPurchaseSalesInvoiceCompensation(true)
+				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
+				.build();
+	}
+
 	@NonNull
 	private PayableDocument buildPayableDocument(@NonNull final String invoiceIdentifier)
 	{
@@ -160,6 +197,8 @@ public class AllocatePayments_StepDef
 
 		final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
 		final Money invoiceOpenMoneyAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
+		final Money discountAmt = moneyService.toMoney(invoiceToAllocate.getDiscountAmountConverted());
+		final Money payAmt = discountAmt != null ? invoiceOpenMoneyAmt.subtract(discountAmt) : invoiceOpenMoneyAmt;
 
 		return PayableDocument.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
@@ -172,7 +211,8 @@ public class AllocatePayments_StepDef
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(AllocationAmounts.builder()
-										   .payAmt(invoiceOpenMoneyAmt)
+										   .payAmt(payAmt)
+										   .discountAmt(discountAmt)
 										   .build()
 										   .convertToRealAmounts(invoiceToAllocate.getMultiplier()))
 				.build();

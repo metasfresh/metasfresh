@@ -33,7 +33,7 @@ public class C_PaySelection_CreatePayments extends JavaProcess implements IProce
 		}
 
 		final Optional<I_C_PaySelection> paySelection = paySelectionBL.getById(PaySelectionId.ofRepoId(context.getSingleSelectedRecordId()));
-		if (paySelection.isEmpty() || !paySelection.get().isProcessed())
+		if (!paySelection.isPresent() || !paySelection.get().isProcessed())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not processed");
 		}
