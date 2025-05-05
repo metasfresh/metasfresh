@@ -12,6 +12,7 @@ import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -51,6 +52,8 @@ public class C_AcctSchema
 	private final ICurrentCostsRepository currentCostsRepository;
 
 	private final static AdMessageKey MSG_ACCT_SCHEMA_HAS_ASSOCIATED_COSTS = AdMessageKey.of("de.metas.acct.AcctSchema.hasCosts");
+
+	public static final ModelDynAttributeAccessor<I_C_AcctSchema, Boolean> DISABLE_CHECK_CURRENCY = new ModelDynAttributeAccessor<>("DISABLE_CHECK_CURRENCY", Boolean.class);
 
 	public C_AcctSchema(
 			@NonNull final ICostElementRepository costElementRepo,
