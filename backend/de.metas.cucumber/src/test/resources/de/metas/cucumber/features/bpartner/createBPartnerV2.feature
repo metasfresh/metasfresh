@@ -926,7 +926,7 @@ Feature: create or update BPartner v2
               "accountStreet": "test-accountStreet_1_updated",
               "accountZip": "test-accountZip_1_up",
               "accountCity": "test-accountCity_1_updated",
-              "accountCountry": "test-accountCountry_1_updated"
+              "accountCountry": "DE"
             },
             {
               "identifier": "iban-DE54500105178721351673",
@@ -951,7 +951,7 @@ Feature: create or update BPartner v2
               "active": true,
               "accountZip": "test-accountZip_3",
               "accountCity": "test-accountCity_3_updated",
-              "accountCountry": "test-accountCountry_3_updated"
+              "accountCountry": "DE"
             }
           ]
         }
@@ -1011,7 +1011,7 @@ Feature: create or update BPartner v2
       "accountStreet": "test-accountStreet_1_updated",
       "accountZip": "test-accountZip_1_up",
       "accountCity": "test-accountCity_1_updated",
-      "accountCountry": "test-accountCountry_1_updated"
+      "accountCountry": "DE"
     },
     {
       "currencyId": 102,
@@ -1036,7 +1036,7 @@ Feature: create or update BPartner v2
       "default": true,
       "accountZip": "test-accountZip_3",
       "accountCity": "test-accountCity_3_updated",
-      "accountCountry": "test-accountCountry_3_updated"
+      "accountCountry": "DE"
     }
   ]
 }
