@@ -197,7 +197,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, false)
 				.filter(esrAccountmatichingIBANorQR_IBAN)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()

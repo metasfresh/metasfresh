@@ -313,6 +313,13 @@
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
                         <target>${metasfresh.java.version}</target>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>1.18.18</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 <plugin>

@@ -74,18 +74,20 @@ public class QRPaymentStringDataProvider extends AbstractPaymentStringDataProvid
 		Check.assume(bpartnerId > 0, "We assume the bPartnerId to be greater than 0. This={}", this);
 		bpBankAccount.setC_BPartner_ID(bpartnerId);
 
-		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.CHF); // CHF, because it's ESR
-
+		final Currency currency = Services.get(ICurrencyDAO.class).getByCurrencyCode(CurrencyCode.ofThreeLetterCode(paymentString.currency()));
 		bpBankAccount.setC_Currency_ID(currency.getId().getRepoId());
-		bpBankAccount.setIsEsrAccount(true); // ..because we are creating this from an ESR/QRR string
+		bpBankAccount.setIsEsrAccount(false); // ..because we are creating this from an ESR/QRR string
 		bpBankAccount.setIsACH(true);
 		final String bPartnerName = bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(bpartnerId));
 		bpBankAccount.setA_Name(bPartnerName);
 		bpBankAccount.setName(bPartnerName);
 
-		bpBankAccount.setQR_IBAN(paymentString.getIBAN());
-		bpBankAccount.setAccountNo(paymentString.getInnerAccountNo());
-		bpBankAccount.setESR_RenderedAccountNo(paymentString.getPostAccountNo()); // we can not know it
+		if (paymentString.isQrIBAN()) {
+			bpBankAccount.setQR_IBAN(paymentString.getIBAN());
+			
+		} else {
+			bpBankAccount.setIBAN(paymentString.getIBAN());			
+		}
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 

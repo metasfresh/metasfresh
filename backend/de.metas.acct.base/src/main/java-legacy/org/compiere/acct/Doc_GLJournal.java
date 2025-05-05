@@ -300,12 +300,18 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 						line,
 						as.getCurrencyId());
 
-				fact.createLine()
-						.setDocLine(line)
-						.setAccount(line.getAccount())
-						.setAmtSource(line.getCurrencyId(), line.getAmtSourceDr(), line.getAmtSourceCr())
-						.setCurrencyConversionCtx(currencyConversionCtx)
-						.buildAndAdd();
+				final FactLine factLine = fact.createLine(line,
+						line.getAccount(),
+						line.getCurrencyId(),
+						line.getAmtSourceDr(),
+						line.getAmtSourceCr());
+				if (factLine == null)
+				{
+					continue;
+				}
+
+				factLine.setCurrencyConversionCtx(currencyConversionCtx);
+				factLine.convert();					
 			}    // for all lines
 		}
 		else

@@ -1,22 +1,46 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import de.metas.attachments.AttachmentEntryService;
+
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
+
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentIdentification1;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentInstructionInformation3CH;
+import de.metas.payment.sepa.model.I_SEPA_Export;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
+import de.metas.util.Services;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,6 +64,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 	private CurrencyId eur;
 	private CurrencyId chf;
+	private ESRImportBL esrImportBL;
 
 	@BeforeEach
 	public void beforeTest()
@@ -55,6 +80,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+		
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		esrImportBL = new ESRImportBL(attachmentEntryService);
+		Services.registerService(IESRImportBL.class, esrImportBL);
 	}
 
 	@Test
@@ -67,23 +96,35 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		);
 		createSEPAExportLine(sepaExport,
 				"001",// SEPA_MandateRefNo
+				true,
 				"NL31INGB0000000044",// IBAN
+				"",
 				"INGBNL2A", // BIC
 				new BigDecimal("100"), // amount
-				eur);
+				eur,
+				""
+				);
 		createSEPAExportLine(sepaExport,
 				"002", // SEPA_MandateRefNo
+				true,
 				"NL31INGB0000000044", // IBAN
+				"",
 				"INGBNL2A",// BIC
 				new BigDecimal("30"), // amount
-				eur);
+				eur,
+				""
+				);
 
 		createSEPAExportLine(sepaExport,
 				"002", // SEPA_MandateRefNo
+				true,
 				"NL31INGB0000000044", // IBAN
+				"",
 				"INGBNL2A",// BIC
 				new BigDecimal("40"), // amount
-				chf);
+				chf,
+				""
+				);
 
 		// invoke the method under test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
@@ -255,6 +296,48 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		return sepaExport;
 	}
 
+	private I_SEPA_Export_Line createSEPAExportLine(
+			final I_SEPA_Export sepaExport,
+			final String SEPA_MandateRefNo,
+			final Boolean isEsrAccount,
+			final String iban,
+			final String qrIban,
+			final String bic,
+			final BigDecimal amt,
+			final CurrencyId currencyId,
+			final String structuredRemittanceInfo)
+	{
+		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
+				.bankName("myBank")
+				.routingNo("routingNo")
+				.build());
+
+		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
+		bankAccount.setC_Currency_ID(currencyId.getRepoId());
+		bankAccount.setIBAN(iban);
+		bankAccount.setQR_IBAN(qrIban);
+		bankAccount.setIsEsrAccount(isEsrAccount);
+		bankAccount.setA_Name("bankAccount.A_Name");
+		save(bankAccount);
+
+		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
+		line.setIBAN(iban);
+		line.setSwiftCode(bic);
+		line.setAmt(amt);
+		line.setC_Currency_ID(currencyId.getRepoId());
+		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);
+
+		line.setC_BP_BankAccount(bankAccount);
+		line.setSEPA_Export(sepaExport);
+		line.setIsActive(true);
+		line.setIsError(false);
+		line.setStructuredRemittanceInfo(structuredRemittanceInfo);
+		save(line);
+
+		return line;
+	}
+
 	@Test
 	public void marshalDocument() throws Exception
 	{
@@ -265,23 +348,35 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		);
 		createSEPAExportLine(sepaExport,
 				"001",// SEPA_MandateRefNo
+				true,
 				"NL31INGB0000000044",// IBAN
+				"",
 				"INGBNL2A", // BIC
 				new BigDecimal("100"), // amount
-				eur);
+				eur,
+				""
+				);
 		createSEPAExportLine(sepaExport,
 				"002", // SEPA_MandateRefNo
+				true,
 				"NL31INGB0000000044", // IBAN
+				"",
 				"INGBNL2A",// BIC
 				new BigDecimal("30"), // amount
-				eur);
+				eur,
+				""
+				);
 
 		createSEPAExportLine(sepaExport,
 				"002", // SEPA_MandateRefNo
+				true,
 				"NL31INGB0000000044", // IBAN
+				"",
 				"INGBNL2A",// BIC
 				new BigDecimal("40"), // amount
-				chf);
+				chf,
+				""
+				);
 
 		final File fstream = File.createTempFile("sepaExport", ".xml");
 		fstream.deleteOnExit();
@@ -341,55 +436,88 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		line.setC_Currency_ID(currencyId.getRepoId());
 		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);
 		line.setStructuredRemittanceInfo(structuredRemittanceInfo);
-
-		line.setC_BP_BankAccount(bankAccount);
-		line.setSEPA_Export(sepaExport);
-		line.setIsActive(true);
-		line.setIsError(false);
-		save(line);
-
-		return line;
-	}
-
-	private I_SEPA_Export_Line createSEPAExportLineQRVersion(
-			final I_SEPA_Export sepaExport,
-			final String SEPA_MandateRefNo,
-			final String QRIban,
-			final String bic,
-			final BigDecimal amt,
-			final CurrencyId currencyId,
-			final String reference)
+	
+	@Test
+	public void createDocument_QRR() throws Exception
 	{
-		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
-															.bankName("myBank")
-															.routingNo("routingNo")
-															.build());
+		final I_SEPA_Export sepaExport = createSEPAExport(
+				"org", // SEPA_CreditorName
+				"12345", // SEPA_CreditorIdentifier
+				"INGBNL2A" // bic
+		);
+		// With QRR Reference (like ESR)
+		createSEPAExportLine(sepaExport,
+				"001",// SEPA_MandateRefNo
+				false, // Esr
+				"",// IBAN
+				"CH1430000001250097798",// QR IBAN
+				"", // BIC
+				new BigDecimal("100"), // amount
+				chf,
+				"210000000003139471430009017");
+		// With Unstructured Reference
+		createSEPAExportLine(sepaExport,
+				"001",// SEPA_MandateRefNo
+				false, // Esr
+				"CH6309000000250097798",// IBAN
+				"",// QR IBAN
+				"", // BIC
+				new BigDecimal("200"), // amount
+				chf,
+				"Unstructured info");
+		// With SCOR Reference «ISO Creditor Reference» ISO 11649
+		createSEPAExportLine(sepaExport,
+				"001",// SEPA_MandateRefNo
+				false, // Esr
+				"CH6309000000250097798",// IBAN
+				"",// QR IBAN
+				"", // BIC
+				new BigDecimal("300"), // amount
+				chf,
+				"RF7923000134444");
 
-		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
-		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
-		bankAccount.setC_Currency_ID(currencyId.getRepoId());
-		bankAccount.setQR_IBAN(QRIban);
-		bankAccount.setIsEsrAccount(true);
-		bankAccount.setA_Name("bankAccount.A_Name");
-		save(bankAccount);
+		xmlDocument = xmlGenerator.createDocument(sepaExport);
 
-		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
-		line.setIBAN(QRIban);
-		line.setSwiftCode(bic);
-		line.setAmt(amt);
-		line.setC_Currency_ID(currencyId.getRepoId());
-		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);
-		line.setStructuredRemittanceInfo(reference);
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("600");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
 
-		line.setC_BP_BankAccount(bankAccount);
-		line.setSEPA_Export(sepaExport);
-		line.setIsActive(true);
-		line.setIsError(false);
-		save(line);
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(1);
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
 
-		return line;
+		for (PaymentInstructionInformation3CH pmtInf : xmlDocument.getCstmrCdtTrfInitn().getPmtInf()) {
+			List<CreditTransferTransactionInformation10CH> cdtTrfTxInfList = pmtInf.getCdtTrfTxInf();
+			assertThat(cdtTrfTxInfList).hasSize(3);
+			int index=0;
+			for (CreditTransferTransactionInformation10CH cdtTrfTxInf : cdtTrfTxInfList) {
+				index++;
+				switch(index){
+		        case 1:
+		    		// With QRR Reference (like ESR)
+					assertThat(cdtTrfTxInf.getAmt().getInstdAmt().getValue()).isEqualByComparingTo("100");
+					assertThat(cdtTrfTxInf.getCdtrAcct().getId().getIBAN()).isEqualTo("CH1430000001250097798");
+					assertThat(cdtTrfTxInf.getRmtInf().getStrd().getCdtrRefInf().getTp().getCdOrPrtry().getPrtry()).isEqualTo("QRR");
+					assertThat(cdtTrfTxInf.getRmtInf().getStrd().getCdtrRefInf().getRef()).isEqualTo("210000000003139471430009017");
+		        	break;
+		        case 2:
+		    		// With Unstructured Reference
+		        	assertThat(cdtTrfTxInf.getAmt().getInstdAmt().getValue()).isEqualByComparingTo("200");
+					assertThat(cdtTrfTxInf.getCdtrAcct().getId().getIBAN()).isEqualTo("CH6309000000250097798");
+					assertThat(cdtTrfTxInf.getRmtInf().getUstrd()).isEqualTo("Unstructured info");
+		        	break;
+		        case 3:
+		        	// With SCOR Reference «ISO Creditor Reference» ISO 11649
+					assertThat(cdtTrfTxInf.getAmt().getInstdAmt().getValue()).isEqualByComparingTo("300");
+					assertThat(cdtTrfTxInf.getCdtrAcct().getId().getIBAN()).isEqualTo("CH6309000000250097798");
+					assertThat(cdtTrfTxInf.getRmtInf().getStrd().getCdtrRefInf().getRef()).isEqualTo("RF7923000134444");
+					assertThat(cdtTrfTxInf.getRmtInf().getStrd().getCdtrRefInf().getTp().getCdOrPrtry().getCd().value()).isEqualTo("SCOR");
+		        	break;
+				}		        	
+			}
+        }
+		
 	}
-
+	
 	@Test
 	public void testReplaceForbiddenChars()
 	{
@@ -404,20 +532,52 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(output).isEqualTo(expected);
 	}
 
+	@Test
+	public void testQrIbanCheck()
+	{
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN(""));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92abc99001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9219999001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9229999001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9232000001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9242000001406809497"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92 3200 0001 4068 0949 7"));
+
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9230000001406809497"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9230999001406809497"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH9231999001406809497"));
+	
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92 3000 0001 4068 0949 7"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92 3099 9001 4068 0949 7"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrIBAN("CH92 3199 9001 4068 0949 7"));
+	}
 
 	@Test
-	public void testIsInvalidQRReference()
+	public void testQrrRemittanceInfo()
 	{
-		assertIsInvalidQRReferenceWorks("", true);
-		assertIsInvalidQRReferenceWorks("33 36170 00113 54610 59304 00000", true);
-		assertIsInvalidQRReferenceWorks("333617000113546105930400000", false);
-		assertIsInvalidQRReferenceWorks("210000000003139471430009017", false);
+		SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 sepaVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(this.bankRepository);
+		assertFalse(sepaVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrrRemittanceInfo(""));
+		assertFalse(sepaVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrrRemittanceInfo("ab"));
+		assertFalse(sepaVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrrRemittanceInfo("12345678901234567890123456"));
+		
+		assertFalse(sepaVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrrRemittanceInfo("210000000003139471430009018"));
+		assertTrue(sepaVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isQrrRemittanceInfo("210000000003139471430009017"));
+		
 	}
-
-	private void assertIsInvalidQRReferenceWorks(String input, boolean expected)
+	
+	@Test
+	public void testScorRemittanceInfoCheck()
 	{
-		boolean result = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isInvalidQRReference(input);
-		assertThat(result).isEqualTo(expected);
-	}
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isScorRemittanceInfo(""));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isScorRemittanceInfo("XX"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isScorRemittanceInfo("RF79 2300 0134 444"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isScorRemittanceInfo("RF7923000134444"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isScorRemittanceInfo("RF7923000134443"));
 
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isScorRemittanceInfo("RF18 5390 0754 7034"));
+		assertTrue(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isScorRemittanceInfo("RF18539007547034"));
+		assertFalse(SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isScorRemittanceInfo("RF18539007587034"));
+	
+	}
+			
 }

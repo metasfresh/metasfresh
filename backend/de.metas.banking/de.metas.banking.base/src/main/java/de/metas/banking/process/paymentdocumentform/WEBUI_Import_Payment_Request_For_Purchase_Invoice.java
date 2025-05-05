@@ -40,6 +40,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -52,7 +54,7 @@ import de.metas.util.Services;
 /**
  * IProcessParametersCallout is used to update frontend data from backend inside "onParameterChanged. Nice!
  */
-public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProcess implements IProcessParametersCallout, IProcessPrecondition
+public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProcess implements IProcessDefaultParametersProvider, IProcessParametersCallout, IProcessPrecondition
 {
 
 	private static final String PARAM_fullPaymentString = "FullPaymentString";
@@ -109,7 +111,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 		final PaymentString paymentString = dataProvider.getPaymentString();
 		final I_C_Payment_Request paymentRequestTemplate = paymentStringProcessService.createPaymentRequestTemplate(bpBankAccount, amountParam, paymentString);
 
-		paymentStringProcessService.createPaymentRequestFromTemplate(getActualInvoice(), paymentRequestTemplate);
+		paymentStringProcessService.createPaymentRequestFromTemplate(getActualInvoice(), paymentRequestTemplate, paymentString);
 		return MSG_OK;
 	}
 
@@ -164,6 +166,9 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 			else
 			{
 				bankAccountNumberParam = paymentString.getPostAccountNo();
+				if (bankAccountNumberParam == null || bankAccountNumberParam != "") {
+					bankAccountNumberParam = paymentString.getIbanAccountNo();
+				}
 				willCreateANewBandAccountParam = true;
 			}
 		}
@@ -180,7 +185,25 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	{
 		return invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(getRecord_ID()));
 	}
+	
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		final String parameterName = parameter.getColumnName();
+		final I_C_Invoice actualInvoice = getActualInvoice();
 
+		if (PARAM_C_BPartner_ID.equals(parameterName) && actualInvoice != null && actualInvoice.getC_BPartner_ID() > 0)
+		{
+			return actualInvoice.getC_BPartner_ID() > 0
+					? actualInvoice.getC_BPartner_ID()
+					: IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+		}
+		else
+		{
+			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+		}
+	}
+	
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
