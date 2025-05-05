@@ -154,3 +154,61 @@ UPDATE AD_UI_Element SET SeqNo=158,Updated=TO_TIMESTAMP('2025-04-30 13:48:25.667
 UPDATE AD_Column SET ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2025-04-30 13:50:49.372000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=8212
 ;
 
+-------
+
+-- Element: A_Country
+-- 2025-05-05T11:02:02.429Z
+UPDATE AD_Element_Trl SET Description='Country Code', Help='Country Code', IsTranslated='Y', Name='Country Code', PrintName='Country Code',Updated=TO_TIMESTAMP('2025-05-05 11:02:02.429000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=1988 AND AD_Language='en_GB'
+;
+
+-- 2025-05-05T11:02:02.461Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_GB' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-05-05T11:02:03.803Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1988,'en_GB')
+;
+
+-- Element: A_Country
+-- 2025-05-05T11:02:11.013Z
+UPDATE AD_Element_Trl SET Description='Ländercode', Help='Ländercode', IsTranslated='Y', Name='Ländercode', PrintName='Ländercode',Updated=TO_TIMESTAMP('2025-05-05 11:02:11.013000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=1988 AND AD_Language='de_CH'
+;
+
+-- 2025-05-05T11:02:11.045Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-05-05T11:02:12.394Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1988,'de_CH')
+;
+
+-- Element: A_Country
+-- 2025-05-05T11:02:28.107Z
+UPDATE AD_Element_Trl SET Description='Country Code', Help='Account Country Code', Name='Account Country Code', PrintName='Country Code',Updated=TO_TIMESTAMP('2025-05-05 11:02:28.107000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=1988 AND AD_Language='en_US'
+;
+
+-- 2025-05-05T11:02:28.139Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-05-05T11:02:29.081Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1988,'en_US')
+;
+
+-- Element: A_Country
+-- 2025-05-05T11:02:36.394Z
+UPDATE AD_Element_Trl SET Description='Ländercode', Help='Ländercode', IsTranslated='Y', Name='Ländercode', PrintName='Ländercode',Updated=TO_TIMESTAMP('2025-05-05 11:02:36.394000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=1988 AND AD_Language='de_DE'
+;
+
+-- 2025-05-05T11:02:36.425Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-05-05T11:02:37.482Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(1988,'de_DE')
+;
+
+-- 2025-05-05T11:02:37.511Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1988,'de_DE')
+;
+
