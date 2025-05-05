@@ -944,4 +944,19 @@ public class X_I_Invoice_Candidate extends org.compiere.model.PO implements I_I_
 	{
 		return get_ValueAsString(COLUMNNAME_M_PriceList_Version_Name);
 	}
+
+	@Override
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1)
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
 }
