@@ -31,6 +31,7 @@
 @import './labels.scss';
 @import './filtersitem.scss';
 @import './UserDropdown.scss';
+@import './spinner.scss';
 
 @import './intro.scss';
 
@@ -497,10 +498,6 @@ body {
       text-align: center;
     }
   }
-}
-
-.screen-freeze-behind {
-  overflow: hidden;
 }
 
 .screen-prompt-freeze {
@@ -1607,26 +1604,6 @@ body {
   }
 }
 
-.spinner {
-  position: absolute;
-  background-color: rgba(255, 255, 255, 0.8);
-
-  .icon {
-    z-index: 99;
-    animation: spin 2s linear infinite;
-    opacity: 0.7;
-
-    &.spinner {
-      background: url('../images/spinner-solid.svg') no-repeat scroll center 0;
-    }
-  }
-}
-
-.modal-spinner {
-  height: 100%;
-  width: 100%;
-  background-color: transparent !important;
-}
 
 .paypal-reservation-container {
   position: absolute;
