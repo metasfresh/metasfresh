@@ -109,6 +109,10 @@ public class C_BP_BankAccount
 			{
 				throw new AdempiereException("Country code " + A_Country + " not found");
 			}
+			else
+			{
+				bp_bankAccount.setA_Country_ID(countryId.getRepoId());
+			}
 		}
 
 	}
