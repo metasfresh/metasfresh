@@ -191,7 +191,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Deprecated
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
-		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, true);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
 	}
 
 	@Override
@@ -277,7 +277,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId)
+	public List<InvoiceTax> retrieveTaxes(@NonNull final InvoiceId invoiceId)
 	{
 		return retrieveTaxRecords(invoiceId)
 				.stream()
@@ -286,7 +286,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId)
+	public List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull final InvoiceId invoiceId)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceTax.class)
 				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoiceId)

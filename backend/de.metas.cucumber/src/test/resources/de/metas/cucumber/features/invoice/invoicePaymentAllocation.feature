@@ -2006,8 +2006,8 @@ Feature: invoice payment allocation
       | inv_27102022_1              | payment_27102022_1          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_27102022_1          | bpartner_27102022_1      | bpartner_location_27102022_1      | 10 Tage 1 % | true      | CO        | false      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_27102022_1          | bpartner_27102022_1      | bpartner_location_27102022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
       | payment_27102022_1      | true                     |
@@ -2024,8 +2024,8 @@ Feature: invoice payment allocation
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
       | inv_27102022_1              | payment_27102022_2          |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_27102022_1          | bpartner_27102022_1      | bpartner_location_27102022_1      | 10 Tage 1 % | true      | CO        | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_27102022_1          | bpartner_27102022_1      | bpartner_location_27102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
       | payment_27102022_2      | true                     |
@@ -2120,8 +2120,8 @@ Feature: invoice payment allocation
       | inv_27102022_2              | payment_27102022_3          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_27102022_2          | bpartner_27102022_2      | bpartner_location_27102022_2      | 10 Tage 1 % | true      | CO        | false      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_27102022_2          | bpartner_27102022_2      | bpartner_location_27102022_2      | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
       | payment_27102022_3      | true                     |
@@ -2138,8 +2138,8 @@ Feature: invoice payment allocation
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
       | inv_27102022_2              | payment_27102022_4          |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_27102022_2          | bpartner_27102022_2      | bpartner_location_27102022_2      | 10 Tage 1 % | true      | CO        | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_27102022_2          | bpartner_27102022_2      | bpartner_location_27102022_2      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
       | payment_27102022_4      | true                     |
@@ -2240,8 +2240,8 @@ Feature: invoice payment allocation
       |                             | payment_28102022_2          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_28102022_1          | bpartner_28102022_1      | bpartner_location_28102022_1      | 10 Tage 1 % | true      | CO        | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_28102022_1          | bpartner_28102022_1      | bpartner_location_28102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
       | payment_28102022_1      | true                     |
@@ -2337,11 +2337,11 @@ Feature: invoice payment allocation
       | inv_31102022_1          | credit_memo_31102022_1                 |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_31102022_1          | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | false      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_31102022_1          | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | credit_memo_31102022_1  | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | credit_memo_31102022_1  | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
       | inv_31102022_1              | 2.4        | 21.4             | 0               | 0               |
@@ -2360,11 +2360,11 @@ Feature: invoice payment allocation
       | inv_31102022_1          | credit_memo_31102022_2                 |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_31102022_1          | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_31102022_1          | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | credit_memo_31102022_2  | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | false      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | credit_memo_31102022_2  | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
       | credit_memo_31102022_2      | -21.16     | -0.47            | 0               | 0               |
@@ -2459,11 +2459,11 @@ Feature: invoice payment allocation
       | inv_31102022_10         | credit_memo_31102022_10                |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_31102022_10         | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | false      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_31102022_10         | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | false      | true                |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | credit_memo_31102022_10 | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | credit_memo_31102022_10 | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
       | inv_31102022_10             | -2.4       | -21.4            | 0               | 0               |
@@ -2482,11 +2482,11 @@ Feature: invoice payment allocation
       | inv_31102022_10         | credit_memo_31102022_11                |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_31102022_10         | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_31102022_10         | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | true       | false               |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | credit_memo_31102022_11 | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | false      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | credit_memo_31102022_11 | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
       | credit_memo_31102022_11     | 21.16      | 0.47             | 0               | 0               |
@@ -2585,11 +2585,11 @@ Feature: invoice payment allocation
       | inv_01112022_1          | purchase_invoice_01112022_1          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_01112022_1          | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | false      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_01112022_1          | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     Then validate created invoices
-      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | purchase_invoice_01112022_1 | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | true       |
+      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | purchase_invoice_01112022_1 | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
       | inv_01112022_1              | 2.36       | 21.44            | 0               | 0               |
@@ -2609,11 +2609,11 @@ Feature: invoice payment allocation
       | inv_01112022_1          | purchase_invoice_01112022_2          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_01112022_1          | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_01112022_1          | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     Then validate created invoices
-      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | purchase_invoice_01112022_2 | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | false      |
+      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | purchase_invoice_01112022_2 | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
       | purchase_invoice_01112022_2 | -21.2      | -0.01            | 0               | 0               |
@@ -2680,12 +2680,32 @@ Feature: invoice payment allocation
     And the payment identified by payment_10012025_1 is completed
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
-      | inv_10012025_1          | bpartner_1               | bpartner_location_1               | 30 Tage netto | true      | CO        | true       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_10012025_1          | bpartner_1               | bpartner_location_1               | 30 Tage netto | true      | CO        | true       | false               |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
       | payment_10012025_1      | true                     |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.DiscountAmt |
       | inv_10012025_1              | payment_10012025_1          | -20.25     | 0.02           |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
