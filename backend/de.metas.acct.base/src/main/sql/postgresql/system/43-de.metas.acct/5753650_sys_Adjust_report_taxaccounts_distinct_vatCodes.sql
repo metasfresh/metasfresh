@@ -130,7 +130,7 @@ BEGIN
 
                        UNION ALL
 
-                       SELECT NULL::numeric AS C_VAT_Code_ID, NULL::varchar AS vatcode
+                       SELECT NULL::varchar AS vatcode
                        WHERE p_c_vat_code_id IS NULL -- include NULL vatcode if no filter is applied
     )
 
