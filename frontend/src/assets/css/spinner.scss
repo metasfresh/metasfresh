@@ -1,3 +1,5 @@
+@import './layers.scss';
+
 .spinner {
   .icon {
     z-index: 99;
@@ -13,6 +15,7 @@
 
 .spinner-wrapper-overlay {
   position: absolute !important;
+  z-index: $z-index-spinner-overlay !important;
   background-color: rgba(255, 255, 255, 0.8) !important;
 }
 
