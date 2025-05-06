@@ -119,45 +119,6 @@ public class PaymentBL implements IPaymentBL
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	public static void markNotReconciledNoSave(
-			@NonNull final I_C_Payment payment)
-	{
-		payment.setIsReconciled(false);
-		payment.setC_BankStatement_ID(-1);
-		payment.setC_BankStatementLine_ID(-1);
-		payment.setC_BankStatementLine_Ref_ID(-1);
-	}
-
-	@VisibleForTesting
-	static PaymentReconcileReference extractPaymentReconcileReference(final I_C_Payment payment)
-	{
-		try
-		{
-			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
-			if (docStatus.isReversed())
-			{
-				final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
-				return PaymentReconcileReference.reversal(reversalId);
-			}
-
-			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
-			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
-			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
-			if (bankStatementLineRefId == null)
-			{
-				return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
-			}
-			else
-			{
-				return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
-			}
-		}
-		catch (final Exception ex)
-		{
-			throw new AdempiereException("Failed extracting payment reconcile reference from " + payment, ex);
-		}
-	}
-
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
 	{
@@ -452,7 +413,7 @@ public class PaymentBL implements IPaymentBL
 		final List<I_C_Invoice> invoices = new ArrayList<>();
 		for (final I_C_AllocationLine alloc : allocations)
 		{
-			if (alloc.getC_Invoice_ID() > 0)
+			if(alloc.getC_Invoice_ID() > 0)
 			{
 				final I_C_Invoice allocatedInvoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(alloc.getC_Invoice_ID()));
 				invoices.add(allocatedInvoice);
@@ -723,6 +684,15 @@ public class PaymentBL implements IPaymentBL
 		}
 	}
 
+	public static void markNotReconciledNoSave(
+			@NonNull final I_C_Payment payment)
+	{
+		payment.setIsReconciled(false);
+		payment.setC_BankStatement_ID(-1);
+		payment.setC_BankStatementLine_ID(-1);
+		payment.setC_BankStatementLine_Ref_ID(-1);
+	}
+
 	@Override
 	public void markReconciled(
 			@NonNull final Collection<PaymentReconcileRequest> requests)
@@ -823,6 +793,36 @@ public class PaymentBL implements IPaymentBL
 		}
 
 		paymentDAO.save(payment);
+	}
+
+	@VisibleForTesting
+	static PaymentReconcileReference extractPaymentReconcileReference(final I_C_Payment payment)
+	{
+		try
+		{
+			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
+			if (docStatus.isReversed())
+			{
+				final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
+				return PaymentReconcileReference.reversal(reversalId);
+			}
+
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
+			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
+			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
+			if (bankStatementLineRefId == null)
+			{
+				return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
+			}
+			else
+			{
+				return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+			}
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed extracting payment reconcile reference from " + payment, ex);
+		}
 	}
 
 	@Override
