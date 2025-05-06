@@ -182,10 +182,7 @@ BEGIN
         UPDATE M_InventoryLine invl
         SET isexplicitcostprice=t.isexplicitcostprice,
             costprice=t.costprice,
-            qtycount=uomConvert(invl.m_product_id,
-                                    t.c_uom_id,
-                                    invl.c_uom_id,
-                                    t.qtycount)
+            qtycount=t.qtycount
         FROM tmp_prev_inventoryline t
         WHERE invl.m_inventory_id = p_M_Inventory_ID
           AND invl.m_product_id = t.m_product_id
