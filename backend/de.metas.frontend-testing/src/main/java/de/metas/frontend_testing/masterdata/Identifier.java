@@ -7,7 +7,6 @@ import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -72,17 +71,5 @@ public class Identifier
 	public <ID extends RepoIdAware> ID toId(@NonNull final Class<ID> idClass)
 	{
 		return RepoIdAwares.ofObject(string, idClass);
-	}
-
-	public int toInt()
-	{
-		try
-		{
-			return Integer.parseInt(string);
-		}
-		catch (Exception ex)
-		{
-			throw new AdempiereException("Failed converting identifier `" + string + "` to int", ex);
-		}
 	}
 }
