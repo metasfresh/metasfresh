@@ -2162,4 +2162,28 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, Object> COLUMN_WriteOffAmt = new ModelColumn<>(I_C_Payment.class, "WriteOffAmt", null);
 	String COLUMNNAME_WriteOffAmt = "WriteOffAmt";
+
+	/**
+	 * Set Refund Status.
+	 * Indicates the refund processing status of the payment.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRefundStatus (@Nullable java.lang.String RefundStatus);
+
+	/**
+	 * Get Refund Status.
+	 * Indicates the refund processing status of the payment.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRefundStatus();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_RefundStatus = new ModelColumn<>(I_C_Payment.class, "RefundStatus", null);
+	String COLUMNNAME_RefundStatus = "RefundStatus";
+
 }
