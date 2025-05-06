@@ -1,5 +1,6 @@
 package de.metas.manufacturing.job.service.commands;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPIItemProductBL;
@@ -149,7 +150,7 @@ public class ReceiveGoodsCommand
 			if (HUQRCodeUnitType.TU.equals(huUnitType))
 			{
 				final I_M_HU tu = createHUProducer().receiveSingleTU(getQtyToReceive(null),
-																	 packingInfo.getPackingInstructionsId());
+						packingInfo.getPackingInstructionsId());
 				collectReceivedHU(tu);
 				final HuId tuId = HuId.ofRepoId(tu.getM_HU_ID());
 
@@ -171,6 +172,10 @@ public class ReceiveGoodsCommand
 			if (handlingUnitsBL.isLoadingUnit(existingHU))
 			{
 				return receiveToExistingLU(existingHU, qrCodeTarget.getTuPIItemProductId());
+			}
+			else if (handlingUnitsBL.isTransportUnit(existingHU))
+			{
+				return receiveToExistingTU(existingHU);
 			}
 			else
 			{
@@ -214,6 +219,13 @@ public class ReceiveGoodsCommand
 				.luId(luId)
 				.tuPIItemProductId(tuPIItemProductId)
 				.build();
+	}
+
+	private ReceivingTarget receiveToExistingTU(@NonNull final I_M_HU existingTU)
+	{
+		final I_M_HU vhu = createHUProducer().receiveVHU(getQtyToReceive(null));
+		HUTransformService.newInstance().cusToExistingTU(ImmutableList.of(vhu), existingTU);
+		return ReceivingTarget.builder().tuId(HuId.ofRepoId(existingTU.getM_HU_ID())).build();
 	}
 
 	private I_PP_Order getPPOrder()
@@ -402,9 +414,9 @@ public class ReceiveGoodsCommand
 		}
 
 		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL,
-																					handlingUnitsBL.createMutableHUContextForProcessing(),
-																					getProductId(),
-																					catchWeight);
+				handlingUnitsBL.createMutableHUContextForProcessing(),
+				getProductId(),
+				catchWeight);
 
 		weightUpdater.updatePackToHUs(receivedHUs);
 	}

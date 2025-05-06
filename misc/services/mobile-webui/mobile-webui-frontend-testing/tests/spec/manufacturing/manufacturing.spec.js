@@ -1,11 +1,11 @@
-import { Backend } from '../utils/screens/Backend';
-import { test } from '../../playwright.config';
-import { LoginScreen } from '../utils/screens/LoginScreen';
-import { ApplicationsListScreen } from '../utils/screens/ApplicationsListScreen';
-import { ManufacturingJobsListScreen } from '../utils/screens/manufacturing/ManufacturingJobsListScreen';
-import { ManufacturingJobScreen } from '../utils/screens/manufacturing/ManufacturingJobScreen';
-import { RawMaterialIssueLineScreen } from '../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
-import { MaterialReceiptLineScreen } from '../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
+import { Backend } from '../../utils/screens/Backend';
+import { test } from '../../../playwright.config';
+import { LoginScreen } from '../../utils/screens/LoginScreen';
+import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
+import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
+import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
+import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
+import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
 const createMasterdata = async ({ finishedProductUOMConfigs } = {}) => {
     const response = await Backend.createMasterdata({
