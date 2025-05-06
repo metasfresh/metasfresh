@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.eevolution.api.BOMComponentType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -81,5 +82,6 @@ public class JsonCreateProductRequest
 		@NonNull BigDecimal qty;
 		boolean percentage;
 		@Nullable X12DE355 uom;
+		@Nullable BOMComponentType componentType;
 	}
 }
