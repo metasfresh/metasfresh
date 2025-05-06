@@ -53,7 +53,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Verarbeitung zum Laufzeitende.
+	 * Set End of Term.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -62,7 +62,7 @@ public interface I_C_Flatrate_Term
 	void setAD_PInstance_EndOfTerm_ID (int AD_PInstance_EndOfTerm_ID);
 
 	/**
-	 * Get Verarbeitung zum Laufzeitende.
+	 * Get End of Term.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -251,7 +251,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
-	 * Set Datenerfassung.
+	 * Set Flatrate Data.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -260,7 +260,7 @@ public interface I_C_Flatrate_Term
 	void setC_Flatrate_Data_ID (int C_Flatrate_Data_ID);
 
 	/**
-	 * Get Datenerfassung.
+	 * Get Flatrate Data.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -324,7 +324,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_Flatrate_Term_Master_ID = "C_Flatrate_Term_Master_ID";
 
 	/**
-	 * Set Nachfolgende Vertragsperiode.
+	 * Set Next Term.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -333,7 +333,7 @@ public interface I_C_Flatrate_Term
 	void setC_FlatrateTerm_Next_ID (int C_FlatrateTerm_Next_ID);
 
 	/**
-	 * Get Nachfolgende Vertragsperiode.
+	 * Get Next Term.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -349,8 +349,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_FlatrateTerm_Next_ID = "C_FlatrateTerm_Next_ID";
 
 	/**
-	 * Set Vertragsverlängerung/-übergang.
-	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 * Set Contract Transition.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -361,8 +360,7 @@ public interface I_C_Flatrate_Term
 	void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID);
 
 	/**
-	 * Get Vertragsverlängerung/-übergang.
-	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 * Get Contract Transition.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -379,35 +377,99 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
-	 * Set Vertrags-Auftrag.
-	 * Auftrag, mit der der Vertrag abgeschlossen wurde
+	 * Set Change or Cancel.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChangeOrCancelTerm (@Nullable java.lang.String ChangeOrCancelTerm);
+
+	/**
+	 * Get Change or Cancel.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getChangeOrCancelTerm();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ChangeOrCancelTerm = new ModelColumn<>(I_C_Flatrate_Term.class, "ChangeOrCancelTerm", null);
+	String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
+
+	/**
+	 * Set Contract Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setContractStatus (@Nullable java.lang.String ContractStatus);
+
+	/**
+	 * Get Contract Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getContractStatus();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractStatus = new ModelColumn<>(I_C_Flatrate_Term.class, "ContractStatus", null);
+	String COLUMNNAME_ContractStatus = "ContractStatus";
+
+	/**
+	 * Set Change Contract Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Order_Term_ID (int C_Order_Term_ID);
+	void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
 
 	/**
-	 * Get Vertrags-Auftrag.
-	 * Auftrag, mit der der Vertrag abgeschlossen wurde
+	 * Get Change Contract Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Order_Term_ID();
+	int getC_OrderLine_TermChange_ID();
 
-	@Nullable org.compiere.model.I_C_Order getC_Order_Term();
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange();
 
-	void setC_Order_Term(@Nullable org.compiere.model.I_C_Order C_Order_Term);
+	void setC_OrderLine_TermChange(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
 
-	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
-	String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
 
 	/**
-	 * Set Änderungs-Auftrag.
-	 * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 * Set Contract Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
+
+	/**
+	 * Get Contract Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderLine_Term_ID();
+
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine_Term();
+
+	void setC_OrderLine_Term(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine_Term);
+
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
+
+	/**
+	 * Set Change Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -418,8 +480,7 @@ public interface I_C_Flatrate_Term
 	void setC_Order_TermChange_ID (int C_Order_TermChange_ID);
 
 	/**
-	 * Get Änderungs-Auftrag.
-	 * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 * Get Change Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -436,81 +497,54 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_Order_TermChange_ID = "C_Order_TermChange_ID";
 
 	/**
-	 * Set Vertrags-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 * Set Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
+	void setC_Order_Term_ID (int C_Order_Term_ID);
 
 	/**
-	 * Get Vertrags-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 * Get Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_OrderLine_Term_ID();
+	int getC_Order_Term_ID();
 
-	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine_Term();
+	@Nullable org.compiere.model.I_C_Order getC_Order_Term();
 
-	void setC_OrderLine_Term(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine_Term);
+	void setC_Order_Term(@Nullable org.compiere.model.I_C_Order C_Order_Term);
 
-	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
-	String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
 
 	/**
-	 * Set Änderungs-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Created = new ModelColumn<>(I_C_Flatrate_Term.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Änderungs-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 * Get Created By.
+	 * User who created this records
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: Table
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_OrderLine_TermChange_ID();
+	int getCreatedBy();
 
-	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange();
-
-	void setC_OrderLine_TermChange(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
-
-	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
-	String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
-
-	/**
-	 * Set Ausschreibungs-Antwort.
-	 * Request for Quotation Response Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_RfQResponseLine_ID (int C_RfQResponseLine_ID);
-
-	/**
-	 * Get Ausschreibungs-Antwort.
-	 * Request for Quotation Response Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_RfQResponseLine_ID();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_C_RfQResponseLine_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_RfQResponseLine_ID", null);
-	String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Tax Category.
@@ -557,74 +591,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Ändern oder Kündigen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setChangeOrCancelTerm (@Nullable java.lang.String ChangeOrCancelTerm);
-
-	/**
-	 * Get Ändern oder Kündigen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getChangeOrCancelTerm();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ChangeOrCancelTerm = new ModelColumn<>(I_C_Flatrate_Term.class, "ChangeOrCancelTerm", null);
-	String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
-
-	/**
-	 * Set Contract Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setContractStatus (@Nullable java.lang.String ContractStatus);
-
-	/**
-	 * Get Contract Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getContractStatus();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractStatus = new ModelColumn<>(I_C_Flatrate_Term.class, "ContractStatus", null);
-	String COLUMNNAME_ContractStatus = "ContractStatus";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Created = new ModelColumn<>(I_C_Flatrate_Term.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Vertrag Datum.
+	 * Set Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -633,7 +600,7 @@ public interface I_C_Flatrate_Term
 	void setDateContracted (@Nullable java.sql.Timestamp DateContracted);
 
 	/**
-	 * Get Vertrag Datum.
+	 * Get Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -645,8 +612,8 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_DateContracted = "DateContracted";
 
 	/**
-	 * Set Lieferart.
-	 * Definiert die zeitliche Steuerung von Lieferungen
+	 * Set Delivery Rule.
+	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -655,8 +622,8 @@ public interface I_C_Flatrate_Term
 	void setDeliveryRule (@Nullable java.lang.String DeliveryRule);
 
 	/**
-	 * Get Lieferart.
-	 * Definiert die zeitliche Steuerung von Lieferungen
+	 * Get Delivery Rule.
+	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -868,7 +835,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_EndDate = "EndDate";
 
 	/**
-	 * Set Vertrag jetzt verlängern.
+	 * Set Extend Contract.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -877,7 +844,7 @@ public interface I_C_Flatrate_Term
 	void setExtendTerm (@Nullable java.lang.String ExtendTerm);
 
 	/**
-	 * Get Vertrag jetzt verlängern.
+	 * Get Extend Contract.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -912,8 +879,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Vertrag autom. verlängern.
-	 * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
+	 * Set Auto Renew.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -922,8 +888,7 @@ public interface I_C_Flatrate_Term
 	void setIsAutoRenew (boolean IsAutoRenew);
 
 	/**
-	 * Get Vertrag autom. verlängern.
-	 * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
+	 * Get Auto Renew.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -935,7 +900,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsAutoRenew = "IsAutoRenew";
 
 	/**
-	 * Set Rechnungskandidat schließen.
+	 * Set Close Invoice Candidate.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -944,7 +909,7 @@ public interface I_C_Flatrate_Term
 	void setIsCloseInvoiceCandidate (boolean IsCloseInvoiceCandidate);
 
 	/**
-	 * Get Rechnungskandidat schließen.
+	 * Get Close Invoice Candidate.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -956,8 +921,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsCloseInvoiceCandidate = "IsCloseInvoiceCandidate";
 
 	/**
-	 * Set Gegenüberstellung mit erbr. Leist..
-	 * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
+	 * Set Cleat with actual Amount.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -968,8 +932,7 @@ public interface I_C_Flatrate_Term
 	void setIsClosingWithActualSum (boolean IsClosingWithActualSum);
 
 	/**
-	 * Get Gegenüberstellung mit erbr. Leist..
-	 * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
+	 * Get Cleat with actual Amount.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -981,8 +944,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsClosingWithActualSum = "IsClosingWithActualSum";
 
 	/**
-	 * Set Abschlusskorrektur vorsehen.
-	 * Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
+	 * Set Clearing with Correction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -993,8 +955,7 @@ public interface I_C_Flatrate_Term
 	void setIsClosingWithCorrectionSum (boolean IsClosingWithCorrectionSum);
 
 	/**
-	 * Get Abschlusskorrektur vorsehen.
-	 * Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
+	 * Get Clearing with Correction.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1050,6 +1011,71 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
+	 * Set Vertrag Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMasterDocumentNo (@Nullable java.lang.String MasterDocumentNo);
+
+	/**
+	 * Get Vertrag Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMasterDocumentNo();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterDocumentNo = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterDocumentNo", null);
+	String COLUMNNAME_MasterDocumentNo = "MasterDocumentNo";
+
+	/**
+	 * Set Master End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMasterEndDate (@Nullable java.sql.Timestamp MasterEndDate);
+
+	/**
+	 * Get Master End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getMasterEndDate();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterEndDate = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterEndDate", null);
+	String COLUMNNAME_MasterEndDate = "MasterEndDate";
+
+	/**
+	 * Set Master Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMasterStartDate (@Nullable java.sql.Timestamp MasterStartDate);
+
+	/**
+	 * Get Master Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getMasterStartDate();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterStartDate = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterStartDate", null);
+	String COLUMNNAME_MasterStartDate = "MasterStartDate";
+
+	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *
@@ -1100,7 +1126,7 @@ public interface I_C_Flatrate_Term
 	 * Set Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1110,78 +1136,13 @@ public interface I_C_Flatrate_Term
 	 * Get Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_Product_ID();
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Vertrag Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMasterDocumentNo (@Nullable java.lang.String MasterDocumentNo);
-
-	/**
-	 * Get Vertrag Nr..
-	 * Document sequence number of the document
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMasterDocumentNo();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterDocumentNo = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterDocumentNo", null);
-	String COLUMNNAME_MasterDocumentNo = "MasterDocumentNo";
-
-	/**
-	 * Set Contract End Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMasterEndDate (@Nullable java.sql.Timestamp MasterEndDate);
-
-	/**
-	 * Get Contract End Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getMasterEndDate();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterEndDate = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterEndDate", null);
-	String COLUMNNAME_MasterEndDate = "MasterEndDate";
-
-	/**
-	 * Set Contract Start Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMasterStartDate (@Nullable java.sql.Timestamp MasterStartDate);
-
-	/**
-	 * Get Contract Start Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getMasterStartDate();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterStartDate = new ModelColumn<>(I_C_Flatrate_Term.class, "MasterStartDate", null);
-	String COLUMNNAME_MasterStartDate = "MasterStartDate";
 
 	/**
 	 * Set Note.
@@ -1207,8 +1168,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_Note = "Note";
 
 	/**
-	 * Set Kündigungs/Benachrichtigungsfrist.
-	 * Datum vor Ende der Vertragslaufzeit, an dem der laufende Vertrag automatisch verlängert oder aber der Betreuer informiert wird.
+	 * Set Notice Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1217,8 +1177,7 @@ public interface I_C_Flatrate_Term
 	void setNoticeDate (@Nullable java.sql.Timestamp NoticeDate);
 
 	/**
-	 * Get Kündigungs/Benachrichtigungsfrist.
-	 * Datum vor Ende der Vertragslaufzeit, an dem der laufende Vertrag automatisch verlängert oder aber der Betreuer informiert wird.
+	 * Get Notice Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1230,8 +1189,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_NoticeDate = "NoticeDate";
 
 	/**
-	 * Set Planmenge pro Maßeinheit.
-	 * Geplante Menge der zu erbringenden Leistung (z.B. zu liefernde Teile), pro pauschal abzurechnender Einheit (z.B. Pflegetag).
+	 * Set Qty per UOM.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1240,8 +1198,7 @@ public interface I_C_Flatrate_Term
 	void setPlannedQtyPerUnit (BigDecimal PlannedQtyPerUnit);
 
 	/**
-	 * Get Planmenge pro Maßeinheit.
-	 * Geplante Menge der zu erbringenden Leistung (z.B. zu liefernde Teile), pro pauschal abzurechnender Einheit (z.B. Pflegetag).
+	 * Get Qty per UOM.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1253,29 +1210,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_PlannedQtyPerUnit = "PlannedQtyPerUnit";
 
 	/**
-	 * Set Lieferprodukt.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPMM_Product_ID (int PMM_Product_ID);
-
-	/**
-	 * Get Lieferprodukt.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPMM_Product_ID();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PMM_Product_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "PMM_Product_ID", null);
-	String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
-
-	/**
-	 * Set Abschlusskorrektur vorbereiten.
-	 * Prozess zum erstellen eines Abrechnungs-Korrektur-Datensatzes und/oder eines Abrechnungs-Verrechnungs-Datensatzes
+	 * Set Prepare Closing.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1284,8 +1219,7 @@ public interface I_C_Flatrate_Term
 	void setPrepareClosing (@Nullable java.lang.String PrepareClosing);
 
 	/**
-	 * Get Abschlusskorrektur vorbereiten.
-	 * Prozess zum erstellen eines Abrechnungs-Korrektur-Datensatzes und/oder eines Abrechnungs-Verrechnungs-Datensatzes
+	 * Get Prepare Closing.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1358,27 +1292,6 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Processing = new ModelColumn<>(I_C_Flatrate_Term.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
-
-	/**
-	 * Set Planmenge Folgejahr.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setQtyPlanned_NextYear (BigDecimal QtyPlanned_NextYear);
-
-	/**
-	 * Get Planmenge Folgejahr.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyPlanned_NextYear();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_QtyPlanned_NextYear = new ModelColumn<>(I_C_Flatrate_Term.class, "QtyPlanned_NextYear", null);
-	String COLUMNNAME_QtyPlanned_NextYear = "QtyPlanned_NextYear";
 
 	/**
 	 * Set Start Date.
@@ -1467,7 +1380,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_TerminationReason = "TerminationReason";
 
 	/**
-	 * Set Vertragsart.
+	 * Set Contract Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1476,7 +1389,7 @@ public interface I_C_Flatrate_Term
 	void setType_Conditions (java.lang.String Type_Conditions);
 
 	/**
-	 * Get Vertragsart.
+	 * Get Contract Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1488,8 +1401,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_Type_Conditions = "Type_Conditions";
 
 	/**
-	 * Set Verrechnungsart.
-	 * Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
+	 * Set Flatrate Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1500,8 +1412,7 @@ public interface I_C_Flatrate_Term
 	void setType_Flatrate (@Nullable java.lang.String Type_Flatrate);
 
 	/**
-	 * Get Verrechnungsart.
-	 * Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
+	 * Get Flatrate Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1511,31 +1422,6 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Type_Flatrate = new ModelColumn<>(I_C_Flatrate_Term.class, "Type_Flatrate", null);
 	String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
-
-	/**
-	 * Set Einheiten-Typ.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setUOMType (@Nullable java.lang.String UOMType);
-
-	/**
-	 * Get Einheiten-Typ.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	@Nullable java.lang.String getUOMType();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_UOMType = new ModelColumn<>(I_C_Flatrate_Term.class, "UOMType", null);
-	String COLUMNNAME_UOMType = "UOMType";
 
 	/**
 	 * Get Updated.

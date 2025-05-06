@@ -138,8 +138,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_Order_ID.Identifier | OPT.ExternalId      | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName |
       | order_1               | 1444_zeroQtyShipped | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ordereLine_1_1            | order_1               | 2021-07-20  | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ordereLine_1_1            | order_1               | 2021-07-20      | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
     # We didn't close the order, so we expect QtyOrdered=10
 
   @from:cucumber

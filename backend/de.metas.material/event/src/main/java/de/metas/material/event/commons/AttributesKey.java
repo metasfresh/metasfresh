@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -148,6 +149,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 	}
 
 	private final String attributesKeyString;
+	@Getter
 	@JsonIgnore
 	private final ImmutableSet<AttributesKeyPart> parts;
 
@@ -198,11 +200,6 @@ public final class AttributesKey implements Comparable<AttributesKey>
 				"AttributesKeys.OTHER or .ALL of the given attributesKey is not supported; attributesKey={}", this);
 	}
 
-	public ImmutableSet<AttributesKeyPart> getParts()
-	{
-		return parts;
-	}
-
 	private static ImmutableSet<AttributesKeyPart> extractAttributeKeyParts(final String attributesKeyString)
 	{
 		if (attributesKeyString.trim().isEmpty())
@@ -249,7 +246,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 
 	public String getValueByAttributeId(@NonNull final AttributeId attributeId)
 	{
-		for (AttributesKeyPart part : parts)
+		for (final AttributesKeyPart part : parts)
 		{
 			if (part.getType() == AttributeKeyPartType.AttributeIdAndValue
 					&& AttributeId.equals(part.getAttributeId(), attributeId))

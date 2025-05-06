@@ -2,10 +2,13 @@ package de.metas.handlingunits.pricing.spi.impl;
 
 import java.math.BigDecimal;
 
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -52,6 +55,7 @@ public class HUPricingTests
 	{
 		AdempiereTestHelper.get().init();
 		helper = new HUPricingTestHelper();
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test

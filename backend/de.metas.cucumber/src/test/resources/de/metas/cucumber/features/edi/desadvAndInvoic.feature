@@ -382,7 +382,8 @@ Feature: desadv and invoic
   - QtyEnteredInBPartnerUOM = 5
   - BPartner_QtyItemCapacity = 5
 
-    Given metasfresh contains M_Products:
+    Given set sys config boolean value false for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
+    And metasfresh contains M_Products:
       | Identifier | Name                     | IsStocked |
       | p_1        | desadvProduct_03052022_3 | true      |
     And metasfresh contains M_HU_PI_Item_Product:
@@ -714,7 +715,8 @@ Feature: desadv and invoic
   - QtyEnteredInBPartnerUOM = 5
   - BPartner_QtyItemCapacity = 5
 
-    Given metasfresh contains M_Products:
+    Given set sys config boolean value false for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
+    And metasfresh contains M_Products:
       | Identifier | Name                     | IsStocked |
       | p_1        | desadvProduct_03052022_5 | true      |
     And metasfresh contains C_UOM_Conversions
@@ -883,7 +885,8 @@ Feature: desadv and invoic
   - QtyEnteredInBPartnerUOM = 5
   - BPartner_QtyItemCapacity = 5
 
-    Given metasfresh contains M_Products:
+    Given set sys config boolean value false for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
+    And metasfresh contains M_Products:
       | Identifier | Name                     | IsStocked |
       | p_1        | desadvProduct_04052022_6 | true      |
     And metasfresh contains C_UOM_Conversions

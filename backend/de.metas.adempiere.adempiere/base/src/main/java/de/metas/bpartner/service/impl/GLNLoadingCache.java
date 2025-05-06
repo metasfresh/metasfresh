@@ -1,22 +1,8 @@
 package de.metas.bpartner.service.impl;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BPartner_Location;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
@@ -29,6 +15,17 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner_Location;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -54,7 +51,7 @@ import lombok.Value;
 
 final class GLNLoadingCache
 {
-	private final CCache<GLN, GLNLocations> cache = CCache.<GLN, GLNLocations> builder()
+	private final CCache<GLN, GLNLocations> cache = CCache.<GLN, GLNLocations>builder()
 			.tableName(I_C_BPartner_Location.Table_Name)
 			.build();
 
@@ -77,24 +74,58 @@ final class GLNLoadingCache
 		}
 	}
 
-	public ImmutableSet<BPartnerId> getBPartnerIds(@NonNull final GLNQuery glnsQuery)
+	@NonNull
+	public Optional<BPartnerLocationId> getSingleBPartnerLocationId(@NonNull final GLNQuery glnsQuery)
 	{
-		final Collection<GLNLocations> glnLocationsList;
-		final boolean outOfTrx = glnsQuery.isOutOfTrx();
-		if (outOfTrx)
+		final ImmutableSet<BPartnerLocationId> bPartnerLocationIds = getBPartnerLocationIds(glnsQuery);
+		if (bPartnerLocationIds.isEmpty())
 		{
-			glnLocationsList = cache.getAllOrLoad(glnsQuery.getGlns(), glns -> retrieveGLNLocationsMap(glns, outOfTrx));
+			return Optional.empty();
+		}
+		else if (bPartnerLocationIds.size() == 1)
+		{
+			return Optional.of(bPartnerLocationIds.iterator().next());
 		}
 		else
 		{
-			glnLocationsList = retrieveGLNLocationsMap(glnsQuery.getGlns(), outOfTrx).values();
+			throw new AdempiereException("More than one BPartnerLocationId found: " + bPartnerLocationIds)
+					.appendParametersToMessage()
+					.setParameter("query", glnsQuery);
 		}
+	}
 
+	@NonNull
+	public ImmutableSet<BPartnerId> getBPartnerIds(@NonNull final GLNQuery glnsQuery)
+	{
+		return getBPartnerLocationIds(glnsQuery)
+				.stream()
+				.map(BPartnerLocationId::getBpartnerId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public ImmutableSet<BPartnerLocationId> getBPartnerLocationIds(@NonNull final GLNQuery glnsQuery)
+	{
 		final ImmutableSet<OrgId> onlyOrgIds = glnsQuery.getOnlyOrgIds();
 
-		return glnLocationsList.stream()
-				.flatMap(glnLocation -> glnLocation.streamBPartnerIds(onlyOrgIds))
+		return getGLNLocations(glnsQuery)
+				.stream()
+				.flatMap(glnLocation -> glnLocation.streamBPartnerLocationIds(onlyOrgIds))
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	private Collection<GLNLocations> getGLNLocations(@NonNull final GLNQuery glnsQuery)
+	{
+		final boolean outOfTrx = glnsQuery.isOutOfTrx();
+		if (outOfTrx)
+		{
+			return cache.getAllOrLoad(glnsQuery.getGlns(), glns -> retrieveGLNLocationsMap(glns, outOfTrx));
+		}
+		else
+		{
+			return retrieveGLNLocationsMap(glnsQuery.getGlns(), outOfTrx).values();
+		}
 	}
 
 	private Map<GLN, GLNLocations> retrieveGLNLocationsMap(@NonNull final Collection<GLN> glns, final boolean outOfTrx)
@@ -151,11 +182,12 @@ final class GLNLoadingCache
 		/**
 		 * @param onlyOrgIds {@code null} or empty means "no restriction".
 		 */
-		Stream<BPartnerId> streamBPartnerIds(@Nullable final Set<OrgId> onlyOrgIds)
+		@NonNull
+		Stream<BPartnerLocationId> streamBPartnerLocationIds(@Nullable final Set<OrgId> onlyOrgIds)
 		{
 			return locations.stream()
 					.filter(location -> location.isMatching(onlyOrgIds))
-					.map(location -> location.getBPartnerId());
+					.map(GLNLocation::getBpLocationId);
 		}
 	}
 
@@ -174,16 +206,11 @@ final class GLNLoadingCache
 
 		boolean isMatching(@Nullable final Set<OrgId> onlyOrgIds)
 		{
-			if(onlyOrgIds == null || onlyOrgIds.isEmpty())
+			if (onlyOrgIds == null || onlyOrgIds.isEmpty())
 			{
 				return true;
 			}
 			return onlyOrgIds.contains(orgId);
-		}
-
-		BPartnerId getBPartnerId()
-		{
-			return bpLocationId.getBpartnerId();
 		}
 	}
 }
