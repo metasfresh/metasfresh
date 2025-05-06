@@ -48,6 +48,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -156,6 +157,7 @@ public class ImportInvoiceCandidatesService
 				.recordReference(recordReference)
 				.soTrx(soTrx)
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.paymentTermId(paymentTermId)
 				.isManual(true)
 				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(ManualCandidateHandler.class))
