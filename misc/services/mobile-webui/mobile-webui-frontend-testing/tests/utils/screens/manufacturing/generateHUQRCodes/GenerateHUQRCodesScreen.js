@@ -11,10 +11,12 @@ export const GenerateHUQRCodesScreen = {
         await containerElement().waitFor({ timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    print: async ({ piTestId, expectNumberOfHUs, expectNumberOfCopies }) => await test.step(`${NAME} - Print ${piTestId}`, async () => {
-        await page.getByTestId(piTestId).tap();
+    print: async ({ piTestId, expectNumberOfHUs, numberOfHUs, expectNumberOfCopies }) => await test.step(`${NAME} - Print ${piTestId}`, async () => {
+        await page.getByTestId(piTestId)
+            .first() // NOTE: in the case of LUs, it might be duplicate buttons in case there are many TUs in the same LU
+            .tap();
         await GenerateHUQRCodesConfirmScreen.waitForScreen();
-        return await GenerateHUQRCodesConfirmScreen.confirm({ expectNumberOfHUs, expectNumberOfCopies });
+        return await GenerateHUQRCodesConfirmScreen.confirm({ expectNumberOfHUs, numberOfHUs, expectNumberOfCopies });
     }),
 
 };
