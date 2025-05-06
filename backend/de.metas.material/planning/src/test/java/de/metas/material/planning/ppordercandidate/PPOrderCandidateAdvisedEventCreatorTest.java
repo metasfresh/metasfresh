@@ -52,7 +52,6 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
@@ -202,7 +201,6 @@ class PPOrderCandidateAdvisedEventCreatorTest
 							.dateStartSchedule(Instant.now())
 							.qtyRequired(new BigDecimal("100"))
 							.build())
-					.lines(Collections.emptyList())
 					.build();
 		}
 

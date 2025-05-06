@@ -57,7 +57,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-abstract class PPOrderCandidateEventHandler
+abstract class  PPOrderCandidateEventHandler
 {
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull protected final CandidateChangeService candidateChangeService;
