@@ -43,7 +43,7 @@ import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvPackItemType;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
-import org.smooks.io.payload.JavaSource;
+import org.smooks.io.source.JavaSource;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
