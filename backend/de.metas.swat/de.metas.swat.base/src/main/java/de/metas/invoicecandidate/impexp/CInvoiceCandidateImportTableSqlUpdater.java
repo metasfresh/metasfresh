@@ -701,7 +701,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 	private void updateProjectErrorMessage(@NonNull final ImportRecordsSelection selection)
 	{
 		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
-				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Could not find any matching C_Project_ID for provided activity value !" + ", '"
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Could not find any matching C_Project_ID for provided project value !" + ", '"
 				+ " WHERE i." + COLUMNNAME_C_Project_ID + " IS NULL "
 				+ " AND i." + COLUMNNAME_C_Project_Value + " IS NOT NULL "
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
