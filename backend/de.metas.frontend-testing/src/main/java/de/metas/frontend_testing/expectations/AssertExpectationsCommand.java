@@ -1,6 +1,5 @@
 package de.metas.frontend_testing.expectations;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.expectations.request.JsonExpectations;
 import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
 import de.metas.frontend_testing.expectations.request.JsonHUExpectation;
@@ -14,16 +13,17 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -69,7 +69,7 @@ public class AssertExpectationsCommand
 		{
 			assertHUs(expectations.getHus());
 		}
-		
+
 		return JsonExpectationsResponse.builder().build();
 	}
 
@@ -114,22 +114,30 @@ public class AssertExpectationsCommand
 			return;
 		}
 
-		final IHUStorage actualStorages = services.getHUStorage(huId);
+		final HashMap<ProductId, IHUProductStorage> actualStorages = services.getHUStorage(huId)
+				.streamProductStorages()
+				.collect(GuavaCollectors.toHashMapByKey(IHUProductStorage::getProductId));
 
-		expectations.forEach(expectation -> assertHUStorage(expectation, actualStorages));
+		for (final JsonHUExpectation.Storage expectation : expectations)
+		{
+			final ProductId productId = context.getId(expectation.getProduct(), ProductId.class);
+			final IHUProductStorage actualStorage = actualStorages.remove(productId);
+			if (actualStorage == null)
+			{
+				throw new AdempiereException("No storage found for product " + productId + " in HU " + huId);
+			}
 
-		final ImmutableMap<ProductId, JsonHUExpectation.Storage> expectationsByProductId = expectations.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						expectation -> context.getId(expectation.getProduct(), ProductId.class),
-						expectation -> expectation
-				));
+			assertHUStorage(expectation, actualStorage);
+		}
+
+		if (!actualStorages.isEmpty())
+		{
+			throw new AdempiereException("Following storages were not expected for " + huId + ": " + actualStorages.values());
+		}
 	}
 
-	private void assertHUStorage(@NonNull final JsonHUExpectation.Storage expectation, @NonNull final IHUStorage actualStorages)
+	private void assertHUStorage(@NonNull final JsonHUExpectation.Storage expectation, @NonNull final IHUProductStorage actualStorage)
 	{
-		final ProductId productId = context.getId(expectation.getProduct(), ProductId.class);
-		final IHUProductStorage actualStorage = actualStorages.getProductStorage(productId);
-
 		final Quantity expectedQty = expectation.getQty().toQuantity();
 		assertEquals("Qty", expectedQty, actualStorage.getQty());
 	}
