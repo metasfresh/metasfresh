@@ -1984,8 +1984,8 @@ Feature: invoice payment allocation
       | Identifier         | Name               |
       | product_27102022_1 | product_27102022_1 |
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_27102022_1 | paymentAllocPLV_27102022_1        | product_27102022_1      | 2.00     | PCE               | Normal                        |
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_27102022_1 | product_27102022_1      | 2.00     | PCE               | Normal                        |
 
 #    GrandTotal = 23.8, Discount = 0.24
     And metasfresh contains C_Invoice:
@@ -1997,8 +1997,8 @@ Feature: invoice payment allocation
     And the invoice identified by inv_27102022_1 is completed
 
     And metasfresh contains C_Payment
-      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
-      | payment_27102022_1 | bpartner_27102022_1      | 1      | EUR                 | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_27102022_1 | bpartner_27102022_1      | 1 EUR  | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
     And the payment identified by payment_27102022_1 is completed
 
     And allocate payments to invoices
@@ -2016,8 +2016,8 @@ Feature: invoice payment allocation
       | inv_27102022_1              | payment_27102022_1          | 1          | 22.8             | 0               | 0               |
 
     And metasfresh contains C_Payment
-      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
-      | payment_27102022_2 | bpartner_27102022_1      | 22.56  | EUR                 | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt    | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_27102022_2 | bpartner_27102022_1      | 22.56 EUR | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
     And the payment identified by payment_27102022_2 is completed
 
     And allocate payments to invoices
@@ -2098,8 +2098,8 @@ Feature: invoice payment allocation
       | Identifier         | Name               |
       | product_27102022_2 | product_27102022_2 |
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_27102022_2 | paymentAllocPLV_27102022_2        | product_27102022_2      | 2.00     | PCE               | Normal                        |
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_27102022_2 | product_27102022_2      | 2.00     | PCE               | Normal                        |
 
     #    GrandTotal = 23.8, Discount = 0.24
     And metasfresh contains C_Invoice:
@@ -2111,8 +2111,8 @@ Feature: invoice payment allocation
     And the invoice identified by inv_27102022_2 is completed
 
     And metasfresh contains C_Payment
-      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
-      | payment_27102022_3 | bpartner_27102022_2      | 1      | EUR                 | Zahlungsausgang   | false     | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_27102022_3 | bpartner_27102022_2      | 1 EUR  | Zahlungsausgang   | false     | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
     And the payment identified by payment_27102022_3 is completed
 
     And allocate payments to invoices
@@ -2130,8 +2130,8 @@ Feature: invoice payment allocation
       | inv_27102022_2              | payment_27102022_3          | -1         | -22.8            | 0               | 0               |
 
     And metasfresh contains C_Payment
-      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
-      | payment_27102022_4 | bpartner_27102022_2      | 22.56  | EUR                 | Zahlungsausgang   | false     | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt    | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_27102022_4 | bpartner_27102022_2      | 22.56 EUR | Zahlungsausgang   | false     | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
     And the payment identified by payment_27102022_4 is completed
 
     And allocate payments to invoices
@@ -2212,8 +2212,8 @@ Feature: invoice payment allocation
       | Identifier         | Name               |
       | product_28102022_1 | product_28102022_1 |
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_28102022_1 | paymentAllocPLV_28102022_1        | product_28102022_1      | 2.00     | PCE               | Normal                        |
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_28102022_1 | product_28102022_1      | 2.00     | PCE               | Normal                        |
 
     #    GrandTotal = 23.8, Discount = 0.24
     And metasfresh contains C_Invoice:
@@ -2225,13 +2225,13 @@ Feature: invoice payment allocation
     And the invoice identified by inv_28102022_1 is completed
 
     And metasfresh contains C_Payment
-      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
-      | payment_28102022_1 | bpartner_28102022_1      | 1      | EUR                 | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_28102022_1 | bpartner_28102022_1      | 1 EUR  | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
     And the payment identified by payment_28102022_1 is completed
 
     And metasfresh contains C_Payment
-      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
-      | payment_28102022_2 | bpartner_28102022_1      | 22.56  | EUR                 | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt    | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_28102022_2 | bpartner_28102022_1      | 22.56 EUR | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
     And the payment identified by payment_28102022_2 is completed
 
     And allocate payments to invoices
@@ -2312,8 +2312,8 @@ Feature: invoice payment allocation
       | Identifier         | Name               |
       | product_31102022_1 | product_31102022_1 |
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_31102022_1 | paymentAllocPLV_31102022_1        | product_31102022_1      | 2.00     | PCE               | Normal                        |
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_31102022_1 | product_31102022_1      | 2.00     | PCE               | Normal                        |
 
     #    GrandTotal = 23.8, Discount = 0.24
     And metasfresh contains C_Invoice:
@@ -2434,8 +2434,8 @@ Feature: invoice payment allocation
       | Identifier          | Name                |
       | product_31102022_10 | product_31102022_10 |
     And metasfresh contains M_ProductPrices
-      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_31102022_10 | paymentAllocPLV_31102022_10       | product_31102022_10     | 2.00     | PCE               | Normal                        |
+      | M_PriceList_Version_ID      | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_31102022_10 | product_31102022_10     | 2.00     | PCE               | Normal                        |
 
     #    GrandTotal = 23.8, Discount = 0.24
     And metasfresh contains C_Invoice:
@@ -2558,9 +2558,9 @@ Feature: invoice payment allocation
       | Identifier         | Name               |
       | product_01112022_1 | product_01112022_1 |
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_01112022_1 | paymentAllocPLV_01112022_1        | product_01112022_1      | 2.00     | PCE               | Normal                        |
-      | pp_01112022_2 | paymentAllocPLV_01112022_2        | product_01112022_1      | 2.00     | PCE               | Normal                        |
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_01112022_1 | product_01112022_1      | 2.00     | PCE               | Normal                        |
+      | paymentAllocPLV_01112022_2 | product_01112022_1      | 2.00     | PCE               | Normal                        |
 
     #    GrandTotal = 23.8, Discount = 0.24
     And metasfresh contains C_Invoice:
@@ -2662,8 +2662,8 @@ Feature: invoice payment allocation
       | Identifier  | Name        |
       | product_10012025_1 | product_10012025_1 |
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_10012025_1 | paymentAllocPLVNotSO              | product_10012025_1      | 1        | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLVNotSO   | product_10012025_1      | 1        | PCE               | Normal                        |
 
     # GrandTotal = 20.23
     And metasfresh contains C_Invoice:
@@ -2675,8 +2675,8 @@ Feature: invoice payment allocation
     And the invoice identified by inv_10012025_1 is completed
 
     And metasfresh contains C_Payment
-      | Identifier         | C_BPartner_ID.Identifier | PayAmt | OPT.DiscountAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.C_Invoice_ID.Identifier |
-      | payment_10012025_1 | bpartner_1               | 20.25  | -0.02           | EUR                 | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt    | OPT.DiscountAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.C_Invoice_ID.Identifier |
+      | payment_10012025_1 | bpartner_1               | 20.25 EUR | -0.02 EUR       | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
     And the payment identified by payment_10012025_1 is completed
 
     Then validate created invoices
@@ -2687,7 +2687,7 @@ Feature: invoice payment allocation
       | payment_10012025_1      | true                     |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.DiscountAmt |
-      | inv_10012025_1              | payment_10012025_1          | -20.25     | 0.02           |
+      | inv_10012025_1              | payment_10012025_1          | -20.25     | 0.02            |
 
 
 
