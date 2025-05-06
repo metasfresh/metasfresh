@@ -68,11 +68,15 @@ public class JsonRemittanceAdviceLineProducer
 {
 	private static final Logger logger = Logger.getLogger(JsonRemittanceAdviceLineProducer.class.getName());
 
+	String lineIdentifier;
+
 	@NonNull REMADVListLineItemExtensionType remadvLineItemExtension;
 
-	public static JsonRemittanceAdviceLineProducer of(@NonNull final REMADVListLineItemExtensionType remadvListLineItemExtensionType)
+	public static JsonRemittanceAdviceLineProducer of(
+			final String lineIdentifier,
+			@NonNull final REMADVListLineItemExtensionType remadvListLineItemExtensionType)
 	{
-		return new JsonRemittanceAdviceLineProducer(remadvListLineItemExtensionType);
+		return new JsonRemittanceAdviceLineProducer(lineIdentifier, remadvListLineItemExtensionType);
 	}
 
 	@NonNull
@@ -95,6 +99,7 @@ public class JsonRemittanceAdviceLineProducer
 			final BigDecimal paymentDiscountAmount = getPaymentDiscountAmount(monetaryAmounts);
 
 			return JsonRemittanceAdviceLine.builder()
+					.lineIdentifier(lineIdentifier)
 					.invoiceIdentifier(getInvoiceIdentifier())
 					.bpartnerIdentifier(getBPartnerIdentifier().orElse(null))
 					.invoiceBaseDocType(getInvoiceDocType())

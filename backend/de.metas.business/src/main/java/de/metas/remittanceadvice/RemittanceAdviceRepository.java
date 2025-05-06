@@ -253,6 +253,7 @@ public class RemittanceAdviceRepository
 		record.setAD_Org_ID(remittanceAdviceLineRequest.getOrgId().getRepoId());
 
 		record.setC_RemittanceAdvice_ID(remittanceAdviceLineRequest.getRemittanceAdviceId().getRepoId());
+		record.setLineIdentifier(remittanceAdviceLineRequest.getLineIdentifier());
 		record.setInvoiceIdentifier(remittanceAdviceLineRequest.getInvoiceIdentifier());
 		record.setC_BPartner_ID(BPartnerId.toRepoId(remittanceAdviceLineRequest.getBpartnerIdentifier()));
 
