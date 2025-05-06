@@ -82,9 +82,9 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
     # oc_1_S0460_10: we need 11PCE of the final product => 44KGM. 140% of 44KGM is 61.6KGM or the 
     # oc_2_S0460_10: 61.6KGM of the semi-product is actually 10.2666667 PCE, which is rounded up to 11PCE (because UOM-precision=0), so we have 11PCE also in the 2nd PP_Order_Candidate!
     Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed | OPT.PP_Order_Candidate_Parent_ID |
-      | oc_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 11 PCE     | 11 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |                                  |
-      | oc_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 11 PCE     | 11 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         | oc_1_S0460_10                    |
+      | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
+      | oc_1_S0460_10 | product_1_1_S0460_10 | bom_1_S0460_10    | ppln_1_1_S0460_10      | resource_S0460 | 11 PCE     | 11 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      | oc_2_S0460_10 | product_2_1_S0460_10 | bom_2_S0460_10    | ppln_2_1_S0460_10      | resource_S0460 | 11 PCE     | 11 PCE       | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
     # oc_2_S0460_10: we want to produce 11PCE of the semi-product, which times 3 is 33
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
