@@ -949,14 +949,14 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public boolean hasUnallocatedIncomingPayment(final IQueryFilter<I_C_Payment> paymentsFilter)
+	public boolean hasUnallocatedIncomingPayment(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
 	{
 		return paymentDAO.stream(paymentsFilter)
 				.anyMatch(payment -> !payment.isAllocated() && payment.isReceipt());
 	}
 
 	@Override
-	public void markForRefund(@NonNull IQueryFilter<I_C_Payment> paymentsFilter)
+	public void markForRefund(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
 	{
 		paymentDAO.stream(paymentsFilter)
 				.filter(payment -> payment.isReceipt() && !payment.isAllocated())
