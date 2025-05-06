@@ -2663,7 +2663,7 @@ Feature: invoice payment allocation
       | product_10012025_1 | product_10012025_1 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | paymentAllocPLVNotSO   | product_10012025_1      | 1        | PCE               | Normal                        |
+      | purchasePLV            | product_10012025_1      | 1        | PCE               | Normal                        |
 
     # GrandTotal = 20.23
     And metasfresh contains C_Invoice:
