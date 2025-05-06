@@ -3,8 +3,11 @@ package de.metas.frontend_testing.masterdata;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -65,4 +68,21 @@ public class Identifier
 	public String getAsString() {return string;}
 
 	public String toUniqueString() {return string + "_" + DATETIME_FORMAT.format(LocalDateTime.now());}
+
+	public <ID extends RepoIdAware> ID toId(@NonNull final Class<ID> idClass)
+	{
+		return RepoIdAwares.ofObject(string, idClass);
+	}
+
+	public int toInt()
+	{
+		try
+		{
+			return Integer.parseInt(string);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting identifier `" + string + "` to int", ex);
+		}
+	}
 }

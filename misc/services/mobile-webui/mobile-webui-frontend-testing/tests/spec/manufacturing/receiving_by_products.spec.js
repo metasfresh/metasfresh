@@ -78,6 +78,13 @@ test('Receive by-products', async ({ page }) => {
         await ManufacturingJobScreen.clickReceiveButton({ index: 2 }); // i.e., first by-product
         await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: byProductsQRCode });
         await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 5, qtyEntered: 1 });
+        await Backend.expect({
+            hus: [{
+                match: { byQRCode: byProductsQRCode },
+                storages: [{ product: 'BY_PRODUCT', qty: '1 PCE' }]
+            }]
+        });
+
         await ManufacturingJobScreen.goBack();
     });
 
@@ -86,7 +93,14 @@ test('Receive by-products', async ({ page }) => {
 
         await ManufacturingJobScreen.clickReceiveButton({ index: 2 }); // i.e., first by-product
         await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: byProductsQRCode });
-        await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 5, qtyEntered: 1 });
+        await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 5, qtyEntered: 2 });
+        await Backend.expect({
+            hus: [{
+                match: { byQRCode: byProductsQRCode },
+                storages: [{ product: 'BY_PRODUCT', qty: '3 PCE' }]
+            }]
+        });
+
         await ManufacturingJobScreen.goBack();
     });
 });
