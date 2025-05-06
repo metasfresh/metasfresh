@@ -171,7 +171,7 @@ public class PPOrderProducerFromCandidate
 
 			if (autoCloseCandidatesAfterProduction)
 			{
-				ppOrderCandidatesDAO.closeCandidate(candidateId);
+				trxManager.runAfterCommit(() -> ppOrderCandidatesDAO.closeCandidate(candidateId));
 			}
 			else
 			{
