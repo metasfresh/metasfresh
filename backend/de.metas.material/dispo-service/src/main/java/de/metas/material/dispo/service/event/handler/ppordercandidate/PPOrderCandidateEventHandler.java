@@ -215,8 +215,8 @@ abstract class PPOrderCandidateEventHandler
 		return MaterialDescriptor.builder()
 				.date(ppOrderCandidate.getPpOrderData().getDatePromised())
 				.productDescriptor(ppOrderCandidate.getPpOrderData().getProductDescriptor())
-				.warehouseId(ppOrderCandidate.getPpOrderData().getWarehouseId())
 				.quantity(ppOrderCandidate.getPpOrderData().getQtyOpen())
+				.warehouseId(ppOrderCandidate.getPpOrderData().getWarehouseId())
 				.build();
 	}
 
