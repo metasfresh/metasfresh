@@ -169,16 +169,14 @@ public class PPOrderProducerFromCandidate
 		ppOrderCand2QtyToAllocate.forEach((candidateId, quantity) -> {
 			ppOrderCandidatesDAO.createProductionOrderAllocation(candidateId, ppOrder, quantity);
 
-			trxManager.runAfterCommit(() -> {
-				if (autoCloseCandidatesAfterProduction)
-				{
-					ppOrderCandidatesDAO.closeCandidate(candidateId);
-				}
-				else
-				{
-					markAsProcessedIfRequired(candidateId, autoProcessCandidatesAfterProduction);
-				}
-			});
+			if (autoCloseCandidatesAfterProduction)
+			{
+				trxManager.runAfterCommit(() -> ppOrderCandidatesDAO.closeCandidate(candidateId));
+			}
+			else
+			{
+				trxManager.runAfterCommit(() -> markAsProcessedIfRequired(candidateId, autoProcessCandidatesAfterProduction));
+			}
 		});
 	}
 
