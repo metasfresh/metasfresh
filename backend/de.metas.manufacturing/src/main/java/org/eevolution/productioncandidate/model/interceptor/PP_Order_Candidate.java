@@ -89,8 +89,9 @@ public class PP_Order_Candidate
 
 		final boolean qtyEnteredOrProcessedChanged = !oldRecord.getQtyEntered().equals(ppOrderCandidateRecord.getQtyEntered())
 				|| !oldRecord.getQtyProcessed().equals(ppOrderCandidateRecord.getQtyProcessed());
+		final boolean isUIAction = InterfaceWrapperHelper.isUIAction(ppOrderCandidateRecord);
 
-		if (qtyEnteredOrProcessedChanged)
+		if (qtyEnteredOrProcessedChanged && isUIAction)
 		{
 			ppOrderCandidateRecord.setQtyToProcess(ppOrderCandidateRecord.getQtyEntered().subtract(ppOrderCandidateRecord.getQtyProcessed()));
 		}
@@ -102,7 +103,11 @@ public class PP_Order_Candidate
 			ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
 			syncUpdatesToMaterialDispo(ppOrderCandidateRecord);
-			ppOrderCandidateRecord.setProcessed(ppOrderCandidateRecord.getQtyToProcess().signum() == 0);
+
+			if (isUIAction)
+			{
+				ppOrderCandidateRecord.setProcessed(ppOrderCandidateRecord.getQtyToProcess().signum() == 0);
+			}
 		}
 	}
 
@@ -175,9 +180,9 @@ public class PP_Order_Candidate
 	private void syncUpdatesToMaterialDispo(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		ddOrderCandidateRepository.delete(DDOrderCandidateQuery.builder()
-												  .ppOrderCandidateId(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()))
-												  .processed(false)
-												  .build());
+				.ppOrderCandidateId(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()))
+				.processed(false)
+				.build());
 
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
 
@@ -194,7 +199,7 @@ public class PP_Order_Candidate
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
 
 		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgAndTraceId(ppOrderCandidatePojo.getPpOrderData().getClientAndOrgId(),
-																					  getMaterialDispoTraceId(ppOrderCandidateRecord));
+				getMaterialDispoTraceId(ppOrderCandidateRecord));
 
 		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
 				.eventDescriptor(eventDescriptor)

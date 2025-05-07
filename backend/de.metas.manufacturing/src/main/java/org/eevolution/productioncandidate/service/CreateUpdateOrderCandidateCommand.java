@@ -48,6 +48,7 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -109,7 +110,9 @@ public class CreateUpdateOrderCandidateCommand
 
 		final Quantity qtyRounded = request.getQtyRequired().roundToUOMPrecision();
 
-		ppOrderCandidateRecord.setQtyEntered(qtyRounded.toBigDecimal());
+		final BigDecimal qtyRoundedBigDecimal = qtyRounded.toBigDecimal();
+		ppOrderCandidateRecord.setQtyEntered(qtyRoundedBigDecimal);
+		ppOrderCandidateRecord.setQtyToProcess(qtyRoundedBigDecimal);
 		ppOrderCandidateRecord.setC_UOM_ID(qtyRounded.getUomId().getRepoId());
 
 		ppOrderCandidateRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
