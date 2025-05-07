@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
+import de.metas.cucumber.stepdefs.InterfaceWrapperHelperUtils;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -96,6 +97,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -188,7 +190,7 @@ public class PP_Order_Candidate_StepDef
 			final StepDefDataIdentifier candidateIdentifier = getPPOrderCandidateIdentifier(row);
 			final PPOrderCandidateId candidateId = ppOrderCandidateTable.getId(candidateIdentifier);
 			ppOrderCandidateService.closeCandidate(candidateId);
-			
+
 			ppOrderCandidateTable.invalidate(candidateIdentifier);
 		});
 	}
@@ -298,12 +300,14 @@ public class PP_Order_Candidate_StepDef
 
 	private void updatePPOrderCandidate(@NonNull final DataTableRow row)
 	{
-		final I_PP_Order_Candidate record = row.getAsIdentifier().lookupIn(ppOrderCandidateTable);
+		@NonNull final I_PP_Order_Candidate record = Objects.requireNonNull(row.getAsIdentifier().lookupIn(ppOrderCandidateTable));
+		InterfaceWrapperHelperUtils.set_ManualUserAction(record);
 		row.getAsOptionalInstantTimestamp(I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule).ifPresent(record::setDateStartSchedule);
 		row.getAsOptionalBigDecimal(I_PP_Order_Candidate.COLUMNNAME_QtyEntered).ifPresent(record::setQtyEntered);
 		row.getAsOptionalBigDecimal(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess).ifPresent(record::setQtyToProcess);
 		row.getAsOptionalInt(I_PP_Order_Candidate.COLUMNNAME_SeqNo).ifPresent(record::setSeqNo);
 		saveRecord(record);
+		InterfaceWrapperHelperUtils.unset_ManualUserAction(record);
 	}
 
 	private I_PP_Order_Candidate getPPOrderCandidate(@NonNull final DataTableRow row)
