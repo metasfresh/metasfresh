@@ -5,6 +5,7 @@ Feature: invoice payment allocation
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And documents are accounted immediately
 
     And metasfresh contains M_PricingSystems
@@ -21,14 +22,16 @@ Feature: invoice payment allocation
       | purchasePLV | purchasePriceList |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
-      | customer1  | Y          | N        | pricingSystem      |
-      | vendor1    | N          | Y        | pricingSystem      |
+      | Identifier       | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customer1        | Y          | N        | pricingSystem      |
+      | vendor1          | N          | Y        | pricingSystem      |
+      | serviceProvider1 | N          | Y        | pricingSystem      |
 
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | bpartner_location_1 | customer1     | Y               | Y               |
-      | bpartner_location_2 | vendor1       | Y               | Y               |
+      | Identifier          | C_BPartner_ID    | IsShipToDefault | IsBillToDefault |
+      | bpartner_location_1 | customer1        | Y               | Y               |
+      | bpartner_location_2 | vendor1          | Y               | Y               |
+      | bpartner_location_3 | serviceProvider1 | Y               | Y               |
 
     And metasfresh contains organization bank accounts
       | Identifier      | C_Currency_ID |
@@ -1853,7 +1856,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_500
   @from:cucumber
-  Scenario: sales credit memo - purchase invoice - inbound payment (REMADV case)
+  Scenario: sales-creditmemo - service-fee purchase-invoice - inbound payment (REMADV case)
     # NOTE: this kind of allocation cannot be manually done by user (because REMADV code is doing it), but the purpose of this test
     # is to make sure, that in case of such allocation the open amounts and accounting is correct
     Given metasfresh contains M_Products:
@@ -1876,13 +1879,13 @@ Feature: invoice payment allocation
       | customerCreditMemo | creditMemoProduct | 1 PCE       | 434.58 | tax19%   |
     And the invoice identified by customerCreditMemo is completed
     And metasfresh contains C_Payment
-      | Identifier     | C_BPartner_ID | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
-      | inboundPayment | vendor1       | -434.97 EUR | true      | org_EUR_account     |
+      | Identifier     | C_BPartner_ID    | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
+      | inboundPayment | serviceProvider1 | -434.97 EUR | true      | org_EUR_account     |
     And the payment identified by inboundPayment is completed
 
-    When allocate payments to invoices
+    When allocate payments to invoices with verbatim DiscountAmt and InvoiceProcessing.FeeAmt
       | C_Payment_ID   | C_Invoice_ID       | DiscountAmt | InvoiceProcessing.FeeAmt | InvoiceProcessing.C_BPartner_ID | InvoiceProcessing.M_Product_ID | InvoiceProcessing.C_Invoice_ID |
-      | inboundPayment | customerCreditMemo | -6.07 EUR   | 6.46 EUR                 | vendor1                         | vendorServiceProduct           | vendorServiceInvoice           |
+      | inboundPayment | customerCreditMemo | -6.07 EUR   | 6.46 EUR                 | serviceProvider1                | vendorServiceProduct           | vendorServiceInvoice           |
 
     Then validate C_AllocationLines
       | C_Invoice_ID         | C_Payment_ID   | Amount  | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
@@ -1891,31 +1894,169 @@ Feature: invoice payment allocation
       # --------------------------------------------------------------------------------------------------
       | customerCreditMemo   | inboundPayment | -434.97 | -6.07       | 0            | alloc2             |
     And validate created invoices
-      | C_Invoice_ID         | C_BPartner_ID | GrandTotal | DocBaseType | IsPaid | IsPartiallyPaid | OpenAmt |
-      | customerCreditMemo   | customer1     | 434.58 EUR | ARC         | true   | false           | 0       |
-      | vendorServiceInvoice | vendor1       | 6.46 EUR   | API         | true   | false           | 0       |
+      | C_Invoice_ID         | C_BPartner_ID    | GrandTotal | DocBaseType | IsPaid | IsPartiallyPaid | OpenAmt |
+      | customerCreditMemo   | customer1        | 434.58 EUR | ARC         | true   | false           | 0       |
+      | vendorServiceInvoice | serviceProvider1 | 6.46 EUR   | API         | true   | false           | 0       |
     And validate payments
       | C_Payment_ID   | IsAllocated |
       | inboundPayment | true        |
     And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | C_Tax_ID | Record_ID            |
-      | C_Receivable_Acct      |             | 434.58 EUR  | customer1     | -        | customerCreditMemo   |
-      | T_Due_Acct             | 69.39 EUR   |             | customer1     | tax19%   | customerCreditMemo   |
-      | *                      |             |             |               |          | customerCreditMemo   |
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID    | C_Tax_ID | Record_ID            |
+      | C_Receivable_Acct      |             | 434.58 EUR  | customer1        | -        | customerCreditMemo   |
+      | T_Due_Acct             | 69.39 EUR   |             | customer1        | tax19%   | customerCreditMemo   |
+      | *                      |             |             |                  |          | customerCreditMemo   |
       # ------------------------------------------------------------------------------------------
-      | V_Liability_Acct       |             | 6.46 EUR    | vendor1       | -        | vendorServiceInvoice |
-      | *                      |             |             |               |          | vendorServiceInvoice |
+      | V_Liability_Acct       |             | 6.46 EUR    | serviceProvider1 | -        | vendorServiceInvoice |
+      | *                      |             |             |                  |          | vendorServiceInvoice |
       # ------------------------------------------------------------------------------------------
-      | C_Receivable_Acct      |             | 6.46 EUR    | customer1     | -        | alloc1               |
-      | V_Liability_Acct       | 6.46 EUR    |             | vendor1       | -        | alloc1               |
+      | C_Receivable_Acct      |             | 6.46 EUR    | customer1        | -        | alloc1               |
+      | V_Liability_Acct       | 6.46 EUR    |             | serviceProvider1 | -        | alloc1               |
       # ------------------------------------------------------------------------------------------
-      | C_Receivable_Acct      | 441.04 EUR  |             | customer1     | -        | alloc2               |
-      | B_UnallocatedCash_Acct |             | 434.97 EUR  | vendor1       | -        | alloc2               |
-      | PayDiscount_Rev_Acct   |             | 6.07 EUR    | vendor1       | tax19%   | alloc2               |
+      | C_Receivable_Acct      | 441.04 EUR  |             | customer1        | -        | alloc2               |
+      | B_UnallocatedCash_Acct |             | 434.97 EUR  | serviceProvider1 | -        | alloc2               |
+      | PayDiscount_Rev_Acct   |             | 6.07 EUR    | serviceProvider1 | tax19%   | alloc2               |
       # tax correction:
-      | PayDiscount_Rev_Acct   | 0.97 EUR    |             | customer1     | tax19%   | alloc2               |
-      | T_Due_Acct             |             | 0.97 EUR    | customer1     | tax19%   | alloc2               |
+      | PayDiscount_Rev_Acct   | 0.97 EUR    |             | customer1        | tax19%   | alloc2               |
+      | T_Due_Acct             |             | 0.97 EUR    | customer1        | tax19%   | alloc2               |
       # ------------------------------------------------------------------------------------------
-      | B_UnallocatedCash_Acct |             | -434.97 EUR | vendor1       | -        | inboundPayment       |
-      | B_InTransit_Acct       | -434.97 EUR |             | vendor1       | -        | inboundPayment       |
+      | B_UnallocatedCash_Acct |             | -434.97 EUR | serviceProvider1 | -        | inboundPayment       |
+      | B_InTransit_Acct       | -434.97 EUR |             | serviceProvider1 | -        | inboundPayment       |
+
+
+  @Id:S0465_510
+  @from:cucumber
+  Scenario: vendor purchase-invoice - service-fee purchase-invoice - inbound payment (REMADV case)
+    # NOTE: this kind of allocation cannot be manually done by user (because REMADV code is doing it), but the purpose of this test
+    # is to make sure, that in case of such allocation the open amounts and accounting is correct
+    Given metasfresh contains M_Products:
+      | Identifier           |
+      | vendorProduct        |
+      | vendorServiceProduct |
+    And update M_PriceLists:
+      | Identifier        | IsTaxIncluded |
+      | purchasePriceList | Y             |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID         | PriceStd | C_UOM_ID |
+      | purchasePLV            | vendorProduct        | 0        | PCE      |
+      | purchasePLV            | vendorServiceProduct | 0        | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier    | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | vendorInvoice | vendor1       | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID  | M_Product_ID  | QtyInvoiced | Price  | C_Tax_ID |
+      | vendorInvoice | vendorProduct | 1 PCE       | 434.58 | tax19%   |
+    And the invoice identified by vendorInvoice is completed
+    And metasfresh contains C_Payment
+      | Identifier     | C_BPartner_ID    | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
+      | inboundPayment | serviceProvider1 | -434.97 EUR | true      | org_EUR_account     |
+    And the payment identified by inboundPayment is completed
+
+    When allocate payments to invoices with verbatim DiscountAmt and InvoiceProcessing.FeeAmt
+      | C_Payment_ID   | C_Invoice_ID  | DiscountAmt | InvoiceProcessing.FeeAmt | InvoiceProcessing.C_BPartner_ID | InvoiceProcessing.M_Product_ID | InvoiceProcessing.C_Invoice_ID |
+      | inboundPayment | vendorInvoice | -6.07 EUR   | 6.46 EUR                 | serviceProvider1                | vendorServiceProduct           | vendorServiceInvoice           |
+
+    Then validate C_AllocationLines
+      | C_Invoice_ID         | C_Payment_ID   | Amount  | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
+      | vendorInvoice        | -              | 6.46    | 0           | -441.04      | alloc1             |
+      | vendorServiceInvoice | -              | -6.46   | 0           | 0            | alloc1             |
+      # --------------------------------------------------------------------------------------------------
+      | vendorInvoice        | inboundPayment | -434.97 | -6.07       | 0            | alloc2             |
+    And validate created invoices
+      | C_Invoice_ID         | C_BPartner_ID    | GrandTotal | DocBaseType | IsPaid | IsPartiallyPaid | OpenAmt |
+      | vendorInvoice        | vendor1          | 434.58 EUR | API         | true   | false           | 0       |
+      | vendorServiceInvoice | serviceProvider1 | 6.46 EUR   | API         | true   | false           | 0       |
+    And validate payments
+      | C_Payment_ID   | IsAllocated |
+      | inboundPayment | true        |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID    | C_Tax_ID | Record_ID            |
+      | V_Liability_Acct       |             | 434.58 EUR  | vendor1          | -        | vendorInvoice        |
+      | T_Credit_Acct          | 69.39 EUR   |             | vendor1          | tax19%   | vendorInvoice        |
+      | *                      |             |             |                  |          | vendorInvoice        |
+      # ------------------------------------------------------------------------------------------
+      | V_Liability_Acct       |             | 6.46 EUR    | serviceProvider1 | -        | vendorServiceInvoice |
+      | *                      |             |             |                  |          | vendorServiceInvoice |
+      # ------------------------------------------------------------------------------------------
+     # Doc_AllocationHdr needs to be fixed and then all expectations also need to be verified !!
+      | C_Receivable_Acct      |             | 6.46 EUR    | vendor1          | -        | alloc1               |
+      | V_Liability_Acct       | 6.46 EUR    |             | serviceProvider1 | -        | alloc1               |
+      # ------------------------------------------------------------------------------------------
+      | V_Liability_Acct       | 441.04 EUR  |             | vendor1          | -        | alloc2               |
+      | B_UnallocatedCash_Acct |             | 434.97 EUR  | serviceProvider1 | -        | alloc2               |
+      | PayDiscount_Rev_Acct   |             | 6.07 EUR    | serviceProvider1 | tax19%   | alloc2               |
+      # tax correction:
+      | PayDiscount_Rev_Acct   | 0.97 EUR    |             | vendor1          | tax19%   | alloc2               |
+      | T_Credit_Acct          |             | 0.97 EUR    | vendor1          | tax19%   | alloc2               |
+      # ------------------------------------------------------------------------------------------
+      | B_UnallocatedCash_Acct |             | -434.97 EUR | serviceProvider1 | -        | inboundPayment       |
+      | B_InTransit_Acct       | -434.97 EUR |             | serviceProvider1 | -        | inboundPayment       |
+
+
+  @Id:S0465_520
+  @from:cucumber
+  Scenario: customer sales-invoice - service-fee purchase-invoice - inbound payment (REMADV case)
+    # NOTE: this kind of allocation cannot be manually done by user (because REMADV code is doing it), but the purpose of this test
+    # is to make sure, that in case of such allocation the open amounts and accounting is correct
+    Given metasfresh contains M_Products:
+      | Identifier           |
+      | customerProduct      |
+      | vendorServiceProduct |
+    And update M_PriceLists:
+      | Identifier        | IsTaxIncluded |
+      | purchasePriceList | Y             |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID         | PriceStd | C_UOM_ID |
+      | salesPLV               | customerProduct      | 0        | PCE      |
+      | purchasePLV            | vendorServiceProduct | 0        | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | customerInvoice | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID    | M_Product_ID    | QtyInvoiced | Price  | C_Tax_ID |
+      | customerInvoice | customerProduct | 1 PCE       | 500.00 | tax19%   |
+    And the invoice identified by customerInvoice is completed
+    And metasfresh contains C_Payment
+      | Identifier     | C_BPartner_ID    | PayAmt     | IsReceipt | C_BP_BankAccount_ID |
+      | inboundPayment | serviceProvider1 | 529.97 EUR | true      | org_EUR_account     |
+    And the payment identified by inboundPayment is completed
+
+    When allocate payments to invoices with verbatim DiscountAmt and InvoiceProcessing.FeeAmt
+      | C_Payment_ID   | C_Invoice_ID    | DiscountAmt | InvoiceProcessing.FeeAmt | InvoiceProcessing.C_BPartner_ID | InvoiceProcessing.M_Product_ID | InvoiceProcessing.C_Invoice_ID |
+      | inboundPayment | customerInvoice | 32.93 EUR   | 32.10 EUR                | serviceProvider1                | vendorServiceProduct           | vendorServiceInvoice           |
+    # The OverUnderAmt is 595.00 (invoice's grantTotal) minus 32.10
+    Then validate C_AllocationLines
+      | C_Invoice_ID         | C_Payment_ID   | Amount | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
+      | customerInvoice      | -              | 32.10  | 0           | 562.9        | alloc1             |
+      | vendorServiceInvoice | -              | -32.10 | 0           | 0            | alloc1             |
+      # --------------------------------------------------------------------------------------------------
+      | customerInvoice      | inboundPayment | 529.97 | 32.93       | 0            | alloc2             |
+    And validate created invoices
+      | C_Invoice_ID         | C_BPartner_ID    | GrandTotal | DocBaseType | IsPaid | IsPartiallyPaid | OpenAmt |
+      | customerInvoice      | customer1        | 595.00 EUR | ARI         | true   | false           | 0       |
+      | vendorServiceInvoice | serviceProvider1 | 32.10 EUR  | API         | true   | false           | 0       |
+    And validate payments
+      | C_Payment_ID   | IsAllocated |
+      | inboundPayment | true        |
+# TODO: verify
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID    | C_Tax_ID | Record_ID            |
+      | C_Receivable_Acct      | 595.00 EUR  |             | customer1        | -        | customerInvoice      |
+      | T_Due_Acct             |             | 95.00 EUR   | customer1        | tax19%   | customerInvoice      |
+      | *                      |             |             |                  |          | customerInvoice      |
+      # ------------------------------------------------------------------------------------------
+      | V_Liability_Acct       |             | 32.10 EUR   | serviceProvider1 | -        | vendorServiceInvoice |
+      | *                      |             |             |                  |          | vendorServiceInvoice |
+      # ------------------------------------------------------------------------------------------
+      | C_Receivable_Acct      |             | 32.10 EUR   | customer1        | -        | alloc1               |
+      | V_Liability_Acct       | 32.10 EUR   |             | serviceProvider1 | -        | alloc1               |
+      # ------------------------------------------------------------------------------------------
+      | C_Receivable_Acct      |             | 562.90 EUR  | customer1        | -        | alloc2               |
+      | B_UnallocatedCash_Acct | 529.97 EUR  |             | serviceProvider1 | -        | alloc2               |
+      | PayDiscount_Exp_Acct   | 32.93 EUR   |             | serviceProvider1 | tax19%   | alloc2               |
+      # tax correction:
+      | PayDiscount_Exp_Acct   |             | 5.26 EUR    | customer1        | tax19%   | alloc2               |
+      | T_Due_Acct             | 5.26 EUR    |             | customer1        | tax19%   | alloc2               |
+      # ------------------------------------------------------------------------------------------
+      | B_UnallocatedCash_Acct |             | 529.97 EUR  | serviceProvider1 | -        | inboundPayment       |
+      | B_InTransit_Acct       | 529.97 EUR  |             | serviceProvider1 | -        | inboundPayment       |
 
