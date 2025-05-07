@@ -313,6 +313,7 @@ public class CreateProductCommand
 	{
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomRecord.getPP_Product_BOM_ID());
 		final ProductId lineProductId = context.getId(line.getProduct(), ProductId.class);
+		final BOMComponentType componentType = line.getComponentType() != null ? line.getComponentType() : BOMComponentType.Component;
 
 		final I_PP_Product_BOMLine lineRecord = newInstance(I_PP_Product_BOMLine.class);
 		lineRecord.setPP_Product_BOM_ID(bomId.getRepoId());
@@ -321,7 +322,7 @@ public class CreateProductCommand
 		final UomId uomId = line.getUom() != null ? uomDAO.getUomIdByX12DE355(line.getUom()) : productBL.getStockUOMId(lineProductId);
 		lineRecord.setC_UOM_ID(uomId.getRepoId());
 
-		lineRecord.setComponentType(BOMComponentType.Component.getCode());
+		lineRecord.setComponentType(componentType.getCode());
 		lineRecord.setValidFrom(bomRecord.getValidFrom());
 
 		if (line.isPercentage())

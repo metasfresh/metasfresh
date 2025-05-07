@@ -12,12 +12,16 @@ export const GenerateHUQRCodesConfirmScreen = {
         await containerElement().waitFor({ timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    confirm: async ({ expectNumberOfHUs, expectNumberOfCopies }) => await test.step(`${NAME} - Confirm print`, async () => {
+    confirm: async ({ expectNumberOfHUs, numberOfHUs, expectNumberOfCopies }) => await test.step(`${NAME} - Confirm print`, async () => {
         if (expectNumberOfHUs != null) {
             await expect(page.getByTestId('numberOfHUs-field')).toHaveValue(`${expectNumberOfHUs}`);
         }
         if (expectNumberOfCopies != null) {
             await expect(page.getByTestId('numberOfCopies-field')).toHaveValue(`${expectNumberOfCopies}`);
+        }
+
+        if (numberOfHUs != null) {
+            await page.getByTestId('numberOfHUs-field').type(`${numberOfHUs}`);
         }
 
         const generatedQRCodesPromise = waitForApiResponse({ urlContains: '/manufacturing/generateHUQRCodes' });

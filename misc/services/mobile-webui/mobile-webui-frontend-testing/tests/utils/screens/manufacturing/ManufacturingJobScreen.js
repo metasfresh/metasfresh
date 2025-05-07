@@ -21,15 +21,21 @@ export const ManufacturingJobScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+        await ManufacturingJobsListScreen.waitForScreen();
+    }),
+
     goBackToPickingJobLine: async () => await test.step(`${NAME} - Go back to picking job line`, async () => {
         await page.locator(ID_BACK_BUTTON).tap();
         await PickingJobLineScreen.waitForScreen();
     }),
 
-    generateSingleHUQRCode: async ({ piTestId, expectNumberOfHUs, expectNumberOfCopies }) => await test.step(`${NAME} - Generate HU QR codes`, async () => {
+    generateSingleHUQRCode: async ({ piTestId, expectNumberOfHUs, numberOfHUs, expectNumberOfCopies = 1 }) => await test.step(`${NAME} - Generate ${numberOfHUs ?? expectNumberOfHUs ?? '?'} x HU QR codes (${expectNumberOfCopies} copies)`, async () => {
         await page.getByTestId(`generateHUQRCodes-button`).tap();
         await GenerateHUQRCodesScreen.waitForScreen();
-        const generatedQRCodesResult = await GenerateHUQRCodesScreen.print({ piTestId, expectNumberOfHUs: 1, expectNumberOfCopies: 1 });
+        const generatedQRCodesResult = await GenerateHUQRCodesScreen.print({ piTestId, expectNumberOfHUs, numberOfHUs, expectNumberOfCopies });
+        console.log('Got result:\n' + JSON.stringify(generatedQRCodesResult, null, 2));
         expect(generatedQRCodesResult?.qrCodes).toHaveLength(1);
         const generatedQRCode = generatedQRCodesResult.qrCodes[0].code;
         console.log('Generated QR codes:\n' + generatedQRCode);
