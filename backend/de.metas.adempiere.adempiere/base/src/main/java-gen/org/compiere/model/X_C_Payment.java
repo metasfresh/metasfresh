@@ -1412,4 +1412,19 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_WriteOffAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
+
+	@Override
+	public void setOriginal_Payment_ID (final int Original_Payment_ID)
+	{
+		if (Original_Payment_ID < 1)
+			set_Value (COLUMNNAME_Original_Payment_ID, null);
+		else
+			set_Value (COLUMNNAME_Original_Payment_ID, Original_Payment_ID);
+	}
+
+	@Override
+	public int getOriginal_Payment_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Original_Payment_ID);
+	}
 }
