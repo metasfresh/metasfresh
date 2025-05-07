@@ -38,7 +38,7 @@ public enum RefundStatus implements ReferenceListAwareEnum
 	ScheduledForRefund(X_C_Payment.REFUNDSTATUS_ScheduledForRefund),
 	Refunded(X_C_Payment.REFUNDSTATUS_Refunded);
 
-	private static final ImmutableMap<String, RefundStatus> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), RefundStatus::getCode);
+	private static final ImmutableMap<String, RefundStatus> statusesByCode = Maps.uniqueIndex(Arrays.asList(values()), RefundStatus::getCode);
 
 	@Getter
 	private final String code;
@@ -56,12 +56,12 @@ public enum RefundStatus implements ReferenceListAwareEnum
 
 	public static RefundStatus ofCode(@NonNull final String code)
 	{
-		final RefundStatus type = typesByCode.get(code);
-		if (type == null)
+		final RefundStatus status = statusesByCode.get(code);
+		if (status == null)
 		{
 			throw new AdempiereException("No " + RefundStatus.class + " found for code: " + code);
 		}
-		return type;
+		return status;
 	}
 
 }
