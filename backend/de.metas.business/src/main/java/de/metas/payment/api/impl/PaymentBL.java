@@ -55,6 +55,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
+import de.metas.payment.RefundStatus;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
@@ -69,6 +70,7 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -943,5 +945,26 @@ public class PaymentBL implements IPaymentBL
 	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
 	{
 		return paymentDAO.getCurrencyConversionTypeId(paymentId);
+	}
+
+	@Override
+	public boolean hasUnallocatedIncomingPayment(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
+	{
+		return paymentDAO.stream(paymentsFilter)
+				.anyMatch(payment -> !payment.isAllocated() && payment.isReceipt());
+	}
+
+	@Override
+	public void markForRefund(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
+	{
+		paymentDAO.stream(paymentsFilter)
+				.filter(payment -> payment.isReceipt() && !payment.isAllocated())
+				.forEach(this::markAsScheduledForRefund);
+	}
+
+	private void markAsScheduledForRefund(@NonNull final I_C_Payment payment)
+	{
+		payment.setRefundStatus(RefundStatus.ScheduledForRefund.getCode());
+		save(payment);
 	}
 }
