@@ -42,12 +42,22 @@ const createMasterdata = async ({ showLastPickedBestBeforeDateForLines } = {}) =
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
                     prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }]
                 },
+                "P2": {
+                    valuePrefix: '00027', // important for EAN13 barcodes
+                    gtin: '97311876341811',
+                    ean13ProductCode: '063299559',
+                    uom: 'PCE',
+                    uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
+                    prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }]
+                },
             },
             packingInstructions: {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
+                "PI2": { lu: "LU2", qtyTUsPerLU: 20, tu: "TU2", product: "P2", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh', qty: 100 }
+                "HU1": { product: 'P1', warehouse: 'wh', qty: 100 },
+                "HU2": { product: 'P2', warehouse: 'wh', qty: 100 }
             },
             salesOrders: {
                 "SO1": {
@@ -55,8 +65,15 @@ const createMasterdata = async ({ showLastPickedBestBeforeDateForLines } = {}) =
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
                     lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }]
+                },
+                "SO2": {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P2', qty: 12, piItemProduct: 'TU2' }]
                 }
             },
+
         }
     })
 }
@@ -215,6 +232,33 @@ test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
             ],
         });
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('EAN13 with a standard prefix', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO2.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO2.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI2.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI2.tuName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
+    console.log("testtesttest1");
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU2.qrCode,
+        catchWeightQRCode: [
+            '7610632995594',
+        ],
+    });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk' });
+
+    await PickingJobScreen.complete();
 });
 
 // noinspection JSUnusedLocalSymbols
