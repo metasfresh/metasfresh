@@ -139,25 +139,25 @@ public class PPOrderProducerFromCandidate
 				: trxManager::runInThreadInheritedTrx;
 
 		runInTrx.accept(() ->
-						{
-							final PPOrderCreateRequest request = allocator.getPPOrderCreateRequest();
+		{
+			final PPOrderCreateRequest request = allocator.getPPOrderCreateRequest();
 
-							final I_PP_Order ppOrder = ppOrderService.createOrder(request);
+			final I_PP_Order ppOrder = ppOrderService.createOrder(request);
 
-							createPPOrderAllocations(ppOrder,
-													 allocator.getPpOrderCand2AllocatedQty(),
-													 ppOrderCandidateProcessRequest.isAutoProcessCandidatesAfterProduction(),
-													 ppOrderCandidateProcessRequest.isAutoCloseCandidatesAfterProduction());
+			createPPOrderAllocations(ppOrder,
+					allocator.getPpOrderCand2AllocatedQty(),
+					ppOrderCandidateProcessRequest.isAutoProcessCandidatesAfterProduction(),
+					ppOrderCandidateProcessRequest.isAutoCloseCandidatesAfterProduction());
 
-							ppOrderService.postPPOrderCreatedEvent(ppOrder);
+			ppOrderService.postPPOrderCreatedEvent(ppOrder);
 
-							if (shouldCompletePPOrder(request.getProductPlanningId(), ppOrderCandidateProcessRequest.getIsDocCompleteOverride()))
-							{
-								ppOrderService.completeDocument(ppOrder);
-							}
+			if (shouldCompletePPOrder(request.getProductPlanningId(), ppOrderCandidateProcessRequest.getIsDocCompleteOverride()))
+			{
+				ppOrderService.completeDocument(ppOrder);
+			}
 
-							result.addOrder(ppOrder);
-						});
+			result.addOrder(ppOrder);
+		});
 	}
 
 	private void createPPOrderAllocations(
@@ -169,14 +169,16 @@ public class PPOrderProducerFromCandidate
 		ppOrderCand2QtyToAllocate.forEach((candidateId, quantity) -> {
 			ppOrderCandidatesDAO.createProductionOrderAllocation(candidateId, ppOrder, quantity);
 
-			if (autoCloseCandidatesAfterProduction)
-			{
-				trxManager.runAfterCommit(() -> ppOrderCandidatesDAO.closeCandidate(candidateId));
-			}
-			else
-			{
-				markAsProcessedIfRequired(candidateId, autoProcessCandidatesAfterProduction);
-			}
+			trxManager.runAfterCommit(() -> {
+				if (autoCloseCandidatesAfterProduction)
+				{
+					ppOrderCandidatesDAO.closeCandidate(candidateId);
+				}
+				else
+				{
+					markAsProcessedIfRequired(candidateId, autoProcessCandidatesAfterProduction);
+				}
+			});
 		});
 	}
 
