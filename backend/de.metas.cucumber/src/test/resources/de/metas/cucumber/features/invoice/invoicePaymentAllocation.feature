@@ -34,20 +34,20 @@ Feature: invoice payment allocation
       | Identifier      | C_Currency_ID |
       | org_EUR_account | EUR           |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -95,7 +95,7 @@ Feature: invoice payment allocation
       # ----------------------------------------------------------------------------------
       | C_Receivable_Acct      | 5.95 EUR    |             | customer1     | inv_100     |
       | *                      |             |             |               | inv_100     |
-    
+
 
 
 
@@ -163,32 +163,32 @@ Feature: invoice payment allocation
       | T_Due_Acct             |             | 95 EUR      | customer1     | tax1     | salesInvoice   |
       | *                      |             |             |               |          | salesInvoice   |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -448,30 +448,30 @@ Feature: invoice payment allocation
       | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    |
       | PayDiscount_Exp_Acct  |             | 0.46 EUR    | tax1     | alloc3    |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -603,35 +603,35 @@ Feature: invoice payment allocation
       | C_Receivable_Acct     | 5.95 EUR    |             | salesInvoice    |
       | *                     |             |             | salesInvoice    |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -748,35 +748,35 @@ Feature: invoice payment allocation
       | C_Invoice_ID |
       | inv_170      |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -905,36 +905,36 @@ Feature: invoice payment allocation
       | T_Credit_Acct         | 95 EUR      |             | vendor1       | tax1     | purchaseInvoice |
       | *                     |             |             |               |          | purchaseInvoice |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -990,34 +990,34 @@ Feature: invoice payment allocation
       | V_Liability_Acct      | 5.95 EUR    |             | alloc2    |
       | B_PaymentSelect_Acct  |             | 5.95 EUR    | alloc2    |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -1087,33 +1087,33 @@ Feature: invoice payment allocation
       | WriteOff_Acct         | 0 EUR       | 2.9 EUR     |          | alloc3    |
       | WriteOff_Acct         | -0.46 EUR   | 0 EUR       | tax1     | alloc3    |
       | T_Credit_Acct         | 0 EUR       | -0.46 EUR   | tax1     | alloc3    |
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -1186,33 +1186,33 @@ Feature: invoice payment allocation
       | PayDiscount_Rev_Acct  | 0.46 EUR    | 0 EUR       | tax1     | alloc3    |
       | T_Credit_Acct         | 0 EUR       | 0.46 EUR    | tax1     | alloc3    |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -1267,39 +1267,39 @@ Feature: invoice payment allocation
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
       | V_Liability_Acct      | 3.57 EUR    | 0 EUR       | alloc2    |
       | B_PaymentSelect_Acct  | 0 EUR       | 3.57 EUR    | alloc2    |
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -1338,43 +1338,43 @@ Feature: invoice payment allocation
       | C_Invoice_ID |
       | inv_230      |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -1588,33 +1588,33 @@ Feature: invoice payment allocation
       | B_PaymentSelect_Acct  | 80 EUR      |             |          | customer1     | outboundPayment1 |
       | B_InTransit_Acct      |             | 80 EUR      |          | customer1     | outboundPayment1 |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -1724,35 +1724,35 @@ Feature: invoice payment allocation
       | B_UnallocatedCash_Acct |             | 5 EUR       | inboundPayment1     |
       | B_InTransit_Acct       | 5 EUR       |             | inboundPayment1     |
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -1918,4 +1918,794 @@ Feature: invoice payment allocation
       # ------------------------------------------------------------------------------------------
       | B_UnallocatedCash_Acct |             | -434.97 EUR | vendor1       | -        | inboundPayment       |
       | B_InTransit_Acct       | -434.97 EUR |             | vendor1       | -        | inboundPayment       |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0132_250
+  @from:cucumber
+  Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a sales invoice
+  - allocate 1st payment to sales invoice for partial amount, paymentTerm discount is not applied
+  - allocate 2nd payment to sales invoice for remaining amount, paymentTerm discount is applied
+
+    And metasfresh contains M_PricingSystems
+      | Identifier                           | Name                                 | Value                                |
+      | paymentAllocPricingSystem_27102022_1 | paymentAllocPricingSystem_27102022_1 | paymentAllocPricingSystem_27102022_1 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_27102022_1 | paymentAllocPricingSystem_27102022_1 | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
+      | paymentAllocPLV_27102022_1 | paymentAllocPriceList_27102022_1 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                    | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
+      | bpartner_27102022_1 | BPartnerTest_27102022_1 | Y              | paymentAllocPricingSystem_27102022_1 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_27102022_1 | bpartner_27102022_1      | Y                   | Y                   |
+
+    And metasfresh contains C_BP_BankAccount
+      | Identifier                 | C_BPartner_ID.Identifier | C_Currency.ISO_Code |
+      | bp_bank_account_27102022_1 | bpartner_27102022_1      | EUR                 |
+
+    And metasfresh contains M_Products:
+      | Identifier         | Name               |
+      | product_27102022_1 | product_27102022_1 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_27102022_1 | product_27102022_1      | 2.00     | PCE               | Normal                        |
+
+#    GrandTotal = 23.8, Discount = 0.24
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_27102022_1 | bpartner_27102022_1      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_27102022_1 | inv_27102022_1          | product_27102022_1      | 10          | PCE               |
+    And the invoice identified by inv_27102022_1 is completed
+
+    And metasfresh contains C_Payment
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_27102022_1 | bpartner_27102022_1      | 1 EUR  | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+    And the payment identified by payment_27102022_1 is completed
+
+    And allocate payments to invoices
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
+      | inv_27102022_1              | payment_27102022_1          |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_27102022_1          | bpartner_27102022_1      | bpartner_location_27102022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
+      | payment_27102022_1      | true                     |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_27102022_1              | payment_27102022_1          | 1          | 22.8             | 0               | 0               |
+
+    And metasfresh contains C_Payment
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt    | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_27102022_2 | bpartner_27102022_1      | 22.56 EUR | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+    And the payment identified by payment_27102022_2 is completed
+
+    And allocate payments to invoices
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
+      | inv_27102022_1              | payment_27102022_2          |
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_27102022_1          | bpartner_27102022_1      | bpartner_location_27102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
+      | payment_27102022_2      | true                     |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_27102022_1              | payment_27102022_2          | 22.56      | 0                | 0               | 0.24            |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0132_260
+  @from:cucumber
+  Scenario: (Purchase) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a purchase invoice
+  - allocate 1st payment to purchase invoice for partial amount, paymentTerm discount is not applied
+  - allocate 2nd payment to purchase invoice for remaining amount, paymentTerm discount is applied
+
+    And metasfresh contains M_PricingSystems
+      | Identifier                           | Name                                 | Value                                |
+      | paymentAllocPricingSystem_27102022_2 | paymentAllocPricingSystem_27102022_2 | paymentAllocPricingSystem_27102022_2 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_27102022_2 | paymentAllocPricingSystem_27102022_2 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
+      | paymentAllocPLV_27102022_2 | paymentAllocPriceList_27102022_2 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                    | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
+      | bpartner_27102022_2 | BPartnerTest_27102022_2 | Y            | paymentAllocPricingSystem_27102022_2 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_27102022_2 | bpartner_27102022_2      | Y                   | Y                   |
+
+    And metasfresh contains C_BP_BankAccount
+      | Identifier                 | C_BPartner_ID.Identifier | C_Currency.ISO_Code |
+      | bp_bank_account_27102022_2 | bpartner_27102022_2      | EUR                 |
+
+    And metasfresh contains M_Products:
+      | Identifier         | Name               |
+      | product_27102022_2 | product_27102022_2 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_27102022_2 | product_27102022_2      | 2.00     | PCE               | Normal                        |
+
+    #    GrandTotal = 23.8, Discount = 0.24
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_27102022_2 | bpartner_27102022_2      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_27102022_2 | inv_27102022_2          | product_27102022_2      | 10          | PCE               |
+    And the invoice identified by inv_27102022_2 is completed
+
+    And metasfresh contains C_Payment
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_27102022_3 | bpartner_27102022_2      | 1 EUR  | Zahlungsausgang   | false     | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+    And the payment identified by payment_27102022_3 is completed
+
+    And allocate payments to invoices
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
+      | inv_27102022_2              | payment_27102022_3          |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_27102022_2          | bpartner_27102022_2      | bpartner_location_27102022_2      | 10 Tage 1 % | true      | CO        | false      | true                |
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
+      | payment_27102022_3      | true                     |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_27102022_2              | payment_27102022_3          | -1         | -22.8            | 0               | 0               |
+
+    And metasfresh contains C_Payment
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt    | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_27102022_4 | bpartner_27102022_2      | 22.56 EUR | Zahlungsausgang   | false     | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+    And the payment identified by payment_27102022_4 is completed
+
+    And allocate payments to invoices
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
+      | inv_27102022_2              | payment_27102022_4          |
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_27102022_2          | bpartner_27102022_2      | bpartner_location_27102022_2      | 10 Tage 1 % | true      | CO        | true       | false               |
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
+      | payment_27102022_4      | true                     |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_27102022_2              | payment_27102022_4          | -22.56     | 0                | 0               | -0.24           |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0132_270
+  @from:cucumber
+  Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a sales invoice (allocation happens only once)
+  - allocate 1st payment to sales invoice for partial amount, paymentTerm discount is not applied
+  - allocate 2nd payment to sales invoice for remaining amount, paymentTerm discount is applied
+
+    And metasfresh contains M_PricingSystems
+      | Identifier                           | Name                                 | Value                                |
+      | paymentAllocPricingSystem_28102022_1 | paymentAllocPricingSystem_28102022_1 | paymentAllocPricingSystem_28102022_1 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_28102022_1 | paymentAllocPricingSystem_28102022_1 | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
+      | paymentAllocPLV_28102022_1 | paymentAllocPriceList_28102022_1 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                    | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
+      | bpartner_28102022_1 | BPartnerTest_28102022_1 | Y              | paymentAllocPricingSystem_28102022_1 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_28102022_1 | bpartner_28102022_1      | Y                   | Y                   |
+
+    And metasfresh contains C_BP_BankAccount
+      | Identifier                 | C_BPartner_ID.Identifier | C_Currency.ISO_Code |
+      | bp_bank_account_28102022_1 | bpartner_28102022_1      | EUR                 |
+
+    And metasfresh contains M_Products:
+      | Identifier         | Name               |
+      | product_28102022_1 | product_28102022_1 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_28102022_1 | product_28102022_1      | 2.00     | PCE               | Normal                        |
+
+    #    GrandTotal = 23.8, Discount = 0.24
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_28102022_1 | bpartner_28102022_1      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_28102022_1 | inv_28102022_1          | product_28102022_1      | 10          | PCE               |
+    And the invoice identified by inv_28102022_1 is completed
+
+    And metasfresh contains C_Payment
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_28102022_1 | bpartner_28102022_1      | 1 EUR  | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+    And the payment identified by payment_28102022_1 is completed
+
+    And metasfresh contains C_Payment
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt    | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx | OPT.DateAcct |
+      | payment_28102022_2 | bpartner_28102022_1      | 22.56 EUR | Zahlungseingang   | true      | bp_bank_account1            | 2022-05-11  | 2022-05-11   |
+    And the payment identified by payment_28102022_2 is completed
+
+    And allocate payments to invoices
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
+      | inv_28102022_1              | payment_28102022_1          |
+      |                             | payment_28102022_2          |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_28102022_1          | bpartner_28102022_1      | bpartner_location_28102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
+      | payment_28102022_1      | true                     |
+      | payment_28102022_2      | true                     |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_28102022_1              | payment_28102022_1          | 1          | 22.8             | 0               | 0               |
+      | inv_28102022_1              | payment_28102022_2          | 22.56      | 0                | 0               | 0.24            |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0132_280
+  @from:cucumber
+  Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 credit memos to a sales invoice
+  - allocate 1st credit memo to sales invoice for partial amount, invoice's paymentTerm discount is not applied, credit memo's paymentTerm discount is applied
+  - allocate 2nd credit memo to sales invoice for remaining amount, paymentTerm discount is applied for both invoice, but not for credit memo (because it is not fully allocated)
+
+    And metasfresh contains M_PricingSystems
+      | Identifier                           | Name                                 | Value                                |
+      | paymentAllocPricingSystem_31102022_1 | paymentAllocPricingSystem_31102022_1 | paymentAllocPricingSystem_31102022_1 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_31102022_1 | paymentAllocPricingSystem_31102022_1 | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
+      | paymentAllocPLV_31102022_1 | paymentAllocPriceList_31102022_1 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                    | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
+      | bpartner_31102022_1 | BPartnerTest_31102022_1 | Y              | paymentAllocPricingSystem_31102022_1 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_31102022_1 | bpartner_31102022_1      | Y                   | Y                   |
+
+    And metasfresh contains M_Products:
+      | Identifier         | Name               |
+      | product_31102022_1 | product_31102022_1 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_31102022_1 | product_31102022_1      | 2.00     | PCE               | Normal                        |
+
+    #    GrandTotal = 23.8, Discount = 0.24
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_31102022_1 | bpartner_31102022_1      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_31102022_1 | inv_31102022_1          | product_31102022_1      | 10          | PCE               |
+    And the invoice identified by inv_31102022_1 is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier             | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | credit_memo_31102022_1 | bpartner_31102022_1      | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier                  | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | credit_memo_line_31102022_1 | credit_memo_31102022_1  | product_31102022_1      | 1           | PCE               |
+    And the invoice identified by credit_memo_31102022_1 is completed
+
+    And allocate invoices (credit memo/purchase) to invoices
+      | C_Invoice_ID.Identifier | OPT.CreditMemo.C_Invoice_ID.Identifier |
+      | inv_31102022_1          | credit_memo_31102022_1                 |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_31102022_1          | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | credit_memo_31102022_1  | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_31102022_1              | 2.4        | 21.4             | 0               | 0               |
+      | credit_memo_31102022_1      | -2.4       | 0                | 0               | 0.02            |
+
+    And metasfresh contains C_Invoice:
+      | Identifier             | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | credit_memo_31102022_2 | bpartner_31102022_1      | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier                  | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | credit_memo_line_31102022_2 | credit_memo_31102022_2  | product_31102022_1      | 9           | PCE               |
+    And the invoice identified by credit_memo_31102022_2 is completed
+
+    And allocate invoices (credit memo/purchase) to invoices
+      | C_Invoice_ID.Identifier | OPT.CreditMemo.C_Invoice_ID.Identifier |
+      | inv_31102022_1          | credit_memo_31102022_2                 |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_31102022_1          | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | credit_memo_31102022_2  | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | credit_memo_31102022_2      | -21.16     | -0.47            | 0               | 0               |
+    And validate C_AllocationLines for invoice inv_31102022_1
+      | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | 2.4        | 21.4             | 0               | 0               |
+      | 21.16      | 0                | 0               | 0.24            |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0132_290
+  @from:cucumber
+  Scenario: (Purchase) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 credit memos to a purchase invoice
+  - allocate 1st credit memo to purchase invoice for partial amount, invoice's paymentTerm discount is not applied, credit memo's paymentTerm discount is applied
+  - allocate 2nd credit memo to purchase invoice for remaining amount, paymentTerm discount is applied for invoice, but not for credit memo (because it is not fully allocated)
+
+    And metasfresh contains M_PricingSystems
+      | Identifier                            | Name                                  | Value                                 |
+      | paymentAllocPricingSystem_31102022_10 | paymentAllocPricingSystem_31102022_10 | paymentAllocPricingSystem_31102022_10 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                        | M_PricingSystem_ID.Identifier         | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_31102022_10 | paymentAllocPricingSystem_31102022_10 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                  | M_PriceList_ID.Identifier         | ValidFrom  |
+      | paymentAllocPLV_31102022_10 | paymentAllocPriceList_31102022_10 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier           | Name                     | OPT.IsVendor | M_PricingSystem_ID.Identifier         | OPT.C_PaymentTerm_ID |
+      | bpartner_31102022_10 | BPartnerTest_31102022_10 | Y            | paymentAllocPricingSystem_31102022_10 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                    | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_31102022_10 | bpartner_31102022_10     | Y                   | Y                   |
+
+    And metasfresh contains M_Products:
+      | Identifier          | Name                |
+      | product_31102022_10 | product_31102022_10 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID      | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_31102022_10 | product_31102022_10     | 2.00     | PCE               | Normal                        |
+
+    #    GrandTotal = 23.8, Discount = 0.24
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_31102022_10 | bpartner_31102022_10     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_31102022_10 | inv_31102022_10         | product_31102022_10     | 10          | PCE               |
+    And the invoice identified by inv_31102022_10 is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier              | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | credit_memo_31102022_10 | bpartner_31102022_10     | Gutschrift (Lieferant)  | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier                   | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | credit_memo_line_31102022_10 | credit_memo_31102022_10 | product_31102022_10     | 1           | PCE               |
+    And the invoice identified by credit_memo_31102022_10 is completed
+
+    And allocate invoices (credit memo/purchase) to invoices
+      | C_Invoice_ID.Identifier | OPT.CreditMemo.C_Invoice_ID.Identifier |
+      | inv_31102022_10         | credit_memo_31102022_10                |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_31102022_10         | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | false      | true                |
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | credit_memo_31102022_10 | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | true       | false               |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_31102022_10             | -2.4       | -21.4            | 0               | 0               |
+      | credit_memo_31102022_10     | 2.4        | 0                | 0               | -0.02           |
+
+    And metasfresh contains C_Invoice:
+      | Identifier              | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | credit_memo_31102022_11 | bpartner_31102022_10     | Gutschrift (Lieferant)  | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier                   | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | credit_memo_line_31102022_11 | credit_memo_31102022_11 | product_31102022_10     | 9           | PCE               |
+    And the invoice identified by credit_memo_31102022_11 is completed
+
+    And allocate invoices (credit memo/purchase) to invoices
+      | C_Invoice_ID.Identifier | OPT.CreditMemo.C_Invoice_ID.Identifier |
+      | inv_31102022_10         | credit_memo_31102022_11                |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_31102022_10         | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | true       | false               |
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | credit_memo_31102022_11 | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | false      | true                |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | credit_memo_31102022_11     | 21.16      | 0.47             | 0               | 0               |
+    And validate C_AllocationLines for invoice inv_31102022_10
+      | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | -2.4       | -21.4            | 0               | 0               |
+      | -21.16     | 0                | 0               | -0.24           |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0132_300
+  @from:cucumber
+  Scenario: Two purchase invoices allocated to a sales invoice
+  - allocate 1st purchase invoice to sales invoice for partial amount, sales invoice's paymentTerm discount is not applied, purchase invoice's paymentTerm discount is applied
+  - allocate 2nd purchase invoice to sales invoice for remaining amount, paymentTerm discount is applied for sales invoice, but not for purchase invoice (because it is not fully allocated)
+
+    And metasfresh contains M_PricingSystems
+      | Identifier                           | Name                                 | Value                                |
+      | paymentAllocPricingSystem_01112022_1 | paymentAllocPricingSystem_01112022_1 | paymentAllocPricingSystem_01112022_1 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_01112022_1 | paymentAllocPricingSystem_01112022_1 | DE                        | EUR                 | PriceListName_01112022_1 | false | false         | 2              |
+      | paymentAllocPriceList_01112022_2 | paymentAllocPricingSystem_01112022_1 | DE                        | EUR                 | PriceListName_01112022_2 | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
+      | paymentAllocPLV_01112022_1 | paymentAllocPriceList_01112022_1 | 2022-05-01 |
+      | paymentAllocPLV_01112022_2 | paymentAllocPriceList_01112022_2 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
+      | bpartner_01112022_1 | BPartnerTest_01112022_1 | Y            | Y              | paymentAllocPricingSystem_01112022_1 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_01112022_1 | bpartner_01112022_1      | Y                   | Y                   |
+
+    And metasfresh contains M_Products:
+      | Identifier         | Name               |
+      | product_01112022_1 | product_01112022_1 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID     | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | paymentAllocPLV_01112022_1 | product_01112022_1      | 2.00     | PCE               | Normal                        |
+      | paymentAllocPLV_01112022_2 | product_01112022_1      | 2.00     | PCE               | Normal                        |
+
+    #    GrandTotal = 23.8, Discount = 0.24
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_01112022_1 | bpartner_01112022_1      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_01112022_1 | inv_01112022_1          | product_01112022_1      | 10          | PCE               |
+    And the invoice identified by inv_01112022_1 is completed
+
+    #    GrandTotal = 2.38, Discount = 0.02
+    And metasfresh contains C_Invoice:
+      | Identifier                  | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchase_invoice_01112022_1 | bpartner_01112022_1      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier                       | C_Invoice_ID.Identifier     | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | purchase_invoice_line_01112022_1 | purchase_invoice_01112022_1 | product_01112022_1      | 1           | PCE               |
+    And the invoice identified by purchase_invoice_01112022_1 is completed
+
+    And allocate invoices (credit memo/purchase) to invoices
+      | C_Invoice_ID.Identifier | OPT.Purchase.C_Invoice_ID.Identifier |
+      | inv_01112022_1          | purchase_invoice_01112022_1          |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_01112022_1          | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
+    Then validate created invoices
+      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | purchase_invoice_01112022_1 | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_01112022_1              | 2.36       | 21.44            | 0               | 0               |
+      | purchase_invoice_01112022_1 | -2.36      | 0                | 0               | -0.02           |
+
+    #    GrandTotal = 21.42, Discount = 0.21
+    And metasfresh contains C_Invoice:
+      | Identifier                  | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchase_invoice_01112022_2 | bpartner_01112022_1      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier                       | C_Invoice_ID.Identifier     | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | purchase_invoice_line_01112022_1 | purchase_invoice_01112022_2 | product_01112022_1      | 9           | PCE               |
+    And the invoice identified by purchase_invoice_01112022_2 is completed
+
+    And allocate invoices (credit memo/purchase) to invoices
+      | C_Invoice_ID.Identifier | OPT.Purchase.C_Invoice_ID.Identifier |
+      | inv_01112022_1          | purchase_invoice_01112022_2          |
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_01112022_1          | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
+    Then validate created invoices
+      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | purchase_invoice_01112022_2 | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | purchase_invoice_01112022_2 | -21.2      | -0.01            | 0               | 0               |
+    And validate C_AllocationLines for invoice inv_01112022_1
+      | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | 2.36       | 21.44            | 0               | 0               |
+      | 21.2       | 0                | 0               | 0.24            |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0132_310
+  @from:cucumber
+  Scenario: allocate payment to purchase invoice with overpayment and negative discount
+
+    Given metasfresh contains M_Products:
+      | Identifier  | Name        |
+      | product_10012025_1 | product_10012025_1 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | purchasePLV            | product_10012025_1      | 1        | PCE               | Normal                        |
+
+    # GrandTotal = 20.23
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_10012025_1 | vendor1                  | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_10012025_1 | inv_10012025_1          | product_10012025_1      | 17          | PCE               |
+    And the invoice identified by inv_10012025_1 is completed
+
+    And metasfresh contains C_Payment
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt    | OPT.DiscountAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.C_Invoice_ID.Identifier |
+      | payment_10012025_1 | vendor1               | 20.25 EUR | -0.02 EUR       | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
+    And the payment identified by payment_10012025_1 is completed
+
+    Then validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_10012025_1          | vendor1       | bpartner_location_2    | 30 Tage netto | true      | CO        | true       | false               |
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
+      | payment_10012025_1      | true                     |
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.DiscountAmt |
+      | inv_10012025_1              | payment_10012025_1          | -20.25     | 0.02            |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
