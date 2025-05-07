@@ -1427,4 +1427,17 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		return get_ValueAsInt(COLUMNNAME_Original_Payment_ID);
 	}
+
+	@Override
+	public void setIsRefund (final boolean IsRefund)
+	{
+		set_Value (COLUMNNAME_IsRefund, IsRefund);
+	}
+
+	@Override
+	public boolean isRefund()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRefund);
+	}
+
 }

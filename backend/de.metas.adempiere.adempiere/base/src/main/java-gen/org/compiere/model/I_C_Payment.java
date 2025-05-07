@@ -2183,5 +2183,25 @@ public interface I_C_Payment
 
 	String COLUMNNAME_Original_Payment_ID = "Original_Payment_ID";
 
+	/**
+	 * Set Refund.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRefund (boolean IsRefund);
+
+	/**
+	 * Get Refund.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRefund();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_IsRefund = new ModelColumn<>(I_C_Payment.class, "IsRefund", null);
+	String COLUMNNAME_IsRefund = "IsRefund";
 
 }
