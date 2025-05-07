@@ -2668,7 +2668,7 @@ Feature: invoice payment allocation
     # GrandTotal = 20.23
     And metasfresh contains C_Invoice:
       | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_10012025_1 | bpartner_1               | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | inv_10012025_1 | vendor1                  | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
       | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
       | invl_10012025_1 | inv_10012025_1          | product_10012025_1      | 17          | PCE               |
@@ -2676,12 +2676,12 @@ Feature: invoice payment allocation
 
     And metasfresh contains C_Payment
       | Identifier         | C_BPartner_ID.Identifier | PayAmt    | OPT.DiscountAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.C_Invoice_ID.Identifier |
-      | payment_10012025_1 | bpartner_1               | 20.25 EUR | -0.02 EUR       | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
+      | payment_10012025_1 | vendor1               | 20.25 EUR | -0.02 EUR       | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
     And the payment identified by payment_10012025_1 is completed
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
-      | inv_10012025_1          | bpartner_1               | bpartner_location_1               | 30 Tage netto | true      | CO        | true       | false               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | inv_10012025_1          | vendor1       | bpartner_location_2    | 30 Tage netto | true      | CO        | true       | false               |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
       | payment_10012025_1      | true                     |
