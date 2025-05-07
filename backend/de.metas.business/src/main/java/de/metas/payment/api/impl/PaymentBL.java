@@ -55,6 +55,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
+import de.metas.payment.RefundStatus;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
@@ -81,7 +82,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -964,7 +964,7 @@ public class PaymentBL implements IPaymentBL
 
 	private void markAsScheduledForRefund(@NonNull final I_C_Payment payment)
 	{
-		payment.setRefundStatus(X_C_Payment.REFUNDSTATUS_ScheduledForRefund);
+		payment.setRefundStatus(RefundStatus.ScheduledForRefund.getCode());
 		save(payment);
 	}
 }
