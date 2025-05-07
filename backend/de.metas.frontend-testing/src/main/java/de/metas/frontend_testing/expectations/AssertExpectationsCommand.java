@@ -5,6 +5,7 @@ import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
 import de.metas.frontend_testing.expectations.request.JsonHUExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPickingExpectation;
 import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleExpectation;
+import de.metas.frontend_testing.expectations.request.QtyAndUOMString;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -20,11 +21,14 @@ import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class AssertExpectationsCommand
@@ -87,27 +91,33 @@ public class AssertExpectationsCommand
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void assertShipmentSchedules(final List<JsonShipmentScheduleExpectation> expectations, final Collection<I_M_ShipmentSchedule> actuals)
 	{
 		throw new UnsupportedOperationException("not implemented"); // TODO
 	}
 
-	private void assertHUs(@NonNull final List<JsonHUExpectation> expectations)
+	private void assertHUs(final Map<String, JsonHUExpectation> expectations)
 	{
 		expectations.forEach(this::assertHU);
 	}
 
-	private void assertHU(@NonNull final JsonHUExpectation expectation)
+	private void assertHU(@NonNull String huMatcherStr, @NonNull final JsonHUExpectation expectation)
 	{
-		final HuId huId = getHUId(expectation.getMatch());
+		final HuId huId = getHUIdByMatcherString(huMatcherStr);
 
 		if (expectation.getStorages() != null)
 		{
 			assertHUStorages(expectation.getStorages(), huId);
 		}
+
+		if (expectation.getAttributes() != null)
+		{
+			assertAttributes(expectation.getAttributes(), huId);
+		}
 	}
 
-	private void assertHUStorages(@NonNull final List<JsonHUExpectation.Storage> expectations, @NonNull final HuId huId)
+	private void assertHUStorages(@NonNull final Map<String, String> expectations, @NonNull final HuId huId)
 	{
 		if (expectations.isEmpty())
 		{
@@ -118,17 +128,17 @@ public class AssertExpectationsCommand
 				.streamProductStorages()
 				.collect(GuavaCollectors.toHashMapByKey(IHUProductStorage::getProductId));
 
-		for (final JsonHUExpectation.Storage expectation : expectations)
-		{
-			final ProductId productId = context.getId(expectation.getProduct(), ProductId.class);
+		expectations.forEach((productIdentifierStr, expectedQtyStr) -> {
+			final Identifier productIdentifier = Identifier.ofString(productIdentifierStr);
+			final ProductId productId = context.getId(productIdentifier, ProductId.class);
 			final IHUProductStorage actualStorage = actualStorages.remove(productId);
 			if (actualStorage == null)
 			{
 				throw new AdempiereException("No storage found for product " + productId + " in HU " + huId);
 			}
 
-			assertHUStorage(expectation, actualStorage);
-		}
+			assertHUStorage(QtyAndUOMString.parseString(expectedQtyStr), actualStorage);
+		});
 
 		if (!actualStorages.isEmpty())
 		{
@@ -136,23 +146,16 @@ public class AssertExpectationsCommand
 		}
 	}
 
-	private void assertHUStorage(@NonNull final JsonHUExpectation.Storage expectation, @NonNull final IHUProductStorage actualStorage)
+	private void assertHUStorage(@NonNull final QtyAndUOMString expectedQtyStr, @NonNull final IHUProductStorage actualStorage)
 	{
-		final Quantity expectedQty = expectation.getQty().toQuantity();
+		final Quantity expectedQty = expectedQtyStr.toQuantity();
 		assertEquals("Qty", expectedQty, actualStorage.getQty());
 	}
 
-	private HuId getHUId(@NonNull final JsonHUExpectation.Match match)
+	private HuId getHUIdByMatcherString(@NonNull final String matcherStr)
 	{
-		if (match.getByQRCode() != null)
-		{
-			@NonNull final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(match.getByQRCode());
-			return services.getHuIdByQRCode(qrCode);
-		}
-		else
-		{
-			throw new AdempiereException("Don't know how to match HU by " + match);
-		}
+		@NonNull final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(matcherStr);
+		return services.getHuIdByQRCode(qrCode);
 	}
 
 	@SuppressWarnings("SameParameterValue")
@@ -163,4 +166,21 @@ public class AssertExpectationsCommand
 			throw new AdempiereException("Expected " + what + " to be <" + expected + "> but was <" + actual + ">");
 		}
 	}
+
+	private void assertAttributes(@NonNull final Map<String, String> expectations, @NonNull final HuId huId)
+	{
+		if (expectations.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableAttributeSet actualAttributes = services.getAttributes(huId);
+
+		expectations.forEach((attributeCodeStr, expectedValueStr) -> {
+			final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeStr);
+			final String actualValueStr = actualAttributes.getValueAsString(attributeCode);
+			assertEquals("Attribute " + attributeCode, expectedValueStr, actualValueStr);
+		});
+	}
+
 }
