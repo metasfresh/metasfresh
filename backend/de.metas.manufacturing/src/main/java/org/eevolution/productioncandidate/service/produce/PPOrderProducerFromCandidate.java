@@ -33,47 +33,33 @@ import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.PPOrderCandidateProcessRequest;
+import org.eevolution.productioncandidate.service.PPOrderCandidateService;
+import org.eevolution.productioncandidate.service.PPOrderCandidateService.PPOrderCandidateUpdateFlagsRequest;
 
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+@Builder
 public class PPOrderProducerFromCandidate
 {
-	private final OrderGenerateResult result;
-	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
-	private final PPOrderCandidateDAO ppOrderCandidatesDAO;
-	private final IPPOrderBL ppOrderService;
-	private final ITrxManager trxManager;
-	private final IProductPlanningDAO productPlanningsRepo;
-	private final Map<ProductPlanningId, ProductPlanning> productPlanningCache;
+	// Params
+	@NonNull private final PPOrderCandidateService ppOrderCandidateService;
+	@NonNull private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
+	@NonNull private final PPOrderCandidateDAO ppOrderCandidatesDAO;
+	@NonNull private final IPPOrderBL ppOrderService;
+	@NonNull private final ITrxManager trxManager;
+	@NonNull private final IProductPlanningDAO productPlanningsRepo;
 	private final boolean createEachPPOrderInOwnTrx;
 
-	@Builder
-	public PPOrderProducerFromCandidate(
-			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService,
-			@NonNull final IPPOrderBL ppOrderService,
-			@NonNull final ITrxManager trxManager,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidatesDAO,
-			@NonNull final IProductPlanningDAO productPlanningsRepo,
-			final boolean createEachPPOrderInOwnTrx)
-	{
-		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
-		this.ppOrderService = ppOrderService;
-		this.trxManager = trxManager;
-		this.ppOrderCandidatesDAO = ppOrderCandidatesDAO;
-		this.productPlanningsRepo = productPlanningsRepo;
-		this.createEachPPOrderInOwnTrx = createEachPPOrderInOwnTrx;
-
-		this.result = new OrderGenerateResult();
-		this.productPlanningCache = new ConcurrentHashMap<>();
-	}
+	// State
+	private final OrderGenerateResult result = new OrderGenerateResult();
+	private final ConcurrentHashMap<ProductPlanningId, ProductPlanning> productPlanningCache = new ConcurrentHashMap<>();
 
 	@NonNull
 	public OrderGenerateResult createOrders(@NonNull final PPOrderCandidateProcessRequest ppOrderCandidateProcessRequest)
@@ -169,14 +155,11 @@ public class PPOrderProducerFromCandidate
 		ppOrderCand2QtyToAllocate.forEach((candidateId, quantity) -> {
 			ppOrderCandidatesDAO.createProductionOrderAllocation(candidateId, ppOrder, quantity);
 
-			if (autoCloseCandidatesAfterProduction)
-			{
-				trxManager.runAfterCommit(() -> ppOrderCandidatesDAO.closeCandidate(candidateId));
-			}
-			else
-			{
-				trxManager.runAfterCommit(() -> markAsProcessedIfRequired(candidateId, autoProcessCandidatesAfterProduction));
-			}
+			ppOrderCandidateService.updateOrderCandidateAfterCommit(PPOrderCandidateUpdateFlagsRequest.builder()
+					.ppOrderCandidateId(candidateId)
+					.forceMarkProcessed(autoProcessCandidatesAfterProduction)
+					.forceClose(autoCloseCandidatesAfterProduction)
+					.build());
 		});
 	}
 
@@ -194,15 +177,5 @@ public class PPOrderProducerFromCandidate
 
 		return productPlanningCache.computeIfAbsent(planningId, productPlanningsRepo::getById)
 				.isDocComplete();
-	}
-
-	private void markAsProcessedIfRequired(@NonNull final PPOrderCandidateId candidateId, final boolean autoProcessCandidatesAfterProduction)
-	{
-		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidatesDAO.getById(candidateId);
-
-		if (autoProcessCandidatesAfterProduction || ppOrderCandidate.getQtyProcessed().compareTo(ppOrderCandidate.getQtyEntered()) >= 0)
-		{
-			ppOrderCandidatesDAO.markAsProcessed(ppOrderCandidate);
-		}
 	}
 }

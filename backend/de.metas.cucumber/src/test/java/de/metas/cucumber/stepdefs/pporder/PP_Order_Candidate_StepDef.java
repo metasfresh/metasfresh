@@ -184,7 +184,13 @@ public class PP_Order_Candidate_StepDef
 	@When("the following PP_Order_Candidates are closed")
 	public void close_PP_Order_Candidate(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> ppOrderCandidateService.closeCandidate(getPPOrderCandidate(row)));
+		DataTableRows.of(dataTable).forEach(row -> {
+			final StepDefDataIdentifier candidateIdentifier = getPPOrderCandidateIdentifier(row);
+			final PPOrderCandidateId candidateId = ppOrderCandidateTable.getId(candidateIdentifier);
+			ppOrderCandidateService.closeCandidate(candidateId);
+			
+			ppOrderCandidateTable.invalidate(candidateIdentifier);
+		});
 	}
 
 	@Then("the following PP_Order_Candidates are closed and cannot be re-opened")
@@ -263,7 +269,7 @@ public class PP_Order_Candidate_StepDef
 		assertThat(orderLineId).isNotNull();
 
 		final Supplier<Optional<I_PP_Order_Candidate>> ppOrderCandSupplier = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId)
-																											   .first());
+				.first());
 
 		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, ppOrderCandSupplier);
 
@@ -302,7 +308,7 @@ public class PP_Order_Candidate_StepDef
 
 	private I_PP_Order_Candidate getPPOrderCandidate(@NonNull final DataTableRow row)
 	{
-		return row.getAsIdentifier(COLUMNNAME_PP_Order_Candidate_ID).lookupIn(ppOrderCandidateTable);
+		return getPPOrderCandidateIdentifier(row).lookupIn(ppOrderCandidateTable);
 	}
 
 	private Set<PPOrderCandidateId> getPPOrderCandidateIds(final @NonNull DataTable table)
@@ -312,7 +318,12 @@ public class PP_Order_Candidate_StepDef
 
 	private PPOrderCandidateId getPPOrderCandidateId(@NonNull final DataTableRow row)
 	{
-		return row.getAsIdentifier(COLUMNNAME_PP_Order_Candidate_ID).lookupIdIn(ppOrderCandidateTable);
+		return getPPOrderCandidateIdentifier(row).lookupIdIn(ppOrderCandidateTable);
+	}
+
+	private static StepDefDataIdentifier getPPOrderCandidateIdentifier(final @NonNull DataTableRow row)
+	{
+		return row.getAsIdentifier(COLUMNNAME_PP_Order_Candidate_ID);
 	}
 
 	private void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
@@ -469,8 +480,8 @@ public class PP_Order_Candidate_StepDef
 			final String qtyProcessedColumnTrl = msgBL.translatable(I_PP_Order_Candidate.COLUMNNAME_QtyProcessed).translate(adLanguage);
 
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED,
-																			 qtyEnteredColumnTrl,
-																			 qtyProcessedColumnTrl);
+					qtyEnteredColumnTrl,
+					qtyProcessedColumnTrl);
 
 			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
 		}
@@ -608,7 +619,7 @@ public class PP_Order_Candidate_StepDef
 	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String orderLineIdentifier)
 	{
 		return OrderLineId.ofRepoIdOrNull(identifierIdsTable.getOptional(orderLineIdentifier)
-												  .orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
+				.orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
 	}
 
 	@And("after not more than {int}s, no PP_Order_Candidates are found for Issue_HU_ID: {string}")
@@ -659,7 +670,7 @@ public class PP_Order_Candidate_StepDef
 	}
 
 	@And("^after not more than (.*)s, the following PP_Order_Candidates exist")
-	public void verifyPPOrderCandidatesAreUpdated(final int timeoutSec, @NonNull final DataTable dataTable )
+	public void verifyPPOrderCandidatesAreUpdated(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName("PP_Order_Candidate_ID")
