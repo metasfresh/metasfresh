@@ -22,15 +22,23 @@
 
 package de.metas.payment;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Payment;
+
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 public enum RefundStatus implements ReferenceListAwareEnum
 {
 	ScheduledForRefund(X_C_Payment.REFUNDSTATUS_ScheduledForRefund),
 	Refunded(X_C_Payment.REFUNDSTATUS_Refunded);
+
+	private static final ImmutableMap<String, RefundStatus> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), RefundStatus::getCode);
 
 	@Getter
 	private final String code;
@@ -39,4 +47,21 @@ public enum RefundStatus implements ReferenceListAwareEnum
 	{
 		this.code = code;
 	}
+
+	@Nullable
+	public static RefundStatus ofNullableCode(final String code)
+	{
+		return code != null ? ofCode(code) : null;
+	}
+
+	public static RefundStatus ofCode(@NonNull final String code)
+	{
+		final RefundStatus type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + RefundStatus.class + " found for code: " + code);
+		}
+		return type;
+	}
+
 }
