@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, page } from '../../../common';
+import { FAST_ACTION_TIMEOUT, page, VERY_SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { ManufacturingJobScreen } from '../ManufacturingJobScreen';
@@ -24,9 +24,10 @@ export const GenerateHUQRCodesConfirmScreen = {
             await page.getByTestId('numberOfHUs-field').type(`${numberOfHUs}`);
         }
 
-        const generatedQRCodesPromise = waitForApiResponse({ urlContains: '/manufacturing/generateHUQRCodes' });
+        const generatedQRCodesPromise = waitForApiResponse({ urlContains: '/manufacturing/generateHUQRCodes', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
         await page.getByTestId('print-button').tap();
+        await page.getByTestId('print-button').waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
         await ManufacturingJobScreen.waitForScreen();
 

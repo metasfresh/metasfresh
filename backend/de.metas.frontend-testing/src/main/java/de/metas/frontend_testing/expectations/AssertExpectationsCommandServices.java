@@ -14,6 +14,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -47,4 +48,10 @@ public class AssertExpectationsCommandServices
 	{
 		return handlingUnitsBL.getStorageFactory().getStorage(handlingUnitsBL.getById(huId));
 	}
+
+	public ImmutableAttributeSet getAttributes(@NonNull final HuId huId)
+	{
+		return handlingUnitsBL.getImmutableAttributeSet(handlingUnitsBL.getById(huId));
+	}
+
 }

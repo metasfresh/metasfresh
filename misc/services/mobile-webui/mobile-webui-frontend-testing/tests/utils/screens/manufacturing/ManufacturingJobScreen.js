@@ -22,6 +22,7 @@ export const ManufacturingJobScreen = {
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await ManufacturingJobScreen.expectVisible();
         await page.locator(ID_BACK_BUTTON).tap();
         await ManufacturingJobsListScreen.waitForScreen();
     }),

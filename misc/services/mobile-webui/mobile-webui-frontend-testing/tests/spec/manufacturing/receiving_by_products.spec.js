@@ -6,9 +6,6 @@ import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/M
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 import { expectErrorToast } from '../../utils/common';
-// import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
-// import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
-// import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -83,10 +80,11 @@ test('Receive By-Products from 2 manufacturing orders into same HU', async ({ pa
         await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: byProductsQRCode });
         await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 10, qtyEntered: 1 });
         await Backend.expect({
-            hus: [{
-                match: { byQRCode: byProductsQRCode },
-                storages: [{ product: 'BY_PRODUCT', qty: '1 PCE' }]
-            }]
+            hus: {
+                [byProductsQRCode]: {
+                    storages: { 'BY_PRODUCT': '1 PCE' },
+                }
+            }
         });
 
         await ManufacturingJobScreen.goBack();
@@ -99,10 +97,11 @@ test('Receive By-Products from 2 manufacturing orders into same HU', async ({ pa
         await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: byProductsQRCode });
         await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 10, qtyEntered: 2 });
         await Backend.expect({
-            hus: [{
-                match: { byQRCode: byProductsQRCode },
-                storages: [{ product: 'BY_PRODUCT', qty: '3 PCE' }]
-            }]
+            hus: {
+                [byProductsQRCode]: {
+                    storages: { 'BY_PRODUCT': '3 PCE' },
+                }
+            }
         });
 
         await ManufacturingJobScreen.goBack();
@@ -125,10 +124,11 @@ test('Fail receiving different By-Products from in same HU', async ({ page }) =>
         await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: byProductsQRCode });
         await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 10, qtyEntered: 1 });
         await Backend.expect({
-            hus: [{
-                match: { byQRCode: byProductsQRCode },
-                storages: [{ product: 'BY_PRODUCT', qty: '1 PCE' }]
-            }]
+            hus: {
+                [byProductsQRCode]: {
+                    storages: { 'BY_PRODUCT': '1 PCE' },
+                }
+            }
         });
     });
 
@@ -139,10 +139,11 @@ test('Fail receiving different By-Products from in same HU', async ({ page }) =>
             await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 10, qtyEntered: 1 });
         });
         await Backend.expect({
-            hus: [{
-                match: { byQRCode: byProductsQRCode },
-                storages: [{ product: 'BY_PRODUCT', qty: '1 PCE' }]
-            }]
+            hus: {
+                [byProductsQRCode]: {
+                    storages: { 'BY_PRODUCT': '1 PCE' },
+                }
+            }
         });
     });
 });
