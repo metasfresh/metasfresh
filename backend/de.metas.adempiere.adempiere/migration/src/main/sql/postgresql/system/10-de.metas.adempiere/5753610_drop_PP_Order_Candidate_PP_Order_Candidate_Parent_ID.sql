@@ -1,3 +1,6 @@
+SELECT backup_table('PP_Order_Candidate')
+;
+
 -- Run mode: SWING_CLIENT
 
 -- UI Element: Produktionsdisposition(541316,EE01) -> Produktionsdisposition(544794,EE01) -> main -> 20 -> bp.PP_Order_Candidate_Parent_ID
