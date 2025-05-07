@@ -170,7 +170,7 @@ public class PPOrderCandidateService
 		}
 	}
 
-	public void closeCandidate(@NonNull PPOrderCandidateId candidateId)
+	public void closeCandidate(@NonNull final PPOrderCandidateId candidateId)
 	{
 		final I_PP_Order_Candidate candidate = ppOrderCandidateDAO.getById(candidateId);
 		closeCandidateNoSave(candidate);

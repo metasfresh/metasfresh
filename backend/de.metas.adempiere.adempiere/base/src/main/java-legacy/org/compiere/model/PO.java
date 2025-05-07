@@ -4941,7 +4941,7 @@ public abstract class PO
 	}
 
 	/**
-	 * Mark this PO as being created, updated or deleted by an manual user action (from window).
+	 * Mark this PO as being created, updated or deleted by a manual user action (from a window).
 	 */
 	public final void set_ManualUserAction(final int windowNo)
 	{
@@ -4958,7 +4958,7 @@ public abstract class PO
 	}
 
 	/**
-	 * Mark this PO as not being created, updated or deleted by an manual user action (from window).
+	 * Mark this PO as not being created, updated or deleted by a manual user action (from a window).
 	 */
 	public final void unset_ManualUserAction()
 	{

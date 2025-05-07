@@ -85,6 +85,10 @@ public class PP_Order_Candidate
 			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, I_PP_Order_Candidate.COLUMNNAME_QtyProcessed })
 	public void syncLinesAndMaterialDisposition(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
+		if (ppOrderCandidateRecord.isClosed())
+		{
+			return;
+		}
 		final I_PP_Order_Candidate oldRecord = InterfaceWrapperHelper.createOld(ppOrderCandidateRecord, I_PP_Order_Candidate.class);
 
 		final boolean qtyEnteredOrProcessedChanged = !oldRecord.getQtyEntered().equals(ppOrderCandidateRecord.getQtyEntered())
