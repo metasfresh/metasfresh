@@ -36,6 +36,7 @@ import org.compiere.model.I_C_Region;
 import org.compiere.model.MCountry;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -45,28 +46,28 @@ import java.util.Properties;
 
 /**
  * @author cg
- *
  */
 public class CountryDAO implements ICountryDAO
 {
-	/** Country Cache */
+	private static final CountryId DEFAULT_C_Country_ID = CountryId.ofRepoId(101); // Germany
+	private static final ImmutableBiMap<String, String> alpha2to3CountryCodes = buildAlpha2to3CountryCodes();
+	/**
+	 * Country Cache
+	 */
 	private final CCache<Integer, IndexedCountries> countriesCache = CCache.<Integer, IndexedCountries>builder()
 			.tableName(I_C_Country.Table_Name)
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
-
-	/** C_Country_ID by AD_Client_ID */
+	/**
+	 * C_Country_ID by AD_Client_ID
+	 */
 	private final CCache<Integer, String> countryCodeByADClientId = CCache.<Integer, String>builder()
 			.cacheName(I_C_Country.Table_Name + "#CountryCodeByAD_Client_ID")
 			.tableName(I_C_Country.Table_Name)
 			.initialCapacity(3)
 			.additionalTableNameToResetFor(I_AD_Client.Table_Name)
 			.build();
-
-	private static final CountryId DEFAULT_C_Country_ID = CountryId.ofRepoId(101); // Germany
-
-	private static final ImmutableBiMap<String, String> alpha2to3CountryCodes = buildAlpha2to3CountryCodes();
 
 	private static ImmutableBiMap<String, String> buildAlpha2to3CountryCodes()
 	{
@@ -81,6 +82,52 @@ public class CountryDAO implements ICountryDAO
 		return alpha2to3CountryCodesBuilder.build();
 	}
 
+	@NonNull
+	private static IndexedCountries retrieveIndexedCountries()
+	{
+		final List<I_C_Country> countries = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Country.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_C_Country.class);
+
+		return new IndexedCountries(countries);
+	}
+
+	private static String retrieveCountryCodeIdByADClientId(final int adClientId)
+	{
+		final Properties ctx = Env.getCtx();
+		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, adClientId);
+		final I_AD_Language lang = Services.get(ILanguageDAO.class).retrieveByAD_Language(client.getAD_Language());
+		return lang.getCountryCode();
+	}
+
+	private static boolean countrySequenceMatches(
+			final CountrySequences sequence,
+			final OrgId orgId,
+			final String adLanguage)
+	{
+		if (!sequence.getOrgId().equals(orgId))
+		{
+			return false;
+		}
+
+		final String countrySequenceLanguage = sequence.getAdLanguage();
+		return countrySequenceLanguage == null || Check.isBlank(countrySequenceLanguage) || countrySequenceLanguage.equals(adLanguage);
+	}
+
+	private static CountrySequences toCountrySequences(final I_C_Country_Sequence record)
+	{
+		return CountrySequences.builder()
+				.adLanguage(record.getAD_Language())
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				//
+				.addressDisplaySequence(record.getDisplaySequence())
+				.localAddressDisplaySequence(record.getDisplaySequenceLocal())
+				.build();
+	}
+
+	@Nullable
 	@Override
 	public CountryCustomInfo retriveCountryCustomInfo(final Properties ctx, final String trxName)
 	{
@@ -145,34 +192,16 @@ public class CountryDAO implements ICountryDAO
 		return countries;
 	} // getCountries
 
+	@NonNull
 	private IndexedCountries getIndexedCountries()
 	{
-		return countriesCache.getOrLoad(0, CountryDAO::retrieveIndexedCountries);
-	}
-
-	private static IndexedCountries retrieveIndexedCountries()
-	{
-		final List<I_C_Country> countries = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Country.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_C_Country.class);
-
-		return new IndexedCountries(countries);
+		return Check.assumeNotNull(countriesCache.getOrLoad(0, CountryDAO::retrieveIndexedCountries), "retrieveIndexedCountries doesn't return null");
 	}
 
 	private String getCountryCodeByADClientId(final Properties ctx)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		return countryCodeByADClientId.getOrLoad(adClientId, () -> retrieveCountryCodeIdByADClientId(adClientId));
-	}
-
-	private static String retrieveCountryCodeIdByADClientId(final int adClientId)
-	{
-		final Properties ctx = Env.getCtx();
-		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, adClientId);
-		final I_AD_Language lang = Services.get(ILanguageDAO.class).retrieveByAD_Language(client.getAD_Language());
-		return lang.getCountryCode();
 	}
 
 	@Override
@@ -205,20 +234,6 @@ public class CountryDAO implements ICountryDAO
 				.findFirst();
 	}
 
-	private static boolean countrySequenceMatches(
-			final CountrySequences sequence,
-			final OrgId orgId,
-			final String adLanguage)
-	{
-		if (!sequence.getOrgId().equals(orgId))
-		{
-			return false;
-		}
-
-		final String countrySequenceLanguage = sequence.getAdLanguage();
-		return countrySequenceLanguage == null || Check.isBlank(countrySequenceLanguage) || countrySequenceLanguage.equals(adLanguage);
-	}
-
 	@Cached(cacheName = I_C_Country_Sequence.Table_Name + "#by#C_Country_ID")
 	public ImmutableList<CountrySequences> retrieveCountrySequences(@NonNull final CountryId countryId)
 	{
@@ -237,17 +252,6 @@ public class CountryDAO implements ICountryDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static CountrySequences toCountrySequences(final I_C_Country_Sequence record)
-	{
-		return CountrySequences.builder()
-				.adLanguage(record.getAD_Language())
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				//
-				.addressDisplaySequence(record.getDisplaySequence())
-				.localAddressDisplaySequence(record.getDisplaySequenceLocal())
-				.build();
-	}
-
 	@Override
 	public I_C_Country retrieveCountryByCountryCode(final String countryCode)
 	{
@@ -258,6 +262,13 @@ public class CountryDAO implements ICountryDAO
 	public CountryId getCountryIdByCountryCode(final String countryCode)
 	{
 		return getIndexedCountries().getIdByCountryCode(countryCode);
+	}
+
+	@Nullable
+	@Override
+	public CountryId getCountryIdByCountryCodeOrNull(@Nullable final String countryCode)
+	{
+		return getIndexedCountries().getIdByCountryCodeOrNull(countryCode);
 	}
 
 	@Override
@@ -305,6 +316,14 @@ public class CountryDAO implements ICountryDAO
 		return country.isEnforceCorrectionInvoice();
 	}
 
+	@NonNull
+	@Override
+	public String getCountryCode(@NonNull final CountryId countryId)
+	{
+		final I_C_Country country = getById(countryId);
+		return country.getCountryCode();
+	}
+
 	private static final class IndexedCountries
 	{
 		private final ImmutableList<I_C_Country> countries;
@@ -340,7 +359,7 @@ public class CountryDAO implements ICountryDAO
 			return country;
 		}
 
-		public I_C_Country getByCountryCodeOrNull(final String countryCode)
+		public I_C_Country getByCountryCodeOrNull(@Nullable final String countryCode)
 		{
 			return countriesByCountryCode.get(countryCode);
 		}
@@ -355,10 +374,19 @@ public class CountryDAO implements ICountryDAO
 			return country;
 		}
 
-		public CountryId getIdByCountryCode(final String countryCode)
+		@NonNull
+		public CountryId getIdByCountryCode(@NonNull final String countryCode)
 		{
 			final I_C_Country country = getByCountryCode(countryCode);
 			return CountryId.ofRepoId(country.getC_Country_ID());
+		}
+
+		@Nullable
+		public CountryId getIdByCountryCodeOrNull(@Nullable final String countryCode)
+		{
+			final I_C_Country country = getByCountryCodeOrNull(countryCode);
+
+			return country != null ? CountryId.ofRepoId(country.getC_Country_ID()) : null;
 		}
 
 	}
