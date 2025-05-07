@@ -243,3 +243,15 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP('2025-05-06 19:19:42.91','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=547168
 ;
 
+
+
+
+
+-- Field: Zahlung(195,D) -> Zahlung(330,D) -> Rückerstattungsstatus
+-- Column: C_Payment.RefundStatus
+-- 2025-05-07T07:35:25.288Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2025-05-07 10:35:25.288','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=742002
+;
+
+
+
