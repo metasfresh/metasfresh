@@ -33,6 +33,7 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -157,4 +158,8 @@ public interface IPaymentBL extends ISingletonService
 	
 	@NonNull
 	Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull PaymentId paymentId);
+
+	void markForRefund(IQueryFilter<I_C_Payment> selectedPaymentsFilter);
+
+	boolean hasUnallocatedIncomingPayment(IQueryFilter<I_C_Payment> selectedPaymentsFilter);
 }

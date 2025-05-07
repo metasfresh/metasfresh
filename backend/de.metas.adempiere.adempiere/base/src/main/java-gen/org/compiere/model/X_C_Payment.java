@@ -1412,4 +1412,25 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_WriteOffAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
+
+	/**
+	 * RefundStatus AD_Reference_ID=541943
+	 * Reference name: Refund Status
+	 */
+	public static final int REFUNDSTATUS_AD_Reference_ID=541943;
+	/** Scheduled for Refund = Scheduled for Refund */
+	public static final String REFUNDSTATUS_ScheduledForRefund = "Scheduled for Refund";
+	/** Refunded = Refunded */
+	public static final String REFUNDSTATUS_Refunded = "Refunded";
+	@Override
+	public void setRefundStatus (final @Nullable java.lang.String RefundStatus)
+	{
+		set_Value (COLUMNNAME_RefundStatus, RefundStatus);
+	}
+
+	@Override
+	public java.lang.String getRefundStatus()
+	{
+		return get_ValueAsString(COLUMNNAME_RefundStatus);
+	}
 }
