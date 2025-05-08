@@ -2,7 +2,7 @@ import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 import { updateUserEditable } from './utils';
-import { current, isDraft, original } from 'immer';
+import { current, isDraft } from 'immer';
 import { getLineByIdFromWFProcess } from './index';
 import { toQRCodeObject } from '../../utils/qrCode/hu';
 
