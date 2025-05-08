@@ -24,6 +24,9 @@ package de.metas.cucumber.stepdefs.pporder;
 
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
@@ -39,5 +42,11 @@ public class PP_Order_Candidate_StepDefData extends StepDefData<I_PP_Order_Candi
 	public PPOrderCandidateId extractIdFromRecord(final I_PP_Order_Candidate record)
 	{
 		return PPOrderCandidateId.ofRepoId(record.getPP_Order_Candidate_ID());
+	}
+
+	public void invalidate(@NonNull final StepDefDataIdentifier identifier)
+	{
+		final I_PP_Order_Candidate candidate = getOptional(identifier).orElse(null);
+		InterfaceWrapperHelper.refresh(candidate);
 	}
 }
