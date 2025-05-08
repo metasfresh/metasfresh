@@ -64,6 +64,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -73,9 +74,11 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_RemittanceAdvice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
+import javax.annotation.RegEx;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.List;
@@ -84,6 +87,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
+@Service
 public class RemittanceAdviceBankingService
 {
 	private static final Logger logger = LogManager.getLogger(RemittanceAdviceBankingService.class);
@@ -98,18 +103,6 @@ public class RemittanceAdviceBankingService
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-
-	public RemittanceAdviceBankingService(
-			@NonNull final PaymentAllocationService paymentAllocationService,
-			@NonNull final RemittanceAdviceRepository remittanceAdviceRepo,
-			@NonNull final RemittanceAdviceService remittanceAdviceService,
-			@NonNull final MoneyService moneyService)
-	{
-		this.paymentAllocationService = paymentAllocationService;
-		this.remittanceAdviceRepo = remittanceAdviceRepo;
-		this.remittanceAdviceService = remittanceAdviceService;
-		this.moneyService = moneyService;
-	}
 
 	public void runForRemittanceAdvice(@NonNull final RemittanceAdvice remittanceAdvice)
 	{

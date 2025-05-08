@@ -27,6 +27,7 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
+import de.metas.banking.service.RemittanceAdviceBankingService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -451,7 +452,7 @@ public class PaymentAllocationServiceTest
 			@NonNull final SOTrx soTrx)
 	{
 		final boolean creditMemo = isCreditMemo(invoice);
-		final InvoiceAmtMultiplier amtMultiplier = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(soTrx, creditMemo);
+		final InvoiceAmtMultiplier amtMultiplier = RemittanceAdviceBankingService.toInvoiceAmtMultiplier(soTrx, creditMemo);
 
 		return PaymentAllocationPayableItem.builder()
 				.amtMultiplier(amtMultiplier)
@@ -566,7 +567,7 @@ public class PaymentAllocationServiceTest
 	@Test
 	public void checkTestsAreUsingSameInvoiceAmtMultiplierAsRealLife()
 	{
-		final InvoiceAmtMultiplier multiplierInRealLife = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(SOTrx.SALES, false);
+		final InvoiceAmtMultiplier multiplierInRealLife = RemittanceAdviceBankingService.toInvoiceAmtMultiplier(SOTrx.SALES, false);
 
 		//noinspection AssertThatBooleanCondition
 		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);

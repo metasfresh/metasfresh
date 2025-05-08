@@ -22,10 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.remittanceadvice.RemittanceAdviceId;
 import de.metas.remittanceadvice.RemittanceAdviceLineId;
 import lombok.NonNull;
-import org.compiere.model.I_C_RemittanceAdvice;
 import org.compiere.model.I_C_RemittanceAdvice_Line;
 
 public class C_RemittanceAdvice_Line_StepDefData extends StepDefData<I_C_RemittanceAdvice_Line>  implements StepDefDataGetIdAware<RemittanceAdviceLineId, I_C_RemittanceAdvice_Line>
