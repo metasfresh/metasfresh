@@ -90,7 +90,7 @@ FROM (SELECT fa.vatcode                    AS vatcode,
               END)                         AS TaxBaseAmt,
              c.iso_code                    AS source_currency,
              cr.iso_code                   AS currency,
-             fa.DocBaseType,
+             dt.DocBaseType,
              fa.C_Tax_ID,
              fa.account_id,
              fa.postingtype,
@@ -107,6 +107,8 @@ FROM (SELECT fa.vatcode                    AS vatcode,
                INNER JOIN C_Currency c ON fa.c_Currency_ID = c.C_Currency_ID
                LEFT OUTER JOIN c_bpartner bp ON fa.c_bpartner_id = bp.c_bpartner_id
                LEFT OUTER JOIN C_InvoiceTax inv_tax ON (fa.record_id = inv_tax.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND inv_tax.c_tax_id = fa.c_tax_id)
+               LEFT OUTER JOIN C_Invoice inv ON (fa.record_id = inv.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice'))
+               LEFT OUTER JOIN C_doctype dt ON inv.c_doctypetarget_id = dt.c_doctype_id
                LEFT OUTER JOIN GL_JournalLine gll ON (fa.record_id = gll.gl_journal_id AND fa.ad_table_id = get_Table_Id('GL_Journal') AND gll.gl_journalline_id = fa.line_id AND COALESCE(gll.dr_tax_id, gll.cr_tax_id) = fa.c_tax_id)
                LEFT OUTER JOIN SAP_GLJournalLine sap_gll ON (fa.record_id = sap_gll.SAP_GLJournal_ID AND fa.ad_table_id = get_Table_Id('SAP_GLJournal') AND
                                                              sap_gll.SAP_GLJournalLine_ID = fa.line_id AND sap_gll.C_tax_id = fa.c_tax_id)
