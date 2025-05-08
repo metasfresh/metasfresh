@@ -73,12 +73,12 @@ public class RemittanceAdviceRepository
 		return toRemittanceAdvice(record);
 	}
 
-	public void createRemittanceAdviceLine(
+	public I_C_RemittanceAdvice_Line createRemittanceAdviceLine(
 			@NonNull final CreateRemittanceAdviceLineRequest remittanceAdviceLineRequest)
 	{
 		final I_C_RemittanceAdvice_Line record = buildRemittanceAdviceLineRecord(remittanceAdviceLineRequest);
-
 		saveRecord(record);
+		return record;
 	}
 
 	@NonNull
