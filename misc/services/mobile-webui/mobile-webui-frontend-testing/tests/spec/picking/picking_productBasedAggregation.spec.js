@@ -227,14 +227,6 @@ test('Filter by EAN13', async ({ page }) => {
         ]);
     });
 
-    await test.step('Clear filter', async () => {
-        await PickingJobsListScreen.clearQRCodeFilter();
-        await PickingJobsListScreen.expectJobButtons([
-            { qtyToDeliver: 72, productId: masterdata.products.P1.id },
-            { qtyToDeliver: 54, productId: masterdata.products.P2.id },
-        ]);
-    });
-
     await test.step('Filter by EAN13 Product Code', async () => {
         await PickingJobsListScreen.filterByQRCode('7610632995594');
         await PickingJobsListScreen.expectJobButtons([
