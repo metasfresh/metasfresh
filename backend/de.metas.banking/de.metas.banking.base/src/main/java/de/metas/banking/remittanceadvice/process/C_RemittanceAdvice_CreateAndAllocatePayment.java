@@ -2,7 +2,7 @@
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -64,7 +64,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		{
 			try
 			{
-				trxManager.runInNewTrx(() -> remittanceAdviceBankingService.runForRemittanceAdvice(remittanceAdvice));
+				trxManager.runInNewTrx(() -> remittanceAdviceBankingService.createPaymentAndAllocations(remittanceAdvice));
 			}
 			catch (final Exception e)
 			{

@@ -32,12 +32,12 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
-import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -67,18 +67,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_RemittanceAdvice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
-import javax.annotation.RegEx;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.List;
@@ -98,34 +95,42 @@ public class RemittanceAdviceBankingService
 	private final RemittanceAdviceService remittanceAdviceService;
 	private final MoneyService moneyService;
 
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
-	public void runForRemittanceAdvice(@NonNull final RemittanceAdvice remittanceAdvice)
+	/**
+	 * Proceses the given remittance-advice by
+	 * <ul>
+	 *     <li>creating and linking a payment</li>
+	 *     <li>creating a service-fee-invoice for each remittance-advice line</li>
+	 *     <li>allocating the payment, service-fee-invoices and remittance-advice lines' invoices against each other</li>
+	 * </ul>
+	 */
+	public void createPaymentAndAllocations(@NonNull final RemittanceAdvice remittanceAdvice)
 	{
-		if (remittanceAdvice.getPaymentId() == null && X_C_RemittanceAdvice.DOCSTATUS_Completed.equals(remittanceAdvice.getDocStatus()))
-		{
-			final I_C_Payment payment = createPayment(remittanceAdvice);
-
-			final PaymentAllocationCriteria paymentAllocationCriteria = getPaymentAllocationCriteria(remittanceAdvice, payment);
-
-			final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePaymentForRemittanceAdvise(paymentAllocationCriteria);
-
-			final Map<InvoiceId, RemittanceAdviceLine> remittanceAdviceLineMap = getRemittanceAdviceLinesByInvoiceId(remittanceAdvice.getLines());
-			populateRemittanceWithAllocationData(remittanceAdviceLineMap, paymentAllocationResult);
-
-			remittanceAdvice.setPaymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()));
-
-			remittanceAdviceRepo.updateRemittanceAdvice(remittanceAdvice);
-		}
-		else
+		final boolean canBeProcessed = remittanceAdvice.getPaymentId() == null && DocStatus.ofCode(remittanceAdvice.getDocStatus()).isCompleted();
+		if (!canBeProcessed)
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Skipping Remittance Advice, RemittanceAdviceId={}, DocStatus={}, PaymentId={}",
 					remittanceAdvice.getRemittanceAdviceId().getRepoId(), remittanceAdvice.getDocStatus(), remittanceAdvice.getPaymentId());
+			return;
 		}
+		
+		final I_C_Payment payment = createPayment(remittanceAdvice);
+
+		final PaymentAllocationCriteria paymentAllocationCriteria = getPaymentAllocationCriteria(remittanceAdvice, payment);
+
+		final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePaymentForRemittanceAdvise(paymentAllocationCriteria);
+
+		final Map<InvoiceId, RemittanceAdviceLine> remittanceAdviceLineMap = getRemittanceAdviceLinesByInvoiceId(remittanceAdvice.getLines());
+		populateRemittanceWithAllocationData(remittanceAdviceLineMap, paymentAllocationResult);
+
+		remittanceAdvice.setPaymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()));
+
+		remittanceAdviceRepo.updateRemittanceAdvice(remittanceAdvice);
 	}
 
 	@NonNull
@@ -283,8 +288,9 @@ public class RemittanceAdviceBankingService
 		}
 
 		final SOTrx soTrx = SOTrx.ofBooleanNotNull(remittanceAdvice.isSOTrx());
-		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
-		final InvoiceAmtMultiplier amtMultiplier = toInvoiceAmtMultiplier(soTrx, isCreditMemo);
+		// final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
+		// final InvoiceAmtMultiplier amtMultiplier = toInvoiceAmtMultiplier(soTrx, isCreditMemo);
+		final InvoiceAmtMultiplier amtMultiplier = invoiceBL.getInvoiceAmtMultiplier(invoice);
 
 		final Amount paymentDiscountAmt = remittanceAdviceLine.getPaymentDiscountAmount() != null
 				? remittanceAdviceLine.getPaymentDiscountAmount()
