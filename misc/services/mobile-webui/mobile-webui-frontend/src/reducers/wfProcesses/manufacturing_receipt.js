@@ -2,7 +2,7 @@ import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 import { updateUserEditable } from './utils';
-import { current, isDraft } from 'immer';
+import { current, isDraft, original } from 'immer';
 import { getLineByIdFromWFProcess } from './index';
 import { toQRCodeObject } from '../../utils/qrCode/hu';
 
@@ -59,7 +59,7 @@ const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, line
 
 const getAggregateToLU = ({ draftActivityLine, luTarget }) => {
   if (luTarget.huQRCode) {
-    const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
+    const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0]?.tuPIItemProductId;
     return {
       existingLU: {
         huQRCode: toQRCodeObject(luTarget.huQRCode),
