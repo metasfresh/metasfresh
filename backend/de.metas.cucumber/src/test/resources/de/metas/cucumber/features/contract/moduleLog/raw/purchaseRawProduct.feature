@@ -81,15 +81,16 @@ Feature: Modular contract log from purchase order for raw product
       | definitive_cm           | APC             | DCM            |
 
     And metasfresh contains M_Products:
-      | Identifier               | Name                                   |
-      | rawProduct               | rawProduct_06032024                    |
-      | addValueOnRaw_PO         | addValueOnRaw_PO_06032024              |
-      | addValueOnRaw_PO_2       | addValueOnRaw_PO_2_06032024            |
-      | subtractValueOnRaw_PO    | subtractValueOnRaw_PO_06032024         |
-      | subtractValueOnRaw_PO_2  | subtractValueOnRaw_PO_2_06032024       |
-      | addValueOnInterim        | addValueOnInterim_test_06032024        |
-      | subValueOnInterim        | subValueOnInterim_test_06032024        |
-      | storageCostForRawProduct | storageCostForRawProduct_test_06032024 |
+      | Identifier                | Name                                   |
+      | rawProduct                | rawProduct_06032024                    |
+      | addValueOnRaw_PO          | addValueOnRaw_PO_06032024              |
+      | addValueOnRaw_PO_2        | addValueOnRaw_PO_2_06032024            |
+      | subtractValueOnRaw_PO     | subtractValueOnRaw_PO_06032024         |
+      | subtractValueOnRaw_PO_2   | subtractValueOnRaw_PO_2_06032024       |
+      | addValueOnInterim         | addValueOnInterim_test_06032024        |
+      | subValueOnInterim         | subValueOnInterim_test_06032024        |
+      | storageCostForRawProduct  | storageCostForRawProduct_test_06032024 |
+      | avReceiptUntilDateProduct | avReceiptUntilDate_06032024            |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | ValidFrom  | ValidTo    | Harvesting_Year_ID.Identifier | TotalInterest | C_Currency.ISO_Code |
@@ -100,20 +101,21 @@ Feature: Modular contract log from purchase order for raw product
       | invoicingGroup_p1                            | invGroup                             | rawProduct              |
 
     And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.Name |
-      | moduleLogPP_1 | moduleLogPLV_PO                   | rawProduct               | 10.00    | PCE               | Normale MWSt          |
-      | moduleLogPP_2 | moduleLogPLV_PO                   | subtractValueOnRaw_PO    | 7.00     | PCE               | Normale MWSt          |
-      | moduleLogPP_3 | moduleLogPLV_PO                   | subtractValueOnRaw_PO_2  | 9.00     | PCE               | Normale MWSt          |
-      | moduleLogPP_4 | moduleLogPLV_PO                   | addValueOnRaw_PO         | 8.00     | PCE               | Normale MWSt          |
-      | moduleLogPP_5 | moduleLogPLV_PO                   | addValueOnRaw_PO_2       | 6.00     | PCE               | Normale MWSt          |
-      | moduleLogPP_6 | moduleLogPLV_PO                   | addValueOnInterim        | 10.00    | PCE               | Normale MWSt          |
-      | moduleLogPP_7 | moduleLogPLV_PO                   | subValueOnInterim        | 10.00    | PCE               | Normale MWSt          |
-      | moduleLogPP_8 | moduleLogPLV_PO                   | storageCostForRawProduct | 0.06     | PCE               | Normale MWSt          |
-      | moduleLogPP_9 | moduleLogPLV_SO                   | rawProduct               | 20.00    | PCE               | Normale MWSt          |
+      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier   | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.Name |
+      | moduleLogPP_1  | moduleLogPLV_PO                   | rawProduct                | 10.00    | PCE               | Normale MWSt          |
+      | moduleLogPP_2  | moduleLogPLV_PO                   | subtractValueOnRaw_PO     | 7.00     | PCE               | Normale MWSt          |
+      | moduleLogPP_3  | moduleLogPLV_PO                   | subtractValueOnRaw_PO_2   | 9.00     | PCE               | Normale MWSt          |
+      | moduleLogPP_4  | moduleLogPLV_PO                   | addValueOnRaw_PO          | 8.00     | PCE               | Normale MWSt          |
+      | moduleLogPP_5  | moduleLogPLV_PO                   | addValueOnRaw_PO_2        | 6.00     | PCE               | Normale MWSt          |
+      | moduleLogPP_6  | moduleLogPLV_PO                   | addValueOnInterim         | 10.00    | PCE               | Normale MWSt          |
+      | moduleLogPP_7  | moduleLogPLV_PO                   | subValueOnInterim         | 10.00    | PCE               | Normale MWSt          |
+      | moduleLogPP_8  | moduleLogPLV_PO                   | storageCostForRawProduct  | 0.06     | PCE               | Normale MWSt          |
+      | moduleLogPP_9  | moduleLogPLV_SO                   | rawProduct                | 20.00    | PCE               | Normale MWSt          |
+      | moduleLogPP_10 | moduleLogPLV_PO                   | avReceiptUntilDateProduct | -1.00    | PCE               | Normale MWSt          |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Year_ID.Identifier | M_PricingSystem_ID.Identifier | OPT.StorageCostStartDate |
-      | modCntr_settings_1             | testSettings_06032024_1 | rawProduct                  | y2022                | moduleLogPricingSystem        | 2022-02-01               |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Year_ID.Identifier | M_PricingSystem_ID.Identifier | OPT.StorageCostStartDate | OPT.ReceiptAVEndDate |
+      | modCntr_settings_1             | testSettings_06032024_1 | rawProduct                  | y2022                | moduleLogPricingSystem        | 2022-02-01               | 2022-02-15           |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | ModularContractHandlerType  |
@@ -126,20 +128,22 @@ Feature: Modular contract log from purchase order for raw product
       | modCntr_type_6             | AddValueOnInterim           |
       | modCntr_type_7             | SubtractValueOnInterim      |
       | modCntr_type_8             | StorageCost                 |
+      | modCntr_type_9             | AVReceiptUntilDate          |
 
     And metasfresh contains ModCntr_Modules:
-      | ModCntr_Module_ID.Identifier | SeqNo | Name                                 | M_Product_ID.Identifier  | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | informative_module           | 0     | informative_06032024_1               | rawProduct               | Service        | modCntr_settings_1             | modCntr_type_0             |
-      | definitive_module            | 0     | definitive_06032024_1                | rawProduct               | Service        | modCntr_settings_1             | modCntr_type_1             |
-      | receipt_module               | 10    | receipt_06032024_1                   | rawProduct               | Service        | modCntr_settings_1             | modCntr_type_2             |
-      | salesOnRawProduct_module     | 20    | salesOnRawProduct_06032024_1         | rawProduct               | Service        | modCntr_settings_1             | modCntr_type_3             |
-      | avOnRawProduct_module_1      | 30    | addValueOnRawProduct_06032024_1      | addValueOnRaw_PO         | Service        | modCntr_settings_1             | modCntr_type_4             |
-      | svOnRawProduct_module_1      | 40    | subtractValueOnRawProduct_06032024_1 | subtractValueOnRaw_PO    | Service        | modCntr_settings_1             | modCntr_type_5             |
-      | svOnRawProduct_module_2      | 50    | subtractValueOnRawProduct_06032024_1 | subtractValueOnRaw_PO_2  | Costs          | modCntr_settings_1             | modCntr_type_5             |
-      | avOnRawProduct_module_2      | 60    | addValueOnRawProduct_06032024_1      | addValueOnRaw_PO_2       | Costs          | modCntr_settings_1             | modCntr_type_4             |
-      | avOnInterim_module           | 70    | addValueOnInterim_06032024_1         | addValueOnInterim        | Costs          | modCntr_settings_1             | modCntr_type_6             |
-      | svOnInterim_module           | 80    | subValueOnInterim_06032024_1         | subValueOnInterim        | Costs          | modCntr_settings_1             | modCntr_type_7             |
-      | storageCost_module           | 90    | storageCost_06032024_1               | storageCostForRawProduct | Costs          | modCntr_settings_1             | modCntr_type_8             |
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                                 | M_Product_ID.Identifier   | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | informative_module           | 0     | informative_06032024_1               | rawProduct                | Service        | modCntr_settings_1             | modCntr_type_0             |
+      | definitive_module            | 0     | definitive_06032024_1                | rawProduct                | Service        | modCntr_settings_1             | modCntr_type_1             |
+      | receipt_module               | 10    | receipt_06032024_1                   | rawProduct                | Service        | modCntr_settings_1             | modCntr_type_2             |
+      | salesOnRawProduct_module     | 20    | salesOnRawProduct_06032024_1         | rawProduct                | Service        | modCntr_settings_1             | modCntr_type_3             |
+      | avOnRawProduct_module_1      | 30    | addValueOnRawProduct_06032024_1      | addValueOnRaw_PO          | Service        | modCntr_settings_1             | modCntr_type_4             |
+      | svOnRawProduct_module_1      | 40    | subtractValueOnRawProduct_06032024_1 | subtractValueOnRaw_PO     | Service        | modCntr_settings_1             | modCntr_type_5             |
+      | svOnRawProduct_module_2      | 50    | subtractValueOnRawProduct_06032024_1 | subtractValueOnRaw_PO_2   | Costs          | modCntr_settings_1             | modCntr_type_5             |
+      | avOnRawProduct_module_2      | 60    | addValueOnRawProduct_06032024_1      | addValueOnRaw_PO_2        | Costs          | modCntr_settings_1             | modCntr_type_4             |
+      | avOnInterim_module           | 70    | addValueOnInterim_06032024_1         | addValueOnInterim         | Costs          | modCntr_settings_1             | modCntr_type_6             |
+      | svOnInterim_module           | 80    | subValueOnInterim_06032024_1         | subValueOnInterim         | Costs          | modCntr_settings_1             | modCntr_type_7             |
+      | storageCost_module           | 90    | storageCost_06032024_1               | storageCostForRawProduct  | Costs          | modCntr_settings_1             | modCntr_type_8             |
+      | avReceiptUntilDate_module    | 100   | avReceiptUntilDate_06032024_1        | avReceiptUntilDateProduct | Costs          | modCntr_settings_1             | modCntr_type_9             |
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
@@ -173,6 +177,7 @@ Feature: Modular contract log from purchase order for raw product
       | price_70                             | moduleLogContract_1           | avOnInterim_module           | addValueOnInterim        | 70        | 10.00     | EUR                        | PCE                   | N                | 0            |
       | price_80                             | moduleLogContract_1           | svOnInterim_module           | subValueOnInterim        | 80        | 10.00     | EUR                        | PCE                   | N                | 0            |
       | price_90                             | moduleLogContract_1           | storageCost_module           | storageCostForRawProduct | 90        | 0.06      | EUR                        | PCE                   | N                | 0            |
+      | price_100                            | moduleLogContract_1           | avReceiptUntilDate_module    | storageCostForRawProduct | 100       | -1.00     | EUR                        | PCE                   | N                | 0            |
 
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName              | OPT.IsBillable |

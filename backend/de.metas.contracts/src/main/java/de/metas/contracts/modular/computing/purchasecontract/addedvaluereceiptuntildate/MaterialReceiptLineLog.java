@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.addedvaluereceiptdate;
+package de.metas.contracts.modular.computing.purchasecontract.addedvaluereceiptuntildate;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -37,7 +37,7 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
 	public MaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final AVReceiptDateComputingMethod computingMethod,
+			@NonNull final AVReceiptUntilDateComputingMethod computingMethod,
 			@NonNull final ModularContractService modularContractService)
 	{
 		super(modCntrInvoicingGroupRepository, modularContractService, computingMethod);

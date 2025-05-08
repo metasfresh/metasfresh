@@ -52,7 +52,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 @RequiredArgsConstructor
 public class ModCntr_Settings_StepDef
 {
-	public static final Timestamp FIXED_STORAGE_DATE = Timestamp.valueOf("2024-04-24 07:15:00");
+	public static final Timestamp DEFAULT_DATE = Timestamp.valueOf("2024-04-24 07:15:00");
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_Product_StepDefData productTable;
@@ -86,7 +86,10 @@ public class ModCntr_Settings_StepDef
 		final SOTrx soTrx = SOTrx.ofBooleanNotNull(DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx, false));
 
 		final Timestamp storageDate = CoalesceUtil.coalesceNotNull(DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_StorageCostStartDate),
-				FIXED_STORAGE_DATE);
+				DEFAULT_DATE);
+
+		final Timestamp receiptAVEndDate = CoalesceUtil.coalesceNotNull(DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_ReceiptAVEndDate),
+				DEFAULT_DATE);
 
 		final Integer freeStorageCostDays = CoalesceUtil.coalesceNotNull(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_FreeStorageCostDays),
 				0);
@@ -117,6 +120,7 @@ public class ModCntr_Settings_StepDef
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
 		modCntrSettingsRecord.setIsSOTrx(soTrx.toYesNoString());
 		modCntrSettingsRecord.setStorageCostStartDate(storageDate);
+		modCntrSettingsRecord.setReceiptAVEndDate(receiptAVEndDate);
 		modCntrSettingsRecord.setFreeStorageCostDays(freeStorageCostDays);
 
 		final BigDecimal interestRate = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_InterestRate);

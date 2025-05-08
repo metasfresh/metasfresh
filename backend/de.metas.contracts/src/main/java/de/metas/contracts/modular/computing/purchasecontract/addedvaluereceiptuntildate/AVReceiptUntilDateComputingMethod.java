@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.addedvaluereceiptdate;
+package de.metas.contracts.modular.computing.purchasecontract.addedvaluereceiptuntildate;
 
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
@@ -32,9 +32,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AVReceiptDateComputingMethod extends AbstractReceiptComputingMethod
+public class AVReceiptUntilDateComputingMethod extends AbstractReceiptComputingMethod
 {
-	public AVReceiptDateComputingMethod(
+	public AVReceiptUntilDateComputingMethod(
 	@NonNull final ModularContractProvider contractProvider,
 	@NonNull final ComputingMethodService computingMethodService)
 	{
