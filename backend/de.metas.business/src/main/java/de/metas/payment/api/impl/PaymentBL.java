@@ -951,20 +951,47 @@ public class PaymentBL implements IPaymentBL
 	public boolean hasUnallocatedIncomingPayment(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
 	{
 		return paymentDAO.stream(paymentsFilter)
-				.anyMatch(payment -> !payment.isAllocated() && payment.isReceipt());
+				.anyMatch(this::isIncomingAndNotAllocated);
 	}
 
 	@Override
 	public void markForRefund(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
 	{
 		paymentDAO.stream(paymentsFilter)
-				.filter(payment -> payment.isReceipt() && !payment.isAllocated())
-				.forEach(this::markAsScheduledForRefund);
+				.filter(this::isIncomingAndNotAllocated)
+				.forEach(payment -> setRefundStatus(payment, RefundStatus.ScheduledForRefund.getCode()));
 	}
 
-	private void markAsScheduledForRefund(@NonNull final I_C_Payment payment)
+	private boolean isIncomingAndNotAllocated(@NonNull final I_C_Payment payment)
 	{
-		payment.setRefundStatus(RefundStatus.ScheduledForRefund.getCode());
+		return payment.isReceipt() && !payment.isAllocated();
+	}
+
+	private void setRefundStatus(@NonNull final I_C_Payment payment, @Nullable final String refundStatus)
+	{
+		payment.setRefundStatus(refundStatus);
 		save(payment);
 	}
+
+	@Override
+	public boolean hasScheduledForRefund(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
+	{
+		return paymentDAO.stream(paymentsFilter)
+				.anyMatch(this::isScheduledForRefund);
+	}
+
+	@Override
+	public void unmarkForRefund(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
+	{
+		paymentDAO.stream(paymentsFilter)
+				.filter(this::isScheduledForRefund)
+				.forEach(payment -> setRefundStatus(payment, null));
+	}
+
+	private boolean isScheduledForRefund(@NonNull final I_C_Payment payment)
+	{
+		final RefundStatus refundStatus = RefundStatus.ofNullableCode(payment.getRefundStatus());
+		return refundStatus != null && refundStatus.isScheduledForRefund();
+	}
+
 }
