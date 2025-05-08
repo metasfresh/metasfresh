@@ -159,7 +159,11 @@ public interface IPaymentBL extends ISingletonService
 	@NonNull
 	Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull PaymentId paymentId);
 
+	boolean hasUnallocatedIncomingPayment(IQueryFilter<I_C_Payment> selectedPaymentsFilter);
+
 	void markForRefund(IQueryFilter<I_C_Payment> selectedPaymentsFilter);
 
-	boolean hasUnallocatedIncomingPayment(IQueryFilter<I_C_Payment> selectedPaymentsFilter);
+	boolean hasScheduledForRefund(IQueryFilter<I_C_Payment> selectedPaymentsFilter);
+
+	void unmarkForRefund(IQueryFilter<I_C_Payment> paymentsFilter);
 }
