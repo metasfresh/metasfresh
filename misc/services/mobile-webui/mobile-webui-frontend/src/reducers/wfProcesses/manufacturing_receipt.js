@@ -59,7 +59,7 @@ const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, line
 
 const getAggregateToLU = ({ draftActivityLine, luTarget }) => {
   if (luTarget.huQRCode) {
-    const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
+    const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0]?.tuPIItemProductId;
     return {
       existingLU: {
         huQRCode: toQRCodeObject(luTarget.huQRCode),
