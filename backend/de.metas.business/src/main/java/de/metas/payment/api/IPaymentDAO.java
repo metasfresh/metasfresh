@@ -9,6 +9,7 @@ import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_PaySelection;
@@ -86,4 +87,6 @@ public interface IPaymentDAO extends ISingletonService
 
 	@NonNull
 	Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull PaymentId paymentId);
+
+	Stream<I_C_Payment> stream(@NonNull IQueryFilter<I_C_Payment> paymentFilter);
 }
