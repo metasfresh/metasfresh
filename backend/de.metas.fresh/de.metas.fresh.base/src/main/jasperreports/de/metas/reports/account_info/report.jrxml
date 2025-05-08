@@ -194,7 +194,7 @@
 					</graphicElement>
 				</rectangle>
 				<textField isBlankWhenNull="true">
-					<reportElement x="1" y="106" width="33" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<reportElement x="1" y="106" width="56" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					</reportElement>
 					<box rightPadding="3"/>
@@ -211,14 +211,14 @@
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="186" y="106" width="216" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="200" y="106" width="202" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="67" y="106" width="119" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="90" y="106" width="110" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
@@ -241,7 +241,7 @@
 					<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="34" y="106" width="33" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="57" y="106" width="33" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
@@ -374,7 +374,7 @@
 					</graphicElement>
 				</rectangle>
 				<textField isBlankWhenNull="true">
-					<reportElement x="1" y="63" width="33" height="9" forecolor="#FFFFFF" uuid="569d3ffa-8899-46d9-a170-b86ada8ef06a">
+					<reportElement x="1" y="63" width="56" height="9" forecolor="#FFFFFF" uuid="569d3ffa-8899-46d9-a170-b86ada8ef06a">
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					</reportElement>
 					<box rightPadding="3"/>
@@ -391,14 +391,14 @@
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="186" y="63" width="216" height="9" forecolor="#FFFFFF" uuid="3b0d6f39-5f33-44a5-958e-cd7673cb9f30"/>
+					<reportElement x="200" y="63" width="202" height="9" forecolor="#FFFFFF" uuid="3b0d6f39-5f33-44a5-958e-cd7673cb9f30"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="67" y="63" width="119" height="9" forecolor="#FFFFFF" uuid="375aacf2-23be-4f91-8582-1ef4775e6cf6"/>
+					<reportElement x="90" y="63" width="110" height="9" forecolor="#FFFFFF" uuid="375aacf2-23be-4f91-8582-1ef4775e6cf6"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
@@ -412,7 +412,7 @@
 					<textFieldExpression><![CDATA[$R{amtdr}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="34" y="63" width="33" height="9" forecolor="#FFFFFF" uuid="6dacd2a1-8949-4fb4-9ba1-50a2ba6c3d57"/>
+					<reportElement x="57" y="63" width="33" height="9" forecolor="#FFFFFF" uuid="6dacd2a1-8949-4fb4-9ba1-50a2ba6c3d57"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
@@ -488,7 +488,7 @@
 		<band height="40" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{unionorder}.intValue() != 4 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="1" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+				<reportElement x="1" y="0" width="56" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<box rightPadding="3"/>
@@ -505,7 +505,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="186" y="0" width="216" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="200" y="0" width="202" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
@@ -517,7 +517,7 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="67" y="0" width="119" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="90" y="0" width="110" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
@@ -531,7 +531,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement x="34" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="57" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
@@ -772,7 +772,7 @@
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 3 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="1" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+				<reportElement x="1" y="0" width="56" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<box rightPadding="3"/>
@@ -789,7 +789,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="186" y="0" width="216" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="200" y="0" width="202" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
@@ -801,7 +801,7 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="67" y="0" width="119" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="90" y="0" width="110" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
@@ -815,7 +815,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement x="34" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="57" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
@@ -832,7 +832,7 @@
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 4 && $F{eurosaldo} != null && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="186" y="0" width="216" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="200" y="0" width="202" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
