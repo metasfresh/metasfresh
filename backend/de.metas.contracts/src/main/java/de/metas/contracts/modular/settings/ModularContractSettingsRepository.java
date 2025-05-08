@@ -235,9 +235,9 @@ public class ModularContractSettingsRepository
 				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))
-				// .addedValueReceiptEndDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getAddedValueReceiptEndDate(),
-				// 		OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
-				// 		orgDAO::getTimeZone)) //TODO
+				.addedValueReceiptEndDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getReceiptAVEndDate(),
+						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
+						orgDAO::getTimeZone))
 				.freeStorageCostDays(settingsRecord.getFreeStorageCostDays())
 				.moduleConfigs(moduleRecords.stream()
 						.map(moduleRecord -> fromRecord(moduleRecord, contractTypes))

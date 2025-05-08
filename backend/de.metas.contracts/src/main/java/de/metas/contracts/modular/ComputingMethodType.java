@@ -61,7 +61,7 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SalesAV(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesAV),
 	SalesAverageAddedValueOnShippedQuantity(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesAverageAVOnShippedQty),
 	SalesInformativeLogs(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesInformativeLogs),
-	AVReceiptDate("AVReceiptDate"),
+	AVReceiptUntilDate(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AVReceiptUntilDate),
 
 	// Methods not needed in this increment
 	@Deprecated IMPORT_LOG_DEPRECATED(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ImportLog_NotUsed),

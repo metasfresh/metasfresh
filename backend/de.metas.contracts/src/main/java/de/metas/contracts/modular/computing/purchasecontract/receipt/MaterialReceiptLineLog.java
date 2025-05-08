@@ -22,37 +22,51 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
-import de.metas.inout.InOutLineId;
-import de.metas.organization.LocalDateAndOrgId;
-import de.metas.organization.OrgId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.uom.UomId;
 import lombok.NonNull;
-import org.compiere.model.I_M_InOut;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 @Component
 class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	@Override
-	public boolean applies(final @NonNull CreateLogRequest request)
-	{
-		final LocalDateAndOrgId appliesUntilDate = request.getModularContractSettings().getAddedValueReceiptEndDate();
-		final I_M_InOut inOut = inOutBL.getByLineIdInTrx(request.getRecordRepoId(InOutLineId::ofRepoId));
-		final LocalDateAndOrgId movementDate = LocalDateAndOrgId.ofTimestamp(inOut.getMovementDate(), OrgId.ofRepoId(inOut.getAD_Org_ID()), orgDAO::getTimeZone);
-		if (movementDate.isAfter(appliesUntilDate))
-		{
-			return false;
-		}
-		return super.applies(request);
-	}
-
 	public MaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ReceiptComputingMethod computingMethod,
 			@NonNull final ModularContractService modularContractService)
 	{
 		super(modCntrInvoicingGroupRepository, modularContractService, computingMethod);
+	}
+
+	@Override
+	@NonNull
+	public ProductPriceWithFlags getContractSpecificPriceWithFlags(final @NonNull CreateLogRequest request)
+	{
+		final FlatrateTermId flatrateTermId = request.getContractId();
+		final I_C_Flatrate_Term modularContract = flatrateBL.getById(flatrateTermId);
+		final ProductId productId = request.getModularContractSettings().getRawProductId();
+		final UomId stockUOMId = productBL.getStockUOMId(productId);
+
+		final CurrencyId currencyId = CurrencyId.optionalOfRepoId(modularContract.getC_Currency_ID())
+				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
+						.appendParametersToMessage()
+						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
+		final ProductPrice productPrice = ProductPrice.builder()
+				.productId(productId)
+				.uomId(stockUOMId)
+				.money(Money.zero(currencyId))
+				.build();
+
+		return ProductPriceWithFlags.ofZero(productPrice);
 	}
 }

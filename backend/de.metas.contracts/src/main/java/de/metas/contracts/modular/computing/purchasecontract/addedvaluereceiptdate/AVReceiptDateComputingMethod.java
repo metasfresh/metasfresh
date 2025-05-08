@@ -38,7 +38,7 @@ public class AVReceiptDateComputingMethod extends AbstractReceiptComputingMethod
 	@NonNull final ModularContractProvider contractProvider,
 	@NonNull final ComputingMethodService computingMethodService)
 	{
-		super(contractProvider, computingMethodService, ComputingMethodType.AVReceiptDate);
+		super(contractProvider, computingMethodService, ComputingMethodType.AVReceiptUntilDate);
 	}
 
 	@Override

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCntr_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 94041749L;
+	private static final long serialVersionUID = -1494555042L;
 
     /** Standard Constructor */
     public X_ModCntr_Settings (final Properties ctx, final int ModCntr_Settings_ID, @Nullable final String trxName)
@@ -149,13 +149,13 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	/** No = N */
 	public static final String ISSOTRX_No = "N";
 	@Override
-	public void setIsSOTrx (final String IsSOTrx)
+	public void setIsSOTrx (final java.lang.String IsSOTrx)
 	{
 		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
 	}
 
 	@Override
-	public String getIsSOTrx() 
+	public java.lang.String getIsSOTrx() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsSOTrx);
 	}
@@ -173,6 +173,21 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public int getM_Co_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Co_Product_ID);
+	}
+
+	@Override
+	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
+	{
+		if (ModCntr_Settings_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_ModCntr_Settings_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_ModCntr_Settings_ID, ModCntr_Settings_ID);
+	}
+
+	@Override
+	public int getModCntr_Settings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Settings_ID);
 	}
 
 	@Override
@@ -221,30 +236,27 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
-	{
-		if (ModCntr_Settings_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_ModCntr_Settings_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_ModCntr_Settings_ID, ModCntr_Settings_ID);
-	}
-
-	@Override
-	public int getModCntr_Settings_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_ModCntr_Settings_ID);
-	}
-
-	@Override
-	public void setName (final String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public String getName() 
+	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setReceiptAVEndDate (final java.sql.Timestamp ReceiptAVEndDate)
+	{
+		set_Value (COLUMNNAME_ReceiptAVEndDate, ReceiptAVEndDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getReceiptAVEndDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ReceiptAVEndDate);
 	}
 
 	@Override
