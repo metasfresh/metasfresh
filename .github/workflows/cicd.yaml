@@ -302,13 +302,13 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
-      - name: push-image metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
+#      - name: push-image metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
+#        uses: nick-fields/retry@v3
+#        with:
+#          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+#          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+#          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+#          command: docker push metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
 #      - name: push-image metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }}
 #        uses: nick-fields/retry@v3
 #        with:
