@@ -49,7 +49,7 @@ public enum RefundStatus implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static RefundStatus ofNullableCode(final String code)
+	public static RefundStatus ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
@@ -62,6 +62,11 @@ public enum RefundStatus implements ReferenceListAwareEnum
 			throw new AdempiereException("No " + RefundStatus.class + " found for code: " + code);
 		}
 		return status;
+	}
+
+	public boolean isScheduledForRefund()
+	{
+		return this == ScheduledForRefund;
 	}
 
 }
