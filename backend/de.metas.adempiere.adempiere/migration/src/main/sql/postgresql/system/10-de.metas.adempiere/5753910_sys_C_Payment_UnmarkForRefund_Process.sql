@@ -15,3 +15,10 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Unmark for refund',Updated=TO_TIMESTAMP('2025-05-08 15:31:05.926','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585466
 ;
 
+-- Process: C_Payment_UnmarkForRefund(de.metas.payment.process.C_Payment_UnmarkForRefund)
+-- Table: C_Payment
+-- EntityType: D
+-- 2025-05-08T12:58:16.089Z
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585466,335,541552,TO_TIMESTAMP('2025-05-08 15:58:15.855','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y',TO_TIMESTAMP('2025-05-08 15:58:15.855','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','N','N')
+;
+
