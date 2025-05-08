@@ -139,13 +139,13 @@ public class InvoiceService
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.getByIds(invoiceCandidateIds);
 
-		final HashMap<AsyncBatchId, ArrayList<InvoiceCandidateId>> asyncBatchId2InvoiceCand = new HashMap<>();
+		final HashMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCand = new HashMap<>();
 
 		invoiceCandidates
 				.forEach(invoiceCandidate -> {
 					final AsyncBatchId currentAsyncBatchId = AsyncBatchId.ofRepoIdOrNone(invoiceCandidate.getC_Async_Batch_ID());
 
-					final ArrayList<InvoiceCandidateId> currentInvoiceCands = new ArrayList<>();
+					final List<InvoiceCandidateId> currentInvoiceCands = new ArrayList<>();
 					currentInvoiceCands.add(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()));
 
 					asyncBatchId2InvoiceCand.merge(currentAsyncBatchId, currentInvoiceCands, CollectionUtils::mergeLists);

@@ -641,7 +641,7 @@ public final class CollectionUtils
 	}
 
 	@NonNull
-	public static <T> ArrayList<T> mergeLists(@NonNull final ArrayList<T> list1, @NonNull final ArrayList<T> list2)
+	public static <T> List<T> mergeLists(@NonNull final List<T> list1, @NonNull final List<T> list2)
 	{
 		list1.addAll(list2);
 		return list1;

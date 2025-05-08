@@ -113,13 +113,13 @@ public class OrderService
 
 		final Map<OLCandId, I_C_OLCand> olCandsById = olCandDAO.retrieveByIds(olCandIds);
 
-		final HashMap<AsyncBatchId, ArrayList<OLCandId>> asyncBatchId2OLCands = new HashMap<>();
+		final HashMap<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCands = new HashMap<>();
 
 		olCandsById.values()
 				.forEach(olCand -> {
 					final AsyncBatchId currentAsyncBatchId = AsyncBatchId.ofRepoIdOrNone(olCand.getC_Async_Batch_ID());
 
-					final ArrayList<OLCandId> currentOLCands = new ArrayList<>();
+					final List<OLCandId> currentOLCands = new ArrayList<>();
 					currentOLCands.add(OLCandId.ofRepoId(olCand.getC_OLCand_ID()));
 
 					asyncBatchId2OLCands.merge(currentAsyncBatchId, currentOLCands, CollectionUtils::mergeLists);
