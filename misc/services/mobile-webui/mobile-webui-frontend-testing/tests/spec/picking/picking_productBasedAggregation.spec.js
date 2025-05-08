@@ -46,7 +46,7 @@ const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly } = {
                 slot3: {},
             },
             products: {
-                "P1": { price: 1 },
+                "P1": { price: 1, ean13ProductCode: '063299559' },
                 "P2": { price: 1, bpartners: [{ bpartner: "customer1", cu_ean: '7617027667203' }] },
             },
             packingInstructions: {
@@ -224,6 +224,21 @@ test('Filter by EAN13', async ({ page }) => {
         await PickingJobsListScreen.filterByQRCode('7617027667203');
         await PickingJobsListScreen.expectJobButtons([
             { qtyToDeliver: 21, productId: masterdata.products.P2.id },
+        ]);
+    });
+
+    await test.step('Clear filter', async () => {
+        await PickingJobsListScreen.clearQRCodeFilter();
+        await PickingJobsListScreen.expectJobButtons([
+            { qtyToDeliver: 72, productId: masterdata.products.P1.id },
+            { qtyToDeliver: 54, productId: masterdata.products.P2.id },
+        ]);
+    });
+
+    await test.step('Filter by EAN13 Product Code', async () => {
+        await PickingJobsListScreen.filterByQRCode('7610632995594');
+        await PickingJobsListScreen.expectJobButtons([
+            { qtyToDeliver: 72, productId: masterdata.products.P1.id },
         ]);
     });
 });
