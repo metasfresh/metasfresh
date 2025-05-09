@@ -24,6 +24,7 @@ package de.metas.banking.payment.modelvalidator;
 
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -31,6 +32,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -136,10 +138,9 @@ public class C_PaySelection
 		}
 	}
 
-	// TODO: Fix this in the followup https://github.com/metasfresh/metasfresh/issues/2841
-	// @DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	// public void createPayments(final I_C_PaySelection paySelection)
-	// {
-	// Services.get(IPaySelectionBL.class).createPayments(paySelection);
-	// }
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void createPaymentsFromOriginalIfNeeded(final I_C_PaySelection paySelection)
+	{
+		Services.get(IPaySelectionBL.class).createPaymentsFromOriginalAndAllocateThem(paySelection);
+	}
 }

@@ -36,6 +36,8 @@ public interface IPaySelectionBL extends ISingletonService
 	 */
 	void createPayments(I_C_PaySelection paySelection);
 
+	void createPaymentsFromOriginalAndAllocateThem(I_C_PaySelection paySelection);
+
 	void linkBankStatementLinesByPaymentIds(@NonNull Map<PaymentId, BankStatementAndLineAndRefId> bankStatementAndLineAndRefIds);
 
 	/**

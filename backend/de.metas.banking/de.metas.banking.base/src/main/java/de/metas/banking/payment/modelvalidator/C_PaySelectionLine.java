@@ -12,6 +12,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -23,6 +25,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 @Interceptor(I_C_PaySelectionLine.class)
@@ -32,6 +35,7 @@ public class C_PaySelectionLine
 	private final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	private static final AdMessageKey MSG_PaySelectionLine_Invoice_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Invoice.InvalidCurrency");
 
@@ -79,21 +83,32 @@ public class C_PaySelectionLine
 		final I_C_PaySelection paySelection = paySelectionLine.getC_PaySelection();
 		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.create(paySelection.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
 
-		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(paySelectionLine.getC_Invoice_ID()));
+		CurrencyId currencyId = null;
+		if (paySelectionLine.getC_Invoice_ID() > 0)
+		{
+			final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(paySelectionLine.getC_Invoice_ID()));
+			currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		}
+
+		if (paySelectionLine.getOriginal_Payment_ID() > 0)
+		{
+			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paySelectionLine.getOriginal_Payment_ID()));
+			currencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
+		}
 
 		//
 		// Match currency
-		if (invoice.getC_Currency_ID() == bankAccount.getC_Currency_ID())
+		final CurrencyId banckAccoutnCurrencyId = CurrencyId.ofRepoId(bankAccount.getC_Currency_ID());
+		if (currencyId.compareTo(banckAccoutnCurrencyId) == 0)
 		{
 			return;
 		}
 
 		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		final CurrencyCode invoiceCurrencyCode = currenciesRepo.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
-		final CurrencyCode bankAccountCurrencyCode = currenciesRepo.getCurrencyCodeById(CurrencyId.ofRepoId(bankAccount.getC_Currency_ID()));
+		final CurrencyCode invoiceCurrencyCode = currenciesRepo.getCurrencyCodeById(currencyId);
+		final CurrencyCode bankAccountCurrencyCode = currenciesRepo.getCurrencyCodeById(banckAccoutnCurrencyId);
 
 		throw new AdempiereException(MSG_PaySelectionLine_Invoice_InvalidCurrency,
-				invoice.getDocumentNo(),     // invoice
 				invoiceCurrencyCode.toThreeLetterCode(),      // Actual
 				bankAccountCurrencyCode.toThreeLetterCode()) // Expected
 				.markAsUserValidationError();

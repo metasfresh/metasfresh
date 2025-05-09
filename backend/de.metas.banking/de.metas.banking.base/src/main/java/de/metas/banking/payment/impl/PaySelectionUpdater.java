@@ -284,6 +284,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		final String sql = buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection)
+				+ " UNION "
 				+ buildPaymentSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
 
 		return sql;
@@ -495,29 +496,29 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " currencyConvert(payamt"
 				+ ",p.C_Currency_ID, ?,?, p.C_ConversionType_ID,p.AD_Client_ID,p.AD_Org_ID) as OpenAmt," // 3
 				+ " null as DiscountAmt," // 4
-				+ " i.PaymentRule, "  // 5
-				+ " p.IsSOTrx, " // 6
+				+ " null as PaymentRule, "  // 5
+				+ " p.IsReceipt, " // 6
 				+ " p.C_Bpartner_ID," // 6
 				// C_BP_BankAccount_ID
 				+ " p.C_BP_BankAccount_ID " //8
 				//
 				+ " FROM C_Payment p "
 				+ " LEFT JOIN C_Doctype dt on p.C_Doctype_ID = dt.C_Doctype_ID "
-				+ " WHERE true AND p.RefundStatus = ? AND p.IsRefunded='N'"  //
+				+ " WHERE true AND p.RefundStatus = ? AND p.IsRefund='N'"  //
 				;
 		sqlParams.add(C_CurrencyTo_ID); // #1
 		sqlParams.add(payDate); // #2
-		sqlParams.add(RefundStatus.Refunded.getCode()); // #3
+		sqlParams.add(RefundStatus.ScheduledForRefund.getCode()); // #3
 
-		// Not already paid invoices
+		// Not already allocated payments
 		{
-			sql += " AND i.IsPaid=?";
+			sql += " AND p.IsAllocated=?";
 			sqlParams.add(false);
 		}
 
 		// Only COmpleted/CLosed payment
 		{
-			sql += " AND i.DocStatus IN (?,?)";
+			sql += " AND p.DocStatus IN (?,?)";
 			sqlParams.add(DocStatus.Completed);
 			sqlParams.add(DocStatus.Closed);
 		}
@@ -587,8 +588,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 	private String buildSelectSQL_PaymentMatchRequirement()
 	{
-		final String whereCreditTransferToCustomer = " p.IsReceipt='N' AND dt.DocBaseType='ARR' ";
-		final String whereCreditTransferToVendor = "  p.IsReceipt='Y' AND dt.DocBaseType='APP'";
+		final String whereCreditTransferToCustomer = " p.IsReceipt='Y' AND dt.DocBaseType='ARR' ";
+		final String whereCreditTransferToVendor = "  p.IsReceipt='N' AND dt.DocBaseType='APP'";
 
 		final InvoiceMatchingMode matchRequirement = getMatchRequirement().orElse(null);
 		if (matchRequirement == null) // ALL

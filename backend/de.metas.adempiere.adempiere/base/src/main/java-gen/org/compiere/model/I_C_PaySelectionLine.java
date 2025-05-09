@@ -187,7 +187,7 @@ public interface I_C_PaySelectionLine
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_Invoice_ID (int C_Invoice_ID);
@@ -197,7 +197,7 @@ public interface I_C_PaySelectionLine
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_Invoice_ID();

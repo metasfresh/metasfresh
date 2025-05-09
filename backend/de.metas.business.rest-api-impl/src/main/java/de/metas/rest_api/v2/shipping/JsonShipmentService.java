@@ -654,7 +654,7 @@ public class JsonShipmentService
 
 		final Map<ShipmentScheduleId, CreateShipmentInfoCandidate> candidateInfoById = Maps.uniqueIndex(createShipmentCandidates, CreateShipmentInfoCandidate::getShipmentScheduleId);
 
-		final Map<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleIds = shipmentService.getShipmentScheduleIdByAsyncBatchId(candidateInfoById.keySet());
+		final Map<AsyncBatchId, List<ShipmentScheduleId>> asyncBatchId2ScheduleIds = shipmentService.getShipmentScheduleIdByAsyncBatchId(candidateInfoById.keySet());
 
 		return asyncBatchId2ScheduleIds.entrySet()
 				.stream()

@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
@@ -57,10 +58,42 @@ public class PaySelectionBL implements IPaySelectionBL
 {
 	private static final AdMessageKey MSG_CannotReactivate_PaySelectionLineInBankStatement_2P = AdMessageKey.of("CannotReactivate_PaySelectionLineInBankStatement");
 	private static final AdMessageKey MSG_PaySelectionLines_No_BankAccount = AdMessageKey.of("C_PaySelection_PaySelectionLines_No_BankAccount");
-
+    private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+
+	@NotNull
+	private static BPBankAcctUse getAcceptedBankAccountUsage(final boolean isSalesInvoice, final boolean isCreditMemo)
+	{
+		if ((isSalesInvoice && !isCreditMemo) ||
+				(!isSalesInvoice && isCreditMemo))
+		{
+			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo
+			// OR it is a Credit memo with isSoTrx = 'N'
+			return BPBankAcctUse.DEBIT;
+		}
+		else
+		{
+			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
+			// OR it is a Credit memo with isSoTrx = 'Y'
+			return BPBankAcctUse.DEPOSIT;
+		}
+	}
+
+	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
+	{
+		return paySelectionLines.stream()
+				.map(paySelectionLine -> PaySelectionId.ofRepoId(paySelectionLine.getC_PaySelection_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@VisibleForTesting
+	static boolean isReconciled(@NonNull final I_C_PaySelectionLine psl)
+	{
+		return BankStatementId.ofRepoIdOrNull(psl.getC_BankStatement_ID()) != null;
+	}
 
 	@Override
 	public I_C_PaySelection getByIdNotNull(@NonNull final PaySelectionId paySelectionId)
@@ -164,24 +197,6 @@ public class PaySelectionBL implements IPaySelectionBL
 		return null;
 	}
 
-	@NotNull
-	private static BPBankAcctUse getAcceptedBankAccountUsage(final boolean isSalesInvoice, final boolean isCreditMemo)
-	{
-		if ((isSalesInvoice && !isCreditMemo) ||
-				(!isSalesInvoice && isCreditMemo))
-		{
-			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo
-			// OR it is a Credit memo with isSoTrx = 'N'
-			return BPBankAcctUse.DEBIT;
-		}
-		else
-		{
-			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
-			// OR it is a Credit memo with isSoTrx = 'Y'
-			return BPBankAcctUse.DEPOSIT;
-		}
-	}
-
 	@Override
 	public IPaySelectionUpdater newPaySelectionUpdater()
 	{
@@ -195,6 +210,17 @@ public class PaySelectionBL implements IPaySelectionBL
 		{
 			paySelectionLine.setC_PaySelection(paySelection); // for optimizations
 			createPaymentIfNeeded(paySelectionLine);
+			createPaymentFromOriginalIfNeeded(paySelectionLine);
+		}
+	}
+
+	@Override
+	public void createPaymentsFromOriginalAndAllocateThem(final I_C_PaySelection paySelection)
+	{
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection))
+		{
+			paySelectionLine.setC_PaySelection(paySelection); // for optimizations
+			createPaymentFromOriginalIfNeeded(paySelectionLine);
 		}
 	}
 
@@ -244,8 +270,6 @@ public class PaySelectionBL implements IPaySelectionBL
 	 */
 	private org.compiere.model.I_C_Payment createPayment(final I_C_PaySelectionLine line)
 	{
-		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-
 		final I_C_PaySelection paySelection = line.getC_PaySelection();
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
 		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
@@ -261,6 +285,38 @@ public class PaySelectionBL implements IPaySelectionBL
 				.discountAmt(line.getDiscountAmt())
 				//
 				.createAndProcess();
+	}
+
+	private void createPaymentFromOriginalIfNeeded(@NonNull final I_C_PaySelectionLine line)
+	{
+		if (line.getOriginal_Payment_ID() > 0 && line.getC_Payment_ID() > 0)
+		{
+			return;
+		}
+
+		final PaymentId originalPaymentId = PaymentId.ofRepoId(line.getOriginal_Payment_ID());
+		final I_C_Payment originalPayment = paymentBL.getById(originalPaymentId);
+		final I_C_PaySelection paySelection = line.getC_PaySelection();
+		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
+
+		final I_C_Payment newPayment = paymentBL.newOutboundPaymentBuilder()
+				.adOrgId(OrgId.ofRepoId(originalPayment.getAD_Org_ID()))
+				.bpartnerId(BPartnerId.ofRepoId(originalPayment.getC_BPartner_ID()))
+				.orgBankAccountId(BankAccountId.ofRepoId(originalPayment.getC_BP_BankAccount_ID()))
+				.currencyId(CurrencyId.ofRepoId(originalPayment.getC_Currency_ID()))
+				.payAmt(originalPayment.getPayAmt())
+				.discountAmt(originalPayment.getDiscountAmt())
+				.writeoffAmt(originalPayment.getWriteOffAmt())
+				.tenderType(TenderType.DirectDeposit)
+				.dateAcct(payDate)
+				.dateTrx(payDate)
+				.createAndProcess();
+
+		// allocate payments
+		allocationBL.allocateSpecificPayments(originalPayment, newPayment);
+
+		line.setC_Payment_ID(newPayment.getC_Payment_ID());
+		paySelectionDAO.save(line);
 	}
 
 	@Override
@@ -311,13 +367,6 @@ public class PaySelectionBL implements IPaySelectionBL
 		updatePaySelectionReconciledStatus(paySelectionIds);
 	}
 
-	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
-	{
-		return paySelectionLines.stream()
-				.map(paySelectionLine -> PaySelectionId.ofRepoId(paySelectionLine.getC_PaySelection_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	@VisibleForTesting
 	void updatePaySelectionReconciledStatus(@NonNull final Set<PaySelectionId> paySelectionIds)
 	{
@@ -346,12 +395,6 @@ public class PaySelectionBL implements IPaySelectionBL
 			paySelection.setIsReconciled(isReconciled);
 			paySelectionDAO.save(paySelection);
 		}
-	}
-
-	@VisibleForTesting
-	static boolean isReconciled(@NonNull final I_C_PaySelectionLine psl)
-	{
-		return BankStatementId.ofRepoIdOrNull(psl.getC_BankStatement_ID()) != null;
 	}
 
 	private void linkBankStatementLine(

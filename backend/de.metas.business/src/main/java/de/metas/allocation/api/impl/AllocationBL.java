@@ -41,6 +41,27 @@ public class AllocationBL implements IAllocationBL
 {
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
+	/**
+	 * Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
+	 */
+	@VisibleForTesting
+	static void applyBankAccountInvoiceAutoAllocRules(
+			@NonNull final ArrayList<I_C_Payment> eligiblePayments,
+			@NonNull final DocTypeId invoiceDocTypeId,
+			@NonNull final BankAccountInvoiceAutoAllocRulesRepository bankAccountInvoiceAutoAllocRulesRepository)
+	{
+		if (eligiblePayments.isEmpty())
+		{
+			return;
+		}
+
+		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
+		eligiblePayments.removeIf(payment -> {
+			final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
+			return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
+		});
+	}
+
 	@Override
 	public C_AllocationHdr_Builder newBuilder()
 	{
@@ -151,27 +172,6 @@ public class AllocationBL implements IAllocationBL
 				SpringContextHolder.instance.getBean(BankAccountInvoiceAutoAllocRulesRepository.class));
 
 		return eligiblePayments;
-	}
-
-	/**
-	 * Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
-	 */
-	@VisibleForTesting
-	static void applyBankAccountInvoiceAutoAllocRules(
-			@NonNull final ArrayList<I_C_Payment> eligiblePayments,
-			@NonNull final DocTypeId invoiceDocTypeId,
-			@NonNull final BankAccountInvoiceAutoAllocRulesRepository bankAccountInvoiceAutoAllocRulesRepository)
-	{
-		if (eligiblePayments.isEmpty())
-		{
-			return;
-		}
-
-		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
-		eligiblePayments.removeIf(payment -> {
-			final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
-			return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
-		});
 	}
 
 	public void autoAllocateSpecificPayment(
@@ -297,7 +297,7 @@ public class AllocationBL implements IAllocationBL
 
 		Timestamp dateTrx;
 		Timestamp dateAcct;
-		if(request.isUseInvoiceDate())
+		if (request.isUseInvoiceDate())
 		{
 			dateTrx = invoice.getDateInvoiced();
 			dateAcct = invoice.getDateAcct();
@@ -332,5 +332,62 @@ public class AllocationBL implements IAllocationBL
 				.lineDone()
 				//
 				.create(true); // complete=true
+	}
+
+	@Override
+	public void allocateSpecificPayments(final @NonNull I_C_Payment originalPayment, final @NonNull I_C_Payment payment)
+	{
+		// payment must not be oallocated
+		if (originalPayment.isAllocated() || payment.isAllocated())
+		{
+			return;
+		}
+
+		if (payment.getC_BPartner_ID() != originalPayment.getC_BPartner_ID())
+		{
+			return;
+		}
+
+		// payments must be completed
+		if (!DocStatus.ofCode(payment.getDocStatus()).isCompleted()
+				|| !DocStatus.ofCode(originalPayment.getDocStatus()).isCompleted())
+		{
+			return;
+		}
+
+		// payment must be processed
+		if (!payment.isProcessed() || originalPayment.isProcessed())
+		{
+			return;
+		}
+
+		final Timestamp dateAcct = TimeUtil.max(originalPayment.getDateAcct(), payment.getDateAcct());
+		final Timestamp dateTrx = TimeUtil.max(originalPayment.getDateTrx(), payment.getDateTrx());
+
+		final C_AllocationHdr_Builder allocBuilder = newBuilder()
+				.currencyId(originalPayment.getC_Currency_ID())
+				.dateAcct(dateAcct)
+				.dateTrx(dateTrx)
+				//
+				.addLine()
+				.orgId(originalPayment.getAD_Org_ID())
+				.bpartnerId(originalPayment.getC_BPartner_ID())
+				.paymentId(originalPayment.getC_Payment_ID())
+				.amount(originalPayment.getPayAmt())
+				.paymentWriteOffAmt(originalPayment.getWriteOffAmt())
+				.discountAmt(originalPayment.getDiscountAmt())
+				.lineDone()
+				//
+				.addLine()
+				.orgId(payment.getAD_Org_ID())
+				.bpartnerId(payment.getC_BPartner_ID())
+				.paymentId(payment.getC_Payment_ID())
+				.amount(payment.getPayAmt())
+				.paymentWriteOffAmt(payment.getWriteOffAmt())
+				.discountAmt(payment.getDiscountAmt())
+				.lineDone();
+
+		allocBuilder
+				.create(true);
 	}
 }
