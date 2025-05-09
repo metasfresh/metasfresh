@@ -356,7 +356,7 @@ public class AllocationBL implements IAllocationBL
 		}
 
 		// payment must be processed
-		if (!payment.isProcessed() || originalPayment.isProcessed())
+		if (!payment.isProcessed() || !originalPayment.isProcessed())
 		{
 			return;
 		}

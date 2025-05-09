@@ -29,6 +29,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
+import de.metas.payment.RefundStatus;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
@@ -210,7 +211,6 @@ public class PaySelectionBL implements IPaySelectionBL
 		{
 			paySelectionLine.setC_PaySelection(paySelection); // for optimizations
 			createPaymentIfNeeded(paySelectionLine);
-			createPaymentFromOriginalIfNeeded(paySelectionLine);
 		}
 	}
 
@@ -308,9 +308,15 @@ public class PaySelectionBL implements IPaySelectionBL
 				.discountAmt(originalPayment.getDiscountAmt())
 				.writeoffAmt(originalPayment.getWriteOffAmt())
 				.tenderType(TenderType.DirectDeposit)
+				.originalPaymentId(originalPaymentId)
+				.isRefund(true)
 				.dateAcct(payDate)
 				.dateTrx(payDate)
 				.createAndProcess();
+
+		// update status
+		originalPayment.setRefundStatus(RefundStatus.Refunded.getCode());
+		paymentBL.save(originalPayment);
 
 		// allocate payments
 		allocationBL.allocateSpecificPayments(originalPayment, newPayment);

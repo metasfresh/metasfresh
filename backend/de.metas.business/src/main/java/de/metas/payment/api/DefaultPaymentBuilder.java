@@ -40,6 +40,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
+import de.metas.payment.PaymentId;
+import de.metas.payment.RefundStatus;
 import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -273,6 +275,32 @@ public class DefaultPaymentBuilder
 		payment.setTenderType(tenderType.getCode());
 		return this;
 	}
+
+	public final DefaultPaymentBuilder originalPaymentId(@Nullable final PaymentId paymentId)
+	{
+		assertNotBuilt();
+		if (paymentId != null)
+		{
+			payment.setOriginal_Payment_ID(PaymentId.toRepoId(paymentId));
+		}
+		return this;
+	}
+
+	public final DefaultPaymentBuilder refundStatus(@NonNull final RefundStatus refundStatus)
+	{
+		assertNotBuilt();
+		payment.setRefundStatus(refundStatus.getCode());
+		return this;
+	}
+
+
+	public final DefaultPaymentBuilder isRefund(final boolean isRefund)
+	{
+		assertNotBuilt();
+		payment.setIsRefund(isRefund);
+		return this;
+	}
+
 
 	/**
 	 * Sets the following fields using the given <code>invoice</code>:
