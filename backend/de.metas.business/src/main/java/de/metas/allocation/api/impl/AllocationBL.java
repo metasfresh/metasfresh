@@ -374,7 +374,6 @@ public class AllocationBL implements IAllocationBL
 				.bpartnerId(originalPayment.getC_BPartner_ID())
 				.paymentId(originalPayment.getC_Payment_ID())
 				.amount(originalPayment.getPayAmt())
-				.paymentWriteOffAmt(originalPayment.getWriteOffAmt())
 				.discountAmt(originalPayment.getDiscountAmt())
 				.lineDone()
 				//
@@ -383,7 +382,6 @@ public class AllocationBL implements IAllocationBL
 				.bpartnerId(payment.getC_BPartner_ID())
 				.paymentId(payment.getC_Payment_ID())
 				.amount(payment.getPayAmt())
-				.paymentWriteOffAmt(payment.getWriteOffAmt())
 				.discountAmt(payment.getDiscountAmt())
 				.lineDone();
 
