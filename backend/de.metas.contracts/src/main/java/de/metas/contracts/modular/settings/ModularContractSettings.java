@@ -43,7 +43,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +70,8 @@ public class ModularContractSettings
 	@NonNull LocalDateAndOrgId storageCostStartDate;
 	int freeStorageCostDays;
 	int additionalInterestDays;
+
+	@NonNull LocalDateAndOrgId addedValueReceiptEndDate;
 
 	@NonNull Percent interestPercent;
 	@NonNull Percent interimPricePercent;

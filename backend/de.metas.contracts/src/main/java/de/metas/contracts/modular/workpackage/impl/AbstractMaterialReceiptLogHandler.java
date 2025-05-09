@@ -24,7 +24,7 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
-import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
@@ -39,7 +39,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
@@ -64,11 +63,10 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 	private final static AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptReverseLogDescription");
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptCompleteLogDescription");
 
-	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull protected final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull protected final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull protected final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
@@ -96,7 +94,7 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 		{
 			return false;
 		}
-		final I_M_InOut inOut = inOutDAO.getByLineIdInTrx(InOutLineId.ofRepoId(tableRef.getRecord_ID()));
+		final I_M_InOut inOut = inOutBL.getByLineIdInTrx(InOutLineId.ofRepoId(tableRef.getRecord_ID()));
 
 		return !inOut.isSOTrx();
 	}
@@ -108,7 +106,7 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 		final InOutLineId receiptLineId = getReceiptLineId(request.getRecordRef());
 		final I_M_InOutLine receiptLineRecord = inOutBL.getLineByIdInTrx(receiptLineId);
 		final I_M_InOut receiptRecord = inOutBL.getById(InOutId.ofRepoId(receiptLineRecord.getM_InOut_ID()));
-		final I_C_Flatrate_Term contractRecord = flatrateDAO.getById(request.getContractId());
+		final I_C_Flatrate_Term contractRecord = flatrateBL.getById(request.getContractId());
 		final Quantity quantity = inOutBL.getQtyEntered(receiptLineRecord);
 
 		final ProductId productId = getProductId(request, receiptLineRecord);

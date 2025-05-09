@@ -30,6 +30,27 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Additional interest days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAddInterestDays (int AddInterestDays);
+
+	/**
+	 * Get Additional interest days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAddInterestDays();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_AddInterestDays = new ModelColumn<>(I_ModCntr_Settings.class, "AddInterestDays", null);
+	String COLUMNNAME_AddInterestDays = "AddInterestDays";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -50,27 +71,6 @@ public interface I_ModCntr_Settings
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Additional interest days.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAddInterestDays (int AddInterestDays);
-
-	/**
-	 * Get Additional interest days.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAddInterestDays();
-
-	ModelColumn<I_ModCntr_Settings, Object> COLUMN_AddInterestDays = new ModelColumn<>(I_ModCntr_Settings.class, "AddInterestDays", null);
-	String COLUMNNAME_AddInterestDays = "AddInterestDays";
 
 	/**
 	 * Set Calendar.
@@ -100,6 +100,31 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_C_Calendar_ID = "C_Calendar_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_Created = new ModelColumn<>(I_ModCntr_Settings.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Year.
 	 * Calendar Year
 	 *
@@ -125,31 +150,6 @@ public interface I_ModCntr_Settings
 
 	ModelColumn<I_ModCntr_Settings, org.compiere.model.I_C_Year> COLUMN_C_Year_ID = new ModelColumn<>(I_ModCntr_Settings.class, "C_Year_ID", org.compiere.model.I_C_Year.class);
 	String COLUMNNAME_C_Year_ID = "C_Year_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_ModCntr_Settings, Object> COLUMN_Created = new ModelColumn<>(I_ModCntr_Settings.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Free Storage Days.
@@ -247,7 +247,7 @@ public interface I_ModCntr_Settings
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSOTrx (String IsSOTrx);
+	void setIsSOTrx (java.lang.String IsSOTrx);
 
 	/**
 	 * Get Sales Transaction.
@@ -257,7 +257,7 @@ public interface I_ModCntr_Settings
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getIsSOTrx();
+	java.lang.String getIsSOTrx();
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Settings.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
@@ -281,6 +281,27 @@ public interface I_ModCntr_Settings
 	int getM_Co_Product_ID();
 
 	String COLUMNNAME_M_Co_Product_ID = "M_Co_Product_ID";
+
+	/**
+	 * Set Modular Contract Settings.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Settings_ID (int ModCntr_Settings_ID);
+
+	/**
+	 * Get Modular Contract Settings.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Settings_ID();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_ModCntr_Settings.class, "ModCntr_Settings_ID", null);
+	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
 
 	/**
 	 * Set Pricing System.
@@ -343,34 +364,13 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_M_Raw_Product_ID = "M_Raw_Product_ID";
 
 	/**
-	 * Set Modular Contract Settings.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setModCntr_Settings_ID (int ModCntr_Settings_ID);
-
-	/**
-	 * Get Modular Contract Settings.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getModCntr_Settings_ID();
-
-	ModelColumn<I_ModCntr_Settings, Object> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_ModCntr_Settings.class, "ModCntr_Settings_ID", null);
-	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
-
-	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -379,10 +379,31 @@ public interface I_ModCntr_Settings
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Settings.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Receipt AV End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setReceiptAVEndDate (java.sql.Timestamp ReceiptAVEndDate);
+
+	/**
+	 * Get Receipt AV End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getReceiptAVEndDate();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_ReceiptAVEndDate = new ModelColumn<>(I_ModCntr_Settings.class, "ReceiptAVEndDate", null);
+	String COLUMNNAME_ReceiptAVEndDate = "ReceiptAVEndDate";
 
 	/**
 	 * Set Storage Cost Start Date.
