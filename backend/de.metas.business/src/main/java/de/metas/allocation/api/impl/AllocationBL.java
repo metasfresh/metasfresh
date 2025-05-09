@@ -381,8 +381,8 @@ public class AllocationBL implements IAllocationBL
 				.orgId(payment.getAD_Org_ID())
 				.bpartnerId(payment.getC_BPartner_ID())
 				.paymentId(payment.getC_Payment_ID())
-				.amount(payment.getPayAmt())
-				.discountAmt(payment.getDiscountAmt())
+				.amount(payment.getPayAmt().negate())
+				.discountAmt(payment.getDiscountAmt().negate())
 				.lineDone();
 
 		allocBuilder
