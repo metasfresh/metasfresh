@@ -3,6 +3,8 @@ FROM metasfresh/metas-mvn-camel:$REFNAME as camel
 
 FROM eclipse-temurin:17.0.5_8-jdk
 
+RUN apt-get -y update && apt-get -y install curl
+
 WORKDIR /app
 
 COPY --from=camel /camel/de-metas-camel-externalsystems/core/target/uber/de-metas-camel-externalsystems-core.jar .
