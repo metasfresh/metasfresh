@@ -71,7 +71,6 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -221,7 +220,7 @@ public class RemittanceAdviceBankingService
 		BigDecimal serviceFeeTaxVATRate = null;
 		final List<I_C_InvoiceLine> serviceFeeInvoiceLines = getInvoiceLines(serviceFeeInvoiceId);
 
-		if (!CollectionUtils.isEmpty(serviceFeeInvoiceLines))
+		if (!serviceFeeInvoiceLines.isEmpty())
 		{
 			final I_C_InvoiceLine firstInvoiceLine = serviceFeeInvoiceLines.get(0);
 			serviceFeeTaxId = TaxId.ofRepoId(firstInvoiceLine.getC_Tax_ID());
