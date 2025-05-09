@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-edi
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,10 +30,10 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVExtensionType;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdvice;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import de.metas.common.rest_api.v1.remittanceadvice.RemittanceAdviceType;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -109,7 +109,7 @@ public class JsonRemittanceAdviceProducer
 
 	private String getGLNFromBusinessEntityType(@NonNull final BusinessEntityType businessEntityType)
 	{
-		if (!StringUtils.isEmpty(businessEntityType.getGLN()))
+		if (Check.isNotBlank(businessEntityType.getGLN()))
 		{
 			return GLN_PREFIX + businessEntityType.getGLN();
 		}
@@ -136,7 +136,7 @@ public class JsonRemittanceAdviceProducer
 
 	private Optional<BigDecimal> asBigDecimal(@Nullable final String value)
 	{
-		if (StringUtils.isEmpty(value))
+		if (Check.isBlank(value))
 		{
 			return Optional.empty();
 		}

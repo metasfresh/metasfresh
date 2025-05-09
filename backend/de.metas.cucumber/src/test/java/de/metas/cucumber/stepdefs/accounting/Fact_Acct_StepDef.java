@@ -47,6 +47,11 @@ public class Fact_Acct_StepDef
 				.build();
 	}
 
+	/**
+	 * Matching philosophy:
+	 * not all fact_acct-records are checked, but instead, only fact accounts that match the record-ids are fetched and then matched against the given {@code table}.
+	 * Therefore, for table-rows with star: it's still important to set the {@code Record_ID}.
+	 */
 	@And("^Fact_Acct records are matching$")
 	public void validateFullyMatchingAndPartialMatchingFactAccts(
 			@NonNull final DataTable table) throws Throwable

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +24,8 @@ package de.metas.remittanceadvice;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceAmtMultiplier;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -33,6 +35,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -66,8 +69,8 @@ public class RemittanceAdviceLine
 	@Nullable
 	private final Amount serviceFeeAmount;
 
-	@Nullable
-	private final String externalInvoiceDocBaseType;
+	@NonNull
+	private final InvoiceDocBaseType externalInvoiceDocBaseType;
 
 	@Nullable
 	private final String invoiceIdentifier;
@@ -96,7 +99,7 @@ public class RemittanceAdviceLine
 	private BPartnerId billBPartnerId;
 
 	@Nullable
-	private Instant dateInvoiced;
+	private final Instant dateInvoiced;
 
 	@Nullable
 	private InvoiceId serviceFeeInvoiceId;
@@ -126,19 +129,44 @@ public class RemittanceAdviceLine
 	private boolean isServiceFeeResolved;
 
 	private boolean isServiceFeeVatRateValid;
-	
-	private boolean processed;
+
+	@Setter private boolean processed;
 
 	@Builder
-	public RemittanceAdviceLine(@NonNull final OrgId orgId, @NonNull final RemittanceAdviceLineId remittanceAdviceLineId, @NonNull final RemittanceAdviceId remittanceAdviceId, @NonNull final Amount remittedAmount, @Nullable final Amount invoiceGrossAmount, @Nullable final Amount paymentDiscountAmount, @Nullable final Amount serviceFeeAmount, @Nullable final String externalInvoiceDocBaseType,
-			@Nullable final String invoiceIdentifier,
-			@Nullable final BPartnerId bpartnerIdentifier, @Nullable final BigDecimal serviceFeeVatRate, final boolean isLineAcknowledged, @Nullable final BigDecimal invoiceAmt, @Nullable final Amount invoiceAmtInREMADVCurrency, @Nullable final Amount overUnderAmt, @Nullable final CurrencyId invoiceCurrencyId, @Nullable final BPartnerId billBPartnerId, @Nullable final Instant dateInvoiced,
-			@Nullable final InvoiceId serviceFeeInvoiceId,
-			@Nullable final BPartnerId serviceFeeBPartnerId, @Nullable final ProductId serviceFeeProductId, @Nullable final TaxId taxId, @Nullable final InvoiceId invoiceId, final boolean isBPartnerValid, final boolean isInvoiceResolved, final boolean isAmountValid, final boolean isInvoiceDocTypeValid, final boolean isInvoiceDateValid, final boolean isServiceFeeResolved, final boolean processed)
+	public RemittanceAdviceLine(@NonNull final OrgId orgId,
+								@NonNull final RemittanceAdviceLineId remittanceAdviceLineId,
+								@NonNull final RemittanceAdviceId remittanceAdviceId,
+								@NonNull final Amount remittedAmount,
+								@Nullable final Amount invoiceGrossAmount,
+								@Nullable final Amount paymentDiscountAmount,
+								@Nullable final Amount serviceFeeAmount,
+								@NonNull final InvoiceDocBaseType externalInvoiceDocBaseType,
+								@Nullable final String invoiceIdentifier,
+								@Nullable final BPartnerId bpartnerIdentifier,
+								@Nullable final BigDecimal serviceFeeVatRate,
+								final boolean isLineAcknowledged,
+								@Nullable final BigDecimal invoiceAmt,
+								@Nullable final Amount invoiceAmtInREMADVCurrency,
+								@Nullable final Amount overUnderAmt,
+								@Nullable final CurrencyId invoiceCurrencyId,
+								@Nullable final BPartnerId billBPartnerId,
+								@Nullable final Instant dateInvoiced,
+								@Nullable final InvoiceId serviceFeeInvoiceId,
+								@Nullable final BPartnerId serviceFeeBPartnerId,
+								@Nullable final ProductId serviceFeeProductId,
+								@Nullable final TaxId taxId,
+								@Nullable final InvoiceId invoiceId,
+								final boolean isBPartnerValid,
+								final boolean isInvoiceResolved,
+								final boolean isAmountValid,
+								final boolean isInvoiceDocTypeValid,
+								final boolean isInvoiceDateValid,
+								final boolean isServiceFeeResolved,
+								final boolean processed)
 	{
 
 		Amount.assertSameCurrency(Stream.of(remittedAmount, overUnderAmt, paymentDiscountAmount)
-										  .filter(Objects::nonNull).toArray(Amount[]::new));
+				.filter(Objects::nonNull).toArray(Amount[]::new));
 
 		if (invoiceAmt != null && invoiceAmt.signum() != 0 && invoiceCurrencyId == null)
 		{
@@ -182,8 +210,8 @@ public class RemittanceAdviceLine
 	public void syncWithInvoice(@NonNull final RemittanceAdviceLineInvoiceDetails remittanceAdviceLineInvoiceDetails)
 	{
 		Amount.assertSameCurrency(remittedAmount,
-								  remittanceAdviceLineInvoiceDetails.getInvoiceAmtInREMADVCurrency(),
-								  remittanceAdviceLineInvoiceDetails.getOverUnderAmtInREMADVCurrency());
+				remittanceAdviceLineInvoiceDetails.getInvoiceAmtInREMADVCurrency(),
+				remittanceAdviceLineInvoiceDetails.getOverUnderAmtInREMADVCurrency());
 
 		invoiceId = remittanceAdviceLineInvoiceDetails.getInvoiceId();
 		billBPartnerId = remittanceAdviceLineInvoiceDetails.getBillBPartnerId();
@@ -199,12 +227,14 @@ public class RemittanceAdviceLine
 		isInvoiceDateValid = remittanceAdviceLineInvoiceDetails.getInvoiceDate().equals(dateInvoiced);
 	}
 
-	public void validateBPartner(){
+	public void validateBPartner()
+	{
 		isBPartnerValid = billBPartnerId != null && billBPartnerId.equals(bpartnerIdentifier);
 	}
 
-	public void validateInvoiceDocBaseType(@NonNull final String invoiceDocType){
-		isInvoiceDocTypeValid = invoiceDocType.equalsIgnoreCase(externalInvoiceDocBaseType);
+	public void validateInvoiceDocBaseType(@NonNull final InvoiceDocBaseType invoiceDocType)
+	{
+		isInvoiceDocTypeValid = invoiceDocType.equals(externalInvoiceDocBaseType);
 	}
 
 	public void removeInvoice()
@@ -243,8 +273,27 @@ public class RemittanceAdviceLine
 		return isInvoiceResolved && (isLineAcknowledged || isAmountValid);
 	}
 
-	public void setProcessed(final boolean processed)
+	/**
+	 * @return amount adjusted towards the invoice's docType. I.e negated if the invoice is a sales-creditmemo or purchase-invoice.
+	 */
+	@NonNull
+	public Amount getRemittedAmountAdjusted()
 	{
-		this.processed = processed;
+		final InvoiceAmtMultiplier multiplier = InvoiceAmtMultiplier.nonAdjustedFor(externalInvoiceDocBaseType);
+		return multiplier.convertToRealValue(getRemittedAmount());
+	}
+
+	/**
+	 * @return amount adjusted towards the invoice's docType. I.e negated if the invoice is a sales-creditmemo or purchase-invoice.
+	 */
+	@Nullable
+	public Amount getInvoiceAmtInREMADVCurrencyAdjusted()
+	{
+		if (getInvoiceAmtInREMADVCurrency() == null)
+		{
+			return null;
+		}
+		final InvoiceAmtMultiplier multiplier = InvoiceAmtMultiplier.nonAdjustedFor(externalInvoiceDocBaseType);
+		return multiplier.convertToRealValue(getInvoiceAmtInREMADVCurrency());
 	}
 }

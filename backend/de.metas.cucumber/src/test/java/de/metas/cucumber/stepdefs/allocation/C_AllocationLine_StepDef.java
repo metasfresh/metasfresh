@@ -120,13 +120,13 @@ public class C_AllocationLine_StepDef
 		final SoftAssertions softly = new SoftAssertions();
 
 		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_Amount)
-				.ifPresent(amount -> softly.assertThat(allocationLine.getAmount()).as("Amount").isEqualTo(amount));
+				.ifPresent(amount -> softly.assertThat(allocationLine.getAmount()).as("Amount").isEqualByComparingTo(amount));
 		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_DiscountAmt)
-				.ifPresent(amount -> softly.assertThat(allocationLine.getDiscountAmt()).as("DiscountAmt").isEqualTo(amount));
+				.ifPresent(amount -> softly.assertThat(allocationLine.getDiscountAmt()).as("DiscountAmt").isEqualByComparingTo(amount));
 		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_WriteOffAmt)
-				.ifPresent(amount -> softly.assertThat(allocationLine.getWriteOffAmt()).as("WriteOffAmt").isEqualTo(amount));
+				.ifPresent(amount -> softly.assertThat(allocationLine.getWriteOffAmt()).as("WriteOffAmt").isEqualByComparingTo(amount));
 		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_OverUnderAmt)
-				.ifPresent(amount -> softly.assertThat(allocationLine.getOverUnderAmt()).as("OverUnderAmt").isEqualTo(amount));
+				.ifPresent(amount -> softly.assertThat(allocationLine.getOverUnderAmt()).as("OverUnderAmt").isEqualByComparingTo(amount));
 
 		softly.assertAll();
 

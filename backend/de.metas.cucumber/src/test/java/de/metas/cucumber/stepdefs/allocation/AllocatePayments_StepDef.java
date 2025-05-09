@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,21 +36,14 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
-import de.metas.currency.Amount;
-import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
@@ -66,13 +59,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -98,13 +89,11 @@ public class AllocatePayments_StepDef
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
-	@NonNull private final M_Product_StepDefData productTable;
 
 	@And("^apply (.*) to invoices$")
 	public void apply_write_off_or_discount_to_invoice(final String processToApply, @NonNull final DataTable table)
@@ -144,7 +133,7 @@ public class AllocatePayments_StepDef
 					.ifPresent(paymentDocuments::add);
 		});
 
-		PaymentAllocationBuilder paymentAllocationBuilder = PaymentAllocationBuilder.newBuilder()
+		final PaymentAllocationBuilder paymentAllocationBuilder = PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
 				.defaultDateTrx(LocalDate.now())
 				.paymentDocuments(paymentDocuments)
@@ -191,8 +180,7 @@ public class AllocatePayments_StepDef
 		for (final AllocationLineCandidate candidate : result.getPaymentAllocationIds().values())
 		{
 			final TableRecordReference payableDocumentRef = candidate.getPayableDocumentRef();
-			if (payableDocumentRef == null
-					|| !payableDocumentRef.tableNameEqualsTo(org.adempiere.banking.model.I_C_Invoice.Table_Name)
+			if (!payableDocumentRef.tableNameEqualsTo(org.adempiere.banking.model.I_C_Invoice.Table_Name)
 					|| payableDocumentRef.getRecord_ID() != invoiceId.getRepoId())
 			{
 				continue;
@@ -218,42 +206,11 @@ public class AllocatePayments_StepDef
 		return Optional.empty();
 	}
 
-	@Nullable
-	private InvoiceProcessingFeeCalculation extractInvoiceProcessingFeeCalculation(@NonNull final DataTableRow row)
-	{
-		final Amount feeAmountIncludingTax = extractFeeAmountIncludingTax(row).orElse(null);
-		if (feeAmountIncludingTax == null)
-		{
-			return null;
-		}
-
-		final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
-		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
-
-		return InvoiceProcessingFeeCalculation.builder()
-				.orgId(orgId)
-				.evaluationDate(SystemTime.asZonedDateTime())
-				.customerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
-				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-				.serviceCompanyBPartnerId(getServiceCompanyBPartnerId(row))
-				.serviceInvoiceDocTypeId(docTypeBL.getDocTypeId(DocTypeQuery.builder()
-						.docBaseType(DocBaseType.PurchaseInvoice)
-						.clientAndOrgId(ClientId.ofRepoId(invoice.getAD_Client_ID()), orgId)
-						.build()))
-				.serviceFeeProductId(row.getAsIdentifier("InvoiceProcessing.M_Product_ID").lookupNotNullIdIn(productTable))
-				.feeAmountIncludingTax(feeAmountIncludingTax)
-				.build();
-	}
 
 	@NonNull
 	private BPartnerId getServiceCompanyBPartnerId(final @NonNull DataTableRow row)
 	{
 		return row.getAsIdentifier("InvoiceProcessing.C_BPartner_ID").lookupNotNullIdIn(bpartnerTable);
-	}
-
-	private static Optional<Amount> extractFeeAmountIncludingTax(final @NonNull DataTableRow row)
-	{
-		return row.getAsOptionalAmount("InvoiceProcessing.FeeAmt");
 	}
 
 	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
@@ -284,22 +241,21 @@ public class AllocatePayments_StepDef
 	}
 
 	@NonNull
-	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier, @NonNull final DataTableRow row)
+	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
+												 @NonNull final DataTableRow row)
 	{
 		return preparePayableDocument(invoiceIdentifier, row).build();
 	}
 
 	@NonNull
-	private PayableDocumentBuilder preparePayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier, @NonNull final DataTableRow row)
+	private PayableDocumentBuilder preparePayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
+														  @NonNull final DataTableRow row)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
-		InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = extractInvoiceProcessingFeeCalculation(row);
 
 		final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
 		final Money invoiceOpenMoneyAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
 		Money payAmt = invoiceOpenMoneyAmt;
-
 		//
 		// Discount
 		Money discountAmt = row.getAsOptionalMoney("DiscountAmt", moneyService::getCurrencyIdByCurrencyCode).orElse(null);
@@ -312,15 +268,11 @@ public class AllocatePayments_StepDef
 			payAmt = payAmt.subtract(discountAmt);
 		}
 
-		//
-		// Invoice Processing Fee
-		final Money invoiceProcessingFee = invoiceProcessingFeeCalculation != null
-				? invoiceProcessingFeeCalculation.getFeeAmountIncludingTax().toMoney(moneyService::getCurrencyIdByCurrencyCode)
-				: null;
-		if (invoiceProcessingFee != null)
-		{
-			payAmt = payAmt.subtract(invoiceProcessingFee);
-		}
+
+		final AllocationAmounts amounts = AllocationAmounts.builder()
+				.payAmt(payAmt)
+				.discountAmt(discountAmt)
+				.build();
 
 		return PayableDocument.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
@@ -332,13 +284,7 @@ public class AllocatePayments_StepDef
 				.date(invoiceToAllocate.getDateInvoiced())
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
-				.amountsToAllocate(AllocationAmounts.builder()
-						.payAmt(payAmt)
-						.discountAmt(discountAmt)
-						.invoiceProcessingFee(invoiceProcessingFee)
-						.build()
-						.convertToRealAmounts(invoiceToAllocate.getMultiplier()))
-				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation);
+				.amountsToAllocate(amounts.convertToRealAmounts(invoiceToAllocate.getMultiplier()));
 	}
 
 	@NonNull

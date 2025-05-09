@@ -45,6 +45,12 @@ public class JsonRemittanceAdviceLine
 {
 	@ApiModelProperty(required = true,
 			dataType = "java.lang.String",
+			value = "This translates to LineIdentifier")
+	@NonNull
+	String lineIdentifier;
+
+	@ApiModelProperty(required = true,
+			dataType = "java.lang.String",
 			value = "This translates to InvoiceIdentifier")
 	@NonNull
 	String invoiceIdentifier;

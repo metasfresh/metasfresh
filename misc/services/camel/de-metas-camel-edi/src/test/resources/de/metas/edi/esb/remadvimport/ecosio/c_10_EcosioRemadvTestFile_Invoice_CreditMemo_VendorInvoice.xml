@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-edi
+  ~ %%
+  ~ Copyright (C) 2025 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<ErpelMessage xmlns="http://erpel.at/schemas/1p0/messaging/message" xmlns:document="http://erpel.at/schemas/1p0/documents" xmlns:edifact="http://erpel.at/schemas/1p0/documents/extensions/edifact" xmlns:erpel="http://erpel.at/schemas/1p0/documents/ext" xmlns:header="http://erpel.at/schemas/1p0/messaging/header"
+>
+    <header:ErpelBusinessDocumentHeader>
+        <header:InterchangeHeader>
+            <header:SyntaxIdentifier>
+                <header:id>UNOC</header:id>
+                <header:versionNum>3</header:versionNum>
+            </header:SyntaxIdentifier>
+            <header:Sender>
+                <header:id>2234567890123</header:id>
+                <header:codeQualifier>14</header:codeQualifier>
+                <header:internalId>1234567890123</header:internalId>
+            </header:Sender>
+            <header:Recipient>
+                <header:id>1234567890124</header:id>
+                <header:codeQualifier>14</header:codeQualifier>
+            </header:Recipient>
+            <header:DateTime>
+                <header:date>2024-09-07</header:date>
+                <header:time>11:43:00</header:time>
+            </header:DateTime>
+            <header:ControlRef>7827909330000</header:ControlRef>
+            <header:ApplicationRef>REMADV</header:ApplicationRef>
+            <header:AgreementId>EANCOM</header:AgreementId>
+        </header:InterchangeHeader>
+    </header:ErpelBusinessDocumentHeader>
+    <document:Document document:DocumentCurrency="CHF" document:DocumentType="RemittanceAdvice" document:GeneratingSystem="">
+        <document:BusinessProcessID>481</document:BusinessProcessID>
+        <document:DocumentNumber>1022747</document:DocumentNumber>
+        <document:DocumentDate>2024-09-07T00:00:00</document:DocumentDate>
+        <document:Supplier>
+            <document:FurtherIdentification document:IdentificationType="GLN">1234567890124</document:FurtherIdentification>
+            <document:Address>
+                <document:Name/>
+                <document:Town/>
+                <document:ZIP/>
+                <document:Country document:CountryCode="CH">CH</document:Country>
+            </document:Address>
+        </document:Supplier>
+        <document:Customer>
+            <document:FurtherIdentification document:IdentificationType="GLN">1234567890123</document:FurtherIdentification>
+            <document:DocumentReference>
+                <document:DocumentID>1022747</document:DocumentID>
+                <document:DocumentType>RemittanceAdvice</document:DocumentType>
+            </document:DocumentReference>
+            <document:DocumentReference>
+                <document:DocumentID>1948351</document:DocumentID>
+                <document:DocumentType>Order</document:DocumentType>
+            </document:DocumentReference>
+        </document:Customer>
+        <document:Details>
+            <document:ItemList>
+                <document:ListLineItem>
+                    <document:PositionNumber>9</document:PositionNumber>
+                    <document:ShortDescription/>
+                    <document:ArticleNumber/>
+                    <document:Quantity document:Unit="PCE">0</document:Quantity>
+                    <document:Delivery>
+                        <document:DeliveryRecipient>
+                            <document:FurtherIdentification document:IdentificationType="GLN">1234567890125</document:FurtherIdentification>
+                        </document:DeliveryRecipient>
+                    </document:Delivery>
+                    <document:TaxAmount>-92.32</document:TaxAmount>
+                    <erpel:ListLineItemExtension>
+                        <edifact:ListLineItemExtension>
+                            <edifact:REMADVListLineItemExtension>
+                                <edifact:BusinessProcessID>380</edifact:BusinessProcessID>
+                                <edifact:DocumentName>RG</edifact:DocumentName>
+                                <edifact:DocumentNameDescription>Invoice</edifact:DocumentNameDescription>
+                                <edifact:DocumentNumber>F244410</edifact:DocumentNumber>
+                                <edifact:DocumentDate>2024-08-08T00:00:00</edifact:DocumentDate>
+                                <edifact:Customer>
+                                    <edifact:BusinessEntityTypeQualifier>BY</edifact:BusinessEntityTypeQualifier>
+                                    <edifact:FurtherIdentification edifact:IdentificationType="GLN">1234567890126</edifact:FurtherIdentification>
+                                </edifact:Customer>
+                                <edifact:RelatedDates>
+                                    <edifact:BookingDate edifact:DateFormatCode="610" edifact:DateFunctionCodeQualifier="179">202408</edifact:BookingDate>
+                                    <edifact:InvoiceSettlementDate edifact:DateFormatCode="616" edifact:DateFunctionCodeQualifier="265">202438</edifact:InvoiceSettlementDate>
+                                    <edifact:PaymentDueDate edifact:DateFormatCode="204" edifact:DateFunctionCodeQualifier="140">20240916000000</edifact:PaymentDueDate>
+                                </edifact:RelatedDates>
+                                <edifact:MonetaryAmounts>
+                                    <edifact:InvoiceGrossAmount>
+                                        <edifact:AmountTypeCode>39</edifact:AmountTypeCode>
+                                        <edifact:Amount>55278.05</edifact:Amount>
+                                    </edifact:InvoiceGrossAmount>
+                                    <edifact:CommissionAmount>
+                                        <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                        <edifact:Amount>-1742.94</edifact:Amount>
+                                    </edifact:CommissionAmount>
+                                    <edifact:PaymentDiscountAmount>
+                                        <edifact:AmountTypeCode>109</edifact:AmountTypeCode>
+                                        <edifact:Amount>0</edifact:Amount>
+                                    </edifact:PaymentDiscountAmount>
+                                    <edifact:RemittedAmount>
+                                        <edifact:AmountTypeCode>12</edifact:AmountTypeCode>
+                                        <edifact:Amount>53535.11</edifact:Amount>
+                                    </edifact:RemittedAmount>
+                                    <edifact:Adjustment>
+                                        <edifact:ReasonCode>19</edifact:ReasonCode>
+                                        <edifact:AdjustmentMonetaryAmount>
+                                            <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                            <edifact:Amount>-771.9</edifact:Amount>
+                                        </edifact:AdjustmentMonetaryAmount>
+                                        <edifact:Tax>
+                                            <edifact:VAT>
+                                                <edifact:Item>
+                                                    <edifact:TaxedAmount>-752.34</edifact:TaxedAmount>
+                                                    <edifact:TaxRate>2.6</edifact:TaxRate>
+                                                    <edifact:Amount>-19.56</edifact:Amount>
+                                                    <edifact:CommissionBaseAmount>
+                                                        <edifact:AmountTypeCode>178</edifact:AmountTypeCode>
+                                                        <edifact:Amount>55278.05</edifact:Amount>
+                                                    </edifact:CommissionBaseAmount>
+                                                </edifact:Item>
+                                            </edifact:VAT>
+                                        </edifact:Tax>
+                                    </edifact:Adjustment>
+                                    <edifact:Adjustment>
+                                        <edifact:ReasonCode>67</edifact:ReasonCode>
+                                        <edifact:AdjustmentMonetaryAmount>
+                                            <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                            <edifact:Amount>-791.77</edifact:Amount>
+                                        </edifact:AdjustmentMonetaryAmount>
+                                        <edifact:Tax>
+                                            <edifact:VAT>
+                                                <edifact:Item>
+                                                    <edifact:TaxedAmount>-732.44</edifact:TaxedAmount>
+                                                    <edifact:TaxRate>8.1</edifact:TaxRate>
+                                                    <edifact:Amount>-59.33</edifact:Amount>
+                                                    <edifact:CommissionBaseAmount>
+                                                        <edifact:AmountTypeCode>178</edifact:AmountTypeCode>
+                                                        <edifact:Amount>55278.05</edifact:Amount>
+                                                    </edifact:CommissionBaseAmount>
+                                                </edifact:Item>
+                                            </edifact:VAT>
+                                        </edifact:Tax>
+                                    </edifact:Adjustment>
+                                    <edifact:Adjustment>
+                                        <edifact:ReasonCode>90</edifact:ReasonCode>
+                                        <edifact:AdjustmentMonetaryAmount>
+                                            <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                            <edifact:Amount>-179.27</edifact:Amount>
+                                        </edifact:AdjustmentMonetaryAmount>
+                                        <edifact:Tax>
+                                            <edifact:VAT>
+                                                <edifact:Item>
+                                                    <edifact:TaxedAmount>-165.84</edifact:TaxedAmount>
+                                                    <edifact:TaxRate>8.1</edifact:TaxRate>
+                                                    <edifact:Amount>-13.43</edifact:Amount>
+                                                    <edifact:CommissionBaseAmount>
+                                                        <edifact:AmountTypeCode>178</edifact:AmountTypeCode>
+                                                        <edifact:Amount>55278.05</edifact:Amount>
+                                                    </edifact:CommissionBaseAmount>
+                                                </edifact:Item>
+                                            </edifact:VAT>
+                                        </edifact:Tax>
+                                    </edifact:Adjustment>
+                                </edifact:MonetaryAmounts>
+                            </edifact:REMADVListLineItemExtension>
+                        </edifact:ListLineItemExtension>
+                    </erpel:ListLineItemExtension>
+                </document:ListLineItem>
+                <document:ListLineItem>
+                    <document:PositionNumber>12</document:PositionNumber>
+                    <document:ShortDescription/>
+                    <document:ArticleNumber/>
+                    <document:Quantity document:Unit="PCE">0</document:Quantity>
+                    <document:Delivery>
+                        <document:DeliveryRecipient>
+                            <document:FurtherIdentification document:IdentificationType="GLN">1234567890127</document:FurtherIdentification>
+                        </document:DeliveryRecipient>
+                    </document:Delivery>
+                    <document:TaxAmount>1.74</document:TaxAmount>
+                    <erpel:ListLineItemExtension>
+                        <edifact:ListLineItemExtension>
+                            <edifact:REMADVListLineItemExtension>
+                                <edifact:BusinessProcessID>84</edifact:BusinessProcessID>
+                                <edifact:DocumentName>RVG-BELA</edifact:DocumentName>
+                                <edifact:DocumentNameDescription>DebitNoteForFinancialAdjustment</edifact:DocumentNameDescription>
+                                <edifact:DocumentNumber>70119785</edifact:DocumentNumber>
+                                <edifact:DocumentDate>2024-08-02T00:00:00</edifact:DocumentDate>
+                                <edifact:Customer>
+                                    <edifact:BusinessEntityTypeQualifier>BY</edifact:BusinessEntityTypeQualifier>
+                                    <edifact:FurtherIdentification edifact:IdentificationType="GLN">1234567890127</edifact:FurtherIdentification>
+                                </edifact:Customer>
+                                <edifact:RelatedDates>
+                                    <edifact:BookingDate edifact:DateFormatCode="610" edifact:DateFunctionCodeQualifier="179">202408</edifact:BookingDate>
+                                    <edifact:InvoiceSettlementDate edifact:DateFormatCode="616" edifact:DateFunctionCodeQualifier="265">202431</edifact:InvoiceSettlementDate>
+                                    <edifact:PaymentDueDate edifact:DateFormatCode="204" edifact:DateFunctionCodeQualifier="140">20240803000000</edifact:PaymentDueDate>
+                                </edifact:RelatedDates>
+                                <edifact:MonetaryAmounts>
+                                    <edifact:InvoiceGrossAmount>
+                                        <edifact:AmountTypeCode>39</edifact:AmountTypeCode>
+                                        <edifact:Amount>1621.5</edifact:Amount>
+                                    </edifact:InvoiceGrossAmount>
+                                    <edifact:CommissionAmount>
+                                        <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                        <edifact:Amount>23.23</edifact:Amount>
+                                    </edifact:CommissionAmount>
+                                    <edifact:PaymentDiscountAmount>
+                                        <edifact:AmountTypeCode>109</edifact:AmountTypeCode>
+                                        <edifact:Amount>0</edifact:Amount>
+                                    </edifact:PaymentDiscountAmount>
+                                    <edifact:RemittedAmount>
+                                        <edifact:AmountTypeCode>12</edifact:AmountTypeCode>
+                                        <edifact:Amount>1644.73</edifact:Amount>
+                                    </edifact:RemittedAmount>
+                                    <edifact:Adjustment>
+                                        <edifact:ReasonCode>67</edifact:ReasonCode>
+                                        <edifact:AdjustmentMonetaryAmount>
+                                            <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                            <edifact:Amount>23.23</edifact:Amount>
+                                        </edifact:AdjustmentMonetaryAmount>
+                                        <edifact:Tax>
+                                            <edifact:VAT>
+                                                <edifact:Item>
+                                                    <edifact:TaxedAmount>21.49</edifact:TaxedAmount>
+                                                    <edifact:TaxRate>8.1</edifact:TaxRate>
+                                                    <edifact:Amount>1.74</edifact:Amount>
+                                                    <edifact:CommissionBaseAmount>
+                                                        <edifact:AmountTypeCode>178</edifact:AmountTypeCode>
+                                                        <edifact:Amount>1621.5</edifact:Amount>
+                                                    </edifact:CommissionBaseAmount>
+                                                </edifact:Item>
+                                            </edifact:VAT>
+                                        </edifact:Tax>
+                                    </edifact:Adjustment>
+                                </edifact:MonetaryAmounts>
+                            </edifact:REMADVListLineItemExtension>
+                        </edifact:ListLineItemExtension>
+                    </erpel:ListLineItemExtension>
+                </document:ListLineItem>
+                <document:ListLineItem>
+                    <document:PositionNumber>13</document:PositionNumber>
+                    <document:ShortDescription/>
+                    <document:ArticleNumber/>
+                    <document:Quantity document:Unit="PCE">0</document:Quantity>
+                    <document:Delivery>
+                        <document:DeliveryRecipient>
+                            <document:FurtherIdentification document:IdentificationType="GLN">1234567890128</document:FurtherIdentification>
+                        </document:DeliveryRecipient>
+                    </document:Delivery>
+                    <document:TaxAmount>0.05</document:TaxAmount>
+                    <erpel:ListLineItemExtension>
+                        <edifact:ListLineItemExtension>
+                            <edifact:REMADVListLineItemExtension>
+                                <edifact:BusinessProcessID>383</edifact:BusinessProcessID>
+                                <edifact:DocumentName>REKLA-BELA</edifact:DocumentName>
+                                <edifact:DocumentNameDescription>DebitNote</edifact:DocumentNameDescription>
+                                <edifact:DocumentNumber>1057</edifact:DocumentNumber>
+                                <edifact:DocumentDate>2024-08-07T00:00:00</edifact:DocumentDate>
+                                <edifact:Customer>
+                                    <edifact:BusinessEntityTypeQualifier>BY</edifact:BusinessEntityTypeQualifier>
+                                    <edifact:FurtherIdentification edifact:IdentificationType="GLN">1234567890129</edifact:FurtherIdentification>
+                                </edifact:Customer>
+                                <edifact:RelatedDates>
+                                    <edifact:BookingDate edifact:DateFormatCode="610" edifact:DateFunctionCodeQualifier="179">202408</edifact:BookingDate>
+                                    <edifact:InvoiceSettlementDate edifact:DateFormatCode="616" edifact:DateFunctionCodeQualifier="265">202432</edifact:InvoiceSettlementDate>
+                                    <edifact:PaymentDueDate edifact:DateFormatCode="204" edifact:DateFunctionCodeQualifier="140">20240808000000</edifact:PaymentDueDate>
+                                </edifact:RelatedDates>
+                                <edifact:MonetaryAmounts>
+                                    <edifact:InvoiceGrossAmount>
+                                        <edifact:AmountTypeCode>39</edifact:AmountTypeCode>
+                                        <edifact:Amount>77.59</edifact:Amount>
+                                    </edifact:InvoiceGrossAmount>
+                                    <edifact:CommissionAmount>
+                                        <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                        <edifact:Amount>0.02</edifact:Amount>
+                                    </edifact:CommissionAmount>
+                                    <edifact:PaymentDiscountAmount>
+                                        <edifact:AmountTypeCode>109</edifact:AmountTypeCode>
+                                        <edifact:Amount>0</edifact:Amount>
+                                    </edifact:PaymentDiscountAmount>
+                                    <edifact:RemittedAmount>
+                                        <edifact:AmountTypeCode>12</edifact:AmountTypeCode>
+                                        <edifact:Amount>77.61</edifact:Amount>
+                                    </edifact:RemittedAmount>
+                                    <edifact:Adjustment>
+                                        <edifact:ReasonCode>19</edifact:ReasonCode>
+                                        <edifact:AdjustmentMonetaryAmount>
+                                            <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                            <edifact:Amount>-1.09</edifact:Amount>
+                                        </edifact:AdjustmentMonetaryAmount>
+                                        <edifact:Tax>
+                                            <edifact:VAT>
+                                                <edifact:Item>
+                                                    <edifact:TaxedAmount>-1.06</edifact:TaxedAmount>
+                                                    <edifact:TaxRate>2.6</edifact:TaxRate>
+                                                    <edifact:Amount>-0.03</edifact:Amount>
+                                                    <edifact:CommissionBaseAmount>
+                                                        <edifact:AmountTypeCode>178</edifact:AmountTypeCode>
+                                                        <edifact:Amount>77.59</edifact:Amount>
+                                                    </edifact:CommissionBaseAmount>
+                                                </edifact:Item>
+                                            </edifact:VAT>
+                                        </edifact:Tax>
+                                    </edifact:Adjustment>
+                                    <edifact:Adjustment>
+                                        <edifact:ReasonCode>67</edifact:ReasonCode>
+                                        <edifact:AdjustmentMonetaryAmount>
+                                            <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                            <edifact:Amount>1.11</edifact:Amount>
+                                        </edifact:AdjustmentMonetaryAmount>
+                                        <edifact:Tax>
+                                            <edifact:VAT>
+                                                <edifact:Item>
+                                                    <edifact:TaxedAmount>1.03</edifact:TaxedAmount>
+                                                    <edifact:TaxRate>8.1</edifact:TaxRate>
+                                                    <edifact:Amount>0.08</edifact:Amount>
+                                                    <edifact:CommissionBaseAmount>
+                                                        <edifact:AmountTypeCode>178</edifact:AmountTypeCode>
+                                                        <edifact:Amount>77.59</edifact:Amount>
+                                                    </edifact:CommissionBaseAmount>
+                                                </edifact:Item>
+                                            </edifact:VAT>
+                                        </edifact:Tax>
+                                    </edifact:Adjustment>
+                                </edifact:MonetaryAmounts>
+                            </edifact:REMADVListLineItemExtension>
+                        </edifact:ListLineItemExtension>
+                    </erpel:ListLineItemExtension>
+                </document:ListLineItem>
+            </document:ItemList>
+        </document:Details>
+        <document:PaymentConditions>
+            <document:DueDate>2024-09-18T00:00:00</document:DueDate>
+            <erpel:PaymentConditionsExtension>
+                <edifact:PaymentConditionsExtension>
+                    <edifact:PaymentCondition>1</edifact:PaymentCondition>
+                    <edifact:PaymentMeans>42</edifact:PaymentMeans>
+                </edifact:PaymentConditionsExtension>
+            </erpel:PaymentConditionsExtension>
+        </document:PaymentConditions>
+        <erpel:DocumentExtension>
+            <edifact:DocumentExtension>
+                <edifact:REMADVExtension>
+                    <edifact:AmountRemitted>51812.76</edifact:AmountRemitted>
+                    <edifact:ComissionAmount>1766.19</edifact:ComissionAmount>
+                    <edifact:PaymentDiscountAmount>0</edifact:PaymentDiscountAmount>
+                </edifact:REMADVExtension>
+            </edifact:DocumentExtension>
+        </erpel:DocumentExtension>
+    </document:Document>
+</ErpelMessage>

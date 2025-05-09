@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,9 +25,11 @@ package de.metas.remittanceadvice;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -36,6 +38,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -54,7 +57,7 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RemittanceAdviceRepositoryTest
 {
@@ -86,7 +89,7 @@ public class RemittanceAdviceRepositoryTest
 		saveRecord(recordLine);
 		recordLine = getRemittanceAdviceLineEntity(record.getC_RemittanceAdvice_ID());
 
-		final Instant currentTime = Instant.now();
+		final Instant currentTime = SystemTime.asInstant();
 		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
 				.remittanceAdviceId(record.getC_RemittanceAdvice_ID())
 				.remittanceAdviceLineId(recordLine.getC_RemittanceAdvice_Line_ID())
@@ -97,7 +100,7 @@ public class RemittanceAdviceRepositoryTest
 				.invoiceAmt(100)
 				.overUnderAmount(0)
 				.currencyCode(CurrencyCode.EUR)
-				.externalInvoiceDocBaseType("APP")
+				.externalInvoiceDocBaseType(InvoiceDocBaseType.ofCode("API"))
 				.serviceFeeAmt(5)
 				.serviceFeeVATRate(2)
 				.isLineAcknowledged(true)
@@ -130,7 +133,8 @@ public class RemittanceAdviceRepositoryTest
 				.discountAmt(10)
 				.serviceFeeAmt(5)
 				.remittedAmountSum(100)
-				.lines(ImmutableList.of(remittanceAdviceLine)).build();
+				.lines(ImmutableList.of(remittanceAdviceLine))
+				.build();
 
 		remittanceAdviceRepository.updateRemittanceAdvice(remittanceAdvice);
 
@@ -139,22 +143,24 @@ public class RemittanceAdviceRepositoryTest
 
 	}
 
+	@NonNull
 	private I_C_RemittanceAdvice getRemittanceAdviceEntity(final int id)
 	{
 		return queryBL.createQueryBuilder(I_C_RemittanceAdvice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_RemittanceAdvice.COLUMN_C_RemittanceAdvice_ID, id)
 				.create()
-				.first();
+				.firstNotNull(I_C_RemittanceAdvice.class);
 	}
 
+	@NonNull
 	private I_C_RemittanceAdvice_Line getRemittanceAdviceLineEntity(final int id)
 	{
 		return queryBL.createQueryBuilder(I_C_RemittanceAdvice_Line.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_RemittanceAdvice_Line.COLUMN_C_RemittanceAdvice_ID, id)
 				.create()
-				.first();
+				.firstNotNull(I_C_RemittanceAdvice_Line.class);
 	}
 
 	@Builder(builderMethodName = "remittance")
@@ -222,7 +228,7 @@ public class RemittanceAdviceRepositoryTest
 			final int invoiceAmt,
 			final int overUnderAmount,
 			@Nullable final CurrencyCode currencyCode,
-			@Nullable final String externalInvoiceDocBaseType,
+			@NonNull final InvoiceDocBaseType externalInvoiceDocBaseType,
 			final int serviceFeeVATRate,
 			final boolean isLineAcknowledged,
 			final boolean isBPartnerValid,
@@ -333,7 +339,7 @@ public class RemittanceAdviceRepositoryTest
 				&& lineModel.getInvoiceGrossAmount().getAsBigDecimal().compareTo(lineEntity.getInvoiceGrossAmount()) == 0
 				&& lineModel.getPaymentDiscountAmount().getAsBigDecimal().compareTo(lineEntity.getPaymentDiscountAmt()) == 0
 				&& lineModel.getServiceFeeAmount().getAsBigDecimal().compareTo(lineEntity.getServiceFeeAmount()) == 0
-				&& lineModel.getExternalInvoiceDocBaseType().equals(lineEntity.getExternalInvoiceDocBaseType())
+				&& lineModel.getExternalInvoiceDocBaseType().equals(InvoiceDocBaseType.ofCode(lineEntity.getExternalInvoiceDocBaseType()))
 				&& lineModel.getBpartnerIdentifier().getRepoId() == lineEntity.getC_BPartner_ID()
 				&& lineModel.getInvoiceIdentifier().equals(lineEntity.getInvoiceIdentifier())
 				&& lineModel.getInvoiceId().getRepoId() == lineEntity.getC_Invoice_ID()

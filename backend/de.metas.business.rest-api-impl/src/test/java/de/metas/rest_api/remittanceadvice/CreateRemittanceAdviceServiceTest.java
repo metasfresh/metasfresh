@@ -505,7 +505,8 @@ class CreateRemittanceAdviceServiceTest
 			final BigDecimal serviceFeeVatRate
 	)
 	{
-		final JsonRemittanceAdviceLine jsonRemittanceAdviceLine = JsonRemittanceAdviceLine.builder()
+		return JsonRemittanceAdviceLine.builder()
+				.lineIdentifier("lineIdentifier")
 				.bpartnerIdentifier(bpartnerIdentifier)
 				.dateInvoiced(dateInvoiced)
 				.invoiceBaseDocType(invoiceBaseDocType)
@@ -516,8 +517,6 @@ class CreateRemittanceAdviceServiceTest
 				.serviceFeeAmount(serviceFeeAmount)
 				.serviceFeeVatRate(serviceFeeVatRate)
 				.build();
-
-		return jsonRemittanceAdviceLine;
 	}
 
 	@Builder(builderMethodName = "createJsonRemittanceAdviceBuilder", builderClassName = "JsonRemittanceAdviceBuilder")
@@ -538,7 +537,7 @@ class CreateRemittanceAdviceServiceTest
 			final List<JsonRemittanceAdviceLine> lines
 	)
 	{
-		final JsonRemittanceAdvice jsonRemittanceAdvice = JsonRemittanceAdvice.builder()
+		return JsonRemittanceAdvice.builder()
 				.orgCode(orgCode)
 				.senderId(senderId)
 				.recipientId(recipientId)
@@ -554,8 +553,6 @@ class CreateRemittanceAdviceServiceTest
 				.additionalNotes(additionalNotes)
 				.lines(lines)
 				.build();
-
-		return jsonRemittanceAdvice;
 	}
 
 	@Builder(builderMethodName = "createJsonCreateRemittanceAdviceRequestBuilder",
@@ -564,10 +561,8 @@ class CreateRemittanceAdviceServiceTest
 			@NonNull final List<JsonRemittanceAdvice> remittanceAdviceList
 	)
 	{
-		final JsonCreateRemittanceAdviceRequest request = JsonCreateRemittanceAdviceRequest.builder()
+		return JsonCreateRemittanceAdviceRequest.builder()
 				.remittanceAdviceList(remittanceAdviceList)
 				.build();
-
-		return request;
 	}
 }

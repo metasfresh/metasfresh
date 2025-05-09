@@ -14,13 +14,14 @@
       "paymentDiscountAmountSum": 0,
       "lines": [
         {
+          "lineIdentifier": "1",
           "invoiceIdentifier": "doc-145808",
           "remittedAmount": 16.4,
           "dateInvoiced": "2020-10-29T23:00:00Z",
           "bpartnerIdentifier": "gln-kundeGLN",
           "invoiceBaseDocType": "ARI",
           "invoiceGrossAmount": 21.4,
-          "paymentDiscountAmount": 2.00,
+          "paymentDiscountAmount": 1.74,
           "serviceFeeAmount": 3,
           "serviceFeeVatRate": 7
         }
