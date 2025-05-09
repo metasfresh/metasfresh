@@ -180,9 +180,6 @@ Feature: invoice payment allocation
       # ----note: no PayDiscount_Rev_Acct because paymentDiscount=0 -------------------------------------------------
       | V_Liability_Acct       | 1644.73 EUR  |              | vendor1         | -        | ral20_alloc2          |
       | B_UnallocatedCash_Acct |              | 1644.73 EUR  | serviceProvider | -        | ral20_alloc2          |
-      # tax correction: TODO: !!Verify i'Ts OK!!
-#      | PayDiscount_Rev_Acct   | 999.99 EUR   |              | serviceProvider | tax19%   | ral20_alloc2          |
-#      | T_Credit_Acct          |              | 999.99 EUR   | serviceProvider | tax19%   | ral20_alloc2          |
     # customerCreditMemo
       | C_Receivable_Acct      |              | 77.60 EUR    | customer1       | -        | customerCreditMemo    |
       | T_Due_Acct             | 12.39 EUR    |              | customer1       | tax19%   | customerCreditMemo    |
