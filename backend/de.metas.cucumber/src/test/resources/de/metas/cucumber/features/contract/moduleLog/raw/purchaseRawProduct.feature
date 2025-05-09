@@ -204,15 +204,22 @@ Feature: Modular contract log from purchase order for raw product
       | receiptLine_1             | inOut_06032024_1      | rawProduct              | 200         | true      | 200            |
 
     And after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName                 | OPT.IsBillable |
-      | log_3                     | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | addValueOnRaw_PO        | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_4             | false         | MaterialReceipt              | EUR                        | PCE                   | 1600       | y2022                             | avOnRawProduct_module_1          | 8.00            | PCE                       | addValueOnRawProduct_06032024_1 | Y              |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier   | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName                      | OPT.IsBillable |
+      | log_receipt1_1            | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | addValueOnRaw_PO          | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_4             | false         | MaterialReceipt              | EUR                        | PCE                   | 1600       | y2022                             | avOnRawProduct_module_1          | 8.00            | PCE                       | addValueOnRawProduct_06032024_1      | Y              |
+      | log_receipt1_2            | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct                | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_2             | false         | MaterialReceipt              | EUR                        | PCE                   | 0          | y2022                             | receipt_module                   | 0               | PCE                       | receipt_06032024_1                   | Y              |
+      | log_receipt1_3            | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct                | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_3             | false         | MaterialReceipt              | EUR                        | PCE                   | 4000       | y2022                             | salesOnRawProduct_module         | 10.00           | PCE                       | salesOnRawProduct_06032024_1         | Y              |
+      | log_receipt1_4            | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | subtractValueOnRaw_PO     | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_5             | false         | MaterialReceipt              | EUR                        | PCE                   | -1400      | y2022                             | svOnRawProduct_module_1          | -7.00           | PCE                       | subtractValueOnRawProduct_06032024_1 | Y              |
+      | log_receipt1_5            | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | addValueOnRaw_PO_2        | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_4             | false         | MaterialReceipt              | EUR                        | PCE                   | -1200      | y2022                             | avOnRawProduct_module_2          | -6.00           | PCE                       | addValueOnRawProduct_06032024_1      | Y              |
+      | log_receipt1_6            | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | subtractValueOnRaw_PO_2   | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_5             | false         | MaterialReceipt              | EUR                        | PCE                   | 1800       | y2022                             | svOnRawProduct_module_2          | 9.00            | PCE                       | subtractValueOnRawProduct_06032024_1 | Y              |
+      | log_receipt1_7            | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct                | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_1             | false         | MaterialReceipt              | EUR                        | PCE                   | 2000       | y2022                             | definitive_module                | 10.00           | PCE                       | salesOnRawProduct_06032024_1         | Y              |
+      | log_receipt1_8            | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | avReceiptUntilDateProduct | bp_moduleLogPO                      | bp_moduleLogPO                  | 200 | M_InOutLine | moduleLogContract_1           | modCntr_type_9             | false         | MaterialReceipt              | EUR                        | PCE                   | 2000       | y2022                             | avReceiptUntilDate_module        | -1.00           | PCE                       | avReceiptUntilDate_06032024_1        | Y              |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | processedTopHU_2   | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 800   | 101                                | 1000006                      |
     And create material receipt
-      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | processedTopHU_2   | receiptSchedule_PO              | inOut_06032024_2      |
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.MovementDate |
+      | processedTopHU_2   | receiptSchedule_PO              | inOut_06032024_2      | 2022-02-16       |
 
     And validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
@@ -293,16 +300,17 @@ Feature: Modular contract log from purchase order for raw product
       | moduleLogContract_1           | metasfresh_user       | 2022-03-01       | 2022-03-01   |
 
     And after not more than 60s, modular C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID.Identifier     | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier  | ProductName                          |
-      | candidate_receipt                     | moduleLogContract_1           | rawProduct               | receipt_06032024_1                   |
-      | candidate_salesOnRawProduct           | moduleLogContract_1           | rawProduct               | salesOnRawProduct_06032024_1         |
-      | candidate_addValueOnRawProduct_1      | moduleLogContract_1           | addValueOnRaw_PO         | addValueOnRawProduct_06032024_1      |
-      | candidate_subtractValueOnRawProduct_1 | moduleLogContract_1           | subtractValueOnRaw_PO    | subtractValueOnRawProduct_06032024_1 |
-      | candidate_addValueOnRawProduct_2      | moduleLogContract_1           | addValueOnRaw_PO_2       | addValueOnRawProduct_06032024_1      |
-      | candidate_subtractValueOnRawProduct_2 | moduleLogContract_1           | subtractValueOnRaw_PO_2  | subtractValueOnRawProduct_06032024_1 |
-      | candidate_addValueOnInterim           | moduleLogContract_1           | addValueOnInterim        | addValueOnInterim_06032024_1         |
-      | candidate_subValueOnInterim           | moduleLogContract_1           | subValueOnInterim        | subValueOnInterim_06032024_1         |
-      | candidate_storageCost                 | moduleLogContract_1           | storageCostForRawProduct | storageCost_06032024_1               |
+      | C_Invoice_Candidate_ID.Identifier     | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier   | ProductName                          |
+      | candidate_receipt                     | moduleLogContract_1           | rawProduct                | receipt_06032024_1                   |
+      | candidate_salesOnRawProduct           | moduleLogContract_1           | rawProduct                | salesOnRawProduct_06032024_1         |
+      | candidate_addValueOnRawProduct_1      | moduleLogContract_1           | addValueOnRaw_PO          | addValueOnRawProduct_06032024_1      |
+      | candidate_subtractValueOnRawProduct_1 | moduleLogContract_1           | subtractValueOnRaw_PO     | subtractValueOnRawProduct_06032024_1 |
+      | candidate_addValueOnRawProduct_2      | moduleLogContract_1           | addValueOnRaw_PO_2        | addValueOnRawProduct_06032024_1      |
+      | candidate_subtractValueOnRawProduct_2 | moduleLogContract_1           | subtractValueOnRaw_PO_2   | subtractValueOnRawProduct_06032024_1 |
+      | candidate_addValueOnInterim           | moduleLogContract_1           | addValueOnInterim         | addValueOnInterim_06032024_1         |
+      | candidate_subValueOnInterim           | moduleLogContract_1           | subValueOnInterim         | subValueOnInterim_06032024_1         |
+      | candidate_storageCost                 | moduleLogContract_1           | storageCostForRawProduct  | storageCost_06032024_1               |
+      | candidate_avReceiptUntilDateProduct   | moduleLogContract_1           | avReceiptUntilDateProduct | avReceiptUntilDate_06032024_1        |
 
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier     | OPT.QtyToInvoice |
@@ -315,6 +323,7 @@ Feature: Modular contract log from purchase order for raw product
       | candidate_addValueOnInterim           | 0                |
       | candidate_subValueOnInterim           | 0                |
       | candidate_storageCost                 | 0                |
+      | candidate_avReceiptUntilDateProduct   | 0                |
 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier     | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
@@ -327,25 +336,27 @@ Feature: Modular contract log from purchase order for raw product
       | candidate_addValueOnInterim           | 0            | 1              | 1                | I               | -40             | 0                   | -40                | Y             |
       | candidate_subValueOnInterim           | 0            | 0              | 0                | I               | 0               | 0                   | 0                  | N             |
       | candidate_storageCost                 | 0            | 1              | 1                | I               | -1710           | 0                   | -1710              | Y             |
+      | candidate_avReceiptUntilDateProduct   | 0            | 200            | 200              | I               | -1              | 0                   | -200               | Y             |
 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_receipt                 | invoice_1               | CO            | 12250          |
+      | candidate_receipt                 | invoice_1               | CO            | 12050          |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 14577.50       | final                       |
+      | invoice_1               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 14339.50       | final                       |
 
     And validate created modular invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier  | ProductName                          | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
-      | invoiceLine_1_1             | invoice_1               | rawProduct               | receipt_06032024_1                   | 1000        | true      | 0                | 0               | 0              | PCE                   | PCE                       |
-      | invoiceLine_1_2             | invoice_1               | rawProduct               | salesOnRawProduct_06032024_1         | 1000        | true      | 10               | 10              | 10000          | PCE                   | PCE                       |
-      | invoiceLine_1_3             | invoice_1               | addValueOnRaw_PO         | addValueOnRawProduct_06032024_1      | 1000        | true      | 8                | 8               | 8000           | PCE                   | PCE                       |
-      | invoiceLine_1_4             | invoice_1               | subtractValueOnRaw_PO_2  | subtractValueOnRawProduct_06032024_1 | 1000        | true      | 9                | 9               | 9000           | PCE                   | PCE                       |
-      | invoiceLine_1_5             | invoice_1               | subtractValueOnRaw_PO    | subtractValueOnRawProduct_06032024_1 | 1000        | true      | -7               | -7              | -7000          | PCE                   | PCE                       |
-      | invoiceLine_1_6             | invoice_1               | addValueOnRaw_PO_2       | addValueOnRawProduct_06032024_1      | 1000        | true      | -6               | -6              | -6000          | PCE                   | PCE                       |
-      | invoiceLine_1_7             | invoice_1               | addValueOnInterim        | addValueOnInterim_06032024_1         | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       |
-      | invoiceLine_1_8             | invoice_1               | storageCostForRawProduct | storageCost_06032024_1               | 1           | true      | -1710            | -1710           | -1710          | PCE                   | PCE                       |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier   | ProductName                          | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
+      | invoiceLine_1_1             | invoice_1               | rawProduct                | receipt_06032024_1                   | 1000        | true      | 0                | 0               | 0              | PCE                   | PCE                       |
+      | invoiceLine_1_2             | invoice_1               | rawProduct                | salesOnRawProduct_06032024_1         | 1000        | true      | 10               | 10              | 10000          | PCE                   | PCE                       |
+      | invoiceLine_1_3             | invoice_1               | addValueOnRaw_PO          | addValueOnRawProduct_06032024_1      | 1000        | true      | 8                | 8               | 8000           | PCE                   | PCE                       |
+      | invoiceLine_1_4             | invoice_1               | subtractValueOnRaw_PO_2   | subtractValueOnRawProduct_06032024_1 | 1000        | true      | 9                | 9               | 9000           | PCE                   | PCE                       |
+      | invoiceLine_1_5             | invoice_1               | subtractValueOnRaw_PO     | subtractValueOnRawProduct_06032024_1 | 1000        | true      | -7               | -7              | -7000          | PCE                   | PCE                       |
+      | invoiceLine_1_6             | invoice_1               | addValueOnRaw_PO_2        | addValueOnRawProduct_06032024_1      | 1000        | true      | -6               | -6              | -6000          | PCE                   | PCE                       |
+      | invoiceLine_1_7             | invoice_1               | addValueOnInterim         | addValueOnInterim_06032024_1         | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       |
+      | invoiceLine_1_8             | invoice_1               | storageCostForRawProduct  | storageCost_06032024_1               | 1           | true      | -1710            | -1710           | -1710          | PCE                   | PCE                       |
+      | invoiceLine_1_9             | invoice_1               | avReceiptUntilDateProduct | avReceiptUntilDate_06032024_1        | 200         | true      | -1               | -1              | -200           | PCE                   | PCE                       |
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID       | MovementDate | OPT.DocumentNo |
