@@ -38,7 +38,7 @@ public class C_PaySelectionLine
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 
-	private static final AdMessageKey MSG_PaySelectionLine_Document_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Invoice.InvalidCurrency");
+	private static final AdMessageKey MSG_PaySelectionLine_Document_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Document.InvalidCurrency");
 
 
 

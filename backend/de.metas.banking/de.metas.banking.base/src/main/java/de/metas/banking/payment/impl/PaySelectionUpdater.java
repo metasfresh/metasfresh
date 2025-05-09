@@ -514,11 +514,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		{
 			sql += " AND p.IsReceipt='Y'";
 		}
-		else
-		{
-			throw new AdempiereException("Unknown matchRequirement: " + matchRequirement);
-		}
-		
 		return sql;
 	}
 

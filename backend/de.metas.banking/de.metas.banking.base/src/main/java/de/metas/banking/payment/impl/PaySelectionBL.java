@@ -323,6 +323,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		final OrgId orgId = OrgId.ofRepoId(originalPayment.getAD_Org_ID());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(originalPayment.getC_BPartner_ID());
 		final BigDecimal payAmt = originalPayment.getPayAmt();
+
 		final I_C_Payment refundPayment = refundPaymentBuilder
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
@@ -340,6 +341,9 @@ public class PaySelectionBL implements IPaySelectionBL
 		originalPayment.setRefundStatus(RefundStatus.Refunded.getCode());
 		paymentBL.save(originalPayment);
 
+		final BigDecimal allocAmt = originalPayment.isReceipt() ? originalPayment.getPayAmt() : originalPayment.getPayAmt().negate();
+		final BigDecimal allocRefundAmt = refundPayment.isReceipt() ? refundPayment.getPayAmt() : refundPayment.getPayAmt().negate();
+
 		allocationBL.newBuilder()
 				.currencyId(originalPayment.getC_Currency_ID())
 				.dateAcct(TimeUtil.max(originalPayment.getDateAcct(), refundPayment.getDateAcct()))
@@ -349,14 +353,14 @@ public class PaySelectionBL implements IPaySelectionBL
 				.orgId(orgId.getRepoId())
 				.bpartnerId(bpartnerId.getRepoId())
 				.paymentId(originalPayment.getC_Payment_ID())
-				.amount(payAmt)
+				.amount(allocAmt)
 				.lineDone()
 				//
 				.addLine()
 				.orgId(orgId.getRepoId())
 				.bpartnerId(bpartnerId.getRepoId())
 				.paymentId(refundPayment.getC_Payment_ID())
-				.amount(payAmt.negate())
+				.amount(allocRefundAmt)
 				.lineDone()
 				//
 				.create(true);
