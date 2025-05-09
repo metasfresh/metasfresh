@@ -36,8 +36,9 @@ public class C_PaySelectionLine
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 
-	private static final AdMessageKey MSG_PaySelectionLine_Invoice_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Invoice.InvalidCurrency");
+	private static final AdMessageKey MSG_PaySelectionLine_Document_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Invoice.InvalidCurrency");
 
 
 
@@ -83,35 +84,43 @@ public class C_PaySelectionLine
 		final I_C_PaySelection paySelection = paySelectionLine.getC_PaySelection();
 		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.create(paySelection.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
 
-		CurrencyId currencyId = null;
-		if (paySelectionLine.getC_Invoice_ID() > 0)
-		{
-			final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(paySelectionLine.getC_Invoice_ID()));
-			currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-		}
-
-		if (paySelectionLine.getOriginal_Payment_ID() > 0)
-		{
-			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(paySelectionLine.getOriginal_Payment_ID()));
-			currencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
-		}
-
 		//
 		// Match currency
-		final CurrencyId banckAccoutnCurrencyId = CurrencyId.ofRepoId(bankAccount.getC_Currency_ID());
-		if (currencyId.compareTo(banckAccoutnCurrencyId) == 0)
+		final CurrencyId documentCurrencyId = getDocumentCurrencyId(paySelectionLine);
+		final CurrencyId bankAccountCurrencyId = CurrencyId.ofRepoId(bankAccount.getC_Currency_ID());
+		if (CurrencyId.equals(documentCurrencyId, bankAccountCurrencyId))
 		{
 			return;
 		}
 
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		final CurrencyCode invoiceCurrencyCode = currenciesRepo.getCurrencyCodeById(currencyId);
-		final CurrencyCode bankAccountCurrencyCode = currenciesRepo.getCurrencyCodeById(banckAccoutnCurrencyId);
+		final CurrencyCode documentCurrencyCode = currenciesRepo.getCurrencyCodeById(documentCurrencyId);
+		final CurrencyCode bankAccountCurrencyCode = currenciesRepo.getCurrencyCodeById(bankAccountCurrencyId);
 
-		throw new AdempiereException(MSG_PaySelectionLine_Invoice_InvalidCurrency,
-				invoiceCurrencyCode.toThreeLetterCode(),      // Actual
+		throw new AdempiereException(MSG_PaySelectionLine_Document_InvalidCurrency,
+				documentCurrencyCode.toThreeLetterCode(),      // Actual
 				bankAccountCurrencyCode.toThreeLetterCode()) // Expected
 				.markAsUserValidationError();
+	}
+
+	private CurrencyId getDocumentCurrencyId(final I_C_PaySelectionLine paySelectionLine)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(paySelectionLine.getC_Invoice_ID());
+		final PaymentId originalPaymentId = PaymentId.ofRepoIdOrNull(paySelectionLine.getOriginal_Payment_ID());
+		
+		if (invoiceId != null)
+		{
+			final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+			return CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		}
+		else if (originalPaymentId != null)
+		{
+			final I_C_Payment payment = paymentBL.getById(originalPaymentId);
+			return CurrencyId.ofRepoId(payment.getC_Currency_ID());
+		}
+		else
+		{
+			throw new AdempiereException("No invoice or original payment found for " + paySelectionLine);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE,  ModelValidator.TYPE_AFTER_DELETE })

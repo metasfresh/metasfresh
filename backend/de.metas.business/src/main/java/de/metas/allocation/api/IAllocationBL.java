@@ -48,8 +48,6 @@ public interface IAllocationBL extends ISingletonService
 	 */
 	boolean isReversal(I_C_AllocationHdr allocationHdr);
 
-	void allocateSpecificPayments(@NonNull I_C_Payment originalPayment, @NonNull I_C_Payment payment);
-
 	@Value
 	@Builder
 	class InvoiceDiscountAndWriteOffRequest

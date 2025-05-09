@@ -22,6 +22,7 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.service.BPBankAcctUse;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
@@ -31,6 +32,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.RefundStatus;
 import de.metas.payment.TenderType;
+import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -46,6 +48,7 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -59,7 +62,7 @@ public class PaySelectionBL implements IPaySelectionBL
 {
 	private static final AdMessageKey MSG_CannotReactivate_PaySelectionLineInBankStatement_2P = AdMessageKey.of("CannotReactivate_PaySelectionLineInBankStatement");
 	private static final AdMessageKey MSG_PaySelectionLines_No_BankAccount = AdMessageKey.of("C_PaySelection_PaySelectionLines_No_BankAccount");
-    private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -215,12 +218,12 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void createPaymentsFromOriginalAndAllocateThem(final I_C_PaySelection paySelection)
+	public void createPaymentRefunds(final I_C_PaySelection paySelection)
 	{
 		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection))
 		{
 			paySelectionLine.setC_PaySelection(paySelection); // for optimizations
-			createPaymentFromOriginalIfNeeded(paySelectionLine);
+			createPaymentRefundIfNeeded(paySelectionLine);
 		}
 	}
 
@@ -287,26 +290,45 @@ public class PaySelectionBL implements IPaySelectionBL
 				.createAndProcess();
 	}
 
-	private void createPaymentFromOriginalIfNeeded(@NonNull final I_C_PaySelectionLine line)
+	private void createPaymentRefundIfNeeded(@NonNull final I_C_PaySelectionLine line)
 	{
-		if (line.getOriginal_Payment_ID() > 0 && line.getC_Payment_ID() > 0)
+		final PaymentId originalPaymentId = PaymentId.ofRepoIdOrNull(line.getOriginal_Payment_ID());
+		if (originalPaymentId == null)
 		{
-			return;
+			return; // not needed
 		}
 
-		final PaymentId originalPaymentId = PaymentId.ofRepoId(line.getOriginal_Payment_ID());
+		if (PaymentId.ofRepoIdOrNull(line.getC_Payment_ID()) != null)
+		{
+			return; // payment refund already created
+		}
+
 		final I_C_Payment originalPayment = paymentBL.getById(originalPaymentId);
+		if (originalPayment.isAllocated())
+		{
+			throw new AdempiereException("Payment must not be allocated");
+		}
+		if (!DocStatus.ofCode(originalPayment.getDocStatus()).isCompletedOrClosed())
+		{
+			throw new AdempiereException("Payment must be completed or closed");
+		}
+
 		final I_C_PaySelection paySelection = line.getC_PaySelection();
 		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
 
-		final I_C_Payment newPayment = paymentBL.newOutboundPaymentBuilder()
-				.adOrgId(OrgId.ofRepoId(originalPayment.getAD_Org_ID()))
-				.bpartnerId(BPartnerId.ofRepoId(originalPayment.getC_BPartner_ID()))
+		final DefaultPaymentBuilder refundPaymentBuilder = originalPayment.isReceipt()
+				? paymentBL.newOutboundPaymentBuilder()
+				: paymentBL.newInboundReceiptBuilder();
+
+		final OrgId orgId = OrgId.ofRepoId(originalPayment.getAD_Org_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(originalPayment.getC_BPartner_ID());
+		final BigDecimal payAmt = originalPayment.getPayAmt();
+		final I_C_Payment refundPayment = refundPaymentBuilder
+				.adOrgId(orgId)
+				.bpartnerId(bpartnerId)
 				.orgBankAccountId(BankAccountId.ofRepoId(originalPayment.getC_BP_BankAccount_ID()))
 				.currencyId(CurrencyId.ofRepoId(originalPayment.getC_Currency_ID()))
-				.payAmt(originalPayment.getPayAmt())
-				.discountAmt(originalPayment.getDiscountAmt())
-				.writeoffAmt(originalPayment.getWriteOffAmt())
+				.payAmt(payAmt)
 				.tenderType(TenderType.DirectDeposit)
 				.originalPaymentId(originalPaymentId)
 				.isRefund(true)
@@ -318,10 +340,29 @@ public class PaySelectionBL implements IPaySelectionBL
 		originalPayment.setRefundStatus(RefundStatus.Refunded.getCode());
 		paymentBL.save(originalPayment);
 
-		// allocate payments
-		allocationBL.allocateSpecificPayments(originalPayment, newPayment);
+		allocationBL.newBuilder()
+				.currencyId(originalPayment.getC_Currency_ID())
+				.dateAcct(TimeUtil.max(originalPayment.getDateAcct(), refundPayment.getDateAcct()))
+				.dateTrx(TimeUtil.max(originalPayment.getDateTrx(), refundPayment.getDateTrx()))
+				//
+				.addLine()
+				.orgId(orgId.getRepoId())
+				.bpartnerId(bpartnerId.getRepoId())
+				.paymentId(originalPayment.getC_Payment_ID())
+				.amount(payAmt)
+				.lineDone()
+				//
+				.addLine()
+				.orgId(orgId.getRepoId())
+				.bpartnerId(bpartnerId.getRepoId())
+				.paymentId(refundPayment.getC_Payment_ID())
+				.amount(payAmt.negate())
+				.lineDone()
+				//
+				.create(true);
 
-		line.setC_Payment_ID(newPayment.getC_Payment_ID());
+		//
+		line.setC_Payment_ID(refundPayment.getC_Payment_ID());
 		paySelectionDAO.save(line);
 	}
 
