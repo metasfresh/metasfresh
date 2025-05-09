@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,6 +30,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -73,12 +74,12 @@ public class RemittanceAdviceRepository
 		return toRemittanceAdvice(record);
 	}
 
-	public void createRemittanceAdviceLine(
+	public I_C_RemittanceAdvice_Line createRemittanceAdviceLine(
 			@NonNull final CreateRemittanceAdviceLineRequest remittanceAdviceLineRequest)
 	{
 		final I_C_RemittanceAdvice_Line record = buildRemittanceAdviceLineRecord(remittanceAdviceLineRequest);
-
 		saveRecord(record);
+		return record;
 	}
 
 	@NonNull
@@ -128,13 +129,13 @@ public class RemittanceAdviceRepository
 	{
 		final I_C_RemittanceAdvice_Line record = getLineRecordById(remittanceAdviceLine.getRemittanceAdviceLineId());
 
-		final Function<Amount, BigDecimal> asBigDecimalOrNll = (amount) -> amount != null ? amount.toBigDecimal() : null;
+		final Function<Amount, BigDecimal> asBigDecimalOrNull = (amount) -> amount != null ? amount.toBigDecimal() : null;
 
 		record.setAD_Org_ID(remittanceAdviceLine.getOrgId().getRepoId());
 
-		record.setInvoiceAmtInREMADVCurrency(asBigDecimalOrNll.apply(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency()));
-		record.setOverUnderAmt(asBigDecimalOrNll.apply(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()));
-		record.setPaymentDiscountAmt(asBigDecimalOrNll.apply(remittanceAdviceLine.getPaymentDiscountAmount()));
+		record.setInvoiceAmtInREMADVCurrency(asBigDecimalOrNull.apply(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency()));
+		record.setOverUnderAmt(asBigDecimalOrNull.apply(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()));
+		record.setPaymentDiscountAmt(asBigDecimalOrNull.apply(remittanceAdviceLine.getPaymentDiscountAmount()));
 		record.setRemittanceAmt(remittanceAdviceLine.getRemittedAmount().toBigDecimal());
 
 		record.setC_Invoice_ID(NumberUtils.asInt(remittanceAdviceLine.getInvoiceId(), -1));
@@ -142,7 +143,7 @@ public class RemittanceAdviceRepository
 		record.setC_Invoice_Currency_ID(NumberUtils.asInt(remittanceAdviceLine.getInvoiceCurrencyId(), -1));
 		record.setBill_BPartner_ID(NumberUtils.asInt(remittanceAdviceLine.getBillBPartnerId(), -1));
 		record.setInvoiceDate(TimeUtil.asTimestamp(remittanceAdviceLine.getDateInvoiced()));
-		record.setInvoiceGrossAmount(asBigDecimalOrNll.apply(remittanceAdviceLine.getInvoiceGrossAmount()));
+		record.setInvoiceGrossAmount(asBigDecimalOrNull.apply(remittanceAdviceLine.getInvoiceGrossAmount()));
 
 		record.setService_Fee_Invoice_ID(NumberUtils.asInt(remittanceAdviceLine.getServiceFeeInvoiceId(), -1));
 		record.setService_Product_ID(NumberUtils.asInt(remittanceAdviceLine.getServiceFeeProductId(), -1));
@@ -158,9 +159,9 @@ public class RemittanceAdviceRepository
 
 		record.setInvoiceIdentifier(remittanceAdviceLine.getInvoiceIdentifier());
 		record.setC_BPartner_ID(BPartnerId.toRepoId(remittanceAdviceLine.getBpartnerIdentifier()));
-		record.setExternalInvoiceDocBaseType(remittanceAdviceLine.getExternalInvoiceDocBaseType());
+		record.setExternalInvoiceDocBaseType(remittanceAdviceLine.getExternalInvoiceDocBaseType().getCode());
 
-		record.setServiceFeeAmount(asBigDecimalOrNll.apply(remittanceAdviceLine.getServiceFeeAmount()));
+		record.setServiceFeeAmount(asBigDecimalOrNull.apply(remittanceAdviceLine.getServiceFeeAmount()));
 		record.setServiceFeeVatRate(remittanceAdviceLine.getServiceFeeVatRate());
 		record.setIsLineAcknowledged(remittanceAdviceLine.isLineAcknowledged());
 
@@ -342,7 +343,7 @@ public class RemittanceAdviceRepository
 
 		final BiFunction<BigDecimal,CurrencyCode, Amount> toAmountOrNull =
 				(amountValue, currencyCode) -> amountValue != null && currencyCode != null ? Amount.of(amountValue, currencyCode) : null;
-
+		
 		return RemittanceAdviceLine.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 
@@ -370,7 +371,7 @@ public class RemittanceAdviceRepository
 
 				.bpartnerIdentifier(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 
-				.externalInvoiceDocBaseType(record.getExternalInvoiceDocBaseType())
+				.externalInvoiceDocBaseType(InvoiceDocBaseType.ofNullableCode(record.getExternalInvoiceDocBaseType()))
 
 				.invoiceAmt(record.getInvoiceAmt())
 

@@ -293,9 +293,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				}
 
 				//
-				// Sales invoice - purchase invoice
+				// Invoice to Invoice compensation
 				{
-					final AmountSourceAndAcct compensationAmt = createPurchaseSalesInvoiceFacts(fact, line);
+					final AmountSourceAndAcct compensationAmt = createInvoiceToInvoiceCompensationFacts(fact, line);
 					invoiceTotalAllocatedAmtSourceAndAcctCollector.add(compensationAmt);
 				}
 
@@ -859,7 +859,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			{
 				factLineBuilder.setAmtSource(allocationSource, null);
 			}
-			// ARI or ARC that is allocated against other invoice
+			// ARI or ARC that is allocated against the other invoice
 			else
 			{
 				factLineBuilder.setAmtSource(null, allocationSource);
@@ -877,7 +877,17 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			// API
 			else
 			{
-				factLineBuilder.setAmtSource(allocationSource, null);
+				// API counter-invoice
+				final DocLine_Allocation counterLine = line.getCounterDocLine();
+				if (counterLine != null && counterLine.isAPI())
+				{
+					factLineBuilder.setAmtSource(null, allocationSource);
+				}
+				// other
+				else
+				{
+					factLineBuilder.setAmtSource(allocationSource, null);
+				}
 			}
 		}
 
@@ -888,21 +898,21 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	}
 
 	/**
-	 * Creates the {@link FactLine} to book the purchase - sales invoice compensation
+	 * Creates the {@link FactLine} to book the invoice-to-invoice compensation
 	 */
-	private AmountSourceAndAcct createPurchaseSalesInvoiceFacts(final Fact fact, final DocLine_Allocation line)
+	private AmountSourceAndAcct createInvoiceToInvoiceCompensationFacts(final Fact fact, final DocLine_Allocation line)
 	{
 		final AcctSchema as = fact.getAcctSchema();
 
-		// Do nothing if this is not a compensation line or it was already compensated
+		// Do nothing if this is not a compensation line, or it was already compensated
 		if (!line.isSalesPurchaseInvoiceToCompensate(as.getId()))
 		{
 			return AmountSourceAndAcct.ZERO;
 		}
 
 		//
-		// Make sure the line is valid compensation line
-		Check.assume(!line.hasPaymentDocument(), "A sales-purchase compensation line shall not have a payment document set: {}", line);
+		// Make sure the line is a valid compensation line
+		Check.assume(!line.hasPaymentDocument(), "A invoice-to-invoice compensation line shall not have a payment document set: {}", line);
 
 		final BigDecimal compensationAmtSource = line.getAllocatedAmt();
 		if (compensationAmtSource.signum() == 0)
@@ -914,11 +924,11 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		Check.assumeNotNull(counterLine, "counterLine not null");
 
 		//
-		// Make sure the counter line is valid compensation line
-		Check.assume(!counterLine.hasPaymentDocument(), "A sales-purchase compensation line shall not have a payment document set: {}", counterLine);
+		// Make sure the counter-line is a valid compensation line
+		Check.assume(!counterLine.hasPaymentDocument(), "A invoice-to-invoice compensation line shall not have a payment document set: {}", counterLine);
 
 		//
-		// Make sure it's not cash based accounting => we are not supporting that case.
+		// Make sure it's not cash-based accounting => we are not supporting that case.
 		if (!as.isAccrual())
 		{
 			throw newPostingException()
@@ -928,7 +938,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		//
-		// Make sure the compensation amount of this line and of it's counter part are matching
+		// Make sure the compensation amount of this line and of its counterpart are matching
 		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
 		if (compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) != 0)
 		{
@@ -939,7 +949,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		//
-		// Create the fact line to book the counter invoice
+		// Create the fact line to book the counter-invoice
 		final FactLineBuilder factLineBuilder = fact.createLine()
 				.setDocLine(counterLine)
 				.setCurrencyId(getCurrencyId())
@@ -956,7 +966,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 			factLineBuilder.setAmtSource(compensationAmtSource, null);
 		}
-		final FactLine factLine = factLineBuilder.buildAndAdd();
+		final FactLine factLine = factLineBuilder.buildAndAddNotNull();
 
 		//
 		// Mark the lines as compensated
