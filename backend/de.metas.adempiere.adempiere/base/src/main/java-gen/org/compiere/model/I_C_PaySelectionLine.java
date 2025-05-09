@@ -187,7 +187,7 @@ public interface I_C_PaySelectionLine
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_Invoice_ID (int C_Invoice_ID);
@@ -197,7 +197,7 @@ public interface I_C_PaySelectionLine
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_Invoice_ID();
@@ -658,4 +658,25 @@ public interface I_C_PaySelectionLine
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Original Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOriginal_Payment_ID (int Original_Payment_ID);
+
+	/**
+	 * Get Original Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOriginal_Payment_ID();
+
+	String COLUMNNAME_Original_Payment_ID = "Original_Payment_ID";
+
 }
