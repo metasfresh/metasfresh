@@ -418,7 +418,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " p.IsReceipt, " // 6
 				+ " p.C_Bpartner_ID," // 6
 				// C_BP_BankAccount_ID
-				+ " p.C_BP_BankAccount_ID " //8
+				+ " (SELECT max(bpb.C_BP_BankAccount_ID) FROM C_BP_BankAccount bpb WHERE bpb.C_BPartner_ID = p.C_BPartner_ID AND bpb.IsActive='Y' "
+				+ " AND bpb.isesraccount='Y') as C_BP_BankAccount_ID "  //8
 				//
 				+ " FROM C_Payment p "
 				+ " LEFT JOIN C_Doctype dt on p.C_Doctype_ID = dt.C_Doctype_ID "
