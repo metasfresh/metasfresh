@@ -47,11 +47,11 @@ public class C_Payment_MarkForRefund extends JavaProcess implements IProcessPrec
 
 		final IQueryFilter<I_C_Payment> selectedPaymentsFilter = context.getQueryFilter(I_C_Payment.class);
 
-		final boolean hasUnallocatedIncomingPayment = paymentBL.hasUnallocatedIncomingPayment(selectedPaymentsFilter);
+		final boolean anyUnallocatedPayment = paymentBL.anyUnallocatedPayment(selectedPaymentsFilter);
 
-		if (!hasUnallocatedIncomingPayment)
+		if (!anyUnallocatedPayment)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No incoming, unallocated payments were selected");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No unallocated payments were selected");
 		}
 
 		return ProcessPreconditionsResolution.accept();

@@ -24,6 +24,7 @@ package de.metas.banking.payment.modelvalidator;
 
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -31,6 +32,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,20 +49,16 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Interceptor(I_C_PaySelection.class)
+@RequiredArgsConstructor
 public class C_PaySelection
 {
 	private static final AdMessageKey MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency = AdMessageKey.of("PaySelection.CannotChangeBPBankAccount.InvalidCurrency");
 
-	private final BankAccountService bankAccountService;
-
-	public C_PaySelection(
-			@NonNull final BankAccountService bankAccountService)
-	{
-		this.bankAccountService = bankAccountService;
-	}
+	@NonNull private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
+	@NonNull private final BankAccountService bankAccountService;
 
 	/**
-	 * Remove line if currency does not match.
+	 * Remove the line if currency does not match.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_PaySelection.COLUMNNAME_C_BP_BankAccount_ID })
 	public void validateBankAccountCurrency(final I_C_PaySelection paySelection)
@@ -86,10 +85,10 @@ public class C_PaySelection
 			final CurrencyCode invoiceCurrencyCode = getCurrencyCodeById(invoice.getC_Currency_ID());
 			final CurrencyCode bankAccountCurrencyCode = getCurrencyCodeById(bankAccount.getC_Currency_ID());
 
-			throw new AdempiereException(MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency, new Object[] {
+			throw new AdempiereException(MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency,
 					paySelection.getName(), // name of the record we deal with
 					bankAccountCurrencyCode.toThreeLetterCode(), // BPBA Actual Currency (actual)
-					invoiceCurrencyCode.toThreeLetterCode() }); // Invoice Currency (expected)
+					invoiceCurrencyCode.toThreeLetterCode()); // Invoice Currency (expected)
 		}
 	}
 
@@ -100,10 +99,9 @@ public class C_PaySelection
 	}
 
 	/**
-	 * Updates the pay selection's name if paydate or the bank account are changed. the name is set to be <PayDate>_<Bank>_<Currency>.
+	 * Updates the pay selection's name if the pay date or the bank account are changed. the name is set to be <PayDate>_<Bank>_<Currency>.
 	 *
-	 * @param paySelection
-	 * @task 08267
+	 * @implSpec task 08267
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_PaySelection.COLUMNNAME_C_BP_BankAccount_ID, I_C_PaySelection.COLUMNNAME_PayDate })
 	public void updateNameIfNotSet(final I_C_PaySelection paySelection)
@@ -136,10 +134,9 @@ public class C_PaySelection
 		}
 	}
 
-	// TODO: Fix this in the followup https://github.com/metasfresh/metasfresh/issues/2841
-	// @DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	// public void createPayments(final I_C_PaySelection paySelection)
-	// {
-	// Services.get(IPaySelectionBL.class).createPayments(paySelection);
-	// }
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void createPaymentRefunds(final I_C_PaySelection paySelection)
+	{
+		paySelectionBL.createPaymentRefunds(paySelection);
+	}
 }

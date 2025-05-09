@@ -948,23 +948,23 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public boolean hasUnallocatedIncomingPayment(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
+	public boolean anyUnallocatedPayment(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
 	{
 		return paymentDAO.stream(paymentsFilter)
-				.anyMatch(this::isIncomingAndNotAllocated);
+				.anyMatch(this::isNotAllocated);
 	}
 
 	@Override
 	public void markForRefund(@NonNull final IQueryFilter<I_C_Payment> paymentsFilter)
 	{
 		paymentDAO.stream(paymentsFilter)
-				.filter(this::isIncomingAndNotAllocated)
+				.filter(this::isNotAllocated)
 				.forEach(payment -> setRefundStatus(payment, RefundStatus.ScheduledForRefund.getCode()));
 	}
 
-	private boolean isIncomingAndNotAllocated(@NonNull final I_C_Payment payment)
+	private boolean isNotAllocated(@NonNull final I_C_Payment payment)
 	{
-		return payment.isReceipt() && !payment.isAllocated();
+		return !payment.isAllocated();
 	}
 
 	private void setRefundStatus(@NonNull final I_C_Payment payment, @Nullable final String refundStatus)

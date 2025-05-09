@@ -1413,6 +1413,34 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+	@Override
+	public void setOriginal_Payment_ID (final int Original_Payment_ID)
+	{
+		if (Original_Payment_ID < 1)
+			set_Value (COLUMNNAME_Original_Payment_ID, null);
+		else
+			set_Value (COLUMNNAME_Original_Payment_ID, Original_Payment_ID);
+	}
+
+	@Override
+	public int getOriginal_Payment_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Original_Payment_ID);
+	}
+
+	@Override
+	public void setIsRefund (final boolean IsRefund)
+	{
+		set_Value (COLUMNNAME_IsRefund, IsRefund);
+	}
+
+	@Override
+	public boolean isRefund()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRefund);
+	}
+
+
 	/**
 	 * RefundStatus AD_Reference_ID=541943
 	 * Reference name: Refund Status
