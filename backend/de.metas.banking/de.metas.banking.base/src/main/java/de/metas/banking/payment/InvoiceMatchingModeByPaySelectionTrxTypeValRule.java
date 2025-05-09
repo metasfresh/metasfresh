@@ -55,13 +55,13 @@ public class InvoiceMatchingModeByPaySelectionTrxTypeValRule extends AbstractJav
 			return true;
 		}
 
-		final InvoiceMatchingMode invoiceMatchingMode = extractInvoiceMatchingMode(item);
-		if (invoiceMatchingMode == null)
+		final PaySelectionMatchingMode paySelectionMatchingMode = extractInvoiceMatchingMode(item);
+		if (paySelectionMatchingMode == null)
 		{
 			return false;
 		}
 
-		return invoiceMatchingMode.isCompatibleWith(trxType);
+		return paySelectionMatchingMode.isCompatibleWith(trxType);
 	}
 
 	private boolean isContextAvailable(@Nullable final IValidationContext evalCtx)
@@ -87,10 +87,10 @@ public class InvoiceMatchingModeByPaySelectionTrxTypeValRule extends AbstractJav
 		return PaySelectionTrxType.ofCode(code);
 	}
 
-	private InvoiceMatchingMode extractInvoiceMatchingMode(@Nullable final NamePair item)
+	private PaySelectionMatchingMode extractInvoiceMatchingMode(@Nullable final NamePair item)
 	{
 		return item != null
-				? InvoiceMatchingMode.ofNullableCode(item.getID())
+				? PaySelectionMatchingMode.ofNullableCode(item.getID())
 				: null;
 	}
 

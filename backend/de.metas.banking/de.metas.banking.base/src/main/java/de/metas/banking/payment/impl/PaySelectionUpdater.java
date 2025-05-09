@@ -2,23 +2,30 @@ package de.metas.banking.payment.impl;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.PaySelectionId;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.banking.payment.InvoiceMatchingMode;
+import de.metas.banking.payment.PaySelectionMatchingMode;
 import de.metas.banking.payment.PaySelectionTrxType;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.RefundStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -26,7 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
@@ -34,6 +40,7 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -45,9 +52,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -57,88 +62,39 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IPaySelectionDAO paySelectionsRepo = Services.get(IPaySelectionDAO.class);
-	private final transient ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPaySelectionDAO paySelectionsRepo = Services.get(IPaySelectionDAO.class);
+	private final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
 	private final ADReferenceService adReferenceService = ADReferenceService.get();
+	private final HashSet<Integer> paySelectionLineIdsToUpdate = new HashSet<>();
 
+	/**
+	 * Payment Rules (from C_Invoice.PaymentRule's available values list)
+	 */
+	private final Supplier<ImmutableSet<PaymentRule>> _paymentRulesSupplier = Suppliers.memoize(this::retrieveInvoicePaymentRules);
 	private boolean _configurable = true;
-
-	/**
-	 * Only When Discount
-	 */
 	private boolean _onlyDiscount = false;
-	/**
-	 * Only when Due
-	 */
 	private boolean _onlyDue = false;
-	/**
-	 * Include Disputed
-	 */
 	private Boolean _includeInDispute = null;
-	/**
-	 * Match Requirement
-	 */
-	private Optional<InvoiceMatchingMode> _matchRequirement = Optional.empty();
-	/**
-	 * Match Requirement
-	 */
+	private Optional<PaySelectionMatchingMode> _matchRequirement = Optional.empty();
 	private Timestamp _payDate = null;
-	/**
-	 * Payment Rule
-	 */
 	private PaymentRule _paymentRule = null;
-	/**
-	 * BPartner
-	 */
 	private int _bpartnerId = 0;
-	/**
-	 * BPartner Group
-	 */
 	private int _bpGroupId = 0;
-
 	private Timestamp _dateInvoiced;
-
 	private String _poReference;
-
-	/**
-	 * Payment Selection
-	 */
 	private I_C_PaySelection _paySelection;
 
-	private final Set<Integer> paySelectionLineIdsToUpdate = new HashSet<>();
-	/**
-	 * Provides a map of C_Invoice_ID to {@link I_C_PaySelectionLine} which were enqueued to be updated
-	 */
-	private final Supplier<Map<Integer, I_C_PaySelectionLine>> _invoiceId2paySelectionLineToUpdateSupplier = Suppliers.memoize(() -> {
-		if (paySelectionLineIdsToUpdate.isEmpty())
-		{
-			return new HashMap<>();
-		}
-
-		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PaySelectionLine.class)
-				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getPaySelectionId())
-				.addInArrayOrAllFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
-				.create()
-				.list();
-
-		final Map<Integer, I_C_PaySelectionLine> invoiceId2paySelectionLine = new HashMap<>(paySelectionLines.size());
-		for (final I_C_PaySelectionLine paySelectionLine : paySelectionLines)
-		{
-			final int invoiceId = paySelectionLine.getC_Invoice_ID();
-			final I_C_PaySelectionLine paySelectionLineOld = invoiceId2paySelectionLine.put(invoiceId, paySelectionLine);
-			Check.assumeNull(paySelectionLineOld, "Only one pay selection line shall exist for an invoice but we found: {}, {}", paySelectionLine, paySelectionLineOld); // shall not happen
-		}
-
-		return invoiceId2paySelectionLine;
-	});
+	private final Supplier<PaySelectionLinesToUpdate> _paySelectionLinesToUpdate = Suppliers.memoize(this::retrievePaySelectionLinesToUpdate);
 
 	//
 	// Statistics
 	private int countCreated = 0;
 	private int countUpdated = 0;
 	private int countDeleted = 0;
+	private Integer _nextLineNo = null;
 
 	PaySelectionUpdater()
 	{
@@ -158,11 +114,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		//
 		// Validate InvoiceMatchingMode vs PaySelectionTrxType
 		final I_C_PaySelection paySelection = getC_PaySelection();
-		final InvoiceMatchingMode invoiceMatchingMode = getMatchRequirement().orElse(null);
-		if (invoiceMatchingMode != null)
+		final PaySelectionMatchingMode paySelectionMatchingMode = getMatchRequirement().orElse(null);
+		if (paySelectionMatchingMode != null)
 		{
 			final PaySelectionTrxType paySelectionTrxType = PaySelectionTrxType.ofNullableCode(paySelection.getPaySelectionTrxType());
-			if (paySelectionTrxType != null && !invoiceMatchingMode.isCompatibleWith(paySelectionTrxType))
+			if (paySelectionTrxType != null && !paySelectionMatchingMode.isCompatibleWith(paySelectionTrxType))
 			{
 				throw new AdempiereException("@Invalid@ @PaySelectionTrxType@");
 			}
@@ -177,17 +133,17 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		//
 		// Delete remaining pay selection lines (which were enqueued to be updated),
 		// because if they were not updated until now, for sure no invoice matched so it's safe to delete them
-		for (final I_C_PaySelectionLine paySelectionLine : dequeueAllPaySelectionLinesToUpdate())
+		final PaySelectionLinesToUpdate paySelectionLinesToUpdate = getPaySelectionLinesToUpdate();
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionLinesToUpdate.dequeueAll())
 		{
 			deletePaySelectionLine(paySelectionLine);
 		}
 
 		//
 		// Update the PaySelection
-		if (invoiceMatchingMode != null)
+		if (paySelectionMatchingMode != null)
 		{
-			paySelection.setPaySelectionTrxType(invoiceMatchingMode.getPaySelectionTrxType().getCode());
-
+			paySelection.setPaySelectionTrxType(paySelectionMatchingMode.getPaySelectionTrxType().getCode());
 			InterfaceWrapperHelper.save(paySelection);
 		}
 
@@ -248,8 +204,16 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			payDate = paySelection.getPayDate();
 		}
 
+		return buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection)
+				+ " UNION "
+				+ buildPaymentSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
+	}
+
+	private @NotNull String buildInvoiceSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
+	{
 		String sql = "SELECT "
 				+ " C_Invoice_ID,"
+				+ " -1 as C_Payment_ID,"
 				// OpenAmt
 				+ " currencyConvert(invoiceOpen(i.C_Invoice_ID, 0)"
 				+ ",i.C_Currency_ID, ?,?, i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID) as OpenAmt," // ##1/2 Currency_To,PayDate
@@ -268,13 +232,12 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				+ " FROM C_Invoice i "
 				+ " LEFT JOIN C_Doctype dt on i.C_Doctype_ID = dt.C_Doctype_ID "
 				+ " WHERE true " //
-		;
+				;
 		sqlParams.add(C_CurrencyTo_ID); // #1
 		sqlParams.add(payDate); // #2
 		sqlParams.add(payDate); // #3
 		sqlParams.add(C_CurrencyTo_ID); // #4
 		sqlParams.add(payDate); // #5
-
 
 		// filter Org_BP_Account_ID if set
 		{
@@ -411,31 +374,30 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 			sqlParams.add(getPOReference());
 		}
 
-		sql += buildSelectSQL_MatchRequirement();
-
+		sql += buildSelectSQL_InvoiceMatchRequirement();
 		return sql;
 	}
 
-	private String buildSelectSQL_MatchRequirement()
+	private String buildSelectSQL_InvoiceMatchRequirement()
 	{
 		final String whereCreditTransferToVendor = " i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType !='ARC' AND i.PaymentRule = '" + PaymentRule.DirectDebit.getCode() + "'";
 		final String whereCreditTransferToCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 
-		final InvoiceMatchingMode matchRequirement = getMatchRequirement().orElse(null);
+		final PaySelectionMatchingMode matchRequirement = getMatchRequirement().orElse(null);
 		if (matchRequirement == null) // ALL
 		{
 			return "AND ( (" + whereCreditTransferToVendor + ") OR ( " + whereDirectDebitFromCustomer + " ) OR (" + whereCreditTransferToCustomer + ") )";
 		}
-		else if (InvoiceMatchingMode.CREDIT_TRANSFER_TO_VENDOR.equals(matchRequirement))
+		else if (PaySelectionMatchingMode.CREDIT_TRANSFER_TO_VENDOR.equals(matchRequirement))
 		{
 			return " AND " + whereCreditTransferToVendor;
 		}
-		else if (InvoiceMatchingMode.DIRECT_DEBIT_FROM_CUSTOMER.equals(matchRequirement))
+		else if (PaySelectionMatchingMode.DIRECT_DEBIT_FROM_CUSTOMER.equals(matchRequirement))
 		{
 			return " AND " + whereDirectDebitFromCustomer;
 		}
-		else if (InvoiceMatchingMode.CREDIT_TRANSFER_TO_CUSTOMER.equals(matchRequirement))
+		else if (PaySelectionMatchingMode.CREDIT_TRANSFER_TO_CUSTOMER.equals(matchRequirement))
 		{
 			return " AND " + whereCreditTransferToCustomer;
 		}
@@ -443,6 +405,116 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		{
 			throw new AdempiereException("Unknown matchRequirement: " + matchRequirement);
 		}
+	}
+
+	private @NotNull String buildPaymentSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
+	{
+		String sql = "SELECT "
+				+ " -1 as C_Invoice_ID," // 1
+				+ " C_Payment_ID," // 2
+				+ " currencyConvert(payamt,p.C_Currency_ID, ?,?, p.C_ConversionType_ID,p.AD_Client_ID,p.AD_Org_ID) as OpenAmt," // 3
+				+ " null as DiscountAmt," // 4
+				+ " null as PaymentRule, "  // 5
+				+ " p.IsReceipt, " // 6
+				+ " p.C_Bpartner_ID," // 6
+				// C_BP_BankAccount_ID
+				+ " p.C_BP_BankAccount_ID " //8
+				//
+				+ " FROM C_Payment p "
+				+ " LEFT JOIN C_Doctype dt on p.C_Doctype_ID = dt.C_Doctype_ID "
+				+ " WHERE true AND p.RefundStatus = ? AND p.IsRefund='N'"  //
+				;
+		sqlParams.add(C_CurrencyTo_ID); // #1
+		sqlParams.add(payDate); // #2
+		sqlParams.add(RefundStatus.ScheduledForRefund.getCode()); // #3
+
+		// Not already allocated payments
+		{
+			sql += " AND p.IsAllocated=?";
+			sqlParams.add(false);
+		}
+
+		// Only COmpleted/CLosed payment
+		{
+			sql += " AND p.DocStatus IN (?,?)";
+			sqlParams.add(DocStatus.Completed);
+			sqlParams.add(DocStatus.Closed);
+		}
+
+		// Only those payments which are matching C_PaySelection's currency (07885)
+		{
+			sql += " AND p.C_Currency_ID=?";
+			sqlParams.add(C_CurrencyTo_ID);
+		}
+
+		// Only for Pay Selection's Organization (if set)
+		if (paySelection.getAD_Org_ID() > 0)
+		{
+			sql += " AND p.AD_Org_ID=? ";
+			sqlParams.add(paySelection.getAD_Org_ID());
+		}
+
+		// Only those payments from our tenant (guard, shall not happen)
+		{
+			sql += " AND p.AD_Client_ID=?";
+			sqlParams.add(paySelection.getAD_Client_ID());
+		}
+
+		//
+		// Exclude invoices from existing pay selections if we were not explicitelly asked to just update a couple of pay selection lines
+		// or, Include only the pay selection lines that we were advised to include.
+		if (paySelectionLineIdsToUpdate.isEmpty())
+		{
+			sql += " AND NOT EXISTS (" //
+					+ "         SELECT 1 FROM C_PaySelectionLine psl " //
+					+ "         WHERE psl.Original_Payment_ID=p.C_Payment_ID AND psl.IsActive='Y' " //
+					+ " )";
+		}
+		else
+		{
+			sql += " AND EXISTS (" //
+					+ " SELECT 1 FROM C_PaySelectionLine psl "
+					+ " WHERE psl.Original_Payment_ID=p.C_Payment_ID AND psl.IsActive='Y' "
+					+ " AND " + DB.buildSqlList("psl.C_PaySelectionLine_ID", paySelectionLineIdsToUpdate, sqlParams)
+					+ " )";
+		}
+
+		// Business Partner
+		if (getC_BPartner_ID() > 0)
+		{
+			sql += " AND p.C_BPartner_ID=?"; // ##
+			sqlParams.add(getC_BPartner_ID());
+		}
+		// Business Partner Group
+		else if (getC_BP_Group_ID() > 0)
+		{
+			sql += " AND EXISTS (SELECT * FROM C_BPartner bp "
+					+ "WHERE bp.C_BPartner_ID=p.C_BPartner_ID AND bp.C_BP_Group_ID=?)"; // ##
+			sqlParams.add(getC_BP_Group_ID());
+		}
+
+		// DateTrx
+		if (getPayDate() != null)
+		{
+			sql += " AND p.DateAcct=?";
+			sqlParams.add(getPayDate());
+		}
+
+		// Match Requirement
+		final PaySelectionMatchingMode matchRequirement = getMatchRequirement().orElse(null);
+		if (matchRequirement == null) // ALL
+		{
+			// no restriction
+		}
+		else if (PaySelectionMatchingMode.CREDIT_TRANSFER_TO_VENDOR.equals(matchRequirement))
+		{
+			sql += " AND p.IsReceipt='N'";
+		}
+		else if (PaySelectionMatchingMode.CREDIT_TRANSFER_TO_CUSTOMER.equals(matchRequirement))
+		{
+			sql += " AND p.IsReceipt='Y'";
+		}
+		return sql;
 	}
 
 	private void createOrUpdatePaySelectionLine(final ResultSet rs) throws SQLException
@@ -455,7 +527,10 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		final PaySelectionLineCandidate.Builder candidateBuilder = PaySelectionLineCandidate.builder();
 		final int invoiceId = rs.getInt("C_Invoice_ID");
-		candidateBuilder.setC_Invoice_ID(invoiceId);
+		candidateBuilder.setInvoiceId(InvoiceId.ofRepoIdOrNull(invoiceId));
+
+		final int paymentId = rs.getInt("C_Payment_ID");
+		candidateBuilder.setPaymentId(PaymentId.ofRepoIdOrNull(paymentId));
 
 		final BigDecimal invoiceOpenAmt = rs.getBigDecimal("OpenAmt");
 		candidateBuilder.setOpenAmt(invoiceOpenAmt);
@@ -467,10 +542,10 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		candidateBuilder.setIsSOTrx(isSOTrx);
 
 		final int bpartnerId = rs.getInt("C_BPartner_ID");
-		candidateBuilder.setC_BPartner_ID(bpartnerId);
+		candidateBuilder.setBPartnerId(BPartnerId.ofRepoId(bpartnerId));
 
 		final int bpBankAccountId = rs.getInt("C_BP_BankAccount_ID");
-		candidateBuilder.setC_BP_BankAccount_ID(bpBankAccountId);
+		candidateBuilder.setBPartnerBankAccountId(BankAccountId.ofRepoIdOrNull(bpBankAccountId));
 
 		PaymentRule paymentRule = PaymentRule.ofNullableCode(rs.getString("PaymentRule"));
 		// check active payment rules
@@ -484,9 +559,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return candidateBuilder.build();
 	}
 
-	private void createOrUpdatePaySelectionLine(final PaySelectionLineCandidate candidate)
+	private void createOrUpdatePaySelectionLine(@NonNull final PaySelectionLineCandidate candidate)
 	{
-		if (candidate.getC_Invoice_ID() <= 0) // shall not happen
+		if (candidate.getInvoiceId() == null && candidate.getPaymentId() == null) // shall not happen
 		{
 			return;
 		}
@@ -496,7 +571,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		//
 		// Dequeue existing C_PaySelectionLine to be updated.
 		// Also make sure the existing pay selection is valid in our context.
-		final I_C_PaySelectionLine existingPaySelectionLine = dequeuePaySelectionLineToUpdateByInvoice(candidate.getC_Invoice_ID()).orElse(null);
+		final PaySelectionLinesToUpdate paySelectionLinesToUpdate = getPaySelectionLinesToUpdate();
+		final I_C_PaySelectionLine existingPaySelectionLine = paySelectionLinesToUpdate.dequeueFor(candidate).orElse(null);
 		if (existingPaySelectionLine != null && existingPaySelectionLine.getC_PaySelection_ID() != paySelection.getC_PaySelection_ID())
 		{
 			throw new AdempiereException("PaySelectionLine to update it's not matching the PaySelection header"
@@ -574,31 +650,29 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		//
 		// Update from candidate
 		paySelectionLine.setPaymentRule(candidate.getPaymentRule());
-		paySelectionLine.setC_Invoice_ID(candidate.getC_Invoice_ID());
+		paySelectionLine.setC_Invoice_ID(InvoiceId.toRepoId(candidate.getInvoiceId()));
+		paySelectionLine.setOriginal_Payment_ID(PaymentId.toRepoId(candidate.getPaymentId()));
 		paySelectionLine.setIsSOTrx(candidate.isSOTrx());
 		paySelectionLine.setOpenAmt(candidate.getOpenAmt());
 		paySelectionLine.setPayAmt(candidate.getPayAmt());
 		paySelectionLine.setDiscountAmt(candidate.getDiscountAmt());
 		paySelectionLine.setDifferenceAmt(candidate.getDifferenceAmt());
-		paySelectionLine.setC_BPartner_ID(candidate.getC_BPartner_ID());
-		final int bpBankAccountId = candidate.getC_BP_BankAccount_ID();
-		if (bpBankAccountId > 0)
+		paySelectionLine.setC_BPartner_ID(BPartnerId.toRepoId(candidate.getBPartnerId()));
+		final BankAccountId bpBankAccountId = candidate.getBPartnerBankAccountId();
+		if (bpBankAccountId != null)
 		{
 			// task 09500: only set the account if it has the same currency as the one of the header
 			// note that this checking is just for extra precaution. the candidate shall already have that currency
 
-			final int paySelectionCurrencyID = paySelection.getC_BP_BankAccount().getC_Currency_ID();
+			final CurrencyId paySelectionCurrencyID = CurrencyId.ofRepoId(paySelection.getC_BP_BankAccount().getC_Currency_ID());
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(paySelectionLine);
-			final String trxName = InterfaceWrapperHelper.getTrxName(paySelectionLine);
+			final BankAccount candidateAccount = bpBankAccountRepo.getById(bpBankAccountId);
 
-			final I_C_BP_BankAccount candidateAccount = InterfaceWrapperHelper.create(ctx, bpBankAccountId, I_C_BP_BankAccount.class, trxName);
+			final CurrencyId candidateCurrencyID = candidateAccount.getCurrencyId();
 
-			final int candidateCurrencyID = candidateAccount.getC_Currency_ID();
-
-			if (paySelectionCurrencyID == candidateCurrencyID)
+			if (candidateCurrencyID.compareTo(paySelectionCurrencyID) == 0)
 			{
-				paySelectionLine.setC_BP_BankAccount_ID(bpBankAccountId);
+				paySelectionLine.setC_BP_BankAccount_ID(BankAccountId.toRepoId(bpBankAccountId));
 			}
 		}
 
@@ -615,14 +689,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return _paymentRulesSupplier.get();
 	}
 
-	/**
-	 * Payment Rules (from C_Invoice.PaymentRule's available values list)
-	 */
-	private final Supplier<ImmutableSet<PaymentRule>> _paymentRulesSupplier = Suppliers.memoize(this::retrieveInvoicePaymentRules);
-
 	private ImmutableSet<PaymentRule> retrieveInvoicePaymentRules()
 	{
-		final POInfo invoicePOInfo = POInfo.getPOInfo(I_C_Invoice.Table_Name);
+		final POInfo invoicePOInfo = POInfo.getPOInfoNotNull(I_C_Invoice.Table_Name);
 		final ReferenceId paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
 
 		final Set<String> paymentRules = adReferenceService.getRefListById(paymentRuleReferenceId).getValues();
@@ -686,13 +755,13 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return this;
 	}
 
-	private Optional<InvoiceMatchingMode> getMatchRequirement()
+	private Optional<PaySelectionMatchingMode> getMatchRequirement()
 	{
 		return _matchRequirement;
 	}
 
 	@Override
-	public IPaySelectionUpdater setMatchRequirement(@Nullable final InvoiceMatchingMode matchRequirement)
+	public IPaySelectionUpdater setMatchRequirement(@Nullable final PaySelectionMatchingMode matchRequirement)
 	{
 		assertConfigurable();
 		_matchRequirement = Optional.ofNullable(matchRequirement);
@@ -777,7 +846,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return this;
 	}
 
-
 	@Override
 	public IPaySelectionUpdater setC_PaySelection(@NonNull final I_C_PaySelection paySelection)
 	{
@@ -803,8 +871,6 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		return PaySelectionId.ofRepoId(getC_PaySelection().getC_PaySelection_ID());
 	}
-
-	private Integer _nextLineNo = null;
 
 	private int getAndIncrementNextLineNo()
 	{
@@ -841,27 +907,81 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return this;
 	}
 
-	/**
-	 * Dequeue (gets and removes from internal list) the {@link I_C_PaySelectionLine} which was scheduled to be updated.
-	 *
-	 * @param invoiceId C_Invoice_ID
-	 * @return existing {@link I_C_PaySelectionLine} which was scheduled to be updated
-	 */
-	private Optional<I_C_PaySelectionLine> dequeuePaySelectionLineToUpdateByInvoice(final int invoiceId)
+	private PaySelectionLinesToUpdate getPaySelectionLinesToUpdate()
 	{
-		final Map<Integer, I_C_PaySelectionLine> invoiceId2paySelectionLineToUpdate = _invoiceId2paySelectionLineToUpdateSupplier.get();
-		final I_C_PaySelectionLine paySelectionLine = invoiceId2paySelectionLineToUpdate.remove(invoiceId);
-		return Optional.ofNullable(paySelectionLine);
+		return _paySelectionLinesToUpdate.get();
 	}
 
-	/**
-	 * Dequeue (gets and removes from internal list) all remaining {@link I_C_PaySelectionLine}s which were scheduled to be updated.
-	 */
-	private List<I_C_PaySelectionLine> dequeueAllPaySelectionLinesToUpdate()
+	private PaySelectionLinesToUpdate retrievePaySelectionLinesToUpdate()
 	{
-		final Map<Integer, I_C_PaySelectionLine> invoiceId2paySelectionLineToUpdate = _invoiceId2paySelectionLineToUpdateSupplier.get();
-		final List<I_C_PaySelectionLine> paySelectionLines = new ArrayList<>(invoiceId2paySelectionLineToUpdate.values());
-		invoiceId2paySelectionLineToUpdate.clear();
-		return paySelectionLines;
+		if (paySelectionLineIdsToUpdate.isEmpty())
+		{
+			return new PaySelectionLinesToUpdate(ImmutableList.of());
+		}
+
+		final List<I_C_PaySelectionLine> lines = queryBL.createQueryBuilder(I_C_PaySelectionLine.class)
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getPaySelectionId())
+				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
+				.create()
+				.list();
+
+		return new PaySelectionLinesToUpdate(lines);
 	}
+
+	//
+	//
+	//
+
+	private static class PaySelectionLinesToUpdate
+	{
+		private final HashMap<InvoiceId, I_C_PaySelectionLine> byInvoiceId = new HashMap<>();
+		private final HashMap<PaymentId, I_C_PaySelectionLine> byPaymentId = new HashMap<>();
+
+		PaySelectionLinesToUpdate(final List<I_C_PaySelectionLine> lines)
+		{
+			for (final I_C_PaySelectionLine line : lines)
+			{
+				final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
+				final PaymentId originalPaymentId = PaymentId.ofRepoIdOrNull(line.getOriginal_Payment_ID());
+				if (invoiceId != null)
+				{
+					final I_C_PaySelectionLine paySelectionLineOld = byInvoiceId.put(invoiceId, line);
+					Check.assumeNull(paySelectionLineOld, "Only one pay selection line shall exist for an invoice but we found: {}, {}", line, paySelectionLineOld); // shall not happen
+				}
+				else if (originalPaymentId != null)
+				{
+					final I_C_PaySelectionLine old = byPaymentId.put(originalPaymentId, line);
+					Check.assumeNull(old, "Duplicate pay selection line for payment: {}, {}", line, old);
+				}
+			}
+		}
+
+		private Optional<I_C_PaySelectionLine> dequeueFor(@NonNull final PaySelectionLineCandidate candidate)
+		{
+			if (candidate.getInvoiceId() != null)
+			{
+				return Optional.ofNullable(byInvoiceId.remove(candidate.getInvoiceId()));
+			}
+			else if (candidate.getPaymentId() != null)
+			{
+				return Optional.ofNullable(byPaymentId.remove(candidate.getPaymentId()));
+			}
+			else
+			{
+				return Optional.empty();
+			}
+		}
+
+		private List<I_C_PaySelectionLine> dequeueAll()
+		{
+			final List<I_C_PaySelectionLine> result = new ArrayList<>(byInvoiceId.values());
+			result.addAll(byPaymentId.values());
+
+			byInvoiceId.clear();
+			byPaymentId.clear();
+
+			return result;
+		}
+	}
+
 }

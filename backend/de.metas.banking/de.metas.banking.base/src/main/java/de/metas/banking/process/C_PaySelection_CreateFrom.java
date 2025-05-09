@@ -4,7 +4,7 @@ import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.banking.payment.InvoiceMatchingMode;
+import de.metas.banking.payment.PaySelectionMatchingMode;
 import de.metas.document.engine.DocStatus;
 import de.metas.payment.PaymentRule;
 import de.metas.process.IProcessPrecondition;
@@ -116,7 +116,7 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 		paySelectionUpdater.setOnlyDiscount(p_OnlyDiscount);
 		paySelectionUpdater.setOnlyDue(p_OnlyDue);
 		paySelectionUpdater.setIncludeInDispute(p_IncludeInDispute);
-		paySelectionUpdater.setMatchRequirement(InvoiceMatchingMode.ofCode(p_MatchRequirement));
+		paySelectionUpdater.setMatchRequirement(PaySelectionMatchingMode.ofCode(p_MatchRequirement));
 		paySelectionUpdater.setPayDate(p_PayDate);
 		paySelectionUpdater.setPaymentRule(PaymentRule.ofNullableCode(p_PaymentRule));
 		paySelectionUpdater.setC_BPartner_ID(p_C_BPartner_ID);
