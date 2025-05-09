@@ -717,12 +717,12 @@ public final class CollectionUtils
 			@NonNull final Function<V, K> mappingFunction)
 	{
 
-		final HashMap<K, List<V>> key2Values = new HashMap<>();
+		final HashMap<K, ArrayList<V>> key2Values = new HashMap<>();
 
 		values.forEach(value -> {
 			final K currentKey = mappingFunction.apply(value);
 
-			final List<V> currentValues = new ArrayList<>();
+			final ArrayList<V> currentValues = new ArrayList<>();
 			currentValues.add(value);
 
 			key2Values.merge(currentKey, currentValues, CollectionUtils::mergeLists);

@@ -143,7 +143,7 @@ public class ShipmentService implements IShipmentService
 			return ImmutableSet.of();
 		}
 
-		final ImmutableMap<AsyncBatchId, List<ShipmentScheduleId>> asyncBatchId2ScheduleId = getShipmentScheduleIdByAsyncBatchId(request.getScheduleIds());
+		final ImmutableMap<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleId = getShipmentScheduleIdByAsyncBatchId(request.getScheduleIds());
 
 		return asyncBatchId2ScheduleId.keySet()
 				.stream()
@@ -216,7 +216,7 @@ public class ShipmentService implements IShipmentService
 	}
 
 	@NonNull
-	public ImmutableMap<AsyncBatchId, List<ShipmentScheduleId>> getShipmentScheduleIdByAsyncBatchId(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	public ImmutableMap<AsyncBatchId, ArrayList<ShipmentScheduleId>> getShipmentScheduleIdByAsyncBatchId(@NonNull final Set<ShipmentScheduleId> scheduleIds)
 	{
 		return trxManager.callInNewTrx(() -> groupSchedulesByAsyncBatch(scheduleIds));
 	}
@@ -314,15 +314,15 @@ public class ShipmentService implements IShipmentService
 	}
 
 	@NonNull
-	private ImmutableMap<AsyncBatchId, List<ShipmentScheduleId>> groupSchedulesByAsyncBatch(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	private ImmutableMap<AsyncBatchId, ArrayList<ShipmentScheduleId>> groupSchedulesByAsyncBatch(@NonNull final Set<ShipmentScheduleId> scheduleIds)
 	{
 		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules2Ids = shipmentSchedulePA.getByIds(scheduleIds, I_M_ShipmentSchedule.class);
 
-		final Map<AsyncBatchId, List<ShipmentScheduleId>> asyncBatchId2ScheduleId = new HashMap<>();
+		final Map<AsyncBatchId, ArrayList<ShipmentScheduleId>> asyncBatchId2ScheduleId = new HashMap<>();
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules2Ids.values())
 		{
-			final List<ShipmentScheduleId> currentShipmentSchedulesIds = new ArrayList<>();
+			final ArrayList<ShipmentScheduleId> currentShipmentSchedulesIds = new ArrayList<>();
 			currentShipmentSchedulesIds.add(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
 
 			final AsyncBatchId currentAsyncBatchId = AsyncBatchId.ofRepoIdOrNone(shipmentSchedule.getC_Async_Batch_ID());
@@ -330,7 +330,7 @@ public class ShipmentService implements IShipmentService
 			asyncBatchId2ScheduleId.merge(currentAsyncBatchId, currentShipmentSchedulesIds, CollectionUtils::mergeLists);
 		}
 
-		final List<ShipmentScheduleId> shipmentSchedulesIdsWithNoAsyncBatchId = asyncBatchId2ScheduleId.get(AsyncBatchId.NONE_ASYNC_BATCH_ID);
+		final ArrayList<ShipmentScheduleId> shipmentSchedulesIdsWithNoAsyncBatchId = asyncBatchId2ScheduleId.get(AsyncBatchId.NONE_ASYNC_BATCH_ID);
 
 		Optional.ofNullable(shipmentSchedulesIdsWithNoAsyncBatchId)
 				.flatMap(this::assignNewAsyncBatch)
