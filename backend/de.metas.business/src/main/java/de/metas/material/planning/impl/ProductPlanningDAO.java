@@ -25,6 +25,7 @@ package de.metas.material.planning.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.maturing.MaturingConfigId;
 import de.metas.material.maturing.MaturingConfigLineId;
@@ -80,8 +81,16 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final CCache<ProductPlanningId, ProductPlanning> productPlanningById = CCache.newLRUCache(I_PP_Product_Planning.Table_Name + "#by", 100, 0);
+
+	@Nullable
 	@Override
 	public ProductPlanning getById(@NonNull final ProductPlanningId id)
+	{
+		return productPlanningById.getOrLoad(id, () -> loadProductPlanning(id));
+	}
+
+	private static ProductPlanning loadProductPlanning(final @NonNull ProductPlanningId id)
 	{
 		return fromRecord(loadOutOfTrx(id, I_PP_Product_Planning.class));
 	}
@@ -189,7 +198,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public Stream<ProductPlanning> query(@NonNull ProductPlanningQuery query)
+	public Stream<ProductPlanning> query(@NonNull final ProductPlanningQuery query)
 	{
 		return toSql(query)
 				.stream()
@@ -264,7 +273,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		}
 	}
 
-	private IQueryBuilder<I_PP_Product_Planning> toSql(@NonNull ProductPlanningQuery query)
+	private IQueryBuilder<I_PP_Product_Planning> toSql(@NonNull final ProductPlanningQuery query)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> sqlQueryBuilder = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)

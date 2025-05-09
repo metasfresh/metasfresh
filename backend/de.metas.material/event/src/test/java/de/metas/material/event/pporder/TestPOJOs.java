@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestPOJOs
 {
