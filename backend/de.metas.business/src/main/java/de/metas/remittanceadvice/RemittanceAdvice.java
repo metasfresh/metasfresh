@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -77,7 +77,7 @@ public class RemittanceAdvice
 
 	@Nullable
 	private final Instant paymentDate;
-	
+
 	@Nullable
 	private final String externalDocumentNumber;
 
@@ -122,19 +122,37 @@ public class RemittanceAdvice
 	private final List<RemittanceAdviceLine> lines;
 
 	@Builder
-	public RemittanceAdvice(@NonNull final RemittanceAdviceId remittanceAdviceId, @NonNull final OrgId orgId, @NonNull final ClientId clientId, @NonNull final BPartnerId sourceBPartnerId, @NonNull final BPartnerBankAccountId sourceBPartnerBankAccountId, @NonNull final BPartnerId destinationBPartnerId, @NonNull final BPartnerBankAccountId destinationBPartnerBankAccountId,
-			@NonNull final String documentNumber,
-			@NonNull final Instant documentDate, @Nullable final String externalDocumentNumber, @NonNull final String docStatus, @NonNull final DocTypeId docTypeId, @NonNull final CurrencyId remittedAmountCurrencyId, @Nullable final Instant sendDate, @Nullable final CurrencyId serviceFeeCurrencyId, @Nullable final String additionalNotes, final boolean isImported,
-			@Nullable final Instant paymentDate,
-			@Nullable final BigDecimal serviceFeeAmount,
-			@NonNull final BigDecimal remittedAmountSum, @Nullable final BigDecimal paymentDiscountAmountSum, @Nullable final PaymentId paymentId, final boolean isSOTrx,
-			final boolean isDocumentAcknowledged, final boolean currenciesReadOnlyFlag, final boolean processed, @NonNull final List<RemittanceAdviceLine> lines)
+	public RemittanceAdvice(@NonNull final RemittanceAdviceId remittanceAdviceId, 
+							@NonNull final OrgId orgId, 
+							@NonNull final ClientId clientId, 
+							@NonNull final BPartnerId sourceBPartnerId, 
+							@NonNull final BPartnerBankAccountId sourceBPartnerBankAccountId, 
+							@NonNull final BPartnerId destinationBPartnerId, 
+							@NonNull final BPartnerBankAccountId destinationBPartnerBankAccountId,
+							@NonNull final String documentNumber,
+							@NonNull final Instant documentDate, 
+							@Nullable final String externalDocumentNumber, 
+							@NonNull final String docStatus, 
+							@NonNull final DocTypeId docTypeId, 
+							@NonNull final CurrencyId remittedAmountCurrencyId, 
+							@Nullable final Instant sendDate, 
+							@Nullable final CurrencyId serviceFeeCurrencyId, 
+							@Nullable final String additionalNotes, final boolean isImported,
+							@Nullable final Instant paymentDate,
+							@Nullable final BigDecimal serviceFeeAmount,
+							@NonNull final BigDecimal remittedAmountSum,
+							@Nullable final BigDecimal paymentDiscountAmountSum, 
+							@Nullable final PaymentId paymentId, 
+							final boolean isSOTrx,
+							final boolean isDocumentAcknowledged, 
+							final boolean currenciesReadOnlyFlag, 
+							final boolean processed, 
+							@NonNull final List<RemittanceAdviceLine> lines)
 	{
 		if (serviceFeeAmount != null && serviceFeeAmount.signum() != 0 && serviceFeeCurrencyId == null)
 		{
 			throw new AdempiereException("Missing ServiceFeeCurrencyID!");
 		}
-
 
 		this.remittanceAdviceId = remittanceAdviceId;
 		this.orgId = orgId;
@@ -181,16 +199,17 @@ public class RemittanceAdvice
 				.map(RemittanceAdviceLineId::getRepoId)
 				.collect(ImmutableList.toImmutableList());
 
-		if (lineIdsWithProblems.size() > 0)
+		if (lineIdsWithProblems.isEmpty())
 		{
-			throw new AdempiereException("There is a number of lines which cannot be completed! Lines with problems:")
-					.appendParametersToMessage()
-					.setParameter("Lines", lineIdsWithProblems);
+			return;
 		}
+		throw new AdempiereException("There is a number of lines which cannot be completed! Lines with problems:")
+				.appendParametersToMessage()
+				.setParameter("Lines", lineIdsWithProblems);
 	}
 
 	/**
-	 * @return true, if any recompute logic was applied, false otherwise
+	 * @return result that indicates if the summing was successfully done
 	 */
 	@NonNull
 	public BooleanWithReason recomputeSumsFromLines()
@@ -208,8 +227,8 @@ public class RemittanceAdvice
 		for (final RemittanceAdviceLine line : lines)
 		{
 			remittedAmountSumAmount = remittedAmountSumAmount == null
-					? line.getRemittedAmount()
-					: remittedAmountSumAmount.add(line.getRemittedAmount());
+					? line.getRemittedAmountAdjusted()
+					: remittedAmountSumAmount.add(line.getRemittedAmountAdjusted());
 
 			if (line.getPaymentDiscountAmount() != null)
 			{

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoice.service;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -12,6 +34,7 @@ import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -124,11 +147,6 @@ public interface IInvoiceBL extends ISingletonService
 	boolean isReversal(I_C_Invoice invoice);
 
 	/**
-	 * @return true if the given invoice is a AR CreditMemo (ARC)
-	 */
-	boolean isARCreditMemo(I_C_Invoice invoice);
-
-	/**
 	 * Writes off the given openAmt from the given invoice.
 	 *
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
@@ -195,6 +213,8 @@ public interface IInvoiceBL extends ISingletonService
 			@NonNull I_C_Invoice invoice,
 			@NonNull BigDecimal openAmt,
 			@NonNull InvoicePaymentStatus paymentStatus);
+
+	InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull I_C_Invoice invoice);
 
 	/**
 	 * @param docTypeTargetId invoice's document type

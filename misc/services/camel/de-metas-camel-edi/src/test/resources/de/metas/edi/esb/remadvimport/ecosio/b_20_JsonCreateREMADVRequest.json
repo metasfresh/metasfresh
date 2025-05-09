@@ -14,6 +14,7 @@
       "paymentDiscountAmountSum": 0,
       "lines": [
         {
+          "lineIdentifier": "51",
           "invoiceIdentifier": "doc-F136248",
           "remittedAmount": 4467.58,
           "dateInvoiced": "2021-09-06T22:00:00Z",
@@ -25,13 +26,14 @@
           "serviceFeeVatRate": 7.7
         },
         {
+          "lineIdentifier": "52",
           "invoiceIdentifier": "doc-G101619",
           "remittedAmount": 140.78,
           "dateInvoiced": "2021-09-06T22:00:00Z",
           "bpartnerIdentifier": "gln-6234567890123",
           "invoiceBaseDocType": "ARC",
           "invoiceGrossAmount": 140.43,
-          "paymentDiscountAmount": -2.67,
+          "paymentDiscountAmount": -1.97,
           "serviceFeeAmount": 2.32,
           "serviceFeeVatRate": 7.7
         }

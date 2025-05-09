@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoice.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -69,6 +91,7 @@ import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -131,6 +154,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -146,28 +170,6 @@ import java.util.Set;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.util.Check.assumeNotNull;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
  * Implements those methods that are DB decoupled
  */
@@ -176,6 +178,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	protected final Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -250,14 +253,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 
 		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-
+		
 		final DocTypeId targetDocTypeId = getTarget_DocType_ID(invoice, creditCtx.getDocTypeId());
 		//
 		// create the credit memo as a copy of the original invoice
-		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
-				copyFrom(invoice, de.metas.common.util.time.SystemTime.asTimestamp(),
+		// counter == false
+		// setOrderRef == creditCtx.isReferenceOriginalOrder()
+		// setInvoiceRef == creditCtx.isReferenceInvoice()
+		// copyLines == true
+		return InterfaceWrapperHelper.create(
+				copyFrom(invoice, SystemTime.asTimestamp(),
 						targetDocTypeId.getRepoId(),
 						invoice.isSOTrx(),
 						false, // counter == false
@@ -266,10 +271,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						true, // copyLines == true
 						new CreditMemoInvoiceCopyHandler(creditCtx)),
 				I_C_Invoice.class);
-		return creditMemo;
 	}
 
-	private DocTypeId getTarget_DocType_ID(final I_C_Invoice invoice, final DocTypeId docTypeId)
+	private DocTypeId getTarget_DocType_ID(
+			@NonNull final I_C_Invoice invoice, 
+			@Nullable final DocTypeId docTypeId)
 	{
 		if (docTypeId != null)
 		{
@@ -580,14 +586,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return isOpenAmtChanged || isFullyPaidChanged || isPartiallyPaidChanged;
 	}
 
-	protected final InvoiceTotal extractGrandTotal(final org.compiere.model.I_C_Invoice invoice)
+	protected final InvoiceTotal extractGrandTotal(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		final Money grandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 		final InvoiceAmtMultiplier multiplier = getInvoiceAmtMultiplier(invoice);
 		return InvoiceTotal.ofRelativeValue(grandTotal, multiplier);
 	}
 
-	private InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	@Override
+	public InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		return InvoiceAmtMultiplier.builder()
 				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
@@ -723,15 +730,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void updateFromBPartner(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_ID());
 		if (bpartnerId == null)
 		{
 			throw new FillMandatoryException("C_BPartner_ID");
 		}
-
+		final ZoneId tz = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
-		final ZonedDateTime date = TimeUtil.asZonedDateTime(invoice.getDateInvoiced());
+		final ZonedDateTime date = TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), tz);
 		if (date == null)
 		{
 			throw new AdempiereException("Set DateInvoiced first");
@@ -1482,7 +1488,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, final org.compiere.model.@NonNull I_C_InvoiceLine invoiceLine)
 	{
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -1569,14 +1575,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofNullableCode(docBaseType);
 		return invoiceDocBaseType != null && invoiceDocBaseType.isCreditMemo();
-	}
-
-	@Override
-	public final boolean isARCreditMemo(final org.compiere.model.I_C_Invoice invoice)
-	{
-		final I_C_DocType docType = getC_DocType(invoice);
-		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(docType.getDocBaseType());
-		return invoiceDocBaseType.isCustomerCreditMemo();
 	}
 
 	@Override

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,6 +28,7 @@ import de.metas.lang.SOTrx;
 import lombok.Builder;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -37,9 +38,21 @@ public class InvoiceAmtMultiplierTest
 {
 	private static @NotNull Amount eur(final String amt) {return Amount.of(amt, CurrencyCode.EUR);}
 
+	@Test
+	void isIncomingMoney()
+	{
+		final InvoiceAmtMultiplier.InvoiceAmtMultiplierBuilder builder = InvoiceAmtMultiplier.builder()
+				.isSOTrxAdjusted(false).isCreditMemoAdjusted(false); // the adjusted-parameters are irrelevant
+		
+		assertThat(builder.soTrx(SOTrx.SALES).isCreditMemo(false).build().isOutgoingMoney()).isFalse();
+		assertThat(builder.soTrx(SOTrx.SALES).isCreditMemo(true).build().isOutgoingMoney()).isTrue();
+		assertThat(builder.soTrx(SOTrx.PURCHASE).isCreditMemo(false).build().isOutgoingMoney()).isTrue();
+		assertThat(builder.soTrx(SOTrx.PURCHASE).isCreditMemo(true).build().isOutgoingMoney()).isFalse();
+	}
+
 	@Value
 	@Builder
-	public static class TestCase
+	public static class RealValueTestCase
 	{
 		@NotNull String name;
 		@NotNull InvoiceAmtMultiplier multiplier;
@@ -52,31 +65,31 @@ public class InvoiceAmtMultiplierTest
 		}
 	}
 
-	public static TestCase[] getTestCases()
+	public static RealValueTestCase[] getTestCases()
 	{
-		return new TestCase[] {
+		return new RealValueTestCase[] {
 				//
 				// Purchase Invoice
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Purchase Invoice")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.PURCHASE).isCreditMemo(false).isSOTrxAdjusted(false).isCreditMemoAdjusted(false).build())
 						.relativeValue(eur("100"))
 						.realValue(eur("-100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Purchase Invoice, CM adjusted")
 						// NOTE isCreditMemoAdjusted flag is not influencing the result because isCreditMemo=false
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.PURCHASE).isCreditMemo(false).isSOTrxAdjusted(false).isCreditMemoAdjusted(true).build())
 						.relativeValue(eur("100"))
 						.realValue(eur("-100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Purchase Invoice, SO adjusted")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.PURCHASE).isCreditMemo(false).isSOTrxAdjusted(true).isCreditMemoAdjusted(false).build())
 						.relativeValue(eur("-100"))
 						.realValue(eur("-100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Purchase Invoice, SO adjusted, CM adjusted")
 						// NOTE isCreditMemoAdjusted flag is not influencing the result because isCreditMemo=false
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.PURCHASE).isCreditMemo(false).isSOTrxAdjusted(true).isCreditMemoAdjusted(true).build())
@@ -85,25 +98,25 @@ public class InvoiceAmtMultiplierTest
 						.build(),
 				//
 				// Purchase Credit Memo
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Purchase Credit Memo")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.PURCHASE).isCreditMemo(true).isSOTrxAdjusted(false).isCreditMemoAdjusted(false).build())
 						.relativeValue(eur("100"))
 						.realValue(eur("100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Purchase Credit Memo, CM Adjusted")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.PURCHASE).isCreditMemo(true).isSOTrxAdjusted(false).isCreditMemoAdjusted(true).build())
 						.relativeValue(eur("-100"))
 						.realValue(eur("100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Purchase Credit Memo, SO Adjusted")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.PURCHASE).isCreditMemo(true).isSOTrxAdjusted(true).isCreditMemoAdjusted(false).build())
 						.relativeValue(eur("-100"))
 						.realValue(eur("100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Purchase Credit Memo, SO adjusted, CM adjusted")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.PURCHASE).isCreditMemo(true).isSOTrxAdjusted(true).isCreditMemoAdjusted(true).build())
 						.relativeValue(eur("100"))
@@ -111,26 +124,26 @@ public class InvoiceAmtMultiplierTest
 						.build(),
 				//
 				// Sales Invoice
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Sales Invoice")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.SALES).isCreditMemo(false).isSOTrxAdjusted(false).isCreditMemoAdjusted(false).build())
 						.relativeValue(eur("100"))
 						.realValue(eur("100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Sales Invoice, CM Adjusted")
 						// NOTE isCreditMemoAdjusted flag is not influencing the result because isCreditMemo=false
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.SALES).isCreditMemo(false).isSOTrxAdjusted(false).isCreditMemoAdjusted(true).build())
 						.relativeValue(eur("100"))
 						.realValue(eur("100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Sales Invoice, SO Adjusted")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.SALES).isCreditMemo(false).isSOTrxAdjusted(true).isCreditMemoAdjusted(false).build())
 						.relativeValue(eur("100"))
 						.realValue(eur("100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Sales Invoice, SO Adjusted, CM Adjusted")
 						// NOTE isCreditMemoAdjusted flag is not influencing the result because isCreditMemo=false
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.SALES).isCreditMemo(false).isSOTrxAdjusted(true).isCreditMemoAdjusted(true).build())
@@ -139,25 +152,25 @@ public class InvoiceAmtMultiplierTest
 						.build(),
 				//
 				// Sales Credit Memo
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Sales Credit Memo")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.SALES).isCreditMemo(true).isSOTrxAdjusted(false).isCreditMemoAdjusted(false).build())
 						.relativeValue(eur("100"))
 						.realValue(eur("-100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Sales Credit Memo, CM Adjusted")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.SALES).isCreditMemo(true).isSOTrxAdjusted(false).isCreditMemoAdjusted(true).build())
 						.relativeValue(eur("-100"))
 						.realValue(eur("-100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Sales Credit Memo, SO Adjusted")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.SALES).isCreditMemo(true).isSOTrxAdjusted(true).isCreditMemoAdjusted(false).build())
 						.relativeValue(eur("100"))
 						.realValue(eur("-100"))
 						.build(),
-				TestCase.builder()
+				RealValueTestCase.builder()
 						.name("Sales Credit Memo, SO Adjusted, CM Adjusted")
 						.multiplier(InvoiceAmtMultiplier.builder().soTrx(SOTrx.SALES).isCreditMemo(true).isSOTrxAdjusted(true).isCreditMemoAdjusted(true).build())
 						.relativeValue(eur("-100"))
@@ -168,7 +181,7 @@ public class InvoiceAmtMultiplierTest
 
 	@ParameterizedTest
 	@MethodSource("getTestCases")
-	void convertToRealValue(TestCase testCase)
+	void convertToRealValue(final RealValueTestCase testCase)
 	{
 		assertThat(testCase.getMultiplier().convertToRealValue(testCase.getRelativeValue()))
 				.as("" + testCase)
@@ -177,7 +190,7 @@ public class InvoiceAmtMultiplierTest
 
 	@ParameterizedTest
 	@MethodSource("getTestCases")
-	void convertToRelativeValue(TestCase testCase)
+	void convertToRelativeValue(final RealValueTestCase testCase)
 	{
 		assertThat(testCase.getMultiplier().convertToRelativeValue(testCase.getRealValue()))
 				.as("" + testCase)
