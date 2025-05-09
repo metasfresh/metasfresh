@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -64,9 +64,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RemittanceAdviceServiceTest
 {
@@ -88,7 +89,6 @@ public class RemittanceAdviceServiceTest
 		invoiceDocTypes = new HashMap<>();
 
 		SpringContextHolder.registerJUnitBean(RemittanceAdviceRepository.class, new RemittanceAdviceRepository());
-		final RemittanceAdviceRepository remittanceAdviceRepository = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
 
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
 		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
@@ -135,9 +135,9 @@ public class RemittanceAdviceServiceTest
 	private RemittanceAdviceLine getRemittanceLine(
 			@Nullable final String invoiceIdentifier,
 			final int invoiceId,
+			@NonNull final InvoiceDocBaseType invoiceDocBaseType,
 			@NonNull final BigDecimal remittanceAmt,
 			@Nullable final CurrencyCode currencyCode,
-			@Nullable final BPartnerId bPartnerId,
 			@Nullable final LocalDate targetInvoicedDate
 	)
 	{
@@ -150,6 +150,7 @@ public class RemittanceAdviceServiceTest
 				.remittanceAdviceId(RemittanceAdviceId.ofRepoId(nextRemittanceId++))//
 				.invoiceIdentifier(invoiceIdentifier)//
 				.invoiceId(InvoiceId.ofRepoIdOrNull(invoiceId))//
+				.externalInvoiceDocBaseType(invoiceDocBaseType)
 				.dateInvoiced(targetInvoicedDate != null ? TimeUtil.asInstant(targetInvoicedDate) : null)
 				.remittedAmount(Amount.of(remittanceAmt, currencyCode != null ? currencyCode : CurrencyCode.EUR))//
 				.build();
@@ -255,7 +256,10 @@ public class RemittanceAdviceServiceTest
 		//given
 		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open(BigDecimal.valueOf(100)).currency(euroCurrencyId).build();
 		final RemittanceAdvice remittanceAdvice = remittance().build();
-		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine().invoiceId(invoice.getC_Invoice_ID()).remittanceAmt(new BigDecimal(100)).build();
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.invoiceId(invoice.getC_Invoice_ID())
+				.invoiceDocBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(CustomerInvoice.getSoTrx(), CustomerInvoice.isCreditMemo()))
+				.remittanceAmt(new BigDecimal(100)).build();
 
 		//when
 		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
@@ -278,6 +282,7 @@ public class RemittanceAdviceServiceTest
 		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
 				.invoiceId(invoice.getC_Invoice_ID())
 				.remittanceAmt(new BigDecimal(120))
+				.invoiceDocBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(CustomerInvoice.getSoTrx(), CustomerInvoice.isCreditMemo()))
 				.build();
 
 		//when
@@ -304,6 +309,7 @@ public class RemittanceAdviceServiceTest
 		final RemittanceAdvice remittanceAdvice = remittance().build();
 		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
 				.invoiceId(invoice.getC_Invoice_ID())
+				.invoiceDocBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(CustomerInvoice.getSoTrx(), CustomerInvoice.isCreditMemo()))
 				.remittanceAmt(new BigDecimal(80)).build();
 
 		//when
@@ -329,6 +335,8 @@ public class RemittanceAdviceServiceTest
 				.currencyCode(CurrencyCode.CHF)
 				.invoiceId(invoice.getC_Invoice_ID())
 				.remittanceAmt(new BigDecimal(200))
+				.invoiceId(invoice.getC_Invoice_ID())
+				.invoiceDocBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(CustomerInvoice.getSoTrx(), CustomerInvoice.isCreditMemo()))
 				.build();
 
 		//when
@@ -355,6 +363,8 @@ public class RemittanceAdviceServiceTest
 				.currencyCode(CurrencyCode.CHF)
 				.invoiceId(invoice.getC_Invoice_ID())
 				.remittanceAmt(new BigDecimal(100))
+				.invoiceId(invoice.getC_Invoice_ID())
+				.invoiceDocBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(CustomerInvoice.getSoTrx(), CustomerInvoice.isCreditMemo()))
 				.build();
 
 		//when
@@ -387,7 +397,8 @@ public class RemittanceAdviceServiceTest
 		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
 				.targetInvoicedDate(invoicedDate)
 				.invoiceId(invoice.getC_Invoice_ID())
-				.bPartnerId(bpartnerId)
+				// the amounts are the same, but the doctype doesn't match our invoice
+				.invoiceDocBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(VendorCreditMemo.getSoTrx(), VendorCreditMemo.isCreditMemo()))
 				.remittanceAmt(new BigDecimal(100))
 				.build();
 
@@ -401,7 +412,9 @@ public class RemittanceAdviceServiceTest
 		assertThat(remittanceAdviceLine.isAmountValid()).isTrue();
 		assertThat(remittanceAdviceLine.isInvoiceDateValid()).isTrue();
 		assertThat(remittanceAdviceLine.isServiceFeeResolved()).isFalse();
-		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isFalse();
+
+		// ..because the amounts are the same, but the doctype doesn't match our invoice
+		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isFalse(); 
 	}
 
 }
