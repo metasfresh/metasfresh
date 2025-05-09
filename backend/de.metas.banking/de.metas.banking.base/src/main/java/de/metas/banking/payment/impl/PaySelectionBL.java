@@ -299,7 +299,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		final I_C_PaySelection paySelection = line.getC_PaySelection();
 		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
 
-		final I_C_Payment newPayment = paymentBL.newOutboundPaymentBuilder()
+		final I_C_Payment paymentRefund = paymentBL.newOutboundPaymentBuilder()
 				.adOrgId(OrgId.ofRepoId(originalPayment.getAD_Org_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(originalPayment.getC_BPartner_ID()))
 				.orgBankAccountId(BankAccountId.ofRepoId(originalPayment.getC_BP_BankAccount_ID()))
@@ -319,9 +319,9 @@ public class PaySelectionBL implements IPaySelectionBL
 		paymentBL.save(originalPayment);
 
 		// allocate payments
-		allocationBL.allocateSpecificPayments(originalPayment, newPayment);
+		allocationBL.allocateSpecificPayments(originalPayment, paymentRefund);
 
-		line.setC_Payment_ID(newPayment.getC_Payment_ID());
+		line.setC_Payment_ID(paymentRefund.getC_Payment_ID());
 		paySelectionDAO.save(line);
 	}
 

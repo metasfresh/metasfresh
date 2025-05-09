@@ -50,8 +50,8 @@ class PaySelectionLineCandidate
 	private final InvoiceId invoiceId;
 	private final PaymentId paymentId;
 	private final boolean isSOTrx;
-	private final BPartnerId bPartnerId;
-	private final BankAccountId bPartnerBankAccountId;
+	private final BPartnerId bpartnerId;
+	private final BankAccountId bpBankAccountId;
 
 	private PaySelectionLineCandidate(final Builder builder)
 	{
@@ -65,8 +65,8 @@ class PaySelectionLineCandidate
 		this.invoiceId = builder.getInvoiceId();
 		this.paymentId = builder.getPaymentId();
 		this.isSOTrx = builder.isSOTrx();
-		this.bPartnerId = builder.getBPartnerId();
-		this.bPartnerBankAccountId = builder.getBPartnerBankAccountId();
+		this.bpartnerId = builder.getBPartnerId();
+		this.bpBankAccountId = builder.getBPartnerBankAccountId();
 	}
 
 	public static final Builder builder()
@@ -122,12 +122,12 @@ class PaySelectionLineCandidate
 
 	public BPartnerId getBPartnerId()
 	{
-		return bPartnerId;
+		return bpartnerId;
 	}
 
 	public BankAccountId getBPartnerBankAccountId()
 	{
-		return bPartnerBankAccountId;
+		return bpBankAccountId;
 	}
 
 	public static final class Builder
