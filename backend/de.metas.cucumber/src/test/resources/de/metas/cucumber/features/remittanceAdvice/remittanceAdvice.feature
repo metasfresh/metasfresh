@@ -123,52 +123,83 @@ Feature: invoice payment allocation
 
     Then validate created invoices
       | C_Invoice_ID          | C_BPartner_ID   | GrandTotal   | DocBaseType | IsPaid | OpenAmt |
-      | customerCreditMemo    | customer1       | 77.60 EUR    | ARC         | true   | 0       |
       | customerInvoice       | customer1       | 55278.05 EUR | ARI         | true   | 0       |
       | vendorInvoice         | vendor1         | 1621.50 EUR  | API         | true   | 0       |
-      | vendorServiceInvoice1 | serviceProvider | 1.11 EUR     | API         | true   | 0       |
-      | vendorServiceInvoice2 | serviceProvider | 971.04 EUR   | API         | true   | 0       |
-      | vendorServiceInvoice3 | serviceProvider | 23.23 EUR    | API         | true   | 0       |
+      | customerCreditMemo    | customer1       | 77.60 EUR    | ARC         | true   | 0       |
+      | vendorServiceInvoice1 | serviceProvider | 971.04 EUR   | API         | true   | 0       |
+      | vendorServiceInvoice2 | serviceProvider | 23.23 EUR    | API         | true   | 0       |
+      | vendorServiceInvoice3 | serviceProvider | 1.11 EUR     | API         | true   | 0       |
     And validate payments
       | C_Payment_ID   | PayAmt   | IsAllocated |
       | inboundPayment | 51812.76 | true        |
 
     And validate C_AllocationLines
-    # customerInvoice
-      | customerInvoice       | -              | 971.04   | 0           | -441.04      | ral10_alloc1       |
-      | vendorServiceInvoice2 | -              | -971.04  | 0           | 0            | ral10_alloc1       |
-      | customerInvoice       | inboundPayment | 53535.11 | 771.90      | 0            | ral10_alloc2       |
-    # customerCreditMemo
       | C_Invoice_ID          | C_Payment_ID   | Amount   | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
-      | customerCreditMemo    | -              | 1.11     | 0           | -441.04      | ral30_alloc1       |
-      | vendorServiceInvoice1 | -              | -1.11    | 0           | 0            | ral30_alloc1       |
-      | customerCreditMemo    | inboundPayment | -77.62   | -1.09       | 0            | ral30_alloc2       |
+    # customerInvoice
+      | customerInvoice       | -              | 971.04   | 0           | 54307.01     | ral10_alloc1       |
+      | vendorServiceInvoice1 | -              | -971.04  | 0           | 0            | ral10_alloc1       |
+      | customerInvoice       | inboundPayment | 53535.11 | 771.90      | 0            | ral10_alloc2       |
     # vendorInvoice
-      | vendorInvoice         | -              | 23.23    | 0           | -441.04      | ral20_alloc1       |
-      | vendorServiceInvoice3 | -              | -23.23   | 0           | 0            | ral20_alloc1       |
-      | vendorInvoice         | inboundPayment | -1621.50 |             | 0            | ral20_alloc2       |
+      | vendorInvoice         | -              | 23.23    | 0           | -1644.73     | ral20_alloc1       |
+      | vendorServiceInvoice2 | -              | -23.23   | 0           | 0            | ral20_alloc1       |
+      | vendorInvoice         | inboundPayment | -1644.73 |             | 0            | ral20_alloc2       |
+    # customerCreditMemo
+      | customerCreditMemo    | -              | 1.11     | 0           | -78.71       | ral30_alloc1       |
+      | vendorServiceInvoice3 | -              | -1.11    | 0           | 0            | ral30_alloc1       |
+      | customerCreditMemo    | inboundPayment | -77.62   | -1.09       | 0            | ral30_alloc2       |
 
     And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID   | C_Tax_ID | Record_ID             |
-    # customerCreditMemo
-      | C_Receivable_Acct      |             | 77.62 EUR   | customer1       | -        | customerCreditMemo    |
-      | T_Due_Acct             | 999.99 EUR  |             | customer1       | tax19%   | customerCreditMemo    |
-      | *                      |             |             |                 |          | customerCreditMemo    |
-      # ------------------------------------------------------------------------------------------
-      | V_Liability_Acct       |             | 1.11 EUR    | serviceProvider | -        | vendorServiceInvoice1 |
-      | *                      |             |             |                 |          | vendorServiceInvoice1 |
-      # ------------------------------------------------------------------------------------------
-      | C_Receivable_Acct      |             | 1.11 EUR    | customer1       | -        | ral30_alloc1          |
-      | V_Liability_Acct       | 1.11 EUR    |             | serviceProvider | -        | ral30_alloc1          |
-      # ------------------------------------------------------------------------------------------
-      | C_Receivable_Acct      | 441.04 EUR  |             | customer1       | -        | ral30_alloc2          |
-      | B_UnallocatedCash_Acct |             | 434.97 EUR  | serviceProvider | -        | ral30_alloc2          |
-      | PayDiscount_Rev_Acct   |             | 1.09 EUR    | serviceProvider | tax19%   | ral30_alloc2          |
-      # tax correction:
-      | PayDiscount_Rev_Acct   | 0.97 EUR    |             | customer1       | tax19%   | ral30_alloc2          |
-      | T_Due_Acct             |             | 0.97 EUR    | customer1       | tax19%   | ral30_alloc2          |
-      # ------------------------------------------------------------------------------------------
-      | B_UnallocatedCash_Acct |             | -434.97 EUR | serviceProvider | -        | inboundPayment        |
-      | B_InTransit_Acct       | -434.97 EUR |             | serviceProvider | -        | inboundPayment        |
+      | AccountConceptualName  | AmtSourceDr  | AmtSourceCr  | C_BPartner_ID   | C_Tax_ID | Record_ID             |
     # customerInvoice
+      | C_Receivable_Acct      | 55278.05 EUR |              | customer1       | -        | customerInvoice       |
+      | T_Due_Acct             |              | 8825.91 EUR  | customer1       | tax19%   | customerInvoice       |
+      | *                      |              |              |                 |          | customerInvoice       |
+      # ------------------------------------------------------------------------------------------
+      | V_Liability_Acct       |              | 971.04 EUR   | serviceProvider | -        | vendorServiceInvoice1 |
+      | *                      |              |              |                 |          | vendorServiceInvoice1 |
+      # ------------------------------------------------------------------------------------------
+      | C_Receivable_Acct      |              | 971.04 EUR   | customer1       | -        | ral10_alloc1          |
+      | V_Liability_Acct       | 971.04 EUR   |              | serviceProvider | -        | ral10_alloc1          |
+      # ------------------------------------------------------------------------------------------
+      | C_Receivable_Acct      |              | 54307.01 EUR | customer1       | -        | ral10_alloc2          |
+      | B_UnallocatedCash_Acct | 53535.11 EUR |              | serviceProvider | -        | ral10_alloc2          |
+      | PayDiscount_Exp_Acct   | 771.90 EUR   |              | serviceProvider | tax19%   | ral10_alloc2          |
+      # tax correction:
+      | PayDiscount_Exp_Acct   |              | 123.24 EUR   | serviceProvider | tax19%   | ral10_alloc2          |
+      | T_Due_Acct             | 123.24 EUR   |              | serviceProvider | tax19%   | ral10_alloc2          |
     # vendorInvoice
+      | V_Liability_Acct       |              | 1621.5 EUR   | vendor1         | -        | vendorInvoice         |
+      | T_Credit_Acct          | 258.89 EUR   |              | vendor1         | tax19%   | vendorInvoice         |
+      | *                      |              |              |                 |          | vendorInvoice         |
+      # ------------------------------------------------------------------------------------------
+      | V_Liability_Acct       |              | 23.23 EUR    | serviceProvider | -        | vendorServiceInvoice2 |
+      | *                      |              |              |                 |          | vendorServiceInvoice2 |
+      # ------------------------------------------------------------------------------------------
+      | V_Liability_Acct       |              | 23.23 EUR    | vendor1         | -        | ral20_alloc1          |
+      | V_Liability_Acct       | 23.23 EUR    |              | serviceProvider | -        | ral20_alloc1          |
+      # ----note: no PayDiscount_Rev_Acct because paymentDiscount=0 -------------------------------------------------
+      | V_Liability_Acct       | 1644.73 EUR  |              | vendor1         | -        | ral20_alloc2          |
+      | B_UnallocatedCash_Acct |              | 1644.73 EUR  | serviceProvider | -        | ral20_alloc2          |
+      # tax correction: TODO: !!Verify i'Ts OK!!
+#      | PayDiscount_Rev_Acct   | 999.99 EUR   |              | serviceProvider | tax19%   | ral20_alloc2          |
+#      | T_Credit_Acct          |              | 999.99 EUR   | serviceProvider | tax19%   | ral20_alloc2          |
+    # customerCreditMemo
+      | C_Receivable_Acct      |              | 77.60 EUR    | customer1       | -        | customerCreditMemo    |
+      | T_Due_Acct             | 12.39 EUR    |              | customer1       | tax19%   | customerCreditMemo    |
+      | *                      |              |              |                 |          | customerCreditMemo    |
+      # ------------------------------------------------------------------------------------------
+      | V_Liability_Acct       |              | 1.11 EUR     | serviceProvider | -        | vendorServiceInvoice3 |
+      | *                      |              |              |                 |          | vendorServiceInvoice3 |
+      # ------------------------------------------------------------------------------------------
+      | C_Receivable_Acct      |              | 1.11 EUR     | customer1       | -        | ral30_alloc1          |
+      | V_Liability_Acct       | 1.11 EUR     |              | serviceProvider | -        | ral30_alloc1          |
+      # ------------------------------------------------------------------------------------------
+      | C_Receivable_Acct      | 78.71 EUR    |              | customer1       | -        | ral30_alloc2          |
+      | B_UnallocatedCash_Acct |              | 77.62 EUR    | serviceProvider | -        | ral30_alloc2          |
+      | PayDiscount_Rev_Acct   |              | 1.09 EUR     | serviceProvider | tax19%   | ral30_alloc2          |
+      # tax correction:
+      | PayDiscount_Rev_Acct   | 0.17 EUR     |              | serviceProvider | tax19%   | ral30_alloc2          |
+      | T_Due_Acct             |              | 0.17 EUR     | serviceProvider | tax19%   | ral30_alloc2          |
+    # Payment
+      | B_UnallocatedCash_Acct |              | 51812.76 EUR | serviceProvider | -        | inboundPayment        |
+      | B_InTransit_Acct       | 51812.76 EUR |              | serviceProvider | -        | inboundPayment        |

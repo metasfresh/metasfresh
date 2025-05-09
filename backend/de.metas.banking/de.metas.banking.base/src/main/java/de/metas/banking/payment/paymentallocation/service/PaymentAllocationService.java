@@ -247,9 +247,8 @@ public class PaymentAllocationService
 		final boolean invoiceIsCreditMemo = amtMultiplier.isCreditMemo();
 
 		// for purchase invoices and sales credit memos, we need to allow this,
-		// because we want the invoice with negative amount to be allocated against the payment with positive amount.
-		// The credit-memo and the payment need to be added up in a way 
-		final boolean allowAllocateAgainstDifferentSignumPayment = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
+		// because we want the "outgoing-money"-invoice to be allocated against the "incoming-money"-payment 
+		final boolean allowAllocateAgainstDifferentSignumPayment = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ amtMultiplier.isOutgoingMoney();
 
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,23 +20,24 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.remittanceAdvice;
 
-import de.metas.remittanceadvice.RemittanceAdviceId;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.remittanceadvice.RemittanceAdviceLineId;
 import lombok.NonNull;
-import org.compiere.model.I_C_RemittanceAdvice;
+import org.compiere.model.I_C_RemittanceAdvice_Line;
 
-public class C_RemittanceAdvice_StepDefData extends StepDefData<I_C_RemittanceAdvice> implements StepDefDataGetIdAware<RemittanceAdviceId, I_C_RemittanceAdvice>
+public class C_RemittanceAdvice_Line_StepDefData extends StepDefData<I_C_RemittanceAdvice_Line> implements StepDefDataGetIdAware<RemittanceAdviceLineId, I_C_RemittanceAdvice_Line>
 {
-	public C_RemittanceAdvice_StepDefData()
+	public C_RemittanceAdvice_Line_StepDefData()
 	{
-		super(I_C_RemittanceAdvice.class);
+		super(I_C_RemittanceAdvice_Line.class);
 	}
 
 	@Override
-	public RemittanceAdviceId extractIdFromRecord(@NonNull final I_C_RemittanceAdvice record)
+	public RemittanceAdviceLineId extractIdFromRecord(@NonNull final I_C_RemittanceAdvice_Line record)
 	{
-		return RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+		return RemittanceAdviceLineId.ofRepoId(record.getC_RemittanceAdvice_Line_ID());
 	}
 }

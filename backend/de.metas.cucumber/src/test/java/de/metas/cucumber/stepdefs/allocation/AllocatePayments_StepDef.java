@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,21 +36,14 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
-import de.metas.currency.Amount;
-import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
@@ -66,13 +59,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -98,13 +89,11 @@ public class AllocatePayments_StepDef
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
-	@NonNull private final M_Product_StepDefData productTable;
 
 	@And("^apply (.*) to invoices$")
 	public void apply_write_off_or_discount_to_invoice(final String processToApply, @NonNull final DataTable table)
@@ -131,27 +120,12 @@ public class AllocatePayments_StepDef
 	@And("allocate payments to invoices")
 	public void allocate_payment_to_invoice(@NonNull final DataTable table)
 	{
-		allocate_payment_to_invoice(table, false);
-	}
-
-	/**
-	 * This stepdef aims at the allocation of C_RemittanceAdvice_Lines. It applies the invoice-type-specific factor (1 or -1) to the invoice's granttotal, but not to the Discount-Amount or Service-Fee.
-	 */
-	@And("allocate payments to invoices with verbatim DiscountAmt and InvoiceProcessing.FeeAmt")
-	public void allocate_payment_to_invoice_verbatim(@NonNull final DataTable table)
-	{
-		allocate_payment_to_invoice(table, true);
-	}
-	
-	private void allocate_payment_to_invoice(@NonNull final DataTable table,
-											 final boolean verbatimDiscountAmtAndFeeAmt)
-	{
 		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
 		final ArrayList<PaymentDocument> paymentDocuments = new ArrayList<>();
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row, verbatimDiscountAmtAndFeeAmt))
+					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 
 			row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
@@ -232,42 +206,11 @@ public class AllocatePayments_StepDef
 		return Optional.empty();
 	}
 
-	@Nullable
-	private InvoiceProcessingFeeCalculation extractInvoiceProcessingFeeCalculation(@NonNull final DataTableRow row)
-	{
-		final Amount feeAmountIncludingTax = extractFeeAmountIncludingTax(row).orElse(null);
-		if (feeAmountIncludingTax == null)
-		{
-			return null;
-		}
-
-		final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
-		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
-
-		return InvoiceProcessingFeeCalculation.builder()
-				.orgId(orgId)
-				.evaluationDate(SystemTime.asZonedDateTime())
-				.customerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
-				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-				.serviceCompanyBPartnerId(getServiceCompanyBPartnerId(row))
-				.serviceInvoiceDocTypeId(docTypeBL.getDocTypeId(DocTypeQuery.builder()
-						.docBaseType(DocBaseType.PurchaseInvoice)
-						.clientAndOrgId(ClientId.ofRepoId(invoice.getAD_Client_ID()), orgId)
-						.build()))
-				.serviceFeeProductId(row.getAsIdentifier("InvoiceProcessing.M_Product_ID").lookupNotNullIdIn(productTable))
-				.feeAmountIncludingTax(feeAmountIncludingTax)
-				.build();
-	}
 
 	@NonNull
 	private BPartnerId getServiceCompanyBPartnerId(final @NonNull DataTableRow row)
 	{
 		return row.getAsIdentifier("InvoiceProcessing.C_BPartner_ID").lookupNotNullIdIn(bpartnerTable);
-	}
-
-	private static Optional<Amount> extractFeeAmountIncludingTax(final @NonNull DataTableRow row)
-	{
-		return row.getAsOptionalAmount("InvoiceProcessing.FeeAmt");
 	}
 
 	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
@@ -277,13 +220,13 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier("C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row, false))
+					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row, false))
+					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
-					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row, false))
+					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 		});
 
@@ -299,34 +242,20 @@ public class AllocatePayments_StepDef
 
 	@NonNull
 	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
-												 @NonNull final DataTableRow row,
-												 final boolean verbatimDiscountAmtAndFeeAmt)
+												 @NonNull final DataTableRow row)
 	{
-		return preparePayableDocument(invoiceIdentifier, row, verbatimDiscountAmtAndFeeAmt).build();
+		return preparePayableDocument(invoiceIdentifier, row).build();
 	}
 
 	@NonNull
 	private PayableDocumentBuilder preparePayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier,
-														  @NonNull final DataTableRow row,
-														  final boolean verbatimDiscountAmtAndFeeAmt)
+														  @NonNull final DataTableRow row)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
-		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = extractInvoiceProcessingFeeCalculation(row);
-
 		final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
 		final Money invoiceOpenMoneyAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
-		Money payAmt;
-		if (verbatimDiscountAmtAndFeeAmt)
-		{
-			// If the payAmt needs negating, we need it right here, before we subtract the possible discount-amount and service-fee
-			payAmt = invoiceOpenMoneyAmt.negateIf(invoiceToAllocate.getMultiplier().isNegateToConvertToRealValue());
-		}
-		else
-		{
-			payAmt = invoiceOpenMoneyAmt;
-		}
-
+		Money payAmt = invoiceOpenMoneyAmt;
 		//
 		// Discount
 		Money discountAmt = row.getAsOptionalMoney("DiscountAmt", moneyService::getCurrencyIdByCurrencyCode).orElse(null);
@@ -339,23 +268,13 @@ public class AllocatePayments_StepDef
 			payAmt = payAmt.subtract(discountAmt);
 		}
 
-		//
-		// Invoice Processing Fee
-		final Money invoiceProcessingFee = invoiceProcessingFeeCalculation != null
-				? invoiceProcessingFeeCalculation.getFeeAmountIncludingTax().toMoney(moneyService::getCurrencyIdByCurrencyCode)
-				: null;
-		if (invoiceProcessingFee != null)
-		{
-			payAmt = payAmt.subtract(invoiceProcessingFee);
-		}
 
 		final AllocationAmounts amounts = AllocationAmounts.builder()
 				.payAmt(payAmt)
 				.discountAmt(discountAmt)
-				.invoiceProcessingFee(invoiceProcessingFee)
 				.build();
 
-		final PayableDocumentBuilder resultBuilder = PayableDocument.builder()
+		return PayableDocument.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
 				.bpartnerId(invoiceToAllocate.getBpartnerId())
 				.documentNo(invoiceToAllocate.getDocumentNo())
@@ -365,18 +284,7 @@ public class AllocatePayments_StepDef
 				.date(invoiceToAllocate.getDateInvoiced())
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
-				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation);
-		if (verbatimDiscountAmtAndFeeAmt)
-		{
-			// don't apply the multiplier here because for the payAmt, it's already done and for the other two we need the original values
-			resultBuilder.amountsToAllocate(amounts);
-		}
-		else
-		{
-			resultBuilder.amountsToAllocate(amounts.convertToRealAmounts(invoiceToAllocate.getMultiplier()));
-		}
-
-		return resultBuilder;
+				.amountsToAllocate(amounts.convertToRealAmounts(invoiceToAllocate.getMultiplier()));
 	}
 
 	@NonNull
