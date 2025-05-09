@@ -33,6 +33,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.invoice.InvoiceAmtMultiplier;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -176,7 +177,7 @@ public class RemittanceAdviceService
 		final Amount invoiceAmt = getInvoiceAmountInRemAdvCurrency(remittanceAdvice.getRemittedAmountCurrencyId(), invoice);
 		final Amount invoiceAmtAdjusted = invoiceAmtMultiplier.convertToRealValue(invoiceAmt);
 
-		final Amount remittedAmountAdjusted = invoiceAmtMultiplier.convertToRealValue(remittanceAdviceLine.getRemittedAmount());
+		final Amount remittedAmountAdjusted = remittanceAdviceLine.getRemittedAmountAdjusted();
 
 		// compute overUnderAmt which needs to be zero for the amounts to be valid
 		Amount overUnderAmt = remittedAmountAdjusted;
@@ -203,7 +204,7 @@ public class RemittanceAdviceService
 				.invoiceCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
 				.invoiceAmtInREMADVCurrency(invoiceAmt)
 				.overUnderAmtInREMADVCurrency(overUnderAmt)
-				.invoiceDocType(invoiceDocType.getDocBaseType())
+				.invoiceDocType(InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType()))
 				.invoiceDate(TimeUtil.asInstant(invoice.getDateInvoiced()))
 				.build();
 	}

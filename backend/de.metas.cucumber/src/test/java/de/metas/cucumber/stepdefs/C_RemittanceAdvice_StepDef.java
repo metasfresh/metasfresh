@@ -26,6 +26,7 @@ import de.metas.banking.service.RemittanceAdviceBankingService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseType;
@@ -39,6 +40,8 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.remittanceadvice.CreateRemittanceAdviceLineRequest;
 import de.metas.remittanceadvice.CreateRemittanceAdviceRequest;
 import de.metas.remittanceadvice.RemittanceAdvice;
@@ -52,13 +55,17 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_RemittanceAdvice;
 import org.compiere.model.I_C_RemittanceAdvice_Line;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_RemittanceAdvice.COLUMNNAME_DateDoc;
@@ -75,14 +82,16 @@ public class C_RemittanceAdvice_StepDef
 	private final C_RemittanceAdvice_Line_StepDefData remittanceAdviceLineTable;
 	private final C_BP_BankAccount_StepDefData bpBankAccountTable;
 	private final C_Invoice_StepDefData invoiceTable;
+	private final C_Payment_StepDefData paymentTable;
 
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final RemittanceAdviceRepository remittanceAdviceRepository = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
 	private final RemittanceAdviceBankingService remittanceAdviceBankingService = SpringContextHolder.instance.getBean(RemittanceAdviceBankingService.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@And("metasfresh contains C_RemittanceAdvice")
 	public void createRemittanceAdvice(@NonNull final DataTable dataTable)
@@ -167,6 +176,7 @@ public class C_RemittanceAdvice_StepDef
 				.serviceFeeAmount(dataTableRow.getAsBigDecimal(I_C_RemittanceAdvice_Line.COLUMNNAME_ServiceFeeAmount))
 				.paymentDiscountAmount(dataTableRow.getAsBigDecimal(I_C_RemittanceAdvice_Line.COLUMNNAME_PaymentDiscountAmt));
 
+		// note that we don't set the actual invoice - we just set the identifier etc, such that the BL can later match the invoice
 		dataTableRow.getAsOptionalIdentifier(I_C_RemittanceAdvice_Line.COLUMNNAME_InvoiceIdentifier + "_for")
 				.map(identifier -> identifier.lookupNotNullIn(invoiceTable))
 				.ifPresent(invoiceRecord ->
@@ -210,16 +220,55 @@ public class C_RemittanceAdvice_StepDef
 	private void loadInvoiceFromLine(@NonNull final DataTableRow dataTableRow)
 	{
 		final StepDefDataIdentifier identifier = dataTableRow.getAsIdentifier();
-		
+
 		final I_C_RemittanceAdvice_Line remittanceAdviceLineRecord = remittanceAdviceLineTable.get(identifier);
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(remittanceAdviceLineRecord.getService_Fee_Invoice_ID());
-		
+
 		assertThat(invoiceId).as("C_RemittanceAdvice_Line with Identifier %s has no Service_Fee_Invoice_ID", identifier.getAsString()).isNotNull();
 
 		final I_C_Invoice invoiceRecord = invoiceDAO.getByIdInTrx(invoiceId);
-
 		invoiceTable.put(
 				dataTableRow.getAsIdentifier(I_C_RemittanceAdvice_Line.COLUMNNAME_Service_Fee_Invoice_ID),
 				invoiceRecord);
+	}
+
+	@And("load Payments from C_RemittanceAdvices")
+	public void loadPaymentsFromRemittanceAdvices(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::loadPaymentFromAdvice);
+	}
+
+	private void loadPaymentFromAdvice(@NonNull final DataTableRow dataTableRow)
+	{
+		final StepDefDataIdentifier identifier = dataTableRow.getAsIdentifier();
+
+		final I_C_RemittanceAdvice remittanceAdviceRecord = remittanceAdviceTable.get(identifier);
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(remittanceAdviceRecord.getC_Payment_ID());
+
+		assertThat(paymentId).as("C_RemittanceAdvice with Identifier %s has no C_Payment_ID", identifier.getAsString()).isNotNull();
+
+		final I_C_Payment paymentRecord = paymentDAO.getById(paymentId);
+		paymentTable.put(
+				dataTableRow.getAsIdentifier(I_C_RemittanceAdvice.COLUMNNAME_C_Payment_ID),
+				paymentRecord);
+	}
+
+	@And("validate C_RemittanceAdvice")
+	public void validateC_RemittanceAdvice(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::validateRemittanceAdvice);
+	}
+
+	private void validateRemittanceAdvice(@NonNull final DataTableRow dataTableRow)
+	{
+		final StepDefDataIdentifier identifier = dataTableRow.getAsIdentifier();
+		final I_C_RemittanceAdvice remittanceAdvice = identifier.lookupNotNullIn(remittanceAdviceTable);
+
+		final SoftAssertions softly = new SoftAssertions();
+
+		final BigDecimal remittanceAmt = dataTableRow.getAsMoney(I_C_RemittanceAdvice.COLUMNNAME_RemittanceAmt, currencyRepository::getCurrencyIdByCurrencyCode).toBigDecimal();
+		softly.assertThat(remittanceAdvice.getRemittanceAmt()).as("RemittanceAmt for Identifier %s", identifier.getAsString()).isEqualByComparingTo(remittanceAmt);
+
+		softly.assertAll();
 	}
 }

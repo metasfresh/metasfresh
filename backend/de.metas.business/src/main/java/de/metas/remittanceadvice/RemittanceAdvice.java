@@ -122,13 +122,32 @@ public class RemittanceAdvice
 	private final List<RemittanceAdviceLine> lines;
 
 	@Builder
-	public RemittanceAdvice(@NonNull final RemittanceAdviceId remittanceAdviceId, @NonNull final OrgId orgId, @NonNull final ClientId clientId, @NonNull final BPartnerId sourceBPartnerId, @NonNull final BPartnerBankAccountId sourceBPartnerBankAccountId, @NonNull final BPartnerId destinationBPartnerId, @NonNull final BPartnerBankAccountId destinationBPartnerBankAccountId,
+	public RemittanceAdvice(@NonNull final RemittanceAdviceId remittanceAdviceId, 
+							@NonNull final OrgId orgId, 
+							@NonNull final ClientId clientId, 
+							@NonNull final BPartnerId sourceBPartnerId, 
+							@NonNull final BPartnerBankAccountId sourceBPartnerBankAccountId, 
+							@NonNull final BPartnerId destinationBPartnerId, 
+							@NonNull final BPartnerBankAccountId destinationBPartnerBankAccountId,
 							@NonNull final String documentNumber,
-							@NonNull final Instant documentDate, @Nullable final String externalDocumentNumber, @NonNull final String docStatus, @NonNull final DocTypeId docTypeId, @NonNull final CurrencyId remittedAmountCurrencyId, @Nullable final Instant sendDate, @Nullable final CurrencyId serviceFeeCurrencyId, @Nullable final String additionalNotes, final boolean isImported,
+							@NonNull final Instant documentDate, 
+							@Nullable final String externalDocumentNumber, 
+							@NonNull final String docStatus, 
+							@NonNull final DocTypeId docTypeId, 
+							@NonNull final CurrencyId remittedAmountCurrencyId, 
+							@Nullable final Instant sendDate, 
+							@Nullable final CurrencyId serviceFeeCurrencyId, 
+							@Nullable final String additionalNotes, final boolean isImported,
 							@Nullable final Instant paymentDate,
 							@Nullable final BigDecimal serviceFeeAmount,
-							@NonNull final BigDecimal remittedAmountSum, @Nullable final BigDecimal paymentDiscountAmountSum, @Nullable final PaymentId paymentId, final boolean isSOTrx,
-							final boolean isDocumentAcknowledged, final boolean currenciesReadOnlyFlag, final boolean processed, @NonNull final List<RemittanceAdviceLine> lines)
+							@NonNull final BigDecimal remittedAmountSum,
+							@Nullable final BigDecimal paymentDiscountAmountSum, 
+							@Nullable final PaymentId paymentId, 
+							final boolean isSOTrx,
+							final boolean isDocumentAcknowledged, 
+							final boolean currenciesReadOnlyFlag, 
+							final boolean processed, 
+							@NonNull final List<RemittanceAdviceLine> lines)
 	{
 		if (serviceFeeAmount != null && serviceFeeAmount.signum() != 0 && serviceFeeCurrencyId == null)
 		{
@@ -208,8 +227,8 @@ public class RemittanceAdvice
 		for (final RemittanceAdviceLine line : lines)
 		{
 			remittedAmountSumAmount = remittedAmountSumAmount == null
-					? line.getRemittedAmount()
-					: remittedAmountSumAmount.add(line.getRemittedAmount());
+					? line.getRemittedAmountAdjusted()
+					: remittedAmountSumAmount.add(line.getRemittedAmountAdjusted());
 
 			if (line.getPaymentDiscountAmount() != null)
 			{

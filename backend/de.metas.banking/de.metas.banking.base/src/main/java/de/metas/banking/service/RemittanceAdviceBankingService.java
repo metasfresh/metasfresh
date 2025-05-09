@@ -23,7 +23,6 @@
 package de.metas.banking.service;
 
 import ch.qos.logback.classic.Level;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
@@ -41,7 +40,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -94,8 +92,7 @@ public class RemittanceAdviceBankingService
 	private final RemittanceAdviceRepository remittanceAdviceRepo;
 	private final RemittanceAdviceService remittanceAdviceService;
 	private final MoneyService moneyService;
-
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+;
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -287,18 +284,13 @@ public class RemittanceAdviceBankingService
 					.setParameter("remittanceAdviceLine", remittanceAdviceLine);
 		}
 
-		final SOTrx soTrx = SOTrx.ofBooleanNotNull(remittanceAdvice.isSOTrx());
-		// final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
-		// final InvoiceAmtMultiplier amtMultiplier = toInvoiceAmtMultiplier(soTrx, isCreditMemo);
-		final InvoiceAmtMultiplier amtMultiplier = invoiceBL.getInvoiceAmtMultiplier(invoice);
-
 		final Amount paymentDiscountAmt = remittanceAdviceLine.getPaymentDiscountAmount() != null
 				? remittanceAdviceLine.getPaymentDiscountAmount()
 				: Amount.zero(moneyService.getCurrencyCodeByCurrencyId(remittanceAdvice.getRemittedAmountCurrencyId()));
 
 		final Amount serviceFeeInREMADVCurrency = remittanceAdviceService.getServiceFeeInREMADVCurrency(remittanceAdviceLine).orElse(null);
 
-		if (remittanceAdviceLine.getInvoiceAmtInREMADVCurrency() == null)
+		if (remittanceAdviceLine.getInvoiceAmtInREMADVCurrencyAdjusted() == null)
 		{
 			throw new AdempiereException("Amount cannot be null if the invoice is resolved!")
 					.appendParametersToMessage()
@@ -306,36 +298,27 @@ public class RemittanceAdviceBankingService
 					.setParameter("remittanceAdviceLine", remittanceAdviceLine);
 		}
 
+		// create a "noop" multiplier that won't mess with the +/- signs
+		final InvoiceAmtMultiplier multiplier =  InvoiceAmtMultiplier.adjustedFor(remittanceAdviceLine.getExternalInvoiceDocBaseType());
+		
+		final SOTrx remittanceAdviceSOTrx = SOTrx.ofBooleanNotNull(remittanceAdvice.isSOTrx());
 		final ZoneId timeZone = orgDAO.getTimeZone(remittanceAdvice.getOrgId());
 
 		return PaymentAllocationPayableItem.builder()
-				.amtMultiplier(amtMultiplier)
-				.payAmt(remittanceAdviceLine.getRemittedAmount())
-				.openAmt(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency())
+				.amtMultiplier(multiplier)
+				.payAmt(remittanceAdviceLine.getRemittedAmountAdjusted())
+				.openAmt(remittanceAdviceLine.getInvoiceAmtInREMADVCurrencyAdjusted())
 				.serviceFeeAmt(serviceFeeInREMADVCurrency)
 				.discountAmt(paymentDiscountAmt)
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-				.invoiceIsCreditMemo(invoiceBL.isCreditMemo(invoice))
 				.invoiceBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.orgId(remittanceAdvice.getOrgId())
 				.clientId(remittanceAdvice.getClientId())
-				.bPartnerId(soTrx.isSales() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
+				.bPartnerId(remittanceAdviceSOTrx.isSales() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
 				.documentNo(invoice.getDocumentNo())
-				.soTrx(soTrx)
+				.soTrx(remittanceAdviceSOTrx)
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced(), timeZone))
 				.build();
-	}
-
-	@VisibleForTesting
-	public static InvoiceAmtMultiplier toInvoiceAmtMultiplier(@NonNull final SOTrx soTrx, final boolean isCreditMemo)
-	{
-		return InvoiceAmtMultiplier.builder()
-				.soTrx(soTrx)
-				.isSOTrxAdjusted(false)
-				.isCreditMemo(isCreditMemo)
-				.isCreditMemoAdjusted(false)
-				.build()
-				.intern();
 	}
 
 	@NonNull

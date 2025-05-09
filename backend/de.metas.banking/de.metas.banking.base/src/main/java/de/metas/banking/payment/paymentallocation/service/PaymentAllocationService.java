@@ -2,7 +2,7 @@
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -244,11 +244,12 @@ public class PaymentAllocationService
 				: Money.zero(currencyId);
 
 		final InvoiceAmtMultiplier amtMultiplier = paymentAllocationPayableItem.getAmtMultiplier();
+		final boolean invoiceIsCreditMemo = amtMultiplier.isCreditMemo();
 
-		// for purchase invoices and sales credit memos, we need to negate
-		// but not for sales invoices and purchase credit memos
-		final boolean invoiceIsCreditMemo = paymentAllocationPayableItem.isInvoiceIsCreditMemo();
-		final boolean negateAmounts = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
+		// for purchase invoices and sales credit memos, we need to allow this,
+		// because we want the invoice with negative amount to be allocated against the payment with positive amount.
+		// The credit-memo and the payment need to be added up in a way 
+		final boolean allowAllocateAgainstDifferentSignumPayment = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
 
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
@@ -265,8 +266,8 @@ public class PaymentAllocationService
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
-				.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo())
-				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way 
+				.creditMemo(invoiceIsCreditMemo)
+				.allowAllocateAgainstDifferentSignumPayment(allowAllocateAgainstDifferentSignumPayment)
 				.build();
 	}
 

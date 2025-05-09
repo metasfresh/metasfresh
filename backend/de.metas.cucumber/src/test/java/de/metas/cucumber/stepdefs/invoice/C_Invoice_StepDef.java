@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -70,7 +70,6 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -95,7 +94,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
@@ -732,64 +730,57 @@ public class C_Invoice_StepDef
 
 	private void create_C_Invoice(@NonNull final DataTableRow row)
 	{
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+
+		row
+				.getAsOptionalString(COLUMNNAME_C_ConversionType_ID + "." + I_C_ConversionType.COLUMNNAME_Name)
+				.map(conversionType ->
+						queryBL.createQueryBuilder(I_C_ConversionType.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_ConversionType.COLUMNNAME_Name, conversionType)
+								.orderBy(I_C_ConversionType.COLUMNNAME_Name)
+								.create()
+								.firstIdOnly()
+				)
+				.ifPresent(invoice::setC_ConversionType_ID);
+
+		row
+				.getAsOptionalString(COLUMNNAME_C_DocTypeTarget_ID + "." + I_C_DocType.COLUMNNAME_Name)
+				.map(docTargetName ->
+						queryBL.createQueryBuilder(I_C_DocType.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, docTargetName)
+								.orderBy(I_C_DocType.COLUMNNAME_Name)
+								.create()
+								.firstIdOnly()
+				)
+				.ifPresent(docTypeId -> {
+					invoice.setC_DocType_ID(docTypeId);
+					invoice.setC_DocTypeTarget_ID(docTypeId);
+				});
+
 		final StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
 		final BPartnerId bpartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
 				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
-
-		final String docTargetName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_DocTypeTarget_ID + "." + I_C_DocType.COLUMNNAME_Name);
-		final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, docTargetName)
-				.orderBy(I_C_DocType.COLUMNNAME_Name)
-				.create()
-				.firstId(DocTypeId::ofRepoIdOrNull);
-
-		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnName(row, COLUMNNAME_DateInvoiced);
-
-		final String conversionType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_ConversionType_ID + "." + I_C_ConversionType.COLUMNNAME_Name);
-		final CurrencyConversionTypeId conversionTypeId = queryBL.createQueryBuilder(I_C_ConversionType.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_ConversionType.COLUMNNAME_Name, conversionType)
-				.orderBy(I_C_ConversionType.COLUMNNAME_Name)
-				.create()
-				.firstId(CurrencyConversionTypeId::ofRepoIdOrNull);
-
-		final boolean soTrx = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsSOTrx);
-
-		final String isoCode = DataTableUtil.extractStringForColumnName(row, I_C_Currency.Table_Name + "." + I_C_Currency.COLUMNNAME_ISO_Code);
-		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCode));
-
-		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
-
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
-		invoice.setC_DocTypeTarget_ID(docTypeId.getRepoId());
-		invoice.setC_DocType_ID(docTypeId.getRepoId());
-		invoice.setDateInvoiced(dateInvoiced);
-		invoice.setIsSOTrx(soTrx);
-		invoice.setC_ConversionType_ID(conversionTypeId.getRepoId());
+
+		invoice.setDateInvoiced(row.getAsLocalDateTimestamp(COLUMNNAME_DateInvoiced));
+		invoice.setIsSOTrx(row.getAsBoolean(COLUMNNAME_IsSOTrx));
+
+		final CurrencyCode isoCode = row.getAsCurrencyCode();
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(isoCode);
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
-		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocumentNo);
-		if (Check.isNotBlank(documentNo))
-		{
-			invoice.setDocumentNo(documentNo);
-		}
+		row.getAsOptionalString(COLUMNNAME_DocumentNo).ifPresent(invoice::setDocumentNo);
+		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
 
-		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalId);
-		if (Check.isNotBlank(externalId))
-		{
-			invoice.setExternalId(externalId);
-		}
+		invoiceDAO.save(invoice);
+		
+		extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		invoiceDAO.save(invoice);
 
-		extractPaymentTermId(row)
-				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
-
-		invoiceDAO.save(invoice);
-
-		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
-		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+		row.getAsIdentifier().putOrReplace(invoiceTable, invoice);
 	}
 
 	private Optional<PaymentTermId> extractPaymentTermId(final @NonNull DataTableRow row)

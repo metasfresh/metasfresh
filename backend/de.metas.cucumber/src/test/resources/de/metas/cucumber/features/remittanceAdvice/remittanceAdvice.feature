@@ -77,78 +77,98 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
-  @Id:S0466_100
+  @Id:S0466_10
   @from:cucumber
   Scenario: Process Remittance-Advice
     # NOTE: this kind of allocation cannot be manually done by user (because REMADV code is doing it), but the purpose of this test
     # is to make sure, that in case of such allocation the open amounts and accounting is correct
+
     Given metasfresh contains C_Invoice:
-      | Identifier         | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | customerCreditMemo | customer1     | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
-      | vendorInvoice      | vendor1       | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
-      | customerInvoice    | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+      | Identifier         | DocumentNo       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
+      | customerInvoice    | F244410_S0466_10 | customer1     | Ausgangsrechnung        | 2022-05-11   | true    | EUR                 |
+      | vendorInvoice      | 1034684_S0466_10 | vendor1       | Eingangsrechnung        | 2022-05-11   | false   | EUR                 |
+      | customerCreditMemo | G104690_S0466_10 | customer1     | Gutschrift              | 2022-05-11   | true    | EUR                 |
+
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID       | M_Product_ID      | QtyInvoiced | Price  | C_Tax_ID |
-      | customerCreditMemo | creditMemoProduct | 1 PCE       | 434.58 | tax19%   |
-      | vendorInvoice      | vendorProduct     | 1 PCE       | 434.58 | tax19%   |
-      | customerInvoice    | customerProduct   | 1 PCE       | 595.00 | tax19%   |
-    And the invoice identified by customerCreditMemo is completed
-    And the invoice identified by vendorInvoice is completed
+      | C_Invoice_ID       | M_Product_ID      | QtyInvoiced | Price    | C_Tax_ID |
+      | customerInvoice    | customerProduct   | 1 PCE       | 55278.05 | tax19%   |
+      | vendorInvoice      | vendorProduct     | 1 PCE       | 1621.50  | tax19%   |
+      | customerCreditMemo | creditMemoProduct | 1 PCE       | 77.60    | tax19%   |
     And the invoice identified by customerInvoice is completed
+    And the invoice identified by vendorInvoice is completed
+    And the invoice identified by customerCreditMemo is completed
 
     And metasfresh contains C_RemittanceAdvice
       | Identifier | Source_BP_BankAccount_ID   | Destination_BP_BankAccount_ID | DocumentNo | DateDoc    | RemittanceAmt | ServiceFeeAmount_Currency_ID | SendAt     |
-      | ra1        | serviceProviderBankAccount | orgBankAccount                | S0466_100  | 2025-05-07 | 1399.91 EUR   | EUR                          | 2025-05-08 |
+      | ra1        | serviceProviderBankAccount | orgBankAccount                | S0466_100  | 2024-09-07 | 52583.57 EUR  | EUR                          | 2025-05-08 |
     And metasfresh contains C_RemittanceAdvice_Lines
-      | Identifier | C_RemittanceAdvice_ID | LineIdentifier | InvoiceIdentifier_for | RemittanceAmt | ServiceFeeAmount | PaymentDiscountAmt |
-      | ral1       | ra1                   | 10             | customerCreditMemo    | 434.97        | 6.46             | -6.07              |
-#      | ral2       | ra1                   | 20             | vendorInvoice         | 434.97        | 6.46             | -6.07              |
-# already probably OK      | ral3       | ra1                   | 30             | customerInvoice       | 529.97        | 32.10            | 32.93              |
+      | Identifier | C_RemittanceAdvice_ID | LineIdentifier | InvoiceIdentifier_for | RemittanceAmt | PaymentDiscountAmt | ServiceFeeAmount |
+      | ral10      | ra1                   | 10             | customerInvoice       | 53535.11      | 771.90             | 971.04           |
+      | ral20      | ra1                   | 20             | vendorInvoice         | 1644.73       | 0                  | 23.23            |
+      | ral30      | ra1                   | 30             | customerCreditMemo    | 77.62         | -1.09              | 1.11             |
     And the C_RemittanceAdvice identified by ra1 is completed
+    And validate C_RemittanceAdvice
+      | Identifier | RemittanceAmt |
+      | ra1        | 51812.76 EUR  |
 
     When the C_RemittanceAdvice identified by ra1 is processed
-
     And load ServiceFeeInvoices from C_RemittanceAdvice_Lines
       | Identifier | Service_Fee_Invoice_ID |
-      | ral1       | vendorServiceInvoice1  |
-      | ral2       | vendorServiceInvoice2  |
-      | ral3       | vendorServiceInvoice3  |
+      | ral10      | vendorServiceInvoice1  |
+      | ral20      | vendorServiceInvoice2  |
+      | ral30      | vendorServiceInvoice3  |
+    And load Payments from C_RemittanceAdvices
+      | Identifier | C_Payment_ID   |
+      | ra1        | inboundPayment |
 
-    Then validate C_AllocationLines
-      | C_Invoice_ID          | C_Payment_ID   | Amount  | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
-      | customerCreditMemo    | -              | 6.46    | 0           | -441.04      | alloc1             |
-      | vendorServiceInvoice1 | -              | -6.46   | 0           | 0            | alloc1             |
-      # --------------------------------------------------------------------------------------------------
-      | customerCreditMemo    | inboundPayment | -434.97 | -6.07       | 0            | alloc2             |
-
-    And validate created invoices
-      | C_Invoice_ID          | C_BPartner_ID   | GrandTotal | DocBaseType | IsPaid | IsPartiallyPaid | OpenAmt |
-      | customerCreditMemo    | customer1       | 434.58 EUR | ARC         | true   | false           | 0       |
-      | vendorServiceInvoice1 | serviceProvider | 6.46 EUR   | API         | true   | false           | 0       |
-      | vendorServiceInvoice2 | serviceProvider | 6.46 EUR   | API         | true   | false           | 0       |
-      | vendorServiceInvoice3 | serviceProvider | 32.10 EUR  | API         | true   | false           | 0       |
-
+    Then validate created invoices
+      | C_Invoice_ID          | C_BPartner_ID   | GrandTotal   | DocBaseType | IsPaid | OpenAmt |
+      | customerCreditMemo    | customer1       | 77.60 EUR    | ARC         | true   | 0       |
+      | customerInvoice       | customer1       | 55278.05 EUR | ARI         | true   | 0       |
+      | vendorInvoice         | vendor1         | 1621.50 EUR  | API         | true   | 0       |
+      | vendorServiceInvoice1 | serviceProvider | 1.11 EUR     | API         | true   | 0       |
+      | vendorServiceInvoice2 | serviceProvider | 971.04 EUR   | API         | true   | 0       |
+      | vendorServiceInvoice3 | serviceProvider | 23.23 EUR    | API         | true   | 0       |
     And validate payments
-      | C_Payment_ID   | IsAllocated |
-      | inboundPayment | true        |
+      | C_Payment_ID   | PayAmt   | IsAllocated |
+      | inboundPayment | 51812.76 | true        |
+
+    And validate C_AllocationLines
+    # customerInvoice
+      | customerInvoice       | -              | 971.04   | 0           | -441.04      | ral10_alloc1       |
+      | vendorServiceInvoice2 | -              | -971.04  | 0           | 0            | ral10_alloc1       |
+      | customerInvoice       | inboundPayment | 53535.11 | 771.90      | 0            | ral10_alloc2       |
+    # customerCreditMemo
+      | C_Invoice_ID          | C_Payment_ID   | Amount   | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
+      | customerCreditMemo    | -              | 1.11     | 0           | -441.04      | ral30_alloc1       |
+      | vendorServiceInvoice1 | -              | -1.11    | 0           | 0            | ral30_alloc1       |
+      | customerCreditMemo    | inboundPayment | -77.62   | -1.09       | 0            | ral30_alloc2       |
+    # vendorInvoice
+      | vendorInvoice         | -              | 23.23    | 0           | -441.04      | ral20_alloc1       |
+      | vendorServiceInvoice3 | -              | -23.23   | 0           | 0            | ral20_alloc1       |
+      | vendorInvoice         | inboundPayment | -1621.50 |             | 0            | ral20_alloc2       |
+
     And Fact_Acct records are matching
       | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID   | C_Tax_ID | Record_ID             |
-      | C_Receivable_Acct      |             | 434.58 EUR  | customer1       | -        | customerCreditMemo    |
-      | T_Due_Acct             | 69.39 EUR   |             | customer1       | tax19%   | customerCreditMemo    |
+    # customerCreditMemo
+      | C_Receivable_Acct      |             | 77.62 EUR   | customer1       | -        | customerCreditMemo    |
+      | T_Due_Acct             | 999.99 EUR  |             | customer1       | tax19%   | customerCreditMemo    |
       | *                      |             |             |                 |          | customerCreditMemo    |
       # ------------------------------------------------------------------------------------------
-      | V_Liability_Acct       |             | 6.46 EUR    | serviceProvider | -        | vendorServiceInvoice1 |
+      | V_Liability_Acct       |             | 1.11 EUR    | serviceProvider | -        | vendorServiceInvoice1 |
       | *                      |             |             |                 |          | vendorServiceInvoice1 |
       # ------------------------------------------------------------------------------------------
-      | C_Receivable_Acct      |             | 6.46 EUR    | customer1       | -        | alloc1                |
-      | V_Liability_Acct       | 6.46 EUR    |             | serviceProvider | -        | alloc1                |
+      | C_Receivable_Acct      |             | 1.11 EUR    | customer1       | -        | ral30_alloc1          |
+      | V_Liability_Acct       | 1.11 EUR    |             | serviceProvider | -        | ral30_alloc1          |
       # ------------------------------------------------------------------------------------------
-      | C_Receivable_Acct      | 441.04 EUR  |             | customer1       | -        | alloc2                |
-      | B_UnallocatedCash_Acct |             | 434.97 EUR  | serviceProvider | -        | alloc2                |
-      | PayDiscount_Rev_Acct   |             | 6.07 EUR    | serviceProvider | tax19%   | alloc2                |
+      | C_Receivable_Acct      | 441.04 EUR  |             | customer1       | -        | ral30_alloc2          |
+      | B_UnallocatedCash_Acct |             | 434.97 EUR  | serviceProvider | -        | ral30_alloc2          |
+      | PayDiscount_Rev_Acct   |             | 1.09 EUR    | serviceProvider | tax19%   | ral30_alloc2          |
       # tax correction:
-      | PayDiscount_Rev_Acct   | 0.97 EUR    |             | customer1       | tax19%   | alloc2                |
-      | T_Due_Acct             |             | 0.97 EUR    | customer1       | tax19%   | alloc2                |
+      | PayDiscount_Rev_Acct   | 0.97 EUR    |             | customer1       | tax19%   | ral30_alloc2          |
+      | T_Due_Acct             |             | 0.97 EUR    | customer1       | tax19%   | ral30_alloc2          |
       # ------------------------------------------------------------------------------------------
       | B_UnallocatedCash_Acct |             | -434.97 EUR | serviceProvider | -        | inboundPayment        |
       | B_InTransit_Acct       | -434.97 EUR |             | serviceProvider | -        | inboundPayment        |
+    # customerInvoice
+    # vendorInvoice

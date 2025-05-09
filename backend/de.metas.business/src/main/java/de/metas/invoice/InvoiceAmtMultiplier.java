@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,6 +38,8 @@ import lombok.ToString;
 public final class InvoiceAmtMultiplier
 {
 	private final SOTrx soTrx;
+	
+	@Getter
 	private final boolean isCreditMemo;
 
 	@Getter
@@ -49,6 +51,33 @@ public final class InvoiceAmtMultiplier
 
 	@SuppressWarnings("UnstableApiUsage")
 	private static final Interner<InvoiceAmtMultiplier> interner = Interners.newStrongInterner();
+
+	public static InvoiceAmtMultiplier nonAdjustedFor(@NonNull final InvoiceDocBaseType invoiceDocBaseType)
+	{
+		return create(invoiceDocBaseType.getSoTrx(), invoiceDocBaseType.isCreditMemo(), false);
+	}
+
+	public static InvoiceAmtMultiplier adjustedFor(@NonNull final InvoiceDocBaseType invoiceDocBaseType)
+	{
+		return create(invoiceDocBaseType.getSoTrx(), invoiceDocBaseType.isCreditMemo(), true);
+	}
+
+	/**
+	 * @param adjusted indicates if the amount to be multiplied here is assumed to be already adjusted.
+	 *                 {@code true} means that actually no multiplication is necessary.
+	 */
+	public static InvoiceAmtMultiplier create(@NonNull final SOTrx soTrx,
+											  final boolean isCreditMemo,
+											  final boolean adjusted)
+	{
+		return InvoiceAmtMultiplier.builder()
+				.soTrx(soTrx)
+				.isSOTrxAdjusted(adjusted)
+				.isCreditMemo(isCreditMemo)
+				.isCreditMemoAdjusted(adjusted)
+				.build()
+				.intern();
+	}
 
 	@Builder
 	private InvoiceAmtMultiplier(
@@ -92,7 +121,7 @@ public final class InvoiceAmtMultiplier
 		final int toRelativeValueMultiplier = getToRelativeValueMultiplier();
 		return toRelativeValueMultiplier > 0 ? realValue : realValue.negate();
 	}
-	
+
 	public boolean isNegateToConvertToRealValue()
 	{
 		return getToRealValueMultiplier() < 0;
@@ -161,4 +190,11 @@ public final class InvoiceAmtMultiplier
 		return multiplier;
 	}
 
+	/**
+	 * @return {@code true} for purchase-invoice and sales-creditmemo. {@code false} otherwise.
+	 */
+	public boolean isOutgoingMoney()
+	{
+		return isCreditMemo ^ soTrx.isPurchase();
+	}
 }
