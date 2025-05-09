@@ -2,7 +2,7 @@
 
 #
 # %L
-# work-javaupdate
+# metas
 # %%
 # Copyright (C) 2024 metas GmbH
 # %%
