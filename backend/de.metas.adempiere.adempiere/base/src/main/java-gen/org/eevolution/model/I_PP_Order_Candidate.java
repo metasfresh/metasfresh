@@ -654,6 +654,27 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_QtyProcessed = "QtyProcessed";
 
 	/**
+	 * Set Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
+
+	/**
+	 * Get Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyProcessed_OnDate();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Order_Candidate.class, "QtyProcessed_OnDate", null);
+	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
+
+	/**
 	 * Set Quantity To Process.
 	 *
 	 * <br>Type: Quantity

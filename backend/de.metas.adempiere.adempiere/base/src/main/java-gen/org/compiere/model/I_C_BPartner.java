@@ -518,6 +518,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_City = "City";
 
 	/**
+	 * Set Commercial Register Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCommercialRegisterNumber (@Nullable java.lang.String CommercialRegisterNumber);
+
+	/**
+	 * Get Commercial Register Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCommercialRegisterNumber();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_CommercialRegisterNumber = new ModelColumn<>(I_C_BPartner.class, "CommercialRegisterNumber", null);
+	String COLUMNNAME_CommercialRegisterNumber = "CommercialRegisterNumber";
+
+	/**
 	 * Set Company Name.
 	 *
 	 * <br>Type: String

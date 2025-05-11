@@ -49,6 +49,7 @@ import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -118,6 +119,8 @@ public class CreateUpdateOrderCandidateCommand
 		ppOrderCandidateRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 
 		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
+		final BigDecimal qtyProcessed_OnDate = productPlanning.getQtyProcessed_OnDate();
+		ppOrderCandidateRecord.setQtyProcessed_OnDate(qtyProcessed_OnDate);
 
 		ppOrderCandidateRecord.setIsSimulated(request.isSimulated());
 		ppOrderCandidateRecord.setIsMaturing(request.isMaturing());

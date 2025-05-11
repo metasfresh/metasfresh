@@ -874,4 +874,12 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_M_Product_PlanningSchema, Object> COLUMN_C_Manufacturing_Aggregation_ID = new ModelColumn<>(I_M_Product_PlanningSchema.class, "C_Manufacturing_Aggregation_ID", null);
 	String COLUMNNAME_C_Manufacturing_Aggregation_ID = "C_Manufacturing_Aggregation_ID";
+
+
+	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
+
+	BigDecimal getQtyProcessed_OnDate();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Product_Planning.class, "QtyProcessed_OnDate", null);
+	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
 }
