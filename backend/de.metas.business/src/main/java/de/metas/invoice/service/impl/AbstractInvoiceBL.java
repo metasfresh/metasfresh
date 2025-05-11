@@ -243,8 +243,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			//
 			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
-			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
-					false); // creditMemoAdjusted = false
+			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice,
+					false).toBigDecimal(); // creditMemoAdjusted = false
 
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)

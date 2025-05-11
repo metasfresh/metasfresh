@@ -212,29 +212,6 @@ public class PPOrderCandidateDAO
 				.forEach(simulatedOrder -> InterfaceWrapperHelper.delete(simulatedOrder, failIfProcessed));
 	}
 
-	public void markAsProcessed(@NonNull final I_PP_Order_Candidate candidate)
-	{
-		if (candidate.isProcessed())
-		{
-			return;
-		}
-
-		candidate.setProcessed(true);
-
-		save(candidate);
-	}
-
-	public void closeCandidate(@NonNull final PPOrderCandidateId ppOrderCandidateId)
-	{
-		final I_PP_Order_Candidate ppOrderCandidate = getById(ppOrderCandidateId);
-
-		ppOrderCandidate.setIsClosed(true);
-		ppOrderCandidate.setProcessed(true);
-		ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyProcessed());
-
-		save(ppOrderCandidate);
-	}
-
 	private void deleteLines(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
 	{
 		deleteLines(PPOrderCandidateId.ofRepoId(ppOrderCandidate.getPP_Order_Candidate_ID()));

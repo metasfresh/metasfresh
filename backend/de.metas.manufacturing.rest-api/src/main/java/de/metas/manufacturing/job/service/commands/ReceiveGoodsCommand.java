@@ -80,7 +80,7 @@ public class ReceiveGoodsCommand
 	// State
 	private I_PP_Order _ppOrder; // lazy
 	private I_PP_Order_BOMLine _coProductLine;
-	private final List<I_M_HU> receivedHUs = new ArrayList<>();
+	private final ArrayList<I_M_HU> receivedHUs = new ArrayList<>();
 
 	@Builder
 	private ReceiveGoodsCommand(
@@ -231,6 +231,7 @@ public class ReceiveGoodsCommand
 		assertMixingDifferentProductsAllowed(existingTU);
 
 		final I_M_HU vhu = createHUProducer().receiveVHU(getQtyToReceive(null));
+		collectReceivedHU(vhu);
 		HUTransformService.newInstance().cusToExistingTU(ImmutableList.of(vhu), existingTU);
 		return ReceivingTarget.builder().tuId(HuId.ofRepoId(existingTU.getM_HU_ID())).build();
 	}
