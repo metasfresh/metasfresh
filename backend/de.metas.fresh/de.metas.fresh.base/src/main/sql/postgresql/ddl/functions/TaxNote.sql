@@ -1,27 +1,22 @@
-DROP FUNCTION IF EXISTS report.TaxNote(IN p_c_invoice_id numeric,
-                                       IN p_ad_language  character varying)
-;
+DROP FUNCTION if exists report.taxnote(p_c_invoice_id numeric, p_ad_language Character Varying);
 
-CREATE OR REPLACE FUNCTION report.TaxNote(IN p_c_invoice_id numeric,
-                                          IN p_ad_language  character varying DEFAULT 'de_DE') RETURNS text
+CREATE OR REPLACE FUNCTION report.taxnote(p_c_invoice_id numeric, p_ad_language Character Varying (6) default 'de_DE') returns text
 AS
 $BODY$
 DECLARE
     taxnotetext text;
 BEGIN
-    SELECT STRING_AGG(DISTINCT report.textsnippet(t.ad_boilerplate_id, p_ad_language), '' || E'\n')
-    INTO taxnotetext
-    FROM c_invoiceline il
-             JOIN C_Tax t ON il.c_tax_id = t.c_tax_id
-    WHERE il.c_invoice_id = p_C_Invoice_ID
-    GROUP BY il.c_invoice_id;
+    select String_agg(distinct report.textsnippet(t.ad_boilerplate_id, p_ad_language), ''||E'\n')
+    into taxnotetext
+    from c_invoiceline il
+             join C_Tax t on il.c_tax_id = t.c_tax_id
+    where il.c_invoice_id = p_C_Invoice_ID
+    group by il.c_invoice_id;
 
-    IF taxnotetext IS NOT NULL THEN
+    IF taxnotetext IS NOT NUll THEN
         RETURN taxnotetext;
     ELSE
         RETURN '';
     END IF;
 END;
-$BODY$
-    LANGUAGE plpgsql
-;
+$BODY$ LANGUAGE plpgsql;
