@@ -60,12 +60,11 @@ SELECT
 	oi.GrandTotalConvert,
 	oi.OpenAmtConvert,
 	oi.main_iso_code
-	
-FROM de_metas_endcustomer_fresh_reports.OpenItems_Report($8, $10) oi
+
+    FROM de_metas_endcustomer_fresh_reports.OpenItems_Report($8, $10, $2) oi
 WHERE
 	oi.AD_Org_ID = (CASE WHEN $1 IS NULL THEN oi.AD_Org_ID ELSE $1 END)
 	AND oi.IsSOTrx = (CASE WHEN $3 IS NULL THEN oi.IsSOTrx ELSE $3 END)
-	AND oi.C_BPartner_ID = (CASE WHEN $2 IS NULL THEN oi.C_BPartner_ID ELSE $2 END)
 	AND ($4 IS NULL OR $4 <= 0 OR oi.daysdue >= $4)
 	AND COALESCE( oi.InvoiceCollectionType, '') =
 		(CASE WHEN COALESCE($5, '') = '' THEN COALESCE( oi.InvoiceCollectionType, '' ) ELSE $5 END)
