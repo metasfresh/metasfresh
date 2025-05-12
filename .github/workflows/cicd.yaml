@@ -7,7 +7,7 @@ on:
       - '**/README.md'
   workflow_dispatch:
 env:
-  PIPELINE_VERSION: '0.3.6'
+  PIPELINE_VERSION: '0.4.1'
 jobs:
 
   init:
