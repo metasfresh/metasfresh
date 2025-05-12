@@ -24,6 +24,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
@@ -67,7 +68,7 @@ public class M_InOut
 	/**
 	 * Reverse linked movements.
 	 */
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void reverseMovements(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
@@ -77,7 +78,7 @@ public class M_InOut
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void deleteMatchInvs(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
@@ -103,9 +104,6 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = {
-			ModelValidator.TIMING_BEFORE_REACTIVATE,
-			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_VOID,
 			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
 			ModelValidator.TIMING_AFTER_CLOSE
 	})
@@ -152,7 +150,7 @@ public class M_InOut
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_DocType_ID})
+			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_DocType_ID })
 	public void beforeSave_updateDescriptionAndDescriptionBottom(final I_M_InOut inoutRecord)
 	{
 		inoutBL.updateDescriptionAndDescriptionBottomFromDocType(inoutRecord);
@@ -172,5 +170,10 @@ public class M_InOut
 		{
 			throw new AdempiereException(ERR_PreventReversingShipmentsWhenInvoiceExists);
 		}
+		//only do related Invoiding logic if not forbidden
+		final I_M_InOut inoutRecord = InterfaceWrapperHelper.create(inout, I_M_InOut.class);
+		deleteMatchInvs(inoutRecord);
+		reverseMovements(inoutRecord);
+		removeInoutFromBalance(inoutRecord);
 	}
 }
