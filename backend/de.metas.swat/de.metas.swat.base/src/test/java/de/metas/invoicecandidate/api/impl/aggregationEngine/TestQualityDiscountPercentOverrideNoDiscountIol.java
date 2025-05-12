@@ -22,20 +22,6 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
@@ -48,6 +34,18 @@ import de.metas.money.MoneyService;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import lombok.NonNull;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
 
 /**
  * There is no inoutLine with inDispute, so the quality discount is actually zero. This test sets an override discount and verifies the aggregation result.
@@ -104,7 +102,7 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 	}
 
 	@Override
-	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
+	protected void step_validate_after_aggregation(@NonNull List<I_C_Invoice_Candidate> invoiceCandidates, @NonNull List<I_M_InOutLine> inOutLines, @NonNull List<IInvoiceHeader> invoices)
 	{
 		super.step_validate_after_aggregation(invoiceCandidates, inOutLines, invoices);
 

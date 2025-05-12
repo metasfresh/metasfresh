@@ -426,6 +426,13 @@ public class PurchaseCandidateRepository
 			record.setProcessed(true);
 		}
 
+		record.setIsManualPrice(purchaseCandidate.isManualPrice());
+		if (purchaseCandidate.isManualPrice())
+		{
+			record.setC_Currency_ID(CurrencyId.toRepoId(purchaseCandidate.getCurrencyId()));
+			record.setPrice_UOM_ID(UomId.toRepoId(purchaseCandidate.getPriceUomId()));
+		}
+
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 
@@ -540,6 +547,7 @@ public class PurchaseCandidateRepository
 				.priceActual(record.getPurchasePriceActual())
 				.isManualDiscount(record.isManualDiscount())
 				.isManualPrice(record.isManualPrice())
+				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.isTaxIncluded(record.isTaxIncluded())
 				.prepared(record.isPrepared())
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))

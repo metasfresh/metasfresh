@@ -1,27 +1,22 @@
 package de.metas.document.engine;
 
+import de.metas.document.DocTypeId;
+import de.metas.util.ISingletonService;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_DocType;
+
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import de.metas.document.DocTypeId;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_DocType;
-
-import de.metas.util.ISingletonService;
-
-import javax.annotation.Nullable;
-
 public interface IDocumentBL extends ISingletonService
 {
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 *
-	 * @param document
-	 * @param docAction
 	 * @return true if document was processed
 	 * @throws IllegalArgumentException if 'document' is not instance of {@link IDocument}.
 	 */
@@ -30,10 +25,6 @@ public interface IDocumentBL extends ISingletonService
 	/**
 	 * This method makes a direct call to the legacy DocumentEngine. It will check if the given <code>processAction</code> is permissible, and if not, execute the given document's current
 	 * <code>DocAction</code> instead.
-	 *
-	 * @param document
-	 * @param processAction
-	 * @return
 	 */
 	boolean processIt(IDocument document, String processAction);
 
@@ -46,8 +37,6 @@ public interface IDocumentBL extends ISingletonService
 	/**
 	 * Process document. If there is any error it throws exception. If success the document is saved.
 	 *
-	 * @param document
-	 * @param docAction
 	 * @param expectedDocStatus (optional) If specified (not null), after processing it is checked that document shall have expected DocStatus
 	 * @throws IllegalArgumentException if document is not a valid {@link IDocument}
 	 * @throws AdempiereException if processing fails or document does not have expected DocStatus
@@ -62,12 +51,11 @@ public interface IDocumentBL extends ISingletonService
 
 	/**
 	 * Check if a document is completed via it's {@code DocStatus} value.
-	 *
+	 * <p>
 	 * A documented is considered complete when it is COmpleted or CLosed.
-	 *
+	 * <p>
 	 * Please note that a reversed document is not considered to be complete.
 	 *
-	 * @param document
 	 * @return true if document is completed
 	 * @throws IllegalArgumentException if document is not a valid {@link IDocument}.
 	 * @deprecated Please directly use {@link DocStatus}'s methods
@@ -80,7 +68,6 @@ public interface IDocumentBL extends ISingletonService
 	/**
 	 * Convert given <code>document</code> to {@link IDocument} interface
 	 *
-	 * @param document
 	 * @return document as {@link IDocument}
 	 * @throws IllegalArgumentException if document is null or it cannot be converted to {@link IDocument}
 	 */
@@ -89,7 +76,6 @@ public interface IDocumentBL extends ISingletonService
 	/**
 	 * Convert given <code>document</code> to {@link IDocument} interface. If the document cannot be converted to {@link IDocument} null is returned.
 	 *
-	 * @param document
 	 * @return document as {@link IDocument} or null
 	 */
 	IDocument getDocumentOrNull(Object document);
@@ -111,7 +97,6 @@ public interface IDocumentBL extends ISingletonService
 	/**
 	 * Retrieve DocumentNo for given record. If no value was found, the model will be loaded and {@link #getDocumentNo(Object)} will be used.
 	 *
-	 * @param ctx
 	 * @return document no
 	 */
 	String getDocumentNo(Properties ctx, final int adTableId, final int recordId);
@@ -128,7 +113,6 @@ public interface IDocumentBL extends ISingletonService
 	 *
 	 * NOTE: this algorithm was implemented due to requirements from http://dewiki908/mediawiki/index.php/03918_Massendruck_f%C3%BCr_Mahnungen_%282013021410000132%29#IT2_-_G01_-_Mass_Printing.
 	 *
-	 * @param model
 	 * @return document no
 	 */
 	String getDocumentNo(Object model);
@@ -159,10 +143,6 @@ public interface IDocumentBL extends ISingletonService
 
 	/**
 	 * Process a list of documents. The documents will be processed in the same transaction.
-	 *
-	 * @param documentsToProcess
-	 * @param docAction
-	 * @param expectedDocStatus
 	 */
 	<T> void processDocumentsList(Collection<T> documentsToProcess, String docAction, String expectedDocStatus);
 
@@ -177,7 +157,6 @@ public interface IDocumentBL extends ISingletonService
 	/**
 	 * Gets document summary
 	 *
-	 * @param model
 	 * @return document summary or toString() in case the model is not a document.
 	 */
 	String getSummary(Object model);
@@ -185,16 +164,11 @@ public interface IDocumentBL extends ISingletonService
 	/**
 	 * Return {@code true} if the given {@code model} has are {@code Reversal_ID} and its own ID is bigger than its reversal partner's ID.
 	 * In other words, returns {@code true}, if the given {@code model} is the reversal and not the reversed document.
-	 *
-	 * @param model
-	 * @return
 	 */
 	boolean isReversalDocument(Object model);
 
 	/**
 	 * Retrieve a map with DocAction Ref_List(135) values.
-	 *
-	 * @return
 	 */
 	Map<String, IDocActionItem> retrieveDocActionItemsIndexedByValue();
 

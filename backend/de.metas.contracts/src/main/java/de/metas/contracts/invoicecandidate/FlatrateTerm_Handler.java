@@ -238,6 +238,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	private ConditionTypeSpecificInvoiceCandidateHandler getSpecificHandler(@NonNull final I_C_Flatrate_Term term)
 	{
 		final ConditionTypeSpecificInvoiceCandidateHandler handlerOrNull = conditionTypeSpecificInvoiceCandidateHandlers.get(term.getType_Conditions());
+		
 		return Check.assumeNotNull(handlerOrNull,
 								   "The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
 								   term.getType_Conditions(), term);

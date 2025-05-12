@@ -47,7 +47,7 @@ import de.metas.pricing.service.PriceListsCollection;
 import de.metas.product.ProductId;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -75,7 +75,7 @@ public class SearchProductPricesCommand
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierResolver externalIdentifierResolver;
 	private final JsonRetrieverService jsonRetrieverService;
 	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade;
 
@@ -86,7 +86,7 @@ public class SearchProductPricesCommand
 
 	@Builder
 	public SearchProductPricesCommand(
-			@NonNull final ProductRestService productRestService,
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final JsonRetrieverService jsonRetrieverService,
 			@NonNull final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade,
 			@NonNull final ExternalIdentifier bpartnerIdentifier,
@@ -94,7 +94,7 @@ public class SearchProductPricesCommand
 			@NonNull final LocalDate targetDate,
 			@Nullable final String orgCode)
 	{
-		this.productRestService = productRestService;
+		this.externalIdentifierResolver = externalIdentifierResolver;
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.bpartnerPriceListServicesFacade = bpartnerPriceListServicesFacade;
 		this.bpartnerIdentifier = bpartnerIdentifier;
@@ -202,7 +202,7 @@ public class SearchProductPricesCommand
 	@NonNull
 	private ProductId getProductId()
 	{
-		return productRestService.resolveProductExternalIdentifier(productIdentifier, orgId)
+		return externalIdentifierResolver.resolveProductExternalIdentifier(productIdentifier, orgId)
 				.orElseThrow(() -> new InvalidIdentifierException("Fail to resolve product external identifier")
 						.appendParametersToMessage()
 						.setParameter("ExternalIdentifier", productIdentifier));

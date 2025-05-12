@@ -149,8 +149,8 @@ public class DataTableUtil
 	}
 
 	private int extractIntOrDefaultForColumnName(
-			final @NotNull Map<String, String> dataTableRow,
-			final @NotNull String columnName,
+			final @NonNull Map<String, String> dataTableRow,
+			final @NonNull String columnName,
 			final int defaultValue)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);

@@ -36,6 +36,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.organization.OrgId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupRepository;
 import org.adempiere.test.AdempiereTestHelper;
@@ -72,7 +73,7 @@ public class ExportBPartnerToRabbitMQServiceTest
 
 		AdempiereTestHelper.get().init();
 
-		exportBPartnerToRabbitMQService = new ExportBPartnerToRabbitMQService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+		exportBPartnerToRabbitMQService = new ExportBPartnerToRabbitMQService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
 																			  new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 																					  new DataExportAuditLogRepository(),
 																			  new DataExportAuditRepository(),

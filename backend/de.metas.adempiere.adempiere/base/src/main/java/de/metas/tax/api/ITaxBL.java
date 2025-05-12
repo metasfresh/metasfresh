@@ -81,4 +81,6 @@ public interface ITaxBL extends ISingletonService
 	TaxCategoryId retrieveRegularTaxCategoryId();
 
 	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
+
+	Tax getDefaultTax(TaxCategoryId taxCategoryId);
 }
