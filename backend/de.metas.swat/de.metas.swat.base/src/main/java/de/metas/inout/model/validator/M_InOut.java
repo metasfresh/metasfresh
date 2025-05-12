@@ -68,8 +68,7 @@ public class M_InOut
 	/**
 	 * Reverse linked movements.
 	 */
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
-	public void reverseMovements(final I_M_InOut inoutRecord)
+	private void reverseMovements(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
@@ -78,8 +77,7 @@ public class M_InOut
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
-	public void deleteMatchInvs(final I_M_InOut inoutRecord)
+	private void deleteMatchInvs(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
@@ -103,10 +101,7 @@ public class M_InOut
 		}
 	}
 
-	@DocValidate(timings = {
-			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
-			ModelValidator.TIMING_AFTER_CLOSE
-	})
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_CLOSE)
 	public void removeInoutFromBalance(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
@@ -156,7 +151,7 @@ public class M_InOut
 		inoutBL.updateDescriptionAndDescriptionBottomFromDocType(inoutRecord);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void forbidVoidingWhenInvoiceExists(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
 		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PreventReversingShipmentsWhenInvoiceExists, false))
@@ -170,7 +165,7 @@ public class M_InOut
 		{
 			throw new AdempiereException(ERR_PreventReversingShipmentsWhenInvoiceExists);
 		}
-		//only do related Invoiding logic if not forbidden
+		//only perform related logic if not forbidden
 		final I_M_InOut inoutRecord = InterfaceWrapperHelper.create(inout, I_M_InOut.class);
 		deleteMatchInvs(inoutRecord);
 		reverseMovements(inoutRecord);
