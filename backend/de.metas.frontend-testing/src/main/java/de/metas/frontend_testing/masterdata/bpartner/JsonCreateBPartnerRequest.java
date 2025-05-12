@@ -4,10 +4,22 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+import java.util.Map;
+
 @Value
 @Builder
 @Jacksonized
 public class JsonCreateBPartnerRequest
 {
-	String gln;
+	@Nullable String gln;
+	@Nullable Map<String, Location> locations;
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Location
+	{
+		@Nullable String gln;
+	}
 }
