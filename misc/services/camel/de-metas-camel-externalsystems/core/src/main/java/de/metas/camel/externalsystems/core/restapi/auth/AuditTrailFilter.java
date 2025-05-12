@@ -83,7 +83,7 @@ public class AuditTrailFilter implements Filter
 
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
-		if (credentials.getAuditTrailEndpoint() == null)
+		if (credentials == null || credentials.getAuditTrailEndpoint() == null)
 		{
 			return requestWrapper;
 		}

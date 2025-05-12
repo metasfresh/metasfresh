@@ -34,8 +34,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
+import org.apache.camel.dataformat.smooks.SmooksDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.smooks.cartridges.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
 
 import javax.xml.namespace.QName;
@@ -64,7 +64,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.invoic");
+		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.invoic.compudata");
 		sdf.setCamelContext(getContext());
 
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
