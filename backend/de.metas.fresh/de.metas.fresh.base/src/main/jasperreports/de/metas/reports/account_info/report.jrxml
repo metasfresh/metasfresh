@@ -253,7 +253,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 					</graphicElement>
 				</rectangle>
 				<textField isBlankWhenNull="true">
-					<reportElement x="1" y="101" width="56" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<reportElement x="1" y="106" width="56" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					</reportElement>
 					<box rightPadding="3"/>
@@ -270,14 +270,14 @@ ORDER BY param_acct_name, dateacct, unionorder
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="200" y="101" width="202" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="200" y="106" width="202" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="90" y="101" width="110" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="90" y="106" width="110" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
@@ -300,7 +300,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 					<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="57" y="101" width="33" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="57" y="106" width="33" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
