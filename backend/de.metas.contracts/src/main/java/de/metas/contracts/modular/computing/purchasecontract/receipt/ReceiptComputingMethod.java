@@ -23,9 +23,6 @@
 package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
@@ -41,10 +38,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
-import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -53,8 +47,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
@@ -68,9 +60,6 @@ import static de.metas.contracts.modular.ComputingMethodType.Receipt;
 public class ReceiptComputingMethod extends AbstractComputingMethodHandler
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull private final ModularContractProvider contractProvider;
@@ -89,39 +78,14 @@ public class ReceiptComputingMethod extends AbstractComputingMethodHandler
 			return false;
 		}
 
-		switch (recordRef.getTableName())
+		if (recordRef.getTableName().equals(I_M_InOutLine.Table_Name))
 		{
-			case I_M_InOutLine.Table_Name ->
-			{
-				final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
-				final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-				final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
-				return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isPurchase() && !(inOutLineRecord.getMovementQty().signum() < 0) && orderId != null;
-			}
-			case I_C_OrderLine.Table_Name ->
-			{
-				final I_C_Order orderRecord = orderBL.getById(orderLineBL.getOrderIdByOrderLineId(OrderLineId.ofRepoId(recordRef.getRecord_ID())));
-				return SOTrx.ofBoolean(orderRecord.isSOTrx()).isPurchase();
-			}
-			case I_C_Flatrate_Term.Table_Name ->
-			{
-				final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
-				if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
-				{
-					return false;
-				}
-
-				final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(flatrateTermRecord.getC_OrderLine_Term_ID());
-				if (orderLineId == null)
-				{
-					return false;
-				}
-
-				final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
-				return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isPurchase();
-			}
-			default -> {return false;}
+			final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
+			final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+			final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+			return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isPurchase() && !(inOutLineRecord.getMovementQty().signum() < 0) && orderId != null;
 		}
+		return false;
 	}
 
 	@Override
@@ -133,22 +97,11 @@ public class ReceiptComputingMethod extends AbstractComputingMethodHandler
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		switch (recordRef.getTableName())
+		if (recordRef.getTableName().equals(I_M_InOutLine.Table_Name))
 		{
-			case I_M_InOutLine.Table_Name ->
-			{
-				return contractProvider.streamModularPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
-			}
-			case I_C_OrderLine.Table_Name ->
-			{
-				return contractProvider.streamModularPurchaseContractsForPurchaseOrderLine(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
-			}
-			case I_C_Flatrate_Term.Table_Name ->
-			{
-				return Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
-			}
-			default -> {return Stream.empty();}
+			return contractProvider.streamModularPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
 		}
+		return Stream.empty();
 	}
 
 	@Override

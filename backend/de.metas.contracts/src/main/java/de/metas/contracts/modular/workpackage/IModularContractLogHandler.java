@@ -47,6 +47,7 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -55,6 +56,7 @@ import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+import java.util.function.IntFunction;
 
 public interface IModularContractLogHandler
 {
@@ -185,6 +187,8 @@ public interface IModularContractLogHandler
 		{
 			return getModuleConfig().getModularContractType().getColumnOption();
 		}
+
+		public <T extends RepoIdAware> T getRecordRepoId(final IntFunction<T> idMapper) {return idMapper.apply(getRecordRef().getRecord_ID());}
 
 		@NonNull
 		public ModularContractTypeId getTypeId() {return moduleConfig.getModularContractTypeId();}

@@ -6,8 +6,6 @@ services:
     image: $mfregistry/metas-db:$mfversion-$dbqualifier
     ports:
       - "15432:5432"
-    volumes:
-      - ./db-data:/var/lib/postgresql/customdata
     healthcheck:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 10s
@@ -131,11 +129,11 @@ services:
       - METASFRESH_API_AUTHTOKEN=37b5d80deb7a4ee098bdc82ff0971c84
       - DE_METAS_CAMEL_EXTERNALSYSTEMS_ACTUATOR_AUTH=Ty59e2qkM7GEUZcMbAIIOjACIC6ziw5R
       - CAMEL_COMPONENT_RABBITMQ_HOSTNAME=rabbitmq
-      - CAMEL_COMPONENT_RABBITMQ_PORT=5672
+      - CAMEL_COMPONENT_RABBITMQ_PORT_NUMBER=5672
       - CAMEL_COMPONENT_RABBITMQ_USERNAME=metasfresh
       - CAMEL_COMPONENT_RABBITMQ_PASSWORD=metasfresh
     depends_on:
-      app:
+      rabbitmq:
         condition: service_healthy
     deploy:
       mode: replicated
@@ -179,6 +177,28 @@ services:
       webapi:
         condition: service_healthy
       app:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  edi:
+    image: $mfregistry/metas-edi:$mfversion
+    healthcheck:
+      test: "curl localhost:8184 || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      JAVA_MAX_HEAP: "210M"
+      JAVA_DISABLE_JAR_CHECKING: "true"
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USER: "metasfresh"
+      RABBITMQ_PASSWORD: "metasfresh"
+    depends_on:
+      rabbitmq:
         condition: service_healthy
     deploy:
       mode: replicated

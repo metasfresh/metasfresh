@@ -73,6 +73,8 @@ public class ModularContractSettings
 	int freeInterestDays;
 	int additionalInterestDays;
 
+	@NonNull LocalDateAndOrgId addedValueReceiptEndDate;
+
 	@NonNull Percent interestPercent;
 	@NonNull Percent interimPricePercent;
 
