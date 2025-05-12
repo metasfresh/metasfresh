@@ -154,14 +154,9 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void forbidVoidingWhenInvoiceExists(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
-		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PreventReversingShipmentsWhenInvoiceExists, false))
-		{
-			return;
-		}
+		final boolean isReversalAllowed = isReversalAllowed(inout);
 
-		final boolean completedOrClosedInvoiceExists = invoiceCandDAO.isCompletedOrClosedInvoice(InOutId.ofRepoId(inout.getM_InOut_ID()));
-
-		if (completedOrClosedInvoiceExists)
+		if (!isReversalAllowed)
 		{
 			throw new AdempiereException(ERR_PreventReversingShipmentsWhenInvoiceExists);
 		}
@@ -170,5 +165,15 @@ public class M_InOut
 		deleteMatchInvs(inoutRecord);
 		reverseMovements(inoutRecord);
 		removeInoutFromBalance(inoutRecord);
+	}
+
+	private boolean isReversalAllowed(final org.compiere.model.@NonNull I_M_InOut inout)
+	{
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PreventReversingShipmentsWhenInvoiceExists, false))
+		{
+			return true;
+		}
+
+		return !invoiceCandDAO.isCompletedOrClosedInvoice(InOutId.ofRepoId(inout.getM_InOut_ID()));
 	}
 }
