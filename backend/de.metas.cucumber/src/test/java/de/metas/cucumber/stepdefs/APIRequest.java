@@ -22,9 +22,13 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -33,21 +37,47 @@ import java.util.Map;
 @Builder
 public class APIRequest
 {
-	@NonNull
-	String endpointPath;
+	@NonNull String endpointPath;
+	@NonNull String method;
+	@Nullable String payload;
+	@NonNull String authToken;
+	@Nullable Map<String, String> additionalHeaders;
 
-	@NonNull
-	String verb;
+	@Nullable @Builder.Default Integer expectedStatusCode = 200;
+	@Nullable String expectedErrorMessageContaining;
+	@Nullable Boolean expectErrorUserFriendly;
 
-	@Nullable
-	String payload;
+	public static class APIRequestBuilder
+	{
+		public APIRequestBuilder payload(@Nullable final Object payloadObj)
+		{
+			this.payload = convertPayloadToString(payloadObj);
+			return this;
+		}
 
-	@NonNull
-	String authToken;
-
-	@Nullable
-	Integer statusCode;
-
-	@Nullable
-	Map<String, String> additionalHeaders;
+		@Nullable
+		private static String convertPayloadToString(@Nullable final Object requestPayload)
+		{
+			if (requestPayload == null)
+			{
+				return null;
+			}
+			else if (requestPayload instanceof String)
+			{
+				return (String)requestPayload;
+			}
+			else
+			{
+				try
+				{
+					final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+					return jsonObjectMapper.writeValueAsString(requestPayload);
+				}
+				catch (JsonProcessingException e)
+				{
+					throw new AdempiereException("Failed converting to json string: " + requestPayload, e);
+				}
+			}
+		}
+	}
 }
