@@ -298,26 +298,18 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			return false;
 		}
 
-		// Shall have a counter line set
+		// Shall have a counter-line with the invoice set
 		final DocLine_Allocation counterLine = getCounterDocLine();
-		if (counterLine == null)
+		if (counterLine == null || !counterLine.hasInvoiceDocument())
 		{
 			return false;
 		}
 
-		// The counter line shall have a invoice set
-		if (!counterLine.hasInvoiceDocument())
-		{
-			return false;
-		}
-
-		// The invoice for this line and the invoice for counter line shall be of opposite transactions (sales-purchase)
-		if (isSOTrxInvoice() == counterLine.isSOTrxInvoice())
-		{
-			return false;
-		}
-
-		return true;
+		//
+		//
+		return isSOTrxInvoice() != counterLine.isSOTrxInvoice() // opposite transactions (sales-purchase)
+				|| (!isSOTrxInvoice() && !counterLine.isSOTrxInvoice()) // purchase-purchase (required for REMADV)
+				;
 	}
 
 	public void markAsSalesPurchaseInvoiceCompensated(final AcctSchema as)
@@ -359,9 +351,19 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return isSOTrxInvoice();
 	}
 
+	public final boolean isPurchaseInvoice() {return !isSOTrxInvoice();}
+
 	public final boolean isCreditMemoInvoice()
 	{
 		return creditMemoInvoice;
+	}
+
+	/**
+	 * @return true if API (Account Payable Invoice), i.e. purchase invoice but not credit memo
+	 */
+	public final boolean isAPI()
+	{
+		return hasInvoiceDocument() && isPurchaseInvoice() && !isCreditMemoInvoice();
 	}
 
 	@NonNull
