@@ -72,6 +72,7 @@
  import java.time.Instant;
  import java.util.Collection;
  import java.util.List;
+ import java.util.Objects;
  import java.util.Optional;
  import java.util.Set;
  import java.util.stream.Collectors;
@@ -318,7 +319,8 @@
 			 final Set<FlatrateTermId> contractIds = invoiceBL.getLines(invoiceId)
 					 .stream()
 					 .map(org.compiere.model.I_C_InvoiceLine::getC_Flatrate_Term_ID)
-					 .map(FlatrateTermId::ofRepoId)
+					 .map(FlatrateTermId::ofRepoIdOrNull) // invoice might have been imported from a csv-file and have no flatrate term 
+					 .filter(Objects::nonNull)
 					 .collect(Collectors.toSet());
 			 flatrateBL.reverseDefinitiveInvoice(contractIds);
 		 }
