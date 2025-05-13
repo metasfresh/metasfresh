@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.GLCategoryId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -34,6 +36,7 @@ import lombok.Value;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.compiere.model.I_C_DocType;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -108,4 +111,9 @@ public interface IDocTypeDAO extends ISingletonService
 	DocBaseType getDocBaseTypeById(@NonNull DocTypeId docTypeId);
 
 	DocBaseAndSubType getDocBaseAndSubTypeById(DocTypeId docTypeId);
+
+	@NonNull
+	Iterator<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
+
+	DocTypeId cloneToOrg(@NonNull I_C_DocType fromDocType, @NonNull OrgId toOrgId);
 }

@@ -7,11 +7,15 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
+
+import java.util.Iterator;
 
 public class DocTypeBL implements IDocTypeBL
 {
@@ -164,5 +168,16 @@ public class DocTypeBL implements IDocTypeBL
 	public void save(@NonNull final I_C_DocType dt)
 	{
 		docTypesRepo.save(dt);
+	}
+
+	@NonNull
+	public Iterator<I_C_DocType> retrieveForSelection(@NonNull final PInstanceId pinstanceId)
+	{
+		return docTypesRepo.retrieveForSelection(pinstanceId);
+	}
+
+	public void cloneToOrg(@NonNull final I_C_DocType fromDocType, @NonNull final OrgId toOrgId)
+	{
+		docTypesRepo.cloneToOrg(fromDocType, toOrgId);
 	}
 }

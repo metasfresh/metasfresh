@@ -10,6 +10,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
@@ -20,6 +23,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -31,6 +35,7 @@ import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -62,6 +67,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 public class DocTypeDAO implements IDocTypeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISequenceDAO sequenceDAO = Services.get(ISequenceDAO.class);
 
 	private final CCache<DocTypeQuery, Optional<DocTypeId>> docTypeIdsByQuery = CCache.<DocTypeQuery, Optional<DocTypeId>>builder()
 			.tableName(I_C_DocType.Table_Name)
@@ -88,14 +94,14 @@ public class DocTypeDAO implements IDocTypeDAO
 	{
 		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
 		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
-		
+
 		if (docTypeRecord == null)
 		{
 			throw new AdempiereException("No C_DocType record found for ID!")
 					.appendParametersToMessage()
 					.setParameter("DocTypeId", docTypeId);
 		}
-		
+
 		return docTypeRecord;
 	}
 
@@ -330,7 +336,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		InterfaceWrapperHelper.save(dt);
 		return DocTypeId.ofRepoId(dt.getC_DocType_ID());
 	}
-	
+
 	@Override
 	public void save(@NonNull final I_C_DocType docTypeRecord)
 	{
@@ -349,6 +355,43 @@ public class DocTypeDAO implements IDocTypeDAO
 	{
 		final I_C_DocType docTypeRecord = getById(docTypeId);
 		return DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
+	}
+
+	@Override
+	public DocTypeId cloneToOrg(@NonNull final I_C_DocType fromDocType, @NonNull final OrgId toOrgId)
+	{
+		final String newName = fromDocType.getName() + "_cloned";
+		final I_C_DocType newDocType = InterfaceWrapperHelper.copy()
+				.setFrom(fromDocType)
+				.setSkipCalculatedColumns(true)
+				.copyToNew(I_C_DocType.class);
+
+		newDocType.setAD_Org_ID(toOrgId.getRepoId());
+		// dev-note: unique index (ad_client_id, name)
+		newDocType.setName(newName);
+
+		final DocSequenceId fromDocSequenceId = DocSequenceId.ofRepoIdOrNull(fromDocType.getDocNoSequence_ID());
+		if (fromDocType.isDocNoControlled() && fromDocSequenceId != null)
+		{
+			final DocSequenceId clonedDocSequenceId = sequenceDAO.cloneToOrg(fromDocSequenceId, toOrgId);
+			newDocType.setDocNoSequence_ID(clonedDocSequenceId.getRepoId());
+			newDocType.setIsDocNoControlled(true);
+		}
+
+		save(newDocType);
+
+		return DocTypeId.ofRepoId(newDocType.getC_DocType_ID());
+	}
+
+	@NonNull
+	public Iterator<I_C_DocType> retrieveForSelection(@NonNull final PInstanceId pinstanceId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_DocType.class)
+				.setOnlySelection(pinstanceId)
+				.orderBy(I_C_DocType.COLUMNNAME_C_DocType_ID)
+				.create()
+				.iterate(I_C_DocType.class);
 	}
 
 	@EqualsAndHashCode
