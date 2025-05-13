@@ -24,6 +24,7 @@ import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -67,6 +68,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	@NotNull
 	private static BPBankAcctUse getAcceptedBankAccountUsage(final boolean isSalesInvoice, final boolean isCreditMemo)
@@ -470,7 +472,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void completePaySelection(final I_C_PaySelection paySelection)
+	public void completePaySelectionInternal(final I_C_PaySelection paySelection)
 	{
 		final List<I_C_PaySelectionLine> lines = getPaySelectionLines(paySelection);
 		if (lines.isEmpty())
@@ -562,5 +564,12 @@ public class PaySelectionBL implements IPaySelectionBL
 	public void updatePaySelectionTotalAmt(@NonNull final PaySelectionId paySelectionId)
 	{
 		paySelectionDAO.updatePaySelectionTotalAmt(paySelectionId);
+	}
+
+	@Override
+	public void complete(@NonNull final PaySelectionId paySelectionId)
+	{
+		final I_C_PaySelection paySelection = paySelectionDAO.getById(paySelectionId).orElseThrow(() -> new AdempiereException("@NotFound@ @C_PaySelection_ID@: " + paySelectionId));
+		documentBL.processEx(paySelection, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 }

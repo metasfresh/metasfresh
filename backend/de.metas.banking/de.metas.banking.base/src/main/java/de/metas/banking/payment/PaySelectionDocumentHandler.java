@@ -64,7 +64,8 @@ public class PaySelectionDocumentHandler implements DocumentHandler
 	{
 		final I_C_PaySelection paySelection = extractPaySelection(docFields);
 
-		Services.get(IPaySelectionBL.class).completePaySelection(paySelection);
+		//noinspection deprecation
+		Services.get(IPaySelectionBL.class).completePaySelectionInternal(paySelection);
 
 		return DocStatus.Completed;
 	}
