@@ -7,6 +7,7 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -26,6 +27,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.Env;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -68,6 +70,7 @@ class CreateSEPAExportFromPaySelectionCommand
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final I_C_PaySelection source;
 
@@ -132,7 +135,7 @@ class CreateSEPAExportFromPaySelectionCommand
 			exportLine.setSwiftCode(toNullOrRemoveSpaces(bank.getSwiftCode()));
 		}
 
-		exportLine.setStructuredRemittanceInfo(originalPaymentId != null ? MSG_SEPA_Payment_Refund.toString() : line.getReference()); // task 07789
+		exportLine.setStructuredRemittanceInfo(originalPaymentId != null ? msgBL.getTranslatableMsgText(MSG_SEPA_Payment_Refund).translate(Env.getAD_Language()) : line.getReference()); // task 07789
 
 		return exportLine;
 	}
