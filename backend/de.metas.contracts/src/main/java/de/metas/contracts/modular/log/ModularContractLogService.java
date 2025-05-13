@@ -45,6 +45,7 @@
  import de.metas.invoice.detail.InvoiceCandidateWithDetails;
  import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
  import de.metas.invoice.detail.InvoiceDetailItem;
+ import de.metas.invoice.service.IInvoiceBL;
  import de.metas.invoicecandidate.InvoiceCandidateId;
  import de.metas.invoicecandidate.api.IInvoiceCandDAO;
  import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -88,6 +89,8 @@
  import java.util.List;
  import java.util.Objects;
  import java.util.Optional;
+ import java.util.Set;
+ import java.util.stream.Collectors;
  import java.util.stream.Stream;
 
  import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS;
@@ -114,6 +117,7 @@
 	 @NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	 @NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	 @NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	 @NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	 @NonNull private final ModularContractLogDAO modularContractLogDAO;
 	 @NonNull private final InvoiceCandidateWithDetailsRepository invoiceCandidateWithDetailsRepository;
