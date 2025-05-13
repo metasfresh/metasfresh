@@ -1,3 +1,11 @@
+-- fix ERROR:  duplicate key value violates unique constraint "ad_field_column" DETAIL:  Key (ad_tab_id, ad_column_id)=(224, 560221) already exists.
+-- There is no script that introduced the conflicting field now
+
+DELETE FROM ad_ui_element WHERE ad_ui_element_id = 627000;
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=733463;
+DELETE FROM ad_field_trl WHERE ad_field_id = 733463;
+DELETE FROM ad_field WHERE ad_field_id = 733463;
+
 -- Field: Geschäftspartner_OLD -> Lieferant -> Eigene-Kd. Nr.
 -- Column: C_BPartner.CustomerNoAtVendor
 -- Field: Geschäftspartner_OLD(123,D) -> Lieferant(224,D) -> Eigene-Kd. Nr.
