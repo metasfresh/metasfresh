@@ -570,6 +570,23 @@ public class PaySelectionBL implements IPaySelectionBL
 	{
 		final PaymentId originalPaymentId = PaymentId.ofRepoIdOrNull(line.getOriginal_Payment_ID());
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
-		// TODO
+		if (originalPaymentId != null)
+		{
+			return PaySelectionLineType.Refund;
+		}
+		else if (invoiceId != null)
+		{
+			return PaySelectionLineType.Invoice;
+		}
+		else
+		{
+			return PaySelectionLineType.Unknown;
+		}
+	}
+
+	@Override
+	public List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull final I_C_PaySelection paySelection)
+	{
+		return paySelectionDAO.retrievePaySelectionLines(paySelection);
 	}
 }

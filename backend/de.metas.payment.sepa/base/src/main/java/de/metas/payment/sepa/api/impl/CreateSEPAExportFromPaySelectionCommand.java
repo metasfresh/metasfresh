@@ -1,14 +1,20 @@
 package de.metas.payment.sepa.api.impl;
 
 import de.metas.banking.Bank;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.PaySelectionLineType;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.sepa.api.SEPAProtocol;
@@ -70,6 +76,8 @@ class CreateSEPAExportFromPaySelectionCommand
 	private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 
 	private final I_C_PaySelection source;
 
@@ -106,7 +114,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		{
 			case Invoice ->
 			{
-				final I_C_Invoice sourceInvoice = line.getC_Invoice(); // FIXME
+				final I_C_Invoice sourceInvoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
 				description = sourceInvoice.getDescription();
 				structuredRemittanceInfo = line.getReference();
 
@@ -121,7 +129,7 @@ class CreateSEPAExportFromPaySelectionCommand
 			default -> throw new AdempiereException(ERR_SEPA_Invoice_Nor_Payment_Set, line);
 		}
 
-		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.load(line.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class); // FIXME
+		final BankAccount bpBankAccount =  bankAccountDAO.getById(BankAccountId.ofRepoId(line.getC_BP_BankAccount_ID()));
 
 		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class, line);
 
@@ -129,8 +137,8 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setAD_Table_ID(getTableId(I_C_PaySelectionLine.class));
 		exportLine.setRecord_ID(line.getC_PaySelectionLine_ID());
 		exportLine.setAmt(line.getPayAmt());
-		exportLine.setC_BP_BankAccount(bpBankAccount); // 07789: also setting the BP bank account so the following model validator(s) can more easily see evaluate what it is.
-		exportLine.setC_Currency_ID(bpBankAccount.getC_Currency_ID());
+		exportLine.setC_BP_BankAccount_ID(BankAccountId.toRepoId(bpBankAccount.getId()));
+		exportLine.setC_Currency_ID(CurrencyId.toRepoId(bpBankAccount.getCurrencyId()));
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
 
 		exportLine.setIBAN(selectIBANOrNull(bpBankAccount));
@@ -138,7 +146,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
 		// set this field
 		// exportLine.setOtherAccountIdentification(OtherAccountIdentification);
-		final BankId bankId = BankId.ofRepoIdOrNull(bpBankAccount.getC_Bank_ID());
+		final BankId bankId = bpBankAccount.getBankId();
 		if (bankId != null)
 		{
 			final Bank bank = bankRepo.getById(bankId);
@@ -167,15 +175,14 @@ class CreateSEPAExportFromPaySelectionCommand
 		// We need the source org BP.
 		final I_C_BPartner orgBP = partnerOrgBL.retrieveLinkedBPartner(paySelectionHeader.getAD_Org_ID());
 
-		final org.compiere.model.I_C_BP_BankAccount bankAccountSource = paySelectionHeader.getC_BP_BankAccount();
-		Check.assumeNotNull(bankAccountSource, "bankAccountSource not null"); // mandatory column
-		final I_C_BP_BankAccount bpBankAccount = create(bankAccountSource, I_C_BP_BankAccount.class);
+		final BankAccount bpBankAccount = bankAccountDAO.getById(BankAccountId.ofRepoIdOrNull(paySelectionHeader.getC_BP_BankAccount_ID()));
+		Check.assumeNotNull(bpBankAccount, "bpBankAccount not null"); // mandatory column
 
 		// task 09923: In case the bp bank account does not have a bank set, it cannot be used in a SEPA Export
-		final BankId bankId = BankId.ofRepoIdOrNull(bpBankAccount.getC_Bank_ID());
+		final BankId bankId = bpBankAccount.getBankId();
 		if (bankId == null)
 		{
-			throw new AdempiereException(ERR_C_BP_BankAccount_BankNotSet, bpBankAccount.toString());
+			throw new AdempiereException(ERR_C_BP_BankAccount_BankNotSet, bpBankAccount);
 		}
 
 		// Set corresponding data
@@ -219,7 +226,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		return from.replace(" ", "");
 	}
 
-	private String selectIBANOrNull(@NonNull final I_C_BP_BankAccount bp_bankAccount)
+	private String selectIBANOrNull(@NonNull final BankAccount bp_bankAccount)
 	{
 		return coalesceSuppliers(
 				() -> toNullOrRemoveSpaces(bp_bankAccount.getIBAN()),

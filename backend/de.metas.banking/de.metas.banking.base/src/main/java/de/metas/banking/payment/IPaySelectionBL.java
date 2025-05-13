@@ -17,6 +17,7 @@ import org.compiere.model.I_C_PaySelectionLine;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -80,4 +81,6 @@ public interface IPaySelectionBL extends ISingletonService
 	void updatePaySelectionTotalAmt(@NonNull PaySelectionId paySelectionId);
 
 	PaySelectionLineType extractType(final I_C_PaySelectionLine line);
+
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(I_C_PaySelection source);
 }
