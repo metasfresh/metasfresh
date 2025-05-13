@@ -64,8 +64,12 @@ public interface IPaySelectionBL extends ISingletonService
 
 	/**
 	 * Make sure all its lines have a C_BP_BankAccount and set the paySelection as processed
+	 *
+	 * @deprecated please don't this method directly
 	 */
-	void completePaySelection(I_C_PaySelection paySelection);
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	void completePaySelectionInternal(I_C_PaySelection paySelection);
 
 	/**
 	 * Verify if the pay selection lines of the given pay selection have C_BP_BankAccount values set.
@@ -78,4 +82,6 @@ public interface IPaySelectionBL extends ISingletonService
 	ImmutableSet<BPartnerId> getBPartnerIdsFromPaySelectionLineIds(@NonNull Collection<PaySelectionLineId> paySelectionLineIds);
 
 	void updatePaySelectionTotalAmt(@NonNull PaySelectionId paySelectionId);
+
+	void complete(@NonNull final PaySelectionId paySelectionId);
 }

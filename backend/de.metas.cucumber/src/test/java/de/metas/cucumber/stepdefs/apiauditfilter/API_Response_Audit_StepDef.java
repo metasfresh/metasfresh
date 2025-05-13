@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.apiauditfilter;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class API_Response_Audit_StepDef
 {
@@ -66,18 +66,18 @@ public class API_Response_Audit_StepDef
 	@And("there are no records in API_Response_Audit for the API_Request_Audit from context")
 	public void validate_API_Response_Audit_no_records_for_request()
 	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+		final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
 		assertThat(requestId).isNotNull();
 
 		final List<I_API_Response_Audit> responseAuditRecords = getApiResponseRecordsByRequestAuditId(requestId);
 
-		assertThat(responseAuditRecords.size()).isEqualTo(0);
+		assertThat(responseAuditRecords).isEmpty();
 	}
 
 	@And("there are no records in API_Response_Audit")
 	public void validate_API_Response_Audit_no_records()
 	{
-		assertThat(this.getAllApiResponseAuditRecords().size()).isEqualTo(0);
+		assertThat(this.getAllApiResponseAuditRecords()).isEmpty();
 	}
 
 	@NonNull
@@ -90,7 +90,7 @@ public class API_Response_Audit_StepDef
 	}
 
 	private boolean isApiResponseAuditFound(
-			@NonNull final JsonMetasfreshId apiRequestAuditId,
+			@NonNull final ApiRequestAuditId apiRequestAuditId,
 			@NonNull final String httpCode,
 			@Nullable final String body)
 	{
@@ -99,7 +99,7 @@ public class API_Response_Audit_StepDef
 
 	@NonNull
 	private Optional<I_API_Response_Audit> getApiResponseAuditRecord(
-			@NonNull final JsonMetasfreshId apiRequestAuditId,
+			@NonNull final ApiRequestAuditId apiRequestAuditId,
 			@NonNull final String httpCode,
 			@Nullable final String body)
 	{
@@ -107,15 +107,15 @@ public class API_Response_Audit_StepDef
 				.stream()
 				.filter(responseAudit -> httpCode.equals(responseAudit.getHttpCode())
 						&& (body == null && responseAudit.getBody() == null
-						   || responseAudit.getBody() != null && body != null && responseAudit.getBody().contains(body)))
+						|| responseAudit.getBody() != null && body != null && responseAudit.getBody().contains(body)))
 				.findFirst();
 	}
 
 	@NonNull
-	private List<I_API_Response_Audit> getApiResponseRecordsByRequestAuditId(@NonNull final JsonMetasfreshId apiRequestAuditId)
+	private List<I_API_Response_Audit> getApiResponseRecordsByRequestAuditId(@NonNull final ApiRequestAuditId apiRequestAuditId)
 	{
 		return queryBL.createQueryBuilder(I_API_Response_Audit.class)
-				.addEqualsFilter(I_API_Response_Audit.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getValue())
+				.addEqualsFilter(I_API_Response_Audit.COLUMN_API_Request_Audit_ID, apiRequestAuditId)
 				.create()
 				.list();
 	}
@@ -124,7 +124,7 @@ public class API_Response_Audit_StepDef
 	{
 		for (final Map<String, String> row : table.asMaps())
 		{
-			final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+			final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
 			assertThat(requestId).isNotNull();
 
 			final String httpCode = DataTableUtil.extractStringForColumnName(row, "HttpCode");
