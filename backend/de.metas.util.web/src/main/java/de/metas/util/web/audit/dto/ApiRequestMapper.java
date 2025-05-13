@@ -32,9 +32,11 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class ApiRequestMapper
@@ -100,7 +102,21 @@ public class ApiRequestMapper
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Failed to parse request body!", e);
+				throw new AdempiereException("Failed to parse request body!", e)
+					.setParameter("body", getRequestBodyAsStringOrNull(requestWrapper))
+					.appendParametersToMessage();
+		}
+	}
+
+	private static String getRequestBodyAsStringOrNull(@NonNull final CachedBodyHttpServletRequest requestWrapper)
+	{
+		try (BufferedReader reader = requestWrapper.getReader())
+		{
+			return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+		}
+		catch (IOException e)
+		{
+			return null;
 		}
 	}
 
