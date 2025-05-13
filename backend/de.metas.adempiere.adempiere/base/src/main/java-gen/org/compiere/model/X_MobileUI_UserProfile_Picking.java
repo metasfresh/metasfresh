@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1241681883L;
+	private static final long serialVersionUID = 1668047699L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -210,7 +210,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isShowLastPickedBestBeforeDateForLines()
+	public boolean isShowLastPickedBestBeforeDateForLines() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
 	}
@@ -251,6 +251,8 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public static final String PICKINGJOBAGGREGATIONTYPE_Sales_order = "sales_order";
 	/** product = product */
 	public static final String PICKINGJOBAGGREGATIONTYPE_Product = "product";
+	/** delivery_location = delivery_location */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Delivery_location = "delivery_location";
 	@Override
 	public void setPickingJobAggregationType (final java.lang.String PickingJobAggregationType)
 	{

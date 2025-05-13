@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata.bpartner;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.RandomGLNGenerator;
 import de.metas.common.util.time.SystemTime;
@@ -30,6 +31,8 @@ import org.compiere.model.I_M_PricingSystem;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -90,26 +93,68 @@ public class CreateBPartnerCommand
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		context.putIdentifier(bpIdentifier, bpartnerId);
 
-		final I_C_BPartner_Location bpLocationRecord = createBPLocation(bpartnerId);
+		final GLN gln;
+		final Map<String, JsonCreateBPartnerResponse.Location> responseLocations;
+		if (request.getLocations() == null || request.getLocations().isEmpty())
+		{
+			final I_C_BPartner_Location bpLocationRecord = createBPLocation(
+					JsonCreateBPartnerRequest.Location.builder()
+							.gln(request.getGln())
+							.build(),
+					bpartnerId,
+					true
+			);
+			gln = GLN.ofNullableString(bpLocationRecord.getGLN());
+			responseLocations = null;
+		}
+		else
+		{
+			gln = null;
+			responseLocations = new HashMap<>();
+
+			boolean isFirstLocation = true;
+			for (final String bpLocationIdentifierStr : request.getLocations().keySet())
+			{
+				final I_C_BPartner_Location bpLocationRecord = createBPLocation(
+						request.getLocations().get(bpLocationIdentifierStr),
+						bpartnerId,
+						isFirstLocation
+				);
+				isFirstLocation = false;
+
+				@NonNull final Identifier bpLocationIdentifier = Identifier.ofString(bpLocationIdentifierStr);
+				final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(bpLocationRecord.getC_BPartner_ID(), bpLocationRecord.getC_BPartner_Location_ID());
+				context.putIdentifier(bpLocationIdentifier, bpLocationId);
+
+				responseLocations.put(bpLocationIdentifierStr, JsonCreateBPartnerResponse.Location.builder()
+						.id(bpLocationId.getRepoId())
+						.gln(GLN.ofNullableString(bpLocationRecord.getGLN()))
+						.build());
+			}
+		}
 
 		return JsonCreateBPartnerResponse.builder()
 				.id(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
 				.bpartnerCode(bpartner.getValue())
-				.gln(GLN.ofNullableString(bpLocationRecord.getGLN()))
+				.gln(gln)
+				.locations(responseLocations)
 				.build();
 	}
 
-	private I_C_BPartner_Location createBPLocation(@NonNull final BPartnerId bpartnerId)
+	private I_C_BPartner_Location createBPLocation(
+			@NonNull JsonCreateBPartnerRequest.Location request,
+			@NonNull final BPartnerId bpartnerId,
+			boolean isDefault)
 	{
 		final LocationId locationId = createLocation();
 
-		final GLN gln = getGLN();
+		final GLN gln = toGLN(request.getGln());
 
 		final I_C_BPartner_Location bPartnerLocationRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
 		bPartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bPartnerLocationRecord.setC_Location_ID(locationId.getRepoId());
-		bPartnerLocationRecord.setIsBillToDefault(true);
-		bPartnerLocationRecord.setIsShipToDefault(true);
+		bPartnerLocationRecord.setIsBillToDefault(isDefault);
+		bPartnerLocationRecord.setIsShipToDefault(isDefault);
 		bPartnerLocationRecord.setIsShipTo(true);
 		bPartnerLocationRecord.setGLN(gln != null ? gln.getCode() : null);
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
@@ -117,20 +162,20 @@ public class CreateBPartnerCommand
 		return bPartnerLocationRecord;
 	}
 
-	private GLN getGLN()
+	private GLN toGLN(final String glnStr)
 	{
-		final String glnStr = StringUtils.trimBlankToNull(request.getGln());
-		if (glnStr == null)
+		final String glnStrNorm = StringUtils.trimBlankToNull(glnStr);
+		if (glnStrNorm == null)
 		{
 			return null;
 		}
-		else if (glnStr.equalsIgnoreCase("random"))
+		else if (glnStrNorm.equalsIgnoreCase("random"))
 		{
 			return randomGLNGenerator.next();
 		}
 		else
 		{
-			return GLN.ofString(glnStr);
+			return GLN.ofString(glnStrNorm);
 		}
 	}
 
