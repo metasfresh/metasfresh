@@ -17,6 +17,7 @@ import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
+import de.metas.banking.payment.PaySelectionLineType;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
@@ -562,5 +563,13 @@ public class PaySelectionBL implements IPaySelectionBL
 	public void updatePaySelectionTotalAmt(@NonNull final PaySelectionId paySelectionId)
 	{
 		paySelectionDAO.updatePaySelectionTotalAmt(paySelectionId);
+	}
+
+	@Override
+	public PaySelectionLineType extractType(final I_C_PaySelectionLine line)
+	{
+		final PaymentId originalPaymentId = PaymentId.ofRepoIdOrNull(line.getOriginal_Payment_ID());
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
+		// TODO
 	}
 }

@@ -3,12 +3,12 @@ package de.metas.payment.sepa.api.impl;
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
-import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.PaySelectionLineType;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.sepa.api.SEPAProtocol;
@@ -65,8 +65,7 @@ class CreateSEPAExportFromPaySelectionCommand
 	private static final AdMessageKey ERR_SEPA_Invoice_Nor_Payment_Set = AdMessageKey.of("SEPA_Invoice_Nor_Payment_Set");
 	private static final AdMessageKey MSG_SEPA_Payment_Refund = AdMessageKey.of("SEPA_Payment_Refund");
 
-
-	private final IPaySelectionDAO paySelectionRepo = Services.get(IPaySelectionDAO.class);
+	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -74,16 +73,16 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private final I_C_PaySelection source;
 
-	public CreateSEPAExportFromPaySelectionCommand(@NonNull final org.compiere.model.I_C_PaySelection source)
+	public CreateSEPAExportFromPaySelectionCommand(@NonNull final I_C_PaySelection source)
 	{
-		this.source = InterfaceWrapperHelper.create(source, I_C_PaySelection.class);
+		this.source = create(source, I_C_PaySelection.class);
 	}
 
 	public I_SEPA_Export run()
 	{
 		final I_SEPA_Export header = createExportHeader(source);
 
-		for (final I_C_PaySelectionLine line : paySelectionRepo.retrievePaySelectionLines(source))
+		for (final I_C_PaySelectionLine line : paySelectionBL.retrievePaySelectionLines(source))
 		{
 			if (line.getC_BP_BankAccount_ID() <= 0)
 			{
@@ -100,17 +99,29 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private I_SEPA_Export_Line createExportLine(@NonNull final I_C_PaySelectionLine line)
 	{
-		final PaymentId originalPaymentId = PaymentId.ofRepoIdOrNull(line.getOriginal_Payment_ID());
-		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
-
-		if (originalPaymentId == null && invoiceId == null)
+		final PaySelectionLineType lineType = paySelectionBL.extractType(line);
+		final String description;
+		final String structuredRemittanceInfo;
+		switch (lineType)
 		{
-			throw new AdempiereException(ERR_SEPA_Invoice_Nor_Payment_Set, line);
+			case Invoice ->
+			{
+				final I_C_Invoice sourceInvoice = line.getC_Invoice(); // FIXME
+				description = sourceInvoice.getDescription();
+				structuredRemittanceInfo = line.getReference();
+
+			}
+			case Refund ->
+			{
+				final PaymentId originalPaymentId = PaymentId.ofRepoId(line.getOriginal_Payment_ID());
+				final I_C_Payment originalPayment = paymentBL.getById(originalPaymentId);
+				description = originalPayment.getDescription();
+				structuredRemittanceInfo = msgBL.getTranslatableMsgText(MSG_SEPA_Payment_Refund).translate(Env.getADLanguageOrBaseLanguage());
+			}
+			default -> throw new AdempiereException(ERR_SEPA_Invoice_Nor_Payment_Set, line);
 		}
 
-		final I_C_Invoice sourceInvoice = line.getC_Invoice();
-		final I_C_Payment originalPayment = originalPaymentId != null ? paymentBL.getById(originalPaymentId) : null;
-		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.load(line.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.load(line.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class); // FIXME
 
 		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class, line);
 
@@ -121,7 +132,6 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setC_BP_BankAccount(bpBankAccount); // 07789: also setting the BP bank account so the following model validator(s) can more easily see evaluate what it is.
 		exportLine.setC_Currency_ID(bpBankAccount.getC_Currency_ID());
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
-		exportLine.setDescription(originalPaymentId != null ? originalPayment.getDescription() :  sourceInvoice.getDescription());
 
 		exportLine.setIBAN(selectIBANOrNull(bpBankAccount));
 
@@ -131,11 +141,12 @@ class CreateSEPAExportFromPaySelectionCommand
 		final BankId bankId = BankId.ofRepoIdOrNull(bpBankAccount.getC_Bank_ID());
 		if (bankId != null)
 		{
-			final Bank bank = bankRepo.getById(bankId); 
+			final Bank bank = bankRepo.getById(bankId);
 			exportLine.setSwiftCode(toNullOrRemoveSpaces(bank.getSwiftCode()));
 		}
 
-		exportLine.setStructuredRemittanceInfo(originalPaymentId != null ? msgBL.getTranslatableMsgText(MSG_SEPA_Payment_Refund).translate(Env.getAD_Language()) : line.getReference()); // task 07789
+		exportLine.setDescription(description);
+		exportLine.setStructuredRemittanceInfo(structuredRemittanceInfo);
 
 		return exportLine;
 	}
@@ -180,7 +191,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 		header.setSEPA_CreditorIdentifier(bpBankAccount.getSEPA_CreditorIdentifier());
 
-		final Bank bank = bankRepo.getById(bankId); 
+		final Bank bank = bankRepo.getById(bankId);
 		if (Check.isBlank(bank.getSwiftCode()))
 		{
 			throw new AdempiereException(ERR_C_Bank_SwiftCodeNotSet, bank.getBankName());
