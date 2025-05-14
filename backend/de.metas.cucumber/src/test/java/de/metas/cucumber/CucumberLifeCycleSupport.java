@@ -53,7 +53,7 @@ public class CucumberLifeCycleSupport
 	private static boolean beforeAllMethodDone;
 
 	public static void beforeAll()
-	{
+			{
 		synchronized (CucumberLifeCycleSupport.class)
 		{
 			if (beforeAllMethodDone)

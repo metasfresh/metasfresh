@@ -108,6 +108,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 public class C_Order_StepDef
@@ -161,7 +162,7 @@ public class C_Order_StepDef
 					final boolean isSOTrx = tableRow.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx);
 					final DocBaseType docBaseType = Optionals.firstPresentOfSuppliers(
 							() -> tableRow.getAsOptionalEnum(COLUMNNAME_DocBaseType, DocBaseType.class),
-							() -> !isSOTrx ? Optional.of(DocBaseType.PurchaseOrder) : Optional.empty() // if we don't do this, MOrder.beforeSave will automatically set IsSOTrx=true because C_DocTypeTarget_ID is not set 
+							() -> !isSOTrx ? Optional.of(DocBaseType.PurchaseOrder) : Optional.empty() // if we don't do this, MOrder.beforeSave will automatically set IsSOTrx=true because C_DocTypeTarget_ID is not set
 					).orElse(null);
 
 					final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
@@ -532,6 +533,12 @@ public class C_Order_StepDef
 			if (Check.isNotBlank(paymentRule))
 			{
 				order.setPaymentRule(paymentRule);
+			}
+
+			final Timestamp preparationDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + COLUMNNAME_PreparationDate);
+			if (preparationDate != null)
+			{
+				order.setPreparationDate(preparationDate);
 			}
 
 			InterfaceWrapperHelper.saveRecord(order);

@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
@@ -123,7 +124,7 @@ public class OrderTest
 		doctype.setDescription(description);
 		doctype.setDocumentNote(documentNote);
 
-		doctype.setIsCopyDescriptionToDocument(true);
+		doctype.setCopyDescriptionAndDocumentNote(CopyDescriptionAndDocumentNote.CopyDescAndDocumentNote.getCode());
 
 		save(doctype);
 

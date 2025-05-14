@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_DocType
  *  @author metasfresh (generated) 
@@ -79,14 +79,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
 	{
-		if (C_DocTypeDifference_ID < 1) 
+		if (C_DocTypeDifference_ID < 1)
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, C_DocTypeDifference_ID);
 	}
 
 	@Override
-	public int getC_DocTypeDifference_ID() 
+	public int getC_DocTypeDifference_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeDifference_ID);
 	}
@@ -94,14 +94,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
+		if (C_DocType_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_DocType_ID() 
+	public int getC_DocType_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
@@ -136,14 +136,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_Invoicing_Pool_ID (final int C_DocType_Invoicing_Pool_ID)
 	{
-		if (C_DocType_Invoicing_Pool_ID < 1) 
+		if (C_DocType_Invoicing_Pool_ID < 1)
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, C_DocType_Invoicing_Pool_ID);
 	}
 
 	@Override
-	public int getC_DocType_Invoicing_Pool_ID() 
+	public int getC_DocType_Invoicing_Pool_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
 	}
@@ -176,6 +176,27 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public int getC_DocTypeShipment_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeShipment_ID);
+	}
+
+	/**
+	 * CopyDescriptionAndDocumentNote AD_Reference_ID=541893
+	 * Reference name: CopyDocumentNote
+	 */
+	public static final int COPYDESCRIPTIONANDDOCUMENTNOTE_AD_Reference_ID=541893;
+	/** CopyDescriptionAndDocumentNote = CD */
+	public static final String COPYDESCRIPTIONANDDOCUMENTNOTE_CopyDescriptionAndDocumentNote = "CD";
+	/** CopyDescriptionAndDocumentNotefromOrder = CO */
+	public static final String COPYDESCRIPTIONANDDOCUMENTNOTE_CopyDescriptionAndDocumentNotefromOrder = "CO";
+	@Override
+	public void setCopyDescriptionAndDocumentNote (final @Nullable java.lang.String CopyDescriptionAndDocumentNote)
+	{
+		set_Value (COLUMNNAME_CopyDescriptionAndDocumentNote, CopyDescriptionAndDocumentNote);
+	}
+
+	@Override
+	public java.lang.String getCopyDescriptionAndDocumentNote()
+	{
+		return get_ValueAsString(COLUMNNAME_CopyDescriptionAndDocumentNote);
 	}
 
 	@Override
@@ -516,7 +537,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		if (GL_Category_ID < 0) 
+		if (GL_Category_ID < 0)
 			set_Value (COLUMNNAME_GL_Category_ID, null);
 		else 
 			set_Value (COLUMNNAME_GL_Category_ID, GL_Category_ID);
@@ -550,18 +571,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public boolean isHasProforma() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_HasProforma);
-	}
-
-	@Override
-	public void setIsCopyDescriptionToDocument (final boolean IsCopyDescriptionToDocument)
-	{
-		set_Value (COLUMNNAME_IsCopyDescriptionToDocument, IsCopyDescriptionToDocument);
-	}
-
-	@Override
-	public boolean isCopyDescriptionToDocument() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsCopyDescriptionToDocument);
 	}
 
 	@Override
@@ -735,14 +744,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setLotNo_Sequence_ID (final int LotNo_Sequence_ID)
 	{
-		if (LotNo_Sequence_ID < 1) 
+		if (LotNo_Sequence_ID < 1)
 			set_Value (COLUMNNAME_LotNo_Sequence_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_LotNo_Sequence_ID, LotNo_Sequence_ID);
 	}
 
 	@Override
-	public int getLotNo_Sequence_ID() 
+	public int getLotNo_Sequence_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}

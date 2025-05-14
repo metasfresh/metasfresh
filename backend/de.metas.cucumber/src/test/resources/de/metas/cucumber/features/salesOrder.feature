@@ -11,8 +11,8 @@ Feature: sales order
   Scenario: we can create and complete a sales order
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
-      | Identifier | Name            |
-      | p_1        | salesProduct_12 |
+      | Identifier | Name                  |
+      | p_1        | salesProduct_17082021 |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
