@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,36 +20,12 @@
  * #L%
  */
 
-package de.metas.postgrest.config;
+package de.metas.process;
 
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.time.Duration;
-
-@Value
-@Builder(toBuilder = true)
-public class PostgRESTConfig
+public enum ProcessCalledFrom
 {
-	@Nullable
-	PostgRESTConfigId id;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	String baseURL;
-
-	@Nullable
-	Duration connectionTimeout;
-
-	@Nullable
-	Duration readTimeout;
-
-	@NonNull
-	@Builder.Default
-	String resultDirectory = "/tmp";
+	WebUI,
+	Scheduler,
+	API,
+	Unknown
 }

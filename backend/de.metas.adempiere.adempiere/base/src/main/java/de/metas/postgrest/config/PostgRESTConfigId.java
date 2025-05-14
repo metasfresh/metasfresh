@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,34 +22,37 @@
 
 package de.metas.postgrest.config;
 
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 
-@Value
-@Builder(toBuilder = true)
-public class PostgRESTConfig
+public class PostgRESTConfigId implements RepoIdAware
 {
-	@Nullable
-	PostgRESTConfigId id;
+	int repoId;
 
-	@NonNull
-	OrgId orgId;
+	@JsonCreator
+	public static PostgRESTConfigId ofRepoId(final int repoId)
+	{
+		return new PostgRESTConfigId(repoId);
+	}
 
-	@NonNull
-	String baseURL;
+	public static int toRepoId(@Nullable final PostgRESTConfigId postgRESTConfigId)
+	{
+		return postgRESTConfigId != null ? postgRESTConfigId.getRepoId() : -1;
+	}
 
-	@Nullable
-	Duration connectionTimeout;
+	private PostgRESTConfigId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "postgRESTConfigId");
+	}
 
-	@Nullable
-	Duration readTimeout;
-
-	@NonNull
-	@Builder.Default
-	String resultDirectory = "/tmp";
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }
