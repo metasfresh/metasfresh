@@ -19,7 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.event.model;
 
@@ -28,25 +27,25 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_EventLog
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLog, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 1575447785L;
+	private static final long serialVersionUID = -1911738006L;
 
-    /** Standard Constructor */
-    public X_AD_EventLog (final Properties ctx, final int AD_EventLog_ID, @Nullable final String trxName)
-    {
-      super (ctx, AD_EventLog_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_AD_EventLog (final Properties ctx, final int AD_EventLog_ID, @Nullable final String trxName)
+	{
+		super (ctx, AD_EventLog_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_AD_EventLog (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/** Load Constructor */
+	public X_AD_EventLog (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -59,14 +58,14 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	@Override
 	public void setAD_EventLog_ID (final int AD_EventLog_ID)
 	{
-		if (AD_EventLog_ID < 1) 
+		if (AD_EventLog_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_EventLog_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_EventLog_ID, AD_EventLog_ID);
 	}
 
 	@Override
-	public int getAD_EventLog_ID() 
+	public int getAD_EventLog_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_EventLog_ID);
 	}
@@ -74,14 +73,14 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	@Override
 	public void setAD_Table_ID (final int AD_Table_ID)
 	{
-		if (AD_Table_ID < 1) 
+		if (AD_Table_ID < 1)
 			set_Value (COLUMNNAME_AD_Table_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
 	@Override
-	public int getAD_Table_ID() 
+	public int getAD_Table_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
@@ -93,12 +92,12 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	}
 
 	@Override
-	public java.lang.String getEventData() 
+	public java.lang.String getEventData()
 	{
 		return get_ValueAsString(COLUMNNAME_EventData);
 	}
 
-	/** 
+	/**
 	 * EventName AD_Reference_ID=541929
 	 * Reference name: Material Event Names
 	 */
@@ -191,6 +190,8 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	public static final String EVENTNAME_AllEventsProcessedEvent = "AllEventsProcessedEvent";
 	/** StockEstimateDeletedEvent = StockEstimateDeletedEvent */
 	public static final String EVENTNAME_StockEstimateDeletedEvent = "StockEstimateDeletedEvent";
+	/** SupplyRequiredDecreasedEvent = SupplyRequiredDecreasedEvent */
+	public static final String EVENTNAME_SupplyRequiredDecreasedEvent = "SupplyRequiredDecreasedEvent";
 	@Override
 	public void setEventName (final @Nullable java.lang.String EventName)
 	{
@@ -198,7 +199,7 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	}
 
 	@Override
-	public java.lang.String getEventName() 
+	public java.lang.String getEventName()
 	{
 		return get_ValueAsString(COLUMNNAME_EventName);
 	}
@@ -210,7 +211,7 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	}
 
 	@Override
-	public java.sql.Timestamp getEventTime() 
+	public java.sql.Timestamp getEventTime()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_EventTime);
 	}
@@ -222,12 +223,12 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	}
 
 	@Override
-	public java.lang.String getEventTopicName() 
+	public java.lang.String getEventTopicName()
 	{
 		return get_ValueAsString(COLUMNNAME_EventTopicName);
 	}
 
-	/** 
+	/**
 	 * EventTypeName AD_Reference_ID=540802
 	 * Reference name: EventTypeName
 	 */
@@ -243,7 +244,7 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	}
 
 	@Override
-	public java.lang.String getEventTypeName() 
+	public java.lang.String getEventTypeName()
 	{
 		return get_ValueAsString(COLUMNNAME_EventTypeName);
 	}
@@ -255,7 +256,7 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	}
 
 	@Override
-	public java.lang.String getEvent_UUID() 
+	public java.lang.String getEvent_UUID()
 	{
 		return get_ValueAsString(COLUMNNAME_Event_UUID);
 	}
@@ -267,7 +268,7 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	}
 
 	@Override
-	public boolean isError() 
+	public boolean isError()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsError);
 	}
@@ -279,7 +280,7 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	}
 
 	@Override
-	public boolean isErrorAcknowledged() 
+	public boolean isErrorAcknowledged()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsErrorAcknowledged);
 	}
@@ -287,14 +288,14 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 	@Override
 	public void setRecord_ID (final int Record_ID)
 	{
-		if (Record_ID < 0) 
+		if (Record_ID < 0)
 			set_Value (COLUMNNAME_Record_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Record_ID, Record_ID);
 	}
 
 	@Override
-	public int getRecord_ID() 
+	public int getRecord_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}

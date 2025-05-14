@@ -19,7 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 package de.metas.event.model;
 
 import org.adempiere.model.ModelColumn;
@@ -30,13 +29,13 @@ import javax.annotation.Nullable;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_AD_EventLog 
+public interface I_AD_EventLog
 {
 
 	String Table_Name = "AD_EventLog";
 
-//	/** AD_Table_ID=540888 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=540888 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**

@@ -170,7 +170,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	public BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
 											 @NonNull final BigDecimal qtyToDistribute)
 	{
-		if (qtyToDistribute.signum() <= 0)
+		if (qtyToDistribute.signum() <= 0 || event.getPpOrderCandidateIds().isEmpty())
 		{
 			return BigDecimal.ZERO;
 		}

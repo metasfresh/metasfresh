@@ -944,7 +944,8 @@ public class CandidateRepositoryWriteService
 	public List<Candidate> getSupplyCandidatesForDemand(@NonNull final Candidate demandCandidate, @NonNull final CandidateBusinessCase businessCase)
 	{
 		Check.assume(demandCandidate.getType().isDemand(), "The given candidate needs to be of type demand {}", demandCandidate);
-		final CandidatesQuery candidatesQuery = CandidatesQuery.ofMaterialDescriptorAndDemandDetails(demandCandidate.getMaterialDescriptor(), demandCandidate.getDemandDetail())
+		final MaterialDescriptor materialDescriptor = demandCandidate.getMaterialDescriptor().withCustomerId(null);//SUPPLY candidates don't have a customer assigned
+		final CandidatesQuery candidatesQuery = CandidatesQuery.ofMaterialDescriptorAndDemandDetails(materialDescriptor, demandCandidate.getDemandDetail())
 				.withType(CandidateType.SUPPLY)
 				.withBusinessCase(businessCase);
 		return candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
