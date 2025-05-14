@@ -23,7 +23,6 @@ CREATE OR REPLACE FUNCTION de_metas_acct.report_InventoryValue(
                 WarehouseName            character varying,
                 ProductValue             character varying,
                 ProductName              character varying,
-                ProductCategoryName      character varying,
                 Qty                      numeric,
                 UOMSymbol                character varying,
                 CostPrice                numeric,
@@ -50,7 +49,6 @@ BEGIN
            fa.AD_Client_ID                                                                                   AS AD_Client_ID,
            COALESCE(p.value, '?')                                                                            AS ProductValue,
            COALESCE(p_trl.Name, p.Name, '?')                                                                 AS ProductName,
-           COALESCE(pc_trl.Name, pc.Name, '?')                                                               AS ProductCategoryName,
            fa.m_product_id                                                                                   AS M_Product_ID,
            COALESCE(SUM(fa.qty), 0)                                                                          AS Qty,
            COALESCE(uom_trl.UOMSymbol, uom.UOMSymbol)                                                        AS UOMSymbol,
@@ -78,8 +76,6 @@ BEGIN
              LEFT OUTER JOIN c_activity activity ON (activity.c_activity_id = wh.c_activity_id)
              LEFT OUTER JOIN m_product p ON (p.m_product_id = fa.m_product_id)
              LEFT OUTER JOIN m_product_trl p_trl ON (p_trl.m_product_id = fa.m_product_id AND p_trl.ad_language = p_AD_Language)
-             LEFT OUTER JOIN m_product_category pc ON (p.m_product_category_id = pc.m_product_category_id)
-             LEFT OUTER JOIN m_product_category_trl pc_trl ON (pc_trl.m_product_category_id = pc.m_product_category_id AND pc_trl.ad_language = p_AD_Language)
              LEFT OUTER JOIN c_uom uom ON (uom.c_uom_id = COALESCE(fa.c_uom_id, p.c_uom_id))
              LEFT OUTER JOIN c_uom_trl uom_trl ON (uom_trl.c_uom_id = uom.c_uom_id AND uom_trl.ad_language = p_AD_Language)
     WHERE TRUE
@@ -164,7 +160,6 @@ BEGIN
                t.WarehouseName,
                t.ProductValue,
                t.ProductName,
-               t.ProductCategoryName,
                t.Qty,
                t.UOMSymbol,
                t.CostPrice,
