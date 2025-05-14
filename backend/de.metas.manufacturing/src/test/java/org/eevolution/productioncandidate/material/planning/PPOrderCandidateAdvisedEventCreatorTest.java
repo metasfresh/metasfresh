@@ -27,6 +27,8 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -228,6 +230,8 @@ class PPOrderCandidateAdvisedEventCreatorTest
 		PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
 		PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 		PPOrderCandidateDAO ppOrderCandidateDAO;
+		CandidateRepositoryWriteService candidateRepositoryWriteService;
+		CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 		private PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedCreator;
 
 		I_M_Product product;
@@ -237,8 +241,10 @@ class PPOrderCandidateAdvisedEventCreatorTest
 		{
 			ppOrderCandidateDemandMatcher = Mockito.mock(PPOrderCandidateDemandMatcher.class);
 			ppOrderCandidatePojoSupplier = Mockito.mock(PPOrderCandidatePojoSupplier.class);
+			candidateRepositoryWriteService = Mockito.mock(CandidateRepositoryWriteService.class);
+			candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
 			ppOrderCandidateDAO = Mockito.mock(PPOrderCandidateDAO.class);
-			ppOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier, ppOrderCandidateDAO);
+			ppOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier, candidateRepositoryWriteService,candidateRepositoryRetrieval,ppOrderCandidateDAO);
 
 			product = newInstance(I_M_Product.class);
 			product.setC_UOM_ID(uomId.getRepoId());

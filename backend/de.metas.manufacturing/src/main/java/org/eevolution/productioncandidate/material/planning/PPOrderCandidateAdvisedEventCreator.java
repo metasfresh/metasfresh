@@ -24,6 +24,12 @@ package org.eevolution.productioncandidate.material.planning;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
@@ -48,6 +54,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -56,6 +64,8 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
 	@NonNull private final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
+	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
+	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
 
 	@NonNull
@@ -170,12 +180,13 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	public BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
 											 @NonNull final BigDecimal qtyToDistribute)
 	{
-		if (qtyToDistribute.signum() <= 0 || event.getPpOrderCandidateIds().isEmpty())
+		final Collection<PPOrderCandidateId> ppOrderCandidateIds = getPpOrderCandidateIds(event);
+		if (qtyToDistribute.signum() <= 0 || ppOrderCandidateIds.isEmpty())
 		{
 			return BigDecimal.ZERO;
 		}
 
-		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByIds(event.getPpOrderCandidateIds());
+		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
 		BigDecimal remainingQtyToDistribute = qtyToDistribute;
 
 		for (final I_PP_Order_Candidate ppOrderCandidate : candidates)
@@ -189,6 +200,15 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		}
 
 		return remainingQtyToDistribute;
+	}
+
+	private @NonNull Collection<PPOrderCandidateId> getPpOrderCandidateIds(final @NonNull SupplyRequiredDecreasedEvent event)
+	{
+		final Candidate demandCandidate = candidateRepositoryRetrieval.retrieveById(CandidateId.ofRepoId(event.getDemandCandidateId()));
+		return candidateRepositoryWriteService.getSupplyCandidatesForDemand(demandCandidate, CandidateBusinessCase.PRODUCTION)
+				.stream()
+				.map(candidate -> ProductionDetail.cast(candidate.getBusinessCaseDetail()).getPpOrderCandidateId())
+				.collect(Collectors.toSet());
 	}
 
 	private BigDecimal doDecreaseQty(final I_PP_Order_Candidate ppOrderCandidate, final BigDecimal remainingQtyToDistribute)

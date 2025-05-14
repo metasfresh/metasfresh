@@ -31,10 +31,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 import static de.metas.material.event.MaterialEventConstants.MD_CANDIDATE_TABLE_NAME;
 
@@ -46,9 +44,7 @@ public class SupplyRequiredDecreasedEvent implements MaterialEvent
 	public static final String TYPE = "SupplyRequiredDecreasedEvent";
 
 	@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor;
-	@NonNull Collection<PPOrderCandidateId> ppOrderCandidateIds;
-	@NonNull Collection<Integer> ddOrderCandidateIds;
-	@NonNull Collection<Integer> purchaseCandidateIds;
+	int demandCandidateId;
 
 	@JsonIgnore
 	@Override

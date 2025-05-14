@@ -16,7 +16,6 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MinMaxDescriptor;
-import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -158,19 +157,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private void fireSupplyRequiredDecreasedEventIfNeeded(final Candidate savedCandidate, final BigDecimal decreasedQty)
 	{
-		if (isCandidateEligibleForDecrease(savedCandidate))
-		{
-			final SupplyRequiredDecreasedEvent event = SupplyRequiredEventCreator.createSupplyRequiredDecreasedEventOrNull(savedCandidate, decreasedQty, candidateRepositoryWriteService);
-			if (event != null)
-			{
-				materialEventService.enqueueEventAfterNextCommit(event);
-			}
-		}
-	}
-
-	private boolean isCandidateEligibleForDecrease(final @NonNull Candidate savedCandidate)
-	{
-		return savedCandidate.getBusinessCase() != null && savedCandidate.getBusinessCaseDetail() != null;
+		materialEventService.enqueueEventAfterNextCommit(SupplyRequiredEventCreator.createSupplyRequiredDecreasedEvent(savedCandidate, decreasedQty));
 	}
 
 	@Override

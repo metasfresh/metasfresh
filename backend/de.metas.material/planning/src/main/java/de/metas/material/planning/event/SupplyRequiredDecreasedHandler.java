@@ -42,7 +42,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
-@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvents
+@Profile(Profiles.PROFILE_MaterialDispo) // we want only one component to bother itself with SupplyRequiredEvents
 @RequiredArgsConstructor
 public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<SupplyRequiredDecreasedEvent>
 {
