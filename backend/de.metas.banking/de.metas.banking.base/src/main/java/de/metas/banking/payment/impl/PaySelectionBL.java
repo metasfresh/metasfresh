@@ -580,7 +580,11 @@ public class PaySelectionBL implements IPaySelectionBL
 		}
 		else
 		{
-			throw new AdempiereException("Unsupported type!");
+			throw new AdempiereException("Unsupported pay selection type, for line: ")
+					.appendParametersToMessage()
+					.setParameter("line", line.getLine())
+					.setParameter("InvoiceId", invoiceId)
+					.setParameter("originalPaymentId", originalPaymentId);
 		}
 	}
 
