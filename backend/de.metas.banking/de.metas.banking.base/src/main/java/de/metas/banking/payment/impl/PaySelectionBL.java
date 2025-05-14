@@ -580,7 +580,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		}
 		else
 		{
-			return PaySelectionLineType.Unknown;
+			throw new AdempiereException("Unsupported type!");
 		}
 	}
 
