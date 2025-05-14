@@ -37,7 +37,6 @@ import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.LogSubEntryId;
-import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
@@ -148,16 +147,16 @@ public class CalibrationManufacturingRawIssuedLog extends AbstractModularContrac
 
 	@Override
 	@NonNull
-	public final LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, @NonNull final ModularContractModuleId modularContractModuleId)
+	public final LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final CreateLogRequest request)
 	{
-		final ManufacturingRawIssued manufacturingRawIssued = manufacturingFacadeService.getManufacturingRawIssued(handleLogsRequest.getTableRecordReference());
+		final ManufacturingRawIssued manufacturingRawIssued = manufacturingFacadeService.getManufacturingRawIssued(request.getRecordRef());
 
 		return LogEntryDeleteRequest.builder()
 				.referencedModel(manufacturingRawIssued.getManufacturingOrderId().toRecordRef())
 				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingRawIssued.getId()))
-				.flatrateTermId(handleLogsRequest.getContractId())
+				.flatrateTermId(request.getContractId())
 				.logEntryContractType(getLogEntryContractType())
-				.modularContractModuleId(modularContractModuleId)
+				.modularContractModuleId(request.getModularContractModuleId())
 				.build();
 	}
 

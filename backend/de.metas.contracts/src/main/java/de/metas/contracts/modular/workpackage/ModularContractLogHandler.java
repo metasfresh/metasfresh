@@ -221,7 +221,7 @@ class ModularContractLogHandler
 			return;
 		}
 
-		contractLogRepo.delete(handler.toLogEntryDeleteRequest(request.getHandleLogsRequest(), request.getModularContractModuleId()));
+		contractLogRepo.delete(handler.toLogEntryDeleteRequest(request));
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("Method: {} | Logs were successfully deleted for request: {}!", "recreateLogs", request);

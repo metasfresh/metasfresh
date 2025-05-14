@@ -27,7 +27,7 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-05-13 10:
 -- Run mode: WEBUI
 
 -- 2025-05-13T08:45:48.878Z
-INSERT INTO ModCntr_Type (AD_Client_ID,AD_Org_ID,Created,CreatedBy,Description,IsActive,IsSOTrx,ModCntr_Type_ID,ModularContractHandlerType,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2025-05-13 10:45:48.874','YYYY-MM-DD HH24:MI:SS.US'),100,'Erstellt Zinslogs für in der Basisbaustein Konfiguaration definierte Bausteine','Y','Y',540038,'SalesInterest','Zinsen Verkauf',TO_TIMESTAMP('2025-05-13 10:45:48.874','YYYY-MM-DD HH24:MI:SS.US'),100,'SalesInterest')
+INSERT INTO ModCntr_Type (AD_Client_ID,AD_Org_ID,Created,CreatedBy,Description,IsActive,IsSOTrx,ModCntr_Type_ID,ModularContractHandlerType,Name,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2025-05-13 10:45:48.874','YYYY-MM-DD HH24:MI:SS.US'),100,'Erstellt Zinslogs für in der Basisbaustein Konfiguaration definierte Bausteine','Y','Y',540038,'SalesInterest','Verkauf - Zinsen',TO_TIMESTAMP('2025-05-13 10:45:48.874','YYYY-MM-DD HH24:MI:SS.US'),100,'SalesInterest')
 ;
 
 -- 2025-05-13T08:47:14.725Z

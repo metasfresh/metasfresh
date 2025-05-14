@@ -117,8 +117,8 @@ public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHand
 				.year(interestBaseRequest.getYear())
 				.description(interestBaseRequest.getDescription())
 				.modularContractTypeId(createLogRequest.getTypeId())
-				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
-				.baseConfigModuleId(createLogRequest.getConfigId().getModularContractModuleId())
+				.configModuleId(createLogRequest.getModularContractModuleId())
+				.baseConfigModuleId(createLogRequest.getBaseModularContractModuleId())
 				.build());
 	}
 

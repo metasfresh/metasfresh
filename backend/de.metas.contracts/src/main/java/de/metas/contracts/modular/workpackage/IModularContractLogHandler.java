@@ -82,13 +82,14 @@ public interface IModularContractLogHandler
 	IComputingMethodHandler getComputingMethod();
 
 	@NonNull
-	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, final @NonNull ModularContractModuleId modularContractModuleId)
+	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final CreateLogRequest request)
 	{
 		return LogEntryDeleteRequest.builder()
-				.referencedModel(handleLogsRequest.getTableRecordReference())
-				.flatrateTermId(handleLogsRequest.getContractId())
+				.referencedModel(request.getRecordRef())
+				.flatrateTermId(request.getContractId())
 				.logEntryContractType(getLogEntryContractType())
-				.modularContractModuleId(modularContractModuleId)
+				.modularContractModuleId(request.getModularContractModuleId())
+				.baseModularContractModuleId(request.getBaseModularContractModuleId())
 				.build();
 	}
 
@@ -168,7 +169,13 @@ public interface IModularContractLogHandler
 		@NonNull
 		public ModularContractModuleId getModularContractModuleId()
 		{
-			return getConfigId().getModularContractModuleId();
+			return moduleConfig.getModularContractModuleId();
+		}
+
+		@Nullable
+		public ModularContractModuleId getBaseModularContractModuleId()
+		{
+			return baseModuleConfig != null ? baseModuleConfig.getModularContractModuleId() : null;
 		}
 
 		public boolean isCostsType()

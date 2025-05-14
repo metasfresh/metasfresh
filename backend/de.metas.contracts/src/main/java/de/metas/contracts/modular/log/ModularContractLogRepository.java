@@ -345,6 +345,11 @@ public class ModularContractLogRepository
 			queryBuilder.addEqualsFilter(request.subEntryId().getColumnName(), request.subEntryId().getId());
 		}
 
+		if (request.baseModularContractModuleId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID, request.baseModularContractModuleId());
+		}
+
 		queryBuilder.create().delete(true);
 	}
 
