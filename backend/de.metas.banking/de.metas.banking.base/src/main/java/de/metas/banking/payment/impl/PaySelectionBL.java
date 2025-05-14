@@ -17,6 +17,7 @@ import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
+import de.metas.banking.payment.PaySelectionLineType;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
@@ -562,5 +563,34 @@ public class PaySelectionBL implements IPaySelectionBL
 	public void updatePaySelectionTotalAmt(@NonNull final PaySelectionId paySelectionId)
 	{
 		paySelectionDAO.updatePaySelectionTotalAmt(paySelectionId);
+	}
+
+	@Override
+	public PaySelectionLineType extractType(final I_C_PaySelectionLine line)
+	{
+		final PaymentId originalPaymentId = PaymentId.ofRepoIdOrNull(line.getOriginal_Payment_ID());
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
+		if (originalPaymentId != null)
+		{
+			return PaySelectionLineType.Refund;
+		}
+		else if (invoiceId != null)
+		{
+			return PaySelectionLineType.Invoice;
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported pay selection type, for line: ")
+					.appendParametersToMessage()
+					.setParameter("line", line.getLine())
+					.setParameter("InvoiceId", invoiceId)
+					.setParameter("originalPaymentId", originalPaymentId);
+		}
+	}
+
+	@Override
+	public List<I_C_PaySelectionLine> retrievePaySelectionLines(@NonNull final I_C_PaySelection paySelection)
+	{
+		return paySelectionDAO.retrievePaySelectionLines(paySelection);
 	}
 }
