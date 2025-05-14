@@ -36,11 +36,9 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.organization.LocalDateAndOrgId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.util.TimeUtil;
@@ -53,8 +51,6 @@ public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHand
 {
 	// use low precision in Logs to be more accurate on aggregation of logs on IC creation with lower precision
 	private static final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
-
-	@NonNull IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final  IModularContractLogHandler interestBaseLogHandler;
 	@NonNull private final ComputingMethodType interestBaseComputingMethodType;
 	public AbstractInterestLogHandler(
@@ -72,8 +68,8 @@ public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHand
 	@Override
 	public boolean applies(final @NonNull CreateLogRequest request)
 	{
-		final ModuleConfig parentModuleConfig = request.getBaseModuleConfig();
-		if ( parentModuleConfig == null || !parentModuleConfig.isMatching(interestBaseComputingMethodType))
+		final ModuleConfig baseModuleConfig = request.getBaseModuleConfig();
+		if ( baseModuleConfig == null || !baseModuleConfig.isMatching(interestBaseComputingMethodType))
 		{
 			return false;
 		}
@@ -88,7 +84,7 @@ public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHand
 		final Money interestBaseAmount = Check.assumePresent(interestBaseRequest.getAmount(), "Amount should be present");
 		final ProductPrice interestBaseAmountAsProductPrice = ProductPrice.builder()
 				.productId(createLogRequest.getProductId())
-				.uomId(productBL.getStockUOMId(createLogRequest.getProductId()))
+				.uomId(Check.assumePresent(interestBaseRequest.getPriceActual(), "Base Price Actual should be present").getUomId())
 				.money(interestBaseAmount)
 				.build();
 		final int interestDays = computeInterestDays(createLogRequest, interestBaseRequest.getTransactionDate(), interestBaseRequest.getPhysicalClearanceDate());
