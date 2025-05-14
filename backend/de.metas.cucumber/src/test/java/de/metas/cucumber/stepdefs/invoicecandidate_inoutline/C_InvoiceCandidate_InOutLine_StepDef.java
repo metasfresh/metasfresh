@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefDa
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -38,6 +39,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
+import org.slf4j.Logger;
 
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -46,6 +48,8 @@ import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COL
 
 public class C_InvoiceCandidate_InOutLine_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(C_InvoiceCandidate_InOutLine_StepDef.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_InvoiceCandidate_InOutLine_StepDefData invoiceCandInOuLineTable;

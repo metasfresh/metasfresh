@@ -7,7 +7,7 @@ import de.metas.ui.web.notification.json.JSONNotificationsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ import java.util.List;
  * #L%
  */
 
-@Api
+@Tag(name = "NotificationRestController")
 @RestController
 @RequestMapping(value = NotificationRestController.ENDPOINT)
 public class NotificationRestController

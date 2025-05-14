@@ -152,14 +152,14 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$F{dateattributevalue}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="186" y="230" width="70" height="18" uuid="d364b4ef-6130-4920-8304-18d4b03c25cf"/>
+				<reportElement positionType="Float" x="186" y="230" width="84" height="18" uuid="d364b4ef-6130-4920-8304-18d4b03c25cf"/>
 				<textElement verticalAlignment="Top" markup="none">
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{CheeseDairyNo}+" : "]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="258" y="230" width="144" height="18" uuid="e6ceea02-4945-4881-aa67-b2b12004f185"/>
+				<reportElement positionType="Float" x="270" y="230" width="132" height="18" uuid="e6ceea02-4945-4881-aa67-b2b12004f185"/>
 				<textElement verticalAlignment="Top" markup="none">
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>

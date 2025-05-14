@@ -3,7 +3,7 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableMap;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+import de.metas.mobile.application.MobileApplicationInfo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -22,7 +22,7 @@ public class JsonMobileApplication
 	@NonNull String caption;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
-	boolean requiresLaunchersQRCodeFilter;
+	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
 	boolean showInMainMenu;
@@ -36,7 +36,7 @@ public class JsonMobileApplication
 				.caption(appInfo.getCaption().translate(jsonOpts.getAdLanguage()))
 				.requiresWorkstation(appInfo.isRequiresWorkstation())
 				.requiresWorkplace(appInfo.isRequiresWorkplace())
-				.requiresLaunchersQRCodeFilter(appInfo.isRequiresLaunchersQRCodeFilter())
+				.showFilterByQRCode(appInfo.isShowFilterByQRCode())
 				.showFilters(appInfo.isShowFilters())
 				.showFilterByDocumentNo(appInfo.isShowFilterByDocumentNo())
 				.showInMainMenu(appInfo.isShowInMainMenu())

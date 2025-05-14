@@ -1,9 +1,9 @@
 package de.metas.replenishment.impexp;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
+import de.metas.i18n.AdMessageKey;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -12,13 +12,9 @@ import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_M_Replenish;
 import org.compiere.model.X_I_Replenish;
 
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
 
 /*
  * #%L
@@ -79,7 +75,7 @@ public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected I_I_Replenish retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
+	protected I_I_Replenish retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_Replenish(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -89,7 +85,7 @@ public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_
 	 */
 	@Override
 	protected ImportRecordResult importRecord(
-			@NonNull IMutable<Object> state_NOTUSED,
+			@NonNull final IMutable<Object> state_NOTUSED,
 			@NonNull final I_I_Replenish importRecord,
 			final boolean isInsertOnly_NOTUSED)
 	{
@@ -100,8 +96,7 @@ public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_
 		}
 		else
 		{
-			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoValidRecord);
-			throw new AdempiereException(errorMsg);
+			throw new AdempiereException(MSG_NoValidRecord);
 		}
 
 	}

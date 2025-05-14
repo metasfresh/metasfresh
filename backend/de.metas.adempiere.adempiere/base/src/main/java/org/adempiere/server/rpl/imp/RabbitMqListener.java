@@ -28,6 +28,7 @@ import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.w3c.dom.Document;
 
+import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -59,6 +60,7 @@ import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 
 public class RabbitMqListener implements MessageListener
 {
+	@Nullable
 	private CachingConnectionFactory connectionFactory;
 
 	private final String host;
@@ -137,6 +139,12 @@ public class RabbitMqListener implements MessageListener
 	{
 
 		connectionFactory = new CachingConnectionFactory(host, port);
+
+		// Attempt to fix ordering issues when sending first ORDERS lines and then the EDI_ReplicationTrx_Update
+		// Also see https://stackoverflow.com/questions/62592526/rabbitmq-topic-exchange-message-ordering 
+		// and https://github.com/metasfresh/metasfresh/pull/18529/files#diff-a8e9572e04cbf14f200ad7a09e00b03c7189f3c4125835d9b4c7e8be01ff599aR104
+		connectionFactory.setChannelCacheSize(1);
+		
 		if (userName != null && password != null)
 		{
 			connectionFactory.setUsername(userName);
@@ -155,7 +163,10 @@ public class RabbitMqListener implements MessageListener
 		container.setConsumerTagStrategy(q -> consumerTag);
 		container.setConnectionFactory(connectionFactory);
 		container.setQueueNames(queueName);
-
+		container.setPrefetchCount(1); // here, the default is 250
+		container.setConcurrentConsumers(1); // 1 is actually the default anyways
+		container.setMaxConcurrentConsumers(1);
+		
 		container.setErrorHandler(t -> {
 			if (isStopping)
 			{

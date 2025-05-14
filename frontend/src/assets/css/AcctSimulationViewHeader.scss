@@ -1,0 +1,16 @@
+@import './variables.scss';
+
+.acctSimulationViewHeader {
+  table-layout: fixed;
+  width: 600px;
+  margin-left: 20px;
+
+  .label {
+    font-weight: bold;
+  }
+
+  .value {
+    text-align: right;
+    padding-right: 20px;
+  }
+}

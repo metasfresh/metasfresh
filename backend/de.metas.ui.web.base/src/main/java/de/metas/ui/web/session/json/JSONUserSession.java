@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
+import de.metas.contracts.ConditionsId;
 import de.metas.i18n.Language;
+import de.metas.letter.BoilerPlateId;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -70,6 +72,10 @@ public class JSONUserSession
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String rolename;
 
+	@JsonProperty("orgname")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String orgname;
+
 	@JsonProperty("language")
 	private final JSONLookupValue language;
 	@JsonProperty("locale")
@@ -77,6 +83,12 @@ public class JSONUserSession
 
 	@JsonProperty("timeZone")
 	private final String timeZone;
+
+	@JsonProperty("defaultFlatrateConditionsId")
+	private final ConditionsId defaultFlatrateConditionsId;
+
+	@JsonProperty("defaultBoilerPlateId")
+	private final BoilerPlateId defaultBoilerPlateId;
 
 	@JsonProperty("websocketEndpoint")
 	private final String websocketEndpoint;
@@ -100,10 +112,14 @@ public class JSONUserSession
 		{
 			username = userSession.getUserName();
 			rolename = userSession.getRoleName();
+			orgname = userSession.getOrgName();
 
 			fullname = userSession.getUserFullname();
 			email = userSession.getUserEmail();
 			avatarId = userSession.getAvatarId();
+
+			defaultFlatrateConditionsId = userSession.getDefaultFlatrateConditionsId();
+			defaultBoilerPlateId = userSession.getDefaultBoilerPlateId();
 
 			userProfileWindowId = WindowConstants.WINDOWID_UserProfile;
 			userProfileId = userSession.getLoggedUserId().getRepoId();
@@ -114,9 +130,14 @@ public class JSONUserSession
 		{
 			username = null;
 			rolename = null;
+			orgname = null;
 			fullname = null;
 			email = null;
 			avatarId = null;
+
+			defaultFlatrateConditionsId = null;
+			defaultBoilerPlateId = null;
+
 			userProfileWindowId = null;
 			userProfileId = null;
 			websocketEndpoint = null;

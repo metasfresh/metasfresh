@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -67,7 +68,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class TaxDAO implements ITaxDAO
 {
-	private final static transient Logger logger = LogManager.getLogger(TaxDAO.class);
+	private final static Logger logger = LogManager.getLogger(TaxDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -245,6 +246,12 @@ public class TaxDAO implements ITaxDAO
 	{
 		final Tax tax = getTaxById(taxId);
 		return Percent.of(tax.getRate());
+	}
+
+	@Override
+	public @NonNull Optional<Tax> getByIfPresent(@NonNull final TaxQuery taxQuery)
+	{
+		return Optional.ofNullable(getBy(taxQuery));
 	}
 
 	@Override
@@ -439,9 +446,9 @@ public class TaxDAO implements ITaxDAO
 		{
 			final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(toCountryId);
 			final boolean isEULocation = countryAreaBL.isMemberOf(Env.getCtx(),
-																  ICountryAreaBL.COUNTRYAREAKEY_EU,
-																  countryCode,
-																  Env.getDate());
+					ICountryAreaBL.COUNTRYAREAKEY_EU,
+					countryCode,
+					Env.getDate());
 			typeOfDestCountry = isEULocation ? WITHIN_COUNTRY_AREA : OUTSIDE_COUNTRY_AREA;
 		}
 		return typeOfDestCountry;
@@ -476,5 +483,16 @@ public class TaxDAO implements ITaxDAO
 		}
 
 		return locationDAO.getCountryIdByLocationId(LocationId.ofRepoId(bpartnerLocation.getC_Location_ID()));
+	}
+
+	@Override
+	public Optional<TaxId> getIdByName(@NonNull final String name, @NonNull final ClientId clientId)
+	{
+		return queryBL.createQueryBuilder(I_C_Tax.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_Name, name)
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_AD_Client_ID, clientId)
+				.create()
+				.firstIdOnlyOptional(TaxId::ofRepoIdOrNull);
 	}
 }

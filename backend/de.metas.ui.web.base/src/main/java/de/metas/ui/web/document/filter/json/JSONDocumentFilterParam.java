@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.Builder;
 import lombok.Value;
 
 import java.util.Optional;
@@ -68,6 +69,7 @@ public class JSONDocumentFilterParam
 	Object valueTo;
 
 	@JsonCreator
+	@Builder
 	private JSONDocumentFilterParam(
 			@JsonProperty("parameterName") final String parameterName,
 			@JsonProperty("value") final Object value,

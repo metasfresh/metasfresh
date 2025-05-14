@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -635,6 +636,7 @@ public final class Check
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
+	@Contract("null, _ -> true")
 	public static boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
 		return EmptyUtil.isEmpty(str, trimWhitespaces);
@@ -643,7 +645,8 @@ public final class Check
 	/**
 	 * @return true if bd is null or bd.signum() is zero
 	 */
-	public static boolean isEmpty(final BigDecimal bd)
+	@Contract("null -> true")
+	public static boolean isEmpty(@Nullable final BigDecimal bd)
 	{
 		return EmptyUtil.isEmpty(bd);
 	}
@@ -659,6 +662,7 @@ public final class Check
 	/**
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
+	@Contract("null -> true")
 	public static boolean isEmpty(@Nullable final Collection<?> collection)
 	{
 		return EmptyUtil.isEmpty(collection);
@@ -851,5 +855,22 @@ public final class Check
 			return true;
 		}
 		return false;
+	}
+
+	public static void assumeSingleNonNull(final String errMessage, final Object... params)
+	{
+		if (params == null)
+		{
+			throw new RuntimeException(errMessage);
+		}
+
+		final long nrOfNonNulls = Arrays.stream(params)
+				.filter(Objects::nonNull)
+				.count();
+
+		if (nrOfNonNulls != 1)
+		{
+			throw new RuntimeException(errMessage);
+		}
 	}
 }

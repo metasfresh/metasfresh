@@ -7,7 +7,10 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -19,15 +22,21 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.PlainContextAware;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -118,6 +127,16 @@ public class CatchWeightHelper
 			final Quantity pickedQty,
 			final I_M_HU huRecord)
 	{
+		return extractQtys(huContext, productId, pickedQty, huRecord, null);
+	}
+
+	public StockQtyAndUOMQty extractQtys(
+			final IHUContext huContext,
+			final ProductId productId,
+			final Quantity pickedQty,
+			final I_M_HU huRecord,
+			final I_M_HU_Trx_Line trxLine)
+	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
 
@@ -129,7 +148,12 @@ public class CatchWeightHelper
 				.stockQty(stockQty);
 
 		final UomId catchUomId = productBL.getCatchUOMId(productId).orElse(null);
-		if (catchUomId != null)
+		if (catchUomId == null)
+		{
+			return qtyPicked.build();
+		}
+
+		if (trxLine == null)
 		{
 			assertUomWeightable(catchUomId);
 
@@ -161,6 +185,15 @@ public class CatchWeightHelper
 			final Quantity catchQty = uomConversionBL.convertQuantityTo(weight, UOMConversionContext.of(productId), catchUomId);
 			qtyPicked.uomQty(catchQty);
 		}
+		else
+		{
+			final Quantity catchQtyUOM = getTrxCatchWeight(huContext, pickedQty, huRecord, trxLine)
+					.orElseThrow(() -> new AdempiereException("Cannot determine catch weight for trxLine")
+							.appendParametersToMessage()
+							.setParameter("trxLine.M_HU_ID", trxLine.getM_HU_ID())
+							.setParameter("trxLine.Qty", trxLine.getQty()));
+			qtyPicked.uomQty(catchQtyUOM);
+		}
 
 		return qtyPicked.build();
 	}
@@ -173,5 +206,40 @@ public class CatchWeightHelper
 		{
 			throw new AdempiereException("CatchUomId=" + catchUomId + " needs to be weightable");
 		}
+	}
+
+	@NonNull
+	private Optional<Quantity> getTrxCatchWeight(
+			@NonNull final IHUContext huContext,
+			@NonNull final Quantity qtyPicked,
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_HU_Trx_Line trxLine)
+	{
+		final AttributeId weightNetAttributeId = Services.get(IAttributeDAO.class)
+				.getAttributeIdByCode(Weightables.ATTR_WeightNet);
+		final List<IHUTransactionAttribute> trxAttributeCandidates = huContext.getProperty(IHUContext.PROPERTY_AttributeTrxCandidates);
+		if (Check.isEmpty(trxAttributeCandidates))
+		{
+			return Optional.empty();
+		}
+
+		final HuId targetHUId = qtyPicked.signum() < 0
+				? HuId.ofRepoId(Services.get(IHUTrxDAO.class).retrieveCounterpartTrxLine(trxLine).getM_HU_ID())
+				: HuId.ofRepoId(trxLine.getM_HU_ID());
+
+		final Function<BigDecimal, Quantity> toNetWeightQty = netWeight -> {
+			final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+			final IWeightable weightable = Weightables.wrap(attributeStorage);
+			return Quantity.of(netWeight, weightable.getWeightNetUOM());
+		};
+
+		return trxAttributeCandidates
+				.stream()
+				.filter(trx -> trx.getAttributeId().equals(weightNetAttributeId))
+				.filter(trx -> trx.getReferencedObject() instanceof I_M_HU)
+				.filter(trx -> ((I_M_HU)trx.getReferencedObject()).getM_HU_ID() == targetHUId.getRepoId())
+				.findFirst()
+				.map(IHUTransactionAttribute::getValueNumber)
+				.map(toNetWeightQty);
 	}
 }

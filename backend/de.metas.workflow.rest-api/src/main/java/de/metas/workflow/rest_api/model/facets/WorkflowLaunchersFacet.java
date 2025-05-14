@@ -28,6 +28,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class WorkflowLaunchersFacet
@@ -36,6 +38,7 @@ public class WorkflowLaunchersFacet
 	@NonNull ITranslatableString caption;
 	@Builder.Default long sortNo = 0;
 	@With boolean isActive;
+	@Nullable Integer hitCount;
 
 	public WorkflowLaunchersFacetGroupId getGroupId() {return facetId.getGroupId();}
 }

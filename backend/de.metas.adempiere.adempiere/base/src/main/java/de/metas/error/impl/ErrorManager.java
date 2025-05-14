@@ -85,6 +85,7 @@ public class ErrorManager implements IErrorManager
 		issue.setSourceMethodName(request.getSourceMethodName());
 		issue.setStackTrace(request.getStacktrace());
 		issue.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPInstance_ID()));
+		issue.setErrorCode(request.getErrorCode());
 		issue.setAD_Org_ID(request.getOrgId().getRepoId());
 		issue.setFrontendURL(StringUtils.trimBlankToNull(request.getFrontendUrl()));
 		saveRecord(issue);
@@ -112,6 +113,9 @@ public class ErrorManager implements IErrorManager
 
 			issue.setIssueSummary(buildIssueSummary(request));
 			issue.setLoggerName(request.getLoggerName());
+
+			final String errorCode = AdempiereException.extractErrorCodeOrNull(throwable);
+			issue.setErrorCode(errorCode);
 
 			// Source class/method name
 			// might be overridden below
@@ -271,7 +275,7 @@ public class ErrorManager implements IErrorManager
 	}
 
 	@Override
-	public void markIssueAcknowledged(@NonNull AdIssueId adIssueId)
+	public void markIssueAcknowledged(@NonNull final AdIssueId adIssueId)
 	{
 		try
 		{
@@ -284,7 +288,7 @@ public class ErrorManager implements IErrorManager
 			adIssueRecord.setProcessed(true);
 			saveRecord(adIssueRecord);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed marking {} as deprecated. Ignored.", adIssueId, ex);
 		}
@@ -348,7 +352,7 @@ public class ErrorManager implements IErrorManager
 
 			return IssueCountersByCategory.of(counters);
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}

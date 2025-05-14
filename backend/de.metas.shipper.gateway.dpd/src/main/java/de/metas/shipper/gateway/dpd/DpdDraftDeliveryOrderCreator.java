@@ -131,7 +131,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
 					// .repoId()
 					.content(packageInfo.getDescription())
-					.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg).intValue())
+					.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
 					.packageDimensions(getPackageDimensions(packageInfo.getPackageId()))
 					// .customDeliveryData()
 					.packageId(packageInfo.getPackageId())

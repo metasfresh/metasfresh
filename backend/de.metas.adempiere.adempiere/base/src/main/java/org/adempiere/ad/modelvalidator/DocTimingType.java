@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.Getter;
 import org.compiere.model.ModelValidator;
 
 import java.util.Map;
@@ -29,7 +30,7 @@ public enum DocTimingType implements TimingType
 	, AFTER_REVERSEACCRUAL(ModelValidator.TIMING_AFTER_REVERSEACCRUAL, IDocument.ACTION_Reverse_Accrual, IDocument.STATUS_Reversed, BeforeAfterType.After) //
 	, BEFORE_COMPLETE(ModelValidator.TIMING_BEFORE_COMPLETE, IDocument.ACTION_Complete, IDocument.STATUS_Completed, BeforeAfterType.Before) //
 	, AFTER_COMPLETE(ModelValidator.TIMING_AFTER_COMPLETE, IDocument.ACTION_Complete, IDocument.STATUS_Completed, BeforeAfterType.After) //
-	, AFTER_UNPOST(ModelValidator.TIMING_AFTER_UNPOST, IDocument.ACTION_UnPost, IDocument.STATUS_Unknown, BeforeAfterType.After) //
+	// , AFTER_UNPOST(ModelValidator.TIMING_AFTER_UNPOST, IDocument.ACTION_UnPost, IDocument.STATUS_Unknown, BeforeAfterType.After) //
 	, BEFORE_POST(ModelValidator.TIMING_BEFORE_POST, IDocument.ACTION_Post, IDocument.STATUS_Unknown, BeforeAfterType.Before) //
 	, AFTER_POST(ModelValidator.TIMING_AFTER_POST, IDocument.ACTION_Post, IDocument.STATUS_Unknown, BeforeAfterType.After) //
 	, BEFORE_UNCLOSE(ModelValidator.TIMING_BEFORE_UNCLOSE, IDocument.ACTION_UnClose, IDocument.STATUS_Completed, BeforeAfterType.Before) //
@@ -41,8 +42,13 @@ public enum DocTimingType implements TimingType
 	//
 
 	private final int timing;
+	
+	@Getter
 	private final String docAction;
+	
+	@Getter
 	private final String docStatus;
+	
 	private final BeforeAfterType beforeAfter;
 
 	DocTimingType(final int timing, final String docAction, final String docStatus, final BeforeAfterType beforeAfter)
@@ -57,16 +63,6 @@ public enum DocTimingType implements TimingType
 	public int toInt()
 	{
 		return timing;
-	}
-
-	public String getDocAction()
-	{
-		return docAction;
-	}
-
-	public String getDocStatus()
-	{
-		return docStatus;
 	}
 
 	public boolean isDocAction(final String docAction)
@@ -136,4 +132,9 @@ public enum DocTimingType implements TimingType
 				|| this == BEFORE_REVERSEACCRUAL || this == AFTER_REVERSEACCRUAL;
 	}
 
+	public boolean isReactivate()
+	{
+		return this == BEFORE_REACTIVATE || this == AFTER_REACTIVATE;
+	}
+	
 }

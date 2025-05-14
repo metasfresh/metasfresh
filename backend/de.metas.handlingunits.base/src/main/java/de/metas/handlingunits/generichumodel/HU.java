@@ -11,9 +11,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -68,7 +66,6 @@ public class HU
 
 	@NonNull
 	@Singular
-	@Getter(AccessLevel.NONE)
 	Map<BPartnerId, String> packagingGTINs;
 
 	@NonNull
@@ -188,7 +185,7 @@ public class HU
 				.collect(ImmutableList.toImmutableList());
 
 		final BigDecimal qtyCU = allQuantities.get(allQuantities.size() / 2);
-		return Quantitys.create(qtyCU, productId);
+		return Quantitys.of(qtyCU, productId);
 	}
 
 	@Nullable

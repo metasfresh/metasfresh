@@ -228,6 +228,7 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
 			I_C_OrderLine.COLUMNNAME_QtyDelivered,
+			I_C_OrderLine.COLUMNNAME_IsDeliveryClosed,
 			I_C_OrderLine.COLUMNNAME_C_Order_ID })
 	public void updateReserved(final I_C_OrderLine orderLine)
 	{
@@ -254,7 +255,7 @@ public class C_OrderLine
 		if (developerModeBL.isEnabled())
 		{
 			final AdempiereException ex = new AdempiereException("@" + ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
-																		 + "\nStorage: " + ol);
+					+ "\nStorage: " + ol);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 	}
@@ -270,8 +271,8 @@ public class C_OrderLine
 		final boolean qtyOrderedLessThanZero = ol.getQtyOrdered().signum() < 0;
 
 		Check.errorIf(qtyOrderedLessThanZero,
-					  "QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
-					  ol.getQtyOrdered(), ol, ol.getC_Order_ID());
+				"QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
+				ol.getQtyOrdered(), ol, ol.getC_Order_ID());
 	}
 
 	// task 06727
@@ -376,11 +377,11 @@ public class C_OrderLine
 		orderLine.setM_DiscountSchemaBreak(null);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-										 .orderLine(orderLine)
-										 .resultUOM(ResultUOM.PRICE_UOM)
-										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
-										 .updateLineNetAmt(true)
-										 .build());
+				.orderLine(orderLine)
+				.resultUOM(ResultUOM.PRICE_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
+				.updateLineNetAmt(true)
+				.build());
 
 		logger.debug("Setting TaxAmtInfo for {}", orderLine);
 		orderLineBL.setTaxAmtInfo(orderLine);
@@ -428,7 +429,7 @@ public class C_OrderLine
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		orderBL.setWeightFromLines(order);
-		
+
 		saveRecord(order);
 	}
 }

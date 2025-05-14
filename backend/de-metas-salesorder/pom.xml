@@ -14,6 +14,7 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
+        <migration-sql-basedir>70-de-metas-salesorder</migration-sql-basedir>
     </properties>
 
     <version>10.0.0</version>

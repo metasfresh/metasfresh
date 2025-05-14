@@ -22,11 +22,10 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
-import java.math.MathContext;
-import java.util.Date;
-import java.util.Properties;
-
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -34,9 +33,9 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
+import java.math.MathContext;
+import java.util.Date;
+import java.util.Properties;
 
 public interface IAttributesBL extends ISingletonService
 {
@@ -52,6 +51,8 @@ public interface IAttributesBL extends ISingletonService
 	 */
 	IAttributeValueGenerator getAttributeValueGeneratorOrNull(org.compiere.model.I_M_Attribute attributeParam);
 
+	IAttributeValuesProvider createAttributeValuesProvider(AttributeId attributeId);
+
 	/**
 	 * Retrieves {@link IAttributeValuesProvider} to be used for given attribute (if any)
 	 *
@@ -61,7 +62,7 @@ public interface IAttributesBL extends ISingletonService
 
 	/**
 	 * Gets product attribute by ID.
-	 *
+	 * <p>
 	 * If the attribute is applicable to given product (i.e. it's included in product's attribute set), the attribute will be returned.
 	 * Else, null will be returned.
 	 *

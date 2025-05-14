@@ -438,7 +438,7 @@ public class MContainer extends X_CM_Container
 					",0, 'Y', now(), 0, now(), 0,").append (
 					getAD_Tree_ID ()).append (",").append (get_ID ()).append (
 					", 0, 999)");
-			int no = DB.executeUpdate (sb.toString (), get_TrxName ());
+			int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString (), get_TrxName ());
 			if (no > 0)
 				log.debug("#" + no + " - TreeType=CMC");
 			else
@@ -482,7 +482,7 @@ public class MContainer extends X_CM_Container
 		StringBuffer sb = new StringBuffer ("DELETE FROM AD_TreeNodeCMC ")
 			.append (" WHERE Node_ID=").append (get_ID ()).append (
 				" AND AD_Tree_ID=").append (getAD_Tree_ID ());
-		int no = DB.executeUpdate (sb.toString (), get_TrxName ());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString (), get_TrxName ());
 		if (no > 0)
 			log.debug("#" + no + " - TreeType=CMC");
 		else
@@ -505,7 +505,7 @@ public class MContainer extends X_CM_Container
 		StringBuffer sb = new StringBuffer ("DELETE FROM AD_TreeNodeCMC ")
 			.append (" WHERE Node_ID=").append (get_IDOld ()).append (
 				" AND AD_Tree_ID=").append (getAD_Tree_ID ());
-		int no = DB.executeUpdate (sb.toString (), get_TrxName ());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString (), get_TrxName ());
 		// If 0 than there is nothing to delete which is okay.
 		if (no > 0)
 			log.debug("#" + no + " - TreeType=CMC");

@@ -60,6 +60,10 @@ public class JsonHU
 
 	int numberOfAggregatedHUs;
 
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String topLevelParentId;
+
 	@NonNull
 	@Singular
 	List<JsonHUProduct> products;
@@ -95,6 +99,10 @@ public class JsonHU
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean isDisposalPending;
 
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String packingInstructionName;
+
 	public JsonHU(
 			@Nullable final String id,
 			@Nullable final String huStatus,
@@ -104,6 +112,7 @@ public class JsonHU
 			@Nullable final String warehouseValue,
 			@Nullable final String locatorValue,
 			final int numberOfAggregatedHUs,
+			@Nullable final String topLevelParentId,
 			@NonNull final List<JsonHUProduct> products,
 			@Nullable final JsonHUAttributeCodeAndValues attributes,
 			@Nullable final JsonHUAttributes attributes2,
@@ -112,7 +121,8 @@ public class JsonHU
 			@Nullable final JsonHUType jsonHUType,
 			@Nullable final List<JsonHU> includedHUs,
 			@Nullable final JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses,
-			final Boolean isDisposalPending)
+			final Boolean isDisposalPending,
+			@Nullable final String packingInstructionName)
 	{
 		this.id = id;
 		this.huStatus = huStatus;
@@ -122,6 +132,7 @@ public class JsonHU
 		this.warehouseValue = warehouseValue;
 		this.locatorValue = locatorValue;
 		this.numberOfAggregatedHUs = numberOfAggregatedHUs;
+		this.topLevelParentId = topLevelParentId;
 		this.products = products;
 		this.clearanceStatus = clearanceStatus;
 		this.clearanceNote = clearanceNote;
@@ -129,6 +140,7 @@ public class JsonHU
 		this.includedHUs = includedHUs;
 		this.allowedHUClearanceStatuses = allowedHUClearanceStatuses;
 		this.isDisposalPending = isDisposalPending;
+		this.packingInstructionName = packingInstructionName;
 
 		if (attributes2 == null)
 		{

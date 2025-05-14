@@ -50,12 +50,18 @@ public interface IRangeAwareParams extends IParams
 	 */
 	boolean getParameter_ToAsBool(String parameterName);
 
+	/**
+	 * @return timestamp value or <code>null</code> if parameter is missing
+	 */
 	@Nullable
 	Timestamp getParameter_ToAsTimestamp(String parameterName);
 
 	@Nullable
 	LocalDate getParameter_ToAsLocalDate(String parameterName);
 
+	/**
+	 * @return {@link ZonedDateTime} or <code>null</code> if parameter is missing
+	 */
 	@Nullable
 	ZonedDateTime getParameter_ToAsZonedDateTime(String parameterName);
 

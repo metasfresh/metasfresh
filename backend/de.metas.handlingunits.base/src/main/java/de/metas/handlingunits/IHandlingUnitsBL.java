@@ -42,6 +42,7 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
@@ -116,6 +117,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return default storage factory
 	 */
 	IHUStorageFactory getStorageFactory();
+
+	IHUProductStorage getSingleHUProductStorage(HuId huId);
+
+	IHUProductStorage getSingleHUProductStorage(I_M_HU hu);
 
 	IMutableHUContext createMutableHUContext();
 
@@ -512,6 +517,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
 	@Nullable
+	I_M_HU_PI getEffectivePI(@NonNull HuId huId);
+
+	@Nullable
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
 	{
 		return BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
@@ -643,6 +651,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	void setHUStatus(@NonNull I_M_HU hu, @NonNull String huStatus);
 
 	boolean isEmptyStorage(I_M_HU hu);
+
+	boolean isDestroyedOrEmptyStorage(I_M_HU hu);
 
 	void setClearanceStatusRecursively(final HuId huId, final ClearanceStatusInfo statusInfo);
 

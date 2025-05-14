@@ -14,6 +14,7 @@ import de.metas.ui.web.view.SqlViewCustomizer;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -142,11 +143,22 @@ public class SqlViewBindingFactory
 		final Set<String> displayFieldNames = entityDescriptor.getFieldNamesWithCharacteristic(key.getRequiredFieldCharacteristic());
 		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFilterDescriptors();
+		final ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors = entityDescriptor.getIncludedEntities()
+				.stream()
+				.filter(includedEntityDescriptor -> SqlDocumentEntityDataBindingDescriptor.isAssignableFrom(includedEntityDescriptor.getDataBinding()))
+				.collect(ImmutableMap.toImmutableMap(
+						DocumentEntityDescriptor::getDetailId,
+						includedEntityDescriptor -> SqlDocumentEntityDataBindingDescriptor.cast(includedEntityDescriptor.getDataBinding())
+				));
 
-		final SqlViewBinding.Builder builder = createBuilderForEntityBindingAndFieldNames(entityBinding, displayFieldNames)
+		final SqlViewBinding.Builder builder = prepareSqlViewBinding(entityBinding)
+				.includedEntitiesDescriptors(includedEntitiesDescriptors)
+				.fields(createViewFieldBindings(entityBinding, displayFieldNames))
+				.displayFieldNames(displayFieldNames)
 				.filterDescriptors(filterDescriptors)
 				.refreshViewOnChangeEvents(entityDescriptor.isRefreshViewOnChangeEvents())
-				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId));
+				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId))
+				.queryIfNoFilters(entityDescriptor.isQueryIfNoFilters());
 
 		builder.filterConverters(filterConverters);
 
@@ -166,20 +178,6 @@ public class SqlViewBindingFactory
 		return builder.build();
 	}
 
-	private SqlViewBinding.Builder createBuilderForEntityBindingAndFieldNames(
-			@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding,
-			@NonNull final Set<String> displayFieldNames)
-	{
-		final SqlViewBinding.Builder builder = prepareSqlViewBinding(entityBinding);
-
-		entityBinding.getFields()
-				.stream()
-				.map(documentField -> createViewFieldBinding(documentField, displayFieldNames))
-				.forEach(builder::field);
-		builder.displayFieldNames(displayFieldNames);
-		return builder;
-	}
-
 	private static SqlViewBinding.Builder prepareSqlViewBinding(@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding)
 	{
 		return SqlViewBinding.builder()
@@ -187,6 +185,16 @@ public class SqlViewBindingFactory
 				.tableAlias(entityBinding.getTableAlias())
 				.sqlWhereClause(entityBinding.getSqlWhereClause())
 				.defaultOrderBys(entityBinding.getDefaultOrderBys());
+	}
+
+	public static ImmutableList<SqlViewRowFieldBinding> createViewFieldBindings(
+			@NonNull final SqlDocumentEntityDataBindingDescriptor entityBinding,
+			@NonNull final Collection<String> availableDisplayColumnNames)
+	{
+		return entityBinding.getFields()
+				.stream()
+				.map(documentField -> createViewFieldBinding(documentField, availableDisplayColumnNames))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public static SqlViewRowFieldBinding createViewFieldBinding(
@@ -203,6 +211,7 @@ public class SqlViewBindingFactory
 				.widgetType(documentField.getWidgetType())
 				.virtualColumn(documentField.isVirtualColumn())
 				.mandatory(documentField.isMandatory())
+				.hideGridColumnIfEmpty(documentField.isHideGridColumnIfEmpty())
 				//
 				.sqlValueClass(documentField.getSqlValueClass())
 				.sqlSelectValue(documentField.getSqlSelectValue())

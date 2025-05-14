@@ -74,7 +74,7 @@ import java.util.stream.Stream;
  */
 public final class SqlViewSelectionQueryBuilder
 {
-	private static final transient Logger logger = LogManager.getLogger(SqlViewSelectionQueryBuilder.class);
+	private static final Logger logger = LogManager.getLogger(SqlViewSelectionQueryBuilder.class);
 
 	private final SqlViewBinding _viewBinding;
 	private boolean applySecurityRestrictions = true;
@@ -122,6 +122,7 @@ public final class SqlViewSelectionQueryBuilder
 		return _viewBinding.getFieldByFieldName(fieldName).getSqlSelectValue();
 	}
 
+	@Nullable
 	private SqlSelectDisplayValue getSqlSelectDisplayValue(final String fieldName)
 	{
 		return _viewBinding.getFieldByFieldName(fieldName).getSqlSelectDisplayValue();
@@ -196,6 +197,16 @@ public final class SqlViewSelectionQueryBuilder
 	{
 		SqlAndParams sqlCreateSelectionLines;
 		SqlAndParams sqlCreateSelection;
+		@Builder.Default
+		boolean isAnyFilterApplied = true;
+	}
+
+	@Value
+	@lombok.Builder
+	private static class SqlAndParamsAndFlags
+	{
+		@NonNull SqlAndParams sql;
+		boolean isAnyFilterApplied;
 	}
 
 	public SqlCreateSelection buildSqlCreateSelectionFrom(
@@ -208,18 +219,25 @@ public final class SqlViewSelectionQueryBuilder
 	{
 		if (!hasGroupingFields())
 		{
-			final SqlAndParams sqlCreateSelection = buildSqlCreateSelection_WithoutGrouping(viewEvalCtx, newViewId, filters, orderBys, queryLimit, filterConverterCtx);
-			return SqlCreateSelection.builder().sqlCreateSelection(sqlCreateSelection).build();
+			final SqlAndParamsAndFlags sqlCreateSelection = buildSqlCreateSelection_WithoutGrouping(viewEvalCtx, newViewId, filters, orderBys, queryLimit, filterConverterCtx);
+			return SqlCreateSelection.builder()
+					.sqlCreateSelection(sqlCreateSelection.getSql())
+					.isAnyFilterApplied(sqlCreateSelection.isAnyFilterApplied())
+					.build();
 		}
 		else
 		{
-			final SqlAndParams sqlCreateSelectionLines = buildSqlCreateSelectionLines_WithGrouping(viewEvalCtx, newViewId, filters, queryLimit, filterConverterCtx);
+			final SqlAndParamsAndFlags sqlCreateSelectionLines = buildSqlCreateSelectionLines_WithGrouping(viewEvalCtx, newViewId, filters, queryLimit, filterConverterCtx);
 			final SqlAndParams sqlCreateSelection = buildSqlCreateSelectionFromSelectionLines(viewEvalCtx, newViewId, orderBys);
-			return SqlCreateSelection.builder().sqlCreateSelection(sqlCreateSelection).sqlCreateSelectionLines(sqlCreateSelectionLines).build();
+			return SqlCreateSelection.builder()
+					.sqlCreateSelection(sqlCreateSelection)
+					.sqlCreateSelectionLines(sqlCreateSelectionLines.getSql())
+					.isAnyFilterApplied(sqlCreateSelectionLines.isAnyFilterApplied())
+					.build();
 		}
 	}
 
-	private SqlAndParams buildSqlCreateSelection_WithoutGrouping(
+	private SqlAndParamsAndFlags buildSqlCreateSelection_WithoutGrouping(
 			@NonNull final ViewEvaluationCtx viewEvalCtx,
 			@NonNull final ViewId newViewId,
 			@Nullable final DocumentFilterList filters,
@@ -238,10 +256,12 @@ public final class SqlViewSelectionQueryBuilder
 
 		SqlAndParams sqlOrderBy_FTS_Line = SqlAndParams.EMPTY;
 		SqlAndParams sqlJoinFTSTable = SqlAndParams.EMPTY;
+		boolean isAnyFilterApplied = false;
 		if (filterSqlExpression.getFilterByFTS() != null)
 		{
 			sqlOrderBy_FTS_Line = filterSqlExpression.getFilterByFTS().buildOrderBy("fts");
 			sqlJoinFTSTable = filterSqlExpression.getFilterByFTS().buildInnerJoinClause(sqlTableAlias, "fts");
+			isAnyFilterApplied = true;
 		}
 
 		final SqlAndParamsExpression sqlOrderBy = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
@@ -282,6 +302,7 @@ public final class SqlViewSelectionQueryBuilder
 			if (sqlWhereClause != null && !sqlWhereClause.isEmpty())
 			{
 				sqlInsert.append("\n AND (\n").append(sqlWhereClause).append("\n)");
+				isAnyFilterApplied = true;
 			}
 		}
 
@@ -294,10 +315,13 @@ public final class SqlViewSelectionQueryBuilder
 
 		//
 		// Evaluate the final SQL query
-		return sqlInsert.build().evaluate(viewEvalCtx.toEvaluatee());
+		return SqlAndParamsAndFlags.builder()
+				.sql(sqlInsert.build().evaluate(viewEvalCtx.toEvaluatee()))
+				.isAnyFilterApplied(isAnyFilterApplied)
+				.build();
 	}
 
-	private SqlAndParams buildSqlCreateSelectionLines_WithGrouping(
+	private SqlAndParamsAndFlags buildSqlCreateSelectionLines_WithGrouping(
 			@NonNull final ViewEvaluationCtx viewEvalCtx,
 			@NonNull final ViewId newViewId,
 			@Nullable final DocumentFilterList filters,
@@ -348,11 +372,13 @@ public final class SqlViewSelectionQueryBuilder
 
 		//
 		// WHERE clause (from query)
+		boolean isAnyFilterApplied = false;
 		{
 			final SqlAndParamsExpression sqlWhereClause = filterSqlExpression.getWhereClauseConsideringAlwaysIncludeSqls();
 			if (sqlWhereClause != null && !sqlWhereClause.isEmpty())
 			{
 				sqlInsert.append("\n AND (\n").append(sqlWhereClause).append("\n)");
+				isAnyFilterApplied = true;
 			}
 		}
 
@@ -369,7 +395,10 @@ public final class SqlViewSelectionQueryBuilder
 
 		//
 		// Evaluate the final SQL query
-		return sqlInsert.build().evaluate(viewEvalCtx.toEvaluatee());
+		return SqlAndParamsAndFlags.builder()
+				.sql(sqlInsert.build().evaluate(viewEvalCtx.toEvaluatee()))
+				.isAnyFilterApplied(isAnyFilterApplied)
+				.build();
 	}
 
 	public SqlAndParams buildSqlCreateSelectionFromSelectionLines(

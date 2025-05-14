@@ -22,16 +22,15 @@ package de.metas.calendar;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Properties;
-
+import de.metas.document.DocBaseType;
+import de.metas.util.ISingletonService;
 import org.adempiere.exceptions.PeriodClosedException;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 
-import de.metas.util.ISingletonService;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Properties;
 
 public interface IPeriodBL extends ISingletonService
 {
@@ -43,9 +42,9 @@ public interface IPeriodBL extends ISingletonService
 	 * @param AD_Org_ID
 	 * @throws PeriodClosedException if the given period is closed
 	 */
-	void testPeriodOpen(Properties ctx, Timestamp dateAcct, String docBaseType, int AD_Org_ID) throws PeriodClosedException;
+	void testPeriodOpen(Properties ctx, Timestamp dateAcct, DocBaseType docBaseType, int AD_Org_ID) throws PeriodClosedException;
 
-	boolean isOpen(Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID);
+	boolean isOpen(Properties ctx, Timestamp DateAcct, DocBaseType DocBaseType, int AD_Org_ID);
 
 	/**
 	 * Suggests which shall be the PeriodStatus for given period action

@@ -24,6 +24,8 @@ package de.metas.workflow.rest_api.model.facets;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Splitter;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -34,7 +36,9 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @EqualsAndHashCode
 public final class WorkflowLaunchersFacetId
@@ -43,6 +47,7 @@ public final class WorkflowLaunchersFacetId
 	@NonNull private final String value;
 
 	static final String SEPARATOR = "_";
+	private static final String QTY_SEPARATOR = "|";
 
 	private WorkflowLaunchersFacetId(
 			@NonNull final WorkflowLaunchersFacetGroupId groupId,
@@ -94,6 +99,12 @@ public final class WorkflowLaunchersFacetId
 		return ofString(groupId, localDate.toString());
 	}
 
+	// NOTE: Quantity class is not accessible from this project :(
+	public static WorkflowLaunchersFacetId ofQuantity(@NonNull final WorkflowLaunchersFacetGroupId groupId, @NonNull final BigDecimal value, @NonNull final RepoIdAware uomId)
+	{
+		return ofString(groupId, value + QTY_SEPARATOR + uomId.getRepoId());
+	}
+
 	@Override
 	@Deprecated
 	public String toString() {return toJsonString();}
@@ -102,14 +113,38 @@ public final class WorkflowLaunchersFacetId
 	@NonNull
 	public String toJsonString() {return groupId.getAsString() + SEPARATOR + value;}
 
-	public boolean isGroupId(@Nullable final WorkflowLaunchersFacetGroupId expectedGroupId)
-	{
-		return WorkflowLaunchersFacetGroupId.equals(this.groupId, expectedGroupId);
-	}
-
+	@NonNull
 	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> type) {return RepoIdAwares.ofObject(value, type);}
 
+	@NonNull
 	public LocalDate getAsLocalDate() {return LocalDate.parse(value);}
+
+	// NOTE: Quantity class is not accessible from this project :(
+	@NonNull
+	public ImmutablePair<BigDecimal, Integer> getAsQuantity()
+	{
+		try
+		{
+			final List<String> parts = Splitter.on(QTY_SEPARATOR).splitToList(value);
+			if (parts.size() != 2)
+			{
+				throw new AdempiereException("Cannot get Quantity from " + this);
+			}
+			
+			return ImmutablePair.of(new BigDecimal(parts.get(0)), Integer.parseInt(parts.get(1)));
+		}
+		catch (AdempiereException ex)
+		{
+			throw ex;
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Cannot get Quantity from " + this, ex);
+		}
+	}
+
+	@NonNull
+	public String getAsString() {return value;}
 
 	@NonNull
 	public <T> T deserializeTo(@NonNull final Class<T> targetClass)

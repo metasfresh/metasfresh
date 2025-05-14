@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Optional;
 
 public interface ISysConfigBL extends ISingletonService
 {
@@ -19,6 +20,12 @@ public interface ISysConfigBL extends ISingletonService
 
 	@Nullable
 	String getValue(@NonNull String name);
+
+	@NonNull
+	default Optional<String> getValueOptional(final String name)
+	{
+		return Optional.ofNullable(getValue(name));
+	}
 
 	int getIntValue(String name, int defaultValue);
 
@@ -59,6 +66,8 @@ public interface ISysConfigBL extends ISingletonService
 	String getValue(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId);
 
 	int getIntValue(String name, int defaultValue, int AD_Client_ID, int AD_Org_ID);
+
+	int getIntValue(String name, int defaultValue, @NonNull ClientAndOrgId clientAndOrgId);
 
 	boolean getBooleanValue(String name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
 

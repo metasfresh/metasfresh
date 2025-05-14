@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -199,6 +200,7 @@ final class PickingV2TestHelper
 				sourceHUsRepository,
 				huReservationService,
 				bpartnersService,
+				ADReferenceService.newMocked(),
 				InventoryService.newInstanceForUnitTesting()
 		);
 

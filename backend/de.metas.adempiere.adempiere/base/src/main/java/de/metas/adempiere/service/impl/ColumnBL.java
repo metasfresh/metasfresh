@@ -1,9 +1,8 @@
 package de.metas.adempiere.service.impl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.table.exception.NoSingleKeyColumnException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -13,9 +12,9 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.util.Check;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -43,36 +42,6 @@ public class ColumnBL implements IColumnBL
 {
 
 	@Override
-	public boolean isRecordIdColumnName(final String columnName)
-	{
-		if (columnName == null)
-		{
-			// should not happen
-			return false;
-		}
-
-		// name must end with "Record_ID"
-		if (!columnName.endsWith(ITableRecordReference.COLUMNNAME_Record_ID))
-		{
-			return false;
-		}
-
-		// classical case
-		if (columnName.equals(ITableRecordReference.COLUMNNAME_Record_ID))
-		{
-			return true;
-		}
-
-		// Column name must end with "_Record_ID"
-		if (!columnName.endsWith("_" + ITableRecordReference.COLUMNNAME_Record_ID))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	@Override
 	public int getContextADTableID(final Properties m_ctx, final int m_curWindowNo, final String columnName)
 	{
 		if (columnName == null)
@@ -81,7 +50,7 @@ public class ColumnBL implements IColumnBL
 			return 0;
 		}
 
-		if (!isRecordIdColumnName(columnName))
+		if (!IColumnBL.isRecordIdColumnName(columnName))
 		{
 			return 0;
 		}

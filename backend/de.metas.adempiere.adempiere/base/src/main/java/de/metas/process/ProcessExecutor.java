@@ -456,7 +456,7 @@ public final class ProcessExecutor
 		}
 	}   // startWorkflow
 
-	private void startJavaOrScriptProcess() throws Exception
+	private void startJavaOrScriptProcess()
 	{
 		logger.debug("startProcess: {}", pi);
 
@@ -561,12 +561,8 @@ public final class ProcessExecutor
 	{
 		final ProcessInfo pi = this.pi;
 
-		final JavaProcess process = pi.newProcessClassInstanceOrNull();
-		if (process == null)
-		{
-			throw new AdempiereException("Cannot create process class instance for " + pi); // shall not happen
-		}
-
+		final JavaProcess process = pi.newProcessClassInstance();
+		
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 
 		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))

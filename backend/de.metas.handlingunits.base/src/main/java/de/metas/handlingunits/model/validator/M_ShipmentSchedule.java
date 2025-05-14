@@ -47,12 +47,12 @@ public class M_ShipmentSchedule
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	
+
 	private final ShipmentScheduleInvalidateBL invalidSchedulesService;
 	private final ShipmentScheduleUpdater shipmentScheduleUpdater;
 
 	public M_ShipmentSchedule(
-			@NonNull final ShipmentScheduleInvalidateBL invalidSchedulesService, 
+			@NonNull final ShipmentScheduleInvalidateBL invalidSchedulesService,
 			@NonNull final ShipmentScheduleUpdater shipmentScheduleUpdater)
 	{
 		this.invalidSchedulesService = invalidSchedulesService;
@@ -138,7 +138,7 @@ public class M_ShipmentSchedule
 		{
 			return;
 		}
-		
+
 		invalidSchedulesService.notifySegmentChangedForShipmentScheduleInclSched(shipmentSchedule); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery
 	}
 }

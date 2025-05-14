@@ -15,29 +15,10 @@
 	<parameter name="RECORD_ID" class="java.lang.Integer"/>
 	<parameter name="ad_language" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT
-	st.description 	as description,
-	st.documentno 	as documentno,
-	st.datedoc 	as datedoc,
-	Trim(
-		COALESCE(bp.name || E'\n', '') ||
-		COALESCE(bpl.Address || E'\n', '')
-	) as PickupLocation,
-	t.name,
-	st.DateToBeFetched,
-	us.name as UserName
-FROM
-	M_ShipperTransportation st
-	INNER JOIN C_BPartner_Location bpl ON st.Shipper_Location_ID = bpl.C_BPartner_Location_ID AND bpl.isActive = 'Y'
-	INNER JOIN C_BPartner bp ON bpl.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-	INNER JOIN C_Location l ON bpl.C_Location_ID = l.C_Location_ID AND l.isActive = 'Y'
-	LEFT OUTER JOIN AD_User us ON st.SalesRep_ID = us.AD_User_ID AND us.isActive = 'Y'
-	LEFT OUTER JOIN M_Tour_Instance ti ON st.M_ShipperTransportation_ID = ti.M_ShipperTransportation_ID AND ti.isActive = 'Y'
-	LEFT OUTER JOIN M_Tour t ON ti.M_Tour_ID = t.M_Tour_ID AND t.isActive = 'Y'
-WHERE
-	st.M_ShipperTransportation_ID = $P{RECORD_ID}
-	AND st.isActive = 'Y'
-;]]>
+		<![CDATA[SELECT *
+FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Description($P{RECORD_ID});
+
+]]>
 	</queryString>
 	<field name="description" class="java.lang.String"/>
 	<field name="documentno" class="java.lang.String"/>

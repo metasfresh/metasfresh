@@ -11,6 +11,14 @@ import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
 import PropTypes from 'prop-types';
 
+const computeWidgetTypeClass = (widgetType, fieldsCount) => {
+  if (fieldsCount > 1) {
+    return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
+  } else {
+    return 'widgetType-' + widgetType;
+  }
+};
+
 /**
  * @file Class based component.
  * @module RawWidget
@@ -39,13 +47,8 @@ export class RawWidget extends PureComponent {
     const { autoFocus, textSelected } = this.props;
     const { rawWidget } = this;
 
-    if (rawWidget.current && autoFocus) {
-      try {
-        rawWidget.current.focus();
-        this.setState({ isFocused: true });
-      } catch (e) {
-        console.error(`Custom widget doesn't have 'focus' function defined`);
-      }
+    if (autoFocus) {
+      this.focus();
     }
 
     if (textSelected) {
@@ -58,6 +61,19 @@ export class RawWidget extends PureComponent {
   componentWillUnmount() {
     this.mounted = false;
   }
+
+  focus = () => {
+    const { rawWidget } = this;
+
+    if (rawWidget.current) {
+      try {
+        rawWidget.current.focus();
+        this.setState({ isFocused: true });
+      } catch (e) {
+        console.error(`Custom widget doesn't have 'focus' function defined`);
+      }
+    }
+  };
 
   /**
    * @method getCachedValue
@@ -178,14 +194,9 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method handleBlurWithParams
-   * @summary on blurring the widget field enable shortcuts/key event listeners
-   * and patch the field if necessary
-   *
-   * @param {*} widgetField
-   * @param {*} value
-   * @param {*} id
+   * @summary on blurring the widget field enable shortcuts/key event listeners and patch the field if necessary
    */
-  handleBlurWithParams = (widgetField, value, id) => {
+  handleBlurWithParams = (widgetField, value, id, valueTo) => {
     const {
       allowShortcut,
       handleBlur,
@@ -202,7 +213,7 @@ export class RawWidget extends PureComponent {
         listenOnKeysTrue && listenOnKeysTrue();
 
         if (widgetField) {
-          this.handlePatch(widgetField, value, id);
+          this.handlePatch(widgetField, value, id, valueTo);
         }
       });
     }
@@ -210,16 +221,18 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method handleBlur
-   * @summary Wrapper around `handleBlurWithParams` to grab the missing
-   * parameters and avoid anonymous function in event handlers
-   * @param {*} e - DOM event
+   * @summary Wrapper around `handleBlurWithParams` to grab the missing parameters and avoid anonymous function in event handlers
    */
-  handleBlur = (e) => {
-    const { filterWidget, fields, id } = this.props;
-    const value = e.target.value;
+  handleBlur = (e, isValueTo = false) => {
+    const { filterWidget, fields, id, widgetData } = this.props;
+
+    const valueToSet = e.target.value;
+    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
+    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+
     const widgetField = getWidgetField({ filterWidget, fields });
 
-    this.handleBlurWithParams(widgetField, value, id);
+    this.handleBlurWithParams(widgetField, value, id, valueTo);
   };
 
   /**
@@ -239,16 +252,26 @@ export class RawWidget extends PureComponent {
    * @method handleKeyDown
    * @summary key handler for the widgets. For number fields we're suppressing up/down
    *          arrows to enable table row navigation
-   * @param {*} e - DOM event
    */
-  handleKeyDown = (e) => {
-    const { lastFormField, widgetType, filterWidget, fields, closeTableField } =
-      this.props;
-    const value = e.target.value;
+  handleKeyDown = (e, isValueTo = false) => {
+    const {
+      propagateEnterKeyEvent,
+      widgetType,
+      filterWidget,
+      fields,
+      closeTableField,
+      id,
+      widgetData,
+    } = this.props;
     const { key } = e;
+
+    const valueToSet = e.target.value;
+    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
+    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+
     const widgetField = getWidgetField({ filterWidget, fields });
 
-    this.updateTypedCharacters(e.target.value);
+    this.updateTypedCharacters(value);
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
     const NumberWidgets = [
@@ -262,37 +285,35 @@ export class RawWidget extends PureComponent {
       (key === 'ArrowUp' || key === 'ArrowDown') &&
       NumberWidgets.includes(widgetType)
     ) {
-      closeTableField();
+      closeTableField?.();
       e.preventDefault();
 
-      return this.handlePatch(widgetField, value, null, null, true);
+      return this.handlePatch(widgetField, value, id, valueTo, true);
     }
 
     if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
-      if (key === 'Enter' && !lastFormField) {
+      if (key === 'Enter' && !propagateEnterKeyEvent) {
         e.preventDefault();
       }
 
       return key === 'Tab'
         ? this.handleBlur(e)
-        : this.handlePatch(widgetField, value);
+        : this.handlePatch(widgetField, value, id, valueTo);
     }
   };
 
-  /**
-   * @method handleChange
-   * @summary onChange event handler
-   * @param {*} e - DOM event
-   */
-  handleChange = (e) => {
-    const { handleChange, filterWidget, fields } = this.props;
+  handleChange = (e, isValueTo = false) => {
+    const { handleChange, filterWidget, fields, id, widgetData } = this.props;
+    if (!handleChange) return;
 
-    const widgetField = getWidgetField({ filterWidget, fields });
+    const widgetFieldName = getWidgetField({ filterWidget, fields });
 
-    if (handleChange) {
-      this.updateTypedCharacters(e.target.value);
-      handleChange(widgetField, e.target.value);
-    }
+    const valueToSet = e.target.value;
+    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
+    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+
+    this.updateTypedCharacters(value);
+    handleChange(widgetFieldName, value, id, valueTo);
   };
 
   /**
@@ -505,12 +526,10 @@ export class RawWidget extends PureComponent {
       isModal,
       handlePatch,
       widgetType,
+      widgetSize,
       handleZoomInto,
       dataEntry,
       subentity,
-      fieldFormGroupClass,
-      fieldLabelClass,
-      fieldInputClass,
     } = this.props;
 
     const fieldColSize = this.getAdaptedFieldColSize();
@@ -551,39 +570,30 @@ export class RawWidget extends PureComponent {
       .map((field) => 'form-field-' + field.field)
       .join(' ');
 
-    let labelClass;
-    let fieldClass;
-    let formGroupClass = '';
-
+    let labelClass = '';
+    let fieldClass = '';
     if (quickInput) {
-      labelClass = fieldLabelClass;
-      fieldClass = fieldInputClass;
-      formGroupClass = fieldFormGroupClass;
+      labelClass = '';
+      fieldClass = '';
+    } else if (dataEntry) {
+      labelClass = 'col-sm-5';
+      fieldClass = 'col-sm-7';
+    } else if ((type === 'primary' || noLabel) && !oneLineException) {
+      labelClass = !noLabel ? 'col-sm-12 panel-title' : '';
+      fieldClass = 'col-sm-12';
+    } else if (type === 'primaryLongLabels') {
+      labelClass = 'col-sm-6';
+      fieldClass = 'col-sm-6';
     } else {
-      labelClass = dataEntry ? 'col-sm-5' : '';
-      if (!labelClass) {
-        labelClass =
-          type === 'primary' && !oneLineException
-            ? 'col-sm-12 panel-title'
-            : type === 'primaryLongLabels'
-            ? 'col-sm-6'
-            : 'col-sm-3';
-      }
+      labelClass = 'col-sm-3';
+      fieldClass = fieldColSize;
+    }
 
-      fieldClass = dataEntry ? 'col-sm-7' : '';
-      if (!fieldClass) {
-        fieldClass =
-          ((type === 'primary' || noLabel) && !oneLineException
-            ? 'col-sm-12 '
-            : type === 'primaryLongLabels'
-            ? 'col-sm-6'
-            : fieldColSize + ' ') +
-          (fields[0].devices ? 'form-group-flex' : '');
-      }
+    if (fields[0].devices) {
+      fieldClass += ' form-group-flex';
     }
 
     const labelProps = {};
-
     if (!noLabel && caption && fields[0].supportZoomInto) {
       labelProps.onClick = () => handleZoomInto(fields[0].field);
     }
@@ -592,92 +602,89 @@ export class RawWidget extends PureComponent {
       <div
         className={classnames(
           'form-group',
-          formGroupClass,
           {
+            row: !quickInput,
             'form-group-table': rowId && !isModal,
           },
+          computeWidgetTypeClass(widgetType, fields.length),
+          widgetSize ? 'widgetSize-' + widgetSize : '',
           widgetFieldsName
         )}
       >
-        <div className="row">
-          {captionElement || null}
-          {!noLabel && caption && (
-            <label
-              className={classnames('form-control-label', labelClass, {
-                'input-zoom': quickInput && fields[0].supportZoomInto,
-                'zoom-into': fields[0].supportZoomInto,
-              })}
-              title={description || caption}
-              {...labelProps}
-            >
-              {caption}
-            </label>
-          )}
-          <div
-            className={fieldClass}
-            onMouseEnter={
-              validStatus && !validStatus.valid
-                ? this.showErrorPopup
-                : undefined
-            }
-            onMouseLeave={this.hideErrorPopup}
+        {captionElement || null}
+        {!noLabel && caption && (
+          <label
+            className={classnames('form-control-label', labelClass, {
+              'zoom-into': fields[0].supportZoomInto,
+            })}
+            title={description || caption}
+            {...labelProps}
           >
-            {!clearedFieldWarning && warning && (
-              <div
-                className={classnames('field-warning', {
-                  'field-warning-message': warning,
-                  'field-error-message': warning && warning.error,
-                })}
-                onMouseEnter={() => this.toggleTooltip(true)}
-                onMouseLeave={() => this.toggleTooltip(false)}
-              >
-                <span>{warning.caption}</span>
-                <i
-                  className="meta-icon-close-alt"
-                  onClick={() => this.clearFieldWarning(warning)}
-                />
-                {warning.message && tooltipToggled && (
-                  <Tooltips action={warning.message} type="" />
-                )}
-              </div>
-            )}
-
+            {caption}
+          </label>
+        )}
+        <div
+          className={fieldClass}
+          onMouseEnter={
+            validStatus && !validStatus.valid ? this.showErrorPopup : undefined
+          }
+          onMouseLeave={this.hideErrorPopup}
+        >
+          {!clearedFieldWarning && warning && (
             <div
-              className={classnames('input-body-container', {
-                focused: isFocused,
+              className={classnames('field-warning', {
+                'field-warning-message': warning,
+                'field-error-message': warning && warning.error,
               })}
-              title={valueDescription}
+              onMouseEnter={() => this.toggleTooltip(true)}
+              onMouseLeave={() => this.toggleTooltip(false)}
             >
-              <CSSTransition
-                key={`trans_${fields[0].fieldName}`}
-                className="fade"
-                timeout={{ enter: 200, exit: 200 }}
-              >
-                <div>
-                  {errorPopup &&
-                    validStatus &&
-                    !validStatus.valid &&
-                    !validStatus.initialValue &&
-                    this.renderErrorPopup(validStatus.reason)}
-                </div>
-              </CSSTransition>
-              {widgetBody}
-            </div>
-            {fields[0].devices && !widgetData[0].readonly && (
-              <DevicesWidget
-                devices={fields[0].devices}
-                tabIndex={1}
-                handleChange={(value) =>
-                  handlePatch && handlePatch(fields[0].field, value)
-                }
+              <span>{warning.caption}</span>
+              <i
+                className="meta-icon-close-alt"
+                onClick={() => this.clearFieldWarning(warning)}
               />
-            )}
+              {warning.message && tooltipToggled && (
+                <Tooltips action={warning.message} type="" />
+              )}
+            </div>
+          )}
+
+          <div
+            className={classnames('input-body-container', {
+              focused: isFocused,
+            })}
+            title={valueDescription}
+          >
+            <CSSTransition
+              key={`trans_${fields[0].fieldName}`}
+              className="fade"
+              timeout={{ enter: 200, exit: 200 }}
+            >
+              <div>
+                {errorPopup &&
+                  validStatus &&
+                  !validStatus.valid &&
+                  !validStatus.initialValue &&
+                  this.renderErrorPopup(validStatus.reason)}
+              </div>
+            </CSSTransition>
+            {widgetBody}
           </div>
-          {/* this is a special case for displaying the scan button on the right side of the field */}
-          {this.isScanQRbuttonPanel() && (
-            <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+          {fields[0].devices && !widgetData[0].readonly && (
+            <DevicesWidget
+              devices={fields[0].devices}
+              tabIndex={1}
+              handleChange={(value) =>
+                handlePatch && handlePatch(fields[0].field, value)
+              }
+            />
           )}
         </div>
+        {/* this is a special case for displaying the scan button on the right side of the field */}
+        {this.isScanQRbuttonPanel() && (
+          <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+        )}
       </div>
     );
   }
@@ -711,6 +718,7 @@ RawWidget.propTypes = {
   tabIndex: PropTypes.number,
   fullScreen: PropTypes.bool,
   widgetType: PropTypes.string,
+  widgetSize: PropTypes.string,
   fields: PropTypes.array,
   icon: PropTypes.string,
   entity: PropTypes.string,
@@ -723,7 +731,7 @@ RawWidget.propTypes = {
   isOpenDatePicker: PropTypes.bool,
   forceHeight: PropTypes.number,
   dataEntry: PropTypes.bool,
-  lastFormField: PropTypes.bool,
+  propagateEnterKeyEvent: PropTypes.bool,
   maxLength: PropTypes.number,
   isFilterActive: PropTypes.bool,
   isEdited: PropTypes.bool,
@@ -731,10 +739,6 @@ RawWidget.propTypes = {
   layoutType: PropTypes.string,
   description: PropTypes.string,
   captionElement: PropTypes.string,
-  fieldFormGroupClass: PropTypes.string,
-  fieldLabelClass: PropTypes.string,
-  fieldInputClass: PropTypes.string,
-
   //
   // Callbacks and other functions:
   allowShortcut: PropTypes.func.isRequired,

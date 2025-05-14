@@ -33,12 +33,13 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+@Getter
 @EqualsAndHashCode
 public final class DocumentSaveStatus
 {
-	public static DocumentSaveStatus unknown()
+	public static DocumentSaveStatus unknown(boolean isPresentInDatabase)
 	{
-		return STATUS_Unknown;
+		return builder().hasChangesToBeSaved(true).isPresentInDatabase(isPresentInDatabase).error(false).reason(TranslatableStrings.anyLanguage("not yet checked")).build();
 	}
 
 	public static DocumentSaveStatus saved()
@@ -51,14 +52,14 @@ public final class DocumentSaveStatus
 		return STATUS_Deleted;
 	}
 
-	public static DocumentSaveStatus notSaved(final DocumentValidStatus invalidState)
+	public static DocumentSaveStatus notSaved(@NonNull final DocumentValidStatus invalidState, @NonNull final DocumentSaveStatus previousSaveStatus)
 	{
-		return builder().hasChangesToBeSaved(true).error(true).reason(invalidState.getReason()).exception(invalidState.getException()).build();
+		return builder().hasChangesToBeSaved(true).isPresentInDatabase(previousSaveStatus.isPresentInDatabase()).error(true).reason(invalidState.getReason()).exception(invalidState.getException()).build();
 	}
 
-	public static DocumentSaveStatus error(@NonNull final Exception exception)
+	public static DocumentSaveStatus error(@NonNull final Exception exception, @NonNull final DocumentSaveStatus previousSaveStatus)
 	{
-		return builder().hasChangesToBeSaved(true).error(true).reason(AdempiereException.extractMessageTrl(exception)).exception(exception).build();
+		return builder().hasChangesToBeSaved(true).isPresentInDatabase(previousSaveStatus.isPresentInDatabase()).error(true).reason(AdempiereException.extractMessageTrl(exception)).exception(exception).build();
 	}
 
 	public static DocumentSaveStatus notSavedJustCreated()
@@ -71,35 +72,37 @@ public final class DocumentSaveStatus
 		return STATUS_SavedJustLoaded;
 	}
 
-	private static final DocumentSaveStatus STATUS_Unknown = builder().hasChangesToBeSaved(true).error(false).reason(TranslatableStrings.anyLanguage("not yet checked")).build();
-	private static final DocumentSaveStatus STATUS_Saved = builder().hasChangesToBeSaved(false).error(false).build();
-	private static final DocumentSaveStatus STATUS_Deleted = builder().hasChangesToBeSaved(false).deleted(true).error(false).build();
-	private static final DocumentSaveStatus STATUS_NotSavedJustCreated = builder().hasChangesToBeSaved(true).error(false).reason(TranslatableStrings.anyLanguage("new")).build();
-	private static final DocumentSaveStatus STATUS_SavedJustLoaded = builder().hasChangesToBeSaved(false).error(false).reason(TranslatableStrings.anyLanguage("just loaded")).build();
+	private static final DocumentSaveStatus STATUS_Saved = builder().hasChangesToBeSaved(false).isPresentInDatabase(true).error(false).build();
+	private static final DocumentSaveStatus STATUS_Deleted = builder().hasChangesToBeSaved(false).isPresentInDatabase(false).deleted(true).error(false).build();
+	private static final DocumentSaveStatus STATUS_NotSavedJustCreated = builder().hasChangesToBeSaved(true).isPresentInDatabase(false).error(false).reason(TranslatableStrings.anyLanguage("new")).build();
+	private static final DocumentSaveStatus STATUS_SavedJustLoaded = builder().hasChangesToBeSaved(false).isPresentInDatabase(true).error(false).reason(TranslatableStrings.anyLanguage("just loaded")).build();
 
-	@Getter private final boolean hasChangesToBeSaved;
-	@Getter private final boolean deleted;
-	@Getter private final boolean error;
-	@Nullable @Getter private final ITranslatableString reason;
-	@Nullable @Getter private final transient Exception exception;
+	private final boolean hasChangesToBeSaved;
+	private final boolean isPresentInDatabase;
+	private final boolean deleted;
+	private final boolean error;
+	@Nullable private final ITranslatableString reason;
+	@Nullable private final transient Exception exception;
 
-	@Getter private final boolean saved; // computed
+	private final boolean saved; // computed
 
 	@Builder
 	private DocumentSaveStatus(
 			final boolean hasChangesToBeSaved,
+			final boolean isPresentInDatabase,
 			final boolean deleted,
 			final boolean error,
 			@Nullable final ITranslatableString reason,
 			@Nullable final Exception exception)
 	{
 		this.hasChangesToBeSaved = hasChangesToBeSaved;
+		this.isPresentInDatabase = isPresentInDatabase;
 		this.deleted = deleted;
 		this.error = error;
-		this.reason = reason;
+		this.reason = !TranslatableStrings.isBlank(reason) ? reason : null;
 		this.exception = exception;
 
-		this.saved = !this.hasChangesToBeSaved && !this.error && !this.deleted;
+		this.saved = !this.hasChangesToBeSaved && this.isPresentInDatabase && !this.error && !this.deleted;
 	}
 
 	@Override
@@ -107,10 +110,11 @@ public final class DocumentSaveStatus
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("saved", saved)
-				.add("deleted", deleted)
-				.add("hasChangesToBeSaved", hasChangesToBeSaved)
-				.add("error", error)
+				.add("saved", saved ? true : null)
+				.add("presentInDatabase", isPresentInDatabase ? true : null)
+				.add("deleted", deleted ? true : null)
+				.add("hasChangesToBeSaved", hasChangesToBeSaved ? true : null)
+				.add("error", error ? true : null)
 				.add("reason", reason)
 				.toString();
 	}

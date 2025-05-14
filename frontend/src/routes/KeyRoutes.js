@@ -7,7 +7,7 @@ import { createWindow } from '../actions/WindowActions';
 
 import Board from '../containers/Board.js';
 import DocList from '../containers/DocList.js';
-import MasterWindow from '../containers/MasterWindow.js';
+import MasterWindowContainer from '../containers/MasterWindowContainer.js';
 
 /**
  * @file Module holding routes that required to be a bit more specific, than the
@@ -89,17 +89,18 @@ BoardRoute.propTypes = {
  */
 const RawMasterWindowRoute = (props) => {
   const dispatch = useDispatch();
-  const { match } = props;
+  const {
+    match: { params: matchParams },
+    location: { search: urlSearchParams },
+  } = props;
+
+  const { windowId, docId } = matchParams;
 
   useEffect(() => {
-    const {
-      match: { params },
-    } = props;
+    dispatch(createWindow({ windowId, docId, urlSearchParams }));
+  }, [windowId, docId, urlSearchParams]);
 
-    dispatch(createWindow({ windowId: params.windowId, docId: params.docId }));
-  }, [match]);
-
-  return <MasterWindow {...props} params={match.params} />;
+  return <MasterWindowContainer {...props} params={matchParams} />;
 };
 
 RawMasterWindowRoute.propTypes = {

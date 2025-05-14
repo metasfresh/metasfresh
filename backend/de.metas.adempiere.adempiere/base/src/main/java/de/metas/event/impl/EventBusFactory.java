@@ -140,9 +140,9 @@ public class EventBusFactory implements IEventBusFactory
 
 	/**
 	 * Creates the event bus.
-	 * If the remote event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE},
+	 * If the remote event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#DISTRIBUTED},
 	 * then the event bus is also bound to a remote endpoint.
-	 * Otherwise the event bus will only be local.
+	 * Otherwise, the event bus will only be local.
 	 */
 	private EventBus createEventBus(@NonNull final Topic topic, @NonNull final MeterRegistry meterRegistry)
 	{
@@ -230,7 +230,7 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	/**
-	 * @return list of available topics on which user can subscribe for UI notifications
+	 * @return set of available topics on which user can subscribe for UI notifications
 	 */
 	private Set<Topic> getAvailableUserNotificationsTopics()
 	{

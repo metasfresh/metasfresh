@@ -2,6 +2,7 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -327,8 +328,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			return false;
 		}
 
-		final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory()
-				.getSingleHUProductStorage(hu);
+		final IHUProductStorage productStorage = handlingUnitsBL.getSingleHUProductStorage(hu);
 
 		final List<MaturingConfigLine> maturingConfigLines = maturingConfigRepository.get().getByFromProductId(productStorage.getProductId());
 
@@ -340,10 +340,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final MaturingConfigLine maturingConfigLine = CollectionUtils.singleElement(maturingConfigLines);
 
 		return productPlanningDAO.find(IProductPlanningDAO.ProductPlanningQuery.builder()
-											   .productId(maturedProductId)
-											   .warehouseId(locatorId.getWarehouseId())
-											   .maturingConfigLineId(maturingConfigLine.getId())
-											   .build())
+						.productId(maturedProductId)
+						.warehouseId(locatorId.getWarehouseId())
+						.maturingConfigLineId(maturingConfigLine.getId())
+						.build())
 				.map(ProductPlanning::isMatured)
 				.orElse(false);
 	}
@@ -389,13 +389,13 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		final I_M_HU receivedHu = receivingMainProduct(ppOrderId)
 				.locatorId(locatorId)
-				.receiveVHU(Quantitys.create(ppOrder.getQtyOrdered(), UomId.ofRepoId(ppOrder.getC_UOM_ID())));
+				.receiveVHU(Quantitys.of(ppOrder.getQtyOrdered(), UomId.ofRepoId(ppOrder.getC_UOM_ID())));
 
 		attributesBL.transferAttributesForSingleProductHUs(huToBeIssued, receivedHu);
 		attributesBL.updateHUAttribute(HuId.ofRepoId(receivedHu.getM_HU_ID()), AttributeConstants.ProductionDate, SystemTime.asTimestamp());
 
 		final HUQRCode huqrCode = huqrCodesService.get().getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
-		huqrCodesService.get().assign(huqrCode, HuId.ofRepoId(receivedHu.getM_HU_ID()));
+		huqrCodesService.get().assign(huqrCode, ImmutableSet.of(HuId.ofRepoId(receivedHu.getM_HU_ID())));
 
 		processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
 	}

@@ -86,7 +86,7 @@ public class DDOrderLowLevelService
 		final BigDecimal qtyToReceiveBD = qtyOrdered // Qty that we need to move
 				.subtract(qtyDelivered); // minus: Qty that we already moved (so it's there, on hand)
 
-		return Quantitys.create(qtyToReceiveBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
+		return Quantitys.of(qtyToReceiveBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
 	}
 
 	public final Quantity getQtyToShip(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt)
@@ -103,7 +103,7 @@ public class DDOrderLowLevelService
 				.subtract(qtyDelivered) // minus: Qty that we already moved (so it's there, on hand)
 				.subtract(qtyInTransit); // minus: Qty that left source locator but did not arrived yet to target locator
 
-		return Quantitys.create(qtyToShipBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
+		return Quantitys.of(qtyToShipBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
 	}
 
 	public void completeDDOrderIfNeeded(final I_DD_Order ddOrder)
@@ -163,7 +163,7 @@ public class DDOrderLowLevelService
 
 		try
 		{
-			return productPlanningDAO.findPlant(
+			return productPlanningDAO.findPlantId(
 					adOrgId,
 					warehouseFrom,
 					ddOrderLine.getM_Product_ID(),

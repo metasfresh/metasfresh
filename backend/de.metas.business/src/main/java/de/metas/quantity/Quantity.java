@@ -3,7 +3,7 @@ package de.metas.quantity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
- import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
@@ -48,7 +48,7 @@ import static java.math.BigDecimal.ZERO;
 public final class Quantity implements Comparable<Quantity>
 {
 	/**
-	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
+	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#of(BigDecimal, UomId)}.
 	 */
 	public static Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uomRecord)
 	{
@@ -56,15 +56,25 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
+	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#of(BigDecimal, UomId)}.
 	 */
 	public static Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uomRecord)
 	{
 		return new Quantity(qty, uomRecord);
 	}
 
+	@Nullable
+	public static Quantity ofNullable(@Nullable final BigDecimal qty, @Nullable final I_C_UOM uom)
+	{
+		if (qty == null || uom == null)
+		{
+			return null;
+		}
+		return of(qty, uom);
+	}
+
 	/**
-	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
+	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#of(BigDecimal, UomId)}.
 	 */
 	public static Quantity of(final int qty, @NonNull final I_C_UOM uomRecord)
 	{
@@ -76,6 +86,7 @@ public final class Quantity implements Comparable<Quantity>
 		return QTY_INFINITE.compareTo(qty) == 0;
 	}
 
+	@Nullable
 	public static Quantity addNullables(@Nullable final Quantity qty1, @Nullable final Quantity qty2)
 	{
 		if (qty1 == null)
@@ -168,6 +179,7 @@ public final class Quantity implements Comparable<Quantity>
 	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
 	private final I_C_UOM uom;
 
+	@NonNull
 	private final BigDecimal sourceQty;
 
 	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
@@ -220,7 +232,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	@Override
 	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -269,6 +281,7 @@ public final class Quantity implements Comparable<Quantity>
 	 *
 	 * @return true if current Qty/UOM are comparable equal.
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean qtyAndUomCompareToEquals(@Nullable final Quantity quantity)
 	{
 		if (this == quantity)
@@ -295,6 +308,10 @@ public final class Quantity implements Comparable<Quantity>
 	{
 		return qty;
 	}
+
+	// intorduced because we cannot use Quantity::toBigDecimal (we have 2 methods)
+	public BigDecimal getAsBigDecimal() {return toBigDecimal();}
+
 
 	/**
 	 * @deprecated Please use {@link #toBigDecimal()}
@@ -330,6 +347,7 @@ public final class Quantity implements Comparable<Quantity>
 		return uom.getC_UOM_ID();
 	}
 
+	@NonNull
 	public UomId getUomId()
 	{
 		return UomId.ofRepoId(uom.getC_UOM_ID());
@@ -348,6 +366,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return source quantity; never null
 	 */
+	@NonNull
 	public BigDecimal getSourceQty()
 	{
 		return sourceQty;
@@ -376,7 +395,7 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 * If you don't have a {@link I_C_UOM} record, but an {@link UomId}, consider using {@link Quantitys#createZero(UomId)}.
+	 * If you don't have a {@link I_C_UOM} record, but an {@link UomId}, consider using {@link Quantitys#zero(UomId)}.
 	 *
 	 * @return ZERO quantity (using given UOM)
 	 */
@@ -429,6 +448,11 @@ public final class Quantity implements Comparable<Quantity>
 			return this;
 		}
 		return new Quantity(QTY_INFINITE, uom, QTY_INFINITE, sourceUom);
+	}
+
+	public Quantity abs()
+	{
+		return signum() >= 0 ? this : negate();
 	}
 
 	public Quantity negate()
@@ -788,7 +812,7 @@ public final class Quantity implements Comparable<Quantity>
 	private Quantity multiply(
 			@NonNull final Percent percent,
 			final int precision,
-			@NonNull RoundingMode roundingMode)
+			@NonNull final RoundingMode roundingMode)
 	{
 		final BigDecimal newQty = percent.computePercentageOf(this.qty, precision, roundingMode);
 
@@ -811,6 +835,11 @@ public final class Quantity implements Comparable<Quantity>
 		return UOMPrecision.ofInt(uom.getStdPrecision());
 	}
 
+	public Quantity setScale(@NonNull final UOMPrecision newScale)
+	{
+		return setScale(newScale, newScale.getRoundingMode());
+	}
+
 	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)
 	{
 		final BigDecimal newQty = qty.setScale(newScale.toInt(), roundingMode);
@@ -830,6 +859,31 @@ public final class Quantity implements Comparable<Quantity>
 	public boolean isWeightable()
 	{
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight();
+	}
+
+	public Percent percentageOf(@NonNull final Quantity whole)
+	{
+		assertSameUOM(this, whole);
+		return Percent.of(toBigDecimal(), whole.toBigDecimal());
+	}
+
+	private void assertUOMOrSourceUOM(@NonNull final UomId uomId)
+	{
+		if (!getUomId().equals(uomId) && !getSourceUomId().equals(uomId))
+		{
+			throw new QuantitiesUOMNotMatchingExpection("UOMs are not compatible")
+					.appendParametersToMessage()
+					.setParameter("Qty.UOM", getUomId())
+					.setParameter("assertUOM", uomId);
+		}
+	}
+
+	@NonNull
+	public BigDecimal toBigDecimalAssumingUOM(@NonNull final UomId uomId)
+	{
+		assertUOMOrSourceUOM(uomId);
+
+		return getUomId().equals(uomId) ? toBigDecimal() : getSourceQty();
 	}
 
 	public List<Quantity> spreadEqually(final int count)

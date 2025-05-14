@@ -30,6 +30,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.api.impl.PlainPrintingQueueSource;
+import de.metas.printing.frontend.FrontendPrinter;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingDataFactory;
@@ -38,7 +39,6 @@ import de.metas.printing.printingdata.PrintingSegment;
 import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.archive.api.ArchivePrintOutStatus;
@@ -83,7 +83,7 @@ public class PrintOutputFacade
 	}
 
 	public void print(@NonNull final IPrintingQueueSource source,
-			@NonNull final IPrintJobBL.ContextForAsyncProcessing printJobContext)
+					  @NonNull final IPrintJobBL.ContextForAsyncProcessing printJobContext)
 	{
 		final Iterator<I_C_Printing_Queue> it = source.createItemsIterator();
 		while (it.hasNext())
@@ -100,17 +100,36 @@ public class PrintOutputFacade
 				final List<PrintingData> printingDataForExternalSystems = new ArrayList<>();
 				for (final PrintingData printingDataItem : printingData)
 				{
-					final PrintingData printingDataToStore = printingDataItem.onlyWithType(OutputType.Store);
-					final boolean hasSegmentsToStoreOnDisk = !printingDataToStore.getSegments().isEmpty();
-					if (hasSegmentsToStoreOnDisk)
+					int countSegmentsAlreadyHandled = 0;
+
+					//
+					// Store directly to disk printer
 					{
-						logger.debug("At least a part of C_Printing_Queue shall be stored directly to disk; -> invoke printingDataToPDFFileStorer; printingData={}; ", printingData);
-						storePDFAndFireEvent(source, item, printingDataToStore);
-						source.markPrinted(item);
+						final PrintingData printingDataToStore = printingDataItem.onlyWithType(OutputType.Store);
+						if (printingDataToStore.hasSegments())
+						{
+							logger.debug("At least a part of C_Printing_Queue shall be stored directly to disk; -> invoke printingDataToPDFFileStorer; printingData={}; ", printingData);
+							storePDFAndFireEvent(source, item, printingDataToStore);
+							countSegmentsAlreadyHandled += printingDataToStore.getSegmentsCount();
+						}
+					}
+
+					//
+					// Frontend side printer
+					final FrontendPrinter frontendPrinter = FrontendPrinter.getOrNull();
+					if (frontendPrinter != null)
+					{
+						final PrintingData printingDataForFrontend = printingDataItem.onlyWithType(OutputType.Frontend);
+						if (printingDataForFrontend.hasSegments())
+						{
+							logger.debug("At least a part of C_Printing_Queue shall be sent to frontend: printingData={}; ", printingData);
+							enqueueToFrontendPrinterAndFireEvent(frontendPrinter, source, item, printingDataForFrontend);
+							countSegmentsAlreadyHandled += printingDataForFrontend.getSegmentsCount();
+						}
 					}
 
 					// if there is a config with a specific hostKey, then printingData.getSegments() might be empty, but still we might need print-jobs
-					if (printingDataItem.getSegments().isEmpty() || printingDataItem.getSegments().size() != printingDataToStore.getSegments().size())
+					if (!printingDataItem.hasSegments() || printingDataItem.getSegmentsCount() != countSegmentsAlreadyHandled)
 					{
 						logger.debug("Also invoke printJobBL, in case there are also items to be printed");
 
@@ -123,19 +142,19 @@ public class PrintOutputFacade
 					}
 
 					final PrintingData printingDataToExternalSystem = printingDataItem.onlyQueuedForExternalSystems();
-					if(!printingDataToExternalSystem.getSegments().isEmpty())
+					if (printingDataToExternalSystem.hasSegments())
 					{
 						printingDataForExternalSystems.add(printingDataItem);
 					}
 				}
-				if(!printingDataForExternalSystems.isEmpty())
+				if (!printingDataForExternalSystems.isEmpty())
 				{
-					if(hasMultipleExternalSystemConfigs(printingDataForExternalSystems))
+					if (hasMultipleExternalSystemConfigs(printingDataForExternalSystems))
 					{
 						throw new AdempiereException(ERROR_MSG_EXTERNAL_SYSTEM_CONFIG).markAsUserValidationError();
 					}
 					final ExternalSystemParentConfigId configId = printingDataForExternalSystems.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
-					Check.assumeNotNull(configId,"ExternalSystemParentConfigId shouldn't be null");
+					Check.assumeNotNull(configId, "ExternalSystemParentConfigId shouldn't be null");
 					final int firstExternalSystemId = configId.getRepoId();
 					final PrintingClientRequest request = PrintingClientRequest.builder()
 							.printingQueueId(item.getC_Printing_Queue_ID())
@@ -154,14 +173,14 @@ public class PrintOutputFacade
 	private boolean hasMultipleExternalSystemConfigs(@NonNull final List<PrintingData> printingDataList)
 	{
 		final ExternalSystemParentConfigId configId = printingDataList.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
-		Check.assumeNotNull(configId,"ExternalSystemParentConfigId shouldn't be null");
+		Check.assumeNotNull(configId, "ExternalSystemParentConfigId shouldn't be null");
 		final int firstExternalSystemId = configId.getRepoId();
 		for (final PrintingData printingData : printingDataList)
 		{
 			for (final PrintingSegment segment : printingData.getSegments())
 			{
 				final ExternalSystemParentConfigId segmentConfigId = segment.getPrinter().getExternalSystemParentConfigId();
-				Check.assumeNotNull(segmentConfigId,"ExternalSystemParentConfigId shouldn't be null");
+				Check.assumeNotNull(segmentConfigId, "ExternalSystemParentConfigId shouldn't be null");
 				if (firstExternalSystemId != segmentConfigId.getRepoId())
 				{
 					return true;
@@ -178,18 +197,36 @@ public class PrintOutputFacade
 	{
 		printingDataToPDFFileStorer.storeInFileSystem(printingDataToStore);
 
-		final ImmutableList<String> printerNames = CollectionUtils.extractDistinctElements(
-				printingDataToStore.getSegments(),
-				s -> s.getPrinter().getName());
+		//
+		// Notify
+		archiveEventManager.firePrintOut(
+				item.getAD_Archive(),
+				source.getProcessingInfo().getAD_User_PrintJob_ID(),
+				printingDataToStore.getPrinterNames(),
+				IArchiveEventManager.COPIES_ONE,
+				ArchivePrintOutStatus.Success);
 
-		for (final String printerName : printerNames)
-		{
-			archiveEventManager.firePrintOut(
-					item.getAD_Archive(),
-					source.getProcessingInfo().getAD_User_PrintJob_ID(),
-					printerName,
-					IArchiveEventManager.COPIES_ONE,
-					ArchivePrintOutStatus.Success);
-		}
+		source.markPrinted(item);
 	}
+
+	private void enqueueToFrontendPrinterAndFireEvent(
+			@NonNull final FrontendPrinter frontendPrinter,
+			@NonNull final IPrintingQueueSource source,
+			@NonNull final I_C_Printing_Queue item,
+			@NonNull final PrintingData printingData)
+	{
+		frontendPrinter.add(printingData);
+
+		//
+		// Notify
+		archiveEventManager.firePrintOut(
+				item.getAD_Archive(),
+				source.getProcessingInfo().getAD_User_PrintJob_ID(),
+				printingData.getPrinterNames(),
+				IArchiveEventManager.COPIES_ONE,
+				ArchivePrintOutStatus.Success);
+
+		source.markPrinted(item);
+	}
+
 }

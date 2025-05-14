@@ -3,13 +3,18 @@ package de.metas.ordercandidate.api;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -20,32 +25,49 @@ import java.util.stream.Collectors;
 @Service
 public class OLCandValidatorService
 {
-	/** AD_Message to be used by users of this implementation. */
+	/**
+	 * AD_Message to be used by users of this implementation.
+	 */
 	public static final AdMessageKey MSG_ERRORS_FOUND = AdMessageKey.of("de.metas.ordercandidate.spi.impl.OLCandPriceValidator.FoundErrors");
+	private static final AdMessageKey MSG_OL_CAND_VALIDATION_ERROR = AdMessageKey.of("OLCandValidatorService.OLCandValidationError");
+
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ThreadLocal<Boolean> validationProcessInProgress = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
-	private final OLCandRegistry olCandRegistry;
+	private final OLCandSPIRegistry olCandSPIRegistry;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public OLCandValidatorService(@NonNull final OLCandRegistry olCandRegistry)
+	public OLCandValidatorService(@NonNull final OLCandSPIRegistry olCandSPIRegistry)
 	{
-		this.olCandRegistry = olCandRegistry;
+		this.olCandSPIRegistry = olCandSPIRegistry;
 	}
 
-	public boolean validate(@NonNull final I_C_OLCand olCand)
+	public I_C_OLCand validate(@NonNull final I_C_OLCand olCand)
 	{
-		final IOLCandValidator validators = olCandRegistry.getValidators();
+		final IOLCandValidator validators = olCandSPIRegistry.getValidators();
 
 		// 08072
-		// before validating, unset the isserror and set the error message on null.
+		// before validating, unset the isError and set the error message on null.
 		// this way they will be up to date after validation
 		olCand.setErrorMsg(null);
 		olCand.setIsError(false);
 
+		olCand.setAD_Issue_ID(0);
+
 		validators.validate(olCand);
 
-		return !olCand.isError();
+		if (!olCand.isError())
+		{
+			return InterfaceWrapperHelper.create(olCand, org.adempiere.process.rpl.model.I_C_OLCand.class);
+		}
+		else
+		{
+			sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, olCand.getC_OLCand_ID()));
+
+			return olCand;
+		}
 	}
 
 	/**
@@ -69,6 +91,16 @@ public class OLCandValidatorService
 		return isUpdateProcess;
 	}
 
+	public void sendNotificationAfterCommit(@NonNull final TableRecordReference candidateRecordReference)
+	{
+		trxManager.runAfterCommit(() -> notificationBL.send(UserNotificationRequest.builder()
+																	.recipientUserId(Env.getLoggedUserId())
+																	.contentADMessage(MSG_OL_CAND_VALIDATION_ERROR)
+																	.contentADMessageParam(candidateRecordReference)
+																	.targetAction(UserNotificationRequest.TargetRecordAction.of(candidateRecordReference))
+																	.build()));
+	}
+
 
 	public List<OLCandValidationResult> clearOLCandidates(
 			@NonNull final List<I_C_OLCand> olCandList,
@@ -84,8 +116,7 @@ public class OLCandValidatorService
 			return olCandValidationResults;
 		}
 
-		final ICompositeQueryUpdater<org.adempiere.process.rpl.model.I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(org.adempiere.process.rpl.model.I_C_OLCand.class)
-				.addSetColumnValue(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_IsImportedWithIssues, false);
+		final ICompositeQueryUpdater<org.adempiere.process.rpl.model.I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(org.adempiere.process.rpl.model.I_C_OLCand.class);
 
 		if (asyncBatchId != null)
 		{

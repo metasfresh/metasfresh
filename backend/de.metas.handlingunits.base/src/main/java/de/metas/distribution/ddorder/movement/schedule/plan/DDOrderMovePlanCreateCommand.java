@@ -1,11 +1,14 @@
 package de.metas.distribution.ddorder.movement.schedule.plan;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -37,16 +40,20 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class DDOrderMovePlanCreateCommand
 {
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	private final HUReservationService huReservationService;
+	private final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
 
 	private static final AdMessageKey MSG_CannotFullAllocate = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product");
 
@@ -65,10 +72,12 @@ public class DDOrderMovePlanCreateCommand
 			final @NonNull DDOrderLowLevelDAO ddOrderLowLevelDAO,
 			final @NonNull HUReservationService huReservationService,
 			//
+			final @NonNull DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
 			final @NonNull DDOrderMovePlanCreateRequest request)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
 		this.huReservationService = huReservationService;
+		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
 		this.ddOrder = request.getDdOrder();
 		this.failIfNotFullAllocated = request.isFailIfNotFullAllocated();
 
@@ -79,28 +88,55 @@ public class DDOrderMovePlanCreateCommand
 
 	public DDOrderMovePlan execute()
 	{
+		final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+		final ImmutableListMultimap<DDOrderLineId, DDOrderMoveSchedule> alreadyCreatedSchedules = ddOrderMoveScheduleRepository
+				.getSchedules(ddOrderId)
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(DDOrderMoveSchedule::getDdOrderLineId, Function.identity()));
+
 		return DDOrderMovePlan.builder()
-				.ddOrderId(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
+				.ddOrderId(ddOrderId)
 				.lines(ddOrderLowLevelDAO.retrieveLines(ddOrder)
 						.stream()
-						.map(this::createPlanStep)
+						.map(line -> createPlanStep(line, alreadyCreatedSchedules))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	public DDOrderMovePlanLine createPlanStep(final I_DD_OrderLine ddOrderLine)
+	@NonNull
+	private DDOrderMovePlanLine createPlanStep(
+			@NonNull final I_DD_OrderLine ddOrderLine,
+			@NonNull final ImmutableListMultimap<DDOrderLineId, DDOrderMoveSchedule> alreadyCreatedSchedules)
 	{
 		final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
 		final LocatorId pickFromLocatorId = warehouseDAO.getLocatorIdByRepoId(ddOrderLine.getM_Locator_ID());
 		final LocatorId dropToLocatorId = warehouseDAO.getLocatorIdByRepoId(ddOrderLine.getM_LocatorTo_ID());
 		final Quantity targetQty = getQtyEntered(ddOrderLine);
+		Quantity allocatedQty = targetQty.toZero();
+		final ArrayList<DDOrderMovePlanStep> planSteps = new ArrayList<>();
+
+		final List<DDOrderMoveSchedule> existingSchedules = alreadyCreatedSchedules.get(DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID()));
+		if (existingSchedules != null)
+		{
+			for (final DDOrderMoveSchedule schedule : existingSchedules)
+			{
+				planSteps.add(DDOrderMovePlanStep.builder()
+									  .scheduleId(schedule.getId())
+									  .productId(schedule.getProductId())
+									  .pickFromLocatorId(schedule.getPickFromLocatorId())
+									  .dropToLocatorId(schedule.getDropToLocatorId())
+									  .pickFromHU(handlingUnitsBL.getById(schedule.getPickFromHUId()))
+									  .qtyToPick(schedule.getQtyToPick())
+									  .isPickWholeHU(schedule.isPickWholeHU())
+									  .build());
+				allocatedQty = allocatedQty.add(schedule.getQtyToPick());
+			}
+		}
 
 		final AllocableHUsList availableHUs = getAvailableHUsToPick(AllocationGroupingKey.builder()
 				.productId(productId)
 				.pickFromLocatorId(pickFromLocatorId)
 				.build());
-		final ArrayList<DDOrderMovePlanStep> planSteps = new ArrayList<>();
-		Quantity allocatedQty = targetQty.toZero();
 
 		for (final AllocableHU allocableHU : availableHUs)
 		{
@@ -172,6 +208,7 @@ public class DDOrderMovePlanCreateCommand
 						.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
 						.reservationRef(Optional.empty()) // TODO introduce some DD Order Step reservation
 						.enforceMandatoryAttributesOnPicking(false)
+						.ignoreHUsScheduledInDDOrderSchedules(true)
 						.build());
 
 		final ImmutableList<AllocableHU> hus = husEligibleToPick.stream()

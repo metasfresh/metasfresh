@@ -30,8 +30,10 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.GetByIdRequest;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
+import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -48,8 +50,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits/hu-manager")
@@ -58,18 +58,34 @@ import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 @Profile(Profiles.PROFILE_App)
 public class HUManagerRestController
 {
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final HUManagerProfileRepository profileRepository;
-	private final HUQRCodesService huQRCodesService;
-	private final HandlingUnitsService handlingUnitsService;
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final MobileApplicationService mobileApplicationService;
+	@NonNull private final HUManagerProfileRepository profileRepository;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HandlingUnitsService handlingUnitsService;
+
+	private void assertApplicationAccess()
+	{
+		mobileApplicationService.assertAccess(HUManagerMobileApplication.APPLICATION_ID, Env.getUserRolePermissions());
+	}
 
 	@PostMapping("/byQRCode")
 	public ResponseEntity<JsonGetSingleHUResponse> retrieveHUManagerConfig(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		return handlingUnitsService.getByIdSupplier(
-				() -> getHuId(request.getQrCode()),
-				request.isIncludeAllowedClearanceStatuses(),
-				getDisplayedAttributeCodes()
+		assertApplicationAccess();
+
+		return handlingUnitsService.getByIdSupplier(() -> {
+														final HuId huId = handlingUnitsService.resolveHuId(GlobalQRCode.parse(request.getQrCode()).orThrow());
+														if (huId == null)
+														{
+															return null;
+														}
+														return GetByIdRequest.builder()
+																.huId(huId)
+																.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()))
+																.orderedAttributeCodes(getDisplayedAttributeCodes())
+																.build();
+													}
 		);
 	}
 
@@ -81,16 +97,5 @@ public class HUManagerRestController
 		return displayedAttributeIdsInOrder != null && !displayedAttributeIdsInOrder.isEmpty()
 				? attributeDAO.getOrderedAttributeCodesByIds(displayedAttributeIdsInOrder)
 				: ImmutableList.of();
-	}
-
-	@NonNull
-	private HuId getHuId(@NonNull final String qrCode)
-	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.parse(qrCode).orNullIfError();
-
-		return Optional.ofNullable(globalQRCode)
-				.map(HUQRCode::fromGlobalQRCode)
-				.flatMap(huQRCodesService::getHuIdByQRCodeIfExists)
-				.orElseGet(() -> HuId.ofHUValue(qrCode));
 	}
 }

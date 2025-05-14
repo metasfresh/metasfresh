@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -84,6 +84,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
@@ -253,6 +254,30 @@ public class M_PriceList_StepDef
 		DataTableRows.of(dataTable).forEach(this::createM_ProductPrice);
 	}
 
+	@And("update metasfresh masterdata M_ProductPrice")
+	public void update_masterdata_M_ProductPrice(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateMasterDataM_ProductPrice(tableRow);
+		}
+	}
+
+	private void updateMasterDataM_ProductPrice(@NonNull final Map<String, String> tableRow)
+	{
+		final int productPriceId = DataTableUtil.extractIntForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final I_M_ProductPrice productPriceRecord = InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class);
+
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
+		productPriceRecord.setC_UOM_ID(productPriceUomId.getRepoId());
+
+		saveRecord(productPriceRecord);
+	}
+
 	@And("update M_ProductPrice:")
 	public void update_M_ProductPrice(@NonNull final DataTable dataTable)
 	{
@@ -318,6 +343,7 @@ public class M_PriceList_StepDef
 				? InterfaceWrapperHelper.newInstance(de.metas.handlingunits.model.I_M_ProductPrice.class)
 				: InterfaceWrapperHelper.load(existingProductPrice.getM_ProductPrice_ID(), de.metas.handlingunits.model.I_M_ProductPrice.class);
 
+		productPrice.setIsActive(true);
 		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 
 		productPrice.setM_Product_ID(productId);
@@ -424,4 +450,24 @@ public class M_PriceList_StepDef
 				.map(Optional::get)
 				.orElse(AttributesKey.NONE);
 	}
+
+	@And("update M_PriceLists:")
+	public void updatePriceLists(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_PriceList_ID)
+				.forEach(this::updatePriceList);
+	}
+
+	private void updatePriceList(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsIdentifier();
+
+		final I_M_PriceList priceList = identifier.lookupNotNullIn(priceListTable);
+		row.getAsOptionalBoolean("IsTaxIncluded").ifPresent(priceList::setIsTaxIncluded);
+
+		save(priceList);
+		priceListTable.putOrReplace(identifier, priceList);
+	}
+
 }

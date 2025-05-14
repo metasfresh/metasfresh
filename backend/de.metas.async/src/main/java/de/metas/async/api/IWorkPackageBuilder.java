@@ -113,7 +113,7 @@ public interface IWorkPackageBuilder
 	 * <p>
 	 * If the async batch it's not set, it will be inherited.
 	 */
-	IWorkPackageBuilder setC_Async_Batch(I_C_Async_Batch asyncBatch);
+	IWorkPackageBuilder setC_Async_Batch(@Nullable I_C_Async_Batch asyncBatch);
 
 	/**
 	 * Sets workpackage user in charge.

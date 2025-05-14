@@ -30,5 +30,5 @@ public interface IEventBusQueueConfiguration
 
 	Optional<String> getTopicName();
 
-	String getFanoutExchangeName();
+	String getExchangeName();
 }

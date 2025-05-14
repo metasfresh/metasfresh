@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.model.DataExportAuditLogId;
+import de.metas.banking.PaySelectionLineId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
+import de.metas.costrevaluation.CostRevaluationDetailId;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
@@ -52,6 +55,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
+@SuppressWarnings("NewClassNamingConvention")
 public class All_RepoIdAware_Classes_Test
 {
 	private static final SkipRules skipRules = new SkipRules()
@@ -67,7 +71,7 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.externalsystem.IExternalSystemChildConfigId.class)
 			.skip(de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId.class)
 			//
-			.skip(de.metas.invoice.InvoiceLineId.class)
+			.skip(de.metas.invoice.InvoiceAndLineId.class)
 			//
 			.skip(de.metas.phonecall.PhonecallSchemaVersionId.class)
 			.skip(de.metas.phonecall.PhonecallSchemaVersionLineId.class)
@@ -92,7 +96,13 @@ public class All_RepoIdAware_Classes_Test
 			//
 			.skip(ExternalSystemOtherConfigId.class)
 			//
-			.skip(MediatedCommissionSettingsLineId.class)
+			.skip(MediatedCommissionSettingsLineId.class)//
+			//
+			.skip(CostRevaluationLineId.class)
+			.skip(CostRevaluationDetailId.class)
+			//
+			.skip(PaySelectionLineId.class)
+			//
 			;
 
 	private static ObjectMapper jsonMapper;
@@ -162,6 +172,11 @@ public class All_RepoIdAware_Classes_Test
 
 		public boolean isSkip(@NonNull final Class<? extends RepoIdAware> repoIdClass)
 		{
+			if (repoIdClass.getAnnotation(RepoIdAwares.SkipTest.class) != null)
+			{
+				return true;
+			}
+
 			final String className = repoIdClass.getName();
 
 			return classNames.contains(className);
@@ -196,15 +211,17 @@ public class All_RepoIdAware_Classes_Test
 			final Stopwatch stopwatch = Stopwatch.createStarted();
 
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
-					.addUrls(ClasspathHelper.forClassLoader())
-					.setScanners(new SubTypesScanner()));
+																	.addUrls(ClasspathHelper.forClassLoader())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
+																	.setScanners(new SubTypesScanner()));
 
 			final Set<Class<? extends RepoIdAware>> classes = reflections.getSubTypesOf(RepoIdAware.class);
 
 			if (classes.isEmpty())
 			{
 				throw new RuntimeException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
-						+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+												   + "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
 			}
 
 			stopwatch.stop();

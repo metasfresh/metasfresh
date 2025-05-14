@@ -92,13 +92,23 @@ public final class ExplainedOptional<T>
 
 	public T orElseThrow()
 	{
+		return orElseThrow(AdempiereException::new);
+	}
+
+	public T orElseThrow(@NonNull final AdMessageKey adMessageKey)
+	{
+		return orElseThrow(message -> new AdempiereException(adMessageKey).setParameter("detail", message));
+	}
+
+	public T orElseThrow(@NonNull final Function<ITranslatableString, RuntimeException> exceptionFactory)
+	{
 		if (value != null)
 		{
 			return value;
 		}
 		else
 		{
-			throw new AdempiereException(explanation);
+			throw exceptionFactory.apply(explanation);
 		}
 	}
 

@@ -29,6 +29,29 @@ DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
 ;
 
 
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE,
+    p_DryRun           char(1))
+;
+
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_m_product_selection_id     numeric,
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE)
+;
+
+
 CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
     p_C_AcctSchema_ID            numeric,
     p_M_CostElement_ID           numeric,
@@ -37,7 +60,8 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
     p_m_product_selection_id     numeric = NULL,
     p_ReorderDocs                char(1) = 'Y',
     p_ReorderDocs_DateAcct_Trunc varchar = 'DD',
-    p_StartDateAcct              timestamp WITH TIME ZONE = '1970-01-01')
+    p_StartDateAcct              timestamp WITH TIME ZONE = '1970-01-01',
+    p_DryRun           char(1) = 'N')
     RETURNS text
 AS
 $BODY$
@@ -45,6 +69,8 @@ DECLARE
     v_productIds      numeric[];
     v_costingLevel    char(1);
     v_orgIds          numeric[];
+    v_costElement                      m_costelement%rowtype;
+    v_IsManualCostPrice                boolean; -- true if we are dealing with manual cost price (i.e. M_Cost.CurrentCostPrice is set by user and we MUST keep it)
     --
     rowcount          integer := 0;
     v_result          text    := '';
@@ -103,9 +129,24 @@ BEGIN
     RAISE NOTICE 'p_C_AcctSchema_ID=%: CostingLevel=%', p_C_AcctSchema_ID, v_costingLevel;
     RAISE NOTICE 'Orgs: %', v_orgIds;
 
-    RAISE NOTICE 'p_M_CostElement_ID=%', p_M_CostElement_ID;
+    --
+    -- Validate parameter: Cost Element
+    --
+    SELECT *
+    INTO v_costElement
+    FROM M_CostElement ce
+    WHERE ce.m_costelement_id = p_M_CostElement_ID;
+    IF (v_costElement IS NULL) THEN
+        RAISE EXCEPTION 'Cost Element % not found', p_M_CostElement_ID;
+    END IF;
+    v_IsManualCostPrice := v_costElement.costingmethod = 'S'; -- S=Standard Costing
+    RAISE NOTICE 'p_M_CostElement_ID=%: CostingMethod=% => IsManualCost=%', p_M_CostElement_ID, v_costElement.costingmethod, v_IsManualCostPrice;
+
+    --
+    -- Log other parameters
     RAISE NOTICE 'p_ReorderDocs=%', p_ReorderDocs;
     RAISE NOTICE 'p_StartDateAcct=%', p_StartDateAcct;
+    RAISE NOTICE 'p_DryRun=%', p_DryRun;
 
 
     --
@@ -185,6 +226,11 @@ BEGIN
     RAISE NOTICE 'Deleted % PP_Order_Cost records', rowcount;
     v_result := v_result || rowcount || ' PP_Order_Cost(s) deleted; ';
 
+    --
+    -- Stop here and ROLLBACK if DryRun
+    IF (p_DryRun = 'Y') THEN
+        RAISE EXCEPTION 'ROLLBACK because p_DryRun=Y';
+    END IF;
 
     --
     -- Un-post documents and enqueue them to posting queue.

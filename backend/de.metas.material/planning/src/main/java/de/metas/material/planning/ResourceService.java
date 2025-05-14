@@ -26,12 +26,19 @@ import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.workplace.WorkplaceId;
 import lombok.NonNull;
+import org.compiere.Adempiere;
 import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ResourceService
 {
+	public static ResourceService newInstanceForJUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ResourceService();
+	}
+
 	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 
 	@NonNull

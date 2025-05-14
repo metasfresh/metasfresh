@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Misc {@link IEventBus} related constants.
@@ -49,6 +50,7 @@ public final class EventBusConfig
 	}
 
 	private static boolean distributedEventsEnabled = true;
+	private static final CopyOnWriteArraySet<Topic> alwaysConsiderAsyncTopics = new CopyOnWriteArraySet<>();
 
 	private EventBusConfig()
 	{
@@ -94,18 +96,29 @@ public final class EventBusConfig
 
 	public static final String JMX_BASE_NAME = "de.metas.event.EventBus";
 
-	/** World wide unique Sender ID of this JVM instance */
+	/**
+	 * World wide unique Sender ID of this JVM instance
+	 */
 	private static final String SENDER_ID = ManagementFactory.getRuntimeMXBean().getName() + "-" + UUID.randomUUID().toString();
 
-	/** @return world wide unique Sender ID of this JVM instance */
+	/**
+	 * @return world wide unique Sender ID of this JVM instance
+	 */
 	public static String getSenderId()
 	{
 		return SENDER_ID;
 	}
 
-	/** @return true of calls to {@link IEventBus#processEvent(Event)} shall be performed asynchronously */
+	/**
+	 * @return true of calls to {@link IEventBus#processEvent(Event)} shall be performed asynchronously
+	 */
 	public static boolean isEventBusPostAsync(@NonNull final Topic topic)
 	{
+		if (alwaysConsiderAsyncTopics.contains(topic))
+		{
+			return true;
+		}
+		
 		// NOTE: in case of unit tests which are checking what notifications were arrived,
 		// allowing the events to be posted async could be a problem because the event might arrive after the check.
 		if (Adempiere.isUnitTestMode())
@@ -127,6 +140,11 @@ public final class EventBusConfig
 		final String standardValue = valuesForPrefix.get(nameForAllTopics);
 		getLogger(EventBusConfig.class).debug("SysConfig returned value={} for keyForTopic={}", standardValue, keyForTopic);
 		return StringUtils.toBoolean(standardValue, false);
+	}
+
+	public static void alwaysConsiderAsync(@NonNull final Topic topic)
+	{
+		alwaysConsiderAsyncTopics.add(topic);
 	}
 
 	public static boolean isMonitorIncomingEvents()

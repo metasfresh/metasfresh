@@ -5,13 +5,19 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -22,60 +28,70 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MoveHUCommand
 {
+	private final static AdMessageKey ONLY_TUS_ON_LUS = AdMessageKey.of("de.metas.handlingunits.movement.MoveHUCommand.ONLY_TUS_ON_LUS");
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final HUTransformService huTransformService;
 	private final HUQRCodesService huQRCodesService;
 
-	private final ImmutableSet<HUIdAndQRCode> huIdAndQRCodes;
+	private final ImmutableSet<MoveHURequestItem> requestItems;
 	private final GlobalQRCode targetQRCode;
+	private final boolean placeAggHusOnNewLUsWhenMoving;
 
 	@Builder
 	private MoveHUCommand(
 			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final Set<HUIdAndQRCode> husToMove,
+			@NonNull final Set<MoveHURequestItem> requestItems,
 			@NonNull final GlobalQRCode targetQRCode)
 	{
-		this.huQRCodesService = huQRCodesService;
 		this.huTransformService = HUTransformService.builder()
 				.huQRCodesService(huQRCodesService)
 				.build();
 
-		this.huIdAndQRCodes = ImmutableSet.copyOf(husToMove);
+		this.huQRCodesService = huQRCodesService;
+		this.requestItems = ImmutableSet.copyOf(requestItems);
 		this.targetQRCode = targetQRCode;
-
+		this.placeAggHusOnNewLUsWhenMoving = isPlaceAggTUsOnNewLUAfterMove(targetQRCode, warehouseDAO);
 	}
 
-	public void execute()
+	public ImmutableSet<HuId> execute()
 	{
-		if (huIdAndQRCodes.isEmpty())
+		if (requestItems.isEmpty())
 		{
-			return;
+			//nothing to move
+			return ImmutableSet.of();
 		}
 
-		trxManager.runInThreadInheritedTrx(this::executeInTrx);
+		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 
-	private void executeInTrx()
+	private ImmutableSet<HuId> executeInTrx()
 	{
 		if (LocatorQRCode.isTypeMatching(targetQRCode))
 		{
 			final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(targetQRCode);
 
-			moveHUIdsToLocator(extractHUIdsToMove(), locatorQRCode.getLocatorId());
+			return moveHUIdsToLocator(extractHUIdsToMove(), locatorQRCode.getLocatorId());
 		}
 		else if (HUQRCode.isTypeMatching(targetQRCode))
 		{
-			getMoveToTargetHUConsumer(HUQRCode.fromGlobalQRCode(targetQRCode))
-					.accept(extractHUIdsToMove());
+			return getMoveToTargetHUFunction(HUQRCode.fromGlobalQRCode(targetQRCode))
+					.apply(extractHUIdsToMove());
 		}
 		else
 		{
@@ -84,7 +100,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private Consumer<List<HuId>> getMoveToTargetHUConsumer(@NonNull final HUQRCode huqrCode)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToTargetHUFunction(@NonNull final HUQRCode huqrCode)
 	{
 		final I_M_HU targetHU = handlingUnitsBL.getById(huQRCodesService.getHuIdByQRCode(huqrCode));
 		if (handlingUnitsBL.isDestroyed(targetHU))
@@ -94,15 +110,15 @@ public class MoveHUCommand
 
 		if (handlingUnitsBL.isLoadingUnit(targetHU))
 		{
-			return getMoveToLUConsumer(targetHU);
+			return getMoveToLUFunction(targetHU);
 		}
 		else if (handlingUnitsBL.isTransportUnit(targetHU))
 		{
-			return getMoveToTUConsumer(targetHU);
+			return getMoveToTUFunction(targetHU);
 		}
 		else if (handlingUnitsBL.isVirtual(targetHU))
 		{
-			return getMoveToCUConsumer(targetHU);
+			return getMoveToCUFunction(targetHU);
 		}
 		else
 		{
@@ -111,7 +127,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private Consumer<List<HuId>> getMoveToCUConsumer(final I_M_HU targetHU)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToCUFunction(final I_M_HU targetHU)
 	{
 		if (!handlingUnitsBL.isVirtual(targetHU))
 		{
@@ -132,11 +148,13 @@ public class MoveHUCommand
 			moveHUsToLocator(husToMove, locatorIdOfTargetHU);
 
 			huTransformService.cusToExistingCU(husToMove, targetHU);
+
+			return ImmutableSet.copyOf(huIdsToMove);
 		};
 	}
 
 	@NonNull
-	private Consumer<List<HuId>> getMoveToLUConsumer(final I_M_HU targetHU)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToLUFunction(final I_M_HU targetHU)
 	{
 		if (!handlingUnitsBL.isLoadingUnit(targetHU))
 		{
@@ -150,17 +168,19 @@ public class MoveHUCommand
 
 			if (husToMove.stream().anyMatch(tu -> !handlingUnitsBL.isTransportUnit(tu)))
 			{
-				throw new AdempiereException("Expecting only TUs to be moved");
+				throw new AdempiereException(ONLY_TUS_ON_LUS);
 			}
 
 			moveHUsToLocator(husToMove, locatorIdOfTargetHU);
 
 			huTransformService.tusToExistingLU(husToMove, targetHU);
+
+			return ImmutableSet.copyOf(huIdsToMove);
 		};
 	}
 
 	@NonNull
-	private Consumer<List<HuId>> getMoveToTUConsumer(final I_M_HU targetHU)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToTUFunction(final I_M_HU targetHU)
 	{
 		if (!handlingUnitsBL.isTransportUnit(targetHU))
 		{
@@ -180,40 +200,91 @@ public class MoveHUCommand
 			moveHUsToLocator(husToMove, locatorIdOfTargetHU);
 
 			huTransformService.cusToExistingTU(husToMove, targetHU);
+			return ImmutableSet.copyOf(huIdsToMove);
 		};
 	}
 
 	@NonNull
 	private List<HuId> extractHUIdsToMove()
 	{
-		return huIdAndQRCodes.stream()
-				.map(huIdAndQRCode -> huTransformService.extractToTopLevel(huIdAndQRCode.getHuId(), huIdAndQRCode.getHuQRCode()))
+		return requestItems.stream()
+				.flatMap(this::extractHuIdsToMove)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private void moveHUIdsToLocator(@NonNull final List<HuId> huIds, @NonNull final LocatorId locatorId)
+	@NonNull
+	private Stream<HuId> extractHuIdsToMove(@NonNull final MoveHURequestItem requestItem)
+	{
+		if (requestItem.getNumberOfTUs() == null || requestItem.getNumberOfTUs().isOne())
+		{
+			final HuId splitHuId = huTransformService.extractToTopLevel(requestItem.getHuIdAndQRCode().getHuId(),
+																		requestItem.getHuIdAndQRCode().getHuQRCode());
+			return Stream.of(splitHuId);
+		}
+		return huTransformService.extractFromAggregatedByQrCode(requestItem.getHuIdAndQRCode().getHuId(),
+																requestItem.getHuIdAndQRCode().getHuQRCode(),
+																requestItem.getNumberOfTUs(),
+																getNewLUPackingInstructionsForAggregateSplit(requestItem.getHuIdAndQRCode().getHuId()).orElse(null))
+				.stream();
+	}
+
+	@NonNull
+	private ImmutableSet<HuId> moveHUIdsToLocator(@NonNull final Collection<HuId> huIds, @NonNull final LocatorId locatorId)
 	{
 		final List<I_M_HU> husToMove = handlingUnitsBL.getByIds(huIds);
 		moveHUsToLocator(husToMove, locatorId);
+		return ImmutableSet.copyOf(huIds);
 	}
 
 	private void moveHUsToLocator(final @NonNull List<I_M_HU> husToMove, @NonNull final LocatorId locatorId)
 	{
-		final List<HuId> huIdsFromDiffLocator = husToMove.stream()
+		final Map<Integer, List<HuId>> diffLocatorToHuIds = husToMove.stream()
 				.filter(hu -> hu.getM_Locator_ID() != locatorId.getRepoId())
-				.map(I_M_HU::getM_HU_ID)
-				.map(HuId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
+				.collect(Collectors.groupingBy(I_M_HU::getM_Locator_ID,
+											   Collectors.mapping(hu -> HuId.ofRepoId(hu.getM_HU_ID()),
+																  Collectors.toList())));
 
-		if (huIdsFromDiffLocator.isEmpty())
+		if (diffLocatorToHuIds.isEmpty())
 		{
 			return;
 		}
 
-		huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
-				.toLocatorId(locatorId)
-				.huIdsToMove(huIdsFromDiffLocator)
-				.movementDate(SystemTime.asInstant())
-				.build());
+		diffLocatorToHuIds.values()
+				.forEach(huIdsSharingTheSameLocator -> huMovementBL.moveHUs(HUMovementGenerateRequest.builder()
+																					.toLocatorId(locatorId)
+																					.huIdsToMove(huIdsSharingTheSameLocator)
+																					.movementDate(SystemTime.asInstant())
+																					.build()));
+	}
+
+	@NonNull
+	private Optional<HuPackingInstructionsItemId> getNewLUPackingInstructionsForAggregateSplit(@NonNull final HuId tuId)
+	{
+		if (!placeAggHusOnNewLUsWhenMoving)
+		{
+			return Optional.empty();
+		}
+
+		final I_M_HU_PI tuPI = handlingUnitsBL.getEffectivePI(tuId);
+		if (tuPI == null)
+		{
+			return Optional.empty();
+		}
+
+		return handlingUnitsDAO.retrieveDefaultParentPIItemId(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, null);
+	}
+
+	private static boolean isPlaceAggTUsOnNewLUAfterMove(
+			@NonNull final GlobalQRCode target,
+			@NonNull final IWarehouseDAO warehouseDAO)
+	{
+		if (!LocatorQRCode.isTypeMatching(target))
+		{
+			return false;
+		}
+
+		final LocatorQRCode locatorQRCode = LocatorQRCode.ofGlobalQRCode(target);
+		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorQRCode.getLocatorId(), I_M_Locator.class);
+		return locator.isPlaceAggHUOnNewLU();
 	}
 }

@@ -109,6 +109,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
+	 *
+	 *
 	 * @see C_Order_Handler#expandRequest(InvoiceCandidateGenerateRequest)
 	 */
 	@Override
@@ -190,6 +192,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// Dimension
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
+
+		icRecord.setC_Tax_ID(orderLine.getC_Tax_ID());
 
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
@@ -534,6 +538,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationType(fromOrderLine.getGroupCompensationType());
 		ic.setGroupCompensationAmtType(fromOrderLine.getGroupCompensationAmtType());
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
+		ic.setIsAllowSeparateInvoicing(fromOrderLine.isAllowSeparateInvoicing());
 	}
 
 	private static void setC_Flatrate_Term_ID(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final org.compiere.model.I_C_OrderLine orderLine)

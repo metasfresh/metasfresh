@@ -37,6 +37,7 @@ class DDOrderPickFromCommand
 	// Params
 	@NonNull private final Instant movementDate = SystemTime.asInstant();
 	@NonNull private final DDOrderMoveScheduleId scheduleId;
+	@NonNull private final HuId huIdToPick;
 
 	// State
 	private DDOrderMoveSchedule schedule;
@@ -55,6 +56,7 @@ class DDOrderPickFromCommand
 		this.handlingUnitsBL = handlingUnitsBL;
 
 		this.scheduleId = request.getScheduleId();
+		this.huIdToPick = request.getHuId();
 	}
 
 	public DDOrderMoveSchedule execute()
@@ -121,7 +123,13 @@ class DDOrderPickFromCommand
 	{
 		// Atm we always take top level HUs
 		// TODO: implement TU level support
-		final I_M_HU pickFromHU = handlingUnitsBL.getById(schedule.getPickFromHUId());
+
+		if (!HuId.equals(huIdToPick, schedule.getPickFromHUId()))
+		{
+			throw new AdempiereException("HU not matching the scheduled one");
+		}
+
+		final I_M_HU pickFromHU = handlingUnitsBL.getById(huIdToPick);
 		return ImmutableList.of(pickFromHU);
 	}
 

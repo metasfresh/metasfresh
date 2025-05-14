@@ -289,7 +289,7 @@ public final class Language implements Serializable
 	 * @param langInfo either language (en) or locale (en-US) or display name
 	 * @return true if base language
 	 */
-	public static boolean isBaseLanguage(final String langInfo)
+	public static boolean isBaseLanguage(@Nullable final String langInfo)
 	{
 		if (langInfo == null)
 		{

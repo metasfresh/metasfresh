@@ -64,7 +64,7 @@ class QuotationLineAggregator
 	{
 		this.priceCalculator = priceCalculator;
 		this.key = key;
-		this.qty = Quantitys.createZero(key.getUomId());
+		this.qty = Quantitys.zero(key.getUomId());
 	}
 
 	public static QuotationLineKey extractKey(@NonNull final ServiceRepairProjectCostCollector costCollector)

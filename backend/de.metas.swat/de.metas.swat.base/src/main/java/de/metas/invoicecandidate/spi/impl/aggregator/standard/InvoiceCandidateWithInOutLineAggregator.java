@@ -115,7 +115,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		return invoiceCandAggregate;
 	}
 
-	private final IInvoiceLineRW createInvoiceLineRW()
+	private IInvoiceLineRW createInvoiceLineRW()
 	{
 		//
 		// We will skip any IInvoiceLineRW creation if there is no valid ICS found on this key
@@ -231,12 +231,12 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 				if (positiveQty)
 				{
 					// e.g. qtyShippedButNotInvoiced = 50 and qtyLeft = 40 => maxQtyToInvoicePerLine = 40
-					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.minUomQty(qtyShippedButNotInvoiced, qtyLeftToInvoice);
+					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.minUomQty(qtyLeftToInvoice, qtyShippedButNotInvoiced);
 				}
 				else
 				{
 					// e.g. qtyShippedButNotInvoiced = -50 and qtyLeft = -40 => maxQtyToInvoicePerLine = -40
-					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.maxUomQty(qtyShippedButNotInvoiced, qtyLeftToInvoice);
+					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.maxUomQty(qtyLeftToInvoice, qtyShippedButNotInvoiced);
 				}
 			}
 		}
@@ -375,7 +375,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		addLineNetAmount(candNetAmtToInvoice);
 	}
 
-	private final void initializeIfNeeded(final InvoiceCandidateWithInOutLine ics)
+	private void initializeIfNeeded(final InvoiceCandidateWithInOutLine ics)
 	{
 		if (_initialized)
 		{
@@ -414,7 +414,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		_initialized = true;
 	}
 
-	private final I_C_Invoice_Candidate getFirstInvoiceCandidate()
+	private I_C_Invoice_Candidate getFirstInvoiceCandidate()
 	{
 		Check.assumeNotNull(_firstCand, "_firstCand not null");
 		return _firstCand;
@@ -434,13 +434,13 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		}
 	}
 
-	private final ProductPrice getPriceActual()
+	private ProductPrice getPriceActual()
 	{
 		Check.assumeNotNull(_priceActual, "_priceActual not null");
 		return _priceActual;
 	}
 
-	private final void setPriceEntered(@NonNull final ProductPrice candPriceEntered)
+	private void setPriceEntered(@NonNull final ProductPrice candPriceEntered)
 	{
 		if (_priceEntered == null)
 		{
@@ -454,13 +454,13 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		}
 	}
 
-	private final ProductPrice getPriceEntered()
+	private ProductPrice getPriceEntered()
 	{
 		Check.assumeNotNull(_priceEntered, "_priceEntered not null");
 		return _priceEntered;
 	}
 
-	private final void setDiscount(@NonNull final Percent candDiscount)
+	private void setDiscount(@NonNull final Percent candDiscount)
 	{
 		if (_discount == null)
 		{
@@ -474,13 +474,13 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		}
 	}
 
-	private final Percent getDiscount()
+	private Percent getDiscount()
 	{
 		Check.assumeNotNull(_discount, "_discount not null");
 		return _discount;
 	}
 
-	private final void setC_OrderLine_ID(final int candOrderLineId)
+	private void setC_OrderLine_ID(final int candOrderLineId)
 	{
 		//
 		// We will retain the 1:n relation between C_OrderLine and C_InvoiceLine,
@@ -517,17 +517,17 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		Check.assume(_invoiceLineNo == candInvoiceLineNo, "All invoice candidates shall have the same InvoiceLineNo={}", _invoiceLineNo);
 	}
 
-	private final int getInvoiceLineNo()
+	private int getInvoiceLineNo()
 	{
 		return _invoiceLineNo;
 	}
 
-	private final int getM_Product_ID()
+	private int getM_Product_ID()
 	{
 		return _productId;
 	}
 
-	private final int getC_Charge_ID()
+	private int getC_Charge_ID()
 	{
 		return _chargeId;
 	}
@@ -548,12 +548,12 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 	}
 
 	/** @return line net amount to invoice */
-	private final Money getLineNetAmt()
+	private Money getLineNetAmt()
 	{
 		return _netLineAmt;
 	}
 
-	private final String getDescription()
+	private String getDescription()
 	{
 		return getFirstInvoiceCandidate().getDescription();
 	}
@@ -565,15 +565,14 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 	private int getC_PaymentTerm_ID()
 	{
-		final int paymentTermId = firstGreaterThanZero(
+		return firstGreaterThanZero(
 				getFirstInvoiceCandidate().getC_PaymentTerm_Override_ID(),
 				getFirstInvoiceCandidate().getC_PaymentTerm_ID());
-		return paymentTermId;
 
 	}
 
 	/** @return effective tax to use in invoice line */
-	private final Tax getC_Tax()
+	private Tax getC_Tax()
 	{
 		final I_C_Invoice_Candidate firstCand = getFirstInvoiceCandidate();
 		return invoiceCandBL.getTaxEffective(firstCand);
@@ -647,9 +646,9 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 	/**
 	 * Checks if given invoice candidate is amount based invoicing (i.e. NOT quantity based invoicing).
-	 *
+	 * <p>
 	 * TODO: find a better way to track this. Consider having a field in C_Invoice_Candidate.
-	 *
+	 * <p>
 	 * To track where it's used, search also for {@link InvalidQtyForPartialAmtToInvoiceException}.
 	 */
 	private boolean isAmountBasedInvoicing(final I_C_Invoice_Candidate cand)

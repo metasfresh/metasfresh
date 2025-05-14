@@ -24,6 +24,8 @@ package de.metas.servicerepair.project.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -51,7 +53,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 
 import java.time.ZoneId;
@@ -121,8 +122,8 @@ public class CreateQuotationFromProjectCommand
 	private DocTypeId getQuotationDocTypeId(@NonNull final ServiceRepairProjectInfo project)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_CostEstimate)
+				.docBaseType(DocBaseType.SalesOrder)
+				.docSubType(DocSubType.CostEstimate)
 				.adClientId(project.getClientAndOrgId().getClientId().getRepoId())
 				.adOrgId(project.getClientAndOrgId().getOrgId().getRepoId())
 				.build());

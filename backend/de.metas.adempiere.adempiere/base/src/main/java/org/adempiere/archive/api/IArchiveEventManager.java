@@ -26,8 +26,12 @@ import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.archive.spi.IArchiveEventListener;
 import org.compiere.model.I_AD_Archive;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
  * Can be called from different places to "inform" registered {@link IArchiveEventListener}s about events.
@@ -67,6 +71,13 @@ public interface IArchiveEventManager extends ISingletonService
 			String printerName,
 			int copies,
 			ArchivePrintOutStatus status);
+
+	void firePrintOut(
+			I_AD_Archive archive,
+			@Nullable UserId userId,
+			@NonNull Set<String> printerNames,
+			int copies,
+			@NonNull ArchivePrintOutStatus status);
 
 	/**
 	 * To be invoked if the archive document is voided, reversed etc.

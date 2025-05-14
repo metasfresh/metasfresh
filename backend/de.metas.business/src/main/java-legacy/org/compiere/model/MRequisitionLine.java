@@ -249,7 +249,7 @@ public class MRequisitionLine extends X_M_RequisitionLine
 				+ "(SELECT COALESCE(SUM(LineNetAmt),0) FROM M_RequisitionLine rl "
 				+ "WHERE r.M_Requisition_ID=rl.M_Requisition_ID) "
 				+ "WHERE M_Requisition_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { getM_Requisition_ID() }, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getM_Requisition_ID() }, ITrx.TRXNAME_ThreadInherited);
 		m_parent = null;
 	}
 

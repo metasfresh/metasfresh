@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,6 +25,7 @@ package org.compiere;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,12 +37,14 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public final class SpringContextHolder
 {
-	public static final transient SpringContextHolder instance = new SpringContextHolder();
+	public static final SpringContextHolder instance = new SpringContextHolder();
 
-	private static final transient Logger logger = LogManager.getLogger(SpringContextHolder.class);
+	private static final Logger logger = LogManager.getLogger(SpringContextHolder.class);
 
 	@Nullable
 	private ApplicationContext applicationContext;
@@ -58,6 +61,7 @@ public final class SpringContextHolder
 		return applicationContext;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isApplicationContextSet()
 	{
 		return applicationContext != null;
@@ -133,6 +137,32 @@ public final class SpringContextHolder
 		return springApplicationContext.getBean(requiredType);
 	}
 
+	public <T> T getBean(@NonNull final Class<T> requiredType, @NonNull final String name)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
+			if (beanImpl != null)
+			{
+				return beanImpl;
+			}
+		}
+
+		final ApplicationContext springApplicationContext = getApplicationContext();
+		try
+		{
+			throwExceptionIfNull(springApplicationContext);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.appendParametersToMessage()
+					.setParameter("requiredType", requiredType)
+					.setParameter("name", name);
+		}
+		// noinspection ConstantConditions
+		return springApplicationContext.getBean(name, requiredType);
+	}
+
 	/**
 	 * can be used if a service might be retrieved before the spring application context is up
 	 */
@@ -166,32 +196,6 @@ public final class SpringContextHolder
 			}
 			throw e;
 		}
-	}
-
-	public <T> T getBean(@NonNull final Class<T> requiredType, @NonNull final String name)
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
-			if (beanImpl != null)
-			{
-				return beanImpl;
-			}
-		}
-
-		final ApplicationContext springApplicationContext = getApplicationContext();
-		try
-		{
-			throwExceptionIfNull(springApplicationContext);
-		}
-		catch (final AdempiereException e)
-		{
-			throw e.appendParametersToMessage()
-					.setParameter("requiredType", requiredType)
-					.setParameter("name", name);
-		}
-		// noinspection ConstantConditions
-		return springApplicationContext.getBean(name, requiredType);
 	}
 
 	/**
@@ -278,6 +282,37 @@ public final class SpringContextHolder
 	public static <T> Lazy<T> lazyBean(@NonNull final Class<T> requiredType, @Nullable final T initialBean)
 	{
 		return new Lazy<>(requiredType, initialBean);
+	}
+
+	public Optional<String> getProperty(@NonNull final String name)
+	{
+		if (applicationContext != null)
+		{
+			final String springContextValue = StringUtils.trimBlankToNull(applicationContext.getEnvironment().getProperty(name));
+			if (springContextValue != null)
+			{
+				logger.debug("Returning the spring context's value {}={} instead of looking up the AD_SysConfig record", name, springContextValue);
+				return Optional.of(springContextValue);
+			}
+		}
+		else
+		{
+			// If there is no Spring context then go an check JVM System Properties.
+			// Usually we will get here when we will run some tools based on metasfresh framework.
+
+			final Properties systemProperties = System.getProperties();
+			final String systemPropertyValue = StringUtils.trimBlankToNull(systemProperties.getProperty(name));
+			if (systemPropertyValue != null)
+			{
+				logger.debug("Returning the JVM system property's value {}={} instead of looking up the AD_SysConfig record", name, systemPropertyValue);
+				return Optional.of(systemPropertyValue);
+			}
+
+			// If there is no JVM System Property then go and check environment variables
+			return StringUtils.trimBlankToOptional(System.getenv(name));
+		}
+
+		return Optional.empty();
 	}
 
 	//

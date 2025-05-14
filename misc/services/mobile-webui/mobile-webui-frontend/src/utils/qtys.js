@@ -73,7 +73,7 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null }) => {
     MAX_maximumFractionDigits
   );
 
-  qtyEffective = parseFloat(qtyEffective.toFixed(maximumFractionDigits));
+  qtyEffective = parseFloat(Number(qtyEffective).toFixed(maximumFractionDigits));
 
   if (maximumFractionDigits < MAX_maximumFractionDigits) {
     formatOptions.minimumFractionDigits = 0;

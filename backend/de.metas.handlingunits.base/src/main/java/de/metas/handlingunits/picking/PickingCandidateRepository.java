@@ -514,18 +514,18 @@ public class PickingCandidateRepository
 
 	@NonNull
 	public ImmutableList<PickingCandidate> getDraftedByHuIdAndPickingSlotId(
-			@Nullable final HuId huId,
+			@NonNull final ImmutableSet<HuId> huIds,
 			@Nullable final PickingSlotId pickingSlotId)
 	{
-		Check.assume(huId != null || pickingSlotId != null, "At least one of HuId and pickingSlotId must be set!");
+		Check.assume(!huIds.isEmpty() || pickingSlotId != null, "At least one of HuIds and pickingSlotId must be set!");
 
 		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, PickingCandidateStatus.Draft);
 
-		if (huId != null)
+		if (!huIds.isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId);
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huIds);
 		}
 		if (pickingSlotId != null)
 		{

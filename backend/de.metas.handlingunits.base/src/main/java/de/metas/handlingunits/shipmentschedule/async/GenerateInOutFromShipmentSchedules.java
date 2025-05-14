@@ -10,6 +10,7 @@ import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
@@ -33,7 +34,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -71,7 +71,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final IParams parameters = getParameters();
 
 		// Create candidates
-		final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride = extractScheduleId2QtyToDeliverOverride(parameters);
+		final QtyToDeliverMap scheduleId2QtyToDeliverOverride = QtyToDeliverMap.fromJson(parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override));
 
 		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates(scheduleId2QtyToDeliverOverride);
 		if (shipmentSchedulesWithHU.isEmpty())
@@ -136,25 +136,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		return result.build();
 	}
 
-	@NonNull
-	private ImmutableMap<ShipmentScheduleId, BigDecimal> extractScheduleId2QtyToDeliverOverride(@NonNull final IParams parameters)
-	{
-		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> result = ImmutableMap.builder();
-		final Collection<String> parameterNames = parameters.getParameterNames();
-		for (final String parameterName : parameterNames)
-		{
-			if (parameterName.startsWith(ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override))
-			{
-				final BigDecimal qtyToDeliverOverride = parameters.getParameterAsBigDecimal(parameterName);
-				final String shipmentScheduleIdStr = parameterName.substring(ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override.length());
-				result.put(
-						ShipmentScheduleId.ofRepoId(Integer.parseInt(shipmentScheduleIdStr)),
-						qtyToDeliverOverride);
-			}
-		}
-		return result.build();
-	}
-
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
 	 * <p>
@@ -172,7 +153,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 * <p>
 	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
-	private List<ShipmentScheduleWithHU> retrieveCandidates(@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride)
+	private List<ShipmentScheduleWithHU> retrieveCandidates(@NonNull final QtyToDeliverMap scheduleId2QtyToDeliverOverride)
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
@@ -206,7 +187,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private ImmutableList<I_M_ShipmentSchedule> getShipmentSchedules()
 	{
 		ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = this._shipmentSchedules;
-		if(shipmentSchedules == null)
+		if (shipmentSchedules == null)
 		{
 			shipmentSchedules = this._shipmentSchedules = retrieveShipmentSchedules();
 		}

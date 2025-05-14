@@ -22,14 +22,18 @@
 
 package de.metas.externalsystem;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.externalsystem.model.X_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
@@ -46,44 +50,30 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Optional;
 
 import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
 import static de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.createExternalConfigParameterRecord;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(SnapshotExtension.class)
 class ExternalSystemConfigRepoTest
 {
 
 	private ExternalSystemConfigRepo externalSystemConfigRepo;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository());
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -108,7 +98,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -146,7 +136,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -169,7 +159,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -209,7 +199,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -236,7 +226,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -263,7 +253,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -316,7 +306,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Alberta_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -374,7 +364,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Shopware6_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -399,7 +389,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -422,7 +412,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -445,7 +435,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -469,7 +459,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -516,7 +506,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -541,7 +531,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -568,7 +558,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -636,7 +626,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -688,7 +678,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		final ExternalSystemParentConfig updatedChildConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
 		assertThat(updatedChildConfig).isNotNull();
-		expect(updatedChildConfig).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(updatedChildConfig);
 
 		assertThat(updatedChildConfig.isActive()).isTrue();
 
@@ -713,8 +703,11 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		leichMehlConfig.setExternalSystemValue("LeichMehl");
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_Disk);
+		leichMehlConfig.setPluFileLocalFolder("/serverFolder");
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -723,7 +716,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -740,9 +733,10 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		leichMehlConfig.setExternalSystemValue(value);
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
-
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 		saveRecord(leichMehlConfig);
 
 		// when
@@ -751,7 +745,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -770,6 +764,7 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -792,8 +787,10 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		leichMehlConfig.setExternalSystemValue("testLeichMehlValue");
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -805,7 +802,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -820,8 +817,10 @@ class ExternalSystemConfigRepoTest
 		configLeichMehl.setExternalSystem_Config_ID(parentRecordActive.getExternalSystem_Config_ID());
 		configLeichMehl.setExternalSystemValue("testLeichMehlValue");
 		configLeichMehl.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehl.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
 		configLeichMehl.setTCP_PortNumber(8080);
 		configLeichMehl.setTCP_Host("tcpHost");
+		configLeichMehl.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(configLeichMehl);
 
@@ -835,8 +834,10 @@ class ExternalSystemConfigRepoTest
 		configLeichMehlInactive.setExternalSystem_Config_ID(parentRecordInactive.getExternalSystem_Config_ID());
 		configLeichMehlInactive.setExternalSystemValue("testLeichMehlValueInactive");
 		configLeichMehlInactive.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehlInactive.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
 		configLeichMehlInactive.setTCP_PortNumber(8080);
 		configLeichMehlInactive.setTCP_Host("tcpHost");
+		configLeichMehlInactive.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(configLeichMehlInactive);
 
@@ -846,7 +847,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -867,7 +868,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test

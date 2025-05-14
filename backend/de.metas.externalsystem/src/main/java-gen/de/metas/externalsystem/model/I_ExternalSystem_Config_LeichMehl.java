@@ -2,17 +2,19 @@ package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for ExternalSystem_Config_LeichMehl
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_LeichMehl
+public interface I_ExternalSystem_Config_LeichMehl 
 {
 
 	String Table_Name = "ExternalSystem_Config_LeichMehl";
 
-	//	/** AD_Table_ID=542129 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=542129 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -75,6 +77,27 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set CU/TU PLU.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCU_TU_PLU (java.lang.String CU_TU_PLU);
+
+	/**
+	 * Get CU/TU PLU.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCU_TU_PLU();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_CU_TU_PLU = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "CU_TU_PLU", null);
+	String COLUMNNAME_CU_TU_PLU = "CU_TU_PLU";
+
+	/**
 	 * Set External System Config.
 	 *
 	 * <br>Type: TableDir
@@ -92,11 +115,11 @@ public interface I_ExternalSystem_Config_LeichMehl
 	 */
 	int getExternalSystem_Config_ID();
 
-	de.metas.externalsystem.model.I_ExternalSystem_Config getExternalSystem_Config();
+	I_ExternalSystem_Config getExternalSystem_Config();
 
-	void setExternalSystem_Config(de.metas.externalsystem.model.I_ExternalSystem_Config ExternalSystem_Config);
+	void setExternalSystem_Config(I_ExternalSystem_Config ExternalSystem_Config);
 
-	ModelColumn<I_ExternalSystem_Config_LeichMehl, de.metas.externalsystem.model.I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "ExternalSystem_Config_ID", de.metas.externalsystem.model.I_ExternalSystem_Config.class);
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "ExternalSystem_Config_ID", I_ExternalSystem_Config.class);
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
@@ -127,7 +150,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystemValue (java.lang.String ExternalSystemValue);
+	void setExternalSystemValue (String ExternalSystemValue);
 
 	/**
 	 * Get Value.
@@ -136,7 +159,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getExternalSystemValue();
+	String getExternalSystemValue();
 
 	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "ExternalSystemValue", null);
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
@@ -165,7 +188,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Enable PLU-file export audit.
+	 * Set PLU-file export audit.
 	 * If enabled, then all the changes done during the PLU-file export will be stored also in metasfresh i.e. the replaced keys from the PLU-file
 	 *
 	 * <br>Type: YesNo
@@ -175,7 +198,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	void setIsPluFileExportAuditEnabled (boolean IsPluFileExportAuditEnabled);
 
 	/**
-	 * Get Enable PLU-file export audit.
+	 * Get PLU-file export audit.
 	 * If enabled, then all the changes done during the PLU-file export will be stored also in metasfresh i.e. the replaced keys from the PLU-file
 	 *
 	 * <br>Type: YesNo
@@ -188,24 +211,68 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_IsPluFileExportAuditEnabled = "IsPluFileExportAuditEnabled";
 
 	/**
-	 * Set Product directory.
-	 * Root directly that contains all PLU Files
+	 * Set Send PLU file to.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProduct_BaseFolderName (java.lang.String Product_BaseFolderName);
+	void setPluFileDestination (java.lang.String PluFileDestination);
 
 	/**
-	 * Get Product directory.
-	 * Root directly that contains all PLU Files
+	 * Get Send PLU file to.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getPluFileDestination();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_PluFileDestination = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "PluFileDestination", null);
+	String COLUMNNAME_PluFileDestination = "PluFileDestination";
+
+	/**
+	 * Set Server-Folder.
+	 * Directory on the external systems server in which a resulting PLU file is saved
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPluFileLocalFolder (@Nullable java.lang.String PluFileLocalFolder);
+
+	/**
+	 * Get Server-Folder.
+	 * Directory on the external systems server in which a resulting PLU file is saved
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPluFileLocalFolder();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_PluFileLocalFolder = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "PluFileLocalFolder", null);
+	String COLUMNNAME_PluFileLocalFolder = "PluFileLocalFolder";
+
+	/**
+	 * Set PLU template directory.
+	 * Root directly that contains all PLU template files
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getProduct_BaseFolderName();
+	void setProduct_BaseFolderName (String Product_BaseFolderName);
+
+	/**
+	 * Get PLU template directory.
+	 * Root directly that contains all PLU template files
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	String getProduct_BaseFolderName();
 
 	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_Product_BaseFolderName = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "Product_BaseFolderName", null);
 	String COLUMNNAME_Product_BaseFolderName = "Product_BaseFolderName";
@@ -218,7 +285,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTCP_Host (java.lang.String TCP_Host);
+	void setTCP_Host (String TCP_Host);
 
 	/**
 	 * Get LANScale Address.
@@ -228,7 +295,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getTCP_Host();
+	String getTCP_Host();
 
 	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_TCP_Host = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "TCP_Host", null);
 	String COLUMNNAME_TCP_Host = "TCP_Host";

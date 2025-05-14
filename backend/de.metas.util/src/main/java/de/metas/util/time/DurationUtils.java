@@ -90,12 +90,17 @@ public class DurationUtils
 		return BigDecimal.valueOf(toLong(duration, unit));
 	}
 
+	public static Duration fromBigDecimal(@NonNull final BigDecimal duration, @NonNull final TemporalUnit unit)
+	{
+		return Duration.of(duration.longValue(), unit);
+	}
+
 	public static int toInt(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
 	{
 		return (int)toLong(duration, unit);
 	}
 
-	private static long toLong(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
+	public static long toLong(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
 	{
 		if (unit == ChronoUnit.SECONDS)
 		{
@@ -140,4 +145,14 @@ public class DurationUtils
 		throw Check.newException("No smaller temporal unit defined for {}", unit);
 	}
 
+	public static boolean isCompleteDays(@NonNull final Duration duration)
+	{
+		if (duration.isZero())
+		{
+			return true;
+		}
+
+		final Duration daysAsDuration = Duration.ofDays(duration.toDays());
+		return daysAsDuration.equals(duration);
+	}
 }

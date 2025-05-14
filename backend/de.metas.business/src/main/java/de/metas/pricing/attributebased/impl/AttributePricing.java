@@ -10,6 +10,7 @@ import de.metas.pricing.IPackingMaterialAware;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
@@ -17,6 +18,7 @@ import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductScalePriceService;
@@ -53,6 +55,7 @@ public class AttributePricing implements IPricingRule
 
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
@@ -132,7 +135,7 @@ public class AttributePricing implements IPricingRule
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 		final I_M_PriceList_Version pricelistVersion = loadOutOfTrx(productPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
-		final I_M_PriceList priceList = pricelistVersion.getM_PriceList();
+		final I_M_PriceList priceList = priceListDAO.getById(PriceListId.ofRepoId(pricelistVersion.getM_PriceList_ID()));
 
 		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
 		if (productPriceSettings == null)
@@ -298,11 +301,11 @@ public class AttributePricing implements IPricingRule
 	 * Extracts an ASI from the given {@code pricingCtx}.
 	 *
 	 * @return <ul>
-	 *         <li>ASI
-	 *         <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
-	 *         or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
-	 *         or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
-	 *         </ul>
+	 * <li>ASI
+	 * <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
+	 * or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
+	 * or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
+	 * </ul>
 	 */
 	@Nullable
 	protected static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)

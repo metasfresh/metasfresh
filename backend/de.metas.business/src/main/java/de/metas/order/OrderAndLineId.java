@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -93,6 +94,11 @@ public class OrderAndLineId
 		return orderId != null && orderLineId != null
 				? new OrderAndLineId(orderId, orderLineId)
 				: null;
+	}
+
+	public static Optional<OrderAndLineId> optionalOfRepoIds(final int orderRepoId, final int orderLineRepoId)
+	{
+		return Optional.ofNullable(ofRepoIdsOrNull(orderRepoId, orderLineRepoId));
 	}
 
 	public static int toOrderRepoId(final OrderAndLineId orderAndLineId)

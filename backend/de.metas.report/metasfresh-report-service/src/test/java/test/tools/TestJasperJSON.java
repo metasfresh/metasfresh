@@ -1,16 +1,5 @@
 package test.tools;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.tools.AdempiereToolsHelper;
-import org.compiere.util.DB;
-import org.compiere.util.Ini;
-import org.junit.Ignore;
-
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import net.sf.jasperreports.engine.JRException;
@@ -21,6 +10,16 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.query.JsonQLQueryExecuterFactory;
 import net.sf.jasperreports.engine.util.JRLoader;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.tools.AdempiereToolsHelper;
+import org.compiere.util.DB;
+import org.junit.Ignore;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /*
  * #%L
@@ -54,7 +53,7 @@ public class TestJasperJSON
 		// Start ADempiere
 		AdempiereToolsHelper.getInstance().startupMinimal();
 		LogManager.setLevel(Level.DEBUG);
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, false); // metas: don't log migration scripts
+		MigrationScriptFileLoggerHolder.setEnabled(false); // metas: don't log migration scripts
 
 		//
 		// get some value from DB

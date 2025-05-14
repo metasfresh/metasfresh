@@ -8,6 +8,7 @@ export const initialState = {
   entries: [
     {
       location: '/',
+      //screenId: ..., // will be set to something like ApplicationsListScreen, a bit later
       hidden: true,
       values: [],
       userInstructions: null,
@@ -17,13 +18,13 @@ export const initialState = {
   ],
 };
 
-const launchersUrlRegExp = /\/\w+\/launchers/gi;
+const launchersUrlRegExp = /\/\w+\/launchers\/?$/i;
 
 const isLaunchersPathname = (pathname) => launchersUrlRegExp.test(pathname);
 
 const getHeaderEntries = (state) => state.headers.entries ?? [];
 
-export const getEntryItemsFromState = (state) => {
+const getEntryItemsFromState = (state) => {
   const headersEntries = getHeaderEntries(state);
 
   let nextUniqueId = 1;
@@ -48,19 +49,21 @@ export const getEntryItemsFromState = (state) => {
   return Object.values(itemsByKey);
 };
 
-export const getCaptionFromHeaders = (state) => {
+const getCaptionFromHeaders = (state) => {
   // return last known caption
   return state.headers.entries.reduce((acc, entry) => (entry.caption ? entry.caption : acc), null);
 };
 
-export const getUserInstructionsFromHeaders = (state) => {
+const getUserInstructionsFromHeaders = (state) => {
   // return last known caption
   return state.headers.entries.reduce((acc, entry) => (entry.userInstructions ? entry.userInstructions : acc), null);
 };
 
-export const useHomeLocation = () => {
-  const { url: currentLocation } = useRouteMatch();
-  return useSelector((state) => getHomeLocation({ state, currentLocation }), shallowEqual);
+export const useHeaders = () => {
+  return useSelector((state) => ({
+    userInstructions: getUserInstructionsFromHeaders(state),
+    entryItems: getEntryItemsFromState(state),
+  }));
 };
 
 const getHomeLocation = ({ state, currentLocation }) => {
@@ -88,41 +91,56 @@ const getHomeLocation = ({ state, currentLocation }) => {
   return { location: '/', iconClassName: DEFAULT_homeIconClassName };
 };
 
+const getBackLocation = ({ state }) => {
+  const headersEntries = getHeaderEntries(state);
+
+  for (let i = headersEntries.length - 1; i >= 0; i--) {
+    const entry = headersEntries[i];
+
+    if (!entry.backLocation) {
+      continue;
+    }
+
+    // console.log(`getBackLocation - returning ${entry.backLocation}`, { entry, i, headersEntries });
+    return entry.backLocation;
+  }
+
+  // console.log(`getBackLocation - no back location found, returning null`, { headersEntries });
+  return null;
+};
+
+export const useBackLocationFromHeaders = () => {
+  return useSelector((state) => getBackLocation({ state }), shallowEqual);
+};
+
+const getScreenIdFromHeaders = (state) => {
+  const headersEntries = getHeaderEntries(state);
+  return headersEntries.length > 0 ? headersEntries[headersEntries.length - 1]?.screenId : null;
+};
+
+export const useNavigationInfoFromHeaders = () => {
+  const { url: currentLocation } = useRouteMatch();
+
+  return useSelector(
+    (state) => ({
+      screenId: getScreenIdFromHeaders(state),
+      caption: getCaptionFromHeaders(state),
+      homeLocation: getHomeLocation({ state, currentLocation }),
+    }),
+    shallowEqual
+  );
+};
+
 export default function reducer(state = initialState, action) {
   const { payload } = action;
 
   switch (action.type) {
     case types.HEADER_PUSH_ENTRY: {
-      const { location, caption, values, userInstructions, isHomeStop, homeIconClassName } = payload;
-
-      // if there are no header values, there's no reason to block space
-      const hidden = !values.length;
-
-      //
-      // Search by location and update an existing entry if possible
-      let existingEntryUpdated = false;
-      let newEntries = state.entries.map((entry) => {
-        if (entry.location === location) {
-          existingEntryUpdated = true;
-          return { ...entry, caption, values, userInstructions, isHomeStop, homeIconClassName, hidden };
-        } else {
-          return entry;
-        }
-      });
-
-      if (existingEntryUpdated) {
-        newEntries = removeEntries({
-          entriesArray: newEntries,
-          startLocation: location,
-          inclusive: false,
-        });
-      } else {
-        const newEntry = { location, caption, values, userInstructions, isHomeStop, homeIconClassName, hidden };
-        newEntries.push(newEntry);
-        // console.log('added newEntry: ', newEntry);
-      }
-
-      // console.log('HEADER_PUSH_ENTRY=>newEntries:', newEntries);
+      const newEntries = createOrUpdateEntry({ entries: state.entries, payload, isUpdateOnly: false });
+      return { ...state, entries: newEntries };
+    }
+    case types.HEADER_UPDATE_ENTRY: {
+      const newEntries = createOrUpdateEntry({ entries: state.entries, payload, isUpdateOnly: true });
       return { ...state, entries: newEntries };
     }
 
@@ -134,9 +152,13 @@ export default function reducer(state = initialState, action) {
       let newEntries = null;
 
       // clear header on main urls
-      if (pathname === '/' || isLaunchersPathname(pathname)) {
+      const isLaunchersScreen = isLaunchersPathname(pathname);
+      if (pathname === '/') {
         newEntries = [...initialState.entries];
-        //console.log('HEADERS: @@router/LOCATION_CHANGE: CLEAR!!!');
+        // console.log('cleared header entries for / url', { pathname, action });
+      } else if (isLaunchersScreen) {
+        newEntries = [...initialState.entries];
+        // console.log('cleared header entries for launchers url', { pathname, action });
       } else {
         newEntries = removeEntries({
           entriesArray: state.entries,
@@ -155,6 +177,103 @@ export default function reducer(state = initialState, action) {
     }
   }
 }
+
+const createOrUpdateEntry = ({ entries, payload, isUpdateOnly }) => {
+  const { location } = payload;
+  const hidden = payload.hidden || !payload.values?.length; // if there are no header values, there's no reason to block space
+  const newEntryValues = { ...payload, hidden };
+
+  //
+  // Search by location and update an existing entry if possible
+  let existingEntryUpdated = false;
+  let newEntries = entries.map((entry) => {
+    if (entry.location === location) {
+      existingEntryUpdated = true;
+      return mergeEntries(entry, newEntryValues);
+    } else {
+      return entry;
+    }
+  });
+
+  //
+  // If we are allowed to also create/remove entries then do so
+  if (!isUpdateOnly) {
+    if (existingEntryUpdated) {
+      newEntries = removeEntries({
+        entriesArray: newEntries,
+        startLocation: location,
+        inclusive: false,
+      });
+    } else {
+      const newEntry = mergeEntries({ location }, newEntryValues);
+      newEntries.push(newEntry);
+      // console.log('added newEntry: ', newEntry);
+    }
+  } else {
+    if (!existingEntryUpdated) {
+      // console.log('Ignoring HEADER_UPDATE_ENTRY because no existing entry was found', {
+      //   payload,
+      //   isUpdateOnly,
+      //   entries,
+      // });
+
+      return entries;
+    }
+  }
+
+  return newEntries;
+};
+
+const mergeEntries = (entry, newValues) => {
+  const newEntry = { ...entry };
+
+  Object.keys(newValues).forEach((key) => {
+    if (key === 'values') {
+      newEntry[key] = mergeEntryValues(entry[key], newValues[key]);
+    } else {
+      const newValue = newValues[key];
+      if (newValue !== undefined) {
+        newEntry[key] = newValue;
+      }
+    }
+  });
+
+  return newEntry;
+};
+
+const mergeEntryValues = (valuesArray, newValuesArray) => {
+  if (!newValuesArray?.length) return valuesArray ? [...valuesArray] : [];
+  if (!valuesArray?.length) return [...newValuesArray];
+
+  const newValuesByCaption = newValuesArray.reduce((accum, value) => {
+    accum[value.caption] = value;
+    return accum;
+  }, {});
+
+  const result = [];
+
+  valuesArray.forEach((value) => {
+    const caption = value.caption;
+    const newValue = newValuesByCaption[caption];
+    delete newValuesByCaption[caption];
+    if (newValue) {
+      result.push(newValue);
+    } else {
+      result.push(value);
+    }
+  });
+
+  newValuesArray.forEach((value) => {
+    const caption = value.caption;
+    const newValue = newValuesByCaption[caption];
+    delete newValuesByCaption[caption];
+    if (newValue) {
+      result.push(newValue);
+    }
+  });
+
+  return result;
+};
 
 const removeEntries = ({ entriesArray, startLocation, inclusive }) => {
   let removeEntry = false;

@@ -63,3 +63,10 @@ export const convertMomentToTimezone = (momentDate, timeZone) => {
     return momentWithTZ.tz(timeZone, false);
   }
 };
+
+export const setMomentToEndOfDay = (moment) => {
+  moment.hours(23);
+  moment.minutes(59);
+  moment.seconds(59);
+  moment.milliseconds(999);
+};

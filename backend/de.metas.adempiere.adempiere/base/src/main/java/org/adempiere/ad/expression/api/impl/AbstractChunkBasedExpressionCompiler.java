@@ -1,8 +1,5 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionCompiler;
@@ -11,6 +8,8 @@ import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L

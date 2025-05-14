@@ -9,9 +9,13 @@ import org.slf4j.MDC;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class SharedTestContext
@@ -27,6 +31,18 @@ public class SharedTestContext
 	public static void put(@NonNull final String key, @Nullable final Supplier<?> valueSupplier)
 	{
 		put(key, (Object)valueSupplier);
+	}
+
+	public static <T> void put(@NonNull final String key, @Nullable final List<T> list, @NonNull Function<T, String> toString)
+	{
+		if (list == null)
+		{
+			put(key, "(empty)");
+		}
+		else
+		{
+			put(key, () -> list.stream().map(toString).collect(Collectors.toList()));
+		}
 	}
 
 	public static void put(@NonNull final String key, @Nullable final Object value)
@@ -58,6 +74,12 @@ public class SharedTestContext
 	public interface ThrowingRunnable
 	{
 		void run() throws Throwable;
+	}
+
+	@FunctionalInterface
+	public interface ThrowingConsumer<E>
+	{
+		void accept(E element) throws Throwable;
 	}
 
 	/**
@@ -103,6 +125,17 @@ public class SharedTestContext
 		finally
 		{
 			threadLocal.set(parent);
+		}
+	}
+
+	public <E> void forEach(@NonNull final Collection<E> collection, String elementName, @NonNull final ThrowingConsumer<E> consumer) throws Throwable
+	{
+		for (final E element : collection)
+		{
+			run(() -> {
+				put(elementName, element);
+				consumer.accept(element);
+			});
 		}
 	}
 

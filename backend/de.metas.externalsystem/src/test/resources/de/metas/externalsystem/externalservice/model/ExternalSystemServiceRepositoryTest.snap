@@ -1,12 +1,12 @@
 de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTest.givenKnownValue_whenGetByValue_thenReturnMatchingService=[
   {
-    "id" : 100001,
-    "externalSystemType" : "GRSSignum",
-    "serviceValue" : "grs_service_value",
-    "name" : "grs_name",
-    "description" : "Description",
-    "enableCommand" : "EnableCommand",
-    "disableCommand" : "DisableCommand"
+    "description": "Description",
+    "disableCommand": "DisableCommand",
+    "enableCommand": "EnableCommand",
+    "externalSystemType": "GRSSignum",
+    "id": 100001,
+    "name": "grs_name",
+    "serviceValue": "grs_service_value"
   }
 ]
 
@@ -14,13 +14,13 @@ de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTes
 de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepositoryTest.givenType_whenGetAllByType_thenReturnMatchingServices=[
   [
     {
-      "id" : 100001,
-      "externalSystemType" : "GRSSignum",
-      "serviceValue" : "grs_service_value",
-      "name" : "grs_name",
-      "description" : "Description",
-      "enableCommand" : "EnableCommand",
-      "disableCommand" : "DisableCommand"
+      "description": "Description",
+      "disableCommand": "DisableCommand",
+      "enableCommand": "EnableCommand",
+      "externalSystemType": "GRSSignum",
+      "id": 100001,
+      "name": "grs_name",
+      "serviceValue": "grs_service_value"
     }
   ]
 ]

@@ -228,7 +228,6 @@ public final class ADialogDialog extends CDialog implements ActionListener
 
 	private JMenuBar menuBar = new JMenuBar();
 	private JMenu mFile = AEnv.getMenu("File");
-	private CMenuItem mEMail = new CMenuItem();
 	private CMenuItem mEnd = new CMenuItem();
 	private CMenuItem mPreference = new CMenuItem();
 	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
@@ -251,9 +250,6 @@ public final class ADialogDialog extends CDialog implements ActionListener
 		this.setJMenuBar(menuBar);
 		confirmPanel.setActionListener(this); // set it first just to know buttons are working in case something failed
 		//
-		mEMail.setIcon(Images.getImageIcon2("EMailSupport16"));
-		mEMail.setText(msgBL.getMsg(Env.getCtx(), "EMailSupport"));
-		mEMail.addActionListener(this);
 		mPreference.setIcon(Images.getImageIcon2("Preference16"));
 		mPreference.setText(msgBL.getMsg(Env.getCtx(), "Preference"));
 		mPreference.addActionListener(this);
@@ -277,7 +273,6 @@ public final class ADialogDialog extends CDialog implements ActionListener
 				, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0));
 		//
 		menuBar.add(mFile);
-		mFile.add(mEMail);
 		if (Env.getUserRolePermissions().isShowPreference())
 			mFile.add(mPreference);
 		mFile.addSeparator();
@@ -384,13 +379,6 @@ public final class ADialogDialog extends CDialog implements ActionListener
 			m_returnCode = A_CANCEL;
 			dispose();
 		}
-		else if (e.getSource() == mEMail)
-		{
-			String title = getTitle();
-			String text = info.getText();
-			dispose();                  // otherwise locking
-			ADialog.createSupportEMail(this, title, text);
-		}
 		else if (e.getSource() == mPreference)
 		{
 			if (Env.getUserRolePermissions().isShowPreference())
@@ -464,7 +452,7 @@ public final class ADialogDialog extends CDialog implements ActionListener
 	}
 
 	/**
-	 * Request focus on inital answer (see {@link #getInialAnswer()}) button.
+	 * Request focus on inital answer.
 	 */
 	private void focusInitialAnswerButton()
 	{

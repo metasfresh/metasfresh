@@ -111,7 +111,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(request.getAllPackagesGrossWeightInKg(DEFAULT_PackageWeightInKg).intValue())
+						.grossWeightKg(request.getAllPackagesGrossWeightInKg(DEFAULT_PackageWeightInKg))
 						.content(request.getAllPackagesContentDescription().orElse("-"))
 						.build())
 				// .customerReference(null)

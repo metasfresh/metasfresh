@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IProductAcctDAO;
-import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.api.ProductCategoryAccounts;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
@@ -152,7 +152,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 		return ProductCategoryAccounts.builder()
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.costingLevel(CostingLevel.forNullableCode(record.getCostingLevel()))
+				.costingLevel(CostingLevel.ofNullableCode(record.getCostingLevel()))
 				.costingMethod(CostingMethod.ofNullableCode(record.getCostingMethod()))
 				.accountIdsByColumnName(accountIds)
 				.build();

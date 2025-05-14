@@ -22,12 +22,15 @@
 
 package de.metas.handlingunits.qrcodes.model;
 
-import lombok.NonNull;
-import org.adempiere.mm.attributes.AttributeCode;
-
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface IHUQRCode
 {
-	Optional<String> getAttributeValueAsString(@NonNull AttributeCode attributeCode);
+	Optional<BigDecimal> getWeightInKg();
+
+	Optional<LocalDate> getBestBeforeDate();
+
+	Optional<String> getLotNumber();
 }

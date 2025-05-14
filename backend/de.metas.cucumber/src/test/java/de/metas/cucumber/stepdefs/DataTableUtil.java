@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -78,7 +79,7 @@ public class DataTableUtil
 				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
 				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
-	
+
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
 	{
 		return prefix + '_' + (++recordIdentifierFallback);
@@ -98,6 +99,14 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@Nullable
+	public Integer extractIntegerOrNullForColumnName(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntegerOrNullForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@Nullable
@@ -261,6 +270,40 @@ public class DataTableUtil
 	}
 
 	@Nullable
+	public static LocalDate extractLocalDateOrNullForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		try
+		{
+			return Check.isBlank(string) ? null : LocalDate.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@NonNull
+	public static LocalDate extractLocalDateForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringForColumnName(dataTableRow, columnName);
+		try
+		{
+			return LocalDate.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@Nullable
 	public static ZonedDateTime extractZonedDateTimeOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
@@ -359,6 +402,12 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@NonNull
+	public static BigDecimal extractBigDecimalForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractBigDecimalForColumnName(dataTableRow.asMap(), columnName);
 	}
 
 	@NonNull

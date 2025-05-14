@@ -73,7 +73,7 @@ public class M_HU_Reservation_StepDef
 
 			final HUReservation huReservation = huReservationService.makeReservation(
 							ReserveHUsRequest.builder()
-									.qtyToReserve(Quantitys.create(huStorageRecord.getQty(), UomId.ofRepoId(huStorageRecord.getC_UOM_ID())))
+									.qtyToReserve(Quantitys.of(huStorageRecord.getQty(), UomId.ofRepoId(huStorageRecord.getC_UOM_ID())))
 									.documentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
 									.productId(ProductId.ofRepoId(huStorageRecord.getM_Product_ID()))
 									.huId(huId)

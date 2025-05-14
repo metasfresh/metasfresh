@@ -40,6 +40,10 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | s_s_1                            | 10                        |
 
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_1                            |
+
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1            | s_s_1                            | D                 | Y                  |

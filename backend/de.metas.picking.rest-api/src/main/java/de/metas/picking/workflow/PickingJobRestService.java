@@ -22,8 +22,16 @@
 
 package de.metas.picking.workflow;
 
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADRefList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -39,19 +47,22 @@ import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class PickingJobRestService
 {
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 	private final PickingJobService pickingJobService;
 	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
@@ -84,13 +95,28 @@ public class PickingJobRestService
 			final @NonNull PickingWFProcessStartParams params,
 			final @NonNull UserId invokerId)
 	{
+		final PickingJobAggregationType aggregationType = params.getAggregationType();
+
+		final BPartnerId customerId = params.getCustomerId();
+		final PickingJobOptions pickingJobOptions = customerId != null ? getPickingJobOptions(customerId) : null;
+		final boolean allowPickingAnyHU = pickingJobOptions != null ? pickingJobOptions.isAllowPickingAnyHU() : aggregationType.isDefaultAllowPickingAnyHU();
+
 		return pickingJobService.createPickingJob(PickingJobCreateRequest.builder()
 				.pickerId(invokerId)
+				.aggregationType(aggregationType)
 				.salesOrderId(params.getSalesOrderId())
 				.deliveryBPLocationId(params.getDeliveryBPLocationId())
 				.warehouseTypeId(params.getWarehouseTypeId())
-				.isAllowPickingAnyHU(mobileUIPickingUserProfileRepository.getProfile().isAllowPickingAnyHU())
+				.isAllowPickingAnyHU(allowPickingAnyHU)
+				.shipmentScheduleIds(params.getShipmentScheduleIds())
 				.build());
+	}
+
+	public PickingJob setPickFromHU(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final HUInfo pickFromHU)
+	{
+		return pickingJobService.setPickFromHU(pickingJob, pickFromHU);
 	}
 
 	public PickingJob allocateAndSetPickingSlot(
@@ -139,64 +165,84 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
-		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
 		return pickingJobService.prepareToComplete(pickingJob)
-				.createShipmentPolicy(profile.getCreateShipmentPolicy())
 				.execute();
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
 		return pickingJobService.getQtyRejectedReasons();
 	}
 
-	public List<LUPickingTarget> getLUAvailableTargets(@NonNull final PickingJob pickingJob)
+	public List<LUPickingTarget> getLUAvailableTargets(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.getLUAvailableTargets(pickingJob);
+		return pickingJobService.getLUAvailableTargets(pickingJob, lineId);
 	}
 
-	public List<TUPickingTarget> getTUAvailableTargets(@NonNull final PickingJob pickingJob)
+	public List<TUPickingTarget> getTUAvailableTargets(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.getTUAvailableTargets(pickingJob);
+		return pickingJobService.getTUAvailableTargets(pickingJob, lineId);
 	}
 
-	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final LUPickingTarget target)
+	public PickingJob setLUPickingTarget(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId,
+			@Nullable final LUPickingTarget target)
 	{
-		return pickingJobService.setPickTarget(pickingJob, target);
+		return pickingJobService.setLUPickingTarget(pickingJob, lineId, target);
 	}
 
-	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final TUPickingTarget target)
+	public PickingJob setTUPickingTarget(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId,
+			@Nullable final TUPickingTarget target)
 	{
-		return pickingJobService.setPickTarget(pickingJob, target);
+		return pickingJobService.setTUPickingTarget(pickingJob, lineId, target);
 	}
 
-	public PickingJob closeLUPickTarget(@NonNull final PickingJob pickingJob)
+	public PickingJob closeLUPickingTarget(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.closeLUPickTarget(pickingJob);
+		return pickingJobService.closeLUPickingTarget(pickingJob, lineId);
 	}
 
-	public PickingJob closeTUPickTarget(@NonNull final PickingJob pickingJob)
+	public PickingJob closeTUPickingTarget(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.closeTUPickTarget(pickingJob);
+		return pickingJobService.closeTUPickingTarget(pickingJob, lineId);
 	}
 
-	public boolean isPickWithNewLU()
-	{
-		return mobileUIPickingUserProfileRepository.getProfile().isPickWithNewLU();
-	}
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
-	public boolean isAllowSkippingRejectedReasons()
+	@NonNull
+	public List<HuId> getClosedLUs(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		return mobileUIPickingUserProfileRepository.getProfile().isAllowSkippingRejectedReason();
-	}
+		final Set<HuId> pickedHuIds = pickingJob.getPickedHuIds(lineId);
+		if (pickedHuIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
-	public boolean isAllowNewTU()
-	{
-		return mobileUIPickingUserProfileRepository.getProfile().isAllowNewTU();
-	}
+		final HuId currentlyOpenedLUId = pickingJob.getLuPickingTarget(lineId)
+				.map(LUPickingTarget::getLuId)
+				.orElse(null);
 
-	public boolean isShowPromptWhenOverPicking()
-	{
-		return mobileUIPickingUserProfileRepository.getProfile().isShowConfirmationPromptWhenOverPick();
+		return handlingUnitsBL.getTopLevelHUs(IHandlingUnitsBL.TopLevelHusQuery.builder()
+						.hus(handlingUnitsBL.getByIds(pickedHuIds))
+						.build())
+				.stream()
+				.filter(handlingUnitsBL::isLoadingUnit)
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.filter(huId -> !HuId.equals(huId, currentlyOpenedLUId))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

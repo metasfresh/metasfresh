@@ -4,13 +4,13 @@ import de.metas.event.impl.EventMDC;
 import lombok.NonNull;
 import org.slf4j.MDC.MDCCloseable;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
  * Forwarding {@link IEventBus} template implementation.
  *
  * @author tsa
- *
  */
 abstract class ForwardingEventBus implements IEventBus
 {
@@ -85,6 +85,12 @@ abstract class ForwardingEventBus implements IEventBus
 	public void enqueueObject(final Object obj)
 	{
 		delegate().enqueueObject(obj);
+	}
+
+	@Override
+	public void enqueueObjectsCollection(@NonNull final Collection<?> objs)
+	{
+		delegate().enqueueObjectsCollection(objs);
 	}
 
 	@Override

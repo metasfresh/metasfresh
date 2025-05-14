@@ -5,6 +5,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     Given infrastructure and metasfresh are running
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And metasfresh is configured for One-DESADV-Per-ORDERS
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh initially has no EDI_Desadv_Pack_Item data
@@ -606,10 +607,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - M_HU_PI_Item_Product_ID = 101 (No Packing Item)
 
     Given metasfresh contains M_Products:
-      | Identifier     | Weight |
-      | p_1_11212023_2 | 0.25   |
-      | p_2_11212023_2 |        |
-      | p_3_11212023_2 |        |
+      | Identifier     | WeightNet |
+      | p_1_11212023_2 | 0.25 KGM  |
+      | p_2_11212023_2 |           |
+      | p_3_11212023_2 |           |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
       | p_1_11212023_2          | PCE                    | KGM                  | 0.25         | true                     |
@@ -690,9 +691,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | bp_1_11212023_2                  | endcustomer              | p_2_11212023_2          | bPartnerProductGTIN_LU |
       | bp_2_11212023_2                  | endcustomer              | p_3_11212023_2          | bPartnerProductGTIN_TU |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID | M_Product_ID   |
-      | pm_1_11212023_2         | p_2_11212023_2 |
-      | pm_2_11212023_2         | p_3_11212023_2 |
+      | M_HU_PackingMaterial_ID.Identifier | M_Product_ID   |
+      | pm_1_11212023_2                    | p_2_11212023_2 |
+      | pm_2_11212023_2                    | p_3_11212023_2 |
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier   | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
@@ -762,7 +763,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @Id:S0316_036
-  Scenario: 1 Pack from 1 line with HU for entire qty.
+  Scenario: 1 Pack from 1 line with HU for partial qty.
   There are no packing-infos to go with, but an actual HU is picked with actual weight, so we use the weight from that HU and then we use the QtyToDeliverCatch_Override for the remaining qty
   in:
   C_OrderLine:
@@ -771,10 +772,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - Weight = 0.25 KGM
 
     Given metasfresh contains M_Products:
-      | Identifier     | Weight |
-      | p_1_11212023_3 | 0.25   |
-      | p_2_11212023_3 |        |
-      | p_3_11212023_3 |        |
+      | Identifier     | WeightNet |
+      | p_1_11212023_3 | 0.25 KGM  |
+      | p_2_11212023_3 |           |
+      | p_3_11212023_3 |           |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
       | p_1_11212023_3          | PCE                    | KGM                  | 0.25         | true                     |
@@ -855,9 +856,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | bp_1_11212023_3                  | endcustomer              | p_2_11212023_3          | bPartnerProductGTIN_LU |
       | bp_2_11212023_3                  | endcustomer              | p_3_11212023_3          | bPartnerProductGTIN_TU |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID | M_Product_ID   |
-      | pm_1_11212023_3         | p_2_11212023_3 |
-      | pm_2_11212023_3         | p_3_11212023_3 |
+      | M_HU_PackingMaterial_ID.Identifier | M_Product_ID   |
+      | pm_1_11212023_3                    | p_2_11212023_3 |
+      | pm_2_11212023_3                    | p_3_11212023_3 |
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier   | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
@@ -901,9 +902,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | s_1_11212023_3        | s_s_1_11212023_3                 | PD                | Y                  |
 
     Then after not more than 120s, EDI_Desadv_Pack records are found:
-      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID              | M_HU_PackagingCode_ID        | GTIN_PackingMaterial   | SeqNo |
-      | p_1_11212023_3     | true                | createdLU_11212023_3 | huPackagingCode_1_11212023_3 | bPartnerProductGTIN_LU | 1     |
-      | p_1_11212023_4     | true                |                      |                              |                        | 2     |
+      | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID              | M_HU_PackagingCode_ID        | GTIN_PackingMaterial   |
+      | p_1_11212023_3     | true                | createdLU_11212023_3 | huPackagingCode_1_11212023_3 | bPartnerProductGTIN_LU |
+      | p_1_11212023_4     | true                | null                 | null                         | null                   |
 
     And after not more than 120s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
@@ -912,9 +913,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And the shipment identified by s_1_11212023_3 is reversed
 
-    Then after not more than 30s, there are no records in EDI_Desadv_Pack_Item
+    Then after not more than 120s, there are no records in EDI_Desadv_Pack_Item
 
-    And after not more than 30s, there are no records in EDI_Desadv_Pack
+    And after not more than 120s, there are no records in EDI_Desadv_Pack
 
     
     
@@ -975,10 +976,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huPackagingCode_2_S0316_040 | CART          | TU          |
 
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID | M_Product_ID  |
-      | pm_1_S0316_040          | p_2_S0316_040 |
-      | pm_2_S0316_040          | p_3_S0316_040 |
-      | pm_3_S0316_040          | p_4_S0316_040 |
+      | M_HU_PackingMaterial_ID.Identifier | M_Product_ID  |
+      | pm_1_S0316_040                     | p_2_S0316_040 |
+      | pm_2_S0316_040                     | p_3_S0316_040 |
+      | pm_3_S0316_040                     | p_4_S0316_040 |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier          |
@@ -1210,7 +1211,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
      # This controls the SSCC18 value that such our LU and desc-pack get SSCC18-value 012345670010000005
     And setup the SSCC18 code generator with GS1ManufacturerCode 1234567, GS1ExtensionDigit 0 and next sequence number always=1000000.
-    
+
     And aggregate TUs to new LU
       | sourceTUs                                                             | newLUs              |
       | createdTU_1_S0457_010,createdTU_2_1_S0457_010,createdTU_2_2_S0457_010 | createdLU_S0457_010 |

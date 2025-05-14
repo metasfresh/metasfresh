@@ -1,12 +1,14 @@
 package de.metas.costing;
 
-import org.compiere.model.I_M_Product;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_M_Product;
+
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -41,12 +43,8 @@ public interface IProductCostingBL extends ISingletonService
 	@NonNull
 	CostingLevel getCostingLevel(I_M_Product product, AcctSchema acctSchema);
 
-	/**
-	 * Get Product Costing Method
-	 *
-	 * @param C_AcctSchema_ID accounting schema ID
-	 * @return product costing method
-	 */
+	@NonNull Map<ProductId, CostingLevel> getCostingLevels(Set<ProductId> productIds, AcctSchema acctSchema);
+
 	@NonNull
 	CostingMethod getCostingMethod(I_M_Product product, AcctSchema acctSchema);
 

@@ -45,7 +45,7 @@ public class ResetSchedulerState implements IStartupHouseKeepingTask
 	@Override
 	public void executeTask()
 	{
-		final int no = DB.executeUpdateEx("UPDATE " + I_AD_Scheduler.Table_Name
+		final int no = DB.executeUpdateAndThrowExceptionOnFail("UPDATE " + I_AD_Scheduler.Table_Name
 				+ " SET " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Started + "'"
 				+ " WHERE " + I_AD_Scheduler.COLUMNNAME_Status + "='" + X_AD_Scheduler.STATUS_Running + "'", ITrx.TRXNAME_None);
 

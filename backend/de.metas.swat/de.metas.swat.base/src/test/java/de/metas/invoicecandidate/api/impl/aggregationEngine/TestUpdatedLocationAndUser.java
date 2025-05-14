@@ -32,7 +32,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -94,7 +94,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, true);
 		final int newUserId = createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -124,7 +124,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, false);
 		final int newUserId = createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -155,7 +155,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, false);
 		createNewDefaultUser(partnerId, newLocationId, "User1", false);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -187,7 +187,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, false);
 		createNewDefaultUser(partnerId, newLocationId, "User1", false);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -215,7 +215,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, true);
 		final int newUserId = createNewDefaultUser(partnerId, -1, "User1", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -246,7 +246,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, true);
 		createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(false)
@@ -282,7 +282,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, true);
 		createNewDefaultUser(partnerId, newLocationId, "User2", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)

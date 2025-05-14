@@ -1,11 +1,6 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-
-import org.apache.commons.lang3.StringUtils;
-import org.compiere.util.Env;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -15,6 +10,8 @@ import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
+import org.compiere.util.Env;
 
 /*
  * #%L

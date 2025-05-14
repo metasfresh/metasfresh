@@ -1,5 +1,5 @@
-@import './variables.css';
-@import './buttons.css';
+@import './variables.scss';
+@import './buttons.scss';
 @import './attributes.scss';
 
 /*
@@ -50,6 +50,7 @@ input {
 .form-control-label {
   padding-top: .3rem;
   padding-bottom: .3125rem;
+  padding-right: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
@@ -243,7 +244,7 @@ input {
 
 .input-checkbox input:disabled ~ .input-checkbox-tick {
   pointer-events: none;
-  background: #76b727a6;
+  background: #ccc;
   border: 0;
 }
 
@@ -999,7 +1000,7 @@ table {
   z-index: 1001;
   box-sizing: border-box;
 }
- 
+
 .lookup-widget-wrapper > div > .input-mandatory {
   border: 2px solid $brand-mandatory-color;
   border-radius: 3px;
@@ -1014,7 +1015,25 @@ table {
   padding: 20px 30px 20px 28px;
 }
 
-
 input:disabled, textarea:disabled {
   color: black !important;
+}
+
+.input-range-container {
+  display: flex;
+  flex-flow: row nowrap;
+  
+  .input-range-from {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+  .input-range-separator {
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding: .3rem .50rem;
+  }
+  .input-range-to {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
 }

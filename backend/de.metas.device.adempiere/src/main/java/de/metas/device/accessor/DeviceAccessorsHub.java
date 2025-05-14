@@ -6,6 +6,7 @@ import de.metas.cache.CCache;
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
+import de.metas.device.api.hook.BeforeAcquireValueHook;
 import de.metas.device.config.DeviceConfig;
 import de.metas.device.config.IDeviceConfigPool;
 import de.metas.device.config.IDeviceConfigPoolListener;
@@ -13,6 +14,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -95,7 +97,7 @@ public class DeviceAccessorsHub
 				.findFirst();
 	}
 
-	public DeviceAccessorsList getDeviceAccessors(final AttributeCode attributeCode)
+	public @Nullable DeviceAccessorsList getDeviceAccessors(final AttributeCode attributeCode)
 	{
 		return cache.getOrLoad(attributeCode, this::createDeviceAccessorsList);
 	}
@@ -114,11 +116,14 @@ public class DeviceAccessorsHub
 
 		for (final DeviceConfig deviceConfig : deviceConfigsForThisAttribute)
 		{
-			// trying to access the device.
+			// trying to access the device and instantiate hooks.
 			final IDevice device;
+			final ImmutableList<BeforeAcquireValueHook> beforeHooks;
 			try
 			{
 				device = DeviceInstanceUtils.createAndConfigureDevice(deviceConfig);
+				
+				beforeHooks = DeviceInstanceUtils.instantiateHooks(deviceConfig);
 			}
 			catch (final Exception e)
 			{
@@ -145,10 +150,11 @@ public class DeviceAccessorsHub
 
 				final DeviceAccessor deviceAccessor = DeviceAccessor.builder()
 						.id(deviceId)
+						.deviceConfig(deviceConfig)
 						.displayName(TranslatableStrings.anyLanguage(deviceName))
 						.device(device)
-						.assignedWarehouseIds(deviceConfig.getAssignedWarehouseIds())
 						.request(request)
+						.beforeHooks(beforeHooks)
 						.build();
 
 				deviceAccessors.add(deviceAccessor);

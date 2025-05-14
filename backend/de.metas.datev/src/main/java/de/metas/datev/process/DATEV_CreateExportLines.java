@@ -1,13 +1,16 @@
 package de.metas.datev.process;
 
-import org.compiere.SpringContextHolder;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.datev.DATEVExportCreateLinesRequest;
+import de.metas.datev.DATEVExportId;
 import de.metas.datev.DATEVExportLinesRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -33,13 +36,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 
 public class DATEV_CreateExportLines extends JavaProcess implements IProcessPrecondition
 {
-	@Autowired
-	private DATEVExportLinesRepository datevExportLinesRepo;
+	private final DATEVExportLinesRepository datevExportLinesRepo = SpringContextHolder.instance.getBean(DATEVExportLinesRepository.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	public DATEV_CreateExportLines()
-	{
-		SpringContextHolder.instance.autowire(this);
-	}
+	private static final String SYS_CONFIG_ONE_LINE_PER_INVOICETAX = "DATEVExportLines_OneLinePerInvoiceTax";
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -59,13 +59,19 @@ public class DATEV_CreateExportLines extends JavaProcess implements IProcessPrec
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int datevExportId = getRecord_ID();
+		final int countCreated = datevExportLinesRepo.createLines(
+				DATEVExportCreateLinesRequest.builder()
+						.datevExportId(DATEVExportId.ofRepoId(getRecord_ID()))
+						.now(SystemTime.asInstant())
+						.userId(getUserId())
+						.isOneLinePerInvoiceTax(isOneLinePerInvoiceTax())
+						.build());
 
-		datevExportLinesRepo.deleteAllByExportId(datevExportId);
-
-		final int created = datevExportLinesRepo.createLinesFromConfig(datevExportId);
-
-		return "@Created@ #" + created;
+		return "@Created@ #" + countCreated;
 	}
 
+	private boolean isOneLinePerInvoiceTax()
+	{
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_ONE_LINE_PER_INVOICETAX, false);
+	}
 }

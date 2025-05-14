@@ -30,12 +30,13 @@ import lombok.NonNull;
 import java.util.Arrays;
 
 //dev-note to be kept in sync with AD_Reference_ID=541598
+@Getter
 public enum JsonReplacementSource
 {
 	Product("P"),
-	PPOrder("PP");
+	PPOrder("PP"),
+	CustomProcessResult("CP");
 
-	@Getter
 	private final String code;
 
 	JsonReplacementSource(@NonNull final String code)

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -85,12 +86,13 @@ public class WorkplaceRepository
 	}
 
 	@NonNull
-	private static Workplace fromRecord(final I_C_Workplace record)
+	private static Workplace fromRecord(@NonNull final I_C_Workplace record)
 	{
 		return Workplace.builder()
 				.id(WorkplaceId.ofRepoId(record.getC_Workplace_ID()))
 				.name(record.getName())
-				.warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
+				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.pickingSlotId(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
 				.build();
 	}
 

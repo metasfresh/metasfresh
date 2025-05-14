@@ -83,9 +83,9 @@ public class RabbitMQDestinationResolver
 		return eventBusQueueConfigurationList.stream()
 				.filter(queueConfig -> queueConfig.getTopicName().isPresent())
 				.filter(queueConfig -> queueConfig.getTopicName().get().equals(topicName))
-				.map(IEventBusQueueConfiguration::getFanoutExchangeName)
+				.map(IEventBusQueueConfiguration::getExchangeName)
 				.findFirst()
-				.orElseGet(() -> SpringContextHolder.instance.getBean(RabbitMQEventBusConfiguration.DefaultQueueConfiguration.class).getFanoutExchangeName());
+				.orElseGet(() -> SpringContextHolder.instance.getBean(RabbitMQEventBusConfiguration.DefaultQueueConfiguration.class).getExchangeName());
 	}
 
 	private static void validateSingleQueueForTopic(@NonNull final List<IEventBusQueueConfiguration> anonymousQueueConfigurationList)

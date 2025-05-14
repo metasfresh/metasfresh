@@ -8,7 +8,7 @@ import de.metas.websocket.WebsocketSubscriptionId;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
@@ -20,7 +20,7 @@ import org.adempiere.util.lang.SynchronizedMutable;
 import java.time.Duration;
 import java.util.List;
 
-class WorkflowLaunchersWebSocketProducer implements WebSocketProducer
+class WorkflowLaunchersWebSocketProducer implements WebSocketProducer, WebSocketProducer.ProduceEventsOnPollSupport
 {
 	private static final String SYSCONFIG_MaxStaleAcceptedInSeconds = "WorkflowLaunchersWebSocketProducer.maxStaleAcceptedInSeconds";
 	private static final Duration DEFAULT_MaxStaleAccepted = Duration.ofSeconds(10);

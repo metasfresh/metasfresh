@@ -222,8 +222,8 @@ public class PPOrderRequestedEventHandlerTests
 		}
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(bomMainProduct.getM_Product_ID(),
-				AttributesKey.ofAttributeValueIds(12345),
-				bomMainProduct.getM_AttributeSetInstance_ID());
+																							  AttributesKey.ofAttributeValueIds(12345),
+																							  bomMainProduct.getM_AttributeSetInstance_ID());
 
 		ppOrderPojo = PPOrder.builder()
 				.ppOrderData(PPOrderData.builder()

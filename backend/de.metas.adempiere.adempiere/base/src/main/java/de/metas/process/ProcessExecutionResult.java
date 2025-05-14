@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.MPrintFormat;
@@ -41,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -92,7 +94,7 @@ public class ProcessExecutionResult
 		Never
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
+	private static final Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
 	private PInstanceId pinstanceId;
 
@@ -180,6 +182,12 @@ public class ProcessExecutionResult
 	@Getter
 	@Nullable
 	private String stringResultContentType = null;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Getter
+	@Setter
+	@Nullable
+	private WebuiNewRecord webuiNewRecord;
 
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
@@ -498,6 +506,11 @@ public class ProcessExecutionResult
 		setRecordToOpen(record, String.valueOf(adWindowId), target);
 	}
 
+	public void setRecordToOpen(@Nullable final TableRecordReference record, @Nullable final AdWindowId adWindowId, @NonNull final OpenTarget target)
+	{
+		setRecordToOpen(record, adWindowId != null ? String.valueOf(adWindowId.getRepoId()) : null, target);
+	}
+
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)
 	{
 		setRecordToOpen(record, String.valueOf(adWindowId), target, targetTab);
@@ -580,6 +593,10 @@ public class ProcessExecutionResult
 		setReportData(ReportResultData.ofFile(file));
 	}
 
+	public void setReportData(@NonNull final File file, @NonNull final String fileName)
+	{
+		setReportData(ReportResultData.ofFile(file, fileName));
+	}
 	public void setReportData(@Nullable final ReportResultData reportData)
 	{
 		this.reportData = reportData;
@@ -755,7 +772,19 @@ public class ProcessExecutionResult
 	 */
 	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
+		addLog(Log_ID, P_Date, P_Number, P_Msg, null);
+	}
+
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, @Nullable final List<String> warningMessages)
+	{
+		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
+				.logId(Log_ID)
+				.pDate(P_Date)
+				.pNumber(P_Number)
+				.pMsg(P_Msg)
+				.warningMessages(warningMessages)
+				.build();
+		addLog(new ProcessInfoLog(request));
 	}    // addLog
 
 	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
@@ -962,6 +991,11 @@ public class ProcessExecutionResult
 			this.profileId = profileId;
 			this.target = target;
 		}
+
+		public static WebuiViewToOpen modalOverlay(@NonNull final String viewId)
+		{
+			return builder().viewId(viewId).target(ViewOpenTarget.ModalOverlay).build();
+		}
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -977,5 +1011,33 @@ public class ProcessExecutionResult
 		{
 			this.code = code;
 		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Value
+	@lombok.Builder
+	public static class WebuiNewRecord
+	{
+		/**
+		 * If this string is used as field value
+		 * then the frontend will try to open the new record modal window to populate that field.
+		 * <p>
+		 * Used mainly to trigger new BPartner.
+		 */
+		public static final String FIELD_VALUE_NEW = "NEW";
+
+		@NonNull String windowId;
+
+		/**
+		 * Field values to be set by frontend, after the NEW record is created
+		 */
+		@NonNull @Singular Map<String, String> fieldValues;
+
+		public enum TargetTab
+		{
+			SAME_TAB, NEW_TAB,
+		}
+
+		@NonNull @Builder.Default TargetTab targetTab = TargetTab.SAME_TAB;
 	}
 }

@@ -11,6 +11,8 @@ import lombok.Value;
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -43,6 +45,8 @@ public class Role
 	@NonNull
 	String name;
 	String description;
+
+	@Nullable RoleGroup roleGroup;
 
 	@NonNull
 	ClientId clientId;

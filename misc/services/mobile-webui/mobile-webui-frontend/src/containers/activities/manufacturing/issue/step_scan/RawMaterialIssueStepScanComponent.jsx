@@ -1,5 +1,4 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { toastError } from '../../../../../utils/toast';
@@ -10,13 +9,14 @@ import { toQRCodeString } from '../../../../../utils/qrCode/hu';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
-import {
-  getActivityById,
-  getStepByIdFromActivity,
-  getStepByQRCodeFromActivity,
-} from '../../../../../reducers/wfProcesses';
+import { getActivityById, getStepByIdFromActivity } from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
 import { useBooleanSetting } from '../../../../../reducers/settings';
+import { useMobileNavigation } from '../../../../../hooks/useMobileNavigation';
+import {
+  getNonIssuedStepByHuIdFromActivity,
+  getNonIssuedStepByQRCodeFromActivity,
+} from '../../../../../reducers/wfProcesses/manufacturing';
 
 const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, stepId }) => {
   console.log('RawMaterialIssueStepScanComponent', { wfProcessId, activityId, lineId, stepId });
@@ -30,8 +30,14 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const eligibleBarcode =
     stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
 
-  const resolveScannedBarcode = (scannedBarcode) => {
-    const step = getStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
+  const resolveScannedBarcode = (scannedBarcode, huId) => {
+    let step;
+    if (huId) {
+      step = getNonIssuedStepByHuIdFromActivity({ activity, lineId, huId });
+    } else {
+      step = getNonIssuedStepByQRCodeFromActivity({ activity, lineId, qrCode: scannedBarcode });
+    }
+
     if (!step) {
       throw trl('activities.picking.notEligibleHUBarcode');
     }
@@ -79,7 +85,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   };
 
   const dispatch = useDispatch();
-  const history = useHistory();
+  const history = useMobileNavigation();
   const onResult = ({ qty = 0, qtyRejected = 0, reason = null, resolvedBarcodeData }) => {
     console.log('onResult', { qty, qtyRejected, reason, resolvedBarcodeData });
 
@@ -87,7 +93,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     const isWeightable = !!resolvedBarcodeData.isWeightable;
     const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
 
-    dispatch(
+    return dispatch(
       updateManufacturingIssue({
         wfProcessId,
         activityId,
@@ -100,13 +106,14 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       })
     )
       .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => history.go(-1));
+      .finally(() => history.goBack());
   };
 
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={eligibleBarcode}
       resolveScannedBarcode={resolveScannedBarcode}
+      useHUScanner={true}
       //
       // userInfo={userInfo}
       // qtyTarget={qtyToIssueTarget}

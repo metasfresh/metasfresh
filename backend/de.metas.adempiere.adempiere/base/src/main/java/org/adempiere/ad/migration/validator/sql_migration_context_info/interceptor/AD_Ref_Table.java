@@ -22,7 +22,7 @@
 
 package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADColumnNameFQ;

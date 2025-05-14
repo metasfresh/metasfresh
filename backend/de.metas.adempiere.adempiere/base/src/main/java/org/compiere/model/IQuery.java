@@ -23,6 +23,7 @@
 package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -40,7 +41,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
@@ -55,6 +55,7 @@ import java.util.Properties;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
@@ -103,6 +104,8 @@ public interface IQuery<T>
 
 	String getTableName();
 
+	IQuery<T> setSqlFromParameter(@NonNull final String name, @Nullable final Object value);
+
 	List<T> list() throws DBException;
 
 	/**
@@ -112,6 +115,11 @@ public interface IQuery<T>
 	 * @return List
 	 */
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
+
+	default ImmutableList<T> listImmutable() throws DBException
+	{
+		return ImmutableList.copyOf(list());
+	}
 
 	/**
 	 * Same as {@link #list(Class)} returns an {@link ImmutableList}. Note: you can update or delete the included records.
@@ -188,6 +196,11 @@ public interface IQuery<T>
 	@Nullable
 	<ET extends T> ET first(Class<ET> clazz) throws DBException;
 
+	default Optional<T> firstOptional() throws DBException
+	{
+		return Optional.ofNullable(first());
+	}
+
 	default <ET extends T> Optional<ET> firstOptional(final Class<ET> clazz) throws DBException
 	{
 		return Optional.ofNullable(first(clazz));
@@ -196,7 +209,7 @@ public interface IQuery<T>
 	@NonNull
 	default Optional<T> firstOnlyOptional() throws DBException
 	{
-		return firstOnlyOptional(getModelClass());
+		return Optional.ofNullable(firstOnly());
 	}
 
 	@NonNull
@@ -208,8 +221,12 @@ public interface IQuery<T>
 	/**
 	 * Same as {@link #first(Class)}, but in case there is no record found an exception will be thrown too.
 	 */
-	@NonNull
-	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
+	@NonNull <ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
+
+	/**
+	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
+	 */
+	T firstOnly() throws DBException;
 
 	/**
 	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
@@ -220,11 +237,12 @@ public interface IQuery<T>
 	@Nullable
 	<ET extends T> ET firstOnly(Class<ET> clazz) throws DBException;
 
+	T firstOnlyNotNull() throws DBException;
+
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there is no record found an exception will be thrown too.
 	 */
-	@NonNull
-	<ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
+	@NonNull <ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
 
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there are more then one record <code>null</code> will be returned instead of throwing exception.
@@ -272,6 +290,12 @@ public interface IQuery<T>
 	 * @param clazz model interface class
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
+
+	default <ET extends T> Iterator<ET> iterateWithGuaranteedIterator(final Class<ET> clazz) throws DBException
+	{
+		setOption(IQuery.OPTION_GuaranteedIteratorRequired, true);
+		return iterate(clazz);
+	}
 
 	default <ID extends RepoIdAware> Iterator<ID> iterateIds(@NonNull final IntFunction<ID> idMapper) throws DBException
 	{
@@ -396,7 +420,7 @@ public interface IQuery<T>
 	/**
 	 * Directly execute DELETE FROM database.
 	 * <p>
-	 * Models, won't be loaded so no model interceptor will be triggered.
+	 * WARNING: Models, won't be loaded so no model interceptor will be triggered!
 	 * <p>
 	 * Also, models will be deleted even if they were marked as Processed=Y.
 	 * <p>
@@ -424,7 +448,25 @@ public interface IQuery<T>
 	 * @param failIfProcessed fail if any of those records are Processed.
 	 * @return how many records were deleted
 	 */
-	int delete(boolean failIfProcessed);
+	default int delete(final boolean failIfProcessed)
+	{
+		final List<T> records = list();
+		if (records.isEmpty())
+		{
+			return 0;
+		}
+
+		int countDeleted = 0;
+		for (final Object record : records)
+		{
+			InterfaceWrapperHelper.delete(record, failIfProcessed);
+			countDeleted++;
+		}
+
+		return countDeleted;
+	}
+
+	default void forEach(@NonNull final Consumer<T> action) {stream().forEach(action);}
 
 	/**
 	 * @return executor which will assist you to mass-update fields of models which are matched by this query
@@ -486,7 +528,7 @@ public interface IQuery<T>
 	 * @param valueType value type
 	 * @see #listColumns(String...)
 	 */
-	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
+	<AT> ImmutableList<AT> listDistinct(String columnName, Class<AT> valueType);
 
 	/**
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
@@ -501,17 +543,9 @@ public interface IQuery<T>
 	 * @return key to model map
 	 * @see #list(Class)
 	 */
-	<K, ET extends T> Map<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
+	<K, ET extends T> ImmutableMap<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
 
-	/**
-	 * Gets an immutable ID to model map.
-	 *
-	 * @return ID to model map
-	 * @see #map(Class, Function)
-	 * @see Model2IdFunction
-	 */
-	<ET extends T> Map<Integer, ET> mapToId(Class<ET> modelClass);
-
+	<K> ImmutableMap<K, T> map(Function<T, K> keyFunction);
 	/**
 	 * Retrieves the records as {@link ListMultimap}.
 	 *
@@ -519,6 +553,8 @@ public interface IQuery<T>
 	 * @return list multimap indexed by a key provided by <code>keyFunction</code>.
 	 */
 	<K, ET extends T> ListMultimap<K, ET> listMultimap(Class<ET> modelClass, Function<ET, K> keyFunction);
+
+	default <K> ListMultimap<K, T> listMultimap(@NonNull Function<T, K> keyFunction) {return listMultimap(getModelClass(), keyFunction);}
 
 	/**
 	 * Retrieves the records and then splits them in groups based on the indexing key provided by <code>keyFunction</code>.

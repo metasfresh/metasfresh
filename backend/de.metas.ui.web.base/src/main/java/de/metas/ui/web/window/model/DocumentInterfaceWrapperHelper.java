@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -231,7 +232,7 @@ public class DocumentInterfaceWrapperHelper extends AbstractInterfaceWrapperHelp
 	}
 
 	@Override
-	public <T> T getDynAttribute(final Object model, final String attributeName)
+	public <T> T getDynAttribute(final @NonNull Object model, final String attributeName)
 	{
 		return DocumentInterfaceWrapper.getDocument(model).getDynAttribute(attributeName);
 	}

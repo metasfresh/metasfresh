@@ -4,18 +4,17 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api';
-import { openFile, processNewRecord } from '../../actions/GenericActions';
+import { startProcess } from '../../api/process';
+import { processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
   callAPI,
   closeModal,
-  createProcess,
   createWindow,
   fetchChangeLog,
   fireUpdateData,
-  handleProcessResponse,
   patch,
+  printDocument,
   resetPrintingOptions,
 } from '../../actions/WindowActions';
 
@@ -35,9 +34,14 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
-import ChangeCurrentWorkplace, {
-  STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
-} from './ChangeCurrentWorkplace';
+import {
+  createProcess,
+  handleProcessResponse,
+} from '../../actions/ProcessActions';
+import ChangeCurrentWorkplace from './ChangeCurrentWorkplace';
+import { computeSaveStatusFlags } from '../../reducers/windowHandler';
+import * as IndicatorState from '../../constants/IndicatorState';
+import * as StaticModalType from '../../constants/StaticModalType';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -219,6 +223,7 @@ class Modal extends Component {
       parentSelection,
       isAdvanced,
       viewId,
+      viewOrderBy,
       modalViewDocumentIds,
       activeTabId,
       childViewId,
@@ -233,10 +238,10 @@ class Modal extends Component {
     switch (modalType) {
       case 'static':
         {
-          if (staticModalType === 'about') {
+          if (staticModalType === StaticModalType.About) {
             request = dispatch(fetchChangeLog(windowId, dataId, tabId, rowId));
           }
-          if (staticModalType === 'comments') {
+          if (staticModalType === StaticModalType.Comments) {
             request = dispatch(
               callAPI({
                 windowId,
@@ -289,6 +294,7 @@ class Modal extends Component {
           const options = {
             processType: windowId,
             viewId,
+            viewOrderBy,
             documentType,
             ids: viewId
               ? modalViewDocumentIds
@@ -403,7 +409,7 @@ class Modal extends Component {
    * @summary Handle closing modal when the `done` button is clicked or `{esc}` key pressed
    */
   handleClose = () => {
-    const { modalSaveStatus, modalType, dispatch } = this.props;
+    const { modalSaveStatus, modalType } = this.props;
 
     if (modalType === 'process') {
       return this.closeModal(modalSaveStatus);
@@ -412,7 +418,6 @@ class Modal extends Component {
     if (modalSaveStatus || window.confirm('Do you really want to leave?')) {
       this.closeModal(modalSaveStatus);
     }
-    dispatch(resetPrintingOptions());
   };
 
   /**
@@ -438,7 +443,7 @@ class Modal extends Component {
   handleStart = () => {
     const { dispatch, layout, windowId, indicator, parentId } = this.props;
 
-    if (indicator === 'pending') {
+    if (indicator === IndicatorState.PENDING) {
       this.setState({ waitingFetch: true, pending: true });
       return;
     }
@@ -453,12 +458,12 @@ class Modal extends Component {
         try {
           response = await startProcess(windowId, layout.pinstanceId);
 
-          const action = handleProcessResponse(
+          const action = handleProcessResponse({
             response,
-            windowId,
-            layout.pinstanceId,
-            parentId
-          );
+            processId: windowId,
+            pinstanceId: layout.pinstanceId,
+            parentId,
+          });
 
           await dispatch(action);
 
@@ -483,26 +488,32 @@ class Modal extends Component {
    * @summary before printing we check the available parameters from the store and we use those for forming the final printing URI
    */
   handlePrinting = () => {
-    const { windowId, modalViewDocumentIds, dataId, printingOptions } =
-      this.props;
-    const docNo = modalViewDocumentIds[0];
-    const docId = dataId;
-    const { options } = printingOptions;
-
-    let extraParams = '';
-    options.map((item) => {
-      extraParams += `${item.internalName}=${item.value}&`;
-    });
-    extraParams = extraParams ? extraParams.slice(0, -1) : extraParams;
-
-    openFile(
-      'window',
+    const {
       windowId,
-      docId,
-      'print',
-      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf?${extraParams}`
-    );
-    this.handleClose();
+      modalViewDocumentIds,
+      dataId,
+      printingOptions,
+      dispatch,
+    } = this.props;
+    const documentId = dataId;
+    const documentNo = modalViewDocumentIds[0] ?? documentId;
+
+    const options = printingOptions.options.reduce((acc, item) => {
+      acc[item.internalName] = item.value;
+      return acc;
+    }, {});
+
+    printDocument({
+      windowId,
+      documentId,
+      documentNo,
+      options,
+    });
+
+    this.closeModal(true);
+    dispatch(resetPrintingOptions());
+
+    return true; // stopPropagation to avoid calling the global alt-P handler
   };
 
   /**
@@ -526,15 +537,13 @@ class Modal extends Component {
     switch (modalType) {
       case 'static': {
         let content = null;
-        if (staticModalType === 'about') {
+        if (staticModalType === StaticModalType.About) {
           content = <ChangeLogModal data={data} />;
-        } else if (staticModalType === 'comments') {
+        } else if (staticModalType === StaticModalType.Comments) {
           content = <CommentsPanel windowId={windowId} docId={dataId} />;
-        } else if (staticModalType === 'printing') {
+        } else if (staticModalType === StaticModalType.Printing) {
           content = <PrintingOptions windowId={windowId} docId={dataId} />;
-        } else if (
-          staticModalType === STATIC_MODAL_TYPE_ChangeCurrentWorkplace
-        ) {
+        } else if (staticModalType === StaticModalType.ChangeCurrentWorkplace) {
           content = <ChangeCurrentWorkplace />;
         }
         return (
@@ -586,7 +595,6 @@ class Modal extends Component {
       printingOptions,
       //
       indicator,
-      isDocumentNotSaved,
       saveStatus,
     } = this.props;
 
@@ -595,7 +603,8 @@ class Modal extends Component {
 
     let applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
-    if (staticModalType === 'printing') applyHandler = this.handlePrinting;
+    if (staticModalType === StaticModalType.Printing)
+      applyHandler = this.handlePrinting;
     const cancelHandler = isNewDoc ? this.removeModal : this.handleClose;
 
     return (
@@ -652,7 +661,8 @@ class Modal extends Component {
                 }
                 onMouseLeave={this.toggleTooltip}
               >
-                {modalType === 'process' || staticModalType === 'printing'
+                {modalType === 'process' ||
+                staticModalType === StaticModalType.Printing
                   ? counterpart.translate('modal.actions.cancel')
                   : counterpart.translate('modal.actions.done')}
 
@@ -682,6 +692,7 @@ class Modal extends Component {
                   tabIndex={0}
                   onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
                   onMouseLeave={this.toggleTooltip}
+                  disabled={indicator === IndicatorState.ERROR}
                 >
                   {counterpart.translate('modal.actions.start')}
 
@@ -696,7 +707,7 @@ class Modal extends Component {
               )}
 
               {/* Printing button caption value comes form the store */}
-              {staticModalType === 'printing' && printBtnCaption && (
+              {staticModalType === StaticModalType.Printing && printBtnCaption && (
                 <button
                   className={classnames(
                     'btn btn-meta-outline-secondary btn-distance-3 btn-md',
@@ -715,19 +726,12 @@ class Modal extends Component {
 
           <Indicator
             indicator={indicator}
-            isDocumentNotSaved={
-              staticModalType === 'printing' ||
-              staticModalType === STATIC_MODAL_TYPE_ChangeCurrentWorkplace
-                ? false
-                : isDocumentNotSaved
-            }
             error={saveStatus?.error ? saveStatus?.reason : ''}
             exception={saveStatus?.error ? saveStatus?.exception : null}
           />
 
           <div
-            className="panel-modal-content js-panel-modal-content
-                          container-fluid"
+            className="panel-modal-content container-fluid"
             ref={(c) => {
               if (c) {
                 c.focus();
@@ -740,7 +744,13 @@ class Modal extends Component {
             {this.renderModalBody()}
           </div>
           {layout.layoutType !== 'singleOverlayField' && (
-            <ModalContextShortcuts done={applyHandler} cancel={cancelHandler} />
+            <ModalContextShortcuts
+              done={applyHandler}
+              cancel={cancelHandler}
+              isBindPrintActionAsDone={
+                staticModalType === StaticModalType.Printing
+              }
+            />
           )}
         </div>
       </div>
@@ -833,36 +843,6 @@ class Modal extends Component {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} [activeTabId]
- * @prop {*} [childViewId]
- * @prop {*} [closeCallback]
- * @prop {*} [childViewSelectedIds]
- * @prop {shape} [data]
- * @prop {string} [dataId]
- * @prop {func} dispatch Dispatch function
- * @prop {string} [indicator]
- * @prop {shape} [layout]
- * @prop {bool} [isAdvanced]
- * @prop {bool} [isDocumentNotSaved]
- * @prop {bool} [isNewDoc]
- * @prop {string} [modalType]
- * @prop {*} [modalTitle]
- * @prop {*} [modalSaveStatus]
- * @prop {*} [modalViewDocumentIds]
- * @prop {string} [staticModalType]
- * @prop {string} [tabId]
- * @prop {*} [parentSelection]
- * @prop {*} [parentWindowId]
- * @prop {*} [parentViewId]
- * @prop {*} [rawModalVisible]
- * @prop {string} [rowId]
- * @prop {*} [triggerField]
- * @prop {string} [viewId]
- * @prop {string} [windowId]
- * @prop {string} [documentType]
- */
 Modal.propTypes = {
   dispatch: PropTypes.func.isRequired,
   isNewDoc: PropTypes.bool,
@@ -877,7 +857,6 @@ Modal.propTypes = {
   indicator: PropTypes.string,
   layout: PropTypes.shape(),
   isAdvanced: PropTypes.bool,
-  isDocumentNotSaved: PropTypes.bool,
   modalTitle: PropTypes.any,
   modalType: PropTypes.any,
   saveStatus: PropTypes.object,
@@ -889,7 +868,7 @@ Modal.propTypes = {
   parentWindowId: PropTypes.any,
   parentViewId: PropTypes.any,
   rawModalVisible: PropTypes.any,
-  rowId: PropTypes.string,
+  rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   triggerField: PropTypes.any,
   viewId: PropTypes.string,
   windowId: PropTypes.string,
@@ -907,8 +886,9 @@ Modal.propTypes = {
 const mapStateToProps = (state, props) => {
   const { tabId, dataId, rawModalWindowId, viewId, documentType } = props;
 
-  const parentViewId = state.windowHandler.modal.parentViewId
-    ? state.windowHandler.modal.parentViewId
+  const modal = state.windowHandler.modal;
+  const parentViewId = modal.parentViewId
+    ? modal.parentViewId
     : props.parentViewId;
 
   const id = parentViewId ? parentViewId : viewId;
@@ -924,12 +904,15 @@ const mapStateToProps = (state, props) => {
 
   const parentSelector = getSelection();
 
+  const { indicator } = computeSaveStatusFlags({ modal });
+
   return {
     parentSelection: parentSelector(state, parentViewTableId),
     activeTabId: state.windowHandler.master.layout.activeTab,
-    indicator: state.windowHandler.indicator,
+    indicator,
     parentViewId,
     parentId,
+    viewOrderBy: parentView?.orderBy,
     printingOptions: state.windowHandler.printingOptions,
   };
 };

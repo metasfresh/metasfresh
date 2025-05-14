@@ -13,7 +13,6 @@ import org.compiere.Adempiere;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 /*
@@ -73,7 +72,7 @@ public class PlainEventBusFactory implements IEventBusFactory
 	private EventBus createEventBus(final Topic topic)
 	{
 		final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector = EventBusFactory.createMicrometerEventBusStatsCollector(topic, new SimpleMeterRegistry());
-		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(Optional.empty(), new SimpleMeterRegistry()));
+		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(new SimpleMeterRegistry()));
 
 		final ExecutorService executor = null;
 		return new EventBus(topic, executor, micrometerEventBusStatsCollector, new PlainEventEnqueuer(), eventBusMonitoringService, new EventLogService(new EventLogsRepository()));
@@ -129,7 +128,7 @@ public class PlainEventBusFactory implements IEventBusFactory
 	}
 
 	@Override
-	public void unregisterUserNotificationsListener(IEventListener listener)
+	public void unregisterUserNotificationsListener(final IEventListener listener)
 	{
 		assertJUnitTestMode();
 	}

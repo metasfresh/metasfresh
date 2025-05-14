@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Spinner from '../app/SpinnerOverlay';
+import counterpart from 'counterpart';
 
 class MultiSelect extends Component {
   constructor(props) {
@@ -64,24 +66,30 @@ class MultiSelect extends Component {
   };
 
   render() {
+    const { loading, hasMoreResults } = this.props;
     const { data, checkedItems } = this.state;
     const dataSource = data.length > 0 ? data : this.props.options;
 
     return (
       <div className="filter-multiselect">
+        {loading && <Spinner iconSize={25} />}
         <div>
           {dataSource.map((item) => (
             <div className="form-group" key={item.key}>
               <div key={item.key} className="row">
-                <div className=" col-sm-6 float-left">
-                  <label className="form-control-label" title={item.caption}>
+                <div className=" col-sm-11 float-left col-label">
+                  <label
+                    className="form-control-label"
+                    title={item.caption}
+                    htmlFor={'chk_' + item.key}
+                  >
                     {item.caption}
                   </label>
                 </div>
-
-                <div className="col-sm-6 float-right">
+                <div className="col-sm-1 float-right col-chk">
                   <label className="input-checkbox">
                     <input
+                      id={'chk_' + item.key}
                       type="checkbox"
                       onChange={() => this.selectItem(item.key, item.caption)}
                       checked={
@@ -96,6 +104,9 @@ class MultiSelect extends Component {
               </div>
             </div>
           ))}
+          {hasMoreResults && (
+            <div>({counterpart.translate('widget.lookup.hasMoreResults')})</div>
+          )}
         </div>
       </div>
     );
@@ -104,6 +115,7 @@ class MultiSelect extends Component {
 
 MultiSelect.propTypes = {
   options: PropTypes.array,
+  loading: PropTypes.bool,
   onFocus: PropTypes.func,
   onSelect: PropTypes.func,
   selectedItems: PropTypes.any,

@@ -25,6 +25,7 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 public class CreatePDFCommand
 {
@@ -82,7 +83,8 @@ public class CreatePDFCommand
 
 		return QRCodePDFResource.builder()
 				.data(report.getReportContent())
-				.filename(report.getReportFilename())
+				.filename(Optional.ofNullable(report.getReportFilename())
+								  .orElse(extractReportFilename(reportProcessInfo)))
 				.pinstanceId(processPInstanceId)
 				.processId(qrCodeProcessId)
 				.build();
@@ -102,5 +104,12 @@ public class CreatePDFCommand
 		{
 			throw new AdempiereException("Failed converting QR codes to JSON: " + qrCodes, e);
 		}
+	}
+
+	@NonNull
+	private static String extractReportFilename(@NonNull final ProcessInfo pi)
+	{
+		return Optional.ofNullable(pi.getTitle())
+				.orElseGet(() -> "report_" + PInstanceId.toRepoIdOr(pi.getPinstanceId(), 0));
 	}
 }

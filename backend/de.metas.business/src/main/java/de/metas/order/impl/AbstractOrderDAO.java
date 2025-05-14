@@ -31,7 +31,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.eevolution.api.PPCostCollectorId;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -329,6 +331,16 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
+	public void deleteByLineId(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final I_C_OrderLine record = InterfaceWrapperHelper.load(orderAndLineId.getOrderLineId(), I_C_OrderLine.class);
+		if (record != null)
+		{
+			InterfaceWrapperHelper.delete(record);
+		}
+	}
+
+	@Override
 	public void save(@NonNull final org.compiere.model.I_C_Order order)
 	{
 		InterfaceWrapperHelper.save(order);
@@ -437,5 +449,13 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_Processed, false)
 				.create()
 				.listDistinct(I_C_OrderLine.COLUMNNAME_C_Order_ID, OrderId.class);
+	}
+
+	@Override
+	public Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull final OrderLineId orderLineId)
+	{
+		final String sql = "SELECT " + org.compiere.model.I_C_OrderLine.COLUMNNAME_PP_Cost_Collector_ID
+				+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
+		return Optional.ofNullable(PPCostCollectorId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId)));
 	}
 }

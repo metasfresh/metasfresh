@@ -24,10 +24,10 @@ package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -50,13 +50,13 @@ public class WorkflowProcess_StepDef
 		DataTableRows.of(dataTable).forEach((row) -> {
 			final WFProcessId processId = row.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable);
 
-			if (processId.getId().startsWith(PickingMobileApplication.APPLICATION_ID.getAsString()))
+			if (processId.getAsString().startsWith(PickingMobileApplication.APPLICATION_ID.getAsString()))
 			{
 				validatePickingJob(processId, row, softAssertions);
 			}
 			else
 			{
-				softAssertions.fail("Unknown processId = " + processId.getId());
+				softAssertions.fail("Unknown processId = " + processId.getAsString());
 			}
 		});
 
@@ -68,7 +68,7 @@ public class WorkflowProcess_StepDef
 			@NonNull final DataTableRow tableRow,
 			@NonNull final SoftAssertions assertionCollector)
 	{
-		final de.metas.workflow.rest_api.model.WFProcessId backendProcessId = de.metas.workflow.rest_api.model.WFProcessId.ofString(processId.getId());
+		final de.metas.workflow.rest_api.model.WFProcessId backendProcessId = de.metas.workflow.rest_api.model.WFProcessId.ofString(processId.getAsString());
 
 		assertionCollector.assertThat(backendProcessId.getApplicationId()).isEqualTo(PickingMobileApplication.APPLICATION_ID);
 		final PickingJobId pickingJobId = backendProcessId.getRepoId(PickingJobId::ofRepoId);

@@ -1,23 +1,28 @@
-de.metas.handlingunits.qrcodes.model.json.v1.JsonConverterV1Test.checkJsonFormatIsNotChanging=[ {
-  "attributes" : [ {
-    "code" : "A1",
-    "displayName" : "Attribute 1",
-    "value" : "value"
-  }, {
-    "code" : "A2",
-    "displayName" : "Attribute 2",
-    "value" : "value",
-    "valueRendered" : "rendered value"
-  } ],
-  "id" : "53c5f90464aea357fefc2c0d76b2-20442",
-  "packingInfo" : {
-    "caption" : "Some TU",
-    "huUnitType" : "TU",
-    "packingInstructionsId" : 123
-  },
-  "product" : {
-    "code" : "productCode",
-    "id" : 111,
-    "name" : "productName"
+de.metas.handlingunits.qrcodes.model.json.v1.JsonConverterV1Test.checkJsonFormatIsNotChanging=[
+  {
+    "attributes": [
+      {
+        "code": "A1",
+        "displayName": "Attribute 1",
+        "value": "value"
+      },
+      {
+        "code": "A2",
+        "displayName": "Attribute 2",
+        "value": "value",
+        "valueRendered": "rendered value"
+      }
+    ],
+    "id": "53c5f90464aea357fefc2c0d76b2-20442",
+    "packingInfo": {
+      "caption": "Some TU",
+      "huUnitType": "TU",
+      "packingInstructionsId": 123
+    },
+    "product": {
+      "code": "productCode",
+      "id": 111,
+      "name": "productName"
+    }
   }
-} ]
+]

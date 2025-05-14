@@ -30,6 +30,7 @@ import lombok.NonNull;
 import java.util.Arrays;
 
 //dev-note to be kept in sync with AD_Reference_ID=541611
+@Getter
 public enum JsonTargetFieldType
 {
 	TextArea("textArea"),
@@ -40,7 +41,6 @@ public enum JsonTargetFieldType
 	UnitChar("unitChar"),
 	Graphic("graphic");
 
-	@Getter
 	private final String code;
 
 	JsonTargetFieldType(@NonNull final String code)

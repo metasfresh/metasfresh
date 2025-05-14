@@ -1,10 +1,13 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.currency.CurrencyRepository;
-import io.github.jsonSnapshot.SnapshotMatcher;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Currency;
@@ -15,15 +18,13 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -51,33 +52,23 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
+@ExtendWith(SnapshotExtension.class)
 class SalesInvoiceFactoryTest
 {
 
 	private SalesInvoiceFactory salesInvoiceFactory;
 
+	private Expect expect;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
+
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
 		salesInvoiceFactory = new SalesInvoiceFactory(new CommissionProductService());
-	}
-
-	@BeforeAll
-	static void beforeAll()
-	{
-		SnapshotMatcher.start(
-				AdempiereTestHelper.SNAPSHOT_CONFIG,
-				AdempiereTestHelper.createSnapshotJsonFunction());
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -125,7 +116,7 @@ class SalesInvoiceFactoryTest
 		final SalesInvoiceLine salesInvoiceLine = result.get().getInvoiceLines().get(0);
 		assertThat(salesInvoiceLine.getInvoicedCommissionPoints().toBigDecimal()).isEqualByComparingTo("-100"); // LineNetAmt * 1 because it's a credit memo
 
-		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
 	}
 
 }

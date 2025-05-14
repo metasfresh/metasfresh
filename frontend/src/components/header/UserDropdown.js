@@ -8,8 +8,8 @@ import Tooltips from '../tooltips/Tooltips';
 import { openSelectCurrentWorkplaceModal } from '../../actions/WindowActions';
 import { getSettingFromMEAsBoolean } from '../../utils/settings';
 import { useWorkplaces } from '../../api/userSession';
-import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { requestRedirect } from '../../reducers/redirect';
 
 class UserDropdown extends Component {
   handleClickOutside = () => this.closeDropdownPanel();
@@ -100,7 +100,6 @@ class UserDropdown extends Component {
 UserDropdown.propTypes = {
   open: PropTypes.bool.isRequired,
   handleUDOpen: PropTypes.func.isRequired,
-  redirect: PropTypes.func.isRequired,
   shortcut: PropTypes.string,
   toggleTooltip: PropTypes.func.isRequired,
   tooltipOpen: PropTypes.string,
@@ -108,9 +107,14 @@ UserDropdown.propTypes = {
   plugins: PropTypes.array,
 };
 
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
+export default onClickOutside(UserDropdown);
+
+//
+//
+//
+//
+//
+//
 
 const AvatarButton = ({
   me,
@@ -145,9 +149,12 @@ AvatarButton.propTypes = {
   openDropdownPanel: PropTypes.func.isRequired,
 };
 
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
+//
+//
+//
+//
+//
+//
 
 const UserDropdownPanel = ({
   me,
@@ -155,7 +162,6 @@ const UserDropdownPanel = ({
   closeDropdownPanel,
   handleKeyDown,
 }) => {
-  const history = useHistory();
   const dispatch = useDispatch();
 
   const { isWorkplacesEnabled, currentWorkplace } = useWorkplaces({
@@ -210,8 +216,10 @@ const UserDropdownPanel = ({
         caption={counterpart.translate('window.settings.caption')}
         icon="meta-icon-settings"
         onClick={() => {
-          history.push(
-            '/window/' + me.userProfileWindowId + '/' + me.userProfileId
+          dispatch(
+            requestRedirect(
+              '/window/' + me.userProfileWindowId + '/' + me.userProfileId
+            )
           );
           closeDropdownPanel();
         }}
@@ -224,7 +232,7 @@ const UserDropdownPanel = ({
         caption={counterpart.translate('window.logOut.caption')}
         icon="meta-icon-logout"
         onClick={() => {
-          history.push('/logout');
+          dispatch(requestRedirect('/logout'));
           closeDropdownPanel();
         }}
       />
@@ -238,12 +246,15 @@ UserDropdownPanel.propTypes = {
   handleKeyDown: PropTypes.func.isRequired,
 };
 
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
+//
+//
+//
+//
+//
+//
 
 const UserDropdownPluginItems = ({ plugins, closeDropdownPanel }) => {
-  const history = useHistory();
+  const dispatch = useDispatch();
 
   if (!plugins || plugins.length <= 0) return null;
 
@@ -256,7 +267,7 @@ const UserDropdownPluginItems = ({ plugins, closeDropdownPanel }) => {
           caption={plugin.userDropdownLink.text}
           icon="meta-icon-settings"
           onClick={() => {
-            history.push(plugin.userDropdownLink.url);
+            dispatch(requestRedirect(plugin.userDropdownLink.url));
             closeDropdownPanel();
           }}
         />
@@ -279,9 +290,12 @@ UserDropdownPluginItems.propTypes = {
   closeDropdownPanel: PropTypes.func.isRequired,
 };
 
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
+//
+//
+//
+//
+//
+//
 
 const UserDropdownItem = ({ icon, caption, onClick }) => {
   return (
@@ -297,8 +311,9 @@ UserDropdownItem.propTypes = {
   onClick: PropTypes.func.isRequired,
 };
 
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------
-
-export default onClickOutside(UserDropdown);
+//
+//
+//
+//
+//
+//

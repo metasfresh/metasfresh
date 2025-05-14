@@ -68,7 +68,7 @@ public class PPOrderAllocatorService
 
 		if (resource.getCapacityPerProductionCycle().signum() == 0)
 		{
-			return Quantitys.create(BigDecimal.ZERO, candidateUomId);
+			return Quantitys.of(BigDecimal.ZERO, candidateUomId);
 		}
 
 		if (resource.getCapacityPerProductionCycle_UOM_ID() <= 0)
@@ -78,7 +78,7 @@ public class PPOrderAllocatorService
 					.setParameter("S_Resource_ID", resource.getS_Resource_ID());
 		}
 
-		final Quantity capacityQty = Quantitys.create(resource.getCapacityPerProductionCycle(),
+		final Quantity capacityQty = Quantitys.of(resource.getCapacityPerProductionCycle(),
 													  UomId.ofRepoId(resource.getCapacityPerProductionCycle_UOM_ID()));
 
 		return uomConversionBL

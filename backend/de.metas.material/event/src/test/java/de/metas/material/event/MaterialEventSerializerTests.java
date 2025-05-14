@@ -3,6 +3,7 @@ package de.metas.material.event;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
+import de.metas.event.Event;
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.attributes.AttributesKeyWithASI;
 import de.metas.material.event.commons.AttributesKey;
@@ -17,8 +18,10 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
+import de.metas.material.event.forecast.ForecastDeletedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
@@ -46,6 +49,7 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.material.event.stock.StockChangedEvent;
@@ -60,11 +64,14 @@ import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
+import de.metas.util.JSONObjectMapper;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -73,13 +80,13 @@ import java.time.temporal.ChronoUnit;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.assertEventEqualAfterSerializeDeserialize;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
 import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -102,10 +109,66 @@ import static java.math.BigDecimal.valueOf;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 public class MaterialEventSerializerTests
 {
+
+	private static final BigDecimal ELEVEN = TEN.add(ONE);
+
+	private static final BigDecimal TWELVE = ELEVEN.add(ONE);
+
+	private static final BigDecimal THIRTEEN = TWELVE.add(ONE);
+
+	private MaterialEventConverter materialEventConverter;
+
 	private static EventDescriptor newEventDescriptor() {return EventDescriptor.ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(1, 2), "traceId");}
+
+	@BeforeEach
+	public void init()
+	{
+		this.materialEventConverter = new MaterialEventConverter();
+	}
+
+	private void assertEventEqualAfterSerializeDeserialize(final MaterialEvent originalEvent)
+	{
+		//
+		// Test direct serialization/deserialization
+		{
+			final JSONObjectMapper<MaterialEvent> jsonObjectMapper = JSONObjectMapper.forClass(MaterialEvent.class);
+
+			final String serializedEvent = jsonObjectMapper.writeValueAsString(originalEvent);
+			final MaterialEvent deserializedEvent = jsonObjectMapper.readValue(serializedEvent);
+
+			assertThat(deserializedEvent).isEqualTo(originalEvent);
+		}
+
+		//
+		// Test via materialEventConverter, without serializing the Event wrapper
+		{
+			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
+			final MaterialEvent deserializedMaterialEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
+
+			assertThat(deserializedMaterialEvent).isEqualTo(originalEvent);
+		}
+
+		//
+		// Test via materialEventConverter, serializing/deserializing the Event wrapper
+		{
+			final JSONObjectMapper<Event> jsonObjectMapper = JSONObjectMapper.forClass(Event.class);
+
+			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
+
+			final String serializedEvent = jsonObjectMapper.writeValueAsString(eventbusEvent);
+			final Event deserializedEvent = jsonObjectMapper.readValue(serializedEvent);
+			final MaterialEvent deserializedMaterialEvent = materialEventConverter.toMaterialEvent(deserializedEvent);
+
+			assertThat(deserializedMaterialEvent).isEqualTo(originalEvent);
+		}
+	}
+
+	private static EventDescriptor createEventDescriptor()
+	{
+		return EventDescriptor.ofClientAndOrg(1, 2);
+	}
 
 	@Test
 	public void attributesChangedEvent()
@@ -416,17 +479,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void forecastCreatedEvent()
 	{
-		final MaterialDescriptor materialDescriptor = newMaterialDescriptor();
-
-		final ForecastLine forecastLine = ForecastLine.builder()
-				.forecastLineId(30)
-				.materialDescriptor(materialDescriptor)
-				.build();
-		final Forecast forecast = Forecast.builder()
-				.forecastId(20)
-				.docStatus("docStatus")
-				.forecastLine(forecastLine)
-				.build();
+		final Forecast forecast = createForecast(newMaterialDescriptor());
 		final ForecastCreatedEvent forecastCreatedEvent = ForecastCreatedEvent
 				.builder()
 				.forecast(forecast)
@@ -434,6 +487,19 @@ public class MaterialEventSerializerTests
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(forecastCreatedEvent);
+	}
+
+	@Test
+	public void forecastDeletedEvent()
+	{
+		final Forecast forecast = createForecast(newMaterialDescriptor());
+		final ForecastDeletedEvent forecastDeletedEvent = ForecastDeletedEvent
+				.builder()
+				.forecast(forecast)
+				.eventDescriptor(newEventDescriptor())
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(forecastDeletedEvent);
 	}
 
 	@Test
@@ -575,7 +641,12 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(newEventDescriptor())
 				.materialDescriptor(newMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
-				.reservedQuantity(new BigDecimal("3"))
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(TEN)
+						.orderedQuantityDelta(TEN)
+						.reservedQuantityDelta(new BigDecimal("3"))
+						.reservedQuantity(new BigDecimal("3"))
+						.build())
 				.shipmentScheduleId(4);
 	}
 
@@ -586,9 +657,12 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(newEventDescriptor())
 				.materialDescriptor(newMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
-				.orderedQuantityDelta(new BigDecimal("2"))
-				.reservedQuantity(new BigDecimal("3"))
-				.reservedQuantityDelta(new BigDecimal("4"))
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
 				.shipmentScheduleId(5)
 				.build();
 
@@ -601,7 +675,12 @@ public class MaterialEventSerializerTests
 		final ShipmentScheduleDeletedEvent shipmentScheduleDeletedEvent = ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(newEventDescriptor())
 				.materialDescriptor(newMaterialDescriptor())
-				.reservedQuantity(new BigDecimal("3"))
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
 				.shipmentScheduleId(5)
 				.build();
 
@@ -716,5 +795,18 @@ public class MaterialEventSerializerTests
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);
+	}
+
+	private static Forecast createForecast(@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		final ForecastLine forecastLine = ForecastLine.builder()
+				.forecastLineId(30)
+				.materialDescriptor(materialDescriptor)
+				.build();
+		return Forecast.builder()
+				.forecastId(20)
+				.docStatus("docStatus")
+				.forecastLine(forecastLine)
+				.build();
 	}
 }

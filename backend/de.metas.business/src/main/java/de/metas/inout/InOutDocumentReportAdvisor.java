@@ -112,6 +112,7 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
 				.language(language)
+				.poReference(inout.getPOReference())
 				.build();
 	}
 

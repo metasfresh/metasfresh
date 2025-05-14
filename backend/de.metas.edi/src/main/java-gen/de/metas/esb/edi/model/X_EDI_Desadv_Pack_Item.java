@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_EDI_Desadv_Pack_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -216519610L;
+	private static final long serialVersionUID = 1014721542L;
 
     /** Standard Constructor */
     public X_EDI_Desadv_Pack_Item (final Properties ctx, final int EDI_Desadv_Pack_Item_ID, @Nullable final String trxName)

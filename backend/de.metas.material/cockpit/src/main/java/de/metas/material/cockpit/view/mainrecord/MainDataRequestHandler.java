@@ -27,6 +27,8 @@ import de.metas.Profiles;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import org.compiere.model.IQuery;
@@ -61,7 +63,7 @@ public class MainDataRequestHandler
 		{
 			final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(updateMainStockDataRequest.getIdentifier());
 
-			dataRecord.setMDCandidateQtyStock(updateMainStockDataRequest.getQtyStockCurrent());
+			dataRecord.setMDCandidateQtyStock_AtDate(updateMainStockDataRequest.getQtyStockCurrent());
 			saveRecord(dataRecord);
 		}
 	}
@@ -90,64 +92,67 @@ public class MainDataRequestHandler
 			final I_MD_Cockpit dataRecord,
 			final UpdateMainDataRequest dataUpdateRequest)
 	{
+		dataRecord.setQtyOrdered_SalesOrder_AtDate(computeSum(dataRecord.getQtyOrdered_SalesOrder_AtDate(), dataUpdateRequest.getOrderedSalesQty()));
+		dataRecord.setQtyOrdered_PurchaseOrder_AtDate(computeSum(dataRecord.getQtyOrdered_PurchaseOrder_AtDate(), dataUpdateRequest.getOrderedPurchaseQty()));
+
 		// was QtyMaterialentnahme
-		dataRecord.setQtyMaterialentnahme(
-				stripTrailingDecimalZeros(dataRecord.getQtyMaterialentnahme().add(dataUpdateRequest.getDirectMovementQty())));
+		dataRecord.setQtyMaterialentnahme_AtDate(computeSum(dataRecord.getQtyMaterialentnahme_AtDate(), dataUpdateRequest.getDirectMovementQty()));
 
 		// was PMM_QtyPromised_OnDate
-		dataRecord.setPMM_QtyPromised_OnDate(stripTrailingDecimalZeros(
-				dataRecord.getPMM_QtyPromised_OnDate().add(dataUpdateRequest.getOfferedQty())));
+		dataRecord.setPMM_QtyPromised_OnDate_AtDate(computeSum(dataRecord.getPMM_QtyPromised_OnDate_AtDate(), dataUpdateRequest.getOfferedQty()));
+
+		dataRecord.setPMM_QtyPromised_NextDay(computeSum(dataRecord.getPMM_QtyPromised_NextDay(), dataUpdateRequest.getOfferedQtyNextDay()));
 
 		// this column was not in the old data model
 		dataRecord.setQtyStockChange(stripTrailingDecimalZeros(
 				dataRecord.getQtyStockChange().add(dataUpdateRequest.getOnHandQtyChange())));
 
 		// was QtyOrdered_OnDate => sum of RV_C_OrderLine_QtyOrderedReservedPromised_OnDate_V.QtyReserved_Purchase => ol.QtyReserved of purchaseOrders
-		dataRecord.setQtySupply_PurchaseOrder(computeSum(dataRecord.getQtySupply_PurchaseOrder(), dataUpdateRequest.getQtySupplyPurchaseOrder()));
+		dataRecord.setQtySupply_PurchaseOrder_AtDate(computeSum(dataRecord.getQtySupply_PurchaseOrder_AtDate(), dataUpdateRequest.getQtySupplyPurchaseOrder()));
 		// was QtyReserved_OnDate, was QtyReserved_Sale
-		dataRecord.setQtyDemand_SalesOrder(computeSum(dataRecord.getQtyDemand_SalesOrder(), dataUpdateRequest.getQtyDemandSalesOrder()));
+		dataRecord.setQtyDemand_SalesOrder_AtDate(computeSum(dataRecord.getQtyDemand_SalesOrder_AtDate(), dataUpdateRequest.getQtyDemandSalesOrder()));
 
-		dataRecord.setQtySupply_DD_Order(computeSum(dataRecord.getQtySupply_DD_Order(), dataUpdateRequest.getQtySupplyDDOrder()));
-		dataRecord.setQtyDemand_DD_Order(computeSum(dataRecord.getQtyDemand_DD_Order(), dataUpdateRequest.getQtyDemandDDOrder()));
+		dataRecord.setQtySupply_DD_Order_AtDate(computeSum(dataRecord.getQtySupply_DD_Order_AtDate(), dataUpdateRequest.getQtySupplyDDOrder()));
+		dataRecord.setQtyDemand_DD_Order_AtDate(computeSum(dataRecord.getQtyDemand_DD_Order_AtDate(), dataUpdateRequest.getQtyDemandDDOrder()));
 
-		dataRecord.setQtySupply_PP_Order(computeSum(dataRecord.getQtySupply_PP_Order(), dataUpdateRequest.getQtySupplyPPOrder()));
+		dataRecord.setQtySupply_PP_Order_AtDate(computeSum(dataRecord.getQtySupply_PP_Order_AtDate(), dataUpdateRequest.getQtySupplyPPOrder()));
 		// was Fresh_QtyMRP, was QtyRequiredForProduction
-		dataRecord.setQtyDemand_PP_Order(computeSum(dataRecord.getQtyDemand_PP_Order(), dataUpdateRequest.getQtyDemandPPOrder()));
+		dataRecord.setQtyDemand_PP_Order_AtDate(computeSum(dataRecord.getQtyDemand_PP_Order_AtDate(), dataUpdateRequest.getQtyDemandPPOrder()));
 
-		dataRecord.setQtySupplyRequired(CoalesceUtil.firstPositiveOrZero(computeSum(dataRecord.getQtySupplyRequired(), dataUpdateRequest.getQtySupplyRequired())));
+		final BigDecimal qtySupplyRequired_AtDate_Prev = dataRecord.getQtySupplyRequired_AtDate();
+		dataRecord.setQtySupplyRequired_AtDate(CoalesceUtil.firstPositiveOrZero(computeSum(qtySupplyRequired_AtDate_Prev, dataUpdateRequest.getQtySupplyRequired())));
 
 		updateQtyStockEstimateColumns(dataRecord, dataUpdateRequest);
 
-		dataRecord.setQtyInventoryCount(computeSum(dataRecord.getQtyInventoryCount(), dataUpdateRequest.getQtyInventoryCount()));
-		dataRecord.setQtyInventoryTime(TimeUtil.asTimestamp(TimeUtil.max(TimeUtil.asInstant(dataRecord.getDateGeneral()),
-																		 dataUpdateRequest.getQtyInventoryTime())));
+		dataRecord.setQtyInventoryCount_AtDate(computeSum(dataRecord.getQtyInventoryCount_AtDate(), dataUpdateRequest.getQtyInventoryCount()));
+		dataRecord.setQtyInventoryTime_AtDate(TimeUtil.asTimestamp(TimeUtil.max(TimeUtil.asInstant(dataRecord.getDateGeneral()),
+				dataUpdateRequest.getQtyInventoryTime())));
 
-		dataRecord.setQtySupplySum(computeQtySupply_Sum(dataRecord));
-		dataRecord.setQtyDemandSum(computeQtyDemand_Sum(dataRecord));
+		dataRecord.setQtySupplySum_AtDate(computeQtySupply_Sum(dataRecord));
+		dataRecord.setQtyDemandSum_AtDate(computeQtyDemand_Sum(dataRecord));
+
+		final ILoggable loggable = Loggables.get();
+		loggable.addLog("Update MD_Cockpit_ID=" + dataRecord.getMD_Cockpit_ID() + ", QtySupplyRequired_AtDate=" + qtySupplyRequired_AtDate_Prev + "->" + dataRecord.getQtySupplyRequired_AtDate());
 	}
 
 	private static void updateQtyStockEstimateColumns(
-			@NonNull final I_MD_Cockpit dataRecord, 
+			@NonNull final I_MD_Cockpit dataRecord,
 			@NonNull final UpdateMainDataRequest dataUpdateRequest)
 	{
 		if (dataUpdateRequest.getQtyStockEstimateCount() != null)
 		{
-			dataRecord.setQtyStockEstimateTime(TimeUtil.asTimestamp(dataUpdateRequest.getQtyStockEstimateTime()));
+			dataRecord.setQtyStockEstimateTime_AtDate(TimeUtil.asTimestamp(dataUpdateRequest.getQtyStockEstimateTime()));
+			dataRecord.setQtyStockEstimateCount_AtDate(dataUpdateRequest.getQtyStockEstimateCount());
 		}
-		else
-		{
-			dataRecord.setQtyStockEstimateTime(null);
-		}
-		dataRecord.setQtyStockEstimateCount(CoalesceUtil.coalesceNotNull(dataUpdateRequest.getQtyStockEstimateCount(), BigDecimal.ZERO));
 
 		final Integer qtyStockEstimateSeqNo = dataUpdateRequest.getQtyStockEstimateSeqNo();
-		if (qtyStockEstimateSeqNo == null || qtyStockEstimateSeqNo == 0)
+		if (qtyStockEstimateSeqNo != null && qtyStockEstimateSeqNo == 0)
 		{
-			dataRecord.setQtyStockEstimateSeqNo(99999);
+			dataRecord.setQtyStockEstimateSeqNo_AtDate(99999);
 		}
 		else
 		{
-			dataRecord.setQtyStockEstimateSeqNo(qtyStockEstimateSeqNo);
+			dataRecord.setQtyStockEstimateSeqNo_AtDate(CoalesceUtil.coalesceNotNull(qtyStockEstimateSeqNo, dataRecord.getQtyStockEstimateSeqNo_AtDate(), 99999));
 		}
 	}
 
@@ -160,9 +165,9 @@ public class MainDataRequestHandler
 	@NonNull
 	private static BigDecimal computeQtyDemand_Sum(@NonNull final I_MD_Cockpit dataRecord)
 	{
-		return dataRecord.getQtyDemand_SalesOrder()
-				.add(dataRecord.getQtyDemand_PP_Order())
-				.add(dataRecord.getQtyDemand_DD_Order());
+		return dataRecord.getQtyDemand_SalesOrder_AtDate()
+				.add(dataRecord.getQtyDemand_PP_Order_AtDate())
+				.add(dataRecord.getQtyDemand_DD_Order_AtDate());
 	}
 
 	/**
@@ -174,9 +179,9 @@ public class MainDataRequestHandler
 	@NonNull
 	private static BigDecimal computeQtySupply_Sum(@NonNull final I_MD_Cockpit dataRecord)
 	{
-		return dataRecord.getQtySupply_PurchaseOrder()
-				.add(dataRecord.getQtySupply_PP_Order())
-				.add(dataRecord.getQtySupply_DD_Order());
+		return dataRecord.getQtySupply_PurchaseOrder_AtDate()
+				.add(dataRecord.getQtySupply_PP_Order_AtDate())
+				.add(dataRecord.getQtySupply_DD_Order_AtDate());
 	}
 
 	/**
@@ -188,7 +193,7 @@ public class MainDataRequestHandler
 	public static BigDecimal computeQtySupplyToSchedule(@NonNull final I_MD_Cockpit dataRecord)
 	{
 		return CoalesceUtil.firstPositiveOrZero(
-				dataRecord.getQtySupplyRequired().subtract(dataRecord.getQtySupplySum()));
+				dataRecord.getQtySupplyRequired_AtDate().subtract(dataRecord.getQtySupplySum_AtDate()));
 	}
 
 	/**
@@ -199,7 +204,7 @@ public class MainDataRequestHandler
 	 */
 	public static BigDecimal computeQtyExpectedSurplus(@NonNull final I_MD_Cockpit dataRecord)
 	{
-		return dataRecord.getQtySupplySum().subtract(dataRecord.getQtyDemandSum());
+		return dataRecord.getQtySupplySum_AtDate().subtract(dataRecord.getQtyDemandSum_AtDate());
 	}
 
 	@NonNull

@@ -1,7 +1,6 @@
 package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
-
 import com.itextpdf.text.Document;
 import com.itextpdf.text.pdf.BadPdfFormatException;
 import com.itextpdf.text.pdf.PdfCopy;

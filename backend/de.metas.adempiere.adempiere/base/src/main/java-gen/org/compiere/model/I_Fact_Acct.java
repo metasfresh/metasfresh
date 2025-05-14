@@ -3,6 +3,7 @@ package org.compiere.model;
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for Fact_Acct
  *  @author Adempiere (generated) 
@@ -43,12 +44,31 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA_Asset_ID();
+	int getA_Asset_ID();
 
-    /** Column definition for A_Asset_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_A_Asset_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "A_Asset_ID", null);
-    /** Column name A_Asset_ID */
-    public static final String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
+	ModelColumn<I_Fact_Acct, Object> COLUMN_A_Asset_ID = new ModelColumn<>(I_Fact_Acct.class, "A_Asset_ID", null);
+	String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
+
+	/**
+	 * Set Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAccountConceptualName (java.lang.String AccountConceptualName);
+
+	/**
+	 * Get Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAccountConceptualName();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_Fact_Acct.class, "AccountConceptualName", null);
+	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
 
 	/**
 	 * Set Konto.
@@ -342,6 +362,26 @@ public interface I_Fact_Acct
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner2_ID (int C_BPartner2_ID);
+
+	/**
+	 * Get Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner2_ID();
+
+	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Identifies a Business Partner
 	 *
@@ -369,6 +409,26 @@ public interface I_Fact_Acct
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
+
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
 	 * Set Werbemassnahme.
@@ -514,6 +574,31 @@ public interface I_Fact_Acct
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
     /** Column name C_LocTo_ID */
     public static final String COLUMNNAME_C_LocTo_ID = "C_LocTo_ID";
+
+	/**
+	 * Set Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderSO_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
+
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
+
+	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_Fact_Acct.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
 	 * Set Periode.
@@ -1082,6 +1167,27 @@ public interface I_Fact_Acct
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Open Item Reconciled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOpenItemsReconciled (boolean IsOpenItemsReconciled);
+
+	/**
+	 * Get Open Item Reconciled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOpenItemsReconciled();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_IsOpenItemsReconciled = new ModelColumn<>(I_Fact_Acct.class, "IsOpenItemsReconciled", null);
+	String COLUMNNAME_IsOpenItemsReconciled = "IsOpenItemsReconciled";
+
+	/**
 	 * Set Line ID.
 	 * Transaction line ID (internal)
 	 *
@@ -1105,6 +1211,33 @@ public interface I_Fact_Acct
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Line_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Line_ID", null);
     /** Column name Line_ID */
     public static final String COLUMNNAME_Line_ID = "Line_ID";
+
+	/**
+	 * Set Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostElement_ID (int M_CostElement_ID);
+
+	/**
+	 * Get Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostElement_ID();
+
+	@Nullable org.compiere.model.I_M_CostElement getM_CostElement();
+
+	void setM_CostElement(@Nullable org.compiere.model.I_M_CostElement M_CostElement);
+
+	ModelColumn<I_Fact_Acct, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_Fact_Acct.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
 
 	/**
 	 * Set Lagerort.
@@ -1163,6 +1296,117 @@ public interface I_Fact_Acct
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set OI Open Amount.
+	 * OI Open amount in accounting currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_OpenAmount (@Nullable BigDecimal OI_OpenAmount);
+
+	/**
+	 * Get OI Open Amount.
+	 * OI Open amount in accounting currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOI_OpenAmount();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OI_OpenAmount = new ModelColumn<>(I_Fact_Acct.class, "OI_OpenAmount", null);
+	String COLUMNNAME_OI_OpenAmount = "OI_OpenAmount";
+
+	/**
+	 * Set OI Open Amount (source).
+	 * OI Open amount in source currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_OpenAmountSource (@Nullable BigDecimal OI_OpenAmountSource);
+
+	/**
+	 * Get OI Open Amount (source).
+	 * OI Open amount in source currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOI_OpenAmountSource();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OI_OpenAmountSource = new ModelColumn<>(I_Fact_Acct.class, "OI_OpenAmountSource", null);
+	String COLUMNNAME_OI_OpenAmountSource = "OI_OpenAmountSource";
+
+	/**
+	 * Set Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_TrxType (@Nullable java.lang.String OI_TrxType);
+
+	/**
+	 * Get Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOI_TrxType();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OI_TrxType = new ModelColumn<>(I_Fact_Acct.class, "OI_TrxType", null);
+	String COLUMNNAME_OI_TrxType = "OI_TrxType";
+
+	/**
+	 * Set Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenItemKey (@Nullable java.lang.String OpenItemKey);
+
+	/**
+	 * Get Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOpenItemKey();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_OpenItemKey = new ModelColumn<>(I_Fact_Acct.class, "OpenItemKey", null);
+	String COLUMNNAME_OpenItemKey = "OpenItemKey";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_POReference = new ModelColumn<>(I_Fact_Acct.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Buchungsart.

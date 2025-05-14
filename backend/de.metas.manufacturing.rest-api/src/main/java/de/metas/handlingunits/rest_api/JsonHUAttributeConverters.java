@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @UtilityClass
-class JsonHUAttributeConverters
+public class JsonHUAttributeConverters
 {
 	@NonNull
 	public static Object toDisplayValue(@Nullable final Object value, @NonNull final String adLanguage)

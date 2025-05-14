@@ -54,6 +54,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	@NonNull DocumentFieldWidgetType widgetType;
 	boolean virtualColumn;
 	boolean mandatory;
+	boolean hideGridColumnIfEmpty;
 
 	@NonNull Class<?> sqlValueClass;
 	@NonNull SqlSelectValue sqlSelectValue;
@@ -71,6 +72,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 			@NonNull final DocumentFieldWidgetType widgetType,
 			final boolean virtualColumn,
 			final boolean mandatory,
+			final boolean hideGridColumnIfEmpty,
 			//
 			@Nullable final Class<?> sqlValueClass,
 			@NonNull final SqlSelectValue sqlSelectValue,
@@ -85,6 +87,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 		this.widgetType = widgetType;
 		this.virtualColumn = virtualColumn;
 		this.mandatory = mandatory;
+		this.hideGridColumnIfEmpty = hideGridColumnIfEmpty;
 
 		this.sqlValueClass = sqlValueClass != null ? sqlValueClass : widgetType.getValueClass();
 		this.sqlSelectValue = sqlSelectValue;
@@ -94,11 +97,5 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 				? sqlOrderBy
 				: SqlOrderByValue.builder().sqlSelectDisplayValue(sqlSelectDisplayValue).sqlSelectValue(sqlSelectValue).columnName(columnName).build();
 		this.fieldLoader = fieldLoader;
-	}
-
-	@Override
-	public boolean isMandatory()
-	{
-		return mandatory;
 	}
 }

@@ -13,7 +13,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 import org.adempiere.warehouse.WarehouseId;
@@ -55,32 +55,34 @@ final class PackageableViewFilters
 
 	private static DocumentFilterDescriptor createDefaultFilterDescriptor()
 	{
+		final LookupDescriptorProviders lookupDescriptorProviders = LookupDescriptorProviders.sharedInstance();
+
 		final DocumentFilterParamDescriptor.Builder orderParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_C_Order_ID)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Order.Table_Name).provideForFilter());
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_C_Order.Table_Name).provideForFilter());
 
 		final DocumentFilterParamDescriptor.Builder customerParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_Customer_ID)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_BPartner.Table_Name).provideForFilter());
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_C_BPartner.Table_Name).provideForFilter());
 
 		final DocumentFilterParamDescriptor.Builder warehouseTypeParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Warehouse_Type_ID)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Warehouse_Type.Table_Name).provideForFilter());
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_M_Warehouse_Type.Table_Name).provideForFilter());
 
 		final DocumentFilterParamDescriptor.Builder warehouseParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Warehouse_ID)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Warehouse.Table_Name).provideForFilter());
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_M_Warehouse.Table_Name).provideForFilter());
 
 		final DocumentFilterParamDescriptor.Builder deliveryDateParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_DeliveryDate)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(PackageableViewFilterVO.PARAM_DeliveryDate))
-				.setWidgetType(DocumentFieldWidgetType.LocalDate);
+				.displayName(Services.get(IMsgBL.class).translatable(PackageableViewFilterVO.PARAM_DeliveryDate))
+				.widgetType(DocumentFieldWidgetType.LocalDate);
 
 		final DocumentFilterParamDescriptor.Builder preparationDateParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_PreparationDate)
-				.setWidgetType(DocumentFieldWidgetType.LocalDate);
+				.widgetType(DocumentFieldWidgetType.LocalDate);
 
 		final DocumentFilterParamDescriptor.Builder shipperParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Shipper_ID)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Shipper.Table_Name).provideForFilter());
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_M_Shipper.Table_Name).provideForFilter());
 
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
@@ -99,14 +101,14 @@ final class PackageableViewFilters
 	private static Builder newParamDescriptor(final String fieldName)
 	{
 		return DocumentFilterParamDescriptor.builder()
-				.setFieldName(fieldName)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(fieldName));
+				.fieldName(fieldName)
+				.displayName(Services.get(IMsgBL.class).translatable(fieldName));
 	}
 
 	public static PackageableViewFilterVO extractPackageableViewFilterVO(final DocumentFilterList filters)
 	{
 		return filters.getFilterById(PackageableViewFilterVO.FILTER_ID)
-				.map(filter -> toPackageableViewFilterVO(filter))
+				.map(PackageableViewFilters::toPackageableViewFilterVO)
 				.orElse(PackageableViewFilterVO.ANY);
 	}
 

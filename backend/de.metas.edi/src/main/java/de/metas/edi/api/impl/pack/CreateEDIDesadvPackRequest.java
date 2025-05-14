@@ -44,14 +44,17 @@ public class CreateEDIDesadvPackRequest
 	@NonNull
 	EDIDesadvId ediDesadvId;
 
+	/**
+	 * A value <=0 means that the repo shall pick the proper seqNo
+	 */
 	@NonNull
 	Integer seqNo;
 	
 	@NonNull
 	String sscc18;
 
-	/** 
-	 * true means the SSCC was just created on-the-fly. false means it's coming from a HU's SSCC-Attribute. 
+	/**
+	 * true means the SSCC was just created on-the-fly. false means it's coming from a HU's SSCC-Attribute.
 	 */
 	@NonNull
 	Boolean isManualIpaSSCC;

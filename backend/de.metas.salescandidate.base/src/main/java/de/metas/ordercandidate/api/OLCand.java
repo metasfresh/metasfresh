@@ -5,7 +5,9 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.error.AdIssueId;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
@@ -32,6 +34,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -122,6 +125,7 @@ public final class OLCand implements IProductPriceAware
 
 	@Getter
 	private final Quantity qty;
+	@Nullable @Getter private final BigDecimal manualQtyInPriceUOM;
 
 	@Getter
 	@Nullable
@@ -154,6 +158,12 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final String email;
 
+	@Getter
+	private final AdIssueId adIssueId;
+
+	@Getter
+	private final String headerAggregationKey;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -180,7 +190,9 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
 			@Nullable final String phone,
-			@Nullable final String email)
+			@Nullable final String email,
+			@Nullable final AdIssueId adIssueId,
+			@Nullable final String headerAggregationKey)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -206,9 +218,11 @@ public final class OLCand implements IProductPriceAware
 		this.paymentTermId = paymentTermId;
 		this.pricingSystemId = pricingSystemId;
 
-		this.qty = Quantitys.create(
+		this.qty = Quantitys.of(
 				this.olCandEffectiveValuesBL.getEffectiveQtyEntered(olCandRecord),
-				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
+				Objects.requireNonNull(this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord)));
+
+		this.manualQtyInPriceUOM = olCandEffectiveValuesBL.getManualQtyInPriceUOM(olCandRecord).orElse(null);
 
 		this.qtyItemCapacityEff = qtyItemCapacityEff;
 
@@ -228,6 +242,10 @@ public final class OLCand implements IProductPriceAware
 		this.bpartnerName = bpartnerName;
 		this.email = email;
 		this.phone = phone;
+
+		this.adIssueId = adIssueId;
+
+		this.headerAggregationKey = headerAggregationKey;
 	}
 
 	@Override
@@ -281,11 +299,13 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getM_AttributeSetInstance_ID();
 	}
 
+	@Nullable
 	public WarehouseId getWarehouseId()
 	{
 		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_ID());
 	}
 
+	@Nullable
 	public WarehouseId getWarehouseDestId()
 	{
 		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_Dest_ID());
@@ -316,6 +336,7 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getC_Currency_ID();
 	}
 
+	@Nullable
 	public String getProductDescription()
 	{
 		return olCandRecord.getProductDescription();
@@ -348,13 +369,15 @@ public final class OLCand implements IProductPriceAware
 		olCandRecord.setGroupingErrorMessage(errorMsg);
 	}
 
-	public void setError(final String errorMsg, final int adNoteId)
+	public void setError(final String errorMsg, final int adNoteId, @Nullable final AdIssueId adIssueId)
 	{
 		olCandRecord.setIsError(true);
 		olCandRecord.setErrorMsg(errorMsg);
 		olCandRecord.setAD_Note_ID(adNoteId);
+		olCandRecord.setAD_Issue_ID(AdIssueId.toRepoId(adIssueId));
 	}
 
+	@Nullable
 	public String getPOReference()
 	{
 		return olCandRecord.getPOReference();
@@ -375,13 +398,8 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getAD_DataDestination_ID();
 	}
 
-	public boolean isImportedWithIssues()
-	{
-		final org.adempiere.process.rpl.model.I_C_OLCand rplCandidate = InterfaceWrapperHelper.create(olCandRecord, org.adempiere.process.rpl.model.I_C_OLCand.class);
-		return rplCandidate.isImportedWithIssues();
-	}
-
 	// FIXME hardcoded (08691)
+	@Nullable
 	public Object getValueByColumn(@NonNull final OLCandAggregationColumn column)
 	{
 		final String olCandColumnName = column.getColumnName();
@@ -463,11 +481,8 @@ public final class OLCand implements IProductPriceAware
 
 	public int getHUPIProductItemId()
 	{
-		if (olCandRecord.getM_HU_PI_Item_Product_Override_ID() > 0)
-		{
-			return olCandRecord.getM_HU_PI_Item_Product_Override_ID();
-		}
-		return olCandRecord.getM_HU_PI_Item_Product_ID();
+		final HUPIItemProductId packingInstructions = olCandEffectiveValuesBL.getEffectivePackingInstructions(olCandRecord);
+		return HUPIItemProductId.toRepoId(packingInstructions);
 	}
 
 	public InvoicableQtyBasedOn getInvoicableQtyBasedOn()
@@ -488,5 +503,10 @@ public final class OLCand implements IProductPriceAware
 		}
 
 		return asyncBatchId.getRepoId() == asyncBatchIdCandidate.getRepoId();
+	}
+
+	public void setHeaderAggregationKey(@NonNull final String headerAggregationKey)
+	{
+		olCandRecord.setHeaderAggregationKey(headerAggregationKey);
 	}
 }

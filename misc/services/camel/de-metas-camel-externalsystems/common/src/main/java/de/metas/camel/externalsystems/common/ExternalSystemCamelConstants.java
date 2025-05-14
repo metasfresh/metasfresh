@@ -98,6 +98,8 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_ATTACHMENT_ROUTE_ID = "To-MF_PushAttachment-Route";
 
+	public static final String MF_AD_Process_ROUTE_ID = "To-MF_InvokeAdProcess-Route";
+
 	public static final String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
 
 	public static final String MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI = "To-MF_Lookup-ExternalReference_V2";

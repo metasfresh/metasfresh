@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
 import { scanAndValidateBarcodeLocation } from '../../../routes/scan';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 export const COMPONENTTYPE_ScanAndValidateBarcode = 'common/scanAndValidateBarcode';
 
 const ScanAndValidateActivity = (props) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
   const { applicationId, wfProcessId, activityState } = props;
 
   const isUserEditable = activityState.dataStored.isUserEditable;

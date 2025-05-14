@@ -1,75 +1,21 @@
-import * as types from '../../constants/DistributionActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 import { current, isDraft } from 'immer';
-import { updateUserEditable } from './utils';
+import { getStepsArrayFromLine } from './index';
 
 const COMPONENT_TYPE = 'distribution/move';
 
 export const distributionReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_DISTRIBUTION_PICK_FROM: {
-      return reduceOnUpdatePickFrom(draftState, action.payload);
-    }
-
-    case types.UPDATE_DISTRIBUTION_DROP_TO: {
-      return reduceOnDropTo(draftState, action.payload);
-    }
-
     default: {
       return draftState;
     }
   }
 };
 
-const reduceOnUpdatePickFrom = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode } = payload;
-  const draftWFProcess = draftState[wfProcessId];
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-
-  draftStep.qtyPicked = qtyPicked;
-  draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
-
-  updateStepStatusAndRollup({
-    draftWFProcess,
-    activityId,
-    lineId,
-    stepId,
-  });
-
-  return draftState;
-};
-
-const reduceOnDropTo = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId } = payload;
-
-  const draftWFProcess = draftState[wfProcessId];
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-
-  draftStep.droppedToLocator = true;
-
-  updateStepStatusAndRollup({
-    draftWFProcess,
-    activityId,
-    lineId,
-    stepId,
-  });
-
-  return draftState;
-};
-
 const updateStepStatus = ({ draftStep }) => {
   draftStep.isPickedFrom = computeIsPickedFrom({ draftStep });
   draftStep.completeStatus = computeStepStatus({ draftStep });
-};
-
-const updateStepStatusAndRollup = ({ draftWFProcess, activityId, lineId, stepId }) => {
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-  updateStepStatus({ draftStep });
-
-  //
-  // Rollup:
-  updateLineStatusFromStepsAndRollup({ draftWFProcess, activityId, lineId });
 };
 
 const computeStepStatus = ({ draftStep }) => {
@@ -85,20 +31,17 @@ const computeIsPickedFrom = ({ draftStep }) => {
   return draftStep.qtyPicked !== 0 || !!draftStep.qtyRejectedReasonCode;
 };
 
-const updateLineStatusFromSteps = ({ draftLine }) => {
+const updateLineFromSteps = ({ draftLine }) => {
   draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
+
+  let qtyPicked = 0;
+  for (const step of getStepsArrayFromLine(draftLine)) {
+    qtyPicked += step.qtyPicked;
+  }
+  draftLine.qtyPicked = qtyPicked;
 };
 
-const updateLineStatusFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
-  const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  updateLineStatusFromSteps({ draftLine });
-
-  //
-  // Rollup:
-  updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
-};
-
-export const computeLineStatusFromSteps = ({ draftLine }) => {
+const computeLineStatusFromSteps = ({ draftLine }) => {
   const stepIds = extractDraftMapKeys(draftLine.steps);
 
   const stepsStatuses = stepIds.reduce((accum, stepId) => {
@@ -110,20 +53,15 @@ export const computeLineStatusFromSteps = ({ draftLine }) => {
     return accum;
   }, []);
 
+  if (stepsStatuses.length === 0) {
+    return CompleteStatus.NOT_STARTED;
+  }
+
   return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepsStatuses);
 };
 
 const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
   draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
-};
-
-const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
-  const draftActivityDataStored = draftWFProcess.activities[activityId].dataStored;
-  updateActivityStatusFromLines({ draftActivityDataStored });
-
-  //
-  // Rollup:
-  updateUserEditable({ draftWFProcess });
 };
 
 const extractDraftMapKeys = (draftMap) => {
@@ -145,16 +83,21 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
   return CompleteStatus.reduceFromCompleteStatuesUniqueArray(linesStatuses);
 };
 
-const normalizeLines = (lines) => {
-  return lines.map((line) => {
-    return {
-      ...line,
-      steps: line.steps.reduce((accum, step) => {
-        accum[step.id] = step;
-        return accum;
-      }, {}),
-    };
-  });
+const normalizeLinesArray = (lines) => {
+  return lines.reduce((accum, line) => {
+    accum[line.lineId] = normalizeLine(line);
+    return accum;
+  }, {});
+};
+
+const normalizeLine = (line) => {
+  return {
+    ...line,
+    steps: line.steps.reduce((accum, step) => {
+      accum[step.id] = step;
+      return accum;
+    }, {}),
+  };
 };
 
 const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
@@ -162,20 +105,21 @@ const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
 
   //
   // Copy lines
-  draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
+  draftActivityDataStored.lines = normalizeLinesArray(fromActivity.componentProps.lines);
 
   //
   // Update all statuses
   const draftLines = draftActivityDataStored.lines;
-  for (let lineIdx = 0; lineIdx < draftLines.length; lineIdx++) {
-    const draftLine = draftLines[lineIdx];
+  console.log('mergeActivityDataStored', { draftLines, fromActivity });
+  for (let lineId of Object.keys(draftLines)) {
+    const draftLine = draftLines[lineId];
 
     for (let stepId of Object.keys(draftLine.steps)) {
       const draftStep = draftLine.steps[stepId];
       updateStepStatus({ draftStep });
     }
 
-    updateLineStatusFromSteps({ draftLine });
+    updateLineFromSteps({ draftLine });
   }
   updateActivityStatusFromLines({ draftActivityDataStored });
 
@@ -187,7 +131,7 @@ registerHandler({
   normalizeComponentProps: ({ componentProps }) => {
     return {
       ...componentProps,
-      lines: normalizeLines(componentProps.lines),
+      lines: normalizeLinesArray(componentProps.lines),
     };
   },
 

@@ -24,7 +24,7 @@ public abstract class AbstractJavaValidationRule implements IValidationRule, INa
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
-	private static List<ValueNamePair> exceptionTableAndColumns = new ArrayList<>();
+	private static final List<ValueNamePair> exceptionTableAndColumns = new ArrayList<>();
 
 	/**
 	 * A Java Validation rule shall never provide a pre-filter where clause.
@@ -39,7 +39,7 @@ public abstract class AbstractJavaValidationRule implements IValidationRule, INa
 	@Override
 	public final Set<String> getAllParameters()
 	{
-		return getPostQueryFilter().getParameters();
+		return getPostQueryFilter().getParameters(null);
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public abstract class AbstractJavaValidationRule implements IValidationRule, INa
 
 	// NOTE: better enforce developer to define this method
 	@Override
-	public abstract Set<String> getParameters();
+	public abstract Set<String> getParameters(@Nullable final String contextTableName);
 
 	@Override
 	public abstract boolean accept(final IValidationContext evalCtx, final NamePair item);

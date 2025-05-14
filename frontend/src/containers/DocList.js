@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { updateUri } from '../utils';
-import { getWindowBreadcrumb } from '../actions/MenuActions';
+import { setBreadcrumbByWindowId } from '../actions/MenuActions';
 import Container from '../components/Container';
 import DocumentList from './DocumentList';
 import Overlay from '../components/app/Overlay';
@@ -12,19 +12,9 @@ import Overlay from '../components/app/Overlay';
 const EMPTY_ARRAY = [];
 const EMPTY_OBJECT = {};
 
-/**
- * @file Class based component.
- * @module DocList
- * @extends Component
- */
 class DocList extends PureComponent {
   state = {};
 
-  /**
-   * getDerivedStateFromProps lifecycle - hold in the state of the component the last page
-   * @param {obj} props
-   * @param {obj} state
-   */
   static getDerivedStateFromProps(props, state) {
     return props.query && props.query.page !== state.lastPage
       ? { lastPage: props.query.page }
@@ -32,23 +22,19 @@ class DocList extends PureComponent {
   }
 
   componentDidMount = () => {
-    const { windowId, getWindowBreadcrumb } = this.props;
+    const { windowId, setBreadcrumbByWindowId } = this.props;
 
-    getWindowBreadcrumb(windowId);
+    setBreadcrumbByWindowId(windowId);
   };
 
   componentDidUpdate = (prevProps) => {
-    const { windowId, getWindowBreadcrumb } = this.props;
+    const { windowId, setBreadcrumbByWindowId } = this.props;
 
     if (prevProps.windowId !== windowId) {
-      getWindowBreadcrumb(windowId);
+      setBreadcrumbByWindowId(windowId);
     }
   };
 
-  /**
-   * @method updateUriCallback
-   * @summary Update the url with query params if needed (ie add viewId, page etc)
-   */
   updateUriCallback = (updatedQuery) => {
     const { query, pathname } = this.props;
     const { viewId } = updatedQuery;
@@ -147,21 +133,6 @@ class DocList extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {array} breadcrumb
- * @prop {object} includedView
- * @prop {string} indicator
- * @prop {object} modal
- * @prop {object} overlay
- * @prop {string} pathname
- * @prop {object} pluginModal
- * @prop {string} processStatus
- * @prop {object} query - routing query
- * @prop {object} rawModal
- * @prop {string} windowId
- * @prop {string} pathname
- */
 DocList.propTypes = {
   includedView: PropTypes.object,
   modal: PropTypes.object.isRequired,
@@ -169,7 +140,7 @@ DocList.propTypes = {
   processStatus: PropTypes.string.isRequired,
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
-  getWindowBreadcrumb: PropTypes.func.isRequired,
+  setBreadcrumbByWindowId: PropTypes.func.isRequired,
   pathname: PropTypes.string.isRequired,
   query: PropTypes.object.isRequired,
 };
@@ -186,4 +157,4 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, { getWindowBreadcrumb })(DocList);
+export default connect(mapStateToProps, { setBreadcrumbByWindowId })(DocList);

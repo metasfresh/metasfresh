@@ -21,6 +21,7 @@ import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -60,14 +61,18 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final OrderProductProposalsService orderProductProposalsService;
+	private final LookupDataSourceFactory lookupDataSourceFactory;
 
-	protected BasePLVProductsProposalViewFactory(final BPartnerProductStatsService bpartnerProductStatsService,
-			final OrderProductProposalsService orderProductProposalsService)
+
+	protected BasePLVProductsProposalViewFactory(final @NonNull BPartnerProductStatsService bpartnerProductStatsService,
+												 final @NonNull OrderProductProposalsService orderProductProposalsService,
+												 final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		super(WINDOW_ID);
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
 		this.orderProductProposalsService = orderProductProposalsService;
+		this.lookupDataSourceFactory = lookupDataSourceFactory;
 	}
 
 	@Override
@@ -102,6 +107,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 		final ProductsProposalRowsData rowsData = ProductsProposalRowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.orderProductProposalsService(orderProductProposalsService)
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				//
 				.priceListVersionId(basePriceListVersionId)
 				.productIdsToExclude(parentView.getProductIds())

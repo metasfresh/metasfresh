@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
@@ -11,6 +12,10 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.eevolution.model.I_DD_Order;
@@ -20,6 +25,7 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 class DistributionJobLoader
 {
@@ -46,23 +52,41 @@ class DistributionJobLoader
 		return load0(ddOrder);
 	}
 
+	public DistributionJob load(final DistributionJobId jobId)
+	{
+		return load(jobId.toDDOrderId());
+	}
+
 	private DistributionJob load0(final I_DD_Order ddOrder)
 	{
+		final MobileUIDistributionConfig config = loadingSupportServices.getConfig();
+
 		final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 		final DocStatus docStatus = DocStatus.ofCode(ddOrder.getDocStatus());
 
 		final ZonedDateTime dateRequired = InstantAndOrgId.ofTimestamp(ddOrder.getDatePromised(), ddOrder.getAD_Org_ID())
 				.toZonedDateTime(loadingSupportServices::getTimeZone);
+		final ZonedDateTime pickDate = Optional.ofNullable(ddOrder.getPickDate())
+				.map(date -> InstantAndOrgId.ofTimestamp(date, ddOrder.getAD_Org_ID()))
+				.map(instant -> instant.toZonedDateTime(loadingSupportServices::getTimeZone))
+				.orElse(dateRequired);
 
 		return DistributionJob.builder()
-				.ddOrderId(ddOrderId)
+				.id(DistributionJobId.ofDDOrderId(ddOrderId))
 				.documentNo(ddOrder.getDocumentNo())
+				.salesOrderDocumentNo(loadingSupportServices.getSalesOderDocNo(ddOrder))
+				.ppOrderDocumentNo(loadingSupportServices.getPPOrderDocNo(ddOrder))
 				.customerId(BPartnerId.ofRepoId(ddOrder.getC_BPartner_ID()))
 				.dateRequired(dateRequired)
+				.pickDate(pickDate)
 				.pickFromWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.dropToWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_To_ID()))
+				.plantInfo(Optional.ofNullable(ResourceId.ofRepoIdOrNull(ddOrder.getPP_Plant_ID()))
+								   .map(loadingSupportServices::getPlantInfo)
+								   .orElse(null))
 				.responsibleId(extractResponsibleId(ddOrder))
 				.isClosed(!docStatus.isCompleted()) // NOTE: we consider closed (for us) anything which is not completed
+				.allowPickingAnyHU(config.isAllowPickingAnyHU())
 				.lines(getDDOrderLines(ddOrderId)
 						.stream()
 						.map(this::toDistributionJobLine)
@@ -82,8 +106,9 @@ class DistributionJobLoader
 		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID());
 
 		return DistributionJobLine.builder()
-				.ddOrderLineId(ddOrderLineId)
+				.id(DistributionJobLineId.ofDDOrderLineId(ddOrderLineId))
 				.product(loadingSupportServices.getProductInfo(ProductId.ofRepoId(ddOrderLine.getM_Product_ID())))
+				.qtyToMove(extractQtyEntered(ddOrderLine))
 				.pickFromLocator(loadingSupportServices.getLocatorInfoByRepoId(ddOrderLine.getM_Locator_ID()))
 				.dropToLocator(loadingSupportServices.getLocatorInfoByRepoId(ddOrderLine.getM_LocatorTo_ID()))
 				.steps(getSchedules(ddOrderId, ddOrderLineId)
@@ -93,12 +118,17 @@ class DistributionJobLoader
 				.build();
 	}
 
+	private static Quantity extractQtyEntered(final I_DD_OrderLine ddOrderLine)
+	{
+		return Quantitys.of(ddOrderLine.getQtyEntered(), UomId.ofRepoId(ddOrderLine.getC_UOM_ID()));
+	}
+
 	public static DistributionJobStep toDistributionJobStep(
 			@NonNull final DDOrderMoveSchedule schedule,
 			@NonNull final DistributionJobLoaderSupportingServices loadingSupportServices)
 	{
 		return DistributionJobStep.builder()
-				.id(schedule.getId())
+				.id(DistributionJobStepId.ofScheduleId(schedule.getId()))
 				.qtyToMoveTarget(schedule.getQtyToPick())
 				//
 				// Pick From

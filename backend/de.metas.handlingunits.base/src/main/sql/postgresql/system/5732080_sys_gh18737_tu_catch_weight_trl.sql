@@ -86,23 +86,25 @@ UPDATE AD_Element_Trl SET Name='Erlauben Sie das Pflücken von TU mit Fanggewich
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583234,'fr_CH') 
 ;
 
--- Element: IsAllowSkippingRejectedReason
--- 2024-08-29T12:13:46.447Z
-UPDATE AD_Element_Trl SET Name='Kommissionierung ohne Grund für zurückgewiesene Menge zulassen', PrintName='Kommissionierung ohne Grund für zurückgewiesene Menge zulassen',Updated=TO_TIMESTAMP('2024-08-29 15:13:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=583236 AND AD_Language='de_CH'
-;
-
--- 2024-08-29T12:13:46.450Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583236,'de_CH') 
-;
-
--- Element: IsAllowSkippingRejectedReason
--- 2024-08-29T12:14:07.507Z
-UPDATE AD_Element_Trl SET Name='Kommissionierung ohne Grund für zurückgewiesene Menge', PrintName='Kommissionierung ohne Grund für zurückgewiesene Menge',Updated=TO_TIMESTAMP('2024-08-29 15:14:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=583236 AND AD_Language='de_DE'
-;
-
--- 2024-08-29T12:14:07.508Z
-/* DDL */  select update_ad_element_on_ad_element_trl_update(583236,'de_DE') 
-;
+--NEW_DAWN_MERGE_ARTIFACT
+--Will be set in 5732170_sys_gh18737_updatetrl.sql
+-- -- Element: IsAllowSkippingRejectedReason
+-- -- 2024-08-29T12:13:46.447Z
+-- UPDATE AD_Element_Trl SET Name='Kommissionierung ohne Grund für zurückgewiesene Menge zulassen', PrintName='Kommissionierung ohne Grund für zurückgewiesene Menge zulassen',Updated=TO_TIMESTAMP('2024-08-29 15:13:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=583236 AND AD_Language='de_CH'
+-- ;
+--
+-- -- 2024-08-29T12:13:46.450Z
+-- /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583236,'de_CH')
+-- ;
+--
+-- -- Element: IsAllowSkippingRejectedReason
+-- -- 2024-08-29T12:14:07.507Z
+-- UPDATE AD_Element_Trl SET Name='Kommissionierung ohne Grund für zurückgewiesene Menge', PrintName='Kommissionierung ohne Grund für zurückgewiesene Menge',Updated=TO_TIMESTAMP('2024-08-29 15:14:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=583236 AND AD_Language='de_DE'
+-- ;
+--
+-- -- 2024-08-29T12:14:07.508Z
+-- /* DDL */  select update_ad_element_on_ad_element_trl_update(583236,'de_DE')
+-- ;
 
 -- 2024-08-29T12:14:07.513Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583236,'de_DE') 

@@ -22,22 +22,19 @@ package org.compiere.model;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /**
  * RMA Line Model
@@ -245,7 +242,7 @@ public class MRMALine extends X_M_RMALine
 				if (!taxIncluded)
 				{
 					final ITaxBL taxBL = Services.get(ITaxBL.class);
-					taxAmt = taxBL.calculateTax(tax, getQty().multiply(unitAmount), taxIncluded, taxPrecision.toInt());
+					taxAmt = taxBL.calculateTaxAmt(tax, getQty().multiply(unitAmount), taxIncluded, taxPrecision.toInt());
 				}
 			}
 		}
@@ -470,6 +467,15 @@ public class MRMALine extends X_M_RMALine
 			return 0;
 		}
 		return m_ioLine.getC_Activity_ID();
+	}
+
+	public int getC_Order_ID()
+	{
+		if (m_ioLine == null)
+		{
+			return 0;
+		}
+		return m_ioLine.getC_Order_ID();
 	}
 
 	/**

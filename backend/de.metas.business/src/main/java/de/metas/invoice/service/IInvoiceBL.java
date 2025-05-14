@@ -2,7 +2,9 @@ package de.metas.invoice.service;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
@@ -10,14 +12,18 @@ import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoicePaymentStatus;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -25,17 +31,18 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_DocType;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
@@ -109,6 +116,8 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isCreditMemo(String docBaseType);
 
+    boolean isReversal(InvoiceId invoiceId);
+
 	/**
 	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
 	 */
@@ -125,6 +134,12 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
+
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
+
+	List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * Create a credit memo for the given invoice.
@@ -160,14 +175,26 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	I_C_InvoiceLine createLine(I_C_Invoice invoice);
 
+	void scheduleUpdateIsPaid(@NonNull InvoiceId invoiceId);
+
+	void testAllocated(@NonNull InvoiceId invoiceId);
+
 	/**
 	 * Test Allocation (and set paid flag)
 	 *
 	 * @param invoice the invoice to be checked
 	 * @param ignoreProcessed if true, then the change will be done even if the given <code>invoice</code> currently still have <code>Processed='N'</code>.
-	 * @return true if the isPaid value was changed
+	 * @return true if the isPaid value or isPartiallyPaid value or openAmt value was changed
 	 */
 	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
+
+	/**
+	 * @return true if there was any change
+	 */
+	boolean setPaymentStatus(
+			@NonNull I_C_Invoice invoice,
+			@NonNull BigDecimal openAmt,
+			@NonNull InvoicePaymentStatus paymentStatus);
 
 	/**
 	 * @param docTypeTargetId invoice's document type
@@ -296,6 +323,9 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	TaxCategoryId getTaxCategoryId(I_C_InvoiceLine invoiceLine);
 
+	@Nullable
+	TaxCategoryId getTaxCategoryId(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+
 	/**
 	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
 	 */
@@ -372,4 +402,14 @@ public interface IInvoiceBL extends ISingletonService
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	String getLocationEmail(InvoiceId invoiceId);
+
+	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
+
+	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+	
+	@Nullable
+	String getPOReference(@NonNull InvoiceId invoiceId);
+
+	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
+
 }

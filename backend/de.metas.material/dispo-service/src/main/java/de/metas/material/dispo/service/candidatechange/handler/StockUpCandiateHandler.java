@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateSaveResult;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -120,13 +122,14 @@ public class StockUpCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
+		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
+		deleteCandidateFunc.apply(candidate.getId());
 	}
 
 	private void assertCorrectCandidateType(@NonNull final Candidate candidate)
 	{
 		Preconditions.checkArgument(candidate.getType() == CandidateType.STOCK_UP,
-				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
-				candidate.getType(), candidate);
+									"Given parameter 'candidate' has type=%s; demandCandidate=%s",
+									candidate.getType(), candidate);
 	}
 }

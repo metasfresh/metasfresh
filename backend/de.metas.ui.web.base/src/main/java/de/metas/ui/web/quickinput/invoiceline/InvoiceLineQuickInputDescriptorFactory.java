@@ -1,34 +1,35 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
-import java.util.Optional;
-import java.util.Set;
-
-import de.metas.ui.web.quickinput.QuickInputConstants;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.util.DisplayType;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
+import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
+import de.metas.ui.web.quickinput.orderline.IOrderLineQuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.validationRule.AdValRuleId;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.util.DisplayType;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -58,10 +59,14 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final InvoiceLineQuickInputCallout invoiceLineQuickInputCallout;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
-	public InvoiceLineQuickInputDescriptorFactory(final InvoiceLineQuickInputCallout invoiceLineQuickInputCallout)
+	public InvoiceLineQuickInputDescriptorFactory(
+			@NonNull final InvoiceLineQuickInputCallout invoiceLineQuickInputCallout,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
 		this.invoiceLineQuickInputCallout = invoiceLineQuickInputCallout;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 	}
 
 	@Override
@@ -94,9 +99,9 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setIsSOTrx(soTrx)
 				.disableDefaultTableCallouts()
 				.setDetailId(detailId)
-				.addField( createProductFieldDescriptor() )
-				.addFieldIf( QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingItemFieldDescriptor )
-				.addField( createQtyFieldDescriptor() )
+				.addField(createProductFieldDescriptor())
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingItemFieldDescriptor)
+				.addField(createQtyFieldDescriptor())
 				.build();
 	}
 
@@ -108,10 +113,10 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(
 						ProductLookupDescriptor
-						.builderWithoutStockInfo()
-						.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
-						.pricingDateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
-						.build() )
+								.builderWithoutStockInfo()
+								.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
+								.pricingDateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
+								.build())
 				.setMandatoryLogic(true)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCallout(invoiceLineQuickInputCallout::onProductChange)
@@ -132,12 +137,12 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 		return DocumentFieldDescriptor.builder(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 				.setCaption(msgBL.translatable(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540480) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_Product_And_DateInvoiced"
-						.buildProvider())
+						.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540480)) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_Product_And_DateInvoiced"
+						.build())
 				.setValueClass(LookupValue.IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
@@ -148,7 +153,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 
 	private QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
+		return QuickInputLayoutDescriptor.onlyFields(entityDescriptor, new String[][] {
 				{ IInvoiceLineQuickInput.COLUMNNAME_M_Product_ID, IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID },
 				{ IInvoiceLineQuickInput.COLUMNNAME_Qty }
 		});

@@ -71,7 +71,8 @@ import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -102,7 +103,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 	private I_M_HU_PI_Item_Product huPIItemProductRecord;
 
 	private I_C_UOM catchUomRecord;
-	private UomId orderUomId;
+	private UomId stockUomId;
 
 	private final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(20);
 
@@ -136,12 +137,11 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		catchUomRecord = BusinessTestHelper.createUOM("catchUom", 3, -1);
 		final I_C_UOM stockUOMRecord = BusinessTestHelper.createUOM("stockUOM", 0, -1);
 		final I_C_UOM orderUOMRecord = BusinessTestHelper.createUOM("orderUOM", 3, -1);
-		orderUomId = UomId.ofRepoId(orderUOMRecord.getC_UOM_ID());
 
 		final I_M_Product productRecord = BusinessTestHelper.createProduct("product", stockUOMRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
-		final UomId stockUomId = UomId.ofRepoId(stockUOMRecord.getC_UOM_ID());
+		stockUomId = UomId.ofRepoId(stockUOMRecord.getC_UOM_ID());
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 													   .productId(productId)
 													   .fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
@@ -216,7 +216,8 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		inOutLineRecord.setM_InOut_ID(inOutRecord.getM_InOut_ID());
 		saveRecord(inOutLineRecord);
 
-		desadvBL = new DesadvBL(new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository()));
+		final HURepository huRepository = new HURepository();
+		desadvBL = new DesadvBL(new EDIDesadvPackService(huRepository, new EDIDesadvPackRepository()), new EDIDesadvInOutLineDAO());
 	}
 
 	@Test
@@ -320,10 +321,15 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 	/**
 	 * tests inoutLine whose quantity is partially covered by an HU
+	 * setting new qty and uom on inOutLine due to {@link de.metas.quantity.StockQtyAndUOMQty#minStockAndUom}
 	 */
 	@Test
 	void addToDesadvCreateForInOutIfNotExist_HU()
 	{
+		inOutLineRecord.setQtyEntered(new BigDecimal("52"));
+		inOutLineRecord.setC_UOM_ID(stockUomId.getRepoId());
+		saveRecord(inOutLineRecord);
+		
 		setupHandlingUnit(); // HU with 49 CUs
 
 		// invoke the method under test
@@ -336,7 +342,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 						/* the first pack is based on the HU that we added */
 						tuple(false, "001111110000000015"),
 
-						// the 2nd pack represents "the rest" that is requiered to arrive at the inOutLineRecord's qtyEntered = 42
+						// the 2nd pack represents "the rest" that is requiered to arrive at the inOutLineRecord's qtyEntered = 52
 						tuple(true, "001111110000000022")//
 				);
 
@@ -349,9 +355,16 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 				);
 	}
 
+	/**
+	 * setting new qty and uom on inOutLine due to {@link de.metas.quantity.StockQtyAndUOMQty#minStockAndUom}
+	 */
 	@Test
 	void addToDesadvCreateForInOutIfNotExist_HU_desadvLineWithCOLIasUOM()
 	{
+		inOutLineRecord.setQtyEntered(new BigDecimal("52"));
+		inOutLineRecord.setC_UOM_ID(stockUomId.getRepoId());
+		saveRecord(inOutLineRecord);
+
 		changeDesadvLineToCOLIasUOM();
 		setupHandlingUnit();
 

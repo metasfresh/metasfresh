@@ -22,12 +22,12 @@ package org.adempiere.ad.modelvalidator.annotations;
  * #L%
  */
 
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 
 /**
  * Annotation used to mark Model Interceptor classes.
@@ -46,8 +46,6 @@ public @interface Interceptor
 {
 	/**
 	 * Model interface on which this model interceptor will be bound
-	 * 
-	 * @return
 	 */
-	public Class<?> value();
+	Class<?> value();
 }

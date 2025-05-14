@@ -62,18 +62,23 @@ public class JsonResponseComposite
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseContact> contacts;
 
+	@JsonInclude(Include.NON_EMPTY)
+	List<JsonResponseBPBankAccount> bankAccounts;
+	
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonResponseComposite(
 			@JsonProperty("orgCode") @Nullable final String orgCode,
 			@JsonProperty("bpartner") @NonNull final JsonResponseBPartner bpartner,
 			@JsonProperty("locations") @Singular final List<JsonResponseLocation> locations,
-			@JsonProperty("contacts") @Singular final List<JsonResponseContact> contacts)
+			@JsonProperty("contacts") @Singular final List<JsonResponseContact> contacts,
+			@JsonProperty("bankAccounts") @Singular final List<JsonResponseBPBankAccount> bankAccounts)
 	{
 		this.orgCode = orgCode;
 		this.bpartner = bpartner;
 		this.locations = coalesce(locations, ImmutableList.of());
 		this.contacts = coalesce(contacts, ImmutableList.of());
+		this.bankAccounts = coalesce(bankAccounts, ImmutableList.of());
 	}
 
 	public ImmutableList<String> extractLocationGlns()

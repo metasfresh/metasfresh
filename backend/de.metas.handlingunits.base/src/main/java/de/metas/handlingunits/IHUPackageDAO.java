@@ -22,18 +22,16 @@ package de.metas.handlingunits;
  * #L%
  */
 
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Package;
-
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.mpackage.PackageId;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Package;
+
+import java.util.Collection;
+import java.util.List;
 
 public interface IHUPackageDAO extends ISingletonService
 {
@@ -42,10 +40,9 @@ public interface IHUPackageDAO extends ISingletonService
 
 	List<I_M_HU> retrieveHUs(org.compiere.model.I_M_Package mpackage);
 
-	List<I_M_Package> retrievePackages(Properties ctx, Collection<Integer> packageIds);
+	List<I_M_Package> retrievePackages(Collection<PackageId> packageIds);
 
 	/**
-	 *
 	 * @param hu
 	 * @return true if given hu is assigned to any {@link I_M_Package}
 	 */

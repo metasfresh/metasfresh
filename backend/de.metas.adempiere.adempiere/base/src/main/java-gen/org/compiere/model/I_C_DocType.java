@@ -167,6 +167,33 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
 
 	/**
+	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocType_Invoicing_Pool_ID (int C_DocType_Invoicing_Pool_ID);
+
+	/**
+	 * Get Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocType_Invoicing_Pool_ID();
+
+	@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool getC_DocType_Invoicing_Pool();
+
+	void setC_DocType_Invoicing_Pool(@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool C_DocType_Invoicing_Pool);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_C_DocType_Invoicing_Pool> COLUMN_C_DocType_Invoicing_Pool_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_Invoicing_Pool_ID", org.compiere.model.I_C_DocType_Invoicing_Pool.class);
+	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
+
+	/**
 	 * Set Document Type for ProForma.
 	 * Document type used for pro forma invoices generated from this sales document
 	 *
@@ -356,7 +383,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set Document Copies.
-	 * Number of copies to be printed
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -366,7 +393,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get Document Copies.
-	 * Number of copies to be printed
+	 * Number of copies to be printed. (Can be overwritten in the Print Format tab in the Business Partner window)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -836,7 +863,7 @@ public interface I_C_DocType
 	String COLUMNNAME_IsSplitWhenDifference = "IsSplitWhenDifference";
 
 	/**
-	 * Set Serial No. Sequence.
+	 * Set Lot No. Sequence.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -845,7 +872,7 @@ public interface I_C_DocType
 	void setLotNo_Sequence_ID (int LotNo_Sequence_ID);
 
 	/**
-	 * Get Serial No. Sequence.
+	 * Get Lot No. Sequence.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

@@ -24,7 +24,7 @@ import java.util.List;
 public class MoveWFActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("distribution.move");
-	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("distribution/move");
+	public static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("distribution/move");
 
 	private final DistributionRestService distributionRestService;
 

@@ -118,7 +118,7 @@ public class HUPackageBL implements IHUPackageBL
 	private static void updateFromInOut(@NonNull final I_M_Package mpackage, @NonNull final I_M_InOut inOut)
 	{
 		mpackage.setM_InOut_ID(inOut.getM_InOut_ID());
-		//mpackage.setPOReference(inOut.getPOReference());
+		mpackage.setPOReference(inOut.getPOReference());
 	}
 
 	@Override
@@ -200,7 +200,7 @@ public class HUPackageBL implements IHUPackageBL
 			//
 			// Update M_Package
 			mpackage.setM_InOut_ID(-1);
-			//mpackage.setPOReference(null);
+			mpackage.setPOReference(null);
 			mpackage.setProcessed(false);
 			save(mpackage);
 		}

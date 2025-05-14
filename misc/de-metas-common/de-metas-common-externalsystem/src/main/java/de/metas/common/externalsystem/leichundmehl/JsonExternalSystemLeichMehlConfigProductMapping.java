@@ -41,7 +41,7 @@ public class JsonExternalSystemLeichMehlConfigProductMapping
 
 	@NonNull
 	JsonMetasfreshId productId;
-
+	
 	@Builder
 	@JsonCreator
 	public JsonExternalSystemLeichMehlConfigProductMapping(

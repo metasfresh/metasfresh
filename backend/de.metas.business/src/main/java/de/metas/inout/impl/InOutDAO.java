@@ -14,6 +14,7 @@ import de.metas.inout.InOutQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -36,6 +37,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -91,9 +93,21 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
 	}
 
 	@Override
@@ -121,12 +135,6 @@ public class InOutDAO implements IInOutDAO
 				.asList();
 	}
 
-	@Override
-	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
-	{
-		@SuppressWarnings("UnnecessaryLocalVariable") final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
-		return inoutLine;
-	}
 
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
@@ -232,6 +240,22 @@ public class InOutDAO implements IInOutDAO
 
 		return queryBuilder.create()
 				.list(clazz);
+	}
+
+	@Override
+	public Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addInArrayFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineIds)
+				.addOnlyActiveRecordsFilter()
+				.stream()
+				.map(inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -490,6 +514,20 @@ public class InOutDAO implements IInOutDAO
 		}
 
 		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
+	}
+
+	@Override
+	public ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull final Timestamp date)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_MovementDate, date)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
+				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, null)
+				.create()
+				.listIds(InOutId::ofRepoId)
+				.asList();
 	}
 
 	@Override

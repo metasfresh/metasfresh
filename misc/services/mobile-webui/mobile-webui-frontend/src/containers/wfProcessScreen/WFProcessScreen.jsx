@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
-import { pushHeaderEntry } from '../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../actions/HeaderActions';
 import { getActivitiesInOrder, getWfProcess } from '../../reducers/wfProcesses';
 
 import AbortButton from './AbortButton';
@@ -19,31 +18,36 @@ import { useApplicationInfo } from '../../reducers/applications';
 import ScanAndValidateActivity, {
   COMPONENTTYPE_ScanAndValidateBarcode,
 } from '../activities/scan/ScanAndValidateActivity';
+import { useScreenDefinition } from '../../hooks/useScreenDefinition';
+import { appLaunchersLocation } from '../../routes/launchers';
+import { useMobileLocation } from '../../hooks/useMobileLocation';
 
 const WFProcessScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId },
-  } = useRouteMatch();
-
-  const { iconClassNames: appIconClassName } = useApplicationInfo({ applicationId });
-
-  const { activities, isAllowAbort, headerProperties } = useSelector(
+  const { wfProcessId } = useMobileLocation();
+  const { parentUrl, activities, isAllowAbort, headerProperties } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId }),
     shallowEqual
   );
 
+  const { url, applicationId } = useScreenDefinition({
+    screenId: 'WFProcessScreen',
+    back: parentUrl ? parentUrl : appLaunchersLocation,
+    isHomeStop: true,
+  });
+
+  const { iconClassNames: appIconClassName, caption: appCaption } = useApplicationInfo({ applicationId });
+
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
+        caption: appCaption,
         values: headerProperties,
-        isHomeStop: true,
         homeIconClassName: appIconClassName,
       })
     );
-  }, [url, headerProperties, applicationId, wfProcessId]);
+  }, [url, headerProperties, appIconClassName]);
 
   return (
     <div className="section pt-2">
@@ -166,6 +170,7 @@ const getPropsFromState = ({ state, wfProcessId }) => {
   const wfProcess = getWfProcess(state, wfProcessId);
 
   return {
+    parentUrl: wfProcess?.parent?.url,
     headerProperties: wfProcess?.headerProperties?.entries ?? [],
     activities: wfProcess ? getActivitiesInOrder(wfProcess) : [],
     isAllowAbort: !!wfProcess?.isAllowAbort,

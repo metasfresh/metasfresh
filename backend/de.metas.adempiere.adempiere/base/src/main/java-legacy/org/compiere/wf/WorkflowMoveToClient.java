@@ -70,7 +70,7 @@ public class WorkflowMoveToClient extends JavaProcess
 		String sql = "UPDATE AD_Workflow SET AD_Client_ID=" + p_AD_Client_ID
 			+ " WHERE AD_Client_ID=0 AND EntityType NOT IN ('D','C')"
 			+ " AND AD_Workflow_ID=" + p_AD_Workflow_ID;
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no == -1)
 			throw new AdempiereSystemError ("Error updating Workflow");
 		changes += no;
@@ -79,7 +79,7 @@ public class WorkflowMoveToClient extends JavaProcess
 		sql = "UPDATE AD_WF_Node SET AD_Client_ID=" + p_AD_Client_ID
 			+ " WHERE AD_Client_ID=0 AND EntityType NOT IN ('D','C')"
 			+ " AND AD_Workflow_ID=" + p_AD_Workflow_ID;
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no == -1)
 			throw new AdempiereSystemError ("Error updating Workflow Node");
 		changes += no;
@@ -90,7 +90,7 @@ public class WorkflowMoveToClient extends JavaProcess
 			+ " AND (AD_WF_Node_ID IN (SELECT AD_WF_Node_ID FROM AD_WF_Node WHERE AD_Workflow_ID=" + p_AD_Workflow_ID
 				+ ") OR AD_WF_Next_ID IN (SELECT AD_WF_Node_ID FROM AD_WF_Node WHERE AD_Workflow_ID=" + p_AD_Workflow_ID 
 				+ "))";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no == -1)
 			throw new AdempiereSystemError ("Error updating Workflow Transition");
 		changes += no;
@@ -100,7 +100,7 @@ public class WorkflowMoveToClient extends JavaProcess
 			+ " WHERE AD_Client_ID=0 AND EntityType NOT IN ('D','C')"
 			+ " AND AD_WF_Node_ID IN (SELECT AD_WF_Node_ID FROM AD_WF_Node WHERE AD_Workflow_ID=" + p_AD_Workflow_ID 
 			+ ")";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no == -1)
 			throw new AdempiereSystemError ("Error updating Workflow Node Parameters");
 		changes += no;
@@ -113,7 +113,7 @@ public class WorkflowMoveToClient extends JavaProcess
 				+ "WHERE AD_WF_Node_ID IN (SELECT AD_WF_Node_ID FROM AD_WF_Node WHERE AD_Workflow_ID=" + p_AD_Workflow_ID
 				+ ") OR AD_WF_Next_ID IN (SELECT AD_WF_Node_ID FROM AD_WF_Node WHERE AD_Workflow_ID=" + p_AD_Workflow_ID
 				+ "))";
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no == -1)
 			throw new AdempiereSystemError ("Error updating Workflow Transition Condition");
 		changes += no;

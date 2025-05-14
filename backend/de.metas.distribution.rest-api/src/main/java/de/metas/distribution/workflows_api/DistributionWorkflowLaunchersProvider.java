@@ -2,101 +2,93 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.organization.IOrgDAO;
-import de.metas.user.UserId;
-import de.metas.util.Services;
+import de.metas.distribution.workflows_api.facets.DistributionFacetIdsCollection;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.warehouse.api.IWarehouseBL;
-
-import java.util.ArrayList;
+import org.adempiere.exceptions.AdempiereException;
 
 class DistributionWorkflowLaunchersProvider
 {
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final DistributionRestService distributionRestService;
+	private final DistributionLauncherCaptionProvider captionProvider;
 
 	public DistributionWorkflowLaunchersProvider(
 			final @NonNull DistributionRestService distributionRestService)
 	{
 		this.distributionRestService = distributionRestService;
+		this.captionProvider = new DistributionLauncherCaptionProvider();
 	}
 
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@NonNull final QueryLimit suggestedLimit)
+	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
-		return computeLaunchers(userId, suggestedLimit);
-	}
-
-	private WorkflowLaunchersList computeLaunchers(
-			final @NonNull UserId userId,
-			final @NonNull QueryLimit limit)
-	{
-		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
-
-		//
-		// Already started launchers
-		final ImmutableList<DDOrderReference> existingDDOrders = distributionRestService.streamActiveReferencesAssignedTo(userId)
-				.collect(ImmutableList.toImmutableList());
-		existingDDOrders.stream()
-				.map(this::toExistingWorkflowLauncher)
-				.forEach(currentResult::add);
-
-		//
-		// New launchers
-		if (!limit.isLimitHitOrExceeded(currentResult))
+		if (query.getFilterByQRCode() != null)
 		{
-			distributionRestService.streamActiveReferencesNotAssigned()
-					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
-					.map(this::toNewWorkflowLauncher)
-					.forEach(currentResult::add);
+			throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
 		}
 
+		final ImmutableList<WorkflowLauncher> launchers = distributionRestService.streamJobReferencesForUser(
+						DDOrderReferenceQuery.builder()
+								.responsibleId(query.getUserId())
+								.suggestedLimit(query.getLimit().orElse(QueryLimit.NO_LIMIT))
+								.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
+								.build()
+				)
+				.map(this::toWorkflowLauncher)
+				.collect(ImmutableList.toImmutableList());
+
 		return WorkflowLaunchersList.builder()
-				.launchers(ImmutableList.copyOf(currentResult))
+				.launchers(launchers)
 				.timestamp(SystemTime.asInstant())
 				.build();
 	}
 
-	private WorkflowLauncher toExistingWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
+	private WorkflowLauncher toWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
 	{
-		return WorkflowLauncher.builder()
-				.applicationId(DistributionMobileApplication.APPLICATION_ID)
-				.caption(computeCaption(ddOrderReference))
-				.startedWFProcessId(WFProcessId.ofIdPart(DistributionMobileApplication.APPLICATION_ID, ddOrderReference.getDdOrderId()))
-				.build();
+		if (ddOrderReference.isJobStarted())
+		{
+			return WorkflowLauncher.builder()
+					.applicationId(DistributionMobileApplication.APPLICATION_ID)
+					.caption(computeCaption(ddOrderReference))
+					.startedWFProcessId(WFProcessId.ofIdPart(DistributionMobileApplication.APPLICATION_ID, ddOrderReference.getDdOrderId()))
+					.testId(ddOrderReference.getTestId())
+					.build();
+		}
+		else
+		{
+			return WorkflowLauncher.builder()
+					.applicationId(DistributionMobileApplication.APPLICATION_ID)
+					.caption(computeCaption(ddOrderReference))
+					.wfParameters(DistributionWFProcessStartParams.builder()
+							.ddOrderId(ddOrderReference.getDdOrderId())
+							.build()
+							.toParams())
+					.testId(ddOrderReference.getTestId())
+					.build();
+		}
 	}
 
-	private WorkflowLauncher toNewWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
-	{
-		return WorkflowLauncher.builder()
-				.applicationId(DistributionMobileApplication.APPLICATION_ID)
-				.caption(computeCaption(ddOrderReference))
-				.wfParameters(DistributionWFProcessStartParams.builder()
-						.ddOrderId(ddOrderReference.getDdOrderId())
-						.build()
-						.toParams())
-				.build();
-	}
-
+	@NonNull
 	private WorkflowLauncherCaption computeCaption(@NonNull final DDOrderReference ddOrderReference)
 	{
-		return WorkflowLauncherCaption.of(
-				TranslatableStrings.builder()
-						.append(warehouseBL.getWarehouseName(ddOrderReference.getFromWarehouseId()))
-						.append(" > ")
-						.append(warehouseBL.getWarehouseName(ddOrderReference.getToWarehouseId()))
-						.append(" | ")
-						.appendDateTime(ddOrderReference.getDatePromised().toZonedDateTime(orgDAO::getTimeZone))
-						.build()
-		);
+		return captionProvider.compute(ddOrderReference);
+	}
+
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final WorkflowLaunchersFacetQuery query)
+	{
+		return distributionRestService.getFacets(
+						DDOrderReferenceQuery.builder()
+								.responsibleId(query.getUserId())
+								.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getActiveFacetIds()))
+								.build()
+				)
+				.toWorkflowLaunchersFacetGroupList(query.getActiveFacetIds());
 	}
 
 }

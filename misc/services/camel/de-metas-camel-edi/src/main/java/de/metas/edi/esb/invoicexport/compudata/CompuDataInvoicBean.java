@@ -26,15 +26,15 @@ import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.InvoicSettings;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.metasfresh.CCreditMemoReasonEnum;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop000VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop111VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop140VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop901991VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoic500VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.CCreditMemoReasonEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop000VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop111VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop119VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop120VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop140VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop901991VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoic500VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoicVType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -120,8 +120,8 @@ public class CompuDataInvoicBean
 		{
 			invoice.setPoReference(Util.mkOwnOrderNumber(xmlCctopInvoice.getInvoiceDocumentno()));
 		}
-		invoice.setReceivergln(xmlCctopInvoice.getReceiverGLN());
-		invoice.setSendergln(xmlCctopInvoice.getSenderGLN());
+		invoice.setReceivergln(xmlCctopInvoice.getReceivergln());
+		invoice.setSendergln(xmlCctopInvoice.getSendergln());
 		invoice.setShipmentDocumentno(xmlCctopInvoice.getShipmentDocumentno());
 		invoice.setVataxID(xmlCctopInvoice.getVATaxID());
 		// invoice.setTotalLines(formatNumber(xmlCctopInvoice.getTotalLines(), decimalFormat)); // not used
@@ -180,7 +180,7 @@ public class CompuDataInvoicBean
 		}
 		cctop000V.setSenderGln(senderGln.toString());
 
-		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceiverGLN());
+		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
 		cctop000V.setIsTest(settings.getTestIndicator());
 
 		return cctop000V;

@@ -22,12 +22,13 @@ package de.metas.handlingunits.attribute.weightable;
  * #L%
  */
 
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import java.math.BigDecimal;
+
 import de.metas.quantity.Quantity;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.compiere.model.I_C_UOM;
 
-import java.math.BigDecimal;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 
 /**
  * Defines something which has weighting capabilities.

@@ -1,36 +1,32 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
-export default class DocumentReferenceItem extends Component {
-  render() {
-    const {
-      caption,
-      targetWindowId,
-      referenceId,
-      filter,
-      onClick,
-      internalName,
-    } = this.props;
-
-    return (
-      <div
-        className="subheader-item js-subheader-item"
-        onClick={(e) =>
-          onClick({
-            targetWindowId,
-            referenceId,
-            filter,
-            ctrlKeyPressed: e.ctrlKey,
-          })
-        }
-        tabIndex={0}
-        data-cy={`reference-${internalName}`}
-      >
-        {caption}
-      </div>
-    );
-  }
-}
+const DocumentReferenceItem = ({
+  caption,
+  targetWindowId,
+  referenceId,
+  filter,
+  onClick,
+  internalName,
+}) => {
+  return (
+    <div
+      className="subheader-item js-subheader-item"
+      onClick={(e) =>
+        onClick({
+          targetWindowId,
+          referenceId,
+          filter,
+          ctrlKeyPressed: e.ctrlKey,
+        })
+      }
+      tabIndex={0}
+      data-cy={`reference-${internalName}`}
+    >
+      {caption}
+    </div>
+  );
+};
 
 DocumentReferenceItem.propTypes = {
   caption: PropTypes.string.isRequired,
@@ -41,3 +37,5 @@ DocumentReferenceItem.propTypes = {
   onClick: PropTypes.func.isRequired,
   internalName: PropTypes.string.isRequired,
 };
+
+export default DocumentReferenceItem;

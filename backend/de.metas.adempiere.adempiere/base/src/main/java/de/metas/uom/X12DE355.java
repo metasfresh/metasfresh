@@ -50,7 +50,6 @@ public class X12DE355
 		return x12de355 != null ? x12de355 : new X12DE355(code);
 	}
 
-	@JsonCreator
 	@Nullable
 	public static X12DE355 ofNullableCode(@Nullable final String code)
 	{

@@ -1,15 +1,6 @@
 package de.metas.contracts.refund.exceedingqty;
 
-import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IPair;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import de.metas.common.util.pair.IPair;
 import de.metas.contracts.refund.AssignCandidatesRequest;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
 import de.metas.contracts.refund.RefundConfig;
@@ -18,6 +9,14 @@ import de.metas.contracts.refund.RefundTestTools;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.quantity.Quantity;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

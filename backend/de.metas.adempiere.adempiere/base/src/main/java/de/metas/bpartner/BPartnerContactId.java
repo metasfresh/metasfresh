@@ -3,7 +3,6 @@ package de.metas.bpartner;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
-import de.metas.location.LocationId;
 import de.metas.user.UserId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -84,7 +83,7 @@ public class BPartnerContactId implements RepoIdAware
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final Integer contactRepoId)
 	{
-		if (bpartnerId == null)
+		if(bpartnerId == null)
 		{
 			return null;
 		}
@@ -145,6 +144,11 @@ public class BPartnerContactId implements RepoIdAware
 		return id != null ? id.getUserId() : null;
 	}
 
+	public static boolean equals(@Nullable final BPartnerContactId id1, @Nullable final BPartnerContactId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+
 	@JsonCreator
 	public static BPartnerContactId ofJsonString(@NonNull final String idStr)
 	{
@@ -166,9 +170,4 @@ public class BPartnerContactId implements RepoIdAware
 	{
 		return bpartnerId.getRepoId() + "-" + userId.getRepoId();
 	}
-	public static boolean equals(@Nullable final BPartnerContactId id1, @Nullable final BPartnerContactId id2)
-	{
-		return Objects.equals(id1, id2);
-	}
-
 }

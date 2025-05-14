@@ -1,17 +1,22 @@
 package de.metas.mforecast;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Forecast;
-import org.compiere.util.TimeUtil;
-
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.mforecast.impl.ForecastId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Forecast;
+import org.compiere.model.I_M_ForecastLine;
+import org.compiere.util.TimeUtil;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 /*
  * #%L
@@ -35,8 +40,11 @@ import lombok.NonNull;
  * #L%
  */
 
+@RequiredArgsConstructor
 class ForecastDocumentHandler implements DocumentHandler
 {
+	private final IForecastDAO forecastDAO;
+
 	private static I_M_Forecast extractForecast(final DocumentTableFields docFields)
 	{
 		return InterfaceWrapperHelper.create(docFields, I_M_Forecast.class);
@@ -100,13 +108,18 @@ class ForecastDocumentHandler implements DocumentHandler
 	@Override
 	public void voidIt(final DocumentTableFields docFields)
 	{
-		throw new UnsupportedOperationException();
-	}
+		final I_M_Forecast forecast = extractForecast(docFields);
 
-	@Override
-	public void closeIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(forecast.getDocStatus());
+		if (docStatus.isClosedReversedOrVoided())
+		{
+			throw new AdempiereException("Document Closed: " + docStatus);
+		}
+
+		getLines(forecast).forEach(this::voidLine);
+
+		forecast.setProcessed(true);
+		forecast.setDocAction(IDocument.ACTION_None);
 	}
 
 	@Override
@@ -140,5 +153,17 @@ class ForecastDocumentHandler implements DocumentHandler
 	{
 		final I_M_Forecast forecast = extractForecast(docFields);
 		return TimeUtil.asLocalDate(forecast.getDatePromised());
+	}
+
+	private void voidLine(@NonNull final I_M_ForecastLine line)
+	{
+		line.setQty(BigDecimal.ZERO);
+		line.setQtyCalculated(BigDecimal.ZERO);
+		InterfaceWrapperHelper.save(line);
+	}
+
+	private List<I_M_ForecastLine> getLines(@NonNull final I_M_Forecast forecast)
+	{
+		return forecastDAO.retrieveLinesByForecastId(ForecastId.ofRepoId(forecast.getM_Forecast_ID()));
 	}
 }

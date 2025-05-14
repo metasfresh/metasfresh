@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_DesadvLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1677687518L;
+	private static final long serialVersionUID = 137682731L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (final Properties ctx, final int EDI_DesadvLine_ID, @Nullable final String trxName)
@@ -228,6 +228,17 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		throw new IllegalArgumentException ("IsDeliveryClosed is virtual column");	}
+
+	@Override
+	public boolean isDeliveryClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
+	}
+
+	@Override
 	public void setIsSubsequentDeliveryPlanned (final boolean IsSubsequentDeliveryPlanned)
 	{
 		set_Value (COLUMNNAME_IsSubsequentDeliveryPlanned, IsSubsequentDeliveryPlanned);
@@ -415,6 +426,19 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public BigDecimal getQtyOrdered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyOrdered_Override (final @Nullable BigDecimal QtyOrdered_Override)
+	{
+		set_Value (COLUMNNAME_QtyOrdered_Override, QtyOrdered_Override);
+	}
+
+	@Override
+	public BigDecimal getQtyOrdered_Override() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

@@ -246,52 +246,48 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	Boolean isManualPrice;
 
-	@ApiModelProperty(position = 380, value = "Translates to C_OLCand.isImportedWithIssues")
-	@JsonInclude(Include.NON_NULL)
-	Boolean isImportedWithIssues;
-
-	@ApiModelProperty(position = 390, value = "Translates to C_OLCand.DeliveryViaRule")
+	@ApiModelProperty(position = 380, value = "Translates to C_OLCand.DeliveryViaRule")
 	@JsonInclude(Include.NON_NULL)
 	String deliveryViaRule;
 
-	@ApiModelProperty(position = 400, value = "Translates to C_OLCand.DeliveryViaRule")
+	@ApiModelProperty(position = 390, value = "Translates to C_OLCand.DeliveryViaRule")
 	@JsonInclude(Include.NON_NULL)
 	String deliveryRule;
 
-	@ApiModelProperty(position = 410, value = "Translates to C_OLCand.importWarningMessage")
+	@ApiModelProperty(position = 400, value = "Translates to C_OLCand.importWarningMessage")
 	@JsonInclude(Include.NON_NULL)
 	String importWarningMessage;
 
-	@ApiModelProperty(position = 420, value = "Translates to C_OLCand.qtyShipped")
+	@ApiModelProperty(position = 410, value = "Translates to C_OLCand.qtyShipped")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyShipped;
 
-	@ApiModelProperty(position = 430, //
+	@ApiModelProperty(position = 420, //
 			value = "Translates to C_OLCand.qtyItemCapacity")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
 
-	@ApiModelProperty(position = 440, //
+	@ApiModelProperty(position = 430, //
 			value = "Translates to C_OLCand.ApplySalesRepFrom. If not specified default value is `CandidateFirst`")
 	@JsonInclude(Include.NON_NULL)
 	JsonApplySalesRepFrom applySalesRepFrom;
 
-	@ApiModelProperty(position = 450, //
+	@ApiModelProperty(position = 440, //
 			value = "Translates to `C_OLCand.BPartnerName`. If omitted, it will fallback to `C_BPartner_Location.BPartnerName` of the referenced shipping location, i.e. `bpartner.bPartnerLocationIdentifier`")
 	@JsonInclude(Include.NON_NULL)
 	String bpartnerName;
 
-	@ApiModelProperty(position = 460, //
+	@ApiModelProperty(position = 450, //
 			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Email` of the referenced shipping location`")
 	@JsonInclude(Include.NON_NULL)
 	String email;
 
-	@ApiModelProperty(position = 470, //
+	@ApiModelProperty(position = 460, //
 			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Phone` of the referenced shipping location`")
 	@JsonInclude(Include.NON_NULL)
 	String phone;
 
-	@ApiModelProperty(position = 480)
+	@ApiModelProperty(position = 470)
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
 
@@ -336,7 +332,6 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("line") final @Nullable Integer line,
 			@JsonProperty("description") final @Nullable String description,
 			@JsonProperty("isManualPrice") final @Nullable Boolean isManualPrice,
-			@JsonProperty("isImportedWithIssues") final @Nullable Boolean isImportedWithIssues,
 			@JsonProperty("deliveryViaRule") final @Nullable String deliveryViaRule,
 			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
@@ -390,7 +385,6 @@ public class JsonOLCandCreateRequest
 		this.line = line;
 		this.description = description;
 		this.isManualPrice = isManualPrice;
-		this.isImportedWithIssues = isImportedWithIssues;
 		this.deliveryViaRule = deliveryViaRule;
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;

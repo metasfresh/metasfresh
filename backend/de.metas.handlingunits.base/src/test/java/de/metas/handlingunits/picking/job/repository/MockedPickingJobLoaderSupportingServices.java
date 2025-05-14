@@ -3,37 +3,47 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.spi.ExistingLockInfo;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Set;
 
 public class MockedPickingJobLoaderSupportingServices implements PickingJobLoaderSupportingServices
 {
 	public static final ZoneId ZONE_ID = ZoneId.of("Europe/London");
 	private final HashMap<HuId, HUQRCode> qrCodes = new HashMap<>();
+
+	@Override
+	public PickingJobOptions getPickingJobOptions(final @NonNull BPartnerId customerId) {return MobileUIPickingUserProfile.DEFAULT.getDefaultPickingJobOptions();}
 
 	@Override
 	public void warmUpCachesFrom(@NonNull final PackageableList items)
@@ -84,6 +94,24 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
+	public Optional<EAN13ProductCode> getEAN13ProductCode(@NonNull final ProductId productId, @Nullable final BPartnerId customerId)
+	{
+		return Optional.empty();
+	}
+
+	@Override
+	public ProductCategoryId getProductCategoryId(@NonNull final ProductId productId)
+	{
+		return ProductCategoryId.ofRepoId(1);
+	}
+
+	@Override
+	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return 0;
+	}
+
+	@Override
 	public ITranslatableString getProductName(@NonNull final ProductId productId)
 	{
 		return TranslatableStrings.anyLanguage("productName-" + productId.getRepoId());
@@ -123,12 +151,9 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
-	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds) {return ImmutableSetMultimap.of();}
-
-	@Override
-	public boolean isCatchWeightTUPickingEnabled()
+	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		return false;
+		return ImmutableSetMultimap.of();
 	}
 
 	public void mockQRCode(@NonNull final HuId huId, @NonNull final HUQRCode qrCode)

@@ -40,32 +40,6 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		return productConversionsCache.getOrLoad(productId, this::retrieveProductConversions);
 	}
 
-	private UOMConversionsMap retrieveProductConversions(@NonNull final ProductId productId)
-	{
-		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
-
-		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
-				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.map(UOMConversionDAO::toUOMConversionOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-
-		final boolean hasRatesForNonStockingUOMs = !rates.isEmpty();
-		
-		return UOMConversionsMap.builder()
-				.productId(productId)
-				.hasRatesForNonStockingUOMs(hasRatesForNonStockingUOMs)
-				.rates(ImmutableList.<UOMConversionRate> builder()
-						.add(UOMConversionRate.one(productStockingUomId)) // default conversion
-						.addAll(rates)
-						.build())
-				.build();
-	}
-
 	@Override
 	public UOMConversionsMap getGenericConversions()
 	{
@@ -144,5 +118,41 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		record.setIsCatchUOMForProduct(request.isCatchUOMForProduct());
 
 		saveRecord(record);
+	}
+
+	@NonNull
+	private UOMConversionsMap retrieveProductConversions(@NonNull final ProductId productId)
+	{
+		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+
+		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(UOMConversionDAO::toUOMConversionOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+
+		return buildUOMConversionsMap(productId,
+									  productStockingUomId,
+									  rates);
+	}
+
+	@NonNull
+	private static UOMConversionsMap buildUOMConversionsMap(
+			@NonNull final ProductId productId,
+			@NonNull final UomId productStockingUomId,
+			@NonNull final ImmutableList<UOMConversionRate> rates)
+	{
+		return UOMConversionsMap.builder()
+				.productId(productId)
+				.hasRatesForNonStockingUOMs(!rates.isEmpty())
+				.rates(ImmutableList.<UOMConversionRate>builder()
+							   .add(UOMConversionRate.one(productStockingUomId)) // default conversion
+							   .addAll(rates)
+							   .build())
+				.build();
 	}
 }

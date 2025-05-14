@@ -1,9 +1,8 @@
 package de.metas.document.engine;
 
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -156,9 +155,9 @@ public interface IDocument
 
 	int get_Table_ID();
 
-	Logger get_Logger();
-
-	/** @return true if saved */
+	/**
+	 * @return true if saved
+	 */
 	boolean save();
 
 	String get_TrxName();

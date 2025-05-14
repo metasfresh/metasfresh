@@ -25,20 +25,32 @@ package de.metas.handlingunits.receiptschedule.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -46,6 +58,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
@@ -103,7 +116,18 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		final DDOrderService ddOrderService = new DDOrderService(
 				ddOrderLowLevelDAO,
 				ddOrderLowLevelService,
-				new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository(), huReservationService));
+				new DDOrderMoveScheduleService(
+						ddOrderLowLevelDAO,
+						new DDOrderMoveScheduleRepository(),
+						ADReferenceService.newMocked(),
+						huReservationService,
+						new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+												   new PPOrderIssueScheduleService(
+														   new PPOrderIssueScheduleRepository(),
+														   new HUQtyService(InventoryService.newInstanceForUnitTesting())
+												   )), new HUQRCodesService(new HUQRCodesRepository(),
+																			new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+																			new QRCodeConfigurationService(new QRCodeConfigurationRepository()))));
 		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository, ddOrderService));
 	}
 

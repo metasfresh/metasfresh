@@ -36,11 +36,11 @@ import de.metas.edi.esb.desadvexport.compudata.join.JP060P100;
 import de.metas.edi.esb.desadvexport.helper.DesadvLines;
 import de.metas.edi.esb.desadvexport.helper.DesadvParser;
 import de.metas.edi.esb.desadvexport.helper.SinglePack;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackItemType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpCBPartnerLocationType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpCBPartnerType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvPackItemType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.smooks.io.payload.JavaSource;
@@ -266,13 +266,13 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		if (packagingCode != null)
 		{
 			final String compudataPackagingCode = switch (packagingCode)
-					{
-						case ISO1 -> "201";
-						case EURO -> "201";
-						case ISO2 -> "200";
-						case ONEW -> "08";
-						default -> null;
-					};
+			{
+				case ISO1 -> "201";
+				case EURO -> "201";
+				case ISO2 -> "200";
+				case ONEW -> "08";
+				default -> null;
+			};
 			p060.setPalettTyp(compudataPackagingCode);
 		}
 
@@ -305,7 +305,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 		p100.setCUperTU(
 				formatNumber(packItem.getQtyCUsPerTU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
-							 decimalFormat));
+						decimalFormat));
 
 		// note that validateExchange() made sure there is at least one
 		p100.setCurrency(xmlDesadv.getCCurrencyID().getISOCode());

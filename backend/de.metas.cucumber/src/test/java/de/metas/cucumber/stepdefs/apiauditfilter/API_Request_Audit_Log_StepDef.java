@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.apiauditfilter;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class API_Request_Audit_Log_StepDef
 {
@@ -56,16 +56,16 @@ public class API_Request_Audit_Log_StepDef
 	@And("there are no records in API_Request_Audit_Log for the API_Request_Audit from context")
 	public void API_Request_Audit_Log_noRecordsById_validation()
 	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+		final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
 
 		assertThat(requestId).isNotNull();
-		assertThat(this.getApiLogRecordsByRequestAuditId(requestId).size()).isEqualTo(0);
+		assertThat(this.getApiLogRecordsByRequestAuditId(requestId)).isEmpty();
 	}
 
 	@And("there are no records in API_Request_Audit_Log")
 	public void API_Request_Audit_Log_noRecords()
 	{
-		assertThat(this.getAllApiLogRecords().size()).isEqualTo(0);
+		assertThat(this.getAllApiLogRecords()).isEmpty();
 	}
 
 	@And("^after not more than (.*)s, there are added records in API_Request_Audit_Log$")
@@ -81,10 +81,10 @@ public class API_Request_Audit_Log_StepDef
 	}
 
 	@NonNull
-	private List<I_API_Request_Audit_Log> getApiLogRecordsByRequestAuditId(@NonNull final JsonMetasfreshId apiRequestAuditId)
+	private List<I_API_Request_Audit_Log> getApiLogRecordsByRequestAuditId(@NonNull final ApiRequestAuditId apiRequestAuditId)
 	{
 		return queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
-				.addEqualsFilter(I_API_Request_Audit_Log.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getValue())
+				.addEqualsFilter(I_API_Request_Audit_Log.COLUMN_API_Request_Audit_ID, apiRequestAuditId)
 				.create()
 				.list();
 	}
@@ -98,13 +98,13 @@ public class API_Request_Audit_Log_StepDef
 				.list();
 	}
 
-	private boolean isApiRequestAuditLogFound(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String logMessage)
+	private boolean isApiRequestAuditLogFound(@NonNull final ApiRequestAuditId apiRequestAuditId, @NonNull final String logMessage)
 	{
 		return getApiRequestAuditLogOptional(apiRequestAuditId, logMessage).isPresent();
 	}
 
 	@NonNull
-	private I_API_Request_Audit_Log getApiRequestAuditLog(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String logMessage)
+	private I_API_Request_Audit_Log getApiRequestAuditLog(@NonNull final ApiRequestAuditId apiRequestAuditId, @NonNull final String logMessage)
 	{
 		final Optional<I_API_Request_Audit_Log> logMessageRecord = getApiRequestAuditLogOptional(apiRequestAuditId, logMessage);
 
@@ -114,10 +114,10 @@ public class API_Request_Audit_Log_StepDef
 	}
 
 	@NonNull
-	private Optional<I_API_Request_Audit_Log> getApiRequestAuditLogOptional(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String logMessage)
+	private Optional<I_API_Request_Audit_Log> getApiRequestAuditLogOptional(@NonNull final ApiRequestAuditId apiRequestAuditId, @NonNull final String logMessage)
 	{
 		return queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
-				.addEqualsFilter(I_API_Request_Audit_Log.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getValue())
+				.addEqualsFilter(I_API_Request_Audit_Log.COLUMN_API_Request_Audit_ID, apiRequestAuditId)
 				.addStringLikeFilter(I_API_Request_Audit_Log.COLUMNNAME_Logmessage, "%" + logMessage + "%", true)
 				.create()
 				.firstOnlyOptional(I_API_Request_Audit_Log.class);
@@ -127,7 +127,7 @@ public class API_Request_Audit_Log_StepDef
 	{
 		for (final Map<String, String> row : table.asMaps())
 		{
-			final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+			final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
 			assertThat(requestId).isNotNull();
 
 			final String logMessage = DataTableUtil.extractStringForColumnName(row, I_API_Request_Audit_Log.COLUMNNAME_Logmessage);

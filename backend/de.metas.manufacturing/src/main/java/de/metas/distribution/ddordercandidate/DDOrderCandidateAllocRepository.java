@@ -10,6 +10,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_DD_Order_Candidate_DDOrder;
 import org.springframework.stereotype.Repository;
@@ -63,7 +64,7 @@ public class DDOrderCandidateAllocRepository
 				.id(record.getDD_Order_Candidate_DDOrder_ID())
 				.ddOrderCandidateId(extractDDOrderCandidateId(record))
 				.ddOrderAndLineId(extractDDOrderAndLineId(record))
-				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qty(Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.build();
 	}
 
@@ -110,6 +111,28 @@ public class DDOrderCandidateAllocRepository
 				.addInArrayFilter(I_DD_Order_Candidate_DDOrder.COLUMN_DD_Order_Candidate_DDOrder_ID, ids)
 				.create()
 				.delete();
+	}
+
+	public void deleteByQuery(@NonNull final DeleteDDOrderCandidateAllocQuery deleteAllocQuery)
+	{
+		final IQueryBuilder<I_DD_Order_Candidate_DDOrder> queryBuilder = queryBL.createQueryBuilder(I_DD_Order_Candidate_DDOrder.class);
+
+		if (deleteAllocQuery.getDdOrderCandidateId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate_DDOrder.COLUMNNAME_DD_Order_Candidate_ID, deleteAllocQuery.getDdOrderCandidateId());
+		}
+
+		if (deleteAllocQuery.getDdOrderLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate_DDOrder.COLUMNNAME_DD_OrderLine_ID, deleteAllocQuery.getDdOrderLineId());
+		}
+
+		if (queryBuilder.getCompositeFilter().isEmpty())
+		{
+			throw new AdempiereException("Deleting all DD_Order_Candidate_DDOrder records is not allowed!");
+		}
+
+		queryBuilder.create().delete();
 	}
 
 	@Value(staticConstructor = "of")

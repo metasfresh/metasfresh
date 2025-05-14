@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor;
-import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
+import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo;
@@ -33,7 +33,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -142,31 +141,28 @@ public class ShipperGatewayFacade
 	{
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);
-		final DeliveryOrderRepository deliveryOrderRepository = shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
+		final DeliveryOrderService deliveryOrderRepository = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
 
 		final ImmutableSet<PackageInfo> packageInfos = mpackages.stream()
 				.map(mpackage -> PackageInfo.builder()
 						.packageId(PackageId.ofRepoId(mpackage.getM_Package_ID()))
-						//.poReference(mpackage.getPOReference())
+						.poReference(mpackage.getPOReference())
 						.description(StringUtils.trimBlankToNull(mpackage.getDescription()))
 						.weightInKg(extractWeightInKg(mpackage).orElse(null))
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 
-		for (final PackageInfo packageInfo : packageInfos)
-		{
-			final CreateDraftDeliveryOrderRequest request = CreateDraftDeliveryOrderRequest.builder()
-					.deliveryOrderKey(deliveryOrderKey)
-					.packageInfos(Collections.singleton(packageInfo))
-					.build();
+		final CreateDraftDeliveryOrderRequest request = CreateDraftDeliveryOrderRequest.builder()
+				.deliveryOrderKey(deliveryOrderKey)
+				.packageInfos(packageInfos)
+				.build();
 
-			final DraftDeliveryOrderCreator shipperGatewayService = shipperRegistry.getShipperGatewayService(shipperGatewayId);
+		final DraftDeliveryOrderCreator shipperGatewayService = shipperRegistry.getShipperGatewayService(shipperGatewayId);
 
-			DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(request);
+		DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(request);
 
-			deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
-			DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId().getRepoId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
-		}
+		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
+		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId().getRepoId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
 	}
 
 	private String retrieveShipperGatewayId(final ShipperId shipperId)

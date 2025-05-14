@@ -22,21 +22,15 @@ package org.compiere.swing.table;
  * #L%
  */
 
+import org.compiere.swing.CCheckBox;
+import org.compiere.util.DisplayType;
 
-import java.awt.Component;
-import java.awt.Insets;
+import javax.swing.*;
+import javax.swing.table.TableCellEditor;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EventObject;
-
-import javax.swing.AbstractCellEditor;
-import javax.swing.JCheckBox;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.table.TableCellEditor;
-
-import org.compiere.swing.CCheckBox;
-import org.compiere.util.DisplayType;
 
 class SelectionColumnCellEditor extends AbstractCellEditor implements TableCellEditor
 {
@@ -83,7 +77,7 @@ class SelectionColumnCellEditor extends AbstractCellEditor implements TableCellE
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int column)
 	{
-		final boolean selected = DisplayType.toBoolean(value, false);
+		final boolean selected = DisplayType.toBooleanNonNull(value, false);
 		checkbox.setSelected(selected);
 		return checkbox;
 	}

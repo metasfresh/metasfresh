@@ -1,7 +1,7 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import lombok.NonNull;

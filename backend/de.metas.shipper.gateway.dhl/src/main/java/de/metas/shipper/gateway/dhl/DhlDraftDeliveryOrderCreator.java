@@ -23,7 +23,7 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
@@ -40,13 +40,14 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -58,16 +59,18 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private static final BigDecimal DEFAULT_PACKAGE_WEIGHT_IN_KG = BigDecimal.ONE;
-	private static final int DHL_MAX_ACCEPTED_GROSS_WEIGHT_IN_KG = 30;
+	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@NonNull private final DhlClientConfigRepository clientConfigRepository;
 
@@ -90,7 +93,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 
-		final String customerReference = ""; // todo what is the customer reference ?
+		final String customerReference = getPOReferences(request.getPackageInfos());
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -115,7 +118,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		for (final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : request.getPackageInfos())
 		{
 			final DhlCustomDeliveryDataDetail.DhlCustomDeliveryDataDetailBuilder dataDetailBuilder = DhlCustomDeliveryDataDetail.builder();
-			dataDetailBuilder.packageId(packageInfo.getPackageId().getRepoId());
+			dataDetailBuilder.packageId(packageInfo.getPackageId());
 
 			// implement handling for DE -> DE and DE -> International packages
 			// currently we only support inside-EU international shipping. For everything else dhl api will error out until the DhlCustomsDocument is properly filled!
@@ -194,26 +197,19 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final PackageDimensions packageDimensions,
 			final CustomDeliveryData customDeliveryData)
 	{
-		final ImmutableSet.Builder<PackageId> mpackageIds = ImmutableSet.builder();
-		int grossWeightKg = 0;
-		for(final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : packageInfos)
-		{
-			mpackageIds.add(packageInfo.getPackageId());
-			grossWeightKg = packageInfo.getWeightInKgOr(DEFAULT_PACKAGE_WEIGHT_IN_KG).setScale(0, RoundingMode.UP).intValueExact();
-		}
-		final int grossWeightKgToUse = Math.min(grossWeightKg, DHL_MAX_ACCEPTED_GROSS_WEIGHT_IN_KG); //client wants to pay overweight delivery fee rather than not being able to ship
-		
-		final DeliveryPosition deliveryPosition = DeliveryPosition.builder()
-				.numberOfPackages(packageInfos.size())
-				.packageIds(mpackageIds.build())
-				.grossWeightKg(grossWeightKgToUse)
-				.packageDimensions(packageDimensions)
-				.build();
-		
+		final List<DeliveryOrderLine> deliveryOrderLines = packageInfos.stream()
+				.map(packageInfo -> DeliveryOrderLine.builder()
+						.packageDimensions(packageDimensions)
+						.packageId(packageInfo.getPackageId())
+						.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(shipperTransportationId)
 				//
+
 				.shipperProduct(serviceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(customerReference)
 				.customDeliveryData(customDeliveryData)
@@ -239,7 +235,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				//
 				// Delivery content
-				.deliveryPosition(deliveryPosition)
+				.deliveryOrderLines(deliveryOrderLines)
 				//
 				.build();
 	}
@@ -268,4 +264,15 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
 	}
+
+	private static String getPOReferences(@NonNull final Collection<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	{
+		return packageInfos.stream()
+				.map(CreateDraftDeliveryOrderRequest.PackageInfo::getPoReference)
+				.map(StringUtils::trimBlankToNull)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.joining(", "));
+	}
+
 }

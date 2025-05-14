@@ -3,12 +3,12 @@ package de.metas.device.config;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.WeakList;
@@ -18,14 +18,19 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.net.IHostIdentifier;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_SysConfig;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -60,6 +65,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 {
 	private static final Logger logger = LogManager.getLogger(SysConfigDeviceConfigPool.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static final String CFG_DEVICE_PREFIX = "de.metas.device";
 	private static final String CFG_DEVICE_NAME_PREFIX = CFG_DEVICE_PREFIX + ".Name";
@@ -67,6 +73,10 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 	private static final String DEVICE_PARAM_DeviceClass = "DeviceClass";
 	private static final String DEVICE_PARAM_AttributeInternalName = "AttributeInternalName";
 	private static final String DEVICE_PARAM_M_Warehouse_ID = "M_Warehouse_ID";
+	private static final String DEVICE_PARAM_M_Locator_ID = "M_Locator_ID";
+	private static final String DEVICE_PARAM_BeforeAcquireValueHook = "BeforeAcquireValueHook";
+	public static final String DEVICE_PARAM_RoundingToQty = "RoundingToQty";
+	public static final String DEVICE_PARAM_RoundingToQty_UOM_ID = "RoundingToQty_UOM_ID";
 
 	/* package */static final String IPADDRESS_ANY = "0.0.0.0";
 
@@ -99,9 +109,8 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 	}
 
 	@Override
-	public void addListener(final IDeviceConfigPoolListener listener)
+	public void addListener(@NonNull final IDeviceConfigPoolListener listener)
 	{
-		Check.assumeNotNull(listener, "Parameter listener is not null");
 		listeners.addIfAbsent(listener); // NOTE: we assume weakDefault=true
 	}
 
@@ -151,6 +160,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 				.collect(GuavaCollectors.toImmutableListMultimap());
 	}
 
+	@Nullable
 	private DeviceConfig createDeviceConfigOrNull(final String deviceName)
 	{
 		if (!isDeviceAvailableHost(deviceName))
@@ -171,6 +181,9 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 				.setParameterValueSupplier(this::getDeviceParamValue)
 				.setRequestClassnamesSupplier(this::getDeviceRequestClassnames)
 				.setAssignedWarehouseIds(getDeviceWarehouseIds(deviceName))
+				.setAssignedLocatorIds(getDeviceLocatorIds(deviceName))
+				.setBeforeHooksClassname(getBeforeHooksClassname(deviceName))
+				.setDeviceConfigParams(getDeviceConfigParams(deviceName))
 				.build();
 	}
 
@@ -236,6 +249,23 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 		}
 	}
 
+	@NonNull
+	private ImmutableList<String> getBeforeHooksClassname(@NonNull final String deviceName)
+	{
+		final String sysconfigName = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_BeforeAcquireValueHook;
+		return Optional.ofNullable(sysConfigBL.getValue(sysconfigName, clientAndOrgId))
+				.map(value -> value.split(","))
+				.map(Arrays::asList)
+				.map(ImmutableList::copyOf)
+				.orElseGet(ImmutableList::of);
+	}
+
+	@NonNull
+	private ImmutableMap<String, String> getDeviceConfigParams(@NonNull final String deviceName)
+	{
+		return ImmutableMap.copyOf(sysConfigBL.getValuesForPrefix(CFG_DEVICE_PREFIX + "." + deviceName, clientAndOrgId));
+	}
+	
 	private Set<WarehouseId> getDeviceWarehouseIds(final String deviceName)
 	{
 		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Warehouse_ID;
@@ -247,7 +277,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 					{
 						return WarehouseId.ofRepoId(Integer.parseInt(warehouseIdStr));
 					}
-					catch (Exception ex)
+					catch (final Exception ex)
 					{
 						logger.warn("Failed parsing {} for {}*", warehouseIdStr, sysconfigPrefix, ex);
 						return null;
@@ -257,11 +287,35 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	private Set<LocatorId> getDeviceLocatorIds(final String deviceName)
+	{
+		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Locator_ID;
+		final Set<Integer> locatorIds = sysConfigBL.getValuesForPrefix(sysconfigPrefix, clientAndOrgId)
+				.values()
+				.stream()
+				.map(locatorIdStr -> {
+					try
+					{
+						return Integer.parseInt(locatorIdStr);
+					}
+					catch (final Exception ex)
+					{
+						logger.warn("Failed parsing {} for {}*", locatorIdStr, sysconfigPrefix, ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return warehouseBL.getLocatorIdsByRepoIds(locatorIds);
+	}
+
 	/**
 	 * @return device implementation classname; never returns null
 	 * @throws DeviceConfigException if no classname was found
 	 */
-	private String getDeviceClassname(final String deviceName)
+	private String getDeviceClassname(@NonNull final String deviceName)
 	{
 		// note: assume not null because in that case, the method above would fail
 		return getSysconfigValueWithHostNameFallback(CFG_DEVICE_PREFIX + "." + deviceName, DEVICE_PARAM_DeviceClass, null);
@@ -277,7 +331,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 	 * @return value; never returns null
 	 * @throws DeviceConfigException if configuration parameter was not found and given <code>defaultStr</code> is <code>null</code>.
 	 */
-	private String getSysconfigValueWithHostNameFallback(final String prefix, final String suffix, final String defaultValue)
+	private String getSysconfigValueWithHostNameFallback(final String prefix, final String suffix, final @Nullable String defaultValue)
 	{
 		//
 		// Try by hostname

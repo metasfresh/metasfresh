@@ -23,6 +23,8 @@ package de.metas.handlingunits.shipping.process;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -30,8 +32,7 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.IQueueActionResult;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
-import de.metas.handlingunits.shipping.CreatePackageForHURequest;
-import de.metas.handlingunits.shipping.IHUPackageBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
@@ -47,6 +48,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,12 +60,12 @@ import java.util.List;
 /**
  * Moved from branch gastro_, /de.metas.handlingunits.base/src/main/java/de/metas/shipping/process/M_ShippingPackage_CreateFromPickingSlots.java.
  * Looks like the process was removed in this base line because it was considered obsolete, but now the customer also wants it in this base line.
- *
- * @task 08743.
+ * <p>
+ * task 08743.
  */
 public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implements IProcessPrecondition
 {
-	private static final transient Logger logger = LogManager.getLogger(M_ShippingPackage_CreateFromPickingSlots.class);
+	private static final Logger logger = LogManager.getLogger(M_ShippingPackage_CreateFromPickingSlots.class);
 
 	//
 	// services
@@ -90,9 +92,9 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		// task 06058: if the document is processed, we not allowed to run this process
+		// task 06058: if the document is processed, we are not allowed to run this process
 		final I_M_ShipperTransportation shipperTransportation = context.getSelectedModel(I_M_ShipperTransportation.class);
-		return ProcessPreconditionsResolution.acceptIf(!shipperTransportation.isProcessed());
+		return ProcessPreconditionsResolution.acceptIf(shipperTransportation != null && !shipperTransportation.isProcessed());
 	}
 
 	@Override
@@ -133,7 +135,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 		// task 06058: if the document is processed, we not allowed to run this process
 		if (shipperTransportation.isProcessed())
 		{
-			throw new AdempiereException(msgBL.getMsg(getCtx(), CreateFromPickingSlots_MSG_DOC_PROCESSED));
+			throw new AdempiereException(msgBL.getMsg(getCtx(), AdMessageKey.of(CreateFromPickingSlots_MSG_DOC_PROCESSED)));
 		}
 
 		final BPartnerId shipperPartnerId = BPartnerId.ofRepoId(shipperTransportation.getShipper_BPartner_ID());
@@ -144,6 +146,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 				pickingSlotDAO.retrievePickingSlots(getCtx(), get_TrxName()),
 				I_M_PickingSlot.class);
 
+		boolean anyMatchingPickingSlot = false;
 		//
 		// Create packages from picking slots
 		for (final I_M_PickingSlot pickingSlot : pickingSlots)
@@ -154,40 +157,47 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			{
 				continue;
 			}
+			anyMatchingPickingSlot = true;
 			createShippingPackages(pickingSlot);
 		}
-		return "OK";
+		if(!anyMatchingPickingSlot)
+		{
+			addLog("Found no M_PickingSlots that match C_BPartner_ID={}; => nothing to do", p_C_BPartner_ID);
+		}
+		return MSG_OK;
 	}
 
-	private void createShippingPackages(final I_M_PickingSlot pickingSlot)
+	private void createShippingPackages(@NonNull final I_M_PickingSlot pickingSlot)
 	{
-		for (final I_M_HU hu : huPickingSlotDAO.retrieveAllHUs(pickingSlot))
+		final List<I_M_HU> huRecords = huPickingSlotDAO.retrieveAllHUs(pickingSlot);
+		addLog("Found {} M_HUs in M_PickingSlot {}", huRecords.size(), pickingSlot.getPickingSlot());
+		
+		for (final I_M_HU hu : huRecords)
 		{
 			// tasks 09033: take care of the HU that might still be open in the picking terminal
 			// we need to close it to prevent inconsistencies and to make sure that is has a C_BPartner_ID and C_BPartner_Location_ID.
 			if (pickingSlot.getM_HU_ID() == hu.getM_HU_ID())
 			{
-				logger.debug("Closing M_HU {} that is still assigned to M_PickingSlot {}", new Object[] { hu, pickingSlot });
+				logger.debug("Closing M_HU {} that is still assigned to M_PickingSlot {}", hu, pickingSlot);
 
 				final IQueueActionResult closeCurrentHUResult = huPickingSlotBL.closeCurrentHU(pickingSlot);
 				logger.debug("Result of IHUPickingSlotBL.closeCurrentHU(): {}", closeCurrentHUResult);
 
 				if (handlingUnitsBL.isDestroyed(hu))
 				{
-					logger.debug("Closing M_HU {} from M_PickingSlot {} destroyed the HU (probably because it was empty; skipping it)", new Object[] { hu, pickingSlot });
+					addLog("Closing M_HU {} from M_PickingSlot {} destroyed the HU (probably because it was empty; skipping it)", hu, pickingSlot);
 					continue;
 				}
 			}
-
-			createShippingPackage(pickingSlot, hu);
+			createShippingPackage(hu);
 		}
 	}
 
-	private void createShippingPackage(final I_M_PickingSlot pickingSlot, final I_M_HU hu)
+	private void createShippingPackage(@NonNull final I_M_HU hu)
 	{
 		if (huPackageDAO.isHUAssignedToPackage(hu))
 		{
-			logger.debug("M_HU {} is already assingned to a M_Package; returning", hu);
+			addLog("M_HU {} is already assigned to a M_Package; => nothing to do", hu);
 			return;
 		}
 
@@ -201,10 +211,10 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 		final I_M_ShippingPackage shippingPackage = shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
 		if (shippingPackage == null)
 		{
-			logger.debug("Unable to create a M_ShippingPackage for M_ShipperTransportation {} and the newly created M_Package {}; returning",
-					new Object[] { shipperTransportation, mpackage });
+			addLog("Unable to create a M_ShippingPackage for M_ShipperTransportation {} and the newly created M_Package {}; => nothing to do",
+					shipperTransportation, mpackage);
 			return;
 		}
-		addLog("@M_HU_ID@: " + hu.getValue());
+		addLog("Created M_Package_ID={} and M_ShippingPackage_ID={} for @M_HU_ID@: {}", mpackage.getM_Package_ID(), shippingPackage.getM_ShippingPackage_ID(), hu.getValue());
 	}
 }

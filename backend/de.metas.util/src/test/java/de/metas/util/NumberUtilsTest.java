@@ -1,37 +1,73 @@
 package de.metas.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.util
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.*;
+
 public class NumberUtilsTest
 {
+	@Test
+	void asBigDecimal()
+	{
+		assertThat(NumberUtils.asBigDecimal(new BigDecimal("0"))).isEqualByComparingTo(BigDecimal.ZERO);
+	}
+
+	@Test
+	void roundTo5Cents()
+	{
+
+		BigDecimal initialValue;
+		BigDecimal roundedValue;
+
+		initialValue = new BigDecimal(1.12345);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.10));
+
+		initialValue = new BigDecimal(1.1345);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.15));
+
+		initialValue = new BigDecimal(2);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(2));
+
+		initialValue = new BigDecimal(1.02345);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1));
+
+		initialValue = new BigDecimal(1.0345);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.05));
+
+		initialValue = new BigDecimal(1.0645);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.05));
+
+		initialValue = new BigDecimal(1.0845);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.1));
+
+		initialValue = new BigDecimal(1.09);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.1));
+
+		initialValue = new BigDecimal(1.1);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.1));
+
+		initialValue = new BigDecimal(1.129);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.15));
+
+		initialValue = new BigDecimal(1.029);
+		roundedValue = NumberUtils.roundTo5Cent(initialValue);
+		assertThat(roundedValue).isEqualTo(BigDecimal.valueOf(1.05));
+	}
+
 	@Nested
 	public class stripTrailingDecimalZeros
 	{
@@ -111,7 +147,7 @@ public class NumberUtilsTest
 					.isEqualTo(new BigDecimal(expectedValueStr));
 		}
 	}
-	
+
 	@Nested
 	public class randomBigDecimal
 	{
@@ -121,6 +157,7 @@ public class NumberUtilsTest
 			test("100", "900", 3);
 		}
 
+		@SuppressWarnings("SameParameterValue")
 		private void test(final String valueMinStr, final String valueMaxStr, final int scale)
 		{
 			final BigDecimal valueMin = new BigDecimal(valueMinStr);
@@ -128,15 +165,20 @@ public class NumberUtilsTest
 
 			final BigDecimal value = NumberUtils.randomBigDecimal(valueMin, valueMax, scale);
 
-			assertThat(value).isGreaterThanOrEqualTo(valueMin);
-			assertThat(value).isLessThanOrEqualTo(valueMax);
+			assertThat(value)
+					.isGreaterThanOrEqualTo(valueMin)
+					.isLessThanOrEqualTo(valueMax);
 			assertThat(value.scale()).isLessThanOrEqualTo(scale);
 		}
 	}
-	
-	@Test 
-	void asBigDecimal()
+
+	@Nested
+	public class asInt_with_defaultValue
 	{
-		assertThat(NumberUtils.asBigDecimal(new BigDecimal("0"))).isEqualByComparingTo(BigDecimal.ZERO);
+		@Test
+		void emptyString()
+		{
+			assertThat(NumberUtils.asInt("", -100)).isEqualTo(-100);
+		}
 	}
 }

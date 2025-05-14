@@ -1,6 +1,7 @@
 package de.metas.printing.model.validator;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.cache.CacheMgt;
@@ -8,6 +9,7 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.event.Topic;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.async.spi.impl.AutomaticallyInvoicePdfPrintinAsyncBatchListener;
@@ -34,17 +36,18 @@ import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Printing base - Main Validator
@@ -54,6 +57,7 @@ import java.util.Properties;
 public class Main extends AbstractModuleInterceptor
 {
 	private static final Logger logger = LogManager.getLogger(Main.class);
+	@NonNull private final HardwarePrinterRepository hardwarePrinterRepository = SpringContextHolder.instance.getBean(HardwarePrinterRepository.class);
 
 	private Boolean enabled;
 	private boolean loggedThatPrintingIsNotEnabled = false;
@@ -80,27 +84,6 @@ public class Main extends AbstractModuleInterceptor
 	protected void onBeforeInit()
 	{
 		//
-		// Configure tables which are skipped when we record migration scripts
-		{
-			final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-			migrationLogger.addTableToIgnoreList(I_AD_User_Login.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Package.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_PrintPackageData.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_PackageInfo.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Job.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Job_Detail.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Job_Instructions.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Print_Job_Line.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_C_Printing_Queue.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_Print_Clients.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_Calibration.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_MediaSize.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_MediaTray.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_AD_Printer_Matching.Table_Name);
-		}
-
-		//
 		// Configure tables which are excluded by EXP_ReplicationTrx
 		{
 			final IReplicationTrxBL replicationTrxBL = Services.get(IReplicationTrxBL.class);
@@ -110,6 +93,28 @@ public class Main extends AbstractModuleInterceptor
 			// and we don't need gracefully handle not-unique lookup results.
 			replicationTrxBL.addTableToIgnoreList(I_AD_User_Login.Table_Name);
 		}
+	}
+
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(
+				I_AD_User_Login.Table_Name,
+				I_C_Print_Package.Table_Name,
+				I_C_PrintPackageData.Table_Name,
+				I_C_Print_PackageInfo.Table_Name,
+				I_C_Print_Job.Table_Name,
+				I_C_Print_Job_Detail.Table_Name,
+				I_C_Print_Job_Instructions.Table_Name,
+				I_C_Print_Job_Line.Table_Name,
+				I_C_Printing_Queue.Table_Name,
+				I_AD_Print_Clients.Table_Name,
+				I_AD_PrinterHW.Table_Name,
+				I_AD_PrinterHW_Calibration.Table_Name,
+				I_AD_PrinterHW_MediaSize.Table_Name,
+				I_AD_PrinterHW_MediaTray.Table_Name,
+				I_AD_Printer_Matching.Table_Name
+		);
 	}
 
 	@Override
@@ -128,7 +133,7 @@ public class Main extends AbstractModuleInterceptor
 		//engine.addModelValidator(new AD_Printer_Config()); added by spring
 		engine.addModelValidator(new AD_Printer_Matching());
 		engine.addModelValidator(new AD_PrinterRouting());
-		engine.addModelValidator(new AD_PrinterHW());
+		engine.addModelValidator(new AD_PrinterHW(hardwarePrinterRepository));
 		engine.addModelValidator(new AD_PrinterHW_Calibration());
 		engine.addModelValidator(new AD_PrinterHW_MediaTray());
 		engine.addModelValidator(new AD_PrinterTray_Matching());

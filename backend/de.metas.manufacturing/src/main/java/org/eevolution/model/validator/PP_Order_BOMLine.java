@@ -22,17 +22,21 @@ package org.eevolution.model.validator;
  * #L%
  */
 
+import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -40,6 +44,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -47,10 +52,13 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 public class PP_Order_BOMLine
 {
 	private static final String DYNATTR_ExplodePhantomRunnable = PP_Order_BOMLine.class.getName() + "#explodePhantomRunnable";
+	private static final AdMessageKey DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED = AdMessageKey.of("org.eevolution.model.validator.DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED");
 
-	@Init
-	public void init()
+	private final DDOrderCandidateRepository ddOrderCandidateRepository;
+
+	public PP_Order_BOMLine(@NonNull final DDOrderCandidateRepository ddOrderCandidateRepository)
 	{
+		this.ddOrderCandidateRepository = ddOrderCandidateRepository;
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Order_BOMLine());
 	}
 
@@ -121,6 +129,23 @@ public class PP_Order_BOMLine
 		{
 			explodePhantomRunnable.run();
 			InterfaceWrapperHelper.setDynAttribute(orderBOMLine, DYNATTR_ExplodePhantomRunnable, null);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void beforeDelete(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		final PPOrderBOMLineId bomLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
+
+		try
+		{
+			ddOrderCandidateRepository.delete(DDOrderCandidateQuery.builder()
+													  .ppOrderBOMLineId(bomLineId)
+													  .build());
+		}
+		catch (final AdempiereException e)
+		{
+			throw new AdempiereException(DD_ORDER_CANDIDATE_ALREADY_PROCESSED_CHANGES_NOT_ALLOWED, e);
 		}
 	}
 }

@@ -3,6 +3,8 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.ean13.EAN13ProductCode;
+import de.metas.ean13.EAN13ProductCodes;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -10,7 +12,8 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -19,6 +22,8 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -27,11 +32,13 @@ import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -39,10 +46,12 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -50,18 +59,21 @@ import java.util.Set;
  *
  * @implNote Please don't instantiate it in Repositories.
  */
+@RequiredArgsConstructor
 public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoaderSupportingServices
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IBPartnerBL bpartnerBL;
-	private final PickingJobSlotService pickingSlotService;
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final HUQRCodesService huQRCodeService;
+
+	@NonNull private final IBPartnerBL bpartnerBL;
+	@NonNull private final PickingJobSlotService pickingSlotService;
+	@NonNull private final HUQRCodesService huQRCodeService;
 	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
@@ -70,17 +82,8 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final HashMap<ProductId, ProductInfo> productInfoCache = new HashMap<>();
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
 
-	public DefaultPickingJobLoaderSupportingServices(
-			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final PickingJobSlotService pickingSlotService,
-			@NonNull final HUQRCodesService huQRCodeService,
-			@NonNull final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository)
-	{
-		this.bpartnerBL = bpartnerBL;
-		this.pickingSlotService = pickingSlotService;
-		this.huQRCodeService = huQRCodeService;
-		this.mobileUIPickingUserProfileRepository = mobileUIPickingUserProfileRepository;
-	}
+	@Override
+	public PickingJobOptions getPickingJobOptions(final @NonNull BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
 	@Override
 	public void warmUpCachesFrom(@NonNull final PackageableList items)
@@ -140,6 +143,18 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public Optional<EAN13ProductCode> getEAN13ProductCode(@NonNull final ProductId productId, @Nullable final BPartnerId customerId)
+	{
+		return getProductInfo(productId).getEan13ProductCodes().getCode(customerId);
+	}
+
+	@Override
+	public ProductCategoryId getProductCategoryId(@NonNull final ProductId productId)
+	{
+		return getProductInfo(productId).getProductCategoryId();
+	}
+
+	@Override
 	public ITranslatableString getProductName(@NonNull final ProductId productId)
 	{
 		return getProductInfo(productId).getName();
@@ -150,12 +165,17 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 		return productInfoCache.computeIfAbsent(productId, this::retrieveProductInfo);
 	}
 
+	@NonNull
 	private ProductInfo retrieveProductInfo(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = productBL.getById(productId);
+		final EAN13ProductCodes ean13ProductCodes = productBL.getEAN13ProductCodes(product);
+		
 		return ProductInfo.builder()
 				.productId(productId)
 				.productNo(product.getValue())
+				.ean13ProductCodes(ean13ProductCodes)
+				.productCategoryId(ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()))
 				.name(InterfaceWrapperHelper.getModelTranslationMap(product).getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName()))
 				.build();
 
@@ -195,9 +215,9 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public boolean isCatchWeightTUPickingEnabled()
+	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		return mobileUIPickingUserProfileRepository.getProfile().isCatchWeightTUPickingEnabled();
+		return orderDAO.getOrderLineById(orderAndLineId).getLine();
 	}
 
 	//
@@ -210,6 +230,8 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	{
 		@NonNull ProductId productId;
 		@NonNull String productNo;
+		@NonNull EAN13ProductCodes ean13ProductCodes;
+		@NonNull ProductCategoryId productCategoryId;
 		@NonNull ITranslatableString name;
 	}
 }

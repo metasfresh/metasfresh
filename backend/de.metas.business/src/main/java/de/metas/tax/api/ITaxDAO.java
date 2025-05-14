@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_TaxCategory;
 
 import java.sql.Timestamp;
@@ -68,7 +69,11 @@ public interface ITaxDAO extends ISingletonService
 
 	Percent getRateById(@NonNull TaxId taxId);
 
+	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
+
 	Tax getBy(final TaxQuery taxQuery);
+
+	Optional<TaxId> getIdByName(String name, ClientId clientId);
 
 	@Builder
 	@Value

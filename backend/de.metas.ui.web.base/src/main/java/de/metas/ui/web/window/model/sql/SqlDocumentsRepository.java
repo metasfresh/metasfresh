@@ -24,6 +24,7 @@ import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -92,9 +93,9 @@ import java.util.stream.Collectors;
  */
 public final class SqlDocumentsRepository implements DocumentsRepository
 {
-	public static final transient SqlDocumentsRepository instance = new SqlDocumentsRepository();
+	public static final SqlDocumentsRepository instance = new SqlDocumentsRepository();
 
-	private static final transient Logger logger = LogManager.getLogger(SqlDocumentsRepository.class);
+	private static final Logger logger = LogManager.getLogger(SqlDocumentsRepository.class);
 
 	private static final String VERSION_DEFAULT = "0";
 
@@ -153,6 +154,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
 		final SqlAndParams sql = sqlBuilder.getSql();
 		final String adLanguage = sqlBuilder.getAD_Language();
+		final DocumentQueryOrderByList orderBys = sqlBuilder.getOrderBysEffective();
 		logger.debug("Retrieving records: {}", sql);
 
 		final int loadLimitWarn = getLoadLimitWarn();
@@ -163,7 +165,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			maxRowsToFetch = loadLimitMax;
 		}
 
-		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(query.getOrderBys());
+		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(orderBys);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -286,16 +288,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				.setParentDocument(parentDocument)
 				.setChangesCollector(changesCollector)
 				.initializeAsNewDocument(documentId, VERSION_DEFAULT);
-	}
-
-	@FunctionalInterface
-	private interface FieldValueSupplier
-	{
-		/**
-		 * @param fieldDescriptor
-		 * @return initial value or {@link DocumentValuesSupplier#NO_VALUE} if it cannot provide a value
-		 */
-		Object getValue(final DocumentFieldDescriptor fieldDescriptor);
 	}
 
 	private static final class ResultSetDocumentValuesSupplier implements DocumentValuesSupplier
@@ -526,7 +518,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			// Actual save
 			// TODO: advice the PO to not reload after save.
 			InterfaceWrapperHelper.save(po);
-			document.markAsNotNew();
+			document.markAsSaved();
 			needsRefresh = true;
 		}
 		else
@@ -538,7 +530,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		// Execute after save runnables
 		if (!afterSaveRunnables.isEmpty())
 		{
-			afterSaveRunnables.forEach(r -> r.run());
+			afterSaveRunnables.forEach(Runnable::run);
 			needsRefresh = true;
 		}
 
@@ -685,8 +677,6 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	/**
 	 * Sets PO's value from given <code>documentField</code>.
 	 *
-	 * @param po
-	 * @param documentField
 	 * @return true if value was set and really changed
 	 */
 	private static boolean setPOValue(final PO po, final IDocumentFieldView documentField)

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -63,6 +63,7 @@ import de.metas.handlingunits.allocation.impl.LULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
@@ -72,9 +73,11 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
+import de.metas.handlingunits.model.I_M_HU_QRCode_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -139,11 +142,13 @@ public class M_HU_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
@@ -159,10 +164,12 @@ public class M_HU_StepDef
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
 
+	private final TestContext testContext;
+
 	@And("all the hu data is reset")
 	public void reset_data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
 	}
 
 	@And("validate M_HUs:")
@@ -240,12 +247,13 @@ public class M_HU_StepDef
 
 			final I_M_InventoryLine inventoryLine = inventoryDAO.getLineById(inventoryLineId, I_M_InventoryLine.class);
 			assertThat(inventoryLine).isNotNull();
-			final HuId huId = HuId.ofRepoId(inventoryLine.getM_HU_ID());
+			final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
+			assertThat(huId).as("inventory line has HU set").isNotNull();
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
-																		 .huId(huId)
-																		 .huIdentifier(huIdentifier)
-																		 .build()));
+					.huId(huId)
+					.huIdentifier(huIdentifier)
+					.build()));
 
 			restTestContext.setIdVariableFromRow(row, huId);
 		});
@@ -381,8 +389,7 @@ public class M_HU_StepDef
 			huTrxBL.process(huContext -> {
 				final LULoader luLoader = new LULoader(huContext);
 
-				@NonNull
-				final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
+				@NonNull final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
 				for (final StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
 				{
 					final I_M_HU sourceTU = huTable.get(sourceTUIdentifier);
@@ -419,7 +426,7 @@ public class M_HU_StepDef
 	{
 		final I_M_HU sourceCU = row.getAsIdentifier("sourceCU").lookupIn(huTable);
 
-		final IHUProductStorage sourceCUProductStorage = handlingUnitsBL.getStorageFactory().getStorage(sourceCU).getSingleHUProductStorage();
+		final IHUProductStorage sourceCUProductStorage = handlingUnitsBL.getSingleHUProductStorage(sourceCU);
 		final ProductId productId = sourceCUProductStorage.getProductId();
 		final I_C_UOM uom = sourceCUProductStorage.getC_UOM();
 
@@ -451,12 +458,12 @@ public class M_HU_StepDef
 				.source(HUListAllocationSourceDestination.of(sourceCU))
 				.destination(producer)
 				.load(AllocationUtils.builder()
-							  .setHUContext(huContext)
-							  .setProduct(productId)
-							  .setQuantity(Quantity.of(qtyCUsPerTU.multiply(qtyTUs.toBigDecimal()), uom))
-							  .setDateAsToday()
-							  .setForceQtyAllocation(true)
-							  .create());
+						.setHUContext(huContext)
+						.setProduct(productId)
+						.setQuantity(Quantity.of(qtyCUsPerTU.multiply(qtyTUs.toBigDecimal()), uom))
+						.setDateAsToday()
+						.setForceQtyAllocation(true)
+						.create());
 
 		final I_M_HU newLU = producer.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("No LU was created"));
 		row.getAsIdentifier("newLU").put(huTable, newLU);
@@ -518,7 +525,7 @@ public class M_HU_StepDef
 
 		final Map<String, Map<String, String>> identifierToRow = rows.stream()
 				.collect(Collectors.toMap(row -> DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER),
-										  Function.identity()));
+						Function.identity()));
 
 		final Map<String, String> topRow = rows.get(0);
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(topRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -579,7 +586,12 @@ public class M_HU_StepDef
 			final I_M_HU_QRCode qrCode = qrCodesTable.get(qrCodeIdentifier);
 			InterfaceWrapperHelper.refresh(qrCode);
 
-			final I_M_HU hu = load(qrCode.getM_HU_ID(), I_M_HU.class);
+			final I_M_HU_QRCode_Assignment singleAssignment = queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+					.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_ID, qrCode.getM_HU_QRCode_ID())
+					.create()
+					.firstOnlyNotNull(I_M_HU_QRCode_Assignment.class);
+
+			final I_M_HU hu = load(singleAssignment.getM_HU_ID(), I_M_HU.class);
 
 			assertThat(hu).isNotNull();
 
@@ -794,6 +806,24 @@ public class M_HU_StepDef
 				validateHU(jsonHU.getIncludedHUs(), includedHusIdentifiers, huIdentifierToRow);
 			}
 		}
+	}
+
+	@And("return hu from customer")
+	public void return_HU_from_customer(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			returnHUFromCustomer(tableRow);
+		}
+	}
+
+	private void returnHUFromCustomer(@NonNull final Map<String, String> tableRow)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Picking_Candidate.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_HU hu = huTable.get(huIdentifier);
+		assertThat(hu).isNotNull();
+
+		returnsServiceFacade.createCustomerReturnInOutForHUs(ImmutableList.of(hu));
 	}
 
 	@NonNull

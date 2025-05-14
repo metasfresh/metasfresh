@@ -61,8 +61,7 @@ public class SSCC18AttributeValueGenerator extends AbstractAttributeValueGenerat
 	{
 		final I_M_HU hu = Services.get(IHUAttributesBL.class).getM_HU(attributeSet);
 
-		// Do not use the HU's ID with the serial-number for different reasons.
-		// We can still always find the HU for an SSCC18 if one exists.
+		// Just don't use the M_HU_ID as serial number. It introduced FUD as multiple packs can have the same HU and each pack needs an individual SSCC.
 		final SSCC18 sscc18 = sscc18CodeBL.generate(OrgId.ofRepoIdOrAny(hu.getAD_Org_ID()));
 		return sscc18.asString();
 	}

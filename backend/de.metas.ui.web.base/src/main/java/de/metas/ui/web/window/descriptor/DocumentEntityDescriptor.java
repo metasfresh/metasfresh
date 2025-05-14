@@ -5,12 +5,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.AdProcessId;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
@@ -21,6 +21,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
@@ -29,6 +30,7 @@ import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollectio
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
 import de.metas.ui.web.window.model.SingleRowDetailIncludedDocumentsCollection;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -39,6 +41,7 @@ import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.callout.api.impl.NullCalloutExecutor;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -162,6 +165,15 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean cloneEnabled;
 
+	@Getter
+	private final boolean queryIfNoFilters;
+
+	@NonNull
+	@Getter
+	private final ImmutableList<IDocumentDecorator> documentDecorators;
+
+	@Nullable @Getter private final NotFoundMessages notFoundMessages;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -208,6 +220,12 @@ public class DocumentEntityDescriptor
 		soTrx = builder.getSOTrx();
 
 		cloneEnabled = builder.isCloneEnabled();
+
+		queryIfNoFilters = builder.queryIfNoFilters;
+
+		documentDecorators = CoalesceUtil.coalesceNotNull(builder.getDocumentDecorators(), ImmutableList.of());
+
+		notFoundMessages = builder.notFoundMessages;
 	}
 
 	@Override
@@ -218,7 +236,7 @@ public class DocumentEntityDescriptor
 				.add("tableName", tableName.orElse(null))
 				.add("fields.count", fields.size()) // only fields count because else it's too long
 				// .add("entityDataBinding", dataBinding) // skip it because it's too long
-				.add("includedEntitites.count", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId.size())
+				.add("includedEntities.count", includedEntitiesByDetailId.isEmpty() ? null : includedEntitiesByDetailId.size())
 				.toString();
 	}
 
@@ -254,6 +272,13 @@ public class DocumentEntityDescriptor
 		return WindowId.of(documentTypeId);
 	}
 
+	@NonNull
+	public DetailId getDetailIdNotNull()
+	{
+		return Check.assumeNotNull(getDetailId(), "expected detailId to be et for {}", this);
+	}
+
+	@Nullable
 	public DocumentFieldDescriptor getSingleIdFieldOrNull()
 	{
 		return idFields.size() == 1 ? idFields.get(0) : null;
@@ -350,7 +375,7 @@ public class DocumentEntityDescriptor
 				.filter(includedEntity -> tableName.equals(includedEntity.getTableNameOrNull()));
 	}
 
-	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(final Class<T> ignoredBindingType)
+	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(@SuppressWarnings("unused") final Class<T> ignoredBindingType)
 	{
 		@SuppressWarnings("unchecked") final T dataBindingCasted = (T)getDataBinding();
 		return dataBindingCasted;
@@ -378,6 +403,7 @@ public class DocumentEntityDescriptor
 		return tableName.orElseThrow(() -> new IllegalStateException("No TableName defined for " + this));
 	}
 
+	@Nullable
 	public String getTableNameOrNull()
 	{
 		return tableName.orElse(null);
@@ -411,7 +437,7 @@ public class DocumentEntityDescriptor
 	{
 		if (printProcessId == null)
 		{
-			new AdempiereException("No print process configured for " + this);
+			throw new AdempiereException("No print process configured for " + this);
 		}
 		return printProcessId;
 	}
@@ -427,11 +453,12 @@ public class DocumentEntityDescriptor
 	//
 	//
 
-	@SuppressWarnings({ "OptionalAssignedToNull", "UnusedReturnValue" })
+	@SuppressWarnings({ "UnusedReturnValue" })
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+		private ImmutableList<IDocumentDecorator> documentDecorators;
 
 		private boolean _built = false;
 
@@ -443,9 +470,10 @@ public class DocumentEntityDescriptor
 		private ITranslatableString _caption = TranslatableStrings.empty();
 		private ITranslatableString _description = TranslatableStrings.empty();
 
-		private final Map<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
-		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
-		private final Map<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
+		private final LinkedHashMap<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
+		private final LinkedHashMap<AdFieldId, DocumentFieldDescriptor.Builder> _fieldBuildersByMainAdFieldId = new LinkedHashMap<>();
+		private ImmutableMap<String, DocumentFieldDescriptor> _fields = null; // will be built
+		private final LinkedHashMap<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
 		private boolean _highVolume;
 
@@ -459,7 +487,7 @@ public class DocumentEntityDescriptor
 		@Getter
 		private QuickInputSupportDescriptor quickInputSupport = null;
 
-		private IncludedTabNewRecordInputMode includedTabNewRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
+		@Getter private IncludedTabNewRecordInputMode includedTabNewRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
 
 		private boolean _refreshViewOnChangeEvents = false;
 
@@ -480,7 +508,11 @@ public class DocumentEntityDescriptor
 		private Optional<AdTabId> _adTabId = Optional.empty();
 		private Optional<String> _tableName = Optional.empty();
 		private Optional<SOTrx> _soTrx = Optional.empty();
-		private int viewPageLength;
+		@Getter private int viewPageLength;
+
+		private boolean queryIfNoFilters = true;
+
+		@Getter @Nullable private NotFoundMessages notFoundMessages;
 
 		private Builder()
 		{
@@ -599,10 +631,15 @@ public class DocumentEntityDescriptor
 
 			// Add field
 			_fieldBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
+			if (fieldBuilder.getMainAdFieldId() != null)
+			{
+				_fieldBuildersByMainAdFieldId.put(fieldBuilder.getMainAdFieldId(), fieldBuilder);
+			}
 
 			return this;
 		}
 
+		@Nullable
 		public DocumentFieldDescriptor.Builder getFieldBuilder(final String fieldName)
 		{
 			return _fieldBuilders.get(fieldName);
@@ -616,6 +653,12 @@ public class DocumentEntityDescriptor
 		public boolean hasField(final String fieldName)
 		{
 			return getFieldBuilder(fieldName) != null;
+		}
+
+		@Nullable
+		public DocumentFieldDescriptor.Builder getFieldBuilder(@NonNull final AdFieldId adFieldId)
+		{
+			return _fieldBuildersByMainAdFieldId.get(adFieldId);
 		}
 
 		public int getFieldsCount()
@@ -640,6 +683,7 @@ public class DocumentEntityDescriptor
 					.collect(ImmutableList.toImmutableList());
 		}
 
+		@Nullable
 		public DocumentFieldDescriptor.Builder getSingleIdFieldBuilderOrNull()
 		{
 			final List<DocumentFieldDescriptor.Builder> idFieldBuilders = getIdFieldBuilders();
@@ -675,6 +719,7 @@ public class DocumentEntityDescriptor
 			return _fields;
 		}
 
+		@Nullable
 		private DocumentFieldDescriptor getParentLinkFieldOrNull()
 		{
 			final List<DocumentFieldDescriptor> parentLinkFields = getFields()
@@ -749,12 +794,18 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(final Class<T> ignoredBuilderType)
+		public Builder setDataBinding(@NonNull final DocumentEntityDataBindingDescriptor dataBinding)
+		{
+			return setDataBinding(() -> dataBinding);
+		}
+
+		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(@SuppressWarnings("unused") final Class<T> ignoredBuilderType)
 		{
 			@SuppressWarnings("unchecked") final T dataBindingBuilder = (T)_dataBinding;
 			return dataBindingBuilder;
 		}
 
+		@Nullable
 		private DocumentEntityDataBindingDescriptor getOrBuildDataBinding()
 		{
 			Preconditions.checkNotNull(_dataBinding, "dataBinding");
@@ -836,11 +887,24 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		public Builder setTableName(@Nullable final Optional<String> tableName)
+		{
+			_tableName = tableName != null ? tableName : Optional.empty();
+			return this;
+		}
+
 		public Optional<String> getTableName()
 		{
 			return _tableName;
 		}
 
+		@NonNull
+		public String getTableNameNotNull()
+		{
+			return _tableName.orElseThrow(() -> new AdempiereException("No main tablename determined"));
+		}
+
+		@Nullable
 		public String getTableNameOrNull()
 		{
 			return _tableName.orElse(null);
@@ -900,7 +964,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public Builder setIsSOTrx(final Optional<SOTrx> soTrx)
+		public Builder setIsSOTrx(@Nullable final Optional<SOTrx> soTrx)
 		{
 			_soTrx = soTrx != null ? soTrx : Optional.empty();
 			return this;
@@ -915,11 +979,6 @@ public class DocumentEntityDescriptor
 		{
 			this.viewPageLength = Math.max(viewPageLength, 0);
 			return this;
-		}
-
-		public int getViewPageLength()
-		{
-			return viewPageLength;
 		}
 
 		public Builder setAllowCreateNewLogic(final ILogicExpression allowCreateNewLogic)
@@ -981,15 +1040,10 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public IncludedTabNewRecordInputMode getIncludedTabNewRecordInputMode()
-		{
-			return includedTabNewRecordInputMode;
-		}
-
 		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
 		{
 			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
-            return this;
+			return this;
 		}
 
 		/**
@@ -1080,19 +1134,34 @@ public class DocumentEntityDescriptor
 			final AdTabId adTabId = getAdTabId().orElse(null);
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 
-			final CreateFiltersProviderContext context = CreateFiltersProviderContext.builder()
-					.adTabId(adTabId)
-					.tableName(tableName)
-					.isAutodetectDefaultDateFilter(isAutodetectDefaultDateFilter())
-					.build();
-
-			return filterDescriptorsProvidersService.createFiltersProvider(context, fields);
+			return filterDescriptorsProvidersService.createFiltersProvider(
+					CreateFiltersProviderContext.builder()
+							.adTabId(adTabId)
+							.tableName(tableName)
+							.isAutodetectDefaultDateFilter(isAutodetectDefaultDateFilter())
+							.fields(ImmutableList.copyOf(fields))
+							.includedEntities(ImmutableList.copyOf(_includedEntitiesByDetailId.values()))
+							.build()
+			);
 		}
 
 		public Builder setFilterDescriptorsProvidersService(final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService)
 		{
 			this.filterDescriptorsProvidersService = filterDescriptorsProvidersService;
 			return this;
+		}
+
+		@NonNull
+		public Builder setDocumentDecorators(final ImmutableList<IDocumentDecorator> documentDecorators)
+		{
+			this.documentDecorators = documentDecorators;
+			return this;
+		}
+
+		@Nullable
+		public ImmutableList<IDocumentDecorator> getDocumentDecorators()
+		{
+			return this.documentDecorators;
 		}
 
 		public Builder setRefreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
@@ -1140,6 +1209,18 @@ public class DocumentEntityDescriptor
 					.sorted(Ordering.natural().onResultOf(DocumentFieldDescriptor.Builder::getDefaultOrderByPriority))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
+		}
+
+		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
+		{
+			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
+		}
+
+		public Builder notFoundMessages(@Nullable final NotFoundMessages notFoundMessages)
+		{
+			this.notFoundMessages = notFoundMessages;
+			return this;
 		}
 	}
 }

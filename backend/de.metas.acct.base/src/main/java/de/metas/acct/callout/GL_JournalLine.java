@@ -10,12 +10,12 @@ package de.metas.acct.callout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package de.metas.acct.callout;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.gljournal.IGLJournalBL;
 import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.common.util.time.SystemTime;
@@ -45,11 +46,10 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Callout(value = I_GL_JournalLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 public class GL_JournalLine
@@ -61,6 +61,17 @@ public class GL_JournalLine
 	private static final boolean ACCTSIGN_Credit = false;
 
 	private final TaxAccountableCallout taxAccountableCallout = new TaxAccountableCallout();
+	private final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
+
+	@CalloutMethod(columnNames = { I_GL_JournalLine.COLUMNNAME_DateAcct})
+	public void assertDateAcctInPeriod(final I_GL_JournalLine glJournalLine)
+	{
+		if(glJournalLine.getDateAcct() != null)
+		{
+			glJournalBL.assertSamePeriod(glJournalLine.getGL_Journal(), glJournalLine);
+		}
+	}
+
 
 	@CalloutMethod(columnNames = {
 			I_GL_JournalLine.COLUMNNAME_DateAcct,
@@ -78,11 +89,7 @@ public class GL_JournalLine
 		}
 
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(glJournalLine.getC_ConversionType_ID());
-		LocalDate dateAcct = TimeUtil.asLocalDate(glJournalLine.getDateAcct());
-		if (dateAcct == null)
-		{
-			dateAcct = SystemTime.asLocalDate();
-		}
+		final Instant dateAcct = glJournalLine.getDateAcct() != null ? glJournalLine.getDateAcct().toInstant() : SystemTime.asInstant();
 		final ClientId adClientId = ClientId.ofRepoId(glJournalLine.getAD_Client_ID());
 		final OrgId adOrgId = OrgId.ofRepoId(glJournalLine.getAD_Org_ID());
 		final I_GL_Journal glJournal = glJournalLine.getGL_Journal();
@@ -153,11 +160,10 @@ public class GL_JournalLine
 
 	/**
 	 * Copy AmtSourceDr/Cr to AmtSourceCr/Dr based on which is the source column.
-	 * 
+	 *<p>
 	 * If the given GL Journal Line has "Split accounting transaction" enabled this method will do nothing
 	 * because in that case the amounts does not have to be synchronized.
-	 * 
-	 * @param glJournalLine
+	 *
 	 * @param fromAmtSourceColumnName source column from where we shall copy the amount. It can be:
 	 *            <ul>
 	 *            <li>{@link I_GL_JournalLine#COLUMNNAME_AmtSourceDr} to copy from AmtSourceDr to AmtSourceCr
@@ -165,7 +171,7 @@ public class GL_JournalLine
 	 *            <li><code>null</code> - it will copy from AmtSourceDr if it's not zero else from AmtSourceCr
 	 *            </ul>
 	 */
-	private final void syncSourceAmountsIfSplitAcctTrx(final I_GL_JournalLine glJournalLine, String fromAmtSourceColumnName)
+	private void syncSourceAmountsIfSplitAcctTrx(final I_GL_JournalLine glJournalLine, String fromAmtSourceColumnName)
 	{
 		// Do nothing if split accounting transaction is enabled
 		if (glJournalLine.isSplitAcctTrx())
@@ -228,7 +234,7 @@ public class GL_JournalLine
 		syncSourceAmountsIfSplitAcctTrx(glJournalLine, I_GL_JournalLine.COLUMNNAME_AmtSourceCr);
 	}
 
-	private final void onTaxBaseAccount(final I_GL_JournalLine glJournalLine)
+	private void onTaxBaseAccount(final I_GL_JournalLine glJournalLine)
 	{
 		//
 		// Take a snapshot of the old values
@@ -364,13 +370,13 @@ public class GL_JournalLine
 		glJournalLine.setType(type);
 	}
 
-	private final ITaxAccountable asTaxAccountable(final I_GL_JournalLine glJournalLine, final boolean accountSignDR)
+	private ITaxAccountable asTaxAccountable(final I_GL_JournalLine glJournalLine, final boolean accountSignDR)
 	{
 		final IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
 		return glJournalLineBL.asTaxAccountable(glJournalLine, accountSignDR);
 	}
 
-	private final boolean isAutoTaxAccount(final I_C_ValidCombination accountVC)
+	private boolean isAutoTaxAccount(final I_C_ValidCombination accountVC)
 	{
 		if (accountVC == null)
 		{

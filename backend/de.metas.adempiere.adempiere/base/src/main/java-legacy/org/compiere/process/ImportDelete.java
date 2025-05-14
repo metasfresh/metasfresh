@@ -70,7 +70,7 @@ public class ImportDelete extends JavaProcess
 		
 		//	Delete
 		String sql = "DELETE FROM " + tableName + " WHERE AD_Client_ID=" + getAD_Client_ID();
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		String msg = Msg.translate(getCtx(), tableName + "_ID") + " #" + no;
 		return msg;
 	}	//	ImportDelete

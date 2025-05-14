@@ -93,6 +93,8 @@ public class Adempiere
 			.fullVersion("Version info not loaded")
 			.build();
 
+	public static final String ENDPOINT_API_V2 = "/api/v2";
+
 	/**
 	 * Detail Version as date Used for Client/Server
 	 */

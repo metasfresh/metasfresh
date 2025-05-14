@@ -40,6 +40,7 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.order.impl.DocTypeService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
@@ -47,7 +48,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_PaymentTerm;
 
 import java.util.HashMap;
 import java.util.List;
@@ -235,7 +235,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		final PaymentTermId paymentTermId = externalSystemShopware6ConfigMapping.getPaymentTermId();
 		if (paymentTermId != null)
 		{
-			final I_C_PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
+			final PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
 			builder.paymentTermValue(paymentTerm.getValue());
 
 		}

@@ -383,6 +383,31 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_EDI_DesadvLine.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
+
+	/**
 	 * Set Subsequent Delivery.
 	 *
 	 * <br>Type: YesNo
@@ -703,6 +728,27 @@ public interface I_EDI_DesadvLine
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyOrdered = new ModelColumn<>(I_EDI_DesadvLine.class, "QtyOrdered", null);
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
+
+	/**
+	 * Set Quantity Ordered override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyOrdered_Override (@Nullable BigDecimal QtyOrdered_Override);
+
+	/**
+	 * Get Quantity Ordered override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyOrdered_Override();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyOrdered_Override = new ModelColumn<>(I_EDI_DesadvLine.class, "QtyOrdered_Override", null);
+	String COLUMNNAME_QtyOrdered_Override = "QtyOrdered_Override";
 
 	/**
 	 * Set CU-UPC.

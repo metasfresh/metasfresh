@@ -466,8 +466,8 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
 		assertThat(params.get(ExternalSystemConstants.PARAM_TCP_HOST)).isEqualTo(host);
 
-		final String product_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
-		assertThat(params.get(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME)).isEqualTo(product_BaseFolderName);
+		final String pluTemplateFile_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
+		assertThat(params.get(ExternalSystemConstants.PARAM_PLU_FILE_TEMPLATE_BASE_FOLDER_NAME)).isEqualTo(pluTemplateFile_BaseFolderName);
 
 		final boolean pluFileEnabled = DataTableUtil.extractBooleanForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_IsPluFileExportAuditEnabled);
 		final String pluFileEnabledConfig = params.get(ExternalSystemConstants.PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED);

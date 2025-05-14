@@ -14,6 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -24,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -51,6 +52,7 @@ public class PPOrderBOMBLTest
 		helper = new MRPTestHelper();
 
 		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
+		SpringContextHolder.registerJUnitBean(new ProductBOMVersionsDAO());
 
 		ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 		ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);

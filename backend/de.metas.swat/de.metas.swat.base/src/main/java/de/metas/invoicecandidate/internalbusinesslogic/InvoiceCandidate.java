@@ -319,7 +319,7 @@ public class InvoiceCandidate
 
 		result.qtysEffective(qtysEffective);
 
-		final Quantity qtyInPriceUom = Quantitys.create(
+		final Quantity qtyInPriceUom = Quantitys.of(
 				qtysEffective.getUOMQtyNotNull(),
 				UOMConversionContext.of(product.getId()),
 				priceUomId);
@@ -397,7 +397,7 @@ public class InvoiceCandidate
 			case AfterDelivery:
 			case OrderCompletelyDelivered:
 			case CustomerScheduleAfterDelivery:
-				if (product.isStocked())
+				if (product.isItemType())
 				{
 					qtyToInvoice = computeInvoicableQtysDelivered();
 				}

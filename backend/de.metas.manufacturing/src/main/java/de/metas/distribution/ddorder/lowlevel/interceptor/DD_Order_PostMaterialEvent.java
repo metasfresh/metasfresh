@@ -5,7 +5,6 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DD_Order_PostMaterialEvent
 {
-	@NonNull final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final PostMaterialEventService materialEventService;
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_DD_Order.COLUMNNAME_DocStatus)

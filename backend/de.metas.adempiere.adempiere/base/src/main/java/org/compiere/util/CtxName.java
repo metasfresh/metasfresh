@@ -9,7 +9,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +18,7 @@ import java.util.Optional;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public final class CtxName
 {
 	private final String name;
@@ -78,7 +78,7 @@ public final class CtxName
 	{
 		if (defaultValueBoolean == null)
 		{
-			defaultValueBoolean = Optional.ofNullable(DisplayType.toBoolean(defaultValue, (Boolean)null));
+			defaultValueBoolean = Optional.ofNullable(DisplayType.toBoolean(defaultValue, null));
 		}
 		return defaultValueBoolean.orElse(null);
 	}
@@ -108,6 +108,7 @@ public final class CtxName
 		return defaultValueDate.orElse(null);
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isOld()
 	{
 		return hasModifier(CtxNames.MODIFIER_Old);
@@ -140,14 +141,13 @@ public final class CtxName
 	}
 
 	/**
-	 * Evaluates this context name and gets it's value from given source/context.
-	 * <p>
+	 * Evaluates this context name and gets its value from given source/context.
 	 * In case the source/context is <code>null</code> then {@link #getDefaultValue()} will be returned.
 	 *
-	 * @param source evaluation context/source; <code>null</code> is accept
-	 * @return {@link Evaluatee}'s variable value or {@link #VALUE_NULL}
+	 * @param source evaluation context/source; <code>null</code> is accepted
+	 * @return {@link Evaluatee}'s variable value or default value
 	 */
-	public String getValueAsString(final Evaluatee source)
+	public String getValueAsString(@Nullable final Evaluatee source)
 	{
 		if (source == null)
 		{
@@ -335,11 +335,6 @@ public final class CtxName
 		return TimeUtil.asZonedDateTime(getValueAsDate(source));
 	}
 
-	public LocalDate getValueAsLocalDate(final Evaluatee source)
-	{
-		return TimeUtil.asLocalDate(getValueAsDate(source));
-	}
-
 	public java.util.Date getValueAsDate(final Evaluatee source)
 	{
 		final java.util.Date defaultValueAsDate = getDefaultValueAsDate();
@@ -388,9 +383,7 @@ public final class CtxName
 	{
 		if (cachedToStringWithTagMarkers == null)
 		{
-			final StringBuilder sb = new StringBuilder();
-			sb.append(CtxNames.NAME_Marker).append(toStringWithoutMarkers()).append(CtxNames.NAME_Marker);
-			cachedToStringWithTagMarkers = sb.toString();
+			cachedToStringWithTagMarkers = CtxNames.NAME_Marker + toStringWithoutMarkers() + CtxNames.NAME_Marker;
 		}
 		return cachedToStringWithTagMarkers;
 	}
@@ -408,13 +401,18 @@ public final class CtxName
 					sb.append(CtxNames.SEPARATOR).append(m);
 				}
 			}
-			if (!Check.isEmpty(defaultValue))
+			if (isDefaultValuePresent(defaultValue))
 			{
 				sb.append(CtxNames.SEPARATOR).append(defaultValue);
 			}
 			cachedToStringWithoutTagMarkers = sb.toString();
 		}
 		return cachedToStringWithoutTagMarkers;
+	}
+
+	private static boolean isDefaultValuePresent(@Nullable String defaultValue)
+	{
+		return !Check.isEmpty(defaultValue);
 	}
 
 	@Override
@@ -488,5 +486,10 @@ public final class CtxName
 			return false;
 		}
 		return true;
+	}
+
+	public boolean equalsByName(@Nullable final CtxName other)
+	{
+		return other != null && this.name.equals(other.name);
 	}
 }

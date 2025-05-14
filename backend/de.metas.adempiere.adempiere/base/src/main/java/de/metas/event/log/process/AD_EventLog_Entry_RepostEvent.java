@@ -65,7 +65,7 @@ public class AD_EventLog_Entry_RepostEvent extends JavaProcess
 		{
 			addLog("The given event log record has a different topic than the event bus!");
 		}
-		
+
 		final IEventBus eventBus = eventBusFactory.getEventBus(topic);
 
 		final ImmutableList<String> handlerToIgnore = ImmutableList.of(eventLogEntryRecord.getClassname());

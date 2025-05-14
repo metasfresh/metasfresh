@@ -210,10 +210,14 @@
 			<artifactId>de.metas.payment.paypal</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>de.metas.payment.revolut</groupId>
 			<artifactId>de.metas.payment.revolut</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.payment.sumup</groupId>
+			<artifactId>de.metas.payment.sumup</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
@@ -352,6 +356,12 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.pos</groupId>
+			<artifactId>de.metas.pos.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

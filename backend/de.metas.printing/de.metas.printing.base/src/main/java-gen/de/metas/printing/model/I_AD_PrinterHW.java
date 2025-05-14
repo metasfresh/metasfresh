@@ -162,6 +162,29 @@ public interface I_AD_PrinterHW
 	String COLUMNNAME_HostKey = "HostKey";
 
 	/**
+	 * Set IPP URL.
+	 * Internet Printing Protol URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIPP_URL (@Nullable java.lang.String IPP_URL);
+
+	/**
+	 * Get IPP URL.
+	 * Internet Printing Protol URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIPP_URL();
+
+	ModelColumn<I_AD_PrinterHW, Object> COLUMN_IPP_URL = new ModelColumn<>(I_AD_PrinterHW.class, "IPP_URL", null);
+	String COLUMNNAME_IPP_URL = "IPP_URL";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

@@ -10,6 +10,7 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.logging.LogManager;
@@ -17,10 +18,13 @@ import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +40,9 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	}
 
 	private final I_EDI_DesadvLine desadvLine;
+
+	@Getter
+	private final I_M_HU_PI_Item_Product tuPIItemProduct;
 
 	private final int lineNo;
 	private final String productValue;
@@ -61,6 +68,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 		this.requiredSSCC18sCount = BigDecimal.valueOf(builder.getRequiredSSCC18Count());
 
 		this.huQtysCalculator = builder.getHUQtysCalculator();
+		this.tuPIItemProduct = builder.getTuPIItemProduct();
 	}
 
 	@Override
@@ -120,7 +128,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	public static class Builder
 	{
 		// services
-		private static final transient Logger logger = LogManager.getLogger(PrintableDesadvLineSSCC18Labels.class);
+		private static final Logger logger = LogManager.getLogger(PrintableDesadvLineSSCC18Labels.class);
 		private final transient IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 		private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 		private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
@@ -311,5 +319,13 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			return Optional.of(lutuConfiguration);
 		}
 
+		@Nullable
+		public I_M_HU_PI_Item_Product getTuPIItemProduct()
+		{
+			return getM_HU_LUTU_Configuration()
+					.map(I_M_HU_LUTU_Configuration::getM_HU_PI_Item_Product_ID)
+					.map(id->InterfaceWrapperHelper.load(id, I_M_HU_PI_Item_Product.class))
+					.orElse(null);
+		}
 	} // Builder
 }

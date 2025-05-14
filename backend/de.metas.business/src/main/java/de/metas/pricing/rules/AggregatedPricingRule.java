@@ -21,7 +21,6 @@ import java.util.stream.Stream;
  * Helper class which aggregates multiple {@link IPricingRule}s.
  *
  * @author tsa
- *
  */
 @ToString
 public final class AggregatedPricingRule implements IPricingRule

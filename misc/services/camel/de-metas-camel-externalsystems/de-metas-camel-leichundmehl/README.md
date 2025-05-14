@@ -21,7 +21,7 @@ When `externalsystems` is invoked, it:
 
 #### 1.`JsonExternalSystemRequest` computed from `window = 541024 - ExternalSystem_Config_LeichMehl`
 - `JsonExternalSystemRequest.parameters.PP_Order_ID` - id of the selected manufacturing order to export
-- `JsonExternalSystemRequest.parameters.Product_BaseFolderName` = `ExternalSystem_Config_LeichMehl.Product_BaseFolderName`
+- `JsonExternalSystemRequest.parameters.PluTemplateFile_BaseFolderName` = `ExternalSystem_Config_LeichMehl.Product_BaseFolderName`
 - `JsonExternalSystemRequest.parameters.TCP_PortNumber` = `ExternalSystem_Config_LeichMehl.TCP_PortNumber`
 - `JsonExternalSystemRequest.parameters.TCP_Host` = `ExternalSystem_Config_LeichMehl.TCP_Host`
 - `JsonExternalSystemRequest.parameters.ConfigMappings` see 1.1

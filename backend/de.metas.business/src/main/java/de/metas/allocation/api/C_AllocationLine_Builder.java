@@ -82,7 +82,7 @@ public class C_AllocationLine_Builder
 		return invoiceId(InvoiceId.toRepoId(invoiceId));
 	}
 
-	public final C_AllocationLine_Builder invoiceId(int invoiceId)
+	public final C_AllocationLine_Builder invoiceId(final int invoiceId)
 	{
 		allocLine.setC_Invoice_ID(invoiceId);
 		return this;
@@ -93,7 +93,7 @@ public class C_AllocationLine_Builder
 		return paymentId(PaymentId.toRepoId(paymentId));
 	}
 
-	public final C_AllocationLine_Builder paymentId(int paymentId)
+	public final C_AllocationLine_Builder paymentId(final int paymentId)
 	{
 		allocLine.setC_Payment_ID(paymentId);
 		return this;
@@ -117,13 +117,13 @@ public class C_AllocationLine_Builder
 		return this;
 	}
 
-	public final C_AllocationLine_Builder overUnderAmt(BigDecimal overUnderAmt)
+	public final C_AllocationLine_Builder overUnderAmt(final BigDecimal overUnderAmt)
 	{
 		allocLine.setOverUnderAmt(overUnderAmt);
 		return this;
 	}
 
-	public C_AllocationLine_Builder paymentWriteOffAmt(BigDecimal paymentWriteOffAmt)
+	public C_AllocationLine_Builder paymentWriteOffAmt(final BigDecimal paymentWriteOffAmt)
 	{
 		allocLine.setPaymentWriteOffAmt(paymentWriteOffAmt);
 		return this;
@@ -160,10 +160,9 @@ public class C_AllocationLine_Builder
 	 * @param allocHdrSupplier allocation header supplier which will provide the allocation header created & saved, just in time, so call it ONLY if you are really gonna create an allocation line.
 	 * @return created {@link I_C_AllocationLine} or <code>null</code> if it was not needed.
 	 */
-	final I_C_AllocationLine create(final Supplier<I_C_AllocationHdr> allocHdrSupplier)
+	@Nullable
+	final I_C_AllocationLine create(@NonNull final Supplier<I_C_AllocationHdr> allocHdrSupplier)
 	{
-		Check.assumeNotNull(allocHdrSupplier, "allocHdrSupplier not null");
-
 		if (isSkipBecauseAllAmountsAreZero())
 		{
 			return null;

@@ -60,6 +60,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 			.add(I_C_Invoice_Candidate.COLUMNNAME_C_UOM_ID)
 			.add(I_C_Invoice_Candidate.COLUMNNAME_IsPrinted)
 			.add(I_C_Invoice_Candidate.COLUMNNAME_Line)
+			.add(I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID)
 			.build();
 
 	private ICLineAggregationKeyBuilder_OLD()
@@ -138,6 +139,9 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 			final String uomName = uom.getName(); // Unique
 			sb.append("/" + uomName);
 		}
+
+		// Use DocTypeID in aggregation
+		sb.append("/").append(ic.getC_DocTypeInvoice_ID() > 0 ? ic.getC_DocTypeInvoice_ID() : 0);
 
 		//
 		// 07442

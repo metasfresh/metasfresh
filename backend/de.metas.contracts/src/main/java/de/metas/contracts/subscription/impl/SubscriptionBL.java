@@ -1097,6 +1097,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		// line's NetLineAmount in MOrderLine.beforeSave()
 		ol.setQtyOrdered(olQty);
 
+		ol.setIsManualQtyInPriceUOM(false);
 		ol.setQtyEnteredInPriceUOM(olQty);
 
 		// now compute the new prices

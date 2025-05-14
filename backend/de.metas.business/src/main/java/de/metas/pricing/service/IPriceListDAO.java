@@ -76,6 +76,8 @@ public interface IPriceListDAO extends ISingletonService
 
 	I_M_PriceList getById(int priceListId);
 
+	I_M_PriceList getByIdInTrx(PriceListId priceListId);
+
 	I_M_PriceList_Version getPriceListVersionById(PriceListVersionId priceListVersionId);
 
 	I_M_PriceList_Version getPriceListVersionByIdInTrx(PriceListVersionId priceListVersionId);

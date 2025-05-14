@@ -71,7 +71,6 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +78,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo;
-import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override;
+import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override;
 
 /**
  * Locks all the given shipments schedules into one big lock, then creates and enqueues workpackages, splitting off locks.
@@ -261,15 +260,10 @@ public class ShipmentScheduleEnqueuer
 			}
 		}
 
-		final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = workPackageParameters.getQtysToDeliverOverride();
+		final QtyToDeliverMap qtysToDeliverOverride = workPackageParameters.getQtysToDeliverOverride();
 		if (qtysToDeliverOverride != null)
 		{
-			final BigDecimal qtyToDeliverOverride = qtysToDeliverOverride.get(shipmentScheduleId);
-			if (qtyToDeliverOverride != null)
-			{
-				workpackageBuilder.parameters()
-						.setParameter(PARAM_PREFIX_QtyToDeliver_Override + shipmentScheduleId.getRepoId(), qtyToDeliverOverride);
-			}
+			workpackageBuilder.parameters().setParameter(PARAM_QtyToDeliver_Override, qtysToDeliverOverride.toJsonString());
 		}
 	}
 
@@ -332,7 +326,7 @@ public class ShipmentScheduleEnqueuer
 	 * Contains the enqueuer's result. Right now it's just two counters, but might be extended in future.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 * task https://metasfresh.atlassian.net/browse/FRESH-342
+	 * @implSpec <a href="https://metasfresh.atlassian.net/browse/FRESH-342">task</a>
 	 */
 	public static class Result implements IEnqueueResult
 	{
@@ -378,7 +372,7 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_IsCloseShipmentSchedules = "IsCloseShipmentSchedules";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
-		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
+		public static final String PARAM_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID";
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
@@ -397,7 +391,7 @@ public class ShipmentScheduleEnqueuer
 		 */
 		@Builder.Default
 		boolean onTheFlyPickToPackingInstructions = false;
-		
+
 		boolean completeShipments;
 		boolean isCloseShipmentSchedules;
 		boolean isShipmentDateToday;
@@ -410,7 +404,7 @@ public class ShipmentScheduleEnqueuer
 		ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos;
 
 		@Nullable
-		ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride;
+		QtyToDeliverMap qtysToDeliverOverride;
 	}
 
 }

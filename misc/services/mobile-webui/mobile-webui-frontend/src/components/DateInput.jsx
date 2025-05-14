@@ -3,17 +3,18 @@ import cx from 'classnames';
 import PropTypes from 'prop-types';
 import { useBooleanSetting } from '../reducers/settings';
 
-const DateInput = ({ value, readOnly, onChange }) => {
+const DateInput = ({ value, readOnly, onChange, testId }) => {
   const isUseNativeComponent = useBooleanSetting('dateInput.isUseNativeComponent');
 
   if (isUseNativeComponent) {
-    return <DateInputNative value={value} readOnly={readOnly} onChange={onChange} />;
+    return <DateInputNative value={value} readOnly={readOnly} onChange={onChange} testId={testId} />;
   } else {
-    return <DateInputLegacy value={value} readOnly={readOnly} onChange={onChange} />;
+    return <DateInputLegacy value={value} readOnly={readOnly} onChange={onChange} testId={testId} />;
   }
 };
 
 DateInput.propTypes = {
+  testId: PropTypes.string,
   value: PropTypes.any,
   readOnly: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
@@ -27,7 +28,7 @@ export default DateInput;
 //
 //
 
-const DateInputNative = ({ value, readOnly, onChange }) => {
+const DateInputNative = ({ value, readOnly, onChange, testId }) => {
   const handleChange = useCallback(
     (e) => {
       const dateNew = e.target.value ? e.target.value : '';
@@ -35,9 +36,19 @@ const DateInputNative = ({ value, readOnly, onChange }) => {
     },
     [onChange]
   );
-  return <input className="input" type="date" value={value} disabled={readOnly} onChange={handleChange} />;
+  return (
+    <input
+      className="input"
+      type="date"
+      value={value}
+      disabled={readOnly}
+      onChange={handleChange}
+      data-testid={testId}
+    />
+  );
 };
 DateInputNative.propTypes = {
+  testId: PropTypes.string,
   value: PropTypes.any,
   readOnly: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
@@ -49,7 +60,7 @@ DateInputNative.propTypes = {
 //
 //
 
-const DateInputLegacy = ({ value, readOnly, onChange }) => {
+const DateInputLegacy = ({ value, readOnly, onChange, testId }) => {
   let displayedDate = value;
   let isValid = true;
   try {
@@ -79,6 +90,7 @@ const DateInputLegacy = ({ value, readOnly, onChange }) => {
 
   return (
     <input
+      data-testid={testId}
       className={cx('input', { 'is-danger': !isValid })}
       type="text"
       value={displayedDate}
@@ -89,6 +101,7 @@ const DateInputLegacy = ({ value, readOnly, onChange }) => {
   );
 };
 DateInputLegacy.propTypes = {
+  testId: PropTypes.string,
   value: PropTypes.any,
   readOnly: PropTypes.bool,
   onChange: PropTypes.func.isRequired,

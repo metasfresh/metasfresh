@@ -1,26 +1,12 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
-import org.adempiere.ad.service.TableRefInfo;
-import org.compiere.model.ILookupDisplayColumn;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.ad_reference.ADRefTable;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
@@ -29,8 +15,21 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Data;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.impl.LookupDisplayColumn;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -79,7 +78,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		return EMPTY;
 	}
 
-	private static final List<FieldValueExtractor> extractFieldNamesFromLookup(final DocumentEntityDescriptor.Builder entityDescriptor)
+	private static List<FieldValueExtractor> extractFieldNamesFromLookup(final DocumentEntityDescriptor.Builder entityDescriptor)
 	{
 		try
 		{
@@ -89,17 +88,16 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 				return ImmutableList.of();
 			}
 
-			final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-			final TableRefInfo tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(idField.getFieldName());
-			final ILookupDisplayInfo displayInfo = lookupDAO.retrieveLookupDisplayInfo(tableRefInfo);
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final ADRefTable tableRefInfo = adReferenceService.getTableDirectRefInfo(idField.getFieldName());
 
-			final ImmutableList<FieldValueExtractor> displayColumnNames = displayInfo.getLookupDisplayColumns()
+			final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+			return lookupDAO.getLookupDisplayInfo(tableRefInfo)
+					.getLookupDisplayColumns()
 					.stream()
 					.map(lookupDisplayColumn -> createFieldValueExtractorFromLookupDisplayColumn(lookupDisplayColumn, entityDescriptor))
-					.filter(fieldValueExtractor -> fieldValueExtractor != null)
+					.filter(Objects::nonNull)
 					.collect(ImmutableList.toImmutableList());
-
-			return displayColumnNames;
 		}
 		catch (final Exception ex)
 		{
@@ -108,7 +106,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		}
 	}
 
-	private static final FieldValueExtractor createFieldValueExtractorFromLookupDisplayColumn(final ILookupDisplayColumn lookupDisplayColumn, final DocumentEntityDescriptor.Builder entityDescriptor)
+	private static FieldValueExtractor createFieldValueExtractorFromLookupDisplayColumn(final LookupDisplayColumn lookupDisplayColumn, final DocumentEntityDescriptor.Builder entityDescriptor)
 	{
 		final String fieldName = lookupDisplayColumn.getColumnName();
 		final DocumentFieldDescriptor.Builder field = entityDescriptor.getFieldBuilder(fieldName);
@@ -130,7 +128,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		return new GenericFieldValueExtractor(fieldName);
 	}
 
-	private static final List<FieldValueExtractor> extractFieldNamesFromDocumentNo(final DocumentEntityDescriptor.Builder entityDescriptor)
+	private static List<FieldValueExtractor> extractFieldNamesFromDocumentNo(final DocumentEntityDescriptor.Builder entityDescriptor)
 	{
 		if (entityDescriptor.hasField(WindowConstants.FIELDNAME_DocumentNo))
 		{
@@ -139,7 +137,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		return ImmutableList.of();
 	}
 
-	private static final List<FieldValueExtractor> extractFieldNamesFromValueName(final DocumentEntityDescriptor.Builder entityDescriptor)
+	private static List<FieldValueExtractor> extractFieldNamesFromValueName(final DocumentEntityDescriptor.Builder entityDescriptor)
 	{
 		final ImmutableList.Builder<FieldValueExtractor> fieldNames = ImmutableList.builder();
 		if (entityDescriptor.hasField(WindowConstants.FIELDNAME_Value))
@@ -154,7 +152,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		return fieldNames.build();
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(GenericDocumentSummaryValueProvider.class);
+	private static final Logger logger = LogManager.getLogger(GenericDocumentSummaryValueProvider.class);
 	private static final GenericDocumentSummaryValueProvider EMPTY = new GenericDocumentSummaryValueProvider(ImmutableList.of());
 
 	private final ImmutableList<FieldValueExtractor> fieldValueExtractors;
@@ -191,7 +189,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		final String summary = fieldValueExtractors.stream()
 				.map(valueExtractor -> valueExtractor.extractFieldValueToString(document))
 				.map(fieldValue -> Check.isEmpty(fieldValue, true) ? null : fieldValue.trim()) // convert empty strings to null
-				.filter(fieldValue -> fieldValue != null) // skip null strings
+				.filter(Objects::nonNull) // skip null strings
 				.collect(Collectors.joining(" ")); // join all field values
 
 		if (Check.isEmpty(summary, true))
@@ -267,7 +265,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 	{
 		private final String fieldName;
 		private final String formatPattern;
-		private int displayType;
+		private final int displayType;
 
 		private NumericFieldValueExtractor(final String fieldName, final DocumentFieldWidgetType widgetType, final String formatPattern)
 		{

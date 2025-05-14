@@ -1,4 +1,6 @@
 .app-container {
+  height: 100vh;
+  
   .app-header {
     top: 0;
     width: 100%;
@@ -34,8 +36,10 @@
   }
 
   .app-content {
+    max-height: 100vh;
     padding-top: 4rem;
     padding-bottom: 6rem;
+    overflow-y: auto;
   }
 
   .app-footer {
@@ -72,4 +76,8 @@
   .app-toaster {
     bottom: 4rem !important;
   }
+}
+
+.app-container-fullscreen {
+  overflow: hidden !important;
 }

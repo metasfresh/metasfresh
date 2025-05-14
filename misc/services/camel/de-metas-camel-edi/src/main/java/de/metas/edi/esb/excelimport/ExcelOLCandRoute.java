@@ -25,7 +25,7 @@ package de.metas.edi.esb.excelimport;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
-import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.XLSImpCOLCandType;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
@@ -66,10 +66,14 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 	public static final String LOCAL_ROUTE_ID = "Excel-Orders-To-MF-OLCand";
 	private static final transient Logger logger = LoggerFactory.getLogger(LOCAL_ROUTE_ID);
 
-	/** This place holder is evaluated via {@link Util#resolveProperty(CamelContext, String)}, that's why we don't put it in {@code {{...}}} */
+	/**
+	 * This place holder is evaluated via {@link Util#resolveProperty(CamelContext, String)}, that's why we don't put it in {@code {{...}}}
+	 */
 	public static final String INPUT_EXCEL_REMOTE = "excel.file.orders.remote";
 
 	public static final String INPUT_EXCEL_LOCAL = "{{excel.file.orders}}";
+
+	public static final String MAP_TO_METASFRESH_TYPE_PROCESSOR_ID = "MapToXLSImpCOLCandTypeProcessor";
 
 	@Override
 	protected void configureEDIRoute(@NonNull final DataFormat jaxb, final DecimalFormat decimalFormat)
@@ -145,7 +149,7 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 					logger.info("Excel: We have {} of {} valid rows to be sent forward", output.size(), rows.size());
 
 					exchange.getIn().setBody(output);
-				})
+				}).id(MAP_TO_METASFRESH_TYPE_PROCESSOR_ID)
 				.split(body())
 				.marshal(jaxb)
 				//

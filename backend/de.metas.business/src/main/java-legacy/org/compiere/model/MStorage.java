@@ -31,6 +31,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -63,7 +64,7 @@ public class MStorage extends X_M_Storage
 	 * @return existing or null
 	 */
 	public static MStorage get(final Properties ctx, final int M_Locator_ID,
-			final int M_Product_ID, final int M_AttributeSetInstance_ID, final String trxName)
+			final int M_Product_ID, final int M_AttributeSetInstance_ID, @Nullable final String trxName)
 	{
 		MStorage retValue = null;
 		String sql = "SELECT * FROM M_Storage "

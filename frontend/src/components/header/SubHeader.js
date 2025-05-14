@@ -2,23 +2,33 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 
 import { elementPathRequest } from '../../api';
-import { updateBreadcrumb } from '../../actions/MenuActions';
 import { getSelection, getTableId } from '../../reducers/tables';
 import keymap from '../../shortcuts/keymap';
 
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 
+// keep in sync with de.metas.ui.web.window.model.DocumentStandardAction
+export const ACTION_BREADCRUMB_CLICK = 'breadcrumbClick';
+export const ACTION_TOGGLE_EDIT_MODE = 'toggleEditMode';
+export const ACTION_ABOUT_DOCUMENT = 'aboutDocument';
+export const ACTION_DOWNLOAD_SELECTED = 'downloadSelected';
+// Standard actions:
+export const ACTION_NEW_DOCUMENT = 'new';
+export const ACTION_OPEN_ADVANCED_EDIT = 'advancedEdit';
+export const ACTION_CLONE_DOCUMENT = 'clone';
+export const ACTION_OPEN_EMAIL = 'email';
+export const ACTION_OPEN_LETTER = 'letter';
+export const ACTION_OPEN_PRINT_RAPORT = 'print';
+export const ACTION_DELETE_DOCUMENT = 'delete';
+export const ACTION_OPEN_COMMENTS = 'comments';
+
 const simplifyName = (name) => name.toLowerCase().replace(/\s/g, '');
 
-/**
- * @file Class based component.
- * @module SubHeader
- * @extends Component
- */
+/** The Actions Menu (ALT-1) */
 class SubHeader extends Component {
   state = {
     pdfSrc: null,
@@ -39,11 +49,6 @@ class SubHeader extends Component {
     }
   }
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method.
-   * @param {*} e
-   */
   handleKeyDown = (e) => {
     const { closeSubheader } = this.props;
 
@@ -102,11 +107,6 @@ class SubHeader extends Component {
     }
   };
 
-  /**
-   * @method handleClickOutside
-   * @summary ToDo: Describe the method.
-   * @param {*} e
-   */
   handleClickOutside = (event) => {
     const { closeSubheader } = this.props;
     const { target } = event;
@@ -119,19 +119,6 @@ class SubHeader extends Component {
     }
   };
 
-  /**
-   * @method toggleAttachmentDelete
-   * @summary ToDo: Describe the method.
-   * @param {*} value
-   */
-  toggleAttachmentDelete = (value) => {
-    this.setState({ attachmentHovered: value });
-  };
-
-  /**
-   * @method getColumnActiveElem
-   * @summary ToDo: Describe the method.
-   */
   getColumnActiveElem = () => {
     const active = document.activeElement;
     if (active.classList.contains('js-subheader-item')) {
@@ -141,10 +128,6 @@ class SubHeader extends Component {
     }
   };
 
-  /**
-   * @method getItemActiveElem
-   * @summary ToDo: Describe the method.
-   */
   getItemActiveElem = () => {
     const active = document.activeElement;
 
@@ -155,371 +138,53 @@ class SubHeader extends Component {
     }
   };
 
-  /**
-   * @method handleUpdateBreadcrumb
-   * @summary ToDo: Describe the method.
-   * @param {*} nodes
-   */
-  handleUpdateBreadcrumb = (nodes) => {
-    const { dispatch } = this.props;
-    nodes.map((node) => dispatch(updateBreadcrumb(node)));
-  };
-
-  /**
-   * @method handleDownloadSelected
-   * @summary ToDo: Describe the method.
-   * @param {*} event
-   */
-  handleDownloadSelected = (event) => {
-    if (this.props.selected.length === 0) {
-      event.preventDefault();
-    }
-  };
-
-  /**
-   * @method handleAboutButton
-   * @summary ToDo: Describe the method.
-   */
-  handleAboutButton = () => {
-    const { selected, activeTab, windowId, openModalRow, openModal } =
-      this.props;
-
-    if (selected && selected.length) {
-      openModalRow(
-        windowId,
-        'static',
-        counterpart.translate('window.about.caption'),
-        activeTab,
-        selected,
-        'about'
-      );
-    } else {
-      openModal(
-        windowId,
-        'static',
-        counterpart.translate('window.about.caption'),
-        null,
-        null,
-        null,
-        null,
-        'about'
-      );
-    }
-  };
-
-  /**
-   * @method renderDocLink
-   * @summary ToDo: Describe the method.
-   * @param {*} action
-   * @param {*} handler
-   * @param {*} icon
-   * @param {*} caption
-   * @param {*} hotkey
-   */
-  renderDocLink = ({ action, handler, icon, caption, hotkey }) => {
-    const { closeSubheader } = this.props;
-
-    return (
-      <div
-        id={`subheaderNav_${simplifyName(caption)}`}
-        key={action}
-        className="subheader-item js-subheader-item"
-        tabIndex={0}
-        onClick={() => {
-          handler();
-          closeSubheader();
-        }}
-      >
-        <i className={icon} />
-
-        {caption}
-
-        <span className="tooltip-inline">{hotkey}</span>
-      </div>
-    );
-  };
-
-  /**
-   * @method renderDocLinks
-   * @summary ToDo: Describe the method.
-   */
-  renderDocLinks = () => {
+  render() {
     const {
-      dataId,
-      docNo,
-      handleClone,
-      handleDelete,
-      handleEmail,
-      handleLetter,
-      handlePrint,
-      openModal,
-      handleComments,
-      standardActions,
       windowId,
-    } = this.props;
-
-    if (!dataId) {
-      return false;
-    }
-
-    const docLinks = [
-      {
-        action: 'advancedEdit',
-        handler: () => {
-          openModal(
-            windowId,
-            'window',
-            counterpart.translate('window.advancedEdit.caption'),
-            true
-          );
-        },
-        icon: 'meta-icon-edit',
-        caption: counterpart.translate('window.advancedEdit.caption'),
-        hotkey: keymap.OPEN_ADVANCED_EDIT,
-      },
-      {
-        action: 'clone',
-        handler: () => {
-          handleClone(windowId, dataId);
-        },
-        icon: 'meta-icon-duplicate',
-        caption: counterpart.translate('window.clone.caption'),
-        hotkey: keymap.CLONE_DOCUMENT,
-      },
-      {
-        action: 'email',
-        handler: () => {
-          handleEmail();
-        },
-        icon: 'meta-icon-mail',
-        caption: counterpart.translate('window.email.caption'),
-        hotkey: keymap.OPEN_EMAIL,
-      },
-      {
-        action: 'letter',
-        handler: () => {
-          handleLetter();
-        },
-        icon: 'meta-icon-letter',
-        caption: counterpart.translate('window.letter.caption'),
-        hotkey: keymap.OPEN_LETTER,
-      },
-      {
-        action: 'print',
-        handler: () => {
-          handlePrint(windowId, dataId, docNo);
-        },
-        icon: 'meta-icon-print',
-        caption: counterpart.translate('window.Print.caption'),
-        hotkey: keymap.OPEN_PRINT_RAPORT,
-      },
-      {
-        action: 'delete',
-        handler: () => {
-          handleDelete();
-        },
-        icon: 'meta-icon-delete',
-        caption: counterpart.translate('window.Delete.caption'),
-        hotkey: keymap.DELETE_DOCUMENT,
-      },
-      {
-        action: 'comments',
-        handler: handleComments,
-        icon: 'meta-icon-message',
-        caption: counterpart.translate('window.comments.caption'),
-        hotkey: keymap.OPEN_COMMENTS,
-      },
-    ]
-      .filter((docLink) =>
-        standardActions.find((action) => action === docLink.action)
-      )
-      .map((docLink) => {
-        return this.renderDocLink(docLink);
-      });
-
-    return docLinks;
-  };
-
-  /**
-   * @method renderNavColumn
-   * @summary ToDo: Describe the method.
-   */
-  renderNavColumn = () => {
-    const {
-      closeSubheader,
+      viewId,
       dataId,
       editmode,
-      handleEditModeToggle,
-      viewId,
-      redirect,
       selected,
       siteName,
-      windowId,
-    } = this.props;
-    const { elementPath } = this.state;
-
-    let currentNode = elementPath;
-    if (currentNode && currentNode.children) {
-      do {
-        currentNode = currentNode.children[currentNode.children.length - 1];
-      } while (
-        currentNode &&
-        currentNode.children &&
-        currentNode.type !== 'window'
-      );
-    }
-    const editModeText = editmode
-      ? counterpart.translate('window.closeEditMode')
-      : counterpart.translate('window.openEditMode');
-
-    return (
-      <div className="subheader-column js-subheader-column" tabIndex={0}>
-        <div className="subheader-header">
-          <BookmarkButton
-            isBookmark={currentNode && currentNode.favorite}
-            nodeId={currentNode && currentNode.nodeId}
-            transparentBookmarks={!!siteName}
-            onUpdateData={this.handleUpdateBreadcrumb}
-          >
-            <span
-              title={currentNode ? currentNode.caption : siteName}
-              className="subheader-title"
-            >
-              {currentNode ? currentNode.caption : siteName}
-            </span>
-          </BookmarkButton>
-        </div>
-
-        <div className="subheader-break" />
-
-        {windowId && (
-          <div
-            id={`subheaderNav_${simplifyName(
-              counterpart.translate('window.new.caption')
-            )}`}
-            className="subheader-item js-subheader-item"
-            tabIndex={0}
-            onClick={() => {
-              redirect('/window/' + windowId + '/new');
-              closeSubheader();
-            }}
-          >
-            <i className="meta-icon-report-1" />
-
-            {counterpart.translate('window.new.caption')}
-
-            <span className="tooltip-inline">{keymap.NEW_DOCUMENT}</span>
-          </div>
-        )}
-
-        {dataId || (windowId && selected.length === 1) ? (
-          <div
-            id={`subheaderNav_${simplifyName(
-              counterpart.translate('window.about.caption')
-            )}`}
-            className="subheader-item js-subheader-item"
-            tabIndex={0}
-            onClick={this.handleAboutButton}
-          >
-            <i className="meta-icon-more" />
-
-            {counterpart.translate('window.about.caption')}
-
-            <span className="tooltip-inline">{keymap.ABOUT_DOCUMENT}</span>
-          </div>
-        ) : null}
-
-        {windowId && viewId && (
-          <a
-            className="subheader-item js-subheader-item"
-            href={`${
-              config.API_URL
-            }/documentView/${windowId}/${viewId}/export/excel?selectedIds=${selected.join(
-              ','
-            )}`}
-            download
-            onClick={this.handleDownloadSelected}
-            style={{
-              opacity: selected.length === 0 ? '0.5' : 1,
-            }}
-          >
-            {counterpart.translate('window.downloadSelected.caption')}
-            {selected.length === 0 &&
-              ` (${counterpart.translate(
-                'window.downloadSelected.nothingSelected'
-              )})`}
-          </a>
-        )}
-        {this.renderDocLinks()}
-        {editmode !== undefined && (
-          <div
-            id={`subheaderNav_${simplifyName(editModeText)}`}
-            key={editmode}
-            className="subheader-item js-subheader-item"
-            tabIndex={0}
-            onClick={() => {
-              handleEditModeToggle();
-              closeSubheader();
-            }}
-          >
-            <i className="meta-icon-settings" />
-            {editModeText}
-            <span className="tooltip-inline">{keymap.TOGGLE_EDIT_MODE}</span>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  /**
-   * @method renderActionsColumn
-   * @summary ToDo: Describe the method.
-   */
-  renderActionsColumn = () => {
-    const {
-      windowId,
-      viewId,
-      dataId,
-      selected,
       entity,
       openModal,
       openModalRow,
       closeSubheader,
       notfound,
-      activeTab,
+      activeTabId,
     } = this.props;
-
-    return (
-      <Actions
-        key={1}
-        windowType={windowId}
-        viewId={viewId}
-        entity={entity}
-        openModal={openModal}
-        openModalRow={openModalRow}
-        closeSubheader={closeSubheader}
-        notfound={notfound}
-        docId={dataId ? dataId : viewId}
-        selected={selected}
-        activeTab={activeTab}
-      />
-    );
-  };
-
-  setRef = (ref) => (this.subHeader = ref);
-
-  render() {
+    const { onMenuItemAction } = this.props;
+    const { elementPath } = this.state;
     return (
       <div
         className="subheader-container overlay-shadow subheader-open js-not-unselect"
         tabIndex={0}
         onKeyDown={this.handleKeyDown}
-        ref={this.setRef}
       >
         <div className="container-fluid-subheader container-fluid">
           <div className="subheader-row">
-            {this.renderNavColumn()}
-            {this.renderActionsColumn()}
+            <MenuNavigationColumn
+              windowId={windowId}
+              viewId={viewId}
+              dataId={dataId}
+              editmode={editmode}
+              selected={selected}
+              siteName={siteName}
+              elementPath={elementPath ? elementPath : null}
+              onAction={onMenuItemAction}
+            />
+            <Actions
+              windowType={windowId}
+              viewId={viewId}
+              entity={entity}
+              openModal={openModal}
+              openModalRow={openModalRow}
+              closeSubheader={closeSubheader}
+              notfound={notfound}
+              docId={dataId ? dataId : viewId}
+              selected={selected}
+              activeTab={activeTabId}
+            />
           </div>
         </div>
       </div>
@@ -527,70 +192,290 @@ class SubHeader extends Component {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {func} activeTab
- * @prop {*} closeSubheader
- * @prop {*} dataId
- * @prop {string} dispatch
- * @prop {*} docNo
- * @prop {*} editmode
- * @prop {*} entity
- * @prop {*} handleClone
- * @prop {*} handleDelete
- * @prop {*} handleEmail
- * @prop {*} handleLetter
- * @prop {*} handleEditModeToggle
- * @prop {*} handlePrint
- * @prop {*} notfound
- * @prop {func} openModal
- * @prop {func} openModalRow
- * @prop {*} viewId
- * @prop {*} redirect
- * @prop {*} selected
- * @prop {*} siteName
- * @prop {*} standardActions
- * @prop {string} viewId
- * @prop {string} windowId
- */
 SubHeader.propTypes = {
-  activeTab: PropTypes.string,
+  activeTabId: PropTypes.string,
   closeSubheader: PropTypes.any,
   dataId: PropTypes.any,
   dispatch: PropTypes.func.isRequired,
-  docNo: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,
-  handleClone: PropTypes.any,
-  handleDelete: PropTypes.any,
-  handleEmail: PropTypes.any,
-  handleComments: PropTypes.func,
-  handleLetter: PropTypes.any,
-  handleEditModeToggle: PropTypes.any,
-  handlePrint: PropTypes.any,
+  onMenuItemAction: PropTypes.func.isRequired,
   notfound: PropTypes.any,
   openModal: PropTypes.func,
   openModalRow: PropTypes.func,
   viewId: PropTypes.string,
-  redirect: PropTypes.any,
   selected: PropTypes.any,
   siteName: PropTypes.any,
-  standardActions: PropTypes.any,
   windowId: PropTypes.string,
 };
 
 const mapStateToProps = (state, props) => {
   const { windowId, documentId, viewId } = props;
-  const activeTab = state.windowHandler.master.layout.activeTab;
-  const tabId = activeTab ? activeTab : null;
-  const tableId = getTableId({ windowId, viewId, tabId, docId: documentId });
+  const activeTabId = state.windowHandler.master.layout.activeTab ?? null;
+  const tableId = getTableId({
+    windowId,
+    viewId,
+    tabId: activeTabId,
+    docId: documentId,
+  });
   const selector = getSelection();
 
   return {
-    standardActions: state.windowHandler.master.standardActions,
     selected: selector(state, tableId),
-    activeTab: tabId,
+    activeTabId,
   };
 };
 
 export default connect(mapStateToProps)(onClickOutside(SubHeader));
+
+//
+//
+//
+//
+//
+
+const MenuNavigationColumn = ({
+  windowId,
+  viewId,
+  dataId,
+  editmode,
+  selected,
+  siteName,
+  elementPath,
+  onAction,
+}) => {
+  const standardActions = useSelector(
+    (state) => state.windowHandler.master.standardActions
+  );
+
+  let currentNode = elementPath;
+  if (currentNode && currentNode.children) {
+    do {
+      currentNode = currentNode.children[currentNode.children.length - 1];
+    } while (
+      currentNode &&
+      currentNode.children &&
+      currentNode.type !== 'window'
+    );
+  }
+  return (
+    <div className="subheader-column js-subheader-column" tabIndex={0}>
+      <div className="subheader-header">
+        <BookmarkButton
+          isBookmark={currentNode && currentNode.favorite}
+          nodeId={currentNode && currentNode.nodeId}
+          transparentBookmarks={!!siteName}
+          onUpdateData={(data) =>
+            onAction({ action: ACTION_BREADCRUMB_CLICK, payload: data })
+          }
+        >
+          <span
+            title={currentNode ? currentNode.caption : siteName}
+            className="subheader-title"
+          >
+            {currentNode ? currentNode.caption : siteName}
+          </span>
+        </BookmarkButton>
+      </div>
+
+      <div className="subheader-break" />
+
+      <MenuItem
+        action={ACTION_NEW_DOCUMENT}
+        captionKey="window.new.caption"
+        icon="meta-icon-report-1"
+        hotkey={keymap.NEW_DOCUMENT}
+        onAction={onAction}
+        visible={!!windowId}
+      />
+      <MenuItem
+        action={ACTION_ABOUT_DOCUMENT}
+        captionKey="window.about.caption"
+        icon="meta-icon-more"
+        hotkey={keymap.ABOUT_DOCUMENT}
+        onAction={onAction}
+        visible={dataId || (windowId && selected.length === 1)}
+      />
+      <DownloadSelectedMenuItem
+        windowId={windowId}
+        viewId={viewId}
+        selected={selected}
+        onAction={onAction}
+      />
+      <DocumentStandardActionMenuItems
+        enabledActions={standardActions}
+        onAction={onAction}
+        visible={!!windowId && !!dataId}
+      />
+      <MenuItem
+        action={ACTION_TOGGLE_EDIT_MODE}
+        captionKey={editmode ? 'window.closeEditMode' : 'window.openEditMode'}
+        icon="meta-icon-settings"
+        hotkey={keymap.TOGGLE_EDIT_MODE}
+        onAction={onAction}
+        visible={editmode !== undefined}
+      />
+    </div>
+  );
+};
+MenuNavigationColumn.propTypes = {
+  windowId: PropTypes.string,
+  viewId: PropTypes.string,
+  dataId: PropTypes.string,
+  editmode: PropTypes.bool,
+  selected: PropTypes.array,
+  siteName: PropTypes.string,
+  elementPath: PropTypes.object,
+  onAction: PropTypes.func.isRequired,
+};
+
+//
+//
+//
+//
+//
+
+const DocumentStandardActionMenuItems = ({
+  enabledActions,
+  visible = true,
+  onAction,
+}) => {
+  if (!visible || !enabledActions || enabledActions.length <= 0) return null;
+
+  return [
+    {
+      action: ACTION_OPEN_ADVANCED_EDIT,
+      icon: 'meta-icon-edit',
+      captionKey: 'window.advancedEdit.caption',
+      hotkey: keymap.OPEN_ADVANCED_EDIT,
+    },
+    {
+      action: ACTION_CLONE_DOCUMENT,
+      icon: 'meta-icon-duplicate',
+      captionKey: 'window.clone.caption',
+      hotkey: keymap.CLONE_DOCUMENT,
+    },
+    {
+      action: ACTION_OPEN_EMAIL,
+      icon: 'meta-icon-mail',
+      captionKey: 'window.email.caption',
+      hotkey: keymap.OPEN_EMAIL,
+    },
+    {
+      action: ACTION_OPEN_LETTER,
+      icon: 'meta-icon-letter',
+      captionKey: 'window.letter.caption',
+      hotkey: keymap.OPEN_LETTER,
+    },
+    {
+      action: ACTION_OPEN_PRINT_RAPORT,
+      icon: 'meta-icon-print',
+      captionKey: 'window.Print.caption',
+      hotkey: keymap.OPEN_PRINT_RAPORT,
+    },
+    {
+      action: ACTION_DELETE_DOCUMENT,
+      icon: 'meta-icon-delete',
+      captionKey: 'window.Delete.caption',
+      hotkey: keymap.DELETE_DOCUMENT,
+    },
+    {
+      action: ACTION_OPEN_COMMENTS,
+      icon: 'meta-icon-message',
+      captionKey: 'window.comments.caption',
+      hotkey: keymap.OPEN_COMMENTS,
+    },
+  ].map(({ action, icon, captionKey, hotkey }) => (
+    <MenuItem
+      key={action}
+      action={action}
+      captionKey={captionKey}
+      icon={icon}
+      hotkey={hotkey}
+      visible={enabledActions.find((action) => action === action)}
+      onAction={onAction}
+    />
+  ));
+};
+DocumentStandardActionMenuItems.propTypes = {
+  enabledActions: PropTypes.array,
+  visible: PropTypes.bool,
+  onAction: PropTypes.func.isRequired,
+};
+
+//
+//
+//
+//
+//
+
+const MenuItem = ({
+  action,
+  captionKey,
+  caption: captionParam,
+  icon,
+  hotkey,
+  visible = true,
+  onAction,
+}) => {
+  if (!visible) return null;
+
+  const caption = captionParam ?? counterpart.translate(captionKey);
+
+  return (
+    <div
+      id={`subheaderNav_${simplifyName(caption)}`}
+      key={action}
+      className="subheader-item js-subheader-item"
+      tabIndex={0}
+      onClick={() => onAction({ action: action })}
+    >
+      <i className={icon} />
+      {caption}
+      <span className="tooltip-inline">{hotkey}</span>
+    </div>
+  );
+};
+MenuItem.propTypes = {
+  action: PropTypes.string.isRequired,
+  captionKey: PropTypes.string,
+  caption: PropTypes.string,
+  icon: PropTypes.string,
+  hotkey: PropTypes.string,
+  visible: PropTypes.any,
+  onAction: PropTypes.func.isRequired,
+};
+
+//
+//
+//
+//
+//
+
+const DownloadSelectedMenuItem = ({ windowId, viewId, selected, onAction }) => {
+  if (!windowId || !viewId) return null;
+
+  const hasSelection = selected && selected?.length > 0;
+  if (!hasSelection) return null;
+
+  return (
+    <a
+      className="subheader-item js-subheader-item"
+      href={`${
+        config.API_URL
+      }/documentView/${windowId}/${viewId}/export/excel?selectedIds=${selected.join(
+        ','
+      )}`}
+      download
+      onClick={() => onAction({ action: ACTION_DOWNLOAD_SELECTED })}
+    >
+      {counterpart.translate('window.downloadSelected.caption')}
+    </a>
+  );
+};
+DownloadSelectedMenuItem.propTypes = {
+  windowId: PropTypes.string,
+  viewId: PropTypes.string,
+  selected: PropTypes.array,
+  onAction: PropTypes.func,
+};

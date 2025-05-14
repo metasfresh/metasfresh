@@ -110,8 +110,8 @@ public interface I_AD_Tab
 	String COLUMNNAME_AD_ColumnSortYesNo_ID = "AD_ColumnSortYesNo_ID";
 
 	/**
-	 * Set System-Element.
-	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 * Set System Element.
+	 * System Element enables the central maintenance of column description and help.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -120,8 +120,8 @@ public interface I_AD_Tab
 	void setAD_Element_ID (int AD_Element_ID);
 
 	/**
-	 * Get System-Element.
-	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 * Get System Element.
+	 * System Element enables the central maintenance of column description and help.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -137,7 +137,7 @@ public interface I_AD_Tab
 	String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
 
 	/**
-	 * Set Bild.
+	 * Set Image.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -147,7 +147,7 @@ public interface I_AD_Tab
 	void setAD_Image_ID (int AD_Image_ID);
 
 	/**
-	 * Get Bild.
+	 * Get Image.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -235,7 +235,7 @@ public interface I_AD_Tab
 	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Register.
+	 * Set Tab.
 	 * Tab within a Window
 	 *
 	 * <br>Type: ID
@@ -245,7 +245,7 @@ public interface I_AD_Tab
 	void setAD_Tab_ID (int AD_Tab_ID);
 
 	/**
-	 * Get Register.
+	 * Get Tab.
 	 * Tab within a Window
 	 *
 	 * <br>Type: ID
@@ -307,7 +307,7 @@ public interface I_AD_Tab
 	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
-	 * Set Schnelleingabe abschalten.
+	 * Set Allow Quick Input.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -316,7 +316,7 @@ public interface I_AD_Tab
 	void setAllowQuickInput (boolean AllowQuickInput);
 
 	/**
-	 * Get Schnelleingabe abschalten.
+	 * Get Allow Quick Input.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -328,7 +328,7 @@ public interface I_AD_Tab
 	String COLUMNNAME_AllowQuickInput = "AllowQuickInput";
 
 	/**
-	 * Set Speicherwarnung.
+	 * Set Commit Warning.
 	 * Warning displayed when saving
 	 *
 	 * <br>Type: Text
@@ -338,7 +338,7 @@ public interface I_AD_Tab
 	void setCommitWarning (@Nullable java.lang.String CommitWarning);
 
 	/**
-	 * Get Speicherwarnung.
+	 * Get Commit Warning.
 	 * Warning displayed when saving
 	 *
 	 * <br>Type: Text
@@ -420,7 +420,7 @@ public interface I_AD_Tab
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Anzeigelogik.
+	 * Set Display Logic.
 	 * If the Field is displayed, the result determines if the field is actually displayed
 	 *
 	 * <br>Type: String
@@ -430,7 +430,7 @@ public interface I_AD_Tab
 	void setDisplayLogic (@Nullable java.lang.String DisplayLogic);
 
 	/**
-	 * Get Anzeigelogik.
+	 * Get Display Logic.
 	 * If the Field is displayed, the result determines if the field is actually displayed
 	 *
 	 * <br>Type: String
@@ -443,9 +443,8 @@ public interface I_AD_Tab
 	String COLUMNNAME_DisplayLogic = "DisplayLogic";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -454,9 +453,8 @@ public interface I_AD_Tab
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -514,8 +512,8 @@ public interface I_AD_Tab
 	String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Import Fields.
-	 * Create Fields from Table Columns
+	 * Set Create Fields.
+	 * Create Field from Table Column, which do not exist in the Tab yet
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -524,8 +522,8 @@ public interface I_AD_Tab
 	void setImportFields (@Nullable java.lang.String ImportFields);
 
 	/**
-	 * Get Import Fields.
-	 * Create Fields from Table Columns
+	 * Get Create Fields.
+	 * Create Field from Table Column, which do not exist in the Tab yet
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -538,7 +536,7 @@ public interface I_AD_Tab
 
 	/**
 	 * Set Included Tab.
-	 * Included Tab in this Tab (Master Dateail)
+	 * Included Tab in this Tab (Master Detail)
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -548,7 +546,7 @@ public interface I_AD_Tab
 
 	/**
 	 * Get Included Tab.
-	 * Included Tab in this Tab (Master Dateail)
+	 * Included Tab in this Tab (Master Detail)
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -583,6 +581,27 @@ public interface I_AD_Tab
 
 	ModelColumn<I_AD_Tab, Object> COLUMN_IncludedTabNewRecordInputMode = new ModelColumn<>(I_AD_Tab.class, "IncludedTabNewRecordInputMode", null);
 	String COLUMNNAME_IncludedTabNewRecordInputMode = "IncludedTabNewRecordInputMode";
+
+	/**
+	 * Set Include filters.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncludeFiltersStrategy (@Nullable java.lang.String IncludeFiltersStrategy);
+
+	/**
+	 * Get Include filters.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncludeFiltersStrategy();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_IncludeFiltersStrategy = new ModelColumn<>(I_AD_Tab.class, "IncludeFiltersStrategy", null);
+	String COLUMNNAME_IncludeFiltersStrategy = "IncludeFiltersStrategy";
 
 	/**
 	 * Set Internal Name.
@@ -652,6 +671,27 @@ public interface I_AD_Tab
 
 	ModelColumn<I_AD_Tab, Object> COLUMN_IsAdvancedTab = new ModelColumn<>(I_AD_Tab.class, "IsAdvancedTab", null);
 	String COLUMNNAME_IsAdvancedTab = "IsAdvancedTab";
+
+	/**
+	 * Set Autodetect Default Date Filter .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutodetectDefaultDateFilter (boolean IsAutodetectDefaultDateFilter);
+
+	/**
+	 * Get Autodetect Default Date Filter .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutodetectDefaultDateFilter();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_IsAutodetectDefaultDateFilter = new ModelColumn<>(I_AD_Tab.class, "IsAutodetectDefaultDateFilter", null);
+	String COLUMNNAME_IsAutodetectDefaultDateFilter = "IsAutodetectDefaultDateFilter";
 
 	/**
 	 * Set Check Parents Changed.
@@ -767,8 +807,8 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsQueryOnLoad = "IsQueryOnLoad";
 
 	/**
-	 * Set Schreibgeschützt.
-	 * Field is read only
+	 * Set readonly.
+	 * Feld / Eintrag / Berecih ist schreibgeschützt
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -777,8 +817,8 @@ public interface I_AD_Tab
 	void setIsReadOnly (boolean IsReadOnly);
 
 	/**
-	 * Get Schreibgeschützt.
-	 * Field is read only
+	 * Get readonly.
+	 * Feld / Eintrag / Berecih ist schreibgeschützt
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -790,8 +830,8 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsReadOnly = "IsReadOnly";
 
 	/**
-	 * Set Refresh All On Activate.
-	 * Refresh all rows when user activates this tab, instead of refreshing only current row
+	 * Set Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -800,8 +840,8 @@ public interface I_AD_Tab
 	void setIsRefreshAllOnActivate (boolean IsRefreshAllOnActivate);
 
 	/**
-	 * Get Refresh All On Activate.
-	 * Refresh all rows when user activates this tab, instead of refreshing only current row
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -924,7 +964,7 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsSortTab = "IsSortTab";
 
 	/**
-	 * Set Übersetzungsregister.
+	 * Set TranslationTab.
 	 * This Tab contains translation information
 	 *
 	 * <br>Type: YesNo
@@ -934,7 +974,7 @@ public interface I_AD_Tab
 	void setIsTranslationTab (boolean IsTranslationTab);
 
 	/**
-	 * Get Übersetzungsregister.
+	 * Get TranslationTab.
 	 * This Tab contains translation information
 	 *
 	 * <br>Type: YesNo
@@ -947,8 +987,8 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsTranslationTab = "IsTranslationTab";
 
 	/**
-	 * Set Max. Suchergebnisse.
-	 * Wenn definiert können Suie nicht mehr Suchergebnisse abfragen - die Suchbedingungen müssen verändert werden, um eine geringere Anzahl zu erhalten
+	 * Set Max Query Records.
+	 * If defined, you cannot query more records as defined - the query criteria needs to be changed to query less records
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -957,8 +997,8 @@ public interface I_AD_Tab
 	void setMaxQueryRecords (int MaxQueryRecords);
 
 	/**
-	 * Get Max. Suchergebnisse.
-	 * Wenn definiert können Suie nicht mehr Suchergebnisse abfragen - die Suchbedingungen müssen verändert werden, um eine geringere Anzahl zu erhalten
+	 * Get Max Query Records.
+	 * If defined, you cannot query more records as defined - the query criteria needs to be changed to query less records
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -991,7 +1031,49 @@ public interface I_AD_Tab
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Sql ORDER BY.
+	 * Set Not Found Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNotFound_Message (@Nullable java.lang.String NotFound_Message);
+
+	/**
+	 * Get Not Found Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNotFound_Message();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_NotFound_Message = new ModelColumn<>(I_AD_Tab.class, "NotFound_Message", null);
+	String COLUMNNAME_NotFound_Message = "NotFound_Message";
+
+	/**
+	 * Set Not Found Message Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNotFound_MessageDetail (@Nullable java.lang.String NotFound_MessageDetail);
+
+	/**
+	 * Get Not Found Message Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNotFound_MessageDetail();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_NotFound_MessageDetail = new ModelColumn<>(I_AD_Tab.class, "NotFound_MessageDetail", null);
+	String COLUMNNAME_NotFound_MessageDetail = "NotFound_MessageDetail";
+
+	/**
+	 * Set SQL ORDER BY.
 	 * Fully qualified ORDER BY clause
 	 *
 	 * <br>Type: String
@@ -1001,7 +1083,7 @@ public interface I_AD_Tab
 	void setOrderByClause (@Nullable java.lang.String OrderByClause);
 
 	/**
-	 * Get Sql ORDER BY.
+	 * Get SQL ORDER BY.
 	 * Fully qualified ORDER BY clause
 	 *
 	 * <br>Type: String

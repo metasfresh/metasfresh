@@ -114,6 +114,7 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
 				.language(language)
+				.poReference(invoice.getPOReference())
 				.build();
 	}
 

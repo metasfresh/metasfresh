@@ -36,6 +36,7 @@ import de.metas.common.shipping.v1.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipping.v1.shipment.JsonCreateShipmentRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
@@ -110,7 +111,7 @@ public class ShipmentService
 	private final AttributeSetHelper attributeSetHelper;
 
 	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService,
-			final AttributeSetHelper attributeSetHelper)
+						   final AttributeSetHelper attributeSetHelper)
 	{
 		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
 		this.attributeSetHelper = attributeSetHelper;
@@ -348,7 +349,7 @@ public class ShipmentService
 				shipmentSchedules,
 				request.getQuantityTypeToUse(),
 				false /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */,
-				ImmutableMap.of(),
+				QtyToDeliverMap.EMPTY,
 				true  /* backwards compatibility: true - fail if no picked HUs found*/
 		);
 

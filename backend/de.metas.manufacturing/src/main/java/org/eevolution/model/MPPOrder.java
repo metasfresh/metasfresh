@@ -41,6 +41,7 @@ import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidationEngine;
@@ -59,6 +60,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.validator.PPOrderChangedEventFactory;
+import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -119,7 +121,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// FIXME: do we still need this?
 		// Update DB:
 		final String sql = "UPDATE PP_Order SET Processed=? WHERE PP_Order_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { processed, get_ID() }, get_TrxName());
 	}
 
 	@Override
@@ -286,6 +288,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean voidIt()
 	{
+		final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
+		final PPOrderChangedEventFactory eventFactory = newPpOrderChangedEventFactory();
+
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 
 		//
@@ -332,6 +337,14 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Update document status and return true
 		setProcessed(true);
 		setDocAction(IDocument.ACTION_None);
+
+		// reset candidate
+		ppOrderCandidateService.resetByPPOrderId(PPOrderId.ofRepoId(getPP_Order_ID()));
+
+		final PPOrderChangedEvent changeEvent = eventFactory.inspectPPOrderAfterChange();
+
+		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+		materialEventService.enqueueEventAfterNextCommit(changeEvent);
 		return true;
 	}
 
@@ -340,9 +353,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 
-		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(
-				SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
-				this);
+		final PPOrderChangedEventFactory eventFactory = newPpOrderChangedEventFactory();
 
 		//
 		// Check already closed
@@ -416,6 +427,13 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		return true;
 	}
 
+	private @NonNull PPOrderChangedEventFactory newPpOrderChangedEventFactory()
+	{
+		return PPOrderChangedEventFactory.newWithPPOrderBeforeChange(
+				SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
+				this);
+	}
+
 	@Override
 	public boolean reverseCorrectIt()
 	{
@@ -445,10 +463,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		orderBOMsRepo.markBOMLinesAsNotProcessed(orderId);
 
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
-
 		setDocAction(IDocument.ACTION_Complete);
 		setProcessed(false);
+
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
+
 		return true;
 	} // reActivateIt
 
@@ -479,7 +498,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public String getSummary()
 	{
-		return "" + getDocumentNo() + "/" + getDatePromised();
+		return getDocumentNo() + "/" + getDatePromised();
 	}
 
 	@Override

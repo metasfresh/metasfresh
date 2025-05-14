@@ -1,4 +1,7 @@
 .window-indicator-container {
+  flex-grow: 0;
+  flex-shrink: 0;
+  
   .bar {
     height: 2px;
   }

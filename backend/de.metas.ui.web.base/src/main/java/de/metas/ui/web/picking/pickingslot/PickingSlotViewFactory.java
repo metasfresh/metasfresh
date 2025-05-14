@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -15,12 +14,14 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ForcePickToComputedHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ForcePickToExistingHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ForcePickToNewHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Source_HU_Delete;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToComputedHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToExistingHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToNewHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_RemoveHUFromPickingSlot;
@@ -35,6 +36,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -214,9 +216,11 @@ public class PickingSlotViewFactory implements IViewFactory
 
 				// fine-picking related processes
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToNewHU.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToComputedHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToExistingHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ReturnQtyToSourceHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ForcePickToNewHU.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ForcePickToComputedHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ForcePickToExistingHU.class),
 
 				// note that WEBUI_Picking_M_Source_HU_Create is called from the HU-editor

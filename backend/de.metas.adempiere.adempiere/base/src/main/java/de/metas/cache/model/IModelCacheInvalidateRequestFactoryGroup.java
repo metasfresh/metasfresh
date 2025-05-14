@@ -31,5 +31,5 @@ public interface IModelCacheInvalidateRequestFactoryGroup
 {
 	TableNamesGroup getTableNamesToEnableRemoveCacheInvalidation();
 
-	Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull String tableName);
+	Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull String tableName, @NonNull ModelCacheInvalidationTiming timing);
 }

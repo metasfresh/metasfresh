@@ -35,6 +35,7 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;

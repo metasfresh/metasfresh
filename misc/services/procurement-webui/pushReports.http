@@ -1,0 +1,9 @@
+# there is a button in intellij to copy this as curl commend to the clipboard
+
+###
+{{baseURL}}/rest/metasfreshSync/pushReports?dateFrom=2025-02-01&dateTo=9999-12-31
+apiKey: {{procurement-webui-authToken}}
+
+###
+http://localhost:8082/rest/metasfreshSync/pushReports?dateFrom=2025-02-12&dateTo=2025-02-12&bpartnerId=134
+apiKey: {{procurement-webui-authToken}}

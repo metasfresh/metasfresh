@@ -99,12 +99,19 @@ public class StepDefUtil
 		Thread.sleep(waitingTimeMillis);
 	}
 
+	/**
+	 * Waits for the given {@code worker} to supply an optional that is present.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 *
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	@Deprecated
 	public <T> T tryAndWaitForItem(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
 			@NonNull final ItemProvider<T> worker) throws InterruptedException
 	{
-		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
 
 	public <T> T tryAndWaitForItem(
@@ -256,6 +263,11 @@ public class StepDefUtil
 		return ItemFetcherExecutor.<T>builder().query(query);
 	}
 
+	public <T> ItemFetcherExecutor.ItemFetcherExecutorBuilder<T> tryAndWaitForData(@NonNull final Supplier<T> dataSupplier)
+	{
+		return ItemFetcherExecutor.<T>builder().dataSupplier(dataSupplier);
+	}
+
 	static long getMaxWaitSecondsEffective(final long maxWaitSecondsParam)
 	{
 		final Long sys_maxWaitSeconds = getSysMaxWaitSeconds().orElse(null);
@@ -335,7 +347,7 @@ public class StepDefUtil
 			throw e;
 		}
 	}
-	
+
 	public List<String> splitByColon(@NonNull final String s)
 	{
 		return Arrays.asList(s.split(":"));

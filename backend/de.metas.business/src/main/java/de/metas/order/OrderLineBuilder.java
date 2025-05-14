@@ -2,6 +2,7 @@ package de.metas.order;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -71,12 +72,17 @@ public class OrderLineBuilder
 
 	private ProductId productId;
 	private AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
+	@Nullable private HUPIItemProductId piItemProductId;
 	private Quantity qty;
 
-	@Nullable private BigDecimal manualPrice;
+	@Nullable
+	private BigDecimal manualPrice;
+	@Nullable
+	private UomId manualPriceUomId;
 	private BigDecimal manualDiscount;
 
-	@Nullable private String description;
+	@Nullable
+	private String description;
 
 	private boolean hideWhenPrinting;
 
@@ -103,6 +109,10 @@ public class OrderLineBuilder
 
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
+		if (piItemProductId != null)
+		{
+			orderLine.setM_HU_PI_Item_Product_ID(piItemProductId.getRepoId());
+		}
 
 		orderLine.setQtyEntered(qty.toBigDecimal());
 		orderLine.setC_UOM_ID(qty.getUomId().getRepoId());
@@ -125,6 +135,11 @@ public class OrderLineBuilder
 		if (dimension != null)
 		{
 			dimensionService.updateRecord(orderLine, dimension);
+		}
+
+		if (manualPriceUomId != null)
+		{
+			orderLine.setPrice_UOM_ID(manualPriceUomId.getRepoId());
 		}
 
 		orderLineBL.updatePrices(orderLine);
@@ -166,16 +181,23 @@ public class OrderLineBuilder
 		}
 	}
 
-	private OrderFactory getParent() { return parent; }
+	private OrderFactory getParent() {return parent;}
 
-	public OrderFactory endOrderLine() { return getParent(); }
+	public OrderFactory endOrderLine() {return getParent();}
 
-	public OrderAndLineId getCreatedOrderAndLineId() { return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID()); }
+	public OrderAndLineId getCreatedOrderAndLineId() {return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());}
 
 	public OrderLineBuilder productId(final ProductId productId)
 	{
 		assertNotBuilt();
 		this.productId = productId;
+		return this;
+	}
+
+	public OrderLineBuilder piItemProductId(final HUPIItemProductId piItemProductId)
+	{
+		assertNotBuilt();
+		this.piItemProductId = piItemProductId;
 		return this;
 	}
 
@@ -226,6 +248,13 @@ public class OrderLineBuilder
 	{
 		assertNotBuilt();
 		this.manualPrice = manualPrice;
+		return this;
+	}
+
+	public OrderLineBuilder manualPriceUomId(@Nullable final UomId manualPriceUomId)
+	{
+		assertNotBuilt();
+		this.manualPriceUomId = manualPriceUomId;
 		return this;
 	}
 

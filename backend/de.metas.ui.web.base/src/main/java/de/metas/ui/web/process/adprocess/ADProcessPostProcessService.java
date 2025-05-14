@@ -4,7 +4,6 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
@@ -31,6 +30,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,13 +42,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.slf4j.Logger;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -372,7 +369,7 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
-						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.NEW_TAB)
 						.build();
 			}
 
@@ -404,7 +401,7 @@ public class ADProcessPostProcessService
 		}
 		//
 		// Close underlying modal view
-		else if(processExecutionResult.isCloseWebuiModalView())
+		else if (processExecutionResult.isCloseWebuiModalView())
 		{
 			return ProcessInstanceResult.CloseViewAction.instance;
 		}
@@ -414,6 +411,16 @@ public class ADProcessPostProcessService
 		{
 			return DisplayQRCodeAction.builder()
 					.code(processExecutionResult.getDisplayQRCode().getCode())
+					.build();
+		}
+		//
+		// New Record action
+		else if (processExecutionResult.getWebuiNewRecord() != null)
+		{
+			return ProcessInstanceResult.NewRecordAction.builder()
+					.windowId(processExecutionResult.getWebuiNewRecord().getWindowId())
+					.fieldValues(processExecutionResult.getWebuiNewRecord().getFieldValues())
+					.targetTab(processExecutionResult.getWebuiNewRecord().getTargetTab())
 					.build();
 		}
 		//

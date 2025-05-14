@@ -12,6 +12,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.model.I_PP_Order;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -83,4 +87,14 @@ public class PPOrderCreatedEvent implements MaterialEvent
 				"The given ppOrderCreatedEvent event has a ppOrderLine with ppOrderLineId={}; ppOrderLine={}",
 				ppOrderLineId, ppOrderLine);
 	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_PP_Order.Table_Name, ppOrder.getPpOrderId());
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

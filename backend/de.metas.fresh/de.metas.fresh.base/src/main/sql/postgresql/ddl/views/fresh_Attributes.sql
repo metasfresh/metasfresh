@@ -17,7 +17,11 @@ FROM (
                                                                                                           THEN (SELECT mt.lot
                                                                                                                 FROM m_material_tracking mt
                                                                                                                 WHERE mt.m_material_tracking_id = ai.value::numeric)
-                                                                                                          ELSE av.Name -- default
+                    ELSE (
+                        CASE
+                            WHEN av.name IS NOT NULL AND av.IsNullFieldValue = 'N'
+                                THEN COALESCE(NULLIF(TRIM(printvalue_override), ''), av.name)::varchar
+                        END)
                 END                      AS ai_Value,
                 M_AttributeSetInstance_ID,
                 a.Value                  AS at_Value,
@@ -40,5 +44,10 @@ FROM (
 WHERE COALESCE(ai_value, '') != ''
 ;
 
-COMMENT ON VIEW Report.fresh_Attributes IS 'retrieves Attributes in the way they are needed for the jasper reports'
+COMMENT ON VIEW Report.fresh_Attributes IS 'retrieves Attributes in the way they are needed for the jasper reports. 
+    Consider using the function Report.fresh_Attributes(p_M_AttributeSetInstance_ID) instead,
+    because in complex reporting queries this view is known to cause sequential scans on M_AttributeInstance.
+    !! While we have both the view and the function, please keep them in sync !!'
+
+
 ;

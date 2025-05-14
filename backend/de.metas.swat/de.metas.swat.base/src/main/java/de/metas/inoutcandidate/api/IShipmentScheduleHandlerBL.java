@@ -1,16 +1,15 @@
 package de.metas.inoutcandidate.api;
 
-import java.util.Properties;
-import java.util.Set;
-
 import de.metas.inout.ShipmentScheduleId;
-import org.compiere.model.I_C_OrderLine;
-
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_OrderLine;
+
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * This interface declares methods to

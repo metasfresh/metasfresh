@@ -200,7 +200,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public ZonedDateTime getPreparationDate(final I_M_ShipmentSchedule sched)
+	public ZonedDateTime getPreparationDate(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final ZonedDateTime preparationDateOverride = TimeUtil.asZonedDateTime(sched.getPreparationDate_Override());
 		if (preparationDateOverride != null)

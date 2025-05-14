@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import de.metas.util.Check;
+import de.metas.util.MFColor;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -84,10 +85,7 @@ public class ColorValue
 
 	public static String toHexString(final int red, final int green, final int blue)
 	{
-		Check.assume(red >= 0 && red <= 255, "Invalid red value: {}", red);
-		Check.assume(green >= 0 && green <= 255, "Invalid green value: {}", green);
-		Check.assume(blue >= 0 && blue <= 255, "Invalid blue value: {}", blue);
-		return String.format("#%02x%02x%02x", red, green, blue);
+		return MFColor.toHexString(red, green, blue);
 	}
 
 	@JsonValue

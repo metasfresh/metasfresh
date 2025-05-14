@@ -19,6 +19,7 @@ package org.compiere.model;
 import com.google.common.io.BaseEncoding;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
@@ -121,7 +122,7 @@ class PO_LOB implements Serializable
 				.append(m_tableName)
 				.append(" SET ").append(m_columnName)
 				.append("=null WHERE ").append(m_whereClause);
-			int no = DB.executeUpdate(sql.toString(), trxName);
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), trxName);
 			log.debug("save [" + trxName + "] #" + no + " - no data - set to null - " + m_value);
 			if (no == 0)
 				log.warn("[" + trxName + "] - not updated - " + sql);
@@ -130,7 +131,7 @@ class PO_LOB implements Serializable
 
 		final String sql;
 		final Object[] sqlParams;
-		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
+		if(MigrationScriptFileLoggerHolder.isEnabled())
 		{
 			final String valueBase64enc = BaseEncoding.base64().encode((byte[])m_value);
 			sql = "UPDATE " + m_tableName + " SET " + m_columnName + "=DECODE(" + DB.TO_STRING(valueBase64enc) + ", 'base64') WHERE " + m_whereClause;

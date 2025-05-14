@@ -1,7 +1,8 @@
-import { delete as del, get, patch, post } from 'axios';
+import axios, { delete as del, get, patch, post } from 'axios';
 
 import { createPatchRequestPayload, getQueryString } from '../utils';
 import { prepareFilterForBackend } from '../utils/filterHelpers';
+import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
 
 export function getData({
   entity,
@@ -17,7 +18,7 @@ export function getData({
 }) {
   let queryParams = getQueryString({
     advanced: fetchAdvancedFields,
-    orderBy: orderBy,
+    orderBy: orderBy ? toOrderBysCommaSeparatedString(orderBy) : null,
   });
 
   return get(
@@ -72,6 +73,46 @@ export function getViewRowsByIds(windowId, viewId, docIds) {
   );
 }
 
+export const getViewFieldDropdown = ({
+  windowId,
+  viewId,
+  rowId,
+  fieldName,
+}) => {
+  const rowIdEncoded = encodeURIComponent(rowId);
+  return axios.get(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowIdEncoded}/edit/${fieldName}/dropdown`
+  );
+};
+
+export const getViewFieldTypeahead = ({
+  windowId,
+  viewId,
+  rowId,
+  fieldName,
+  query,
+}) => {
+  const rowIdEncoded = encodeURIComponent(rowId);
+  const queryParams = getQueryString({ query });
+  return axios.get(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowIdEncoded}/edit/${fieldName}/typeahead?${queryParams}`
+  );
+};
+
+export const patchModalView = ({
+  windowId,
+  viewId,
+  rowId,
+  fieldName,
+  value,
+}) => {
+  const rowIdEncoded = encodeURIComponent(rowId);
+  return patch(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowIdEncoded}/edit`,
+    createPatchRequestPayload(fieldName, value)
+  ).then((rawResponse) => rawResponse.data);
+};
+
 export function patchRequest({
   // HOTFIX: before refactoring all calls explicity set docId to `null`
   // instead of `undefined` so default value 'NEW' was never used!
@@ -88,7 +129,8 @@ export function patchRequest({
   viewId,
   isEdit,
 }) {
-  let payload =
+  const rowIdEncoded = rowId != null ? encodeURIComponent(rowId) : null;
+  const payload =
     docId !== 'NEW' ? createPatchRequestPayload(property, value) : [];
 
   return patch(
@@ -99,7 +141,7 @@ export function patchRequest({
       (viewId ? '/' + viewId : '') +
       (docId ? '/' + docId : '') +
       (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
+      (rowIdEncoded ? '/' + rowIdEncoded : '') +
       (subentity ? '/' + subentity : '') +
       (subentityId ? '/' + subentityId : '') +
       (isAdvanced ? '?advanced=true' : '') +
@@ -203,20 +245,29 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
   );
 }
 
-/*
- * @method quickActionsRequest
- * @summary Do a request for quick actions
- *
- * @param {string} viewId
- * @param {string} viewProfileId
- * @param {array} selectedIds
- * @param {object} childView
- * @param {object} parentView
- */
-export async function quickActionsRequest({
+/** Fetches all actions to be displayed in top "burger" menu */
+export const allActionsRequest = ({
+  windowId,
+  viewId,
+  viewOrderBy,
+  selectedIds,
+  childViewId,
+  childViewSelectedIds,
+}) => {
+  return post(`${config.API_URL}/documentView/${windowId}/${viewId}/actions`, {
+    viewOrderBy,
+    selectedIds,
+    childViewId,
+    childViewSelectedIds,
+    all: true,
+  });
+};
+
+export function quickActionsRequest({
   windowId,
   viewId,
   viewProfileId,
+  viewOrderBy,
   selectedIds,
   childView,
   parentView,
@@ -225,6 +276,7 @@ export async function quickActionsRequest({
   if (childView && childView.viewId) {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
       childViewId: childView.viewId,
       childViewSelectedIds: childView.selected,
@@ -232,6 +284,7 @@ export async function quickActionsRequest({
   } else if (parentView && parentView.viewId) {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
       parentViewId: parentView.viewId,
       parentViewSelectedIds: parentView.selected,
@@ -239,6 +292,7 @@ export async function quickActionsRequest({
   } else {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
     };
   }
@@ -367,3 +421,35 @@ export function getViewAttributeTypeahead(
     query
   )}`);
 }
+
+export const getViewFilterParameterDropdown = ({
+  windowId,
+  viewId,
+  filterId,
+  parameterName,
+  context = {},
+}) => {
+  return axios.post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/dropdown`,
+    {
+      context,
+    }
+  );
+};
+
+export const getViewFilterParameterTypeahead = ({
+  windowId,
+  viewId,
+  filterId,
+  parameterName,
+  query,
+  context = {},
+}) => {
+  return axios.post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/typeahead`,
+    {
+      query: query,
+      context,
+    }
+  );
+};

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_PrinterHW, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1403843343L;
+	private static final long serialVersionUID = 1613139754L;
 
     /** Standard Constructor */
     public X_AD_PrinterHW (final Properties ctx, final int AD_PrinterHW_ID, @Nullable final String trxName)
@@ -89,6 +89,18 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	}
 
 	@Override
+	public void setIPP_URL (final @Nullable java.lang.String IPP_URL)
+	{
+		set_Value (COLUMNNAME_IPP_URL, IPP_URL);
+	}
+
+	@Override
+	public java.lang.String getIPP_URL() 
+	{
+		return get_ValueAsString(COLUMNNAME_IPP_URL);
+	}
+
+	@Override
 	public void setName (final java.lang.String Name)
 	{
 		set_ValueNoCheck (COLUMNNAME_Name, Name);
@@ -111,6 +123,8 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	public static final String OUTPUTTYPE_Store = "Store";
 	/** Queue = Queue */
 	public static final String OUTPUTTYPE_Queue = "Queue";
+	/** Frontend = Frontend */
+	public static final String OUTPUTTYPE_Frontend = "Frontend";
 	@Override
 	public void setOutputType (final java.lang.String OutputType)
 	{

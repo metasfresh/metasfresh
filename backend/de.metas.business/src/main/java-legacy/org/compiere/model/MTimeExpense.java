@@ -16,6 +16,19 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.Msg;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -26,19 +39,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.Msg;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Services;
 
 /**
  * 	Time + Expense Model
@@ -226,7 +226,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		String sql = "UPDATE S_TimeExpenseLine SET Processed='"
 			+ (processed ? "Y" : "N")
 			+ "' WHERE S_TimeExpense_ID=" + getS_TimeExpense_ID();
-		int noLine = DB.executeUpdate(sql, get_TrxName());
+		int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		m_lines = null;
 		log.debug(processed + " - Lines=" + noLine);
 	}	//	setProcessed
@@ -327,7 +327,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 			return IDocument.STATUS_Invalid;
 
 		//	Std Period open? - AP (Reimbursement) Invoice
-		if (!MPeriod.isOpen(getCtx(), getDateReport(), MDocType.DOCBASETYPE_APInvoice, getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateReport(), DocBaseType.PurchaseInvoice, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;

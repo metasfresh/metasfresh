@@ -2,9 +2,11 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
@@ -14,6 +16,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -126,4 +129,30 @@ public class PickingJobStepPickFromMap
 		return getMainPickFrom().getQtyRejected();
 	}
 
+	@NonNull
+	public List<HuId> getPickedHUIds()
+	{
+		return map.values()
+				.stream()
+				.map(PickingJobStepPickFrom::getPickedTo)
+				.filter(Objects::nonNull)
+				.filter(pickedTo -> pickedTo.getQtyPicked().signum() > 0)
+				.map(PickingJobStepPickedTo::getPickedHuIds)
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Optional<PickingJobStepPickedToHU> getLastPickedHU()
+	{
+		return map.values()
+				.stream()
+				.map(PickingJobStepPickFrom::getPickedTo)
+				.filter(Objects::nonNull)
+				.filter(pickedTo -> pickedTo.getQtyPicked().signum() > 0)
+				.map(PickingJobStepPickedTo::getLastPickedHu)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.max(Comparator.comparing(PickingJobStepPickedToHU::getCreatedAt));
+	}
 }

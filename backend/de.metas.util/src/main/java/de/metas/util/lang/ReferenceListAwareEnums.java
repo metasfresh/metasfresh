@@ -69,8 +69,7 @@ public class ReferenceListAwareEnums
 	{
 		final ReferenceListAwareDescriptor descriptor = getDescriptor(clazz);
 
-		@SuppressWarnings("unchecked")
-		final T enumObj = (T)descriptor.getOfCodeFunction().apply(code);
+		@SuppressWarnings("unchecked") final T enumObj = (T)descriptor.getOfCodeFunction().apply(code);
 
 		return enumObj;
 	}
@@ -79,11 +78,9 @@ public class ReferenceListAwareEnums
 	{
 		if (ReferenceListAwareEnum.class.isAssignableFrom(enumType))
 		{
-			@SuppressWarnings("unchecked")
-			final Class<? extends ReferenceListAwareEnum> referenceListAwareEnumType = (Class<? extends ReferenceListAwareEnum>)enumType;
+			@SuppressWarnings("unchecked") final Class<? extends ReferenceListAwareEnum> referenceListAwareEnumType = (Class<? extends ReferenceListAwareEnum>)enumType;
 
-			@SuppressWarnings("unchecked")
-			final T result = (T)ofCode(code, referenceListAwareEnumType);
+			@SuppressWarnings("unchecked") final T result = (T)ofCode(code, referenceListAwareEnumType);
 
 			return result;
 		}
@@ -108,8 +105,7 @@ public class ReferenceListAwareEnums
 		final Set<ReferenceListAwareEnum> values = descriptor.getValues()
 				.orElseThrow(() -> Check.newException("Cannot extract values for " + clazz));
 
-		@SuppressWarnings("unchecked")
-		final Set<T> retValue = (Set<T>)(values);
+		@SuppressWarnings("unchecked") final Set<T> retValue = (Set<T>)(values);
 		return retValue;
 	}
 
@@ -186,13 +182,33 @@ public class ReferenceListAwareEnums
 					throw Check.mkEx("Field " + field.getName() + " is expected to be static");
 				}
 
-				final int adReferenceId = field.getInt(null);
+				final Class<?> fieldType = field.getType();
+				final int adReferenceId;
+				if (int.class.equals(fieldType) || Integer.class.equals(fieldType))
+				{
+					adReferenceId = field.getInt(null);
+				}
+				// NOTE: because ReferenceId is not available here, we have to use RepoIdAware
+				else if (RepoIdAware.class.isAssignableFrom(fieldType))
+				{
+					final RepoIdAware id = (RepoIdAware)field.get(null);
+					if (id == null)
+					{
+						throw Check.mkEx("Field " + field.getName() + " is expected to be set");
+					}
+					adReferenceId = id.getRepoId();
+				}
+				else
+				{
+					throw Check.mkEx("Field " + field.getName() + " has unsupported type: " + fieldType);
+				}
+
 				if (adReferenceId <= 0)
 				{
 					throw Check.mkEx("Field " + field.getName() + "is expected to have a positive value");
 				}
-
 				return adReferenceId;
+
 			}
 		}
 
@@ -218,14 +234,12 @@ public class ReferenceListAwareEnums
 			final Class<?> returnType = valuesMethod.getReturnType();
 			if (returnType.isArray())
 			{
-				@SuppressWarnings("unchecked")
-				final T[] valuesArr = (T[])invokeStaticMethod(valuesMethod);
+				@SuppressWarnings("unchecked") final T[] valuesArr = (T[])invokeStaticMethod(valuesMethod);
 				return ImmutableSet.copyOf(valuesArr);
 			}
 			else if (Collection.class.isAssignableFrom(returnType))
 			{
-				@SuppressWarnings("unchecked")
-				final Collection<T> valuesCollection = (Collection<T>)invokeStaticMethod(valuesMethod);
+				@SuppressWarnings("unchecked") final Collection<T> valuesCollection = (Collection<T>)invokeStaticMethod(valuesMethod);
 				return ImmutableSet.copyOf(valuesCollection);
 			}
 			else
@@ -304,7 +318,7 @@ public class ReferenceListAwareEnums
 		@Nullable
 		public T ofNullableCode(@Nullable final String code)
 		{
-			return code != null && Check.isNotBlank(code) ? ofCode(code) : null;
+			return Check.isNotBlank(code) ? ofCode(code) : null;
 		}
 
 		public Optional<T> optionalOfNullableCode(@Nullable final String code)
@@ -334,6 +348,12 @@ public class ReferenceListAwareEnums
 				throw Check.mkEx("No " + typeName + " found for code or name: " + code);
 			}
 			return type;
+		}
+
+		@Nullable
+		public T ofNullableCodeOrName(@Nullable final String code)
+		{
+			return code != null && Check.isNotBlank(code) ? ofCodeOrName(code) : null;
 		}
 
 		@NonNull

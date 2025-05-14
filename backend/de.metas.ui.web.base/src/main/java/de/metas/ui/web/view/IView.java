@@ -15,14 +15,13 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -103,6 +102,7 @@ public interface IView
 
 	long size();
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	default boolean isAllowClosingPerUserRequest()
 	{
 		return true;
@@ -121,6 +121,8 @@ public interface IView
 	int getQueryLimit();
 
 	boolean isQueryLimitHit();
+
+	@Nullable default EmptyReason getEmptyReason() {return null;}
 
 	/**
 	 * Invalidate ALL view rows.
@@ -161,9 +163,9 @@ public interface IView
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
+	LookupValuesPage getFilterParameterDropdown(String filterId, String filterParameterName, ViewFilterParameterLookupEvaluationCtx ctx);
 
-	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
+	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, ViewFilterParameterLookupEvaluationCtx ctx);
 
 	/**
 	 * Gets the stick filters.
@@ -220,6 +222,16 @@ public interface IView
 	 * If a {@link IViewRow} was not found for given ID, this method simply ignores it.
 	 */
 	Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds);
+
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
+	
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, DocumentQueryOrderByList orderBys, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
 
 	/**
 	 * Notify the view that given record(s) has changed.

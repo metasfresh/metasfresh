@@ -1,9 +1,6 @@
 import React from 'react';
 import { useWorkplaces } from '../../api/userSession';
 
-export const STATIC_MODAL_TYPE_ChangeCurrentWorkplace =
-  'changeCurrentWorkplace';
-
 const ChangeCurrentWorkplace = () => {
   const {
     isWorkplacesLoading,

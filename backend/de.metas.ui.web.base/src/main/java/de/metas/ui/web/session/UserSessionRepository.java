@@ -105,8 +105,8 @@ public class UserSessionRepository
 		final String adLanguageToSet = fromUser.getAD_Language();
 		if (!Check.isEmpty(adLanguageToSet))
 		{
-			String adLanguageOld = userSession.setAD_Language(adLanguageToSet);
-			String adLanguageNew = userSession.getAD_Language();
+			final String adLanguageOld = userSession.setAD_Language(adLanguageToSet);
+			final String adLanguageNew = userSession.getAD_Language();
 			if (!Objects.equals(adLanguageNew, adLanguageOld))
 			{
 				changesCollector.language(userSession.getLanguageAsJson());

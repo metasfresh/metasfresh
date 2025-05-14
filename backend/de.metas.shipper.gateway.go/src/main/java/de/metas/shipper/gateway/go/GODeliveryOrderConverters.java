@@ -1,17 +1,7 @@
 package de.metas.shipper.gateway.go;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Set;
-
-import de.metas.mpackage.PackageId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.util.TimeUtil;
-
 import de.metas.location.ICountryDAO;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -24,6 +14,17 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 /*
  * #%L
@@ -153,7 +154,7 @@ import lombok.experimental.UtilityClass;
 		return DeliveryPosition.builder()
 				.numberOfPackages(orderPO.getGO_NumberOfPackages())
 				.packageIds(mpackageIds)
-				.grossWeightKg(orderPO.getGO_GrossWeightKg())
+				.grossWeightKg(BigDecimal.valueOf(orderPO.getGO_GrossWeightKg()))
 				.content(orderPO.getGO_PackageContentDescription())
 				.build();
 	}
@@ -161,7 +162,10 @@ import lombok.experimental.UtilityClass;
 	public static void deliveryPositionToPO(final I_GO_DeliveryOrder orderPO, final DeliveryPosition deliveryPosition)
 	{
 		orderPO.setGO_NumberOfPackages(deliveryPosition.getNumberOfPackages());
-		orderPO.setGO_GrossWeightKg(deliveryPosition.getGrossWeightKg());
+		final int go_grossWeightKg = deliveryPosition.getGrossWeightKg()
+				.setScale(0, RoundingMode.UP)
+				.intValue();
+		orderPO.setGO_GrossWeightKg(go_grossWeightKg);
 		orderPO.setGO_PackageContentDescription(deliveryPosition.getContent());
 	}
 

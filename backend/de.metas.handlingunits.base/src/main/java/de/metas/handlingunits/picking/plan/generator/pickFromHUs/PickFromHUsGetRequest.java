@@ -29,6 +29,7 @@ public class PickFromHUsGetRequest
 	@NonNull ShipmentAllocationBestBeforePolicy bestBeforePolicy;
 	@NonNull Optional<HUReservationDocRef> reservationRef;
 	@Nullable ImmutableSet<HuId> onlyHuIds;
+	boolean ignoreHUsScheduledInDDOrderSchedules;
 
 	/**
 	 * If {@code true}, then check, which attributes are mandatory for the HUs' products. 
@@ -45,7 +46,8 @@ public class PickFromHUsGetRequest
 			@NonNull final ShipmentAllocationBestBeforePolicy bestBeforePolicy,
 			@NonNull final Optional<HUReservationDocRef> reservationRef, 
 			@Nullable final Boolean enforceMandatoryAttributesOnPicking,
-			@Nullable final ImmutableSet<HuId> onlyHuIds)
+			@Nullable final ImmutableSet<HuId> onlyHuIds,
+			final boolean ignoreHUsScheduledInDDOrderSchedules)
 	{
 		Check.assumeNotEmpty(pickFromLocatorIds, "pickFromLocatorIds shall not be empty");
 
@@ -57,5 +59,6 @@ public class PickFromHUsGetRequest
 		this.reservationRef = reservationRef;
 		this.enforceMandatoryAttributesOnPicking = CoalesceUtil.coalesceNotNull(enforceMandatoryAttributesOnPicking, false);
 		this.onlyHuIds = onlyHuIds;
+		this.ignoreHUsScheduledInDDOrderSchedules = ignoreHUsScheduledInDDOrderSchedules;
 	}
 }

@@ -278,16 +278,21 @@ public class PP_Product_Bom_StepDef
 						.addEqualsFilter(I_PP_Product_BOMVersions.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 						.create()
 						.firstOnly(I_PP_Product_BOMVersions.class),
-				() -> newInstance(I_PP_Product_BOMVersions.class));
-
-		bomVersionsRecord.setM_Product_ID(productRecord.getM_Product_ID());
-		bomVersionsRecord.setName(productRecord.getName());
-
-		saveRecord(bomVersionsRecord);
+				() -> createNewBomVersion(productRecord));
 
 		row.getAsOptionalIdentifier(I_PP_Product_BOMVersions.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.ifPresent(identifier -> productBomVersionsTable.putOrReplace(identifier, bomVersionsRecord));
 
+		return bomVersionsRecord;
+	}
+
+	private static I_PP_Product_BOMVersions createNewBomVersion(final I_M_Product productRecord)
+	{
+		final I_PP_Product_BOMVersions bomVersionsRecord = newInstance(I_PP_Product_BOMVersions.class);
+		bomVersionsRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		bomVersionsRecord.setName(productRecord.getName());
+
+		saveRecord(bomVersionsRecord);
 		return bomVersionsRecord;
 	}
 }

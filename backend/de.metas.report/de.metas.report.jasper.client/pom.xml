@@ -92,6 +92,12 @@ java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>

@@ -258,7 +258,7 @@ public class MOrderTax extends X_C_OrderTax
 				//
 				if (!documentLevel)
 				{
-					taxAmt = taxAmt.add(taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision()));
+					taxAmt = taxAmt.add(taxBL.calculateTaxAmt(tax, baseAmt, isTaxIncluded(), getPrecision()));
 				}
 
 				//
@@ -292,7 +292,7 @@ public class MOrderTax extends X_C_OrderTax
 		// Calculate Tax
 		if (documentLevel)
 		{
-			taxAmt = taxBL.calculateTax(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+			taxAmt = taxBL.calculateTaxAmt(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
 		}
 		setTaxAmt(taxAmt);
 

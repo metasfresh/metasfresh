@@ -1,6 +1,8 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -39,6 +41,7 @@ import java.util.Set;
 public class RemoveHUFromPickingSlotCommand
 {
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final HuId huId;
@@ -67,8 +70,20 @@ public class RemoveHUFromPickingSlotCommand
 
 	}
 
+	@NonNull
 	private List<PickingCandidate> retrievePickingCandidates()
 	{
-		return pickingCandidateRepository.getDraftedByHuIdAndPickingSlotId(huId, pickingSlotId);
+		return pickingCandidateRepository.getDraftedByHuIdAndPickingSlotId(getHuIds(), pickingSlotId);
+	}
+
+	@NonNull
+	private ImmutableSet<HuId> getHuIds()
+	{
+		if (huId == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		return handlingUnitsDAO.retrieveHuIdAndDownstream(huId);
 	}
 }

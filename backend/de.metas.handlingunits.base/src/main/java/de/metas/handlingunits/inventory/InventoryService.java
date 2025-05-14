@@ -1,6 +1,8 @@
 package de.metas.handlingunits.inventory;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -15,6 +17,8 @@ import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProduc
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.AggregationType;
@@ -22,6 +26,7 @@ import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
@@ -87,7 +92,11 @@ public class InventoryService
 		return new InventoryService(
 				new InventoryRepository(),
 				SourceHUsService.get(),
-				new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService())
+				new HUQRCodesService(
+						new HUQRCodesRepository(),
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+						new QRCodeConfigurationService(new QRCodeConfigurationRepository())
+				)
 		);
 	}
 
@@ -293,8 +302,8 @@ public class InventoryService
 	private DocTypeId getVirtualInventoryDocTypeId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(InventoryDocSubType.VirtualInventory.getDocBaseType())
-				.docSubType(InventoryDocSubType.VirtualInventory.getCode())
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
+				.docSubType(DocSubType.VirtualInventory)
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());

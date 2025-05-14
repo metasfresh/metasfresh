@@ -1,13 +1,14 @@
 package de.metas.i18n;
 
-import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -69,6 +70,16 @@ public final class BooleanWithReason
 		}
 	}
 
+	public static BooleanWithReason falseBecause(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
+	{
+		return falseBecause(TranslatableStrings.adMessage(adMessage, msgParameters));
+	}
+
+	public static BooleanWithReason falseBecause(@NonNull final Exception exception)
+	{
+		return falseBecause(AdempiereException.extractMessageTrl(exception));
+	}
+
 	private static ITranslatableString toTrl(@Nullable final String reasonStr)
 	{
 		if (reasonStr == null || Check.isBlank(reasonStr))
@@ -85,7 +96,7 @@ public final class BooleanWithReason
 	public static final BooleanWithReason FALSE = new BooleanWithReason(false, TranslatableStrings.empty());
 
 	private final boolean value;
-	private final ITranslatableString reason;
+	@NonNull @Getter private final ITranslatableString reason;
 
 	private BooleanWithReason(
 			final boolean value,
@@ -98,15 +109,14 @@ public final class BooleanWithReason
 	@Override
 	public String toString()
 	{
+		final String valueStr = String.valueOf(value);
 		final String reasonStr = !TranslatableStrings.isBlank(reason)
 				? reason.getDefaultValue()
 				: null;
 
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("value", value)
-				.add("reason", reasonStr)
-				.toString();
+		return reasonStr != null
+				? valueStr + " because " + reasonStr
+				: valueStr;
 	}
 
 	public boolean toBoolean()
@@ -124,11 +134,6 @@ public final class BooleanWithReason
 		return !value;
 	}
 
-	public ITranslatableString getReason()
-	{
-		return reason;
-	}
-
 	public String getReasonAsString()
 	{
 		return reason.getDefaultValue();
@@ -140,6 +145,13 @@ public final class BooleanWithReason
 		{
 			throw new AdempiereException(reason);
 		}
+	}
+
+	public BooleanWithReason and(@NonNull final Supplier<BooleanWithReason> otherSupplier)
+	{
+		return isFalse()
+				? this
+				: Check.assumeNotNull(otherSupplier.get(), "otherSupplier shall not return null");
 	}
 
 }

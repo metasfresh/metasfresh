@@ -162,4 +162,10 @@ public class PickingSlotBL implements IPickingSlotBL
 		return isAvailableForAnyBPartner(pickingSlotDAO.getById(pickingSlotId));
 	}
 
+	@NonNull
+	public I_M_PickingSlot getById(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return pickingSlotDAO.getById(pickingSlotId);
+	}
+
 }

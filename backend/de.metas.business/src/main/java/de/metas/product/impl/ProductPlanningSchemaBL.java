@@ -24,6 +24,7 @@ package de.metas.product.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
@@ -36,7 +37,6 @@ import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 
 import java.util.ArrayList;

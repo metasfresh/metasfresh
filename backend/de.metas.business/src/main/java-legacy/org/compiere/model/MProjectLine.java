@@ -230,7 +230,7 @@ public class MProjectLine extends X_C_ProjectLine
 				+ "FROM C_ProjectLine pl "
 				+ "WHERE pl.C_Project_ID=p.C_Project_ID AND pl.IsActive='Y') "
 				+ "WHERE C_Project_ID=" + getC_Project_ID());
-		final int no = DB.executeUpdateEx(sql, get_TrxName());
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
 		if (no != 1)
 		{
 			log.warn("updateHeader - #{}", no);

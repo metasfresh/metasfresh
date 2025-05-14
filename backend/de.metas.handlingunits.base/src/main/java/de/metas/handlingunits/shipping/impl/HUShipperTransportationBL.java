@@ -6,21 +6,21 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHULockBL;
-import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IInOutPackageDAO;
-import de.metas.handlingunits.shipping.AddTrackingInfosForInOutWithoutHUReq;
-import de.metas.handlingunits.shipping.CreatePackageForHURequest;
-import de.metas.handlingunits.shipping.CreatePackagesForInOutRequest;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.handlingunits.shipping.AddTrackingInfosForInOutWithoutHUReq;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.CreatePackagesForInOutRequest;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
+import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
 import de.metas.inout.IInOutDAO;
@@ -202,7 +202,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
 
 		// services
-		final IInOutPackageDAO inOutPackageDAO = Services.get(IInOutPackageDAO.class);
+		final InOutPackageRepository inOutPackageRepository = SpringContextHolder.instance.getBean(InOutPackageRepository.class);
 		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 		final ShippingWeightCalculator weightCalculator = newWeightCalculator();
 
@@ -224,7 +224,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			// Create M_Packages
 			final List<CreatePackagesRequest> createPackagesRequestList = buildCreatePackageRequest(shipperId, request, weightCalculator);
 
-			final List<I_M_Package> mPackages = inOutPackageDAO.createM_Packages(createPackagesRequestList);
+			final List<I_M_Package> mPackages = inOutPackageRepository.createM_Packages(createPackagesRequestList);
 			result.addAll(mPackages);
 
 			//

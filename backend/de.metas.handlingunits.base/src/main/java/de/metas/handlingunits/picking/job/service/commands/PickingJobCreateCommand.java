@@ -31,16 +31,19 @@ import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class PickingJobCreateCommand
@@ -56,6 +59,8 @@ public class PickingJobCreateCommand
 	private final PickingCandidateService pickingCandidateService;
 	private final PickingJobHUReservationService pickingJobHUReservationService;
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
+	private final PickingJobSlotService pickingJobSlotService;
+	private final WorkplaceService workplaceService;
 
 	private final PickingJobCreateRequest request;
 
@@ -70,15 +75,18 @@ public class PickingJobCreateCommand
 			@NonNull final PickingJobHUReservationService pickingJobHUReservationService,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
+			@NonNull final WorkplaceService workplaceService,
 			//
 			@NonNull final PickingJobCreateRequest request)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
+		this.pickingJobSlotService = pickingJobSlotService;
 		this.pickingCandidateService = pickingCandidateService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.loadingSupportServices = loadingSupportServices;
 		this.pickingConfigRepo = pickingConfigRepo;
+		this.workplaceService = workplaceService;
 
 		this.request = request;
 	}
@@ -98,13 +106,11 @@ public class PickingJobCreateCommand
 		pickingJobLockService.lockShipmentSchedules(shipmentScheduleIds, request.getPickerId());
 		try
 		{
-			final PickingJobHeaderKey headerKey = items.stream()
-					.map(PickingJobCreateCommand::extractPickingJobHeaderKey)
-					.distinct()
-					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException(MORE_THAN_ONE_JOB_ERROR_MSG)));
+			final PickingJobHeaderKey headerKey = extractPickingJobHeaderKey(items);
 
 			final PickingJob pickingJob = pickingJobRepository.createNewAndGet(
 					PickingJobCreateRepoRequest.builder()
+							.aggregationType(request.getAggregationType())
 							.orgId(headerKey.getOrgId())
 							.salesOrderId(headerKey.getSalesOrderId())
 							.preparationDate(headerKey.getPreparationDate())
@@ -120,7 +126,7 @@ public class PickingJobCreateCommand
 
 			pickingJobHUReservationService.reservePickFromHUs(pickingJob);
 
-			return pickingJob;
+			return allocatePickingSlotIfPossible(pickingJob);
 		}
 		catch (final Exception createJobException)
 		{
@@ -137,14 +143,33 @@ public class PickingJobCreateCommand
 		}
 	}
 
+	@NonNull
+	private PickingJob allocatePickingSlotIfPossible(@NonNull final PickingJob pickingJob)
+	{
+		final PickingSlotId pickingSlotId = workplaceService.getWorkplaceByUserId(request.getPickerId())
+				.map(Workplace::getPickingSlotId)
+				.orElse(null);
+
+		if (pickingSlotId == null)
+		{
+			return pickingJob;
+		}
+
+		return PickingJobAllocatePickingSlotCommand.builder()
+				.pickingJobRepository(pickingJobRepository)
+				.pickingSlotService(pickingJobSlotService)
+				//
+				.pickingJob(pickingJob)
+				.pickingSlotId(pickingSlotId)
+				.failIfNotAllocated(false)
+				//
+				.build().execute();
+	}
+
 	private PackageableList getItemsToPick()
 	{
 		final PackageableQuery query = toPackageableQuery(request);
-
-		final PackageableList items = packagingDAO
-				.stream(query)
-				.collect(PackageableList.collect());
-
+		final PackageableList items = packagingDAO.stream(query).collect(PackageableList.collect());
 		if (items.isEmpty())
 		{
 			throw new AdempiereException(MSG_NotAllItemsAreAvailableToBePicked)
@@ -163,6 +188,7 @@ public class PickingJobCreateCommand
 				.salesOrderId(request.getSalesOrderId())
 				.deliveryBPLocationId(request.getDeliveryBPLocationId())
 				.warehouseTypeId(request.getWarehouseTypeId())
+				.onlyShipmentScheduleIds(request.getShipmentScheduleIds())
 				.build();
 	}
 
@@ -171,24 +197,24 @@ public class PickingJobCreateCommand
 	private static class PickingJobHeaderKey
 	{
 		@NonNull OrgId orgId;
-		@NonNull OrderId salesOrderId;
-		@NonNull InstantAndOrgId preparationDate;
-		@NonNull InstantAndOrgId deliveryDate;
-		@NonNull BPartnerLocationId deliveryBPLocationId;
-		@NonNull String deliveryRenderedAddress;
-		@NonNull BPartnerLocationId handoverLocationId;
+		@Nullable OrderId salesOrderId;
+		@Nullable InstantAndOrgId preparationDate;
+		@Nullable InstantAndOrgId deliveryDate;
+		@Nullable BPartnerLocationId deliveryBPLocationId;
+		@Nullable String deliveryRenderedAddress;
+		@Nullable BPartnerLocationId handoverLocationId;
 	}
 
-	private static PickingJobHeaderKey extractPickingJobHeaderKey(@NonNull final Packageable item)
+	private PickingJobHeaderKey extractPickingJobHeaderKey(@NonNull final PackageableList items)
 	{
 		return PickingJobHeaderKey.builder()
-				.orgId(item.getOrgId())
-				.salesOrderId(Objects.requireNonNull(item.getSalesOrderId()))
-				.preparationDate(item.getPreparationDate())
-				.deliveryDate(item.getDeliveryDate())
-				.deliveryBPLocationId(item.getCustomerLocationId())
-				.deliveryRenderedAddress(item.getCustomerAddress())
-				.handoverLocationId(item.getHandoverLocationId())
+				.orgId(items.getSingleOrgId())
+				.salesOrderId(items.getSingleSalesOrderId().orElse(null))
+				.preparationDate(items.getSinglePreparationDate().orElse(null))
+				.deliveryDate(items.getSingleDeliveryDate().orElse(null))
+				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElse(null))
+				.deliveryRenderedAddress(items.getSingleCustomerAddress().orElse(null))
+				.handoverLocationId(items.getSingleHandoverLocationId().orElse(null))
 				.build();
 	}
 
@@ -205,18 +231,12 @@ public class PickingJobCreateCommand
 	@Builder
 	private static class PickingJobLineKey
 	{
-		// @NonNull ProductId productId;
-		// @NonNull UomId uomId;
-		// @NonNull AttributeSetInstanceId asiId;
 		@NonNull ShipmentScheduleId shipmentScheduleId;
 	}
 
 	private static PickingJobLineKey extractPickingJobLineKey(@NonNull final Packageable item)
 	{
 		return PickingJobLineKey.builder()
-				// .productId(item.getProductId())
-				// .uomId(item.getUomId())
-				// .asiId(item.getAsiId())
 				.shipmentScheduleId(item.getShipmentScheduleId())
 				.build();
 	}
@@ -251,10 +271,11 @@ public class PickingJobCreateCommand
 		}
 
 		return PickingJobCreateRepoRequest.Line.builder()
-				.productId(plan.getSingleProductId())
+				.productId(items.getSingleProductId())
 				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
 				.qtyToPick(plan.getQtyToPick())
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
+				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElse(null))
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.steps(lines.stream()
@@ -270,12 +291,14 @@ public class PickingJobCreateCommand
 	private static PickingJobCreateRepoRequest.Line createLineRequest_NoPickingPlan(final @NonNull PackageableList items)
 	{
 		return PickingJobCreateRepoRequest.Line.builder()
-				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
-				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No shipment schedule found for " + items)))
-				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.productId(items.getSingleProductId())
 				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
 				.qtyToPick(items.getQtyToPick())
+				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
+				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
+				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No shipment schedule found for " + items)))
+				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
+				.pickFromManufacturingOrderId(items.getSingleManufacturingOrderId().orElse(null))
 				.build();
 	}
 

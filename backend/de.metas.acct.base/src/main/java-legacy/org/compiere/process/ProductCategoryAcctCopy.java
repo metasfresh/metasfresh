@@ -16,17 +16,16 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_M_Product_Acct;
-import org.compiere.util.DB;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.CacheMgt;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.product.ProductCategoryId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_M_Product_Acct;
+import org.compiere.util.DB;
+
+import java.math.BigDecimal;
 
 /**
  * Copy Product Catergory Default Accounts
@@ -75,7 +74,7 @@ public class ProductCategoryAcctCopy extends JavaProcess
 					//
 					+ "WHERE pa.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId()
 					+ " AND EXISTS (SELECT 1 FROM M_Product p WHERE p.M_Product_ID=pa.M_Product_ID AND p.M_Product_Category_ID=" + toProductCategoryId.getRepoId() + ")");
-			countUpdated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			countUpdated = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 			addLog(0, null, BigDecimal.valueOf(countUpdated), "@Updated@");
 		}
 
@@ -101,13 +100,13 @@ public class ProductCategoryAcctCopy extends JavaProcess
 					+ " acct.P_PurchasePriceVariance_Acct, acct.P_InvoicePriceVariance_Acct,"
 					+ " acct.P_TradeDiscountRec_Acct, acct.P_TradeDiscountGrant_Acct, "
 					+ " acct.P_WIP_Acct, acct.P_FloorStock_Acct, acct.P_MethodChangeVariance_Acct, acct.P_UsageVariance_Acct, acct.P_RateVariance_Acct,"
-					+ " acct.P_MixVariance_Acct, acct.P_Labor_Acct, acct.P_Burden_Acct, acct.P_CostOfProduction_Acct, acct.P_OutsideProcessing_Acct, acct.P_Overhead_Acct, acct.P_Scrap_Acct "
+					+ " acct.P_MixVariance_Acct, acct.P_Labor_Acct, acct.P_Burden_Acct, acct.P_CostOfProduction_Acct, acct.P_OutsideProcessing_Acct, acct.P_Overhead_Acct, acct.P_Scrap_Acct"
 					+ " FROM M_Product p"
 					+ " INNER JOIN M_Product_Category_Acct acct ON (acct.M_Product_Category_ID=" + fromProductCategoryId.getRepoId() + " AND acct.C_AcctSchema_ID=" + fromAcctSchemaId.getRepoId() + ")"
 					+ " WHERE 1=1"
 					+ " AND p.M_Product_Category_ID=" + toProductCategoryId.getRepoId()
 					+ " AND NOT EXISTS (SELECT 1 FROM M_Product_Acct pa WHERE pa.M_Product_ID=p.M_Product_ID AND pa.C_AcctSchema_ID=" + toAcctSchemaId.getRepoId() + ")";
-			countCreated = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			countCreated = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 			addLog(0, null, BigDecimal.valueOf(countCreated), "@Created@");
 		}
 

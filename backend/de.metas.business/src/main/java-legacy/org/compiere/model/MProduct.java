@@ -308,7 +308,7 @@ public class MProduct extends X_M_Product
 					+ "WHERE IsActive='Y'"
 					// + " AND GuaranteeDate > now()"
 					+ "  AND M_Product_ID=" + getM_Product_ID());
-			int no = DB.executeUpdate(sql, get_TrxName());
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Asset Description updated #" + no);
 		}
 
@@ -326,6 +326,14 @@ public class MProduct extends X_M_Product
 				log.info("This M_Product is created via CopyRecordSupport; -> don't insert the default _acct records");
 			}
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
+		}
+
+		// Product category changed, then update the accounts
+		if (!newRecord && is_ValueChanged(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+		{
+			update_Accounting(I_M_Product_Acct.Table_Name,
+					I_M_Product_Category_Acct.Table_Name,
+					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
 		}
 		
 		return true;

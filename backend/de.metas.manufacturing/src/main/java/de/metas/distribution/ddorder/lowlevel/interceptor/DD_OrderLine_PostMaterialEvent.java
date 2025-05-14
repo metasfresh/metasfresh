@@ -37,15 +37,13 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_DD_OrderLine;
-import org.springframework.stereotype.Component;
 
 @Interceptor(I_DD_OrderLine.class)
-@Component
 @RequiredArgsConstructor
 public class DD_OrderLine_PostMaterialEvent
 {
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	@NonNull final DistributionNetworkRepository distributionNetworkRepository;
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
 	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
 	@NonNull private final PostMaterialEventService materialEventService;
@@ -61,7 +59,7 @@ public class DD_OrderLine_PostMaterialEvent
 	}
 
 	@ModelChange(
-			timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE},
 			ifColumnsChanged = {
 					I_DD_OrderLine.COLUMNNAME_M_Product_ID,
 					I_DD_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID,

@@ -29,6 +29,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -525,6 +526,18 @@ public class Util
 		return out.toByteArray();
 	}
 
+	public static byte[] readBytes(@NonNull final Resource resource)
+	{
+		try
+		{
+			return readBytes(resource.getInputStream());
+		}
+		catch (IOException e)
+		{
+			throw new AdempiereException("Error reading stream", e);
+		}
+	}
+
 	// metas: 03749
 	public static String encodeBase64(final byte[] b)
 	{
@@ -549,7 +562,7 @@ public class Util
 		catch (final IOException e)
 		{
 			throw new AdempiereException("Cannot write file " + file + "."
-					+ "\n " + e.getLocalizedMessage() // also append the original error message because it could be helpful for user.
+												 + "\n " + e.getLocalizedMessage() // also append the original error message because it could be helpful for user.
 					, e);
 		}
 		finally

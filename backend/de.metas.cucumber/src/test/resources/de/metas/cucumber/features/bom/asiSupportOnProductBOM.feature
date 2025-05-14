@@ -160,14 +160,14 @@ Feature: ASI support in Product BOM rest-api
 
     And the order identified by order_SO is completed
 
-      And after not more than 60s, AD_EventLog are found
-        | AD_EventLog_ID.Identifier | EventType           | SupplyRequiredEvent.M_Product_ID.Identifier | EventData.Pattern   |
-        | eventLog_1                | SupplyRequiredEvent | product_S1                                  | SupplyRequiredEvent |
+    And after not more than 60s, AD_EventLog are found
+      | AD_EventLog_ID.Identifier | EventName           | SupplyRequiredEvent.M_Product_ID.Identifier |
+      | eventLog_1                | SupplyRequiredEvent | product_S1                                  |
 
-      And after not more than 60s, AD_EventLog_Entry are found
-        | AD_EventLog_Entry_ID.Identifier | AD_EventLog_ID.Identifier | Classname                                              | MsgText                                               | Processed |
-        | eventLogEntry_1                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | No PP_Product_Planning record found => nothing to do; | false     |
-        | eventLogEntry_2                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
+    And after not more than 60s, AD_EventLog_Entry are found
+      | AD_EventLog_Entry_ID.Identifier | AD_EventLog_ID.Identifier | Classname                                              | MsgText                                               | Processed |
+      | eventLogEntry_1                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | No PP_Product_Planning record found => nothing to do; | false     |
+      | eventLogEntry_2                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
 
   @from:cucumber
   Scenario: Create sales order without ASI, on complete production candidate is found having the productPlanning ASI

@@ -22,7 +22,13 @@ package de.metas.material.planning;
  * #L%
  */
 
+import java.util.List;
+import java.util.Properties;
+
 import com.google.common.collect.ImmutableSet;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.I_S_ResourceType;
+
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -58,4 +64,5 @@ public interface IResourceDAO extends ISingletonService
 	ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull UserId userId);
 
 	ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(@NonNull Collection<ResourceTypeId> resourceTypeIds);
+	ImmutableSet<ResourceId> getActivePlantIds();
 }

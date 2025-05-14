@@ -28,8 +28,10 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_
 
 public interface CoreConstants
 {
+	/** This is the header-key for our API-token when doing http. */
 	String AUTHORIZATION = "Authorization";
-
+	String ACCEPT = "accept";
+	
 	String AUDIT_SENSITIVE_DATA_PATTERN_PROPERTY = "metasfresh.audit.sensitive-data.pattern";
 	String AUDIT_SENSITIVE_DATA_PATTERN_GROUP_PROPERTY = "metasfresh.audit.sensitive-data.pattern.group";
 

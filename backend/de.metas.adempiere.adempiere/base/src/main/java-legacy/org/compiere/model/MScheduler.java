@@ -166,7 +166,7 @@ public class MScheduler extends X_AD_Scheduler
 		final String sql = "DELETE FROM AD_SchedulerLog "
 			+ "WHERE AD_Scheduler_ID=" + getAD_Scheduler_ID()
 			+ " AND Created > (now() - INTERVAL '" + getKeepLogDays() + " days')";
-		return DB.executeUpdateEx(sql, trxName);
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
 	}	//	deleteLog
 
 	/**

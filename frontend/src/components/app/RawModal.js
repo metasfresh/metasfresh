@@ -2,47 +2,30 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import classnames from 'classnames';
 
-import { deleteViewRequest, advSearchRequest, patchRequest } from '../../api';
+import { advSearchRequest, patchRequest } from '../../api';
 import { PATCH_RESET } from '../../constants/ActionTypes';
 
-import { unsetIncludedView } from '../../actions/ViewActions';
+import { closeViewModal } from '../../actions/ViewActions';
 import { addNotification } from '../../actions/AppActions';
-import {
-  closeModal,
-  closeRawModal,
-  openRawModal,
-} from '../../actions/WindowActions';
+import { openRawModal } from '../../actions/WindowActions';
 
 import keymap from '../../shortcuts/keymap';
-import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
-import { renderHeaderProperties } from '../../utils/documentListHelper';
+import { renderHeaderPropertiesGroups } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
-import Indicator from './Indicator';
-import ModalButton from './ModalButton';
+import ModalButton from '../modal/ModalButton';
+import ModalComponent from '../modal/ModalComponent';
+import { OIViewHeader_WINDOW_ID } from '../acctOpenItems/OIViewHeader';
+import { AcctSimulationViewHeader_WINDOW_ID } from '../acctSimulation/AcctSimulationViewHeader';
+import { getIndicatorFromState } from '../../reducers/windowHandler';
 
 /**
- * @file Class based component.
- * @module RawModal
- * @extends Component
+ * View modal
  */
 class RawModal extends Component {
   state = {
-    scrolled: false,
     visibleTooltips: {},
   };
-
-  componentDidMount() {
-    // Dirty solution, but use only if you need to
-    // there is no way to affect body
-    // because body is out of react app range
-    // and css dont affect parents
-    // but we have to change scope of scrollbar
-    document.body.style.overflow = 'hidden';
-
-    this.initEventListeners();
-  }
 
   componentWillUnmount() {
     const { masterDocumentList } = this.props;
@@ -50,8 +33,6 @@ class RawModal extends Component {
     if (masterDocumentList) {
       masterDocumentList.updateQuickActions();
     }
-
-    this.removeEventListeners();
   }
 
   UNSAFE_componentWillUpdate(props) {
@@ -62,11 +43,6 @@ class RawModal extends Component {
     }
   }
 
-  /**
-   * @method showTooltip
-   * @summary ToDo: Describe the method.
-   * @param {*} type
-   */
   showTooltip = (type) => {
     this.setState({
       visibleTooltips: {
@@ -76,54 +52,12 @@ class RawModal extends Component {
     });
   };
 
-  /**
-   * @method hideTooltip
-   * @summary ToDo: Describe the method.
-   * @param {*} type
-   */
   hideTooltip = (type) => {
     this.setState({
       visibleTooltips: {
         ...this.state.visibleTooltips,
         [`${type}`]: false,
       },
-    });
-  };
-
-  /**
-   * @method initEventListeners
-   * @summary ToDo: Describe the method.
-   */
-  initEventListeners = () => {
-    const modalContent = document.querySelector('.js-panel-modal-content');
-
-    if (modalContent) {
-      modalContent.addEventListener('scroll', this.handleScroll);
-    }
-  };
-
-  /**
-   * @method removeEventListeners
-   * @summary ToDo: Describe the method.
-   */
-  removeEventListeners = () => {
-    const modalContent = document.querySelector('.js-panel-modal-content');
-
-    if (modalContent) {
-      modalContent.removeEventListener('scroll', this.handleScroll);
-    }
-  };
-
-  /**
-   * @method handleScroll
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
-  handleScroll = (event) => {
-    const scrollTop = event.srcElement.scrollTop;
-
-    this.setState({
-      scrolled: scrollTop > 0,
     });
   };
 
@@ -170,15 +104,8 @@ class RawModal extends Component {
     });
   };
 
-  /**
-   * @async
-   * @method handleClose
-   * @summary ToDo: Describe the method.
-   * @param {*} type
-   */
   handleClose = async (type) => {
-    const { dispatch, viewId, windowId, requests, rawModal, featureType } =
-      this.props;
+    const { dispatch, requests, rawModal, featureType } = this.props;
 
     featureType === 'SEARCH' &&
       type === 'DONE' &&
@@ -214,39 +141,23 @@ class RawModal extends Component {
       );
     } else {
       await this.removeModal();
-      await deleteViewRequest(windowId, viewId, type);
+      // await deleteViewRequest(windowId, viewId, type);
     }
   };
 
-  /**
-   * @async
-   * @method removeModal
-   * @summary ToDo: Describe the method.
-   */
-  removeModal = async () => {
+  removeModal = async (closeAction) => {
     const { dispatch, modalVisible, windowId, viewId } = this.props;
 
-    await Promise.all(
-      [
-        closeRawModal(),
-        closeModal(),
-        unsetIncludedView({
-          windowId: windowId,
-          viewId,
-          forceClose: true,
-        }),
-      ].map((action) => dispatch(action))
+    await dispatch(
+      closeViewModal({
+        windowId,
+        viewId,
+        modalVisible,
+        closeAction: closeAction ?? 'DONE',
+      })
     );
-
-    if (!modalVisible) {
-      document.body.style.overflow = 'auto';
-    }
   };
 
-  /**
-   * @method renderButtons
-   * @summary ToDo: Describe the method.
-   */
   renderButtons = () => {
     const { modalVisible, rawModal, windowId, modalTableSelectedId } =
       this.props;
@@ -299,11 +210,7 @@ class RawModal extends Component {
     return buttonsArray;
   };
 
-  /**
-   * @method generateShortcuts
-   * @summary ToDo: Describe the method.
-   */
-  generateShortcuts = () => {
+  generateShortcutActions = () => {
     let { allowedCloseActions } = this.props;
     const shortcutActions = {};
 
@@ -319,58 +226,44 @@ class RawModal extends Component {
       shortcutActions[`${name.toLowerCase()}`] = () => this.handleClose(name);
     }
 
-    return <ModalContextShortcuts {...shortcutActions} />;
+    return shortcutActions;
   };
 
   render() {
-    const { modalTitle, children, modalDescription, rawModal, indicator } =
-      this.props;
-    const { scrolled } = this.state;
+    const {
+      windowId,
+      modalTitle,
+      children,
+      modalDescription,
+      rawModal,
+      indicator,
+    } = this.props;
 
     if (!children) {
       return null;
     }
 
+    const isRenderHeaderProperties =
+      !!rawModal.headerProperties &&
+      String(windowId) !== OIViewHeader_WINDOW_ID &&
+      String(windowId) !== AcctSimulationViewHeader_WINDOW_ID;
+
     return (
-      <div className="screen-freeze raw-modal">
-        <div className="click-overlay" onClick={this.removeModal} />
-        <div className="modal-content-wrapper">
-          <div className="panel panel-modal panel-modal-primary">
-            <div
-              className={classnames(
-                'panel-groups-header',
-                'panel-modal-header',
-                {
-                  'header-shadow': scrolled,
-                }
-              )}
-            >
-              <span className="panel-modal-header-title panel-modal-header-title-with-header-properties">
-                {modalTitle ? modalTitle : 'Modal'}
-                <span className="panel-modal-description">
-                  {modalDescription ? modalDescription : ''}
-                </span>
-              </span>
-              {!!rawModal.headerProperties && (
-                <div className="optional">
-                  {renderHeaderProperties(rawModal.headerProperties.groups)}
-                </div>
-              )}
-              <div className="items-row-2">{this.renderButtons()}</div>
-            </div>
-            <Indicator indicator={indicator} />
-            <div
-              className="panel-modal-content js-panel-modal-content"
-              ref={(c) => {
-                c && c.focus();
-              }}
-            >
-              {children}
-            </div>
-            {this.generateShortcuts()}
-          </div>
-        </div>
-      </div>
+      <ModalComponent
+        title={modalTitle}
+        description={modalDescription}
+        indicator={indicator}
+        renderHeaderProperties={() =>
+          isRenderHeaderProperties
+            ? renderHeaderPropertiesGroups(rawModal.headerProperties.groups)
+            : null
+        }
+        renderButtons={this.renderButtons}
+        shortcutActions={this.generateShortcutActions()}
+        onClickOutside={() => this.removeModal('CANCEL')}
+      >
+        {children}
+      </ModalComponent>
     );
   }
 }
@@ -427,7 +320,7 @@ const mapStateToProps = ({ windowHandler, tables }, ownProps) => {
     rawModal: windowHandler.rawModal,
     requests: windowHandler.patches.requests,
     success: windowHandler.patches.success,
-    indicator: windowHandler.indicator,
+    indicator: getIndicatorFromState({ windowHandler, isModal: true }),
     modalTableSelectedId: selectedId,
   };
 };

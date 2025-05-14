@@ -32,6 +32,7 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
+import org.compiere.model.X_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -99,7 +100,11 @@ public class M_InOutLine_HandlerTest
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
+		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
+		save(paymentTerm);
+
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
+		bPartner.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		save(bPartner);
 
 		final I_C_BPartner_Location bPartnerLocation = newInstance(I_C_BPartner_Location.class);
@@ -121,6 +126,7 @@ public class M_InOutLine_HandlerTest
 
 		final I_M_Product packagingProduct = newInstance(I_M_Product.class);
 		packagingProduct.setC_UOM_ID(packagingProductUom.getC_UOM_ID());
+		packagingProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		save(packagingProduct);
 
 		final I_C_UOM packagingUom = newInstance(I_C_UOM.class);

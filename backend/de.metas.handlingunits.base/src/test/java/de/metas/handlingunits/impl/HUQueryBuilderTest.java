@@ -2,6 +2,7 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
@@ -70,7 +71,10 @@ public class HUQueryBuilderTest
 				createHU("otherLocator-product", otherLocator, product),
 				createHU("otherLocator-otherProduct", otherLocator, otherProduct));
 
-		huQueryBuilder = new HUQueryBuilder(new HUReservationRepository(), new AgeAttributesService());
+		huQueryBuilder = new HUQueryBuilder(
+				new HUReservationRepository(),
+				new AgeAttributesService(),
+				new DDOrderMoveScheduleRepository());
 	}
 
 	private static I_M_HU createHU(

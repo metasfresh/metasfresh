@@ -2,6 +2,7 @@ package org.adempiere.product.service.impl;
 
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.impl.ProductBL;
 import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -25,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductBLTest
 {
-	private IProductBL productBL;
+	private ProductBL productBL;
 
 	@BeforeEach
 	public void beforeEach()
@@ -33,7 +34,7 @@ public class ProductBLTest
 		AdempiereTestHelper.get().init();
 		POJOWrapper.setDefaultStrictValues(false);
 
-		productBL = Services.get(IProductBL.class);
+		productBL = (ProductBL)Services.get(IProductBL.class);
 	}
 
 	@Nested
@@ -141,9 +142,9 @@ public class ProductBLTest
 			return UomId.ofRepoId(uom.getC_UOM_ID());
 		}
 
-		void createUOMConversion(final UomId fromUomId, final UomId toUomId, boolean isCatchWeight)
+		void createUOMConversion(final UomId fromUomId, final UomId toUomId, final boolean isCatchWeight)
 		{
-			I_C_UOM_Conversion record = InterfaceWrapperHelper.newInstance(I_C_UOM_Conversion.class);
+			final I_C_UOM_Conversion record = InterfaceWrapperHelper.newInstance(I_C_UOM_Conversion.class);
 			record.setM_Product_ID(productId.getRepoId());
 			record.setC_UOM_ID(fromUomId.getRepoId());
 			record.setC_UOM_To_ID(toUomId.getRepoId());

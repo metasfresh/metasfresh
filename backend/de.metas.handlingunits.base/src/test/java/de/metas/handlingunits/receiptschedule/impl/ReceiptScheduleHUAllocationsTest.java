@@ -59,7 +59,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get old HU allocations
-		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
 		assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
 
 		final boolean deleteOldTUAllocations = true;
@@ -67,7 +67,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get new HU allocations
-		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
 		assertEquals("Invalid amount of New HU Allocations", 10, newHUAllocations.size());
 	}
 
@@ -90,7 +90,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get old HU allocations
-		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
 		assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
 
 		final boolean deleteOldTUAllocations = false; // do not delete old TU allocations and allocate again
@@ -98,7 +98,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get new HU allocations
-		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
 		assertEquals("Invalid amount of New HU Allocations", 10 + 10, newHUAllocations.size());
 	}
 
@@ -122,7 +122,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get old HU allocations (before split)
-		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+		final List<I_M_ReceiptSchedule_Alloc> oldHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
 		assertEquals("Invalid amount of Old HU Allocations", 10, oldHUAllocations.size());
 
 		//
@@ -148,7 +148,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Get new HU allocations (after split)
-		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
+		final List<I_M_ReceiptSchedule_Alloc> newHUAllocations = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, huContext.getTrxName());
 		assertEquals("Invalid amount of New HU Allocations", 16, newHUAllocations.size());
 
 		//

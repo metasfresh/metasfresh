@@ -96,7 +96,7 @@ class PPOrderCandidateAdvisedEventCreatorTest
 
 	private Quantity qty(final String value)
 	{
-		return Quantitys.create(value, uomId);
+		return Quantitys.of(value, uomId);
 	}
 
 	@Nested

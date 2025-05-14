@@ -1,6 +1,5 @@
 package de.metas.distribution.workflows_api;
 
-import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.quantity.Quantity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
@@ -13,7 +12,7 @@ import javax.annotation.Nullable;
 @Value
 public class DistributionJobStep
 {
-	@NonNull DDOrderMoveScheduleId id;
+	@NonNull DistributionJobStepId id;
 	@NonNull Quantity qtyToMoveTarget;
 
 	//
@@ -31,7 +30,7 @@ public class DistributionJobStep
 
 	@Builder
 	private DistributionJobStep(
-			@NonNull final DDOrderMoveScheduleId id,
+			@NonNull final DistributionJobStepId id,
 			@NonNull final Quantity qtyToMoveTarget,
 			//
 			@NonNull final HUInfo pickFromHU,

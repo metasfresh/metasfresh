@@ -24,11 +24,27 @@ package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import lombok.NonNull;
 
 public class JsonWFHQRCode_StepDefData extends StepDefData<JsonHUQRCode>
 {
 	public JsonWFHQRCode_StepDefData()
 	{
 		super(JsonHUQRCode.class);
+	}
+
+	public void put(@NonNull StepDefDataIdentifier identifier, @NonNull JsonDisplayableQRCode qrCode)
+	{
+		put(identifier, toJsonHUQRCode(qrCode));
+	}
+
+	private static JsonHUQRCode toJsonHUQRCode(final JsonDisplayableQRCode from)
+	{
+		return JsonHUQRCode.builder()
+				.code(from.getCode())
+				.displayable(from.getDisplayable())
+				.build();
 	}
 }

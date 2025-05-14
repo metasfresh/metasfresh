@@ -58,39 +58,46 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				</jr:QRCode>
 			</componentElement>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="76" y="5" width="52" height="10" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
-				<textElement textAlignment="Left" markup="none">
-					<font fontName="Arial" size="8" isBold="true"/>
+				<reportElement x="74" y="55" width="50" height="10" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hu}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="76" y="32" width="52" height="10" uuid="85aeb64c-6220-4f2c-a45d-ef4e0ee38f92"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="8" isBold="true"/>
+			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="74" y="28" width="50" height="10" uuid="85aeb64c-6220-4f2c-a45d-ef4e0ee38f92"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{proddate}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="76" y="63" width="52" height="10" uuid="298106b7-439c-4290-925b-ae24d9802cd1"/>
-				<textElement verticalAlignment="Top" markup="none">
-					<font fontName="Arial" size="8" isBold="true"/>
+				<reportElement positionType="Float" x="74" y="4" width="50" height="10" uuid="298106b7-439c-4290-925b-ae24d9802cd1"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
+					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{stringattributevalue}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{stringattributevalue}!=null?$F{stringattributevalue}:"000000"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="76" y="22" width="52" height="10" uuid="6ef5e45a-6712-420b-91ec-b095100bf532"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="8" isBold="true"/>
+				<reportElement x="74" y="38" width="50" height="10" uuid="6ef5e45a-6712-420b-91ec-b095100bf532"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="4" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{proddate}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="76" y="52" width="52" height="10" uuid="fac5137e-7b34-4d6a-b60e-1f8a75fc2007"/>
-				<textElement verticalAlignment="Top" markup="none">
-					<font fontName="Arial" size="8" isBold="true"/>
+				<reportElement positionType="Float" x="74" y="14" width="50" height="10" uuid="fac5137e-7b34-4d6a-b60e-1f8a75fc2007"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="4" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{CheeseDairyNo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="74" y="65" width="50" height="10" uuid="d586b010-a399-47a0-8ab6-1f8ec979935d"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="4" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{hu-value}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

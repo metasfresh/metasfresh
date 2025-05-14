@@ -1,14 +1,15 @@
-import React, { useContext, createContext } from 'react';
-import { useStore, useDispatch } from 'react-redux';
+import React, { createContext, useContext } from 'react';
+import { useDispatch, useStore } from 'react-redux';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
 import { loginByQrCode, loginRequest, logoutRequest } from '../api/login';
 import { COOKIE_EXPIRATION } from '../constants/Cookie';
-import { setToken, clearToken } from '../actions/TokenActions';
+import { clearToken, setToken } from '../actions/TokenActions';
 import { setLanguage } from '../utils/translations';
 import { getIsLoggedInFromState, getTokenFromState } from '../reducers/appHandler';
+import * as uiTrace from '../utils/ui_trace/';
 
 const authContext = createContext();
 
@@ -25,8 +26,13 @@ export function ProvideAuth({ children }) {
   if (!token) {
     const tokenFromCookie = Cookies.get('Token');
     const languageFromCookie = Cookies.get('Language');
+    const userFullnameFromCookies = Cookies.get('UserFullname');
     if (tokenFromCookie) {
-      auth.loginByToken({ token: tokenFromCookie, language: languageFromCookie });
+      auth.loginByToken({
+        token: tokenFromCookie,
+        language: languageFromCookie,
+        userFullname: userFullnameFromCookies,
+      });
       console.log('ProvideAuth: Logged in by token from cookie');
     }
   }
@@ -50,14 +56,15 @@ function createAuthObject() {
   const store = useStore();
   const dispatch = useDispatch();
 
-  const loginByToken = async ({ token, language }) => {
+  const loginByToken = async ({ token, language, userFullname }) => {
     if (language) {
       setLanguage(language);
       Cookies.set('Language', language, { expires: COOKIE_EXPIRATION });
     }
 
-    dispatch(setToken(token));
+    dispatch(setToken({ token, userFullname }));
     Cookies.set('Token', token, { expires: COOKIE_EXPIRATION });
+    Cookies.set('UserFullname', userFullname, { expires: COOKIE_EXPIRATION });
 
     axios.defaults.headers.common['Authorization'] = token;
     if (language) {
@@ -67,11 +74,12 @@ function createAuthObject() {
 
   const login = (username, password) => {
     return loginRequest(username, password)
-      .then(async ({ error, token, language }) => {
+      .then(async ({ error, token, language, userFullname, userId }) => {
         if (error) {
           return Promise.reject(error);
         } else {
-          await loginByToken({ token, language });
+          await loginByToken({ token, language, userFullname });
+          uiTrace.login({ userId, username, userFullname, language, method: 'password' });
           return Promise.resolve();
         }
       })
@@ -83,11 +91,12 @@ function createAuthObject() {
 
   const qrLogin = (qrCode) => {
     return loginByQrCode(qrCode)
-      .then(async ({ error, token, language }) => {
+      .then(async ({ error, token, language, userFullname, userId, username }) => {
         if (error) {
           return Promise.reject(error);
         } else {
-          await loginByToken({ token, language });
+          await loginByToken({ token, language, userFullname });
+          uiTrace.login({ userId, username, userFullname, language, method: 'qrCode' });
           return Promise.resolve();
         }
       })
@@ -98,6 +107,8 @@ function createAuthObject() {
   };
 
   const logout = () => {
+    uiTrace.logout();
+
     logoutRequest().catch((error) => {
       console.error('logout error: ', error);
     });
@@ -105,8 +116,9 @@ function createAuthObject() {
     dispatch(clearToken());
 
     Cookies.remove('Token', { expires: COOKIE_EXPIRATION });
+    Cookies.remove('UserFullname', { expires: COOKIE_EXPIRATION });
 
-    axios.defaults.headers.common['Authorization'] = null;
+    delete axios.defaults.headers.common['Authorization'];
 
     return Promise.resolve();
   };

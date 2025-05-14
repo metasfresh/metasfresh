@@ -6,11 +6,13 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -50,6 +52,7 @@ import java.util.stream.Stream;
 @ToString
 public final class TableRecordReferenceSet implements Iterable<TableRecordReference>
 {
+	@NonNull
 	public static TableRecordReferenceSet of(final Collection<TableRecordReference> recordRefs)
 	{
 		if (recordRefs.isEmpty())
@@ -60,7 +63,7 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 		return new TableRecordReferenceSet(recordRefs);
 	}
 
-	public static TableRecordReferenceSet of(final TableRecordReference recordRef)
+	public static TableRecordReferenceSet of(@Nullable final TableRecordReference recordRef)
 	{
 		return recordRef != null ? new TableRecordReferenceSet(ImmutableSet.of(recordRef)) : EMPTY;
 	}
@@ -98,6 +101,7 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 
 	public static final TableRecordReferenceSet EMPTY = new TableRecordReferenceSet(ImmutableSet.of());
 
+	@Getter
 	private final ImmutableSet<TableRecordReference> recordRefs;
 
 	private TableRecordReferenceSet(final Collection<TableRecordReference> recordRefs)
@@ -210,5 +214,52 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	public int size()
 	{
 		return recordRefs.size();
+	}
+
+	@NonNull
+	public AdTableId getSingleTableId()
+	{
+		final ImmutableSet<AdTableId> tableIds = getTableIds();
+
+		if (tableIds.isEmpty())
+		{
+			throw new AdempiereException("No AD_Table_ID");
+		}
+		else if (tableIds.size() == 1)
+		{
+			return tableIds.iterator().next();
+		}
+		else
+		{
+			throw new AdempiereException("More than one AD_Table_ID found: " + tableIds);
+		}
+	}
+
+	public void assertSingleTableName()
+	{
+		final ImmutableSet<AdTableId> tableIds = getTableIds();
+
+		if (tableIds.isEmpty())
+		{
+			throw new AdempiereException("No AD_Table_ID");
+		}
+		else if (tableIds.size() != 1)
+		{
+			throw new AdempiereException("More than one AD_Table_ID found: " + tableIds);
+		}
+	}
+
+	public Stream<TableRecordReference> streamReferences()
+	{
+		return recordRefs.stream();
+	}
+
+	@NonNull
+	private ImmutableSet<AdTableId> getTableIds()
+	{
+		return recordRefs.stream()
+				.map(TableRecordReference::getAD_Table_ID)
+				.map(AdTableId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

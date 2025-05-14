@@ -1,6 +1,5 @@
 package de.metas.material.interceptor;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
@@ -108,8 +107,8 @@ public class M_ForecastPostMaterialEventEventCreatorTest
 		}
 
 		final ForecastCreatedEvent result = forecastEventCreator.createEventWithLinesAndTiming(
-				ImmutableList.of(forecastLineRecord1, forecastLineRecord2),
-				DocTimingType.AFTER_COMPLETE);
+				forecastModel,
+				DocTimingType.AFTER_COMPLETE).orElse(null);
 		assertThat(result).isNotNull();
 
 		final Forecast forecast = result.getForecast();

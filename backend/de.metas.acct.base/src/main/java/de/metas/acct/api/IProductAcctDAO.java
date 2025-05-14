@@ -1,5 +1,6 @@
 package de.metas.acct.api;
 
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductCategoryId;

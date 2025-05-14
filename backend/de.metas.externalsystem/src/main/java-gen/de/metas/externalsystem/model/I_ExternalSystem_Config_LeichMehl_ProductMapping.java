@@ -3,16 +3,16 @@ package de.metas.externalsystem.model;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_LeichMehl_ProductMapping
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_LeichMehl_ProductMapping
+public interface I_ExternalSystem_Config_LeichMehl_ProductMapping 
 {
 
 	String Table_Name = "ExternalSystem_Config_LeichMehl_ProductMapping";
 
-	//	/** AD_Table_ID=542172 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=542172 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -52,7 +52,7 @@ public interface I_ExternalSystem_Config_LeichMehl_ProductMapping
 	/**
 	 * Set Business Partner.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -61,7 +61,7 @@ public interface I_ExternalSystem_Config_LeichMehl_ProductMapping
 	/**
 	 * Get Business Partner.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -95,7 +95,28 @@ public interface I_ExternalSystem_Config_LeichMehl_ProductMapping
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set ExternalSystem_Config_LeichMehl_ProductMapping.
+	 * Set CU/TU PLU.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCU_TU_PLU (String CU_TU_PLU);
+
+	/**
+	 * Get CU/TU PLU.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	String getCU_TU_PLU();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl_ProductMapping, Object> COLUMN_CU_TU_PLU = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl_ProductMapping.class, "CU_TU_PLU", null);
+	String COLUMNNAME_CU_TU_PLU = "CU_TU_PLU";
+
+	/**
+	 * Set PLU Configuration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -104,7 +125,7 @@ public interface I_ExternalSystem_Config_LeichMehl_ProductMapping
 	void setExternalSystem_Config_LeichMehl_ProductMapping_ID (int ExternalSystem_Config_LeichMehl_ProductMapping_ID);
 
 	/**
-	 * Get ExternalSystem_Config_LeichMehl_ProductMapping.
+	 * Get PLU Configuration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -156,11 +177,11 @@ public interface I_ExternalSystem_Config_LeichMehl_ProductMapping
 	 */
 	int getLeichMehl_PluFile_ConfigGroup_ID();
 
-	de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup getLeichMehl_PluFile_ConfigGroup();
+	I_LeichMehl_PluFile_ConfigGroup getLeichMehl_PluFile_ConfigGroup();
 
-	void setLeichMehl_PluFile_ConfigGroup(de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup LeichMehl_PluFile_ConfigGroup);
+	void setLeichMehl_PluFile_ConfigGroup(I_LeichMehl_PluFile_ConfigGroup LeichMehl_PluFile_ConfigGroup);
 
-	ModelColumn<I_ExternalSystem_Config_LeichMehl_ProductMapping, de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup> COLUMN_LeichMehl_PluFile_ConfigGroup_ID = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl_ProductMapping.class, "LeichMehl_PluFile_ConfigGroup_ID", de.metas.externalsystem.model.I_LeichMehl_PluFile_ConfigGroup.class);
+	ModelColumn<I_ExternalSystem_Config_LeichMehl_ProductMapping, I_LeichMehl_PluFile_ConfigGroup> COLUMN_LeichMehl_PluFile_ConfigGroup_ID = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl_ProductMapping.class, "LeichMehl_PluFile_ConfigGroup_ID", I_LeichMehl_PluFile_ConfigGroup.class);
 	String COLUMNNAME_LeichMehl_PluFile_ConfigGroup_ID = "LeichMehl_PluFile_ConfigGroup_ID";
 
 	/**
@@ -192,7 +213,7 @@ public interface I_ExternalSystem_Config_LeichMehl_ProductMapping
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPLU_File (java.lang.String PLU_File);
+	void setPLU_File (String PLU_File);
 
 	/**
 	 * Get PLU_File.
@@ -201,7 +222,7 @@ public interface I_ExternalSystem_Config_LeichMehl_ProductMapping
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getPLU_File();
+	String getPLU_File();
 
 	ModelColumn<I_ExternalSystem_Config_LeichMehl_ProductMapping, Object> COLUMN_PLU_File = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl_ProductMapping.class, "PLU_File", null);
 	String COLUMNNAME_PLU_File = "PLU_File";

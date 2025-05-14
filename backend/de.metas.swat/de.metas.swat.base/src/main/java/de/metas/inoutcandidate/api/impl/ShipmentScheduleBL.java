@@ -14,20 +14,20 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.location.ShipmentScheduleLocationsUpdater;
 import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -247,8 +247,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public boolean isSchedAllowsConsolidate(final I_M_ShipmentSchedule sched)
+	public boolean isSchedAllowsConsolidate(@NonNull final I_M_ShipmentSchedule sched)
 	{
+		final ShipmentScheduleAllowConsolidatePredicateComposite shipmentScheduleAllowConsolidatePredicateComposite = SpringContextHolder.instance
+				.getBean(ShipmentScheduleAllowConsolidatePredicateComposite.class);
+		if (!shipmentScheduleAllowConsolidatePredicateComposite.isSchedAllowsConsolidate(sched))
+		{
+			return false;
+		}
+
 		// task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
@@ -336,11 +343,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		Check.errorUnless(shipmentScheduleRecord.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentScheduleRecord);
 
 		shipmentScheduleRecord.setIsClosed(false);
-
-		Services.get(IShipmentScheduleHandlerBL.class).updateShipmentScheduleFromReferencedRecord(shipmentScheduleRecord);
-		updateQtyOrdered(shipmentScheduleRecord);
-
 		save(shipmentScheduleRecord);
+
+		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesService.flagForRecompute(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
 	}
 
 	@Override
@@ -352,13 +358,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return false;
 		}
 
+		//noinspection UnnecessaryLocalVariable
 		final boolean wasClosed = createOld(shipmentScheduleRecord, I_M_ShipmentSchedule.class).isClosed();
-		if (!wasClosed)
-		{
-			return false;
-		}
-
-		return true; // was closed, but is now open
+		return wasClosed;// was closed, but is now open
 	}
 
 	@Override
@@ -430,7 +432,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return Optional.empty();
 		}
 
-		final Quantity result = Quantitys.create(
+		final Quantity result = Quantitys.of(
 				shipmentScheduleRecord.getQtyToDeliverCatch_Override(),
 				UomId.ofRepoId(shipmentScheduleRecord.getCatch_UOM_ID()));
 		return Optional.of(result);
@@ -444,7 +446,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void updateCatchUoms(@NonNull final ProductId productId, long delayMs)
+	public void updateCatchUoms(@NonNull final ProductId productId, final long delayMs)
 	{
 		if (delayMs < 0)
 		{
@@ -547,7 +549,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule)
+	public ZonedDateTime getPreparationDate(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		return shipmentScheduleEffectiveBL.getPreparationDate(schedule);
 	}
@@ -574,14 +576,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		trxManager.runInThreadInheritedTrx(() -> applyUserChangesInTrx0(userChanges));
 	}
 
-	private void applyUserChangesInTrx0(@NonNull ShipmentScheduleUserChangeRequestsList userChanges)
+	private void applyUserChangesInTrx0(@NonNull final ShipmentScheduleUserChangeRequestsList userChanges)
 	{
 		final Set<ShipmentScheduleId> shipmentScheduleIds = userChanges.getShipmentScheduleIds();
 		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> recordsById = shipmentSchedulePA.getByIds(shipmentScheduleIds);
 
 		for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIds)
 		{
-			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId))
 			{
 
 				final ShipmentScheduleUserChangeRequest userChange = userChanges.getByShipmentScheduleId(shipmentScheduleId);
@@ -649,8 +651,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			if (record.isProcessed())
 			{
 				throw new AdempiereException(
-						Services.get(IMsgBL.class)
-								.getTranslatableMsgText(MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID()))
+						MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID())
 						.markAsUserValidationError();
 			}
 			closeShipmentSchedule(record);

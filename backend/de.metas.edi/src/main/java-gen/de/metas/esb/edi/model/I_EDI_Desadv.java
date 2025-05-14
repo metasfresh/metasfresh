@@ -1,8 +1,9 @@
 package de.metas.esb.edi.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for EDI_Desadv
  *  @author metasfresh (generated) 
@@ -182,24 +183,51 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
+	 * Set Date Promised.
+	 * Date Order was promised
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDatePromised (@Nullable java.sql.Timestamp DatePromised);
+
+	/**
+	 * Get Date Promised.
+	 * Date Order was promised
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.sql.Timestamp getDatePromised();
+
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_DatePromised = new ModelColumn<>(I_EDI_Desadv.class, "DatePromised", null);
+	String COLUMNNAME_DatePromised = "DatePromised";
+
+	/**
 	 * Set Delivery Via.
 	 * How the order will be delivered
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
+	void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
 	/**
 	 * Get Delivery Via.
 	 * How the order will be delivered
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDeliveryViaRule();
+	java.lang.String getDeliveryViaRule();
 
 	ModelColumn<I_EDI_Desadv, Object> COLUMN_DeliveryViaRule = new ModelColumn<>(I_EDI_Desadv.class, "DeliveryViaRule", null);
 	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
@@ -289,7 +317,7 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
-	 * Set EDI Fehlermeldung.
+	 * Set EDI Error Message.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -298,7 +326,7 @@ public interface I_EDI_Desadv
 	void setEDIErrorMsg (@Nullable java.lang.String EDIErrorMsg);
 
 	/**
-	 * Get EDI Fehlermeldung.
+	 * Get EDI Error Message.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -310,7 +338,7 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_EDIErrorMsg = "EDIErrorMsg";
 
 	/**
-	 * Set EDI Status Exportieren.
+	 * Set EDI export status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -319,7 +347,7 @@ public interface I_EDI_Desadv
 	void setEDI_ExportStatus (@Nullable java.lang.String EDI_ExportStatus);
 
 	/**
-	 * Get EDI Status Exportieren.
+	 * Get EDI export status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -331,7 +359,7 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
 
 	/**
-	 * Set Geliefert %.
+	 * Set Delivered %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -340,7 +368,7 @@ public interface I_EDI_Desadv
 	void setFulfillmentPercent (BigDecimal FulfillmentPercent);
 
 	/**
-	 * Get Geliefert %.
+	 * Get Delivered %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -352,7 +380,7 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_FulfillmentPercent = "FulfillmentPercent";
 
 	/**
-	 * Set Geliefert % Minimum.
+	 * Set Delivered % min.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -361,7 +389,7 @@ public interface I_EDI_Desadv
 	void setFulfillmentPercentMin (@Nullable BigDecimal FulfillmentPercentMin);
 
 	/**
-	 * Get Geliefert % Minimum.
+	 * Get Delivered % min.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -373,7 +401,7 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_FulfillmentPercentMin = "FulfillmentPercentMin";
 
 	/**
-	 * Set Übergabeadresse.
+	 * Set unloading address.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -382,7 +410,7 @@ public interface I_EDI_Desadv
 	void setHandOver_Location_ID (int HandOver_Location_ID);
 
 	/**
-	 * Get Übergabeadresse.
+	 * Get unloading address.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -461,8 +489,33 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Set Shipments not sent.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsShipmentsNotSent (boolean IsShipmentsNotSent);
+
+	/**
+	 * Get Shipments not sent.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	boolean isShipmentsNotSent();
+
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_IsShipmentsNotSent = new ModelColumn<>(I_EDI_Desadv.class, "IsShipmentsNotSent", null);
+	String COLUMNNAME_IsShipmentsNotSent = "IsShipmentsNotSent";
+
+	/**
+	 * Set Date.
+	 * Date a product was moved in or out of inventory
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -471,8 +524,8 @@ public interface I_EDI_Desadv
 	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Get Date.
+	 * Date a product was moved in or out of inventory
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -549,6 +602,31 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set shipment_documentno.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setShipment_DocumentNo (@Nullable java.lang.String Shipment_DocumentNo);
+
+	/**
+	 * Get shipment_documentno.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getShipment_DocumentNo();
+
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_Shipment_DocumentNo = new ModelColumn<>(I_EDI_Desadv.class, "Shipment_DocumentNo", null);
+	String COLUMNNAME_Shipment_DocumentNo = "Shipment_DocumentNo";
+
+	/**
 	 * Set SumDeliveredInStockingUOM.
 	 *
 	 * <br>Type: Quantity
@@ -616,8 +694,7 @@ public interface I_EDI_Desadv
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Nutzer 1.
-	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 * Set User 1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -626,8 +703,7 @@ public interface I_EDI_Desadv
 	void setUserFlag (@Nullable java.lang.String UserFlag);
 
 	/**
-	 * Get Nutzer 1.
-	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 * Get User 1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

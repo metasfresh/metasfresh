@@ -4,7 +4,6 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
@@ -16,8 +15,9 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
@@ -29,7 +29,6 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	@Override
@@ -52,26 +51,22 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 
 	@NonNull
 	@Override
-	public Quantity computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
+	public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 	{
 		final OLCandHUPackingAware huPackingAware = new OLCandHUPackingAware(olCand);
 		final Capacity capacity = huPackingAwareBL.calculateCapacity(huPackingAware);
 		if (capacity == null)
 		{
-			final ITranslatableString msg = msgBL
-					.getTranslatableMsgText(MSG_TU_UOM_CAPACITY_REQUIRED,
-							uomDAO.getX12DE355ById(extractUomId(olCand)),
-							olCand.getC_OLCand_ID());
-			throw new AdempiereException(msg).markAsUserValidationError();
+			return Optional.empty();
 		}
 
 		final ProductId productId = ProductId.ofRepoId(olCand.getM_Product_ID());
 		// note that the product's stocking UOM is never a TU-UOM
 		if (capacity.isInfiniteCapacity())
 		{
-			return Quantity.infinite(capacity.getC_UOM());
+			return Optional.of(Quantity.infinite(capacity.getC_UOM()));
 		}
-		return uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId);
+		return Optional.of(uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId));
 	}
 
 	private UomId extractUomId(@NonNull final I_C_OLCand olCand)

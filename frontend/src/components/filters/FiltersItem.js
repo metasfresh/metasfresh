@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Moment from 'moment-timezone';
 
-import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
+import { closeFilterBox, openFilterBox } from '../../actions/WindowActions';
 
 import { convertDateToReadable } from '../../utils/dateHelpers';
 import { isFocusableWidgetType } from '../../utils/widgetHelpers';
@@ -18,6 +18,11 @@ import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 import OverlayField from '../app/OverlayField';
 import Tooltips from '../tooltips/Tooltips.js';
 import WidgetWrapper from '../../containers/WidgetWrapper';
+import {
+  getViewFilterParameterDropdown,
+  getViewFilterParameterTypeahead,
+} from '../../api/view';
+import { prepareParameterValueForBackend } from '../../utils/filterHelpers';
 
 /**
  * @file Class based component.
@@ -142,23 +147,14 @@ class FiltersItem extends PureComponent {
    * @summary Called from the widgets to set the filter value. It then pushes the
    * change to the active filter.
    *
-   * @param {object|array} parameter
+   * @param {string|object|array} parameter
    * @param {*} value
    * @param {*} id
    * @param {*} valueTo
    */
   setValue = (parameter, value, id, valueTo = '') => {
-    if (!Array.isArray(parameter)) {
-      parameter = [parameter];
-    }
-
-    parameter = parameter.map((param) => ({
-      parameterName: param.parameterName ? param.parameterName : param,
-      value,
-      valueTo,
-    }));
-
-    const { filter, activeFilter } = this.mergeSingle(parameter, true);
+    const parametersArray = toParameterValueArray(parameter, value, valueTo);
+    const { filter, activeFilter } = this.mergeSingle(parametersArray, true);
 
     return new Promise((resolve) => {
       this.setState({ filter, activeFilter }, () => resolve(true));
@@ -185,8 +181,8 @@ class FiltersItem extends PureComponent {
    * @summary This method syncs values between filters/active filters. It takes an array
    * of params (be it initial parameters, or updated when the widget value changes) and
    * traverses the local filter and activeFilter objects updating the values when needed.
-   * If value for parameter exists it will be updated, if not - nulled. In case of active
-   * filters, paremeters without values will be removed (and in case there are no more
+   * If value for parameter exists it will be updated, if not - nullified. In case of active
+   * filters, parameters without values will be removed (and in case there are no more
    * parameters left the filter will be removed from active)
    *
    * @param {obj} parameters - filter parameters object
@@ -195,21 +191,15 @@ class FiltersItem extends PureComponent {
    */
   mergeSingle = (parameters, active) => {
     const { activeFilter, filter } = this.state;
-    let newActiveFilter = activeFilter
-      ? { ...activeFilter }
-      : {
-          filterId: filter.filterId,
-          parameters: [],
-        };
-    let value = '';
-    let valueTo = '';
-    let activeValue = '';
-    let activeValueTo = '';
+
     const paramsMap = {};
     const updatedParameters = {};
-
     parameters.forEach((parameter) => {
       const parameterName = parameter.parameterName;
+      let value = '';
+      let valueTo = '';
+      let activeValue = '';
+      let activeValueTo = '';
 
       // if filter has defaultValue, update local filters data to include
       // it for displaying
@@ -241,8 +231,7 @@ class FiltersItem extends PureComponent {
 
       // update values for active filters, as we then bubble them up to use
       // this data in PATCH request updating them on the server
-      const updateActive =
-        active || (!active && parameter.defaultValue) ? true : false;
+      const updateActive = !!(active || (!active && parameter.defaultValue));
 
       if (updateActive) {
         updatedParameters[parameterName] = {
@@ -251,6 +240,13 @@ class FiltersItem extends PureComponent {
         };
       }
     });
+
+    let newActiveFilter = activeFilter
+      ? { ...activeFilter }
+      : {
+          filterId: filter.filterId,
+          parameters: [],
+        };
 
     // updated activeFilter parameters
     const parametersArray = [];
@@ -289,7 +285,10 @@ class FiltersItem extends PureComponent {
         if (paramsMap[param.parameterName]) {
           const { value, valueTo } = paramsMap[param.parameterName];
 
-          if (value !== null && value !== '') {
+          if (
+            (value !== null && value !== '') ||
+            (valueTo !== null && valueTo !== '')
+          ) {
             return {
               ...param,
               value: convertDateToReadable(param.widgetType, value),
@@ -442,6 +441,71 @@ class FiltersItem extends PureComponent {
   showTooltip = () => this.toggleTooltip(true);
   hideTooltip = () => this.toggleTooltip(false);
 
+  prepareLookupContextFromState = (filterId) => {
+    const { filter } = this.state;
+
+    // shall not happen:
+    if (filter?.filterId !== filterId) {
+      console.warn(
+        'prepareLookupContextFromState: called with wrong filterId',
+        { filterId, filter }
+      );
+      return {};
+    }
+
+    const context = {};
+
+    if (Array.isArray(filter.parameters)) {
+      filter.parameters.forEach((parameter) => {
+        context[parameter.parameterName] = prepareParameterValueForBackend({
+          value: parameter.value,
+          defaultValue: parameter.defaultValue,
+          widgetType: parameter.widgetType,
+        });
+      });
+    }
+
+    return context;
+  };
+
+  typeaheadSupplier = ({
+    docType: windowId,
+    docId: viewId, // NOTE: for some reason docId is the viewId and not the viewId which is undefined
+    subentityId: filterId,
+    propertyName: parameterName,
+    query,
+  }) => {
+    const context = this.prepareLookupContextFromState(filterId);
+    delete context[parameterName];
+
+    return getViewFilterParameterTypeahead({
+      windowId,
+      viewId,
+      filterId,
+      parameterName,
+      query,
+      context,
+    });
+  };
+
+  dropdownValuesSupplier = ({
+    docType: windowId,
+    viewId,
+    subentityId: filterId,
+    propertyName: parameterName,
+  }) => {
+    const context = this.prepareLookupContextFromState(filterId);
+    delete context[parameterName];
+
+    return getViewFilterParameterDropdown({
+      windowId,
+      viewId,
+      filterId,
+      parameterName,
+      context,
+    });
+  };
+
   render() {
     const {
       data,
@@ -570,6 +634,8 @@ class FiltersItem extends PureComponent {
                           onHide,
                           isFilterActive: isActive,
                           updateItems: this.updateItems,
+                          typeaheadSupplier: this.typeaheadSupplier,
+                          dropdownValuesSupplier: this.dropdownValuesSupplier,
                           autoFocus,
                         }}
                       />
@@ -636,46 +702,30 @@ class FiltersItem extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {func} applyFilters
- * @prop {func} [clearFilters]
- * @prop {*} [filterWrapper]
- * @prop {string} [panelCaption]
- * @prop {array} [active]
- * @prop {*} data
- * @prop {*} notValidFields
- * @prop {*} isActive
- * @prop {*} windowType
- * @prop {*} onShow
- * @prop {*} onHide
- * @prop {*} viewId
- * @prop {*} outsideClick
- * @prop {*} closeFilterMenu
- * @prop {*} captionValue
- * @prop {*} openedFilter
- * @prop {*} returnBackToDropdown
- * @prop {func} openFilterBox
- * @prop {func} closeFilterBox
- */
 FiltersItem.propTypes = {
-  applyFilters: PropTypes.func.isRequired,
-  clearFilters: PropTypes.func,
-  filtersWrapper: PropTypes.any,
+  filtersWrapper: PropTypes.object,
   panelCaption: PropTypes.string,
   active: PropTypes.array,
-  data: PropTypes.any,
+  data: PropTypes.object,
   notValidFields: PropTypes.any,
-  isActive: PropTypes.any,
-  windowType: PropTypes.any,
-  onShow: PropTypes.any,
-  onHide: PropTypes.any,
-  viewId: PropTypes.any,
-  outsideClick: PropTypes.any,
-  closeFilterMenu: PropTypes.any,
-  captionValue: PropTypes.any,
-  openedFilter: PropTypes.any,
-  returnBackToDropdown: PropTypes.any,
+  isActive: PropTypes.bool,
+  windowType: PropTypes.string,
+  viewId: PropTypes.string,
+  captionValue: PropTypes.string,
+  openedFilter: PropTypes.bool,
+
+  //
+  // Callbacks and other functions:
+  applyFilters: PropTypes.func.isRequired,
+  clearFilters: PropTypes.func,
+  onShow: PropTypes.func,
+  onHide: PropTypes.func,
+  closeFilterMenu: PropTypes.func,
+  outsideClick: PropTypes.func,
+  returnBackToDropdown: PropTypes.func,
+
+  //
+  // mapDispatchToProps:
   openFilterBox: PropTypes.func.isRequired,
   closeFilterBox: PropTypes.func.isRequired,
 };
@@ -684,3 +734,21 @@ export default connect(null, {
   openFilterBox,
   closeFilterBox,
 })(FiltersItem);
+
+//
+//
+//
+//
+//
+
+const toParameterValueArray = (parameter, value, valueTo) => {
+  let parametersArray = Array.isArray(parameter) ? parameter : [parameter];
+
+  parametersArray = parametersArray.map((param) => ({
+    parameterName: param.parameterName ? param.parameterName : param,
+    value,
+    valueTo,
+  }));
+
+  return parametersArray;
+};

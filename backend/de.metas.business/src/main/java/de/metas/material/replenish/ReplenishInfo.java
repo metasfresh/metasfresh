@@ -35,10 +35,7 @@ import org.adempiere.warehouse.WarehouseId;
 public class ReplenishInfo
 {
 	@NonNull
-	ProductId productId;
-
-	@NonNull
-	WarehouseId warehouseId;
+	Identifier identifier;
 
 	@NonNull
 	StockQtyAndUOMQty min;
@@ -52,5 +49,16 @@ public class ReplenishInfo
 				.min(min.getStockQty().toBigDecimal())
 				.max(max.getStockQty().toBigDecimal())
 				.build();
+	}
+
+	@Builder
+	@Value
+	public static class Identifier
+	{
+		@NonNull
+		ProductId productId;
+
+		@NonNull
+		WarehouseId warehouseId;
 	}
 }

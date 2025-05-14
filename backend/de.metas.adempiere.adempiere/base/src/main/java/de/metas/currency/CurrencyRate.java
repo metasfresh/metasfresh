@@ -31,7 +31,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Value
 public class CurrencyRate
@@ -43,7 +43,7 @@ public class CurrencyRate
 	CurrencyPrecision toCurrencyPrecision;
 
 	BigDecimal conversionRate;
-	LocalDate conversionDate;
+	Instant conversionDate;
 	CurrencyConversionTypeId conversionTypeId;
 
 	@Builder
@@ -54,7 +54,7 @@ public class CurrencyRate
 			@NonNull final CurrencyPrecision toCurrencyPrecision,
 			@NonNull final CurrencyPrecision fromCurrencyPrecision,
 			@NonNull final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final LocalDate conversionDate)
+			@NonNull final Instant conversionDate)
 	{
 		this.conversionRate = conversionRate;
 		this.fromCurrencyId = fromCurrencyId;

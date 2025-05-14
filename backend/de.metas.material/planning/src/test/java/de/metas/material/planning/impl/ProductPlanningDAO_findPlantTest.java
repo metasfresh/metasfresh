@@ -59,7 +59,7 @@ public class ProductPlanningDAO_findPlantTest
 		final int productId = -1; // N/A
 		final int attributeSetInstanceId = AttributeConstants.M_AttributeSetInstance_ID_None;
 
-		final ResourceId plantActual = productPlanningDAO.findPlant(
+		final ResourceId plantActual = productPlanningDAO.findPlantId(
 				adOrgId,
 				warehouse,
 				productId,
@@ -84,7 +84,7 @@ public class ProductPlanningDAO_findPlantTest
 		final I_M_Product product = createProduct("product");
 		createProductPlanningWithPlant(org, warehouse, product);
 
-		final ResourceId plantActual = productPlanningDAO.findPlant(
+		final ResourceId plantActual = productPlanningDAO.findPlantId(
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
@@ -107,7 +107,7 @@ public class ProductPlanningDAO_findPlantTest
 		final int adOrgId = 1;
 		final int productId = 2;
 
-		assertThatThrownBy(() -> productPlanningDAO.findPlant(adOrgId, warehouse, productId, AttributeConstants.M_AttributeSetInstance_ID_None))
+		assertThatThrownBy(() -> productPlanningDAO.findPlantId(adOrgId, warehouse, productId, AttributeConstants.M_AttributeSetInstance_ID_None))
 				.isInstanceOf(NoPlantForWarehouseException.class);
 	}
 
@@ -126,7 +126,7 @@ public class ProductPlanningDAO_findPlantTest
 		final I_M_Product product = createProduct("product");
 		final ProductPlanning productPlanning = createProductPlanningWithPlant(org, warehouse, product);
 
-		final ResourceId plantActual = productPlanningDAO.findPlant(
+		final ResourceId plantActual = productPlanningDAO.findPlantId(
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
@@ -145,7 +145,7 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanningWithPlant(org, warehouse, product);
 		createProductPlanningWithPlant(org, warehouse, product);
 
-		assertThatThrownBy(() -> productPlanningDAO.findPlant(
+		assertThatThrownBy(() -> productPlanningDAO.findPlantId(
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
@@ -169,7 +169,7 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanning(org, warehouse, product, null);
 		createProductPlanning(org, warehouse, product, null);
 
-		final ResourceId plantActual = productPlanningDAO.findPlant(
+		final ResourceId plantActual = productPlanningDAO.findPlantId(
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),

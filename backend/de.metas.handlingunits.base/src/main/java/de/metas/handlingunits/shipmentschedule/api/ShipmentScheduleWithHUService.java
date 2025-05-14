@@ -24,7 +24,6 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -76,7 +75,6 @@ import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
@@ -162,7 +160,7 @@ public class ShipmentScheduleWithHUService
 		 * If set and {@link #quantityType} is TYPE_QTY_TO_DELIVER (or _BOTH), then the respective M_ShipmentSchedule's current QtyToDeliver and QtyToDeliver_Override will be ignored.
 		 */
 		@Nullable
-		Quantity quantityToDeliverOverride;
+		StockQtyAndUOMQty quantityToDeliverOverride;
 
 		/**
 		 * Fails if no picked HUs were found.
@@ -214,7 +212,7 @@ public class ShipmentScheduleWithHUService
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			final boolean onTheFlyPickToPackingInstructions,
-			@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride,
+			@NonNull final QtyToDeliverMap qtyToDeliverMap,
 			final boolean isFailIfNoPickedHUs)
 	{
 		if (shipmentSchedules.isEmpty())
@@ -234,7 +232,8 @@ public class ShipmentScheduleWithHUService
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final Quantity quantityToDeliverOverride = extractQuantityToDeliverOverrideOrNull(scheduleId2QtyToDeliverOverride, shipmentSchedule);
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+			final StockQtyAndUOMQty quantityToDeliverOverride = qtyToDeliverMap.getQtyToDeliver(shipmentScheduleId);
 			requestBuilder.quantityToDeliverOverride(quantityToDeliverOverride);
 
 			final ImmutableList<ShipmentScheduleWithHU> candidatesForSched = createCandidatesForSched(requestBuilder, shipmentSchedule);
@@ -247,28 +246,9 @@ public class ShipmentScheduleWithHUService
 		return ImmutableList.copyOf(candidates);
 	}
 
-	@Nullable
-	private Quantity extractQuantityToDeliverOverrideOrNull(
-			@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride,
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		final Quantity quantityToDeliverOverride;
-		final BigDecimal qtyToDeliverOverride = scheduleId2QtyToDeliverOverride.get(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
-		if (qtyToDeliverOverride != null)
-		{
-			quantityToDeliverOverride = Quantitys.create(qtyToDeliverOverride, ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
-
-		}
-		else
-		{
-			quantityToDeliverOverride = null;
-		}
-		return quantityToDeliverOverride;
-	}
-
 	private List<ShipmentScheduleWithHU> createShipmentSchedulesWithHUForQtyToDeliver(
 			@NonNull final I_M_ShipmentSchedule scheduleRecord,
-			@Nullable final Quantity quantityToDeliverOverride,
+			@Nullable final StockQtyAndUOMQty quantityToDeliverOverride,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			final boolean pickAccordingToPackingInstruction,
 			@NonNull final IHUContext huContext)
@@ -276,7 +256,7 @@ public class ShipmentScheduleWithHUService
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliersNotNull(
-				() -> quantityToDeliverOverride,
+				() -> quantityToDeliverOverride != null ? quantityToDeliverOverride.getStockQty() : null,
 				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
 		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
@@ -304,9 +284,22 @@ public class ShipmentScheduleWithHUService
 		{
 			final boolean hasNoPickedHUs = result.isEmpty();
 
-			final Quantity catchQtyOverride = hasNoPickedHUs
-					? shipmentScheduleBL.getCatchQtyOverride(scheduleRecord).orElse(null)
-					: null /* if at least one HU was picked, the catchOverride qty was added there */;
+			final Quantity catchQtyOverride;
+			if (quantityToDeliverOverride != null && quantityToDeliverOverride.isDifferentUOMQty())
+			{
+				if (!hasNoPickedHUs)
+				{
+					throw new AdempiereException("Overriding catch weight when there are already picked records is not allowed")
+							.setParameter("quantityToDeliverOverride", quantityToDeliverOverride);
+				}
+				catchQtyOverride = quantityToDeliverOverride.getUOMQtyNotNull();
+			}
+			else
+			{
+				catchQtyOverride = hasNoPickedHUs
+						? shipmentScheduleBL.getCatchQtyOverride(scheduleRecord).orElse(null)
+						: null /* if at least one HU was picked, the catchOverride qty was added there */;
+			}
 
 			final ProductId productId = ProductId.ofRepoId(scheduleRecord.getM_Product_ID());
 			final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQty.builder()

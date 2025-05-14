@@ -268,20 +268,20 @@ public interface I_M_PickingSlot
 	/**
 	 * Set PickingSlot.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPickingSlot (java.lang.String PickingSlot);
+	void setPickingSlot (String PickingSlot);
 
 	/**
 	 * Get PickingSlot.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getPickingSlot();
+	String getPickingSlot();
 
 	ModelColumn<I_M_PickingSlot, Object> COLUMN_PickingSlot = new ModelColumn<>(I_M_PickingSlot.class, "PickingSlot", null);
 	String COLUMNNAME_PickingSlot = "PickingSlot";

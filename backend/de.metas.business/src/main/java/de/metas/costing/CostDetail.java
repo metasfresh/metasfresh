@@ -1,12 +1,8 @@
 package de.metas.costing;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountAndQtyDetailed;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -15,6 +11,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
 
 /*
  * #%L
@@ -41,27 +43,29 @@ import lombok.With;
 @Value
 public class CostDetail
 {
-	@With
-	CostDetailId id;
+	@With CostDetailId id;
 
-	ClientId clientId;
-	OrgId orgId;
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
 
-	AcctSchemaId acctSchemaId;
-	CostElementId costElementId;
-	ProductId productId;
-	AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull AcctSchemaId acctSchemaId;
+	@NonNull CostElementId costElementId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
-	CostAmount amt;
-	Quantity qty;
+	@NonNull CostAmountType amtType;
+	@NonNull CostAmount amt;
+	@NonNull @With Quantity qty;
 
-	boolean changingCosts;
+	@With boolean changingCosts;
 
 	CostDetailPreviousAmounts previousAmounts;
 
-	CostingDocumentRef documentRef;
+	@NonNull CostingDocumentRef documentRef;
 
-	String description;
+	@Nullable String description;
+
+	@NonNull @With Instant dateAcct;
 
 	@Builder
 	private CostDetail(
@@ -72,12 +76,14 @@ public class CostDetail
 			@NonNull final CostElementId costElementId,
 			@NonNull final ProductId productId,
 			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final CostAmountType amtType,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
 			final boolean changingCosts,
 			final CostDetailPreviousAmounts previousAmounts,
 			@NonNull final CostingDocumentRef documentRef,
-			@Nullable final String description)
+			@Nullable final String description,
+			@NonNull Instant dateAcct)
 	{
 		this.id = id;
 		this.clientId = clientId;
@@ -86,12 +92,14 @@ public class CostDetail
 		this.costElementId = costElementId;
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId;
+		this.amtType = amtType;
 		this.amt = amt;
 		this.qty = qty;
 		this.changingCosts = changingCosts;
 		this.previousAmounts = previousAmounts;
 		this.documentRef = documentRef;
 		this.description = description;
+		this.dateAcct = dateAcct;
 
 		if (this.previousAmounts != null
 				&& !CurrencyId.equals(this.previousAmounts.getCurrencyId(), amt.getCurrencyId()))
@@ -117,4 +125,6 @@ public class CostDetail
 			return getQty().signum() < 0;
 		}
 	}
+
+	public CostAmountAndQtyDetailed getAmtAndQtyDetailed() {return CostAmountAndQtyDetailed.of(amt, qty, amtType);}
 }

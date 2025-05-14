@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -30,6 +31,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
@@ -82,6 +84,8 @@ public class WEBUI_M_HU_Transform
 {
 	// Services
 	private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
+	private final ADReferenceService adReferenceService = SpringContextHolder.instance.getBean(ADReferenceService.class);
+	private final LookupDataSourceFactory lookupDataSourceFactory = SpringContextHolder.instance.getBean(LookupDataSourceFactory.class);
 
 	private final HUTransformService huTransformService = HUTransformService.newInstance();
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -152,6 +156,8 @@ public class WEBUI_M_HU_Transform
 		final HUEditorRow selectedRow = getSingleSelectedRow();
 
 		return WebuiHUTransformParametersFiller.builder()
+				.adReferenceService(adReferenceService)
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.view(view)
 				.selectedRow(selectedRow)
 				.actionType(p_Action == null ? null : ActionType.valueOf(p_Action))

@@ -4,6 +4,7 @@ import { updateCommentsPanelTextInput } from '../../actions/CommentsPanelActions
 import { connect } from 'react-redux';
 import { PropTypes } from 'prop-types';
 import { translateCaption } from '../../utils/index';
+import * as StaticModalType from '../../constants/StaticModalType';
 
 export const CommentsPanelForm = (props) => {
   const { textInput, postComment, updateText, docId, windowId } = props;
@@ -52,7 +53,7 @@ export const CommentsPanelForm = (props) => {
                       docId,
                       tabId: null,
                       rowId: null,
-                      target: 'comments',
+                      target: StaticModalType.Comments,
                       verb: 'POST',
                       data: textInput,
                     });

@@ -22,15 +22,6 @@ package de.metas.inoutcandidate.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import org.adempiere.util.lang.ObjectUtils;
-
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.product.ProductId;
@@ -42,6 +33,14 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.util.lang.ObjectUtils;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * It's a part of an {@link HUReceiptLineCandidate}.
@@ -86,7 +85,7 @@ import lombok.NonNull;
 		this.productId = productId;
 
 		_stale = true; // stale by default
-		_qty = Quantitys.createZero(uomId);
+		_qty = Quantitys.zero(uomId);
 	}
 
 	@Override
@@ -98,7 +97,7 @@ import lombok.NonNull;
 	public void add(@NonNull final I_M_ReceiptSchedule_Alloc rsa)
 	{
 		final BigDecimal rsaQty = rsa.getHU_QtyAllocated();
-		final Quantity huAllocatedQty = Quantitys.create(rsaQty, UomId.ofRepoId(rsa.getM_ReceiptSchedule().getC_UOM_ID()));
+		final Quantity huAllocatedQty = Quantitys.of(rsaQty, UomId.ofRepoId(rsa.getM_ReceiptSchedule().getC_UOM_ID()));
 
 		_qty = Quantitys.add(UOMConversionContext.of(productId), _qty, huAllocatedQty);
 

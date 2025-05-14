@@ -79,6 +79,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -141,6 +142,7 @@ public final class ProcessInfo implements Serializable
 		adWorkflowId = builder.getWorkflowId();
 		invokedBySchedulerId = builder.getInvokedBySchedulerId();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
+		logWarning = builder.isLogWarning();
 
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
@@ -235,6 +237,9 @@ public final class ProcessInfo implements Serializable
 	 */
 	@Getter
 	private final boolean notifyUserAfterExecution;
+
+	@Getter
+	private final boolean logWarning;
 
 	/**
 	 * Process Instance ID
@@ -569,7 +574,10 @@ public final class ProcessInfo implements Serializable
 		return AdWindowId.toRepoId(getAdWindowId());
 	}
 
-	public boolean isInvokedByScheduler() {return invokedBySchedulerId != null;}
+	public boolean isInvokedByScheduler()
+	{
+		return invokedBySchedulerId != null;
+	}
 
 	private static ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
@@ -669,7 +677,7 @@ public final class ProcessInfo implements Serializable
 	 * task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
-	@Nullable
+	@NonNull
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
 	{
 		// default: use a "neutral" filter that does not exclude anything
@@ -690,6 +698,7 @@ public final class ProcessInfo implements Serializable
 	 * @param defaultQueryFilter filter to be returned if this process info does not have a whereClause set.
 	 * @return a query filter for the current m_whereClause or if there is none, return <code>defaultQueryFilter</code>
 	 */
+	@Contract("!null -> !null")
 	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElse(@Nullable final IQueryFilter<T> defaultQueryFilter)
 	{
@@ -821,6 +830,8 @@ public final class ProcessInfo implements Serializable
 		private AdSchedulerId invokedBySchedulerId;
 
 		private Boolean notifyUserAfterExecution;
+
+		private Boolean logWarning;
 
 		private ProcessInfoBuilder()
 		{
@@ -1136,6 +1147,7 @@ public final class ProcessInfo implements Serializable
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
+			setLogWarning(adProcess.isLogWarning());
 			return this;
 		}
 
@@ -1324,14 +1336,14 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder setRecord(final String tableName, final int recordId)
+		public ProcessInfoBuilder setRecord(@Nullable final String tableName, final int recordId)
 		{
 			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			this.recordId = recordId;
 			return this;
 		}
 
-		public ProcessInfoBuilder setRecord(final ITableRecordReference recordRef)
+		public ProcessInfoBuilder setRecord(@Nullable final ITableRecordReference recordRef)
 		{
 			if (recordRef == null)
 			{
@@ -1566,7 +1578,7 @@ public final class ProcessInfo implements Serializable
 			return tabNo;
 		}
 
-		public ProcessInfoBuilder setWhereClause(final String whereClause)
+		public ProcessInfoBuilder setWhereClause(@Nullable final String whereClause)
 		{
 			this.whereClause = Optional.ofNullable(whereClause);
 			return this;
@@ -1639,6 +1651,34 @@ public final class ProcessInfo implements Serializable
 				}
 			}
 			return notifyUserAfterExecution;
+		}
+
+		public ProcessInfoBuilder setLogWarning(final boolean logWarning)
+		{
+			this.logWarning = logWarning;
+
+			return this;
+		}
+
+		public boolean isLogWarning()
+		{
+			if (logWarning == null)
+			{
+
+					final I_AD_Process processRecord = getAD_ProcessOrNull();
+					if (processRecord != null)
+					{
+						this.logWarning = processRecord.isLogWarning();
+						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
+					}
+					else
+					{
+						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+						this.logWarning = false;
+					}
+				}
+
+			return logWarning;
 		}
 
 		private String getWhereClause()

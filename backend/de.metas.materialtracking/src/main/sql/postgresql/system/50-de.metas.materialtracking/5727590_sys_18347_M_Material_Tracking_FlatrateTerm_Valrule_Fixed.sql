@@ -1,0 +1,5 @@
+-- Name: C_Flatrate_Term for M_Material_Tracking
+-- 2024-07-01T14:28:36.245Z
+UPDATE AD_Val_Rule SET Code='EXISTS (SELECT 1 FROM C_FLatrate_Term t JOIN M_Material_Tracking mt ON mt.M_Material_Tracking_ID = @M_Material_Tracking_ID / 0@  WHERE (EXISTS (SELECT 1  FROM C_Flatrate_Conditions fc JOIN M_QualityInsp_LagerKonf lk ON fc.M_QualityInsp_LagerKonf_ID = lk.M_QualityInsp_LagerKonf_ID JOIN M_QualityInsp_LagerKonf_Version lkv ON lk.M_QualityInsp_LagerKonf_ID = lkv.M_QualityInsp_LagerKonf_ID WHERE fc.C_Flatrate_Conditions_ID = t.C_Flatrate_Conditions_ID AND lkv.M_QualityInsp_LagerKonf_Version_ID = @M_QualityInsp_LagerKonf_Version_ID / 0@ )) AND t.M_Product_ID = @M_Product_ID / 0@ AND t.Bill_BPartner_ID = @C_BPartner_ID / 0@ AND t.C_Flatrate_Term_ID = C_Flatrate_Term.C_Flatrate_Term_ID AND t.StartDate = ''@ValidFrom/9999-12-31@'' AND (t.EndDate IS NULL OR t.EndDate >= ''@ValidTo/2000-01-01@''))',Updated=TO_TIMESTAMP('2024-07-01 14:28:36.112000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540311
+;
+

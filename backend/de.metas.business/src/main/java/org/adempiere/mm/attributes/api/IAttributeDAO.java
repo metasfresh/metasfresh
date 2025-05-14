@@ -12,6 +12,7 @@ import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
@@ -36,6 +37,8 @@ public interface IAttributeDAO extends ISingletonService
 	void save(I_M_AttributeInstance ai);
 
 	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
+
+	MultiAttributeSetAttributeIdsList getAttributeIdsByAttributeSetIds(@NonNull Set<AttributeSetId> attributeSetIds);
 
 	I_M_Attribute getAttributeById(int attributeId);
 
@@ -63,7 +66,7 @@ public interface IAttributeDAO extends ISingletonService
 	ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds);
 
 	/**
-	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).
+	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeSetId#NONE}).
 	 */
 	I_M_AttributeSet retrieveNoAttributeSet();
 

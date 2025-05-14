@@ -9,6 +9,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessType;
@@ -31,6 +32,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -60,15 +62,14 @@ import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 public class ADProcessDAO implements IADProcessDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_AD_Process getById(@NonNull final AdProcessId processId)
@@ -336,33 +337,35 @@ public class ADProcessDAO implements IADProcessDAO
 	@Override
 	public void addProcessStatistics(final AdProcessId adProcessId, final ClientId adClientId, final long durationMillisToAdd)
 	{
-		try
-		{
-			I_AD_Process_Stats processStats = queryBL
-					.createQueryBuilderOutOfTrx(I_AD_Process_Stats.class)
-					.addEqualsFilter(I_AD_Process_Stats.COLUMN_AD_Client_ID, adClientId)
-					.addEqualsFilter(I_AD_Process_Stats.COLUMN_AD_Process_ID, adProcessId)
-					.create()
-					.firstOnly(I_AD_Process_Stats.class);
-			if (processStats == null)
+		trxManager.runInNewTrx(() -> {
+			try
 			{
-				processStats = newInstanceOutOfTrx(I_AD_Process_Stats.class);
-				InterfaceWrapperHelper.setValue(processStats, I_AD_Process_Stats.COLUMNNAME_AD_Client_ID, adClientId.getRepoId());
-				processStats.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-				processStats.setAD_Process_ID(adProcessId.getRepoId());
+				I_AD_Process_Stats processStats = queryBL
+						.createQueryBuilder(I_AD_Process_Stats.class)
+						.addEqualsFilter(I_AD_Process_Stats.COLUMN_AD_Client_ID, adClientId)
+						.addEqualsFilter(I_AD_Process_Stats.COLUMN_AD_Process_ID, adProcessId)
+						.create()
+						.firstOnly(I_AD_Process_Stats.class);
+				if (processStats == null)
+				{
+					processStats = newInstance(I_AD_Process_Stats.class);
+					InterfaceWrapperHelper.setValue(processStats, I_AD_Process_Stats.COLUMNNAME_AD_Client_ID, adClientId.getRepoId());
+					processStats.setAD_Org_ID(OrgId.ANY.getRepoId());
+					processStats.setAD_Process_ID(adProcessId.getRepoId());
+				}
+
+				final int count = processStats.getStatistic_Count();
+				final int durationMillis = processStats.getStatistic_Millis();
+
+				processStats.setStatistic_Count(count + 1);
+				processStats.setStatistic_Millis((int)(durationMillis + durationMillisToAdd));
+				InterfaceWrapperHelper.save(processStats);
 			}
-
-			final int count = processStats.getStatistic_Count();
-			final int durationMillis = processStats.getStatistic_Millis();
-
-			processStats.setStatistic_Count(count + 1);
-			processStats.setStatistic_Millis((int)(durationMillis + durationMillisToAdd));
-			InterfaceWrapperHelper.save(processStats);
-		}
-		catch (final Exception ex)
-		{
-			logger.error("Failed updating process statistics for AD_Process_ID={}, AD_Client_ID={}, DurationMillisToAdd={}. Ignored.", adProcessId, adClientId, durationMillisToAdd, ex);
-		}
+			catch (final Exception ex)
+			{
+				logger.error("Failed updating process statistics for AD_Process_ID={}, AD_Client_ID={}, DurationMillisToAdd={}. Ignored.", adProcessId, adClientId, durationMillisToAdd, ex);
+			}
+		});
 	}
 
 	@Override
@@ -454,7 +457,7 @@ public class ADProcessDAO implements IADProcessDAO
 		// NOTE: don't use parameterized SQL queries because this script will be logged as a migration script (task
 
 		final String sqlDelete = "DELETE FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + targetProcessParaId;
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Process_Para_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Process_Para_Trl (AD_Process_Para_ID, AD_Language, " +
@@ -463,7 +466,7 @@ public class ADProcessDAO implements IADProcessDAO
 				" SELECT " + targetProcessParaId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + sourceProcessParaId;
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Process_Para_Trl inserted: {}", countInsert);
 	}
 
@@ -618,17 +621,16 @@ public class ADProcessDAO implements IADProcessDAO
 			@Nullable final String newColumnName)
 	{
 		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Process_Para which is using given AD_Element_ID
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				// Inline parameters because this sql will be logged into the migration script.
 				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
 	}
 
-
 	@Override
 	public ProcessType retrieveProcessType(@NonNull final AdProcessId processId)
 	{
-		final I_AD_Process process =  InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
+		final I_AD_Process process = InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
 		return ProcessType.ofCode(process.getType());
 	}
 

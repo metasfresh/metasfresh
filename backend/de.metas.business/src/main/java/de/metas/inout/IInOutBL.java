@@ -1,7 +1,11 @@
 package de.metas.inout;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -14,7 +18,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_R_Request;
 
@@ -23,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -59,6 +63,11 @@ public interface IInOutBL extends ISingletonService
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
+	Quantity getQtyEntered(@NonNull I_M_InOutLine inoutLine);
+
+	/**
+	 * @see #getStockQtyAndQtyInUOM(I_M_InOutLine)
+	 */
 	Quantity getMovementQty(I_M_InOutLine inoutLine);
 
 	/**
@@ -72,6 +81,14 @@ public interface IInOutBL extends ISingletonService
 	StockQtyAndUOMQty getStockQtyAndQtyInUOM(I_M_InOutLine inoutLine);
 
 	List<I_M_InOutLine> getLines(@NonNull InOutId inoutId);
+
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
+
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
+
+	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
+
+	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
@@ -159,16 +176,6 @@ public interface IInOutBL extends ISingletonService
 	List<I_M_InOutLine> sortLines(I_M_InOut inOut);
 
 	/**
-	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOut}.
-	 */
-	void deleteMatchInvs(I_M_InOut inout);
-
-	/**
-	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOutLine}.
-	 */
-	void deleteMatchInvsForInOutLine(I_M_InOutLine iol);
-
-	/**
 	 * @return the given <code>iol</code>'s <code>MovementQty</code> or its negation, based on the inOut's <code>MovementType</code>.
 	 */
 	BigDecimal getEffectiveStorageChange(I_M_InOutLine iol);
@@ -195,7 +202,18 @@ public interface IInOutBL extends ISingletonService
 
 	String getLocationEmail(InOutId ofRepoId);
 
+	@Nullable
+	String getPOReference(@NonNull InOutId inOutId);
+
 	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
+
+	CurrencyConversionContext getCurrencyConversionContext(InOutId inoutId);
+
+	CurrencyConversionContext getCurrencyConversionContext(I_M_InOut inout);
+
+	Money getCOGSBySalesOrderId(
+			@NonNull OrderLineId salesOrderLineId,
+			@NonNull AcctSchemaId acctSchemaId);
 
 	ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull OrderId orderId);
 }

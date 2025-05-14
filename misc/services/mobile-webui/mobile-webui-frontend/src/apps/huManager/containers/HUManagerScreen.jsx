@@ -1,24 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 
 import { useDispatch, useSelector } from 'react-redux';
-
-import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
+import {
+  huManagerBulkActionsLocation,
+  huManagerDisposeLocation,
+  huManagerHuLabelsLocation,
+  huManagerMoveLocation,
+} from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
-import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
+import HUScanner from '../../../components/huSelector/HUScanner';
 import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
+import * as scanAnythingRoutes from '../../scanAnything/routes';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { trl } from '../../../utils/translations';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -27,27 +30,15 @@ const MODALS = {
 };
 
 const HUManagerScreen = () => {
+  const { history } = useScreenDefinition({
+    screenId: 'HUManagerScreen',
+    back: '/',
+  });
+
   const dispatch = useDispatch();
-  const history = useHistory();
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
   const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
-
-  const { url } = useRouteMatch();
-  useEffect(() => {
-    // IMPORTANT, else it won't restore the title when we move back to this screen
-    dispatch(pushHeaderEntry({ location: url }));
-  }, []);
-
-  const resolveScannedBarcode = ({ scannedBarcode }) => {
-    return api.getHUByQRCode(scannedBarcode).then((handlingUnitInfo) => ({ handlingUnitInfo }));
-  };
-
-  const onResolvedResult = (result) => {
-    //console.log('onResolvedResult', { result });
-    const { handlingUnitInfo } = result;
-    setHandlingUnitInfo(handlingUnitInfo);
-  };
 
   const onDisposeClick = () => {
     history.push(huManagerDisposeLocation());
@@ -55,8 +46,15 @@ const HUManagerScreen = () => {
   const onMoveClick = () => {
     history.push(huManagerMoveLocation());
   };
+  const onBulkActionsClick = () => {
+    history.push(huManagerBulkActionsLocation());
+  };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
+    history.push(scanAnythingRoutes.appLocation());
+  };
+  const onPrintLabelsClicked = () => {
+    history.push(huManagerHuLabelsLocation());
   };
   const onClearanceChange = ({ clearanceNote, clearanceStatus }) => {
     dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })) //
@@ -75,7 +73,9 @@ const HUManagerScreen = () => {
         setLotNo,
         lotNo,
       })
-      .then(setHandlingUnitInfo)
+      .then(() => {
+        dispatch(clearLoadedData());
+      })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setModalToDisplay(''));
   };
@@ -132,39 +132,57 @@ const HUManagerScreen = () => {
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} currentLocatorQRCode={currentLocatorQRCode} />
         <div className="pt-3 section">
           {isExistingHU && (
-            <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
+            <ButtonWithIndicator
+              captionKey="huManager.action.dispose.buttonCaption"
+              onClick={onDisposeClick}
+              testId="dispose-button"
+            />
           )}
-          <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
+          <ButtonWithIndicator
+            captionKey="huManager.action.move.buttonCaption"
+            onClick={onMoveClick}
+            testId="move-button"
+          />
           {isExistingHU && (
             <ButtonWithIndicator
-              caption={trl('huManager.action.setClearance.buttonCaption')}
+              captionKey="huManager.action.setClearance.buttonCaption"
               onClick={() => setModalToDisplay(MODALS.CLEARANCE_STATUS)}
+              testId="set-clearance-button"
             />
           )}
           {!isExistingHU && (
             <ButtonWithIndicator
-              caption={trl('huManager.action.setCurrentLocator.buttonCaption')}
+              captionKey="huManager.action.setCurrentLocator.buttonCaption"
               onClick={() => setModalToDisplay(MODALS.SCAN_CURRENT_LOCATOR)}
+              testId="set-current-locator-button"
             />
           )}
+          <ButtonWithIndicator
+            caption={trl('huManager.action.bulkActions.buttonCaption')}
+            onClick={onBulkActionsClick}
+          />
           {isAllowQtyChange && (
             <ButtonWithIndicator
-              caption={trl('huManager.action.changeQty.buttonCaption')}
+              captionKey="huManager.action.changeQty.buttonCaption"
               onClick={() => setModalToDisplay(MODALS.CHANGE_QTY)}
+              testId="change-qty-button"
             />
           )}
-          <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
+          <ButtonWithIndicator
+            captionKey="huManager.action.printLabels.buttonCaption"
+            onClick={onPrintLabelsClicked}
+            testId="print-labels-button"
+          />
+          <ButtonWithIndicator
+            captionKey="huManager.action.scanAgain.buttonCaption"
+            onClick={onScanAgainClick}
+            testId="scan-again-button"
+          />
         </div>
       </>
     );
   } else {
-    return (
-      <BarcodeScannerComponent
-        continuousRunning={true}
-        resolveScannedBarcode={resolveScannedBarcode}
-        onResolvedResult={onResolvedResult}
-      />
-    );
+    return <HUScanner onResolvedBarcode={(handlingUnitInfo) => setHandlingUnitInfo(handlingUnitInfo)} />;
   }
 };
 

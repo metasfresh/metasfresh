@@ -1,18 +1,20 @@
 package de.metas.esb.edi.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for EDI_cctop_000_v
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_EDI_cctop_000_v 
 {
 
-    /** TableName=EDI_cctop_000_v */
-    public static final String Table_Name = "EDI_cctop_000_v";
+	String Table_Name = "EDI_cctop_000_v";
 
-    /** AD_Table_ID=540464 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540464 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +25,9 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +37,7 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +47,9 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Location.
@@ -58,7 +58,7 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
 	 * Get Location.
@@ -67,10 +67,9 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_Location_ID();
+	int getC_BPartner_Location_ID();
 
-    /** Column name C_BPartner_Location_ID */
-    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
 	 * Get Created.
@@ -80,12 +79,10 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_Created = new ModelColumn<>(I_EDI_cctop_000_v.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -95,10 +92,9 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set EDI_cctop_000_v.
@@ -107,7 +103,7 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEDI_cctop_000_v_ID (int EDI_cctop_000_v_ID);
+	void setEDI_cctop_000_v_ID (int EDI_cctop_000_v_ID);
 
 	/**
 	 * Get EDI_cctop_000_v.
@@ -116,35 +112,31 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getEDI_cctop_000_v_ID();
+	int getEDI_cctop_000_v_ID();
 
-    /** Column definition for EDI_cctop_000_v_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EDI_cctop_000_v_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "EDI_cctop_000_v_ID", null);
-    /** Column name EDI_cctop_000_v_ID */
-    public static final String COLUMNNAME_EDI_cctop_000_v_ID = "EDI_cctop_000_v_ID";
+	ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EDI_cctop_000_v_ID = new ModelColumn<>(I_EDI_cctop_000_v.class, "EDI_cctop_000_v_ID", null);
+	String COLUMNNAME_EDI_cctop_000_v_ID = "EDI_cctop_000_v_ID";
 
 	/**
-	 * Set EDI-ID des Dateiempfängers.
+	 * Set EDI-ID des INVOIC-Empfängers.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEdiDesadvRecipientGLN (java.lang.String EdiDesadvRecipientGLN);
+	void setEdiInvoicRecipientGLN (@Nullable java.lang.String EdiInvoicRecipientGLN);
 
 	/**
-	 * Get EDI-ID des Dateiempfängers.
+	 * Get EDI-ID des INVOIC-Empfängers.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEdiDesadvRecipientGLN();
+	@Nullable java.lang.String getEdiInvoicRecipientGLN();
 
-    /** Column definition for EdiDesadvRecipientGLN */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EdiDesadvRecipientGLN = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "EdiDesadvRecipientGLN", null);
-    /** Column name EdiDesadvRecipientGLN */
-    public static final String COLUMNNAME_EdiDesadvRecipientGLN = "EdiDesadvRecipientGLN";
+	ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EdiInvoicRecipientGLN = new ModelColumn<>(I_EDI_cctop_000_v.class, "EdiInvoicRecipientGLN", null);
+	String COLUMNNAME_EdiInvoicRecipientGLN = "EdiInvoicRecipientGLN";
 
 	/**
 	 * Set Active.
@@ -154,7 +146,7 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -164,12 +156,10 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_IsActive = new ModelColumn<>(I_EDI_cctop_000_v.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Get Updated.
@@ -179,12 +169,10 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_Updated = new ModelColumn<>(I_EDI_cctop_000_v.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -194,8 +182,7 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

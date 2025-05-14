@@ -1,8 +1,9 @@
 package de.metas.workflow.rest_api.service;
 
+import de.metas.mobile.application.MobileApplication;
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -21,7 +22,10 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 
 	@Override
 	@NonNull
-	MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId);
+	default MobileApplicationInfo customizeApplicationInfo(@NonNull MobileApplicationInfo applicationInfo, @NonNull UserId loggedUserId)
+	{
+		return MobileApplication.super.customizeApplicationInfo(applicationInfo, loggedUserId);
+	}
 
 	WorkflowLaunchersList provideLaunchers(WorkflowLaunchersQuery query);
 

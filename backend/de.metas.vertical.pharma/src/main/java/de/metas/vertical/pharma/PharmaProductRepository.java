@@ -54,7 +54,7 @@ public class PharmaProductRepository
 	public boolean isLineForNarcoticProduct(final InOutAndLineId inOutLineId)
 	{
 		final IInOutDAO inOutRepo = Services.get(IInOutDAO.class);
-		final I_M_InOutLine inOutLine = inOutRepo.getLineById(inOutLineId.getInOutLineId());
+		final I_M_InOutLine inOutLine = inOutRepo.getLineByIdInTrx(inOutLineId.getInOutLineId());
 
 		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
 

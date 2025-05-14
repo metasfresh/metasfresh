@@ -144,9 +144,9 @@ public class DDOrderCandidateRepository
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.hupiItemProductId(HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID()))
-				.qty(Quantitys.create(record.getQtyEntered(), uomId))
+				.qty(Quantitys.of(record.getQtyEntered(), uomId))
 				.qtyTUs(record.getQtyEnteredTU().intValueExact())
-				.qtyProcessed(Quantitys.create(record.getQtyProcessed(), uomId))
+				.qtyProcessed(Quantitys.of(record.getQtyProcessed(), uomId))
 				//
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				//
@@ -253,6 +253,10 @@ public class DDOrderCandidateRepository
 		if (query.getDdOrderCandidateId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_DD_Order_Candidate_ID, query.getDdOrderCandidateId());
+		}
+		if (query.getPpOrderBOMLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_DD_Order_Candidate.COLUMNNAME_Forward_PP_Order_BOMLine_ID, query.getPpOrderBOMLineId());
 		}
 
 		return queryBuilder;

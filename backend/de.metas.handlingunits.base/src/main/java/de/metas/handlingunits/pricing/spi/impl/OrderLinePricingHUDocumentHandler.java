@@ -162,6 +162,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		return ProductPrices.newQuery(plv)
 				.setProductId(productId)
 				.onlyAttributePricing()
+				.onlyValidPrices(true)
 				.retrieveDefault(I_M_ProductPrice.class);
 	}
 }

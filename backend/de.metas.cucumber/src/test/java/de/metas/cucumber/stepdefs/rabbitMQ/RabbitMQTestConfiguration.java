@@ -64,10 +64,4 @@ public class RabbitMQTestConfiguration implements IEventBusQueueConfiguration
 	{
 		return Optional.of(topic.getName());
 	}
-
-	@Override
-	public String getFanoutExchangeName()
-	{
-		return exchangeName;
-	}
 }

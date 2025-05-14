@@ -26,8 +26,8 @@ import de.metas.edi.esb.commons.ClearingCenter;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
-import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ObjectFactory;
 import lombok.NonNull;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
@@ -46,12 +46,16 @@ import java.text.NumberFormat;
 import java.time.Instant;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.contentOf;
 
 class CompudataDesadvRouteTest extends CamelTestSupport
 {
 	@EndpointInject("mock:fileOutputEndpoint")
 	private MockEndpoint fileOutputEndpoint;
+
+	@EndpointInject("mock:ep.rabbitmq.to.mf")
+	private MockEndpoint feedbackOutputEndpoint;
 
 	@Override
 	protected RouteBuilder createRouteBuilder()

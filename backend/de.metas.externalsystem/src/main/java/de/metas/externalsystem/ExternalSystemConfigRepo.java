@@ -32,6 +32,8 @@ import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.leichmehl.PLUFileDestination;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -849,18 +851,21 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemLeichMehlConfig buildExternalSystemLeichMehlConfig(@NonNull final I_ExternalSystem_Config_LeichMehl config)
+	private ExternalSystemLeichMehlConfig buildExternalSystemLeichMehlConfig(@NonNull final I_ExternalSystem_Config_LeichMehl configRecord)
 	{
-		final ExternalSystemLeichMehlConfigId id = ExternalSystemLeichMehlConfigId.ofRepoId(config.getExternalSystem_Config_LeichMehl_ID());
+		final ExternalSystemLeichMehlConfigId id = ExternalSystemLeichMehlConfigId.ofRepoId(configRecord.getExternalSystem_Config_LeichMehl_ID());
 
 		return ExternalSystemLeichMehlConfig.builder()
 				.id(id)
-				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
-				.value(config.getExternalSystemValue())
-				.productBaseFolderName(config.getProduct_BaseFolderName())
-				.tcpPort(config.getTCP_PortNumber())
-				.tcpHost(config.getTCP_Host())
-				.pluFileExportAuditEnabled(config.isPluFileExportAuditEnabled())
+				.parentId(ExternalSystemParentConfigId.ofRepoId(configRecord.getExternalSystem_Config_ID()))
+				.value(configRecord.getExternalSystemValue())
+				.productBaseFolderName(configRecord.getProduct_BaseFolderName())
+				.pluFileDestination(PLUFileDestination.ofCode(configRecord.getPluFileDestination()))
+				.tcpPort(configRecord.getTCP_PortNumber())
+				.tcpHost(configRecord.getTCP_Host())
+				.pluFileServerFolder(configRecord.getPluFileLocalFolder())
+				.pluType(PLUType.ofCode(configRecord.getCU_TU_PLU()))
+				.pluFileExportAuditEnabled(configRecord.isPluFileExportAuditEnabled())
 				.build();
 	}
 }

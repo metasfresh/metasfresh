@@ -52,7 +52,7 @@ public class AdWindowId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final AdWindowId id)
+	public static int toRepoId(@Nullable final AdWindowId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

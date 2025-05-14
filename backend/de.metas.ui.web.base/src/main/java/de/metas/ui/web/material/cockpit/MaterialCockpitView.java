@@ -95,7 +95,7 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	{
 		return DocumentQueryOrderByList.ofList(
 				ImmutableList.of(
-						DocumentQueryOrderBy.byFieldName(I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo),
+						DocumentQueryOrderBy.byFieldName(I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo_AtDate),
 						DocumentQueryOrderBy.byFieldName(I_MD_Cockpit.COLUMNNAME_ProductValue))
 		);
 	}

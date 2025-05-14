@@ -7,6 +7,8 @@ import { trl } from '../utils/translations';
 import { useBooleanSetting, useNumber, usePositiveNumberSetting } from '../reducers/settings';
 import { debounce } from 'lodash';
 import { beep } from '../utils/audio';
+import * as uiTrace from '../utils/ui_trace';
+import Spinner from './Spinner';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -63,7 +65,7 @@ const BarcodeScannerComponent = ({
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
 
-  const validateScannedBarcodeAndForward = async ({ scannedBarcode, controls = null }) => {
+  const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
     inputTextRef?.current?.select();
 
     const scanningStatus = scanningStatusRef.current;
@@ -116,6 +118,11 @@ const BarcodeScannerComponent = ({
       }
     }
   };
+
+  const validateScannedBarcodeAndForward = uiTrace.traceFunction(
+    validateScannedBarcodeAndForward0,
+    ({ scannedBarcode }) => ({ eventName: 'barcodeScanned', scannedBarcode })
+  );
 
   const mountedRef = useRef(true);
   useEffect(() => {
@@ -184,6 +191,7 @@ const BarcodeScannerComponent = ({
       <video key="video" ref={videoRef} width="100%" height="100%" />
       {isShowInputText && !isProcessing && (
         <input
+          id="input-text"
           key="input-text"
           ref={inputTextRef}
           className="input-text"
@@ -193,16 +201,9 @@ const BarcodeScannerComponent = ({
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
           onKeyUp={handleInputTextKeyPress}
+          data-testid="qrCode-input"
         />
       )}
-    </div>
-  );
-};
-
-const Spinner = () => {
-  return (
-    <div className="loading">
-      <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
     </div>
   );
 };

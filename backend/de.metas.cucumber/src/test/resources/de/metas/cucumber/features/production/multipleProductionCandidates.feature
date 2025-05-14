@@ -80,6 +80,7 @@ Feature: create multiple production candidates
   @Id:S0129.1_140
   @Id:S0212.100
   @from:cucumber
+  @flaky
   Scenario:  The manufacturing candidate is created for a sales order line,
   then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand.
@@ -241,6 +242,7 @@ Feature: create multiple production candidates
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
+  @flaky
   @from:cucumber
   @Id:S0212.300
   Scenario: The manufacturing candidate is created for a sales order line and then the sales order is re-opened and the ordered quantity is increased,

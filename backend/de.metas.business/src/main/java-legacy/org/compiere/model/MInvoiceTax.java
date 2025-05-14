@@ -88,7 +88,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 		MInvoiceTax retValue = new Query(line.getCtx(), Table_Name, "C_Invoice_ID=? AND C_Tax_ID=?", trxName)
 				.setParameters(new Object[] { line.getC_Invoice_ID(), C_Tax_ID })
-				.firstOnly();
+				.firstOnly(MInvoiceTax.class);
 		if (retValue != null)
 		{
 			retValue.set_TrxName(trxName);
@@ -264,7 +264,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 				}
 				else
 				{
-					amt = taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision());
+					amt = taxBL.calculateTaxAmt(tax, baseAmt, isTaxIncluded(), getPrecision());
 				}
 				//
 				taxAmt = taxAmt.add(amt);
@@ -294,7 +294,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		// Calculate Tax
 		if (documentLevel || taxAmt.signum() == 0)
 		{
-			taxAmt = taxBL.calculateTax(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+			taxAmt = taxBL.calculateTaxAmt(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
 		}
 		setTaxAmt(taxAmt);
 

@@ -24,8 +24,10 @@ package de.metas.device.scales;
 
 import de.metas.device.scales.impl.ScalesGetWeightHandler;
 import de.metas.device.scales.impl.soehenle.ISoehenleCmd;
+import de.metas.device.scales.impl.soehenle.SendTargetWeightHandler;
 import de.metas.device.scales.impl.soehenle.SoehenleInstantGrossWeightCmd;
 import de.metas.device.scales.impl.soehenle.SoehenleResponseStringParser;
+import de.metas.device.scales.impl.soehenle.SoehenleSendTargetWeightRequest;
 import de.metas.device.scales.impl.soehenle.SoehenleStableGrossWeightCmd;
 import de.metas.device.scales.request.GetGrossWeighRequest;
 import de.metas.device.scales.request.GetInstantGrossWeighRequest;
@@ -41,6 +43,7 @@ public class SoehenleScales extends AbstractTcpScales
 		registerHandler(GetInstantGrossWeighRequest.class, mkHandler(SoehenleInstantGrossWeightCmd.getInstance()));
 		registerHandler(GetGrossWeighRequest.class, mkHandler(SoehenleStableGrossWeightCmd.getInstance()));
 		registerHandler(GetStableGrossWeighRequest.class, mkHandler(SoehenleStableGrossWeightCmd.getInstance()));
+		registerHandler(SoehenleSendTargetWeightRequest.class, SendTargetWeightHandler.of(getEndPoint()));
 	}
 
 	@SuppressWarnings({ "rawtypes" })

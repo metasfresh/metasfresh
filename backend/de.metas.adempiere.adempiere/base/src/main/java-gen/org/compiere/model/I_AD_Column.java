@@ -258,7 +258,7 @@ public interface I_AD_Column
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setColumnName (java.lang.String ColumnName);
+	void setColumnName (@Nullable java.lang.String ColumnName);
 
 	/**
 	 * Get DB Column Name.

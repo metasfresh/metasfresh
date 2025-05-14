@@ -29,9 +29,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Same as {@link Interceptor}
- *
- * WARNING: this annotation is about to be deprecated. Please consider using {@link Interceptor}.
+ * Almost same as {@link Interceptor}, but does <b>not</b> work in conjuction with the {@link org.springframework.stereotype.Component} annotation!
+ * <p>
+ * WARNING: this annotation is about to be deprecated. Please use {@link Interceptor}.
  *
  * @author tsa
  */
@@ -42,8 +42,6 @@ public @interface Validator
 {
 	/**
 	 * Same as {@link Interceptor#value()}
-	 *
-	 * @return
 	 */
-	public Class<?> value();
+	Class<?> value();
 }

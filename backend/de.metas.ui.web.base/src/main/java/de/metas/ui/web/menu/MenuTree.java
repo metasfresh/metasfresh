@@ -1,32 +1,29 @@
 package de.metas.ui.web.menu;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
+import de.metas.ui.web.menu.MenuNode.MenuNodeType;
+import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ListMultimap;
-
-import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
-import de.metas.ui.web.menu.MenuNode.MenuNodeType;
-import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.WindowId;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L

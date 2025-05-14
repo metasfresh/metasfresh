@@ -1,84 +1,45 @@
 de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
   {
-    "id" : 1000000,
-    "orgId" : 1000000,
-    "docBaseAndSubType" : {
-      "docBaseType" : "MMI",
-      "docSubType" : "ISH"
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "ISH"
     },
-    "inventoryType" : "PHYSICAL",
-    "movementDate" : {
-      "dateTime" : {
-        "date" : {
-          "year" : 2020,
-          "month" : 6,
-          "day" : 15,
-          "leapYear" : true
-        },
-        "time" : {
-          "hour" : 0,
-          "minute" : 0,
-          "second" : 0,
-          "nano" : 0
-        }
-      },
-      "offset" : {
-        "totalSeconds" : -28800
-      },
-      "zone" : {
-        "id" : "UTC-08:00"
-      }
-    },
-    "docStatus" : "DR",
-    "documentNo" : "documentNo",
-    "lines" : [
+    "docStatus": "DR",
+    "documentNo": "documentNo",
+    "id": 1000000,
+    "inventoryType": "PHYSICAL",
+    "lines": [
       {
-        "id" : 1000000,
-        "orgId" : 1000000,
-        "asiId" : 1000000,
-        "productId" : 40,
-        "storageAttributesKey" : "10§&§11§&§12",
-        "locatorId" : "1000000_1000000",
-        "huAggregationType" : "MULTI_HU",
-        "inventoryType" : "PHYSICAL",
-        "counted" : true,
-        "qtyBookFixed" : {
-          "qty" : "30",
-          "uomId" : 1000000
-        },
-        "qtyCountFixed" : {
-          "qty" : "3",
-          "uomId" : 1000000
-        },
-        "inventoryLineHUs" : [
+        "asiId": 1000000,
+        "counted": true,
+        "huAggregationType": "MULTI_HU",
+        "id": 1000000,
+        "inventoryLineHUs": [
           {
-            "id" : 1000000,
-            "huId" : 100,
-            "inventoryType" : "PHYSICAL",
-            "qtyBook" : {
-              "qty" : "10",
-              "uomId" : 1000000
-            },
-            "qtyCount" : {
-              "qty" : "1",
-              "uomId" : 1000000
-            }
+            "huId": 100,
+            "id": 1000000,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": "10 Ea",
+            "qtyCount": "1 Ea"
           },
           {
-            "id" : 1000001,
-            "huId" : 200,
-            "inventoryType" : "PHYSICAL",
-            "qtyBook" : {
-              "qty" : "20",
-              "uomId" : 1000000
-            },
-            "qtyCount" : {
-              "qty" : "2",
-              "uomId" : 1000000
-            }
+            "huId": 200,
+            "id": 1000001,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": "20 Ea",
+            "qtyCount": "2 Ea"
           }
-        ]
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "1000000_1000000",
+        "orgId": 1000000,
+        "productId": 40,
+        "qtyBookFixed": "30 Ea",
+        "qtyCountFixed": "3 Ea",
+        "storageAttributesKey": "10§&§11§&§12"
       }
-    ]
+    ],
+    "movementDate": "2020-06-15T00:00:00-08:00",
+    "orgId": 1000000
   }
 ]

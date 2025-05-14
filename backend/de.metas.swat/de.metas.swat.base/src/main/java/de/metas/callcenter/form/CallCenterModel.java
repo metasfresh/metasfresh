@@ -122,7 +122,7 @@ public class CallCenterModel
 		try
 		{
 			final I_AD_Column c = Services.get(IADTableDAO.class).retrieveColumn(I_R_Group_Prospect.Table_Name, I_R_Group_Prospect.COLUMNNAME_R_Group_ID);
-			m_bundlesLookup = MLookupFactory.get(m_ctx, m_windowNo,
+			m_bundlesLookup = MLookupFactory.newInstance().get(m_ctx, m_windowNo,
 					0,								// Column_ID,
 					DisplayType.Table,				//AD_Reference_ID,
 					I_R_Group_Prospect.Table_Name,

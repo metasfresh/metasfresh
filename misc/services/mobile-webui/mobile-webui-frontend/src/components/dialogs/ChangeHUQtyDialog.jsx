@@ -6,6 +6,9 @@ import { trl } from '../../utils/translations';
 import QtyInputField from '../QtyInputField';
 import { qtyInfos } from '../../utils/qtyInfos';
 import DateInput from '../DateInput';
+import DialogButton from './DialogButton';
+import Dialog from './Dialog';
+import * as uiTrace from '../../utils/ui_trace';
 
 const ChangeHUQtyDialog = ({
   currentQty,
@@ -53,7 +56,7 @@ const ChangeHUQtyDialog = ({
   };
   const onDialogYes = () => {
     if (allValid) {
-      onSubmit({
+      const submitRequest = {
         qty: {
           qty: qtyInfos.toNumberOrString(qtyInfo),
           uomCode: uom,
@@ -63,74 +66,96 @@ const ChangeHUQtyDialog = ({
         setLotNo: isShowLotNo,
         lotNo,
         description: qtyChangeDescription,
-      });
+      };
+      uiTrace.putContext(submitRequest);
+      onSubmit(submitRequest);
     }
   };
 
   return (
     <div>
-      <div className="prompt-dialog get-qty-dialog">
-        <article className="message is-dark">
-          <div className="message-body">
-            <div className="table-container">
-              <table className="table">
-                <tbody>
-                  <tr>
-                    <th>{trl('huManager.action.changeQty.qtyLabel')}</th>
-                    <td>
-                      <QtyInputField
-                        qty={qtyInfos.toNumberOrString(qtyInfo)}
-                        uom={uom}
-                        validateQtyEntered={validateQtyEntered}
-                        onQtyChange={onQtyEntered}
-                        isRequestFocus={true}
-                      />
-                    </td>
-                  </tr>
-                  {isShowBestBeforeDate && (
-                    <tr>
-                      <th>{trl('general.BestBeforeDate')}</th>
-                      <td>
-                        <div className="field">
-                          <div className="control">
-                            <DateInput type="date" value={bestBeforeDate} onChange={onBestBeforeDateEntered} />
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                  {isShowLotNo && (
-                    <tr>
-                      <th>{trl('general.LotNo')}</th>
-                      <td>
-                        <div className="field">
-                          <div className="control">
-                            <input className="input" type="text" value={lotNo} onChange={onLotNoEntered} />
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                  <tr>
-                    <th>{trl('huManager.action.changeQty.descriptionLabel')}</th>
-                    <td>
-                      <textarea className="input" value={qtyChangeDescription} onChange={onDescriptionChange} />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="buttons is-centered">
-              <button className="button is-danger" disabled={!allValid} onClick={onDialogYes}>
-                {trl('activities.picking.confirmDone')}
-              </button>
-              <button className="button is-success" onClick={onCloseDialog}>
-                {trl('general.cancelText')}
-              </button>
-            </div>
-          </div>
-        </article>
-      </div>
+      <Dialog className="change-hu-qty-dialog" testId="ChangeHUQtyDialog">
+        <div className="table-container">
+          <table className="table">
+            <tbody>
+              <tr>
+                <th>{trl('huManager.action.changeQty.qtyLabel')}</th>
+                <td>
+                  <QtyInputField
+                    testId="qtyEntered"
+                    qty={qtyInfos.toNumberOrString(qtyInfo)}
+                    uom={uom}
+                    validateQtyEntered={validateQtyEntered}
+                    onQtyChange={onQtyEntered}
+                    isRequestFocus={true}
+                  />
+                </td>
+              </tr>
+              {isShowBestBeforeDate && (
+                <tr>
+                  <th>{trl('general.BestBeforeDate')}</th>
+                  <td>
+                    <div className="field">
+                      <div className="control">
+                        <DateInput
+                          testId="bestBeforeDate"
+                          type="date"
+                          value={bestBeforeDate}
+                          onChange={onBestBeforeDateEntered}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {isShowLotNo && (
+                <tr>
+                  <th>{trl('general.LotNo')}</th>
+                  <td>
+                    <div className="field">
+                      <div className="control">
+                        <input
+                          data-testid="lotNo"
+                          className="input"
+                          type="text"
+                          value={lotNo}
+                          onChange={onLotNoEntered}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              <tr>
+                <th>{trl('huManager.action.changeQty.descriptionLabel')}</th>
+                <td>
+                  <textarea
+                    data-testid="description"
+                    className="input"
+                    value={qtyChangeDescription}
+                    onChange={onDescriptionChange}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="buttons is-centered">
+          <DialogButton
+            testId="ok-button"
+            captionKey="activities.picking.confirmDone"
+            className="is-danger"
+            disabled={!allValid}
+            onClick={onDialogYes}
+          />
+          <DialogButton
+            testId="cancel-button"
+            captionKey="general.cancelText"
+            className="is-success"
+            onClick={onCloseDialog}
+          />
+        </div>
+      </Dialog>
     </div>
   );
 };

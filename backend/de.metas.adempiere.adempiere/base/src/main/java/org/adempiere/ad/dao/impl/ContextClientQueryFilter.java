@@ -22,23 +22,22 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.compiere.util.Env;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
 /**
  * Retain only those records which had the AD_Client_ID equals with the one from Context.
  *
- * @author tsa
- *
  * @param <T>
+ * @author tsa
  */
 public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
@@ -55,7 +54,7 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 
 	public ContextClientQueryFilter()
 	{
-		this((Properties)null, DEFAULT_IncludeSystemClient);
+		this(null, DEFAULT_IncludeSystemClient);
 	}
 
 	public ContextClientQueryFilter(final Properties ctx)
@@ -69,6 +68,15 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 		this.includeSystemClient = includeSystemClient;
 		this.sql = includeSystemClient ? SQL_ADClientOrSystem : SQL_ADClient;
 	}
+
+	private ContextClientQueryFilter(@NonNull final ContextClientQueryFilter<T> from)
+	{
+		this.ctx = from.ctx;
+		this.includeSystemClient = from.includeSystemClient;
+		this.sql = from.sql;
+	}
+
+	public ContextClientQueryFilter<T> copy() {return new ContextClientQueryFilter<>(this);}
 
 	@Override
 	public String toString()
@@ -87,7 +95,7 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 	{
 		final Properties ctxToUse = ctx == null ? this.ctx : ctx;
 		final int adClientId = Env.getAD_Client_ID(ctxToUse);
-		return Arrays.asList((Object)adClientId);
+		return Collections.singletonList(adClientId);
 	}
 
 	public void setContext(final Properties ctx)
@@ -135,8 +143,7 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 		}
 		else if (adClientId instanceof Number)
 		{
-			final int adClientIdInt = ((Number)adClientId).intValue();
-			return adClientIdInt;
+			return ((Number)adClientId).intValue();
 		}
 		else
 		{

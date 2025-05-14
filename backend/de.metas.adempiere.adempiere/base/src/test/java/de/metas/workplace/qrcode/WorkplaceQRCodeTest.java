@@ -25,6 +25,7 @@ package de.metas.workplace.qrcode;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,7 @@ class WorkplaceQRCodeTest
 		final Workplace workplace = Workplace.builder()
 				.id(WorkplaceId.ofRepoId(1000001))
 				.name("workplace1")
+				.warehouseId(WarehouseId.MAIN)
 				.build();
 		final WorkplaceQRCode qrCode = WorkplaceQRCode.ofWorkplace(workplace);
 		System.out.println("QRCode: " + qrCode.toGlobalQRCodeJsonString());

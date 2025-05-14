@@ -1,11 +1,10 @@
 package org.adempiere.service;
 
-import java.util.Properties;
-
 import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
 import org.compiere.model.I_AD_Preference;
 
-import de.metas.util.ISingletonService;
+import java.util.Properties;
 
 /*
  * #%L

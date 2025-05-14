@@ -2,6 +2,7 @@ package de.metas.material.event.ddordercandidate;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.util.IdConstants;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MinMaxDescriptor;
@@ -141,4 +142,13 @@ public class DDOrderCandidateData
 		return toBuilder().forwardPPOrderRef(forwardPPOrderRefNew).build();
 	}
 
+	public int getOrderLineIdAsRepoId()
+	{
+		return IdConstants.toRepoId(salesOrderLineId);
+	}
+
+	public int getOrderIdAsRepoId()
+	{
+		return IdConstants.toRepoId(salesOrderId);
+	}
 }
