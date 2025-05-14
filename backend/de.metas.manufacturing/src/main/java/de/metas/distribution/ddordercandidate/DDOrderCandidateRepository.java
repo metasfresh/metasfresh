@@ -27,6 +27,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -68,7 +69,7 @@ public class DDOrderCandidateRepository
 		candidate.setId(DDOrderCandidateId.ofRepoId(record.getDD_Order_Candidate_ID()));
 	}
 
-	private static void updateRecord(final I_DD_Order_Candidate record, DDOrderCandidate from)
+	private static void updateRecord(final I_DD_Order_Candidate record, final DDOrderCandidate from)
 	{
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
 		record.setDateOrdered(Timestamp.from(from.getDateOrdered()));
@@ -126,7 +127,7 @@ public class DDOrderCandidateRepository
 	{
 		record.setForward_PP_Order_ID(from != null ? PPOrderId.toRepoId(from.getPpOrderId()) : -1);
 		record.setForward_PP_Order_BOMLine_ID(from != null ? PPOrderBOMLineId.toRepoId(from.getPpOrderBOMLineId()) : -1);
-		record.setForward_PP_Order_Candidate_ID(from != null ? from.getPpOrderCandidateId() : -1);
+		record.setForward_PP_Order_Candidate_ID(from != null ? PPOrderCandidateId.toRepoId(from.getPpOrderCandidateId()) : -1);
 		record.setForward_PP_OrderLine_Candidate_ID(from != null ? from.getPpOrderLineCandidateId() : -1);
 	}
 
@@ -176,9 +177,9 @@ public class DDOrderCandidateRepository
 	@Nullable
 	private static PPOrderRef extractForwardPPOrderRef(final I_DD_Order_Candidate record)
 	{
-		final int ppOrderCandidateId = record.getForward_PP_Order_Candidate_ID();
+		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(record.getForward_PP_Order_Candidate_ID());
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getForward_PP_Order_ID());
-		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		if (ppOrderCandidateId == null && ppOrderId == null)
 		{
 			return null;
 		}
@@ -262,7 +263,7 @@ public class DDOrderCandidateRepository
 		return queryBuilder;
 	}
 
-	public void updateByQuery(@NonNull final DDOrderCandidateQuery query, @NonNull UnaryOperator<DDOrderCandidate> updater)
+	public void updateByQuery(@NonNull final DDOrderCandidateQuery query, @NonNull final UnaryOperator<DDOrderCandidate> updater)
 	{
 		final List<I_DD_Order_Candidate> records = toSqlQuery(query).create().list();
 		for (final I_DD_Order_Candidate record : records)

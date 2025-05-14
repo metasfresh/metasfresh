@@ -31,6 +31,7 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
@@ -77,6 +78,7 @@ import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -445,7 +447,7 @@ public class CandidateRepositoryWriteService
 		productionDetailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		productionDetailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
 
-		productionDetailRecordToUpdate.setPP_Order_Candidate_ID(productionDetail.getPpOrderCandidateId());
+		productionDetailRecordToUpdate.setPP_Order_Candidate_ID(PPOrderCandidateId.toRepoId(productionDetail.getPpOrderCandidateId()));
 		productionDetailRecordToUpdate.setPP_OrderLine_Candidate_ID(productionDetail.getPpOrderLineCandidateId());
 		productionDetailRecordToUpdate.setPP_Order_ID(PPOrderId.toRepoId(productionDetail.getPpOrderId()));
 		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(productionDetail.getPpOrderBOMLineId()));
@@ -501,7 +503,7 @@ public class CandidateRepositoryWriteService
 		save(detailRecordToUpdate);
 	}
 
-	private static void updateRecord(@NonNull final I_MD_Candidate_Dist_Detail record, @Nullable DDOrderRef from)
+	private static void updateRecord(@NonNull final I_MD_Candidate_Dist_Detail record, @Nullable final DDOrderRef from)
 	{
 		record.setDD_Order_Candidate_ID(from != null ? from.getDdOrderCandidateId() : -1);
 		record.setDD_Order_ID(from != null ? from.getDdOrderId() : -1);
@@ -512,7 +514,7 @@ public class CandidateRepositoryWriteService
 	{
 		record.setPP_Order_ID(from != null ? PPOrderId.toRepoId(from.getPpOrderId()) : -1);
 		record.setPP_Order_BOMLine_ID(from != null ? PPOrderBOMLineId.toRepoId(from.getPpOrderBOMLineId()) : -1);
-		record.setPP_Order_Candidate_ID(from != null ? from.getPpOrderCandidateId() : -1);
+		record.setPP_Order_Candidate_ID(from != null ? PPOrderCandidateId.toRepoId(from.getPpOrderCandidateId()) : -1);
 		record.setPP_OrderLine_Candidate_ID(from != null ? from.getPpOrderLineCandidateId() : -1);
 	}
 
@@ -937,6 +939,15 @@ public class CandidateRepositoryWriteService
 																		 .seqNo(candidateRecord.getSeqNo())
 																		 .build(),
 																 candidateRecord.getQty());
+	}
+
+	public List<Candidate> getSupplyCandidatesForDemand(@NonNull final Candidate demandCandidate, @NonNull final CandidateBusinessCase businessCase)
+	{
+		Check.assume(demandCandidate.getType().isDemand(), "The given candidate needs to be of type demand {}", demandCandidate);
+		final CandidatesQuery candidatesQuery = CandidatesQuery.ofMaterialDescriptorAndDemandDetails(demandCandidate.getMaterialDescriptor(), demandCandidate.getDemandDetail())
+				.withType(CandidateType.SUPPLY)
+				.withBusinessCase(businessCase);
+		return candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
 	}
 
 	public void updateCandidatesByQuery(@NonNull final CandidatesQuery query, @NonNull final UnaryOperator<Candidate> updater)

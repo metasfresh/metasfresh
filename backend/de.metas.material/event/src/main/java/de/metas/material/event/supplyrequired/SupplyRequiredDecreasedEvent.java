@@ -2,7 +2,7 @@
  * #%L
  * metasfresh-material-event
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,48 +20,50 @@
  * #L%
  */
 
-package de.metas.material.event.pporder;
+package de.metas.material.event.supplyrequired;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 
-@EqualsAndHashCode(callSuper = false)
-@Getter
-@ToString
-public abstract class AbstractPPOrderCandidateEvent implements MaterialEvent
+import static de.metas.material.event.MaterialEventConstants.MD_CANDIDATE_TABLE_NAME;
+
+@Value
+@Builder
+@Jacksonized
+public class SupplyRequiredDecreasedEvent implements MaterialEvent
 {
-	@NonNull protected final EventDescriptor eventDescriptor;
-	@NonNull protected final PPOrderCandidate ppOrderCandidate;
-	@Nullable protected final SupplyRequiredDescriptor supplyRequiredDescriptor;
+	public static final String TYPE = "SupplyRequiredDecreasedEvent";
 
-	public AbstractPPOrderCandidateEvent(
-			@NonNull final EventDescriptor eventDescriptor,
-			@NonNull final PPOrderCandidate ppOrderCandidate,
-			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
-	{
-		this.eventDescriptor = eventDescriptor;
-		this.ppOrderCandidate = ppOrderCandidate;
-		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
-	}
+	@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor;
+	@NonNull Collection<PPOrderCandidateId> ppOrderCandidateIds;
+	@NonNull Collection<Integer> ddOrderCandidateIds;
+	@NonNull Collection<Integer> purchaseCandidateIds;
 
 	@JsonIgnore
-	public PPOrderCandidateId getPpOrderCandidateId() {return getPpOrderCandidate().getPpOrderCandidateId();}
+	@Override
+	public EventDescriptor getEventDescriptor()
+	{
+		return supplyRequiredDescriptor.getEventDescriptor();
+	}
 
 	@Nullable
 	@Override
 	public TableRecordReference getSourceTableReference()
 	{
-		return TableRecordReference.ofNullable(I_PP_Order_Candidate.Table_Name, getPpOrderCandidateId());
+		return TableRecordReference.ofNullable(MD_CANDIDATE_TABLE_NAME, supplyRequiredDescriptor.getDemandCandidateId());
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

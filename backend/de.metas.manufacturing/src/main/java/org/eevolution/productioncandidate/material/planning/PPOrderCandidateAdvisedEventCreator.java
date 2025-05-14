@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.material.planning.ppordercandidate;
+package org.eevolution.productioncandidate.material.planning;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -28,6 +28,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
+import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
@@ -40,9 +41,11 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Component
 @RequiredArgsConstructor
@@ -74,7 +77,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		boolean firstRequest = true;
 		for (final MaterialRequest request : partialRequests)
 		{
-			final int parentPPOrderCandidateId = supplyRequiredDescriptor.getPpOrderCandidateId();
+			final PPOrderCandidateId parentPPOrderCandidateId = supplyRequiredDescriptor.getPpOrderCandidateId();
 
 			// this is the PPOrderCandidate which we advise the system to create! 
 			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request)
@@ -158,5 +161,13 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 			partialRequests = partialRequestsBuilder.build();
 		}
 		return partialRequests;
+	}
+
+	public BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent supplyRequiredDescriptor,
+											 @NonNull final BigDecimal remainingQtyToDistribute)
+	{
+
+
+		return remainingQtyToDistribute;
 	}
 }

@@ -83,7 +83,7 @@ public class PPOrderCandidateAdvisedEvent extends AbstractPPOrderCandidateEvent
 
 		final PPOrderCandidate ppOrderCandidate = getPpOrderCandidate();
 
-		Check.errorIf(ppOrderCandidate.getPpOrderCandidateId() > 0,
+		Check.errorIf(ppOrderCandidate.getPpOrderCandidateId() != null,
 					  "The given ppOrderCandidateAdvisedEvent's ppOrderCandidate may not yet have an ID; ppOrderCandidate={}", ppOrderCandidate);
 
 		final int productPlanningId = ppOrderCandidate.getPpOrderData().getProductPlanningId();
