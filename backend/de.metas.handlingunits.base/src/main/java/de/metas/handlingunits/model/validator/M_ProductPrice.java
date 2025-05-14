@@ -78,6 +78,8 @@ public class M_ProductPrice
 	@CalloutMethod(columnNames = { I_M_ProductPrice.COLUMNNAME_C_UOM_ID })
 	public void validateUOM(final I_M_ProductPrice productPrice)
 	{
+		if(productBL.getById(ProductId.ofRepoId(productPrice.getM_Product_ID())).isSkipPriceUOMValidation()){return;}
+
 		final UomId uomId = UomId.ofRepoIdOrNull(productPrice.getC_UOM_ID());
 		if(uomId == null)
 		{
