@@ -28,6 +28,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessBasicInfo;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessType;
@@ -79,7 +80,7 @@ import java.util.stream.Collectors;
 @Profile(Profiles.PROFILE_App)
 public class ProcessRestController
 {
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
@@ -111,8 +112,9 @@ public class ProcessRestController
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
-		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
-		processInfoBuilder.setAD_Process_ID(processId.get());
+		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
+				.setAD_Process_ID(processId.get())
+				.setProcessCalledFrom(ProcessCalledFrom.API);
 
 		final boolean parametersPresent = request != null && !Check.isEmpty(request.getProcessParameters());
 
