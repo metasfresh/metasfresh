@@ -234,7 +234,7 @@ public class ModularContractLogRepository
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
-				.modularParentContractModuleId(ModularContractModuleId.ofRepoIdOrNull(record.getModCntr_BaseModule_ID()))
+				.baseModularContractModuleId(ModularContractModuleId.ofRepoIdOrNull(record.getModCntr_BaseModule_ID()))
 				.invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(record.getC_Invoice_Candidate_ID()))
 				.build();

@@ -81,6 +81,9 @@ public interface IModularContractLogHandler
 	@NonNull
 	IComputingMethodHandler getComputingMethod();
 
+	@Nullable
+	default ComputingMethodType getBaseComputingMethodType() {return null;}
+
 	@NonNull
 	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final CreateLogRequest request)
 	{

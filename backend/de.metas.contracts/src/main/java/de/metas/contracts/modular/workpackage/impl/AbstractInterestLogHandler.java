@@ -66,6 +66,9 @@ public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHand
 	}
 
 	@Override
+	public ComputingMethodType getBaseComputingMethodType(){return interestBaseComputingMethodType;}
+
+	@Override
 	public boolean applies(final @NonNull CreateLogRequest request)
 	{
 		final ModuleConfig baseModuleConfig = request.getBaseModuleConfig();

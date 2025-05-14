@@ -140,7 +140,7 @@ public class ModularContractLogEntry
 	boolean isBillable;
 
 	@NonNull ModularContractModuleId modularContractModuleId;
-	@Nullable ModularContractModuleId modularParentContractModuleId;
+	@Nullable ModularContractModuleId baseModularContractModuleId;
 
 	@Nullable BigDecimal userElementNumber1;
 	@Nullable BigDecimal userElementNumber2;
@@ -177,7 +177,7 @@ public class ModularContractLogEntry
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			final boolean isBillable,
 			@NonNull final ModularContractModuleId modularContractModuleId,
-			@Nullable final ModularContractModuleId modularParentContractModuleId,
+			@Nullable final ModularContractModuleId baseModularContractModuleId,
 			final @Nullable BigDecimal userElementNumber1,
 			final @Nullable BigDecimal userElementNumber2
 			)
@@ -222,7 +222,7 @@ public class ModularContractLogEntry
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable;
 		this.modularContractModuleId = modularContractModuleId;
-		this.modularParentContractModuleId = modularParentContractModuleId;
+		this.baseModularContractModuleId = baseModularContractModuleId;
 		this.userElementNumber1 = userElementNumber1;
 		this.userElementNumber2 = userElementNumber2;
 	}
