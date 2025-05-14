@@ -44,7 +44,6 @@ public class SupplyRequiredDecreasedEvent implements MaterialEvent
 	public static final String TYPE = "SupplyRequiredDecreasedEvent";
 
 	@NonNull SupplyRequiredDescriptor supplyRequiredDescriptor;
-	int demandCandidateId;
 
 	@JsonIgnore
 	@Override

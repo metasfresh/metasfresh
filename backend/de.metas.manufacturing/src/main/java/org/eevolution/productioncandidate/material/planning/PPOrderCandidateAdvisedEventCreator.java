@@ -204,7 +204,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 	private @NonNull Collection<PPOrderCandidateId> getPpOrderCandidateIds(final @NonNull SupplyRequiredDecreasedEvent event)
 	{
-		final Candidate demandCandidate = candidateRepositoryRetrieval.retrieveById(CandidateId.ofRepoId(event.getDemandCandidateId()));
+		final Candidate demandCandidate = candidateRepositoryRetrieval.retrieveById(CandidateId.ofRepoId(event.getSupplyRequiredDescriptor().getDemandCandidateId()));
 		return candidateRepositoryWriteService.getSupplyCandidatesForDemand(demandCandidate, CandidateBusinessCase.PRODUCTION)
 				.stream()
 				.map(candidate -> ProductionDetail.cast(candidate.getBusinessCaseDetail()).getPpOrderCandidateId())

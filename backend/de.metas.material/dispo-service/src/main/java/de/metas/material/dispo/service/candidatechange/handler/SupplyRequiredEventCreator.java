@@ -73,7 +73,6 @@ public class SupplyRequiredEventCreator
 				null);
 		return SupplyRequiredDecreasedEvent.builder()
 				.supplyRequiredDescriptor(descriptor)
-				.demandCandidateId(demandCandidate.getId().getRepoId())
 				.build();
 	}
 
