@@ -44,4 +44,8 @@ public class BaseModuleConfig
 	{
 		return ModularContractModuleId.equals(modularContractModuleId, baseModuleConfigId.getModularContractModuleId());
 	}
+
+	@NonNull public ModularContractModuleId getModularContractModuleId() {return moduleConfigId.getModularContractModuleId();}
+
+	@NonNull public ModularContractModuleId getBaseModularContractModuleId() {return baseModuleConfigId.getModularContractModuleId();}
 }

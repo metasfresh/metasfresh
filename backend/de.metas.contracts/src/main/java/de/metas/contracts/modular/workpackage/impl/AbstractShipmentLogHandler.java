@@ -234,6 +234,7 @@ public abstract class AbstractShipmentLogHandler extends AbstractModularContract
 				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_REVERSED, productName, quantity.abs()))
 				.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 				.contractModuleId(createLogRequest.getModularContractModuleId())
+				.baseContractModuleId(createLogRequest.getBaseModularContractModuleId())
 				.build());
 	}
 

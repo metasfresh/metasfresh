@@ -262,6 +262,11 @@ public class ModularContractLogRepository
 			queryBuilder.entryId(request.id());
 		}
 
+		if (request.baseContractModuleId() != null)
+		{
+			queryBuilder.baseContractModuleId(request.baseContractModuleId());
+		}
+
 		final I_ModCntr_Log oldLog = lastRecord(queryBuilder.build())
 				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
@@ -389,6 +394,11 @@ public class ModularContractLogRepository
 		if (query.getContractModuleId() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, query.getContractModuleId());
+		}
+
+		if (query.getBaseContractModuleId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID, query.getBaseContractModuleId());
 		}
 
 		if (query.getProcessed() != null)
