@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-material-planning
+ * de.metas.manufacturing
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -41,7 +41,9 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -54,6 +56,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
 	@NonNull private final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
+	@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
 
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createAdvisedEvents(
@@ -105,7 +108,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 		return result.build();
 	}
-	
+
 	@Nullable
 	private static Quantity extractMaxQuantityPerOrder(@NonNull final ProductPlanning productPlanning)
 	{
@@ -163,11 +166,53 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		return partialRequests;
 	}
 
-	public BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent supplyRequiredDescriptor,
-											 @NonNull final BigDecimal remainingQtyToDistribute)
+	@Override
+	public BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
+											 @NonNull final BigDecimal qtyToDistribute)
 	{
+		if (qtyToDistribute.signum() <= 0)
+		{
+			return BigDecimal.ZERO;
+		}
 
+		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByIds(event.getPpOrderCandidateIds());
+		BigDecimal remainingQtyToDistribute = qtyToDistribute;
+
+		for (final I_PP_Order_Candidate ppOrderCandidate : candidates)
+		{
+			remainingQtyToDistribute = doDecreaseQty(ppOrderCandidate, remainingQtyToDistribute);
+
+			if (remainingQtyToDistribute.signum() <= 0)
+			{
+				return BigDecimal.ZERO;
+			}
+		}
 
 		return remainingQtyToDistribute;
+	}
+
+	private BigDecimal doDecreaseQty(final I_PP_Order_Candidate ppOrderCandidate, final BigDecimal remainingQtyToDistribute)
+	{
+		if (remainingQtyToDistribute.signum() <= 0)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		if (isCandidateEligibleForBeingDecreased(ppOrderCandidate))
+		{
+			final BigDecimal qtyToDecrease = remainingQtyToDistribute.min(ppOrderCandidate.getQtyToProcess());
+			ppOrderCandidate.setQtyToProcess(ppOrderCandidate.getQtyToProcess().subtract(qtyToDecrease));
+			ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyEntered().subtract(qtyToDecrease));
+			ppOrderCandidateDAO.save(ppOrderCandidate);
+			return remainingQtyToDistribute.subtract(qtyToDecrease);
+		}
+		return remainingQtyToDistribute;
+	}
+
+	private static boolean isCandidateEligibleForBeingDecreased(final I_PP_Order_Candidate ppOrderCandidate)
+	{
+		return ppOrderCandidate.isActive() &&
+				!ppOrderCandidate.isClosed() &&
+				ppOrderCandidate.getQtyToProcess().signum() > 0;
 	}
 }

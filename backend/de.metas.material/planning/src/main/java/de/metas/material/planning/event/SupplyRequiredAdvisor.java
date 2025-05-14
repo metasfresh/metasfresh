@@ -15,10 +15,10 @@ public interface SupplyRequiredAdvisor
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context);
 
-	default BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent supplyRequiredDescriptor,
-											  @NonNull final BigDecimal remainingQtyToDistribute)
+	default BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
+											  @NonNull final BigDecimal qtyToDistribute)
 	{
-		return remainingQtyToDistribute;
+		return qtyToDistribute;
 	}
 
 }

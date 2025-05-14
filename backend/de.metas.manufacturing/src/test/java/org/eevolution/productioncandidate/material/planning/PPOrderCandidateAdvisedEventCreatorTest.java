@@ -52,6 +52,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -108,6 +109,7 @@ class PPOrderCandidateAdvisedEventCreatorTest
 				.date(NOW)
 				.build();
 	}
+
 	public static ProductDescriptor createProductDescriptorWithProductId(final int productId)
 	{
 		return ProductDescriptor.forProductAndAttributes(
@@ -225,6 +227,7 @@ class PPOrderCandidateAdvisedEventCreatorTest
 	{
 		PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
 		PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
+		PPOrderCandidateDAO ppOrderCandidateDAO;
 		private PPOrderCandidateAdvisedEventCreator ppOrderCandidateAdvisedCreator;
 
 		I_M_Product product;
@@ -234,7 +237,8 @@ class PPOrderCandidateAdvisedEventCreatorTest
 		{
 			ppOrderCandidateDemandMatcher = Mockito.mock(PPOrderCandidateDemandMatcher.class);
 			ppOrderCandidatePojoSupplier = Mockito.mock(PPOrderCandidatePojoSupplier.class);
-			ppOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier);
+			ppOrderCandidateDAO = Mockito.mock(PPOrderCandidateDAO.class);
+			ppOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier, ppOrderCandidateDAO);
 
 			product = newInstance(I_M_Product.class);
 			product.setC_UOM_ID(uomId.getRepoId());
