@@ -1,5 +1,6 @@
 package de.metas.document.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
@@ -10,8 +11,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
-import de.metas.document.sequence.DocSequenceId;
-import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -23,7 +22,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -35,7 +33,6 @@ import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -67,7 +64,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 public class DocTypeDAO implements IDocTypeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ISequenceDAO sequenceDAO = Services.get(ISequenceDAO.class);
 
 	private final CCache<DocTypeQuery, Optional<DocTypeId>> docTypeIdsByQuery = CCache.<DocTypeQuery, Optional<DocTypeId>>builder()
 			.tableName(I_C_DocType.Table_Name)
@@ -357,41 +353,15 @@ public class DocTypeDAO implements IDocTypeDAO
 		return DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 	}
 
-	@Override
-	public DocTypeId cloneToOrg(@NonNull final I_C_DocType fromDocType, @NonNull final OrgId toOrgId)
-	{
-		final String newName = fromDocType.getName() + "_cloned";
-		final I_C_DocType newDocType = InterfaceWrapperHelper.copy()
-				.setFrom(fromDocType)
-				.setSkipCalculatedColumns(true)
-				.copyToNew(I_C_DocType.class);
-
-		newDocType.setAD_Org_ID(toOrgId.getRepoId());
-		// dev-note: unique index (ad_client_id, name)
-		newDocType.setName(newName);
-
-		final DocSequenceId fromDocSequenceId = DocSequenceId.ofRepoIdOrNull(fromDocType.getDocNoSequence_ID());
-		if (fromDocType.isDocNoControlled() && fromDocSequenceId != null)
-		{
-			final DocSequenceId clonedDocSequenceId = sequenceDAO.cloneToOrg(fromDocSequenceId, toOrgId);
-			newDocType.setDocNoSequence_ID(clonedDocSequenceId.getRepoId());
-			newDocType.setIsDocNoControlled(true);
-		}
-
-		save(newDocType);
-
-		return DocTypeId.ofRepoId(newDocType.getC_DocType_ID());
-	}
-
 	@NonNull
-	public Iterator<I_C_DocType> retrieveForSelection(@NonNull final PInstanceId pinstanceId)
+	public ImmutableList<I_C_DocType> retrieveForSelection(@NonNull final PInstanceId pinstanceId)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_DocType.class)
 				.setOnlySelection(pinstanceId)
 				.orderBy(I_C_DocType.COLUMNNAME_C_DocType_ID)
 				.create()
-				.iterate(I_C_DocType.class);
+				.listImmutable();
 	}
 
 	@EqualsAndHashCode

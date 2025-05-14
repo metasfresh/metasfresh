@@ -25,3 +25,31 @@ UPDATE AD_Process SET AccessLevel='3',Updated=TO_TIMESTAMP('2025-05-13 12:03:31'
 -- 2025-05-13T11:22:12.091Z
 UPDATE AD_Process_Trl SET Name='Clone Selection',Updated=TO_TIMESTAMP('2025-05-13 14:22:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585468
 ;
+
+-- 2025-05-14T18:56:42.991Z
+UPDATE AD_Process SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:56:42.99','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585468
+;
+
+-- 2025-05-14T18:56:43Z
+UPDATE AD_Process_Trl trl SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.' WHERE AD_Process_ID=585468 AND AD_Language='de_DE'
+;
+
+-- Process: C_DocType_Clone_Selection(de.metas.document.process.C_DocType_Clone_Selection)
+-- 2025-05-14T18:57:00.692Z
+UPDATE AD_Process_Trl SET Description='Clone selected document types to the below organization and in case the document is number controlled and it has a sequence, also clone the sequence to the below organization.',Updated=TO_TIMESTAMP('2025-05-14 21:57:00.692','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585468
+;
+
+-- Process: C_DocType_Clone_Selection(de.metas.document.process.C_DocType_Clone_Selection)
+-- 2025-05-14T18:57:04.903Z
+UPDATE AD_Process_Trl SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:57:04.903','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585468
+;
+
+-- Process: C_DocType_Clone_Selection(de.metas.document.process.C_DocType_Clone_Selection)
+-- 2025-05-14T18:57:08.526Z
+UPDATE AD_Process_Trl SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:57:08.526','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585468
+;
+
+-- Process: C_DocType_Clone_Selection(de.metas.document.process.C_DocType_Clone_Selection)
+-- 2025-05-14T18:57:09.882Z
+UPDATE AD_Process_Trl SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:57:09.882','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND AD_Process_ID=585468
+;

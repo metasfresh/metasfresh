@@ -22,11 +22,11 @@ package de.metas.document;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.GLCategoryId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
-import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
@@ -36,7 +36,6 @@ import lombok.Value;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.compiere.model.I_C_DocType;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -113,7 +112,5 @@ public interface IDocTypeDAO extends ISingletonService
 	DocBaseAndSubType getDocBaseAndSubTypeById(DocTypeId docTypeId);
 
 	@NonNull
-	Iterator<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
-
-	DocTypeId cloneToOrg(@NonNull I_C_DocType fromDocType, @NonNull OrgId toOrgId);
+	ImmutableList<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
 }

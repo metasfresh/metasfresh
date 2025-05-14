@@ -22,6 +22,7 @@
 
 package de.metas.document.process;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.document.IDocTypeBL;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessPrecondition;
@@ -42,8 +43,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.DB;
-
-import java.util.Iterator;
 
 public class C_DocType_Clone_Selection extends JavaProcess implements IProcessPrecondition
 {
@@ -71,16 +70,14 @@ public class C_DocType_Clone_Selection extends JavaProcess implements IProcessPr
 		final OrgId orgId = OrgId.ofRepoId(toOrgId);
 		final PInstanceId pinstanceId = getPinstanceId();
 
-		final Iterator<I_C_DocType> docTypes = docTypeBL.retrieveForSelection(pinstanceId);
+		final ImmutableList<I_C_DocType> docTypes = docTypeBL.retrieveForSelection(pinstanceId);
 
-		int count = 0;
-		while (docTypes.hasNext())
+		for (final I_C_DocType docType : docTypes)
 		{
-			docTypeBL.cloneToOrg(docTypes.next(), orgId);
-			count++;
+			docTypeBL.cloneToOrg(docType, orgId);
 		}
 
-		return "@Copied@=" + count;
+		return "@Copied@=" + docTypes.size();
 	}
 
 	@Override

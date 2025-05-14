@@ -1,5 +1,6 @@
 package de.metas.document;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
@@ -8,8 +9,6 @@ import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
-
-import java.util.Iterator;
 
 public interface IDocTypeBL extends ISingletonService
 {
@@ -81,7 +80,7 @@ public interface IDocTypeBL extends ISingletonService
 	void save(I_C_DocType dt);
 
 	@NonNull
-	Iterator<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
+	ImmutableList<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
 
-	void cloneToOrg(@NonNull I_C_DocType dt, @NonNull OrgId toOrgId);
+	DocTypeId cloneToOrg(@NonNull I_C_DocType dt, @NonNull OrgId toOrgId);
 }
