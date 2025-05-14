@@ -61,7 +61,7 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 	{
 		final SupplyRequiredDescriptor descriptor = event.getSupplyRequiredDescriptor();
 		final MaterialPlanningContext context = helper.createContextOrNull(descriptor);
-		BigDecimal remainingQtyToHandle = descriptor.getFullDemandQty();
+		BigDecimal remainingQtyToHandle = descriptor.getMaterialDescriptor().getQuantity();
 		if (context != null)
 		{
 			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)

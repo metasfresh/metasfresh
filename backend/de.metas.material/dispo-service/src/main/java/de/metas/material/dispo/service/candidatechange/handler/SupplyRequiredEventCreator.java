@@ -67,8 +67,8 @@ public class SupplyRequiredEventCreator
 		return SupplyRequiredEvent.of(descriptor);
 	}
 
-	@NonNull
-	public static SupplyRequiredDecreasedEvent createSupplyRequiredDecreasedEvent(
+	@Nullable
+	public static SupplyRequiredDecreasedEvent createSupplyRequiredDecreasedEventOrNull(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal decreasedQty,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService)
@@ -92,7 +92,10 @@ public class SupplyRequiredEventCreator
 				.map(candidate -> PurchaseDetail.cast(candidate.getBusinessCaseDetail()).getPurchaseCandidateRepoId())
 				.collect(Collectors.toSet());
 
-
+		if (ppOrderCandidateIds.isEmpty() && distributionCandidates.isEmpty() && purchaseCandidates.isEmpty())
+		{
+			return null;
+		}
 		return SupplyRequiredDecreasedEvent.builder()
 				.supplyRequiredDescriptor(descriptor)
 				.ppOrderCandidateIds(ppOrderCandidateIds)
