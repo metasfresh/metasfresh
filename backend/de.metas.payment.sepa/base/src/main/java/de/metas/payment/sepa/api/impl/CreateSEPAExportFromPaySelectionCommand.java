@@ -14,11 +14,9 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.sepa.api.SEPAProtocol;
-import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
@@ -26,7 +24,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -83,7 +80,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	public CreateSEPAExportFromPaySelectionCommand(@NonNull final I_C_PaySelection source)
 	{
-		this.source = create(source, I_C_PaySelection.class);
+		this.source = source;
 	}
 
 	public I_SEPA_Export run()
@@ -137,8 +134,8 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setAD_Table_ID(getTableId(I_C_PaySelectionLine.class));
 		exportLine.setRecord_ID(line.getC_PaySelectionLine_ID());
 		exportLine.setAmt(line.getPayAmt());
-		exportLine.setC_BP_BankAccount_ID(BankAccountId.toRepoId(bpBankAccount.getId()));
-		exportLine.setC_Currency_ID(CurrencyId.toRepoId(bpBankAccount.getCurrencyId()));
+		exportLine.setC_BP_BankAccount_ID(bpBankAccount.getId().getRepoId());
+		exportLine.setC_Currency_ID(bpBankAccount.getCurrencyId().getRepoId());
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
 
 		exportLine.setIBAN(selectIBANOrNull(bpBankAccount));
@@ -175,8 +172,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		// We need the source org BP.
 		final I_C_BPartner orgBP = partnerOrgBL.retrieveLinkedBPartner(paySelectionHeader.getAD_Org_ID());
 
-		final BankAccount bpBankAccount = bankAccountDAO.getById(BankAccountId.ofRepoIdOrNull(paySelectionHeader.getC_BP_BankAccount_ID()));
-		Check.assumeNotNull(bpBankAccount, "bpBankAccount not null"); // mandatory column
+		final BankAccount bpBankAccount = bankAccountDAO.getById(BankAccountId.ofRepoId(paySelectionHeader.getC_BP_BankAccount_ID()));
 
 		// task 09923: In case the bp bank account does not have a bank set, it cannot be used in a SEPA Export
 		final BankId bankId = bpBankAccount.getBankId();
