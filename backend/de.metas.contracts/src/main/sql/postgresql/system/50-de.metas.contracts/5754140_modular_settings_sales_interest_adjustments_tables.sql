@@ -284,7 +284,7 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,589969,541449,540816,0,TO_TIMESTAMP('2025-05-14 08:08:57.782','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y',30,TO_TIMESTAMP('2025-05-14 08:08:57.782','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
-
-
-
+-- 2025-05-14T18:42:15.524Z
+CREATE UNIQUE INDEX modcntr_basemoduleconfig_settings_uq ON ModCntr_BaseModuleConfig (ModCntr_Settings_ID,ModCntr_Module_ID,ModCntr_BaseModule_ID) WHERE isActive = 'Y'
+;
 
