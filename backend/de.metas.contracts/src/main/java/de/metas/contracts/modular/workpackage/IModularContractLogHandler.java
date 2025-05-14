@@ -146,7 +146,7 @@ public interface IModularContractLogHandler
 		@NonNull HandleLogsRequest handleLogsRequest;
 		@NonNull ModularContractSettings modularContractSettings;
 		@NonNull ModuleConfig moduleConfig;
-		@Nullable ModuleConfig parentModuleConfig;
+		@Nullable ModuleConfig baseModuleConfig;
 
 		public YearId getYearId() {return getModularContractSettings().getYearId();}
 
@@ -197,13 +197,13 @@ public interface IModularContractLogHandler
 		public String getProductName() {return moduleConfig.getName();}
 
 		@NonNull
-		public CreateLogRequest toParentModuleCreateLogRequest()
+		public CreateLogRequest toBaseModuleCreateLogRequest()
 		{
 			return CreateLogRequest
 					.builder()
 					.handleLogsRequest(handleLogsRequest)
 					.modularContractSettings(modularContractSettings)
-					.moduleConfig(Check.assumeNotNull(parentModuleConfig, "parentModuleConfig shouldn't be null"))
+					.moduleConfig(Check.assumeNotNull(baseModuleConfig, "parentModuleConfig shouldn't be null"))
 					.build();
 		}
 	}

@@ -34,13 +34,13 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 @Getter
@@ -64,28 +64,28 @@ public class InterestComputingMethod extends AbstractShipmentComputingMethod
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
-		if (logs.isEmpty())
+
+		final Money totalInterest = logs.getAmountSum().orElse(null);
+		if (totalInterest == null)
 		{
 			return computingMethodService.toZeroResponse(request);
 		}
+		Check.assumeEquals(request.getCurrencyId(), totalInterest.getCurrencyId(), "Log and Invoice Currency should be the same");
+
+
 
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
-		final Quantity qtyInStockUOM = computingMethodService.getQtySum(logs, stockUOMId)
-				.divide(BigDecimal.valueOf(logs.getDistinctBaseModuleConfigCount()));
-
-
-		final Money money = logs.computePricePerQtyUnit()
-				.orElseGet(() -> Money.zero(request.getCurrencyId()));
+		final ProductPrice priceWithStockUOM = ProductPrice.builder()
+				.productId(request.getProductId())
+				.money(totalInterest)
+				.uomId(stockUOMId)
+				.build();
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(money)
-						.uomId(stockUOMId)
-						.build())
-				.qty(qtyInStockUOM)
+				.price(priceWithStockUOM)
+				.qty(totalInterest.isZero() ? Quantitys.zero(stockUOMId) : Quantitys.one(stockUOMId))
 				.build();
 	}
 

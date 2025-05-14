@@ -73,9 +73,9 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.DocBaseType;
@@ -239,7 +239,7 @@ public class FlatrateBL implements IFlatrateBL
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
-	@NonNull private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
+	@NonNull private final ModularContractLogRepository modularContractLogRepository = SpringContextHolder.instance.getBean(ModularContractLogRepository.class);
 
 	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -2448,7 +2448,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private boolean isModularContractFullyShipped(@NonNull final FlatrateTermId flatrateTermId)
 	{
-		final ModularContractLogEntriesList logs = modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery
+		final ModularContractLogEntriesList logs = modularContractLogRepository.getModularContractLogEntries(ModularContractLogQuery
 				.builder()
 				.flatrateTermId(flatrateTermId)
 				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_SALES_METHODS)

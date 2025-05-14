@@ -17,7 +17,7 @@ import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.ModularContractPriceRepository;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
@@ -65,7 +65,7 @@ import java.sql.Timestamp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FlatrateTermHandlerTest extends ContractsTestBase
 {
@@ -82,7 +82,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	protected void init()
 	{
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
-		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogRepository());
 		SpringContextHolder.registerJUnitBean(ModularContractLogService.newInstanceForJUnitTesting());
 		SpringContextHolder.registerJUnitBean(ModularContractSettingsService.newInstanceForJUnitTesting());
 		SpringContextHolder.registerJUnitBean(ModularContractComputingMethodHandlerRegistry.newInstanceForJUnitTesting());

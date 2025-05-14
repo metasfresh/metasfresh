@@ -52,7 +52,7 @@ import java.math.BigDecimal;
 public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHandler
 {
 	// use low precision in Logs to be more accurate on aggregation of logs on IC creation with lower precision
-	protected final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
+	private static final CurrencyPrecision precision = CurrencyPrecision.ofInt(12);
 
 	@NonNull IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final  IModularContractLogHandler interestBaseLogHandler;
@@ -72,7 +72,7 @@ public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHand
 	@Override
 	public boolean applies(final @NonNull CreateLogRequest request)
 	{
-		final ModuleConfig parentModuleConfig = request.getParentModuleConfig();
+		final ModuleConfig parentModuleConfig = request.getBaseModuleConfig();
 		if ( parentModuleConfig == null || !parentModuleConfig.isMatching(interestBaseComputingMethodType))
 		{
 			return false;
@@ -84,14 +84,14 @@ public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHand
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final LogEntryCreateRequest interestBaseRequest = interestBaseLogHandler.createLogEntryCreateRequest(createLogRequest.toParentModuleCreateLogRequest()).get();
+		final LogEntryCreateRequest interestBaseRequest = interestBaseLogHandler.createLogEntryCreateRequest(createLogRequest.toBaseModuleCreateLogRequest()).get();
 		final Money interestBaseAmount = Check.assumePresent(interestBaseRequest.getAmount(), "Amount should be present");
 		final ProductPrice interestBaseAmountAsProductPrice = ProductPrice.builder()
 				.productId(createLogRequest.getProductId())
 				.uomId(productBL.getStockUOMId(createLogRequest.getProductId()))
 				.money(interestBaseAmount)
 				.build();
-		final Integer interestDays = computeInterestDays(createLogRequest, interestBaseRequest.getTransactionDate(), interestBaseRequest.getPhysicalClearanceDate());
+		final int interestDays = computeInterestDays(createLogRequest, interestBaseRequest.getTransactionDate(), interestBaseRequest.getPhysicalClearanceDate());
 		final Percent interestPercent = createLogRequest.getModularContractSettings().getInterestPercent();
 
 
@@ -122,11 +122,11 @@ public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHand
 				.description(interestBaseRequest.getDescription())
 				.modularContractTypeId(createLogRequest.getTypeId())
 				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
-				.parentConfigModuleId(createLogRequest.getConfigId().getModularContractModuleId())
+				.baseConfigModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.build());
 	}
 
-	private Integer computeInterestDays(
+	private int computeInterestDays(
 			final @NotNull CreateLogRequest createLogRequest,
 			final @NonNull LocalDateAndOrgId transactionDate,
 			final @Nullable LocalDateAndOrgId physicalClearanceDate)
@@ -138,7 +138,7 @@ public abstract class AbstractInterestLogHandler extends AbstractShipmentLogHand
 	}
 
 	@NonNull
-	private Money computeAmount(
+	private static Money computeAmount(
 			final @NotNull ProductPrice productPrice,
 			final @NonNull Integer interestDays,
 			final @NonNull Percent interestPercent)

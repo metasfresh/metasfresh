@@ -24,7 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.informative;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.impl.AbstractFinalInvoiceLineLog;
 import lombok.Getter;
@@ -39,12 +39,12 @@ public class FinalInvoiceLineLog extends AbstractFinalInvoiceLineLog
 
 	public FinalInvoiceLineLog(
 			@NonNull final ModularContractService modularContractService,
-			@NonNull final ModularContractLogDAO contractLogDAO,
+			@NonNull final ModularContractLogRepository contractLogRepo,
 			@NonNull final ModularContractLogService modularContractLogService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final InformativeLogComputingMethod computingMethod)
 	{
-		super(modularContractService, contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
+		super(modularContractService, contractLogRepo, modularContractLogService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
 	}
 }

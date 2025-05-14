@@ -32,8 +32,8 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -71,7 +71,7 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 
 	@NonNull private final ShippingNotificationService notificationService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogRepository contractLogRepo;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -80,13 +80,13 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 
 	protected AbstractShippingNotificationLogHandler(final @NonNull ShippingNotificationService notificationService,
 			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			final @NonNull ModularContractLogDAO contractLogDAO,
+			final @NonNull ModularContractLogRepository contractLogRepo,
 			@NonNull final ModularContractService modularContractService)
 	{
 		super(modularContractService);
 		this.notificationService = notificationService;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
-		this.contractLogDAO = contractLogDAO;
+		this.contractLogRepo = contractLogRepo;
 	}
 
 	@Override
@@ -174,7 +174,7 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 
 		final TableRecordReference notificationLineRef = TableRecordReference.of(notificationLine);
 
-		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
+		final Quantity quantity = contractLogRepo.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
 				.flatrateTermId(createLogRequest.getContractId())
 				.referenceSet(TableRecordReferenceSet.of(notificationLineRef))
 				.build());

@@ -44,6 +44,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -67,7 +68,6 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final AdMessageKey DIFFERENT_CURRENCIES_MESSAGE = AdMessageKey.of("Different_Currencies");
-	private static final AdMessageKey DIFFERENT_CONTRACTS_MESSAGE = AdMessageKey.of("Different_Contracts");
 
 	@Param(parameterName = "M_Product_ID", mandatory = true)
 	private ProductId p_M_Product_ID;
@@ -107,6 +107,7 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
 		retrieveContractSpecificPricesFromSelectionWithoutAveragePrices()
@@ -132,31 +133,35 @@ public class ModCntr_Specific_Price_Update_Selection extends JavaProcess impleme
 
 	private void updatePrice(final ModCntrSpecificPriceId contractPriceId)
 	{
-		final ModCntrSpecificPrice newContractPrice;
+		trxManager.assertThreadInheritedTrxNotExists();
+		trxManager.runInThreadInheritedTrx(() -> {
+					final ModCntrSpecificPrice newContractPrice;
 
-		if (p_asNewPrice)
-		{
-			newContractPrice = modularContractPriceService.cloneById(contractPriceId, contractPrice -> contractPrice.toBuilder()
-					.amount(Money.of(p_price, p_C_Currency_ID))
-					.uomId(p_C_UOM_ID)
-					.minValue(p_minValue)
-					.build());
-		}
-		else
-		{
-			newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
-					.amount(Money.of(p_price, p_C_Currency_ID))
-					.uomId(p_C_UOM_ID)
-					.minValue(p_minValue)
-					.build());
-		}
+					if (p_asNewPrice)
+					{
+						newContractPrice = modularContractPriceService.cloneById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+								.amount(Money.of(p_price, p_C_Currency_ID))
+								.uomId(p_C_UOM_ID)
+								.minValue(p_minValue)
+								.build());
+					}
+					else
+					{
+						newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+								.amount(Money.of(p_price, p_C_Currency_ID))
+								.uomId(p_C_UOM_ID)
+								.minValue(p_minValue)
+								.build());
+					}
 
-		contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
-						.unitPrice(newContractPrice.getProductPrice())
-						.flatrateTermId(newContractPrice.flatrateTermId())
-						.modularContractModuleId(newContractPrice.modularContractModuleId())
-						.build(),
-				logHandlerRegistry);
+					contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
+									.unitPrice(newContractPrice.getProductPrice())
+									.flatrateTermId(newContractPrice.flatrateTermId())
+									.modularContractModuleId(newContractPrice.modularContractModuleId())
+									.build(),
+							logHandlerRegistry);
+				}
+		);
 	}
 
 	public ImmutableSet<ModCntrSpecificPriceId> retrieveContractSpecificPricesFromSelectionWithoutAveragePrices()

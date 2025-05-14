@@ -28,11 +28,11 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.BaseModuleConfig;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModuleConfig;
-import de.metas.contracts.modular.settings.ModuleParentConfig;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
@@ -87,7 +87,7 @@ class ModularContractLogHandler
 	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final ModularContractLogHandlerRegistry handlerRegistry;
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogRepository contractLogRepo;
 	@NonNull private final ModularContractLogService modularLogService;
 	@NonNull private final ShippingNotificationService notificationService;
 
@@ -117,18 +117,18 @@ class ModularContractLogHandler
 		final LogAction action = getLogAction(request);
 		for (final ModuleConfig moduleConfig : moduleConfigs)
 		{
-			if (settings.containsModuleParentConfig(moduleConfig))
+			if (settings.containsBaseModuleConfig(moduleConfig))
 			{
-				for (final ModuleParentConfig parentConfig : settings.getModuleParentConfigs())
+				for (final BaseModuleConfig baseConfig : settings.getBaseModuleConfigs())
 				{
-					if(parentConfig.isConfigFor(moduleConfig))
+					if(baseConfig.isConfigFor(moduleConfig))
 					{
 						final IModularContractLogHandler.CreateLogRequest createLogRequest = IModularContractLogHandler.CreateLogRequest
 								.builder()
 								.handleLogsRequest(request)
 								.modularContractSettings(settings)
 								.moduleConfig(moduleConfig)
-								.parentModuleConfig(settings.getModuleConfigByIdOrError(parentConfig.getModuleParentConfigId()))
+								.baseModuleConfig(settings.getModuleConfigByIdOrError(baseConfig.getBaseModuleConfigId()))
 								.build();
 
 						handleLogs(handler, action, createLogRequest);
@@ -185,7 +185,7 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
 		createLogEntryCreateRequest(handler, request)
-				.ifPresent(contractLogDAO::create)
+				.ifPresent(contractLogRepo::create)
 				.ifAbsent(explanation -> Loggables.withLogger(logger, Level.DEBUG)
 						.addLog("Method: {} | No logs created for request: {}! reason: {}!",
 								"createLogs",
@@ -221,7 +221,7 @@ class ModularContractLogHandler
 			return;
 		}
 
-		contractLogDAO.delete(handler.toLogEntryDeleteRequest(request.getHandleLogsRequest(), request.getModularContractModuleId()));
+		contractLogRepo.delete(handler.toLogEntryDeleteRequest(request.getHandleLogsRequest(), request.getModularContractModuleId()));
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("Method: {} | Logs were successfully deleted for request: {}!", "recreateLogs", request);

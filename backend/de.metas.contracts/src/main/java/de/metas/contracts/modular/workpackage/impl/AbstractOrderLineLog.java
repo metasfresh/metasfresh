@@ -28,8 +28,8 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerHelper;
@@ -74,18 +74,18 @@ public abstract class AbstractOrderLineLog extends AbstractModularContractLogHan
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull private final ModularContractLogDAO modularContractLogDAO;
+	@NonNull private final ModularContractLogRepository modularContractLogRepository;
 
 	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
 
 	public AbstractOrderLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ModularContractLogDAO modularContractLogDAO)
+			@NonNull final ModularContractLogRepository modularContractLogRepository)
 	{
 		super(modularContractService);
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
-		this.modularContractLogDAO = modularContractLogDAO;
+		this.modularContractLogRepository = modularContractLogRepository;
 	}
 
 	@Override
@@ -148,7 +148,7 @@ public abstract class AbstractOrderLineLog extends AbstractModularContractLogHan
 		final I_C_OrderLine orderLineRecord = orderBL.getOrderLineById(orderLineRef.getIdAssumingTableName(getSupportedTableName(), OrderLineId::ofRepoId));
 		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
 
-		final Quantity quantity = modularContractLogDAO.retrieveQuantityFromExistingLog(
+		final Quantity quantity = modularContractLogRepository.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
 						.flatrateTermId(request.getContractId())
 						.referenceSet(TableRecordReferenceSet.of(request.getRecordRef()))

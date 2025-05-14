@@ -14,7 +14,7 @@ import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.ModularContractPriceRepository;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.ContractOrderService;
@@ -45,7 +45,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
@@ -60,7 +60,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
-		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 		SpringContextHolder.registerJUnitBean(ModularContractComputingMethodHandlerRegistry.newInstanceForJUnitTesting());
 		SpringContextHolder.registerJUnitBean(ProcessModularLogsEnqueuer.newInstanceForJUnitTesting());

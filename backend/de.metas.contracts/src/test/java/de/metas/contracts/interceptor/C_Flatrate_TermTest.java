@@ -5,7 +5,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.location.impl.DummyDocumentLocationBL;
@@ -54,7 +54,7 @@ public class C_Flatrate_TermTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
-		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogRepository());
 	}
 
 	@Test

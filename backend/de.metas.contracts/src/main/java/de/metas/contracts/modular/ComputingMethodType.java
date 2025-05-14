@@ -105,7 +105,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			SalesAV,
 			SalesStorageCost,
 			SalesAverageAddedValueOnShippedQuantity,
-			AVReceiptUntilDate
+			AVReceiptUntilDate,
+			SalesInterest
 	);
 
 	public static final ImmutableSet<ComputingMethodType> PURCHASE_SALES_METHODS = ImmutableSet.of(
@@ -141,7 +142,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			SalesStorageCost,
 			Sales,
 			SalesAV,
-			SalesAverageAddedValueOnShippedQuantity
+			SalesAverageAddedValueOnShippedQuantity,
+			SalesInterest
 	);
 
 	public static final ImmutableSet<ComputingMethodType> INTEREST_SPECIFIC_METHODS = ImmutableSet.of(AddValueOnInterim,
@@ -210,7 +212,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	public static final ImmutableSet<ComputingMethodType> NEED_UOM_EACH_METHODS = ImmutableSet.of(
 			SalesStorageCost,
 			PurchaseStorageCost,
-			DefinitiveInvoiceStorageCost
+			DefinitiveInvoiceStorageCost,
+			SalesInterest
 	);
 
 

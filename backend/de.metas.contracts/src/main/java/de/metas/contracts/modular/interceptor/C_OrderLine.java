@@ -23,7 +23,7 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public class C_OrderLine
 	private static final AdMessageKey MSG_ERR_DELETION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_OrderLine.DeletionNotAllowed");
 
 
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogRepository contractLogRepo;
 	@NonNull private final ModularContractService contractService;
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -51,7 +51,7 @@ public class C_OrderLine
 	{
 		final TableRecordReference recordReference = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
 
-		if (contractLogDAO.hasAnyModularLogs(recordReference))
+		if (contractLogRepo.hasAnyModularLogs(recordReference))
 		{
 			throw new AdempiereException(MSG_ERR_DELETION_NOT_ALLOWED)
 					.markAsUserValidationError();

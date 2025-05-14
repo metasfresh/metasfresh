@@ -152,6 +152,27 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_C_Year_ID = "C_Year_ID";
 
 	/**
+	 * Set Free Interest Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setFreeInterestDays (int FreeInterestDays);
+
+	/**
+	 * Get Free Interest Days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getFreeInterestDays();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_FreeInterestDays = new ModelColumn<>(I_ModCntr_Settings.class, "FreeInterestDays", null);
+	String COLUMNNAME_FreeInterestDays = "FreeInterestDays";
+
+	/**
 	 * Set Free Storage Days.
 	 *
 	 * <br>Type: Integer

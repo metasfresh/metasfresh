@@ -31,7 +31,7 @@ import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.i18n.AdMessageKey;
@@ -78,7 +78,7 @@ public class C_Order
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull private final ModularContractService contractService;
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogRepository contractLogRepo;
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
@@ -137,7 +137,7 @@ public class C_Order
 		final boolean hasAnyModularLogs = orderBL.retrieveOrderLines(orderRecord)
 				.stream()
 				.map(record -> TableRecordReference.of(I_C_OrderLine.Table_Name, record.getC_OrderLine_ID()))
-				.anyMatch(contractLogDAO::hasAnyModularLogs);
+				.anyMatch(contractLogRepo::hasAnyModularLogs);
 
 		if (!hasAnyModularLogs)
 		{

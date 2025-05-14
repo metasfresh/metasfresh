@@ -133,7 +133,7 @@ public class LogEntryCreateRequest
 	ModularContractModuleId configModuleId;
 
 	@Nullable
-	ModularContractModuleId parentConfigModuleId;
+	ModularContractModuleId baseConfigModuleId;
 
 	@Nullable
 	ProductPrice priceActual;
@@ -206,7 +206,7 @@ public class LogEntryCreateRequest
 			@Nullable final String description,
 			@NonNull final ModularContractTypeId modularContractTypeId,
 			@NonNull final ModularContractModuleId configModuleId,
-			@Nullable final ModularContractModuleId parentConfigModuleId,
+			@Nullable final ModularContractModuleId baseConfigModuleId,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			@Nullable final Boolean isBillable,
@@ -249,7 +249,7 @@ public class LogEntryCreateRequest
 		this.description = description;
 		this.modularContractTypeId = modularContractTypeId;
 		this.configModuleId = configModuleId;
-		this.parentConfigModuleId = parentConfigModuleId;
+		this.baseConfigModuleId = baseConfigModuleId;
 		this.priceActual = priceActual;
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable != null ? isBillable : true;

@@ -28,18 +28,20 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ModuleParentConfig
+public class BaseModuleConfig
 {
+	@NonNull BaseModuleConfigAndSettingsId id;
+
 	@NonNull String name;
 
-	@NonNull ModuleConfigAndSettingsId moduleParentConfigId;
+	@NonNull ModuleConfigAndSettingsId baseModuleConfigId;
 
 	@NonNull ModuleConfigAndSettingsId moduleConfigId;
 
 	public boolean isConfigFor(@NonNull final ModuleConfig moduleConfig) {return ModuleConfigAndSettingsId.equals(moduleConfig.getId(), moduleConfigId);}
 
-	public boolean isConfigWithParent(@NonNull final ModularContractModuleId modularContractModuleId)
+	public boolean isConfigWithBaseConfig(@NonNull final ModularContractModuleId modularContractModuleId)
 	{
-		return ModularContractModuleId.equals(modularContractModuleId, moduleParentConfigId.getModularContractModuleId());
+		return ModularContractModuleId.equals(modularContractModuleId, baseModuleConfigId.getModularContractModuleId());
 	}
 }

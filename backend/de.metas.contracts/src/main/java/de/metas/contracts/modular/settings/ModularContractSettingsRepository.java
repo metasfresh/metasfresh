@@ -35,6 +35,7 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_ModCntr_BaseModuleConfig;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
@@ -134,16 +135,17 @@ public class ModularContractSettingsRepository
 				.build();
 	}
 
-	// private static ModuleParentConfig fromRecord(@NonNull final I_ModCntr_ParentModuleConfig record)//TODO
-	// {
-	// 	final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
-	//
-	// 	return ModuleParentConfig.builder()
-	// 			.moduleConfigId(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, record.getModCntr_Module_ID()))
-	// 			.moduleParentConfigId(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, record.getModCntr_ParentModule_ID()))
-	// 			.name(record.getName())
-	// 			.build();
-	// }
+	private static BaseModuleConfig fromRecord(@NonNull final I_ModCntr_BaseModuleConfig record)
+	{
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
+
+		return BaseModuleConfig.builder()
+				.id(BaseModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, record.getModCntr_BaseModuleConfig_ID()))
+				.moduleConfigId(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, record.getModCntr_Module_ID()))
+				.baseModuleConfigId(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, record.getModCntr_BaseModule_ID()))
+				.name(record.getName())
+				.build();
+	}
 
 	public ModularContractType getContractTypeById(@NonNull final ModularContractTypeId id)
 	{
@@ -200,7 +202,13 @@ public class ModularContractSettingsRepository
 				.create()
 				.list();
 
-		return fromRecord(InterfaceWrapperHelper.load(contractSettingsId, I_ModCntr_Settings.class), moduleRecords);
+		final List<I_ModCntr_BaseModuleConfig> baseModuleConfigRecords = queryBL.createQueryBuilder(I_ModCntr_BaseModuleConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_BaseModuleConfig.COLUMNNAME_ModCntr_Settings_ID, contractSettingsId)
+				.create()
+				.list();
+
+		return fromRecord(InterfaceWrapperHelper.load(contractSettingsId, I_ModCntr_Settings.class), moduleRecords, baseModuleConfigRecords);
 	}
 
 	@NonNull
@@ -208,23 +216,33 @@ public class ModularContractSettingsRepository
 	{
 		final ImmutableListMultimap<ModularContractSettingsId, I_ModCntr_Module> settingsId2ModuleRecords = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_ModCntr_Module.COLUMN_ModCntr_Settings_ID, contractSettingsIds)
+				.addInArrayFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, contractSettingsIds)
 				.create()
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						module -> ModularContractSettingsId.ofRepoId(module.getModCntr_Settings_ID()),
 						Function.identity()));
 
+		final ImmutableListMultimap<ModularContractSettingsId, I_ModCntr_BaseModuleConfig> settingsId2BaseModuleConfigRecords = queryBL.createQueryBuilder(I_ModCntr_BaseModuleConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_ModCntr_BaseModuleConfig.COLUMNNAME_ModCntr_Settings_ID, contractSettingsIds)
+				.create()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						baseModuleConfig -> ModularContractSettingsId.ofRepoId(baseModuleConfig.getModCntr_Settings_ID()),
+						Function.identity()));
+
 		return InterfaceWrapperHelper.loadByRepoIdAwares(contractSettingsIds, I_ModCntr_Settings.class)
 				.stream()
-				.map(settings -> fromRecord(settings, settingsId2ModuleRecords.get(extractId(settings))))
+				.map(settings -> fromRecord(settings, settingsId2ModuleRecords.get(extractId(settings)), settingsId2BaseModuleConfigRecords.get(extractId(settings))))
 				.collect(ImmutableMap.toImmutableMap(ModularContractSettings::getId, Function.identity()));
 	}
 
 	@NonNull
 	private ModularContractSettings fromRecord(
 			@NonNull final I_ModCntr_Settings settingsRecord,
-			@NonNull final List<I_ModCntr_Module> moduleRecords)
+			@NonNull final List<I_ModCntr_Module> moduleRecords,
+			@NonNull final List<I_ModCntr_BaseModuleConfig> baseModuleConfigRecords)
 	{
 		final ModularContractTypeMap contractTypes = getContractTypes();
 
@@ -248,9 +266,12 @@ public class ModularContractSettingsRepository
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))
 				.freeStorageCostDays(settingsRecord.getFreeStorageCostDays())
-				//.freeInterestDays(settingsRecord.getFreeInterestDays()) TODO
+				.freeInterestDays(settingsRecord.getFreeInterestDays())
 				.moduleConfigs(moduleRecords.stream()
 						.map(moduleRecord -> fromRecord(moduleRecord, contractTypes))
+						.collect(ImmutableList.toImmutableList()))
+				.baseModuleConfigs(baseModuleConfigRecords.stream()
+						.map(ModularContractSettingsRepository::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}

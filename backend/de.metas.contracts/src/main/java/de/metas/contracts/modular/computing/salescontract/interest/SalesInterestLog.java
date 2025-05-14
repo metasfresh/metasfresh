@@ -20,33 +20,25 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.processed;
+package de.metas.contracts.modular.computing.salescontract.interest;
 
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.salescontract.addedvalue.ShipmentLineLog;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.ModularContractLogRepository;
-import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.workpackage.impl.AbstractFinalInvoiceLineLog;
-import lombok.Getter;
+import de.metas.contracts.modular.workpackage.impl.AbstractInterestLogHandler;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-@Getter
-public class FinalInvoiceLineLog extends AbstractFinalInvoiceLineLog
+public class SalesInterestLog extends AbstractInterestLogHandler
 {
-	@NonNull private final DefinitiveInvoiceForProcessedProductComputingMethod computingMethod;
-
-	private final boolean billable = true;
-
-	public FinalInvoiceLineLog(
+	public SalesInterestLog(
 			@NonNull final ModularContractService modularContractService,
-			@NonNull final ModularContractLogRepository contractLogRepo,
-			@NonNull final ModularContractLogService modularContractLogService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final DefinitiveInvoiceForProcessedProductComputingMethod computingMethod)
+			@NonNull final InterestComputingMethod computingMethod,
+			@NonNull final ShipmentLineLog interestBaseLogHandler)
 	{
-		super(modularContractService, contractLogRepo, modularContractLogService, modCntrInvoicingGroupRepository);
-		this.computingMethod = computingMethod;
+		super(modularContractService, modCntrInvoicingGroupRepository, computingMethod, interestBaseLogHandler, ComputingMethodType.Sales);
 	}
 }

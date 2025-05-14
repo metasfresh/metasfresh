@@ -16,7 +16,7 @@ import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.ModularContractPriceRepository;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.greeting.GreetingRepository;
@@ -46,7 +46,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -97,7 +97,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
-		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 
 		SpringContextHolder.registerJUnitBean(ModularContractComputingMethodHandlerRegistry.newInstanceForJUnitTesting());

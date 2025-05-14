@@ -41,8 +41,8 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
@@ -120,7 +120,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final ModularContractSettingsService modularContractSettingsService = SpringContextHolder.instance.getBean(ModularContractSettingsService.class);
-	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
+	private final ModularContractLogRepository modularContractLogRepository = SpringContextHolder.instance.getBean(ModularContractLogRepository.class);
 	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 	private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethods = SpringContextHolder.instance.getBean(ModularContractComputingMethodHandlerRegistry.class);
 
@@ -200,7 +200,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 			return DONT;
 		}
 
-		final boolean billableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
+		final boolean billableLogsExist = modularContractLogRepository.anyMatch(ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
 				.computingMethodTypes(getModCntrInvoiceType(term.isSOTrx()).getComputingMethodTypes())
 				.processed(false)
@@ -217,7 +217,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 	{
 		return ImmutableList.builder()
 				.add(term)
-				.addAll(modularContractLogDAO.list(ModularContractLogQuery.builder()
+				.addAll(modularContractLogRepository.list(ModularContractLogQuery.builder()
 						.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
 						.computingMethodTypes(getModCntrInvoiceType(term.isSOTrx()).getComputingMethodTypes())
 						.processed(false)
@@ -281,7 +281,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 	{
 		if (!computingResponse.getIds().isEmpty())
 		{
-			trxManager.runAfterCommit(() -> modularContractLogDAO.setICProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
+			trxManager.runAfterCommit(() -> modularContractLogRepository.setICProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
 					InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
 		}
 	}

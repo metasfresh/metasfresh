@@ -64,7 +64,7 @@ public class ModularContractSettings
 	@Nullable ProductId processedProductId;
 	@Nullable ProductId coProductId;
 	@NonNull @Singular ImmutableList<ModuleConfig> moduleConfigs;
-	@NonNull @Singular ImmutableList<ModuleParentConfig> moduleParentConfigs;
+	@NonNull @Singular ImmutableList<BaseModuleConfig> baseModuleConfigs;
 
 	@NonNull SOTrx soTrx;
 
@@ -155,14 +155,14 @@ public class ModularContractSettings
 		return moduleConfigs.stream().anyMatch(config -> config.isMatching(computingMethodType));
 	}
 
-	public boolean containsModuleParentConfig(@NonNull final ModuleConfig moduleConfig)
+	public boolean containsBaseModuleConfig(@NonNull final ModuleConfig moduleConfig)
 	{
-		return moduleParentConfigs.stream().anyMatch(config -> config.isConfigFor(moduleConfig));
+		return baseModuleConfigs.stream().anyMatch(config -> config.isConfigFor(moduleConfig));
 	}
 
-	public List<ModuleParentConfig> getModuleParentConfigsByParentId(@NonNull final ModularContractModuleId modularContractModuleId)
+	public List<BaseModuleConfig> getBaseModuleConfigsByBaseModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
 	{
-		return moduleParentConfigs.stream().filter(config -> config.isConfigWithParent(modularContractModuleId)).toList();
+		return baseModuleConfigs.stream().filter(config -> config.isConfigWithBaseConfig(modularContractModuleId)).toList();
 	}
 
 	public long countMatching(@NonNull final ComputingMethodType computingMethodType, @NonNull final ProductId productId)
