@@ -62,7 +62,7 @@ public class C_Invoice_EDI_Export_JSON extends PostgRESTProcessExecutor
 		invoiceRecord.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted);
 		invoiceDAO.save(invoiceRecord);
 
-		final boolean calledViaAPI = ProcessCalledFrom.API.equals(getProcessInfo().getProcessCalledFrom());
+		final boolean calledViaAPI = isCalledViaAPI();
 
 		return CustomPostgRESTParameters.builder().storeJsonFile(!calledViaAPI).build();
 	}
@@ -72,6 +72,8 @@ public class C_Invoice_EDI_Export_JSON extends PostgRESTProcessExecutor
 	{
 		final ReportResultData reportData = Check.assumeNotNull(getResult().getReportData(), "reportData shall not be null after successful invocation");
 
+		// note that if it was called via API, then the result will also be in API_Response_Audit, but there it will be removed after some time
+		addLog("Attaching result to C_Invoice_ID " + invoiceRecord.getC_Invoice_ID() + " with filename " + reportData.getReportFilename());
 		attachmentEntryService.createNewAttachment(
 				invoiceRecord,
 				reportData.getReportFilename(),
@@ -82,6 +84,11 @@ public class C_Invoice_EDI_Export_JSON extends PostgRESTProcessExecutor
 		invoiceDAO.save(invoiceRecord);
 
 		return MSG_OK;
+	}
+
+	private boolean isCalledViaAPI()
+	{
+		return ProcessCalledFrom.API.equals(getProcessInfo().getProcessCalledFrom());
 	}
 
 	@Override

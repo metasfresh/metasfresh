@@ -56,13 +56,14 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(583629)
 ;
 
+-- setting the default value so it will work with existing instances 
 -- Column: S_PostgREST_Config.PostgREST_ResultDirectory
 -- 2025-05-13T12:39:30.995Z
-UPDATE AD_Column SET DefaultValue='/tmp', IsMandatory='Y',Updated=TO_TIMESTAMP('2025-05-13 12:39:30.995000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589982
+UPDATE AD_Column SET DefaultValue='/home/metasfresh/postgREST_results', IsMandatory='Y',Updated=TO_TIMESTAMP('2025-05-13 12:39:30.995000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589982
 ;
 
 -- 2025-05-13T12:41:26.774Z
-/* DDL */ SELECT public.db_alter_table('S_PostgREST_Config','ALTER TABLE public.S_PostgREST_Config ADD COLUMN PostgREST_ResultDirectory VARCHAR(1024) DEFAULT ''/tmp'' NOT NULL')
+/* DDL */ SELECT public.db_alter_table('S_PostgREST_Config','ALTER TABLE public.S_PostgREST_Config ADD COLUMN PostgREST_ResultDirectory VARCHAR(1024) DEFAULT ''/home/metasfresh/postgREST_results'' NOT NULL')
 ;
 
 -- Table: S_PostgREST_Config
@@ -250,5 +251,71 @@ UPDATE AD_Element base SET Description=trl.Description, Name=trl.Name, PrintName
 
 -- 2025-05-13T12:52:57.889Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583630,'en_US')
+;
+
+-- Field: PostgREST Konfiguration(540933,D) -> PostgREST Konfiguration(542805,D) -> Sektion (Matching)
+-- Column: S_PostgREST_Config.PostgREST_ResultDirectory
+-- 2025-05-15T12:17:53.301Z
+UPDATE AD_Field SET AD_Name_ID=583630, Description='Sektion, für die diese Konfiguration gilt', Help=NULL, Name='Sektion (Matching)',Updated=TO_TIMESTAMP('2025-05-15 12:17:53.301000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=743163
+;
+
+-- 2025-05-15T12:17:53.309Z
+UPDATE AD_Field_Trl trl SET Description='Sektion, für die diese Konfiguration gilt',Name='Sektion (Matching)' WHERE AD_Field_ID=743163 AND AD_Language='de_DE'
+;
+
+-- 2025-05-15T12:17:53.341Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583630)
+;
+
+-- 2025-05-15T12:17:53.392Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=743163
+;
+
+-- 2025-05-15T12:17:53.397Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(743163)
+;
+
+-- Field: PostgREST Konfiguration(540933,D) -> PostgREST Konfiguration(542805,D) -> Ausgabeverzeichnis
+-- Column: S_PostgREST_Config.PostgREST_ResultDirectory
+-- 2025-05-15T12:34:07.450Z
+UPDATE AD_Field SET AD_Name_ID=NULL, Description='Wenn ein PostgREST-Resultat lokal gespeichert wird, gibt dieses Feld den Ordner aus Sicht des metasfresh-Servers an.', Help=NULL, Name='Ausgabeverzeichnis',Updated=TO_TIMESTAMP('2025-05-15 12:34:07.449000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=743163
+;
+
+-- 2025-05-15T12:34:07.454Z
+UPDATE AD_Field_Trl trl SET Description='Wenn ein PostgREST-Resultat lokal gespeichert wird, gibt dieses Feld den Ordner aus Sicht des metasfresh-Servers an.',Name='Ausgabeverzeichnis' WHERE AD_Field_ID=743163 AND AD_Language='de_DE'
+;
+
+-- 2025-05-15T12:34:07.456Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583629)
+;
+
+-- 2025-05-15T12:34:07.461Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=743163
+;
+
+-- 2025-05-15T12:34:07.463Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(743163)
+;
+
+-- Field: PostgREST Konfiguration(540933,D) -> PostgREST Konfiguration(542805,D) -> Sektion (Matching)
+-- Column: S_PostgREST_Config.AD_Org_ID
+-- 2025-05-15T12:34:17.326Z
+UPDATE AD_Field SET AD_Name_ID=583630, Description='Sektion, für die diese Konfiguration gilt', Help=NULL, Name='Sektion (Matching)',Updated=TO_TIMESTAMP('2025-05-15 12:34:17.326000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=614976
+;
+
+-- 2025-05-15T12:34:17.329Z
+UPDATE AD_Field_Trl trl SET Description='Sektion, für die diese Konfiguration gilt',Help=NULL,Name='Sektion (Matching)' WHERE AD_Field_ID=614976 AND AD_Language='de_DE'
+;
+
+-- 2025-05-15T12:34:17.331Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583630)
+;
+
+-- 2025-05-15T12:34:17.337Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=614976
+;
+
+-- 2025-05-15T12:34:17.341Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(614976)
 ;
 

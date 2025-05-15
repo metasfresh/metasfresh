@@ -103,12 +103,10 @@ public class ProcessExecutionResult
 	 */
 	@Setter @Getter private String summary = "";
 	/**
-	 * -- GETTER --
-	 *
-	 * @return true if the process execution failed
+	 * true if the process execution failed
 	 */
 	@Getter private boolean error = false;
-	
+
 	@Getter private transient boolean errorWasReportedToUser = false;
 
 	/**
@@ -139,7 +137,7 @@ public class ProcessExecutionResult
 	private transient Throwable throwable = null;
 
 	/**
-	 *  Tells if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
+	 * Tells if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
 	 */
 	@Setter @Getter private boolean refreshAllAfterExecution = false;
 
@@ -147,7 +145,7 @@ public class ProcessExecutionResult
 	private TableRecordReference recordToRefreshAfterExecution = null;
 
 	/**
-	 *  Tells the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
+	 * Tells the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
 	 */
 	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToSelectAfterExecution = null;
@@ -181,17 +179,7 @@ public class ProcessExecutionResult
 	@Getter
 	@Nullable
 	private String webuiViewId = null;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@Getter
-	@Nullable
-	private String stringResult = null;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@Getter
-	@Nullable
-	private String stringResultContentType = null;
-
+	
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Getter
 	@Setter
@@ -223,9 +211,7 @@ public class ProcessExecutionResult
 			@JsonProperty("recordsToOpen") @Nullable final RecordsToOpen recordsToOpen,
 			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
 			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
-			@JsonProperty("webuiViewId") @Nullable final String webuiViewId,
-			@JsonProperty("stringResult") @Nullable final String stringResult,
-			@JsonProperty("stringResultContentType") @Nullable final String stringResultContentType)
+			@JsonProperty("webuiViewId") @Nullable final String webuiViewId)
 	{
 		this.pinstanceId = pinstanceId;
 		this.summary = summary;
@@ -240,8 +226,6 @@ public class ProcessExecutionResult
 		this.webuiViewToOpen = webuiViewToOpen;
 		this.displayQRCode = displayQRCode;
 		this.webuiViewId = webuiViewId;
-		this.stringResult = stringResult;
-		this.stringResultContentType = stringResultContentType;
 	}
 
 	@Override
@@ -312,7 +296,6 @@ public class ProcessExecutionResult
 		{
 			return;
 		}
-
 		this.throwable = throwable;
 	}
 
@@ -340,12 +323,6 @@ public class ProcessExecutionResult
 	{
 		Check.assumeNotNull(showProcessLogsPolicy, "showProcessLogsPolicy not null");
 		this.showProcessLogsPolicy = showProcessLogsPolicy;
-	}
-
-	public void setStringResult(@Nullable final String result, @NonNull final String contentType)
-	{
-		this.stringResult = result;
-		this.stringResultContentType = contentType;
 	}
 
 	/**
@@ -516,6 +493,7 @@ public class ProcessExecutionResult
 	{
 		setReportData(ReportResultData.ofFile(file, fileName));
 	}
+
 	public void setReportData(@Nullable final ReportResultData reportData)
 	{
 		this.reportData = reportData;

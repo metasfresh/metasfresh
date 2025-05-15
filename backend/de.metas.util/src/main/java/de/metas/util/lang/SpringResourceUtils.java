@@ -52,7 +52,7 @@ public class SpringResourceUtils
 	}
 
 	// we have this trivial method just for the sake of completeness, as we also have toByteArray
-	public Resource fromByteArray(@NonNull final byte[] byteArray)
+	public Resource fromByteArray(final byte[] byteArray)
 	{
 		return new ByteArrayResource(byteArray);
 	}

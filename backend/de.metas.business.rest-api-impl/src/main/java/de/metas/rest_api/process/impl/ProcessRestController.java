@@ -137,7 +137,7 @@ public class ProcessRestController
 		final List<ProcessBasicInfo> processList = processService.getProcessesByType(ProcessType.getTypesRunnableFromAppRestController());
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Retrieved {} process-info items", processList.size());
-				
+
 		final List<JSONProcessBasicInfo> jsonProcessList = processList
 				.stream()
 				.map(this::buildJSONProcessBasicInfo)
@@ -158,14 +158,14 @@ public class ProcessRestController
 	{
 		if (processExecutionResult.isError())
 		{
-			throw AdempiereException.wrapIfNeeded(processExecutionResult.getThrowable());
-		}
-		else if (Check.isNotBlank(processExecutionResult.getStringResult()))
-		{
-			return ResponseEntity
-					.ok()
-					.contentType(MediaType.valueOf(processExecutionResult.getStringResultContentType()))
-					.body(processExecutionResult.getStringResult());
+			if(processExecutionResult.getThrowable() != null)
+			{
+				throw AdempiereException.wrapIfNeeded(processExecutionResult.getThrowable());
+			}
+			else
+			{
+				throw new AdempiereException(processExecutionResult.getSummary());
+			}
 		}
 		else if (Check.isNotBlank(processExecutionResult.getReportFilename()))
 		{
@@ -176,7 +176,8 @@ public class ProcessRestController
 			return ResponseEntity.ok()
 					.contentType(MediaType.parseMediaType(contentType))
 					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
-					.body(processExecutionResult.getReportData());
+					.header(HttpHeaders.ACCEPT_RANGES, "none") // the download is not resumable
+					.body(processExecutionResult.getReportDataResource());
 		}
 		else
 		{
