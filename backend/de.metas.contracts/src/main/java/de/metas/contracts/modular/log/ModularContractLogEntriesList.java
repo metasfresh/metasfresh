@@ -185,15 +185,15 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 
 	public Optional<Money> computePricePerQtyUnit()
 	{
-		final Optional<Money> totalMoney = getAmountSum();
-		final Optional<Quantity> totalQuantity = getQtySum();
+		final Money totalMoney = getAmountSum().orElse(null);
+		final Quantity totalQuantity = getQtySum().orElse(null);
 
-		if (totalMoney.isEmpty() || totalQuantity.isEmpty())
+		if (totalMoney == null || totalQuantity == null)
 		{
 			return Optional.empty();
 		}
 
-		final Money weightedAvgMoney = totalMoney.get().divide(totalQuantity.get().toBigDecimal(), precision);
+		final Money weightedAvgMoney = totalMoney.divide(totalQuantity.toBigDecimal(), precision);
 		return Optional.of(weightedAvgMoney);
 	}
 

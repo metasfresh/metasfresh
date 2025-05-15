@@ -121,7 +121,7 @@ public class ModularContractSettings
 	}
 
 	@NonNull
-	public ModuleConfig getModuleConfigByIdOrError(@NonNull final ModuleConfigAndSettingsId moduleConfigAndSettingsId)
+	public ModuleConfig getModuleConfigById(@NonNull final ModuleConfigAndSettingsId moduleConfigAndSettingsId)
 	{
 		return getModuleConfigs()
 				.stream()

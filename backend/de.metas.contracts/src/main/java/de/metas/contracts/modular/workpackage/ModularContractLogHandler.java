@@ -128,7 +128,7 @@ class ModularContractLogHandler
 								.handleLogsRequest(request)
 								.modularContractSettings(settings)
 								.moduleConfig(moduleConfig)
-								.baseModuleConfig(settings.getModuleConfigByIdOrError(baseConfig.getBaseModuleConfigId()))
+								.baseModuleConfig(settings.getModuleConfigById(baseConfig.getBaseModuleConfigId()))
 								.build();
 
 						handleLogs(handler, action, createLogRequest);

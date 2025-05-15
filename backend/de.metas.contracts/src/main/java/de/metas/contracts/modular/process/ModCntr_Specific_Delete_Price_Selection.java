@@ -85,31 +85,7 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess impleme
 	protected String doIt()
 	{
 		retrieveContractSpecificPricesFromSelection()
-				.forEach(contractPriceId -> {
-					trxManager.assertThreadInheritedTrxNotExists();
-					trxManager.runInThreadInheritedTrx(() ->
-							{
-								if (!modularContractPriceService.existsSimilarContractSpecificScalePrice(contractPriceId))
-								{
-									throw new AdempiereException(ERROR_MSG_NO_FALLBACK_PRICE);
-								}
-
-								final ModCntrSpecificPrice contractPrice = modularContractPriceService.getById(contractPriceId);
-
-								// delete price
-								modularContractPriceService.deleteById(contractPriceId);
-
-								// the update price by recomputing the price for logs
-								// the given price is ingonred in UserElementNumberShipmentLineLog
-								contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
-												.unitPrice(contractPrice.getProductPrice())
-												.flatrateTermId(contractPrice.flatrateTermId())
-												.modularContractModuleId(contractPrice.modularContractModuleId())
-												.build(),
-										logHandlerRegistry);
-							}
-					);
-				});
+				.forEach(this::deletePrice);
 		return MSG_OK;
 	}
 
@@ -137,6 +113,33 @@ public class ModCntr_Specific_Delete_Price_Selection extends JavaProcess impleme
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true)
 				.create()
 				.count() > 0;
+	}
+
+	private void deletePrice(@NonNull final ModCntrSpecificPriceId contractPriceId)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+		trxManager.runInThreadInheritedTrx(() ->
+				{
+					if (!modularContractPriceService.existsSimilarContractSpecificScalePrice(contractPriceId))
+					{
+						throw new AdempiereException(ERROR_MSG_NO_FALLBACK_PRICE);
+					}
+
+					final ModCntrSpecificPrice contractPrice = modularContractPriceService.getById(contractPriceId);
+
+					// delete price
+					modularContractPriceService.deleteById(contractPriceId);
+
+					// the update price by recomputing the price for logs
+					// the given price is ingonred in UserElementNumberShipmentLineLog
+					contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
+									.unitPrice(contractPrice.getProductPrice())
+									.flatrateTermId(contractPrice.flatrateTermId())
+									.modularContractModuleId(contractPrice.modularContractModuleId())
+									.build(),
+							logHandlerRegistry);
+				}
+		);
 	}
 
 }
