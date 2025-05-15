@@ -465,7 +465,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       # because ppo_2_S0460_40 was not voided, oc_2_S0460_40 was not emptied
       | oc_2_S0460_40 | product_2_1_S0460_40 | bom_2_S0460_40    | ppln_2_1_S0460_40      | resource_S0460 | 40 PCE     | 0 PCE        | 40 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
       # oc_3_S0460_40 was created when o_1_S0460_40 was completed
-      | oc_3_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 1 PCE      | 0 PCE        | 1 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      | oc_3_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 1 PCE      | 0 PCE        | 1 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
       # because oc_2_S0460_40 will provide enough qty of product_2_1_S0460_40, no child PP_Order_candidate is created for oc_3_S0460_40
 
     And after not more than 60s, PP_OrderLine_Candidates are found
@@ -473,8 +473,8 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | oc_1_S0460_40         | product_2_1_S0460_40 | 0 PCE      | CO            | boml_2_1_S0460_40     |
       | oc_1_S0460_40         | product_2_2_S0460_40 | 0 PCE      | CO            | boml_2_2_S0460_40     |
       | oc_2_S0460_40         | product_3_1_S0460_40 | 0 PCE      | CO            | boml_3_1_S0460_40     |
-      | oc_1_S0460_40         | product_2_1_S0460_40 | 20 PCE     | CO            | boml_2_1_S0460_40     |
-      | oc_1_S0460_40         | product_2_2_S0460_40 | 10 PCE     | CO            | boml_2_2_S0460_40     |
+      | oc_1_S0460_40         | product_2_1_S0460_40 | 0 PCE     | CO            | boml_2_1_S0460_40     |
+      | oc_1_S0460_40         | product_2_2_S0460_40 | 0 PCE     | CO            | boml_2_2_S0460_40     |
       | oc_2_S0460_40         | product_3_1_S0460_40 | 0 PCE      | CO            | boml_3_1_S0460_40     |
 
     And after not more than 60s, PP_Orders are found
