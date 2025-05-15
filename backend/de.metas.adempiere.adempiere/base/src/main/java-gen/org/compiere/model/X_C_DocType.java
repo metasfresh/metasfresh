@@ -516,16 +516,18 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		if (GL_Category_ID < 0) 
-			set_Value (COLUMNNAME_GL_Category_ID, null);
-		else 
-			set_Value (COLUMNNAME_GL_Category_ID, GL_Category_ID);
+		set_ValueNoCheck("GL_Category_ID", GL_Category_ID);
 	}
 
 	@Override
 	public int getGL_Category_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_GL_Category_ID);
+		final Integer ii = (Integer)get_Value("GL_Category_ID");
+		if (ii == null)
+		{
+			return 0;
+		}
+		return ii;
 	}
 
 	@Override
