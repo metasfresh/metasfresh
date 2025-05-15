@@ -98,27 +98,21 @@ public class ProcessExecutionResult
 
 	@Getter private PInstanceId pinstanceId;
 
-	/**
-	 * Summary of Execution
-	 */
+	/** Summary of Execution */
 	@Setter @Getter private String summary = "";
-	/**
-	 * true if the process execution failed
-	 */
+
+	/** true if the process execution failed */
 	@Getter private boolean error = false;
 
 	@Getter private transient boolean errorWasReportedToUser = false;
 
-	/**
-	 * Process timed out
-	 */
+	/** Process timed out */
 	@Getter @Setter private boolean timeout = false;
 
-	/**
-	 * Log Info
-	 */
+	/** Log Info */
 	@Nullable
 	private transient List<ProcessInfoLog> logs;
+
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
 
 	//
@@ -130,7 +124,7 @@ public class ProcessExecutionResult
 	private ReportResultData reportData;
 
 	/**
-	 * If the process fails with an Throwable, the Throwable is caught and stored here
+	 * If the process fails with a Throwable, the Throwable is caught and stored here
 	 */
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
 	@Nullable
@@ -511,6 +505,11 @@ public class ProcessExecutionResult
 		return reportData != null ? reportData.getReportData() : null;
 	}
 
+	public boolean isReportDataResourceAvailable()
+	{
+		return reportData != null;
+	}
+	
 	@Nullable
 	public String getReportFilename()
 	{

@@ -167,7 +167,7 @@ public class ProcessRestController
 				throw new AdempiereException(processExecutionResult.getSummary());
 			}
 		}
-		else if (Check.isNotBlank(processExecutionResult.getReportFilename()))
+		else if (processExecutionResult.isReportDataResourceAvailable())
 		{
 			final String contentType = Check.isNotBlank(processExecutionResult.getReportContentType())
 					? processExecutionResult.getReportContentType()
