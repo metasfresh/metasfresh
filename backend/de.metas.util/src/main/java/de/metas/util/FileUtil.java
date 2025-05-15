@@ -49,33 +49,18 @@ import java.util.zip.ZipOutputStream;
 @UtilityClass
 public final class FileUtil
 {
+	@Deprecated
 	public static void copy(@NonNull final File from, @NonNull final OutputStream out) throws IOException
 	{
-		try (final InputStream in = Files.newInputStream(from.toPath()))
-		{
-			copy(in, out);
-		}
+		de.metas.common.util.FileUtil.copy(from, out);
 	}
 
-	public static void copy(@NonNull final InputStream in, @NonNull final File to) throws IOException
-	{
-		try (final FileOutputStream out = new FileOutputStream(to))
-		{
-			copy(in, out);
-		}
-	}
-
+	@Deprecated
 	public static void copy(@NonNull final InputStream in, @NonNull final OutputStream out) throws IOException
 	{
-		final byte[] buf = new byte[4096];
-		int len;
-		while ((len = in.read(buf)) > 0)
-		{
-			out.write(buf, 0, len);
-		}
-		out.flush();
+		de.metas.common.util.FileUtil.copy(in, out);
 	}
-	
+
 	public static String getTempDir()
 	{
 		return System.getProperty("java.io.tmpdir");
@@ -246,8 +231,8 @@ public final class FileUtil
 	}
 
 	public static Optional<Path> findNotExistingFile(
-			@NonNull final Path directory, 
-			@NonNull final String desiredFilename, 
+			@NonNull final Path directory,
+			@NonNull final String desiredFilename,
 			final int tries)
 	{
 		final String fileBaseNameInitial = getFileBaseName(desiredFilename);

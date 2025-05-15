@@ -22,6 +22,7 @@
 
 package de.metas.postgrest.process;
 
+import de.metas.common.util.FileUtil;
 import de.metas.postgrest.client.GetRequest;
 import de.metas.postgrest.client.PostgRESTClient;
 import de.metas.postgrest.client.PostgRESTResponseFormat;
@@ -31,7 +32,6 @@ import de.metas.postgrest.config.PostgRESTConfigRepository;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
-import de.metas.util.FileUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -136,10 +136,9 @@ public class PostgRESTProcessExecutor extends JavaProcess
 
 		if (parameters.isStoreJsonFile())
 		{
-			final Path outputFilePath = Paths.get(
-					config.getResultDirectory(),
-					processRecord.getValue(),
-					fileName);
+			final Path outputFilePath = FileUtil.createAndValidatePath(
+					Paths.get(config.getResultDirectory()),
+					Paths.get(processRecord.getValue(), fileName));
 
 			// store resource to disk
 			Files.createDirectories(outputFilePath.getParent());

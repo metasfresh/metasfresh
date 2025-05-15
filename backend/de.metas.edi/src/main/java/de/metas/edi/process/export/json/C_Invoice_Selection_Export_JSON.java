@@ -23,8 +23,9 @@
 package de.metas.edi.process.export.json;
 
 import de.metas.edi.model.I_C_Invoice;
+import de.metas.edi.model.I_EDI_Document;
 import de.metas.error.AdIssueId;
-import de.metas.error.impl.ErrorManager;
+import de.metas.error.IErrorManager;
 import de.metas.invoice.InvoiceId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -50,7 +51,7 @@ import static de.metas.edi.process.export.json.C_Invoice_EDI_Export_JSON.PARAM_C
 public class C_Invoice_Selection_Export_JSON extends JavaProcess implements IProcessPrecondition
 {
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ErrorManager errorManager = Services.get(ErrorManager.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private int countExported;
 	private int countErrors;
@@ -85,8 +86,9 @@ public class C_Invoice_Selection_Export_JSON extends JavaProcess implements IPro
 			final ProcessExecutor processExecutor = ProcessInfo
 					.builder()
 					.setProcessCalledFrom(getProcessInfo().getProcessCalledFrom())
-					.setAD_ProcessByValue(C_Invoice_EDI_Export_JSON.class.getName())
+					.setAD_ProcessByClassname(C_Invoice_EDI_Export_JSON.class.getName())
 					.addParameter(PARAM_C_INVOICE_ID, invoiceId.getRepoId())
+					.setRecord(I_C_Invoice.Table_Name, invoiceId.getRepoId()) // will be stored in the AD_Pinstance
 					.buildAndPrepareExecution()
 					.executeSync();
 
@@ -124,6 +126,7 @@ public class C_Invoice_Selection_Export_JSON extends JavaProcess implements IPro
 				.addEqualsFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx, true)
 				.addEqualsFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_DocStatus, I_C_Invoice.DOCSTATUS_Completed)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsEdiEnabled, true)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_EDI_ExportStatus, I_EDI_Document.EDI_EXPORTSTATUS_Pending)
 				.create()
 				.iterateAndStreamIds(InvoiceId::ofRepoId);
 	}

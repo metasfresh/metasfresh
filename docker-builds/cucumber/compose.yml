@@ -22,7 +22,6 @@ services:
       replicas: 1
 
   postgrest:
-    build: postgrest
     image: postgrest/postgrest:latest
     environment:
       PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
