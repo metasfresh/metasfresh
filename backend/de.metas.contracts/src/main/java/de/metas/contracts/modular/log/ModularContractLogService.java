@@ -46,6 +46,7 @@
  import de.metas.invoice.detail.InvoiceCandidateWithDetails;
  import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
  import de.metas.invoice.detail.InvoiceDetailItem;
+ import de.metas.invoice.service.IInvoiceBL;
  import de.metas.invoicecandidate.InvoiceCandidateId;
  import de.metas.invoicecandidate.api.IInvoiceCandDAO;
  import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -87,7 +88,10 @@
  import java.time.Instant;
  import java.util.Collection;
  import java.util.List;
+ import java.util.Objects;
  import java.util.Optional;
+ import java.util.Set;
+ import java.util.stream.Collectors;
  import java.util.stream.Stream;
 
  import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS;
@@ -114,6 +118,7 @@
 	 @NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	 @NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	 @NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	 @NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	 @NonNull private final ModularContractLogRepository modularContractLogRepository;
 	 @NonNull private final InvoiceCandidateWithDetailsRepository invoiceCandidateWithDetailsRepository;
@@ -422,7 +427,13 @@
 
 		 if (docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
 		 {
-			 flatrateBL.reverseDefinitiveInvoice(ImmutableSet.of(Check.assumePresent(flatrateBL.getIdByInvoiceId(invoiceId), "FlatrateTermId should be present")));
+			 final Set<FlatrateTermId> contractIds = invoiceBL.getLines(invoiceId)
+					 .stream()
+					 .map(org.compiere.model.I_C_InvoiceLine::getC_Flatrate_Term_ID)
+					 .map(FlatrateTermId::ofRepoIdOrNull) // invoice might have been imported from a csv-file and have no flatrate term 
+					 .filter(Objects::nonNull)
+					 .collect(Collectors.toSet());
+			 flatrateBL.reverseDefinitiveInvoice(contractIds);
 		 }
 	 }
 
