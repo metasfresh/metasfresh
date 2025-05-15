@@ -27,6 +27,7 @@ Feature: EDI export via postgREST
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | bpartner_location_1 | customer1     | Y               | Y               |
 
+  @ignore # postgREST-support doesn't yet work
   @from:cucumber
   Scenario: create an invoice and exports it to JSON
     Given metasfresh contains M_Products:
@@ -44,6 +45,7 @@ Feature: EDI export via postgREST
     And metasfresh contains S_PostgREST_Config_StepDef
       | AD_Org_ID | Base_url               | Read_timeout | Connection_timeout |
       | 1000000   | http://localhost:20001 | PT5S         | PT5S               |
+      #| 1000000   | http://postgrest:3000 | PT5S         | PT5S               |
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
       | c_1        | 10    | GET        | api/v2/test    | N                     | Y                                | Y                 |
