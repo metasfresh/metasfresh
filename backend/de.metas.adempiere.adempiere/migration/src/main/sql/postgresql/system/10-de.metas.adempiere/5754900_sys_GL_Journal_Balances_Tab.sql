@@ -553,3 +553,101 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583636,'de_CH')
 ;
 
+
+-- Tab: Hauptbuch Journal_OLD(540356,D) -> Salden
+-- Table: GL_Journal_Balances_v
+-- 2025-05-15T16:59:45.107Z
+UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2025-05-15 16:59:45.107000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=548061
+;
+
+-- Tab: Hauptbuch Journal_OLD(540356,D) -> Salden
+-- Table: GL_Journal_Balances_v
+-- 2025-05-15T17:00:15.444Z
+UPDATE AD_Tab SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2025-05-15 17:00:15.444000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=548061
+;
+
+-- UI Element: Hauptbuch Journal_OLD(540356,D) -> Salden(548061,D) -> balance -> 10 -> balance.Buchungsschlüssel
+-- Column: GL_Journal_Balances_v.AccountConceptualName
+-- 2025-05-15T17:04:57.093Z
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2025-05-15 17:04:57.093000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=632341
+;
+
+-- UI Element: Hauptbuch Journal_OLD(540356,D) -> Salden(548061,D) -> balance -> 10 -> balance.Konto
+-- Column: GL_Journal_Balances_v.Account_ID
+-- 2025-05-15T17:05:04.945Z
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2025-05-15 17:05:04.945000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=632342
+;
+
+-- UI Element: Hauptbuch Journal_OLD(540356,D) -> Salden(548061,D) -> balance -> 10 -> balance.Soll
+-- Column: GL_Journal_Balances_v.AmtAcctDr
+-- 2025-05-15T17:05:09.717Z
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2025-05-15 17:05:09.717000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=632343
+;
+
+-- UI Element: Hauptbuch Journal_OLD(540356,D) -> Salden(548061,D) -> balance -> 10 -> balance.Haben
+-- Column: GL_Journal_Balances_v.AmtAcctCr
+-- 2025-05-15T17:05:13.931Z
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2025-05-15 17:05:13.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=632344
+;
+
+
+
+
+
+
+
+
+-- 2025-05-15T18:30:42.364Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=744618
+;
+
+-- Field: Hauptbuch Journal_OLD(540356,D) -> Salden(548061,D) -> Salden
+-- Column: GL_Journal_Balances_v.GL_Journal_Balances_v_ID
+-- 2025-05-15T18:30:42.369Z
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=744618
+;
+
+-- 2025-05-15T18:30:42.374Z
+DELETE FROM AD_Field WHERE AD_Field_ID=744618
+;
+
+-- Column: GL_Journal_Balances_v.GL_Journal_Balances_v_ID
+-- 2025-05-15T18:30:51.793Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=590001
+;
+
+-- 2025-05-15T18:30:51.798Z
+DELETE FROM AD_Column WHERE AD_Column_ID=590001
+;
+
+-- Column: GL_Journal_Balances_v.Account_ID
+-- 2025-05-15T18:31:04.876Z
+UPDATE AD_Column SET IsParent='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2025-05-15 18:31:04.876000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589988
+;
+
+-- Column: GL_Journal_Balances_v.GL_Journal_ID
+-- 2025-05-15T18:31:13.478Z
+UPDATE AD_Column SET IsParent='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2025-05-15 18:31:13.478000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589987
+;
+
+-- Table: GL_Journal_Balances_v
+-- 2025-05-15T18:31:17.700Z
+UPDATE AD_Table SET IsDeleteable='N', IsView='Y',Updated=TO_TIMESTAMP('2025-05-15 18:31:17.698000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_ID=542479
+;
+
+-- 2025-05-15T18:32:41.872Z
+UPDATE AD_Element SET ColumnName=NULL,Updated=TO_TIMESTAMP('2025-05-15 18:32:41.872000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583636
+;
+
+-- 2025-05-15T18:32:42.189Z
+UPDATE AD_Column SET ColumnName=NULL WHERE AD_Element_ID=583636
+;
+
+-- 2025-05-15T18:32:42.190Z
+UPDATE AD_Process_Para SET ColumnName=NULL WHERE AD_Element_ID=583636
+;
+
+-- 2025-05-15T18:32:42.193Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583636,'de_DE')
+;
+
