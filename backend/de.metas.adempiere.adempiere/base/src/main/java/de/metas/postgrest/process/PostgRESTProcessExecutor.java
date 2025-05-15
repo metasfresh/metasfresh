@@ -31,6 +31,7 @@ import de.metas.postgrest.config.PostgRESTConfigRepository;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
+import de.metas.util.FileUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -49,7 +50,6 @@ import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -143,14 +143,9 @@ public class PostgRESTProcessExecutor extends JavaProcess
 
 			// store resource to disk
 			Files.createDirectories(outputFilePath.getParent());
-			try (final InputStream in = postgRESTResponse.getInputStream(); final OutputStream out = Files.newOutputStream(outputFilePath))
+			try (final InputStream in = postgRESTResponse.getInputStream())
 			{
-				final byte[] buffer = new byte[8192];
-				int bytesRead;
-				while ((bytesRead = in.read(buffer)) != -1)
-				{
-					out.write(buffer, 0, bytesRead);
-				}
+				FileUtil.copy(in, outputFilePath.toFile());
 			}
 			addLog("Stored postgREST result to {}", outputFilePath);
 			processInfo.getResult().setReportData(outputFilePath.toFile(), fileNameForReportData);
