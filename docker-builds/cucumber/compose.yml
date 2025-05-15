@@ -20,7 +20,19 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      
+
+  postgrest:
+    build: postgrest
+    image: postgrest/postgrest:latest
+    environment:
+      PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
+      PGRST_DB_SCHEMA: public
+      PGRST_DB_ANON_ROLE: metasfresh
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
   rabbitmq:
     image: rabbitmq:3.9.13-management
     ports:
