@@ -33,8 +33,8 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.impl.AbstractContractLog;
 import de.metas.currency.CurrencyPrecision;
@@ -92,11 +92,11 @@ public class PurchaseModularContractLog extends AbstractContractLog
 	public PurchaseModularContractLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ModularContractLogDAO contractLogDAO,
+			@NonNull final ModularContractLogRepository contractLogRepo,
 			@NonNull final AVInterimComputingMethod computingMethod,
 			@NonNull final ModularContractLogService modularContractLogService)
 	{
-		super(modularContractService, modCntrInvoicingGroupRepository, contractLogDAO);
+		super(modularContractService, modCntrInvoicingGroupRepository, contractLogRepo);
 		this.computingMethod = computingMethod;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 		this.modularContractLogService = modularContractLogService;

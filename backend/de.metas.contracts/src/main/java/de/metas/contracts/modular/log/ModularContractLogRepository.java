@@ -59,6 +59,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -87,7 +88,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-public class ModularContractLogDAO
+public class ModularContractLogRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -166,12 +167,23 @@ public class ModularContractLogDAO
 						() -> log.setPriceActual(null));
 
 		log.setModCntr_Module_ID(request.getConfigModuleId().getRepoId());
+		log.setModCntr_BaseModule_ID(ModularContractModuleId.toRepoId(request.getBaseConfigModuleId()));
 
 		log.setModCntr_InvoicingGroup_ID(InvoicingGroupId.toRepoId(request.getInvoicingGroupId()));
 
 		if (request.getStorageDays() != null)
 		{
 			log.setStorageDays(request.getStorageDays());
+		}
+
+		if (request.getInterestDays() != null)
+		{
+			log.setInterestDays(request.getInterestDays());
+		}
+
+		if (request.getInterestPercent() != null)
+		{
+			log.setInterestRate(request.getInterestPercent().toBigDecimal());
 		}
 
 		if (request.getUserElementNumber1() != null)
@@ -199,7 +211,7 @@ public class ModularContractLogDAO
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.initialProductId(ProductId.ofRepoIdOrNull(record.getInitial_Product_ID()))
 				.productName(record.getProductName())
-				.modularContractTypeId(ModularContractTypeId.ofRepoIdOrNull(record.getModCntr_Type_ID()))
+				.modularContractTypeId(ModularContractTypeId.ofRepoId(record.getModCntr_Type_ID()))
 				.referencedRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.contractType(LogEntryContractType.ofCode(record.getContractType()))
 				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(record.getCollectionPoint_BPartner_ID()))
@@ -214,12 +226,15 @@ public class ModularContractLogDAO
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.physicalClearanceDate(LocalDateAndOrgId.ofNullableTimestamp(record.getPhysicalClearanceDate(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.storageDays(record.getStorageDays() >= 0 ? record.getStorageDays() : null)
+				.interestDays(record.getInterestDays() >= 0 ? record.getInterestDays() : null)
+				.interestPercent(Percent.of(record.getInterestRate()))
 				.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber1))
 				.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber2))
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
+				.baseModularContractModuleId(ModularContractModuleId.ofRepoIdOrNull(record.getModCntr_BaseModule_ID()))
 				.invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(record.getC_Invoice_Candidate_ID()))
 				.build();
@@ -245,6 +260,11 @@ public class ModularContractLogDAO
 		if (request.id() != null)
 		{
 			queryBuilder.entryId(request.id());
+		}
+
+		if (request.baseContractModuleId() != null)
+		{
+			queryBuilder.baseContractModuleId(request.baseContractModuleId());
 		}
 
 		final I_ModCntr_Log oldLog = lastRecord(queryBuilder.build())
@@ -330,6 +350,11 @@ public class ModularContractLogDAO
 			queryBuilder.addEqualsFilter(request.subEntryId().getColumnName(), request.subEntryId().getId());
 		}
 
+		if (request.baseModularContractModuleId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID, request.baseModularContractModuleId());
+		}
+
 		queryBuilder.create().delete(true);
 	}
 
@@ -369,6 +394,11 @@ public class ModularContractLogDAO
 		if (query.getContractModuleId() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, query.getContractModuleId());
+		}
+
+		if (query.getBaseContractModuleId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID, query.getBaseContractModuleId());
 		}
 
 		if (query.getProcessed() != null)
@@ -449,7 +479,7 @@ public class ModularContractLogDAO
 	public Quantity retrieveQuantityFromExistingLog(final @NonNull ModularContractLogQuery query)
 	{
 		return lastRecord(query)
-				.map(ModularContractLogDAO::extractQty)
+				.map(ModularContractLogRepository::extractQty)
 				.orElseThrow(() -> new AdempiereException("No records found for " + query));
 	}
 
@@ -705,6 +735,10 @@ public class ModularContractLogDAO
 		record.setDateTrx(from.getTransactionDate().toTimestamp(getZoneIdByOrgId));
 		Optional.ofNullable(from.getStorageDays())
 				.ifPresentOrElse(record::setStorageDays, () -> record.setStorageDays(0));
+		// Optional.ofNullable(from.getInterestDays().)
+		// 		.ifPresentOrElse(record::setInterestDays, () -> record.setInterestDays(0));
+		// Optional.ofNullable(from.getInterestPercent().)
+		// 		.ifPresentOrElse(record::setInterestPercent, () -> record.setInterestPercent(null); TODO
 		record.setHarvesting_Year_ID(from.getYear().getRepoId());
 		record.setIsBillable(from.isBillable());
 		Optional.ofNullable(from.getPriceActual())

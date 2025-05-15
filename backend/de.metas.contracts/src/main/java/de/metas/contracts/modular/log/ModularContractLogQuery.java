@@ -53,6 +53,7 @@ public class ModularContractLogQuery
 	@NonNull @Singular ImmutableSet<FlatrateTermId> flatrateTermIds;
 	@Nullable ModularContractTypeId modularContractTypeId;
 	@Nullable ModularContractModuleId contractModuleId;
+	@Nullable ModularContractModuleId baseContractModuleId;
 	@Nullable Boolean processed;
 	@Nullable Boolean billable;
 	@NonNull @Singular ImmutableSet<InvoiceCandidateId> invoiceCandidateIds;

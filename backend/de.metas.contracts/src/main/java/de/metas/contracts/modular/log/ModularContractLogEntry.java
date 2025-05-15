@@ -42,6 +42,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -118,6 +119,12 @@ public class ModularContractLogEntry
 	Integer storageDays;
 
 	@Nullable
+	Integer interestDays;
+
+	@Nullable
+	Percent interestPercent;
+
+	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
 
 	@NonNull YearId year;
@@ -133,6 +140,7 @@ public class ModularContractLogEntry
 	boolean isBillable;
 
 	@NonNull ModularContractModuleId modularContractModuleId;
+	@Nullable ModularContractModuleId baseModularContractModuleId;
 
 	@Nullable BigDecimal userElementNumber1;
 	@Nullable BigDecimal userElementNumber2;
@@ -160,13 +168,16 @@ public class ModularContractLogEntry
 			@NonNull final LocalDateAndOrgId transactionDate,
 			@Nullable final LocalDateAndOrgId physicalClearanceDate,
 			@Nullable final Integer storageDays,
+			@Nullable final Integer interestDays,
+			@Nullable final Percent interestPercent,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			final boolean isBillable,
-			final @NonNull ModularContractModuleId modularContractModuleId,
+			@NonNull final ModularContractModuleId modularContractModuleId,
+			@Nullable final ModularContractModuleId baseModularContractModuleId,
 			final @Nullable BigDecimal userElementNumber1,
 			final @Nullable BigDecimal userElementNumber2
 			)
@@ -202,6 +213,8 @@ public class ModularContractLogEntry
 		this.transactionDate = transactionDate;
 		this.physicalClearanceDate = physicalClearanceDate;
 		this.storageDays = storageDays;
+		this.interestDays = interestDays;
+		this.interestPercent = interestPercent;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
 		this.description = description;
@@ -209,14 +222,9 @@ public class ModularContractLogEntry
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable;
 		this.modularContractModuleId = modularContractModuleId;
+		this.baseModularContractModuleId = baseModularContractModuleId;
 		this.userElementNumber1 = userElementNumber1;
 		this.userElementNumber2 = userElementNumber2;
-	}
-
-	@Nullable
-	public UomId getPriceActualUOMId()
-	{
-		return priceActual != null ? priceActual.getUomId() : null;
 	}
 
 	@NonNull

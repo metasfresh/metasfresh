@@ -32,7 +32,6 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -41,8 +40,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -87,7 +84,7 @@ public abstract class AbstractAverageAVOnShippedQtyComputingMethod extends Abstr
 
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 
-		final Money money = computeAverageAmount(logs)
+		final Money money = logs.computePricePerQtyUnit()
 				.orElseGet(() -> Money.zero(request.getCurrencyId()));
 
 		return ComputingResponse.builder()
@@ -101,19 +98,4 @@ public abstract class AbstractAverageAVOnShippedQtyComputingMethod extends Abstr
 				.qty(computingMethodService.getQtySum(logs, stockUOMId))
 				.build();
 	}
-
-	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs)
-	{
-		final Optional<Money> totalMoney = logs.getAmountSum();
-		final Optional<Quantity> totalQuantity = logs.getQtySum();
-
-		if (totalMoney.isEmpty() || totalQuantity.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final Money weightedAvgMoney = totalMoney.get().divide(totalQuantity.get().toBigDecimal(), precision);
-		return Optional.of(weightedAvgMoney);
-	}
-
 }

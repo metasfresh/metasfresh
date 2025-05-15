@@ -25,7 +25,7 @@ package de.metas.contracts.modular.workpackage.impl;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.lang.SOTrx;
@@ -43,11 +43,11 @@ public abstract class AbstractFinalInvoiceLineLog extends AbstractInvoiceLineLog
 
 	public AbstractFinalInvoiceLineLog(
 			@NonNull final ModularContractService modularContractService,
-			@NonNull final ModularContractLogDAO contractLogDAO,
+			@NonNull final ModularContractLogRepository contractLogRepo,
 			@NonNull final ModularContractLogService modularContractLogService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
 	{
-		super(modularContractService, contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
+		super(modularContractService, contractLogRepo, modularContractLogService, modCntrInvoicingGroupRepository);
 	}
 
 	@Override

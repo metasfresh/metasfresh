@@ -62,6 +62,7 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SalesAverageAddedValueOnShippedQuantity(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesAverageAVOnShippedQty),
 	SalesInformativeLogs(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesInformativeLogs),
 	AVReceiptUntilDate(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AVReceiptUntilDate),
+	SalesInterest("SalesInterest"), //TODO
 
 	// Methods not needed in this increment
 	@Deprecated IMPORT_LOG_DEPRECATED(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ImportLog_NotUsed),
@@ -104,7 +105,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			SalesAV,
 			SalesStorageCost,
 			SalesAverageAddedValueOnShippedQuantity,
-			AVReceiptUntilDate
+			AVReceiptUntilDate,
+			SalesInterest
 	);
 
 	public static final ImmutableSet<ComputingMethodType> PURCHASE_SALES_METHODS = ImmutableSet.of(
@@ -140,7 +142,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 			SalesStorageCost,
 			Sales,
 			SalesAV,
-			SalesAverageAddedValueOnShippedQuantity
+			SalesAverageAddedValueOnShippedQuantity,
+			SalesInterest
 	);
 
 	public static final ImmutableSet<ComputingMethodType> INTEREST_SPECIFIC_METHODS = ImmutableSet.of(AddValueOnInterim,
@@ -209,7 +212,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	public static final ImmutableSet<ComputingMethodType> NEED_UOM_EACH_METHODS = ImmutableSet.of(
 			SalesStorageCost,
 			PurchaseStorageCost,
-			DefinitiveInvoiceStorageCost
+			DefinitiveInvoiceStorageCost,
+			SalesInterest
 	);
 
 

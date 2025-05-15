@@ -36,6 +36,7 @@ public record LogEntryDeleteRequest(
 		@Nullable LogSubEntryId subEntryId,
 		@NonNull FlatrateTermId flatrateTermId,
 		@NonNull LogEntryContractType logEntryContractType,
-		@NonNull ModularContractModuleId modularContractModuleId)
+		@NonNull ModularContractModuleId modularContractModuleId,
+	    @Nullable ModularContractModuleId baseModularContractModuleId)
 {
 }

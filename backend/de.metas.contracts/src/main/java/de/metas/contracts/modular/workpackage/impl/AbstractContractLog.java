@@ -34,8 +34,8 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -78,18 +78,18 @@ public abstract class AbstractContractLog extends AbstractModularContractLogHand
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogRepository contractLogRepo;
 
 
 	@NonNull @Getter private final String supportedTableName = I_C_Flatrate_Term.Table_Name;
 
 	public AbstractContractLog(@NonNull final ModularContractService modularContractService,
 							   @NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-							   @NonNull final ModularContractLogDAO contractLogDAO)
+							   @NonNull final ModularContractLogRepository contractLogRepo)
 	{
 		super(modularContractService);
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
-		this.contractLogDAO = contractLogDAO;
+		this.contractLogRepo = contractLogRepo;
 	}
 
 	@Override
@@ -177,7 +177,7 @@ public abstract class AbstractContractLog extends AbstractModularContractLogHand
 
 		final boolean isInterimContract = TypeConditions.ofCode(contract.getType_Conditions()).isModularContractType();
 		final AdMessageKey msgToUse = isInterimContract ? MSG_ON_INTERIM_REVERSE_DESCRIPTION : MSG_ON_MODULAR_REVERSE_DESCRIPTION;
-		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
+		final Quantity quantity = contractLogRepo.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
 				.flatrateTermId(createLogRequest.getContractId())
 				.referenceSet(TableRecordReferenceSet.of(recordRef))
 				.build());

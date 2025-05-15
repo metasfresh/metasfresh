@@ -943,7 +943,7 @@ public class TimeUtil
 	 * @return true if valid
 	 * @see #isBetween(Date, Date, Date)
 	 */
-	public static boolean isValid(final Timestamp validFrom, final Timestamp validTo, final Timestamp testDate)
+	public static boolean isValid(@Nullable final Timestamp validFrom, @Nullable final Timestamp validTo, @Nullable final Timestamp testDate)
 	{
 		if (testDate == null)
 		{
@@ -960,10 +960,8 @@ public class TimeUtil
 	 *
 	 * @return true if date is between given dates (inclusively)
 	 */
-	public static boolean isBetween(final Date date, @Nullable final Date dateFrom, @Nullable final Date dateTo)
+	public static boolean isBetween(@NonNull final Date date, @Nullable final Date dateFrom, @Nullable final Date dateTo)
 	{
-		Check.assumeNotNull(date, "date not null");
-
 		if (dateFrom != null && date.before(dateFrom))
 		{
 			return false;
@@ -1970,10 +1968,6 @@ public class TimeUtil
 			final long millis = (Long)obj;
 			return Instant.ofEpochMilli(millis);
 		}
-		else if (obj instanceof InstantAndOrgId)
-		{
-			return ((InstantAndOrgId)obj).toInstant();
-		}
 		else
 		{
 			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Instant.class);
@@ -2283,6 +2277,7 @@ public class TimeUtil
 	/**
 	 * Compute the days between two dates as if each year is 360 days long.
 	 * More details and an implementation for Excel can be found in {@link org.apache.poi.ss.formula.functions.Days360}
+	 * Note: This is the European variant, the US version works differently
 	 */
 	public static long getDaysBetween360(@NonNull final ZonedDateTime from, @NonNull final ZonedDateTime to)
 	{

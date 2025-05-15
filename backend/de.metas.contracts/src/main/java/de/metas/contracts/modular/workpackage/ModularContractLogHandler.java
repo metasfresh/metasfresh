@@ -28,8 +28,9 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.BaseModuleConfig;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.document.engine.DocStatus;
@@ -86,7 +87,7 @@ class ModularContractLogHandler
 	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final ModularContractLogHandlerRegistry handlerRegistry;
-	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogRepository contractLogRepo;
 	@NonNull private final ModularContractLogService modularLogService;
 	@NonNull private final ShippingNotificationService notificationService;
 
@@ -114,27 +115,50 @@ class ModularContractLogHandler
 		}
 
 		final LogAction action = getLogAction(request);
-
 		for (final ModuleConfig moduleConfig : moduleConfigs)
 		{
-			final IModularContractLogHandler.CreateLogRequest createLogRequest = IModularContractLogHandler.CreateLogRequest
-					.builder()
-					.handleLogsRequest(request)
-					.modularContractSettings(settings)
-					.productName(moduleConfig.getName())
-					.moduleConfig(moduleConfig)
-					.typeId(moduleConfig.getModularContractTypeId())
-					.build();
-
-			if (handler.applies(createLogRequest))
+			if (settings.containsBaseModuleConfig(moduleConfig))
 			{
-				switch (action)
+				for (final BaseModuleConfig baseConfig : settings.getBaseModuleConfigs())
 				{
-					case CREATE -> createLogs(handler, createLogRequest);
-					case REVERSE -> reverseLogs(handler, createLogRequest);
-					case RECOMPUTE -> recreateLogs(handler, createLogRequest);
-					default -> throw new AdempiereException("Unknown action: " + action);
+					if(baseConfig.isConfigFor(moduleConfig))
+					{
+						final IModularContractLogHandler.CreateLogRequest createLogRequest = IModularContractLogHandler.CreateLogRequest
+								.builder()
+								.handleLogsRequest(request)
+								.modularContractSettings(settings)
+								.moduleConfig(moduleConfig)
+								.baseModuleConfig(settings.getModuleConfigById(baseConfig.getBaseModuleConfigId()))
+								.build();
+
+						handleLogs(handler, action, createLogRequest);
+					}
 				}
+			}
+			else
+			{
+				final IModularContractLogHandler.CreateLogRequest createLogRequest = IModularContractLogHandler.CreateLogRequest
+						.builder()
+						.handleLogsRequest(request)
+						.modularContractSettings(settings)
+						.moduleConfig(moduleConfig)
+						.build();
+
+				handleLogs(handler, action, createLogRequest);
+			}
+		}
+	}
+
+	private void handleLogs(final @NonNull IModularContractLogHandler handler, final LogAction action, final IModularContractLogHandler.CreateLogRequest createLogRequest)
+	{
+		if (handler.applies(createLogRequest))
+		{
+			switch (action)
+			{
+				case CREATE -> createLogs(handler, createLogRequest);
+				case REVERSE -> reverseLogs(handler, createLogRequest);
+				case RECOMPUTE -> recreateLogs(handler, createLogRequest);
+				default -> throw new AdempiereException("Unknown action: " + action);
 			}
 		}
 	}
@@ -161,7 +185,7 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
 		createLogEntryCreateRequest(handler, request)
-				.ifPresent(contractLogDAO::create)
+				.ifPresent(contractLogRepo::create)
 				.ifAbsent(explanation -> Loggables.withLogger(logger, Level.DEBUG)
 						.addLog("Method: {} | No logs created for request: {}! reason: {}!",
 								"createLogs",
@@ -197,7 +221,7 @@ class ModularContractLogHandler
 			return;
 		}
 
-		contractLogDAO.delete(handler.toLogEntryDeleteRequest(request.getHandleLogsRequest(), request.getModularContractModuleId()));
+		contractLogRepo.delete(handler.toLogEntryDeleteRequest(request));
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("Method: {} | Logs were successfully deleted for request: {}!", "recreateLogs", request);

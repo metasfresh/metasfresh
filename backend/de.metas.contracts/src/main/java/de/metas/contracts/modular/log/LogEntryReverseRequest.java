@@ -38,7 +38,8 @@ public record LogEntryReverseRequest(
 		@Nullable FlatrateTermId flatrateTermId,
 		@Nullable String description,
 		@NonNull LogEntryContractType logEntryContractType,
-		@NonNull ModularContractModuleId contractModuleId)
+		@NonNull ModularContractModuleId contractModuleId,
+		@Nullable ModularContractModuleId baseContractModuleId)
 {
 	public LogEntryReverseRequest
 	{

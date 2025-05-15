@@ -24,6 +24,7 @@ package de.metas.contracts.modular.workpackage;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.Check;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
@@ -76,9 +77,15 @@ public class ModularContractLogHandlerRegistry
 	@NonNull
 	public IModularContractLogHandler getApplicableHandlerForOrError(@NonNull final ModularContractLogEntry logEntry)
 	{
+		final ComputingMethodType baseComputingMethodType = logEntry.getBaseModularContractModuleId() != null
+				? modularContractSettingsService.getByModuleId(logEntry.getBaseModularContractModuleId()).getComputingMethodType()
+				: null;
+
+
 		final ImmutableList<IModularContractLogHandler> matchingHandlers = handlers.stream()
 				.filter(handler -> modularContractSettingsService.hasComputingMethodType(logEntry.getModularContractModuleId(), handler.getComputingMethod().getComputingMethodType()))
 				.filter(handler -> handler.getLogEntryDocumentType() == logEntry.getDocumentType())
+				.filter(handler -> handler.getBaseComputingMethodType() == baseComputingMethodType)
 				.collect(ImmutableList.toImmutableList());
 
 		Check.assume(matchingHandlers.size() == 1, "Exactly 1 log-handler should be found for log, but found " + matchingHandlers.size());

@@ -64,11 +64,13 @@ public class ModularContractSettings
 	@Nullable ProductId processedProductId;
 	@Nullable ProductId coProductId;
 	@NonNull @Singular ImmutableList<ModuleConfig> moduleConfigs;
+	@NonNull @Singular ImmutableList<BaseModuleConfig> baseModuleConfigs;
 
 	@NonNull SOTrx soTrx;
 
 	@NonNull LocalDateAndOrgId storageCostStartDate;
 	int freeStorageCostDays;
+	int freeInterestDays;
 	int additionalInterestDays;
 
 	@NonNull LocalDateAndOrgId addedValueReceiptEndDate;
@@ -119,6 +121,17 @@ public class ModularContractSettings
 	}
 
 	@NonNull
+	public ModuleConfig getModuleConfigById(@NonNull final ModuleConfigAndSettingsId moduleConfigAndSettingsId)
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(config -> config.isMatching(moduleConfigAndSettingsId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No matching ModuleConfig found")
+						.setParameter("ID", moduleConfigAndSettingsId));
+	}
+
+	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
 	{
 		Check.assumeNotEmpty(computingMethodTypes, "ComputingMethodTypes shouldn't be empty");
@@ -140,6 +153,16 @@ public class ModularContractSettings
 	public boolean contains(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return moduleConfigs.stream().anyMatch(config -> config.isMatching(computingMethodType));
+	}
+
+	public boolean containsBaseModuleConfig(@NonNull final ModuleConfig moduleConfig)
+	{
+		return baseModuleConfigs.stream().anyMatch(config -> config.isConfigFor(moduleConfig));
+	}
+
+	public List<BaseModuleConfig> getBaseModuleConfigsByBaseModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		return baseModuleConfigs.stream().filter(config -> config.isConfigWithBaseConfig(modularContractModuleId)).toList();
 	}
 
 	public long countMatching(@NonNull final ComputingMethodType computingMethodType, @NonNull final ProductId productId)

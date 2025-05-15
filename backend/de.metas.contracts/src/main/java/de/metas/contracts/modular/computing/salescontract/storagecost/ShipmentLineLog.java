@@ -51,7 +51,7 @@ class ShipmentLineLog extends AbstractStorageCostLogHandler
 			final @NonNull LocalDateAndOrgId transactionDate,
 			final @Nullable LocalDateAndOrgId physicalClearanceDate)
 	{
-		Check.assumeNotNull(physicalClearanceDate, "Physical Clearance Date shouldn't be null ()");
+		Check.assumeNotNull(physicalClearanceDate, "Physical Clearance Date shouldn't be null");
 		final int daysBetween = (int)TimeUtil.getDaysBetween360(physicalClearanceDate.toInstant(orgDAO::getTimeZone), transactionDate.toInstant(orgDAO::getTimeZone));
 		final int daysFree = createLogRequest.getModularContractSettings().getFreeStorageCostDays();
 		return Math.max(daysBetween - daysFree, 0);
