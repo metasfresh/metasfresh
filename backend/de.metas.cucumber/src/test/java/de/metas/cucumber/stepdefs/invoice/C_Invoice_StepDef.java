@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
@@ -175,6 +176,7 @@ public class C_Invoice_StepDef
 	private final C_DocType_StepDefData docTypeTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final C_PaymentTerm_StepDefData paymentTermTable;
+	private final TestContext restTestContext;
 
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
@@ -257,6 +259,9 @@ public class C_Invoice_StepDef
 		}
 	}
 
+	/**
+	 * Note that the new invoice's IC is also added to {@link TestContext} for further use in API-requests.
+	 */
 	@And("metasfresh contains C_Invoice:")
 	public void addC_Invoices(@NonNull final DataTable dataTable)
 	{
@@ -783,6 +788,7 @@ public class C_Invoice_StepDef
 		invoiceDAO.save(invoice);
 
 		row.getAsIdentifier().putOrReplace(invoiceTable, invoice);
+		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
 	}
 
 	private Optional<PaymentTermId> extractPaymentTermId(final @NonNull DataTableRow row)

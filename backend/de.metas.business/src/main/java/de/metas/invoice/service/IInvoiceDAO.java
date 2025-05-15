@@ -167,7 +167,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice);
 
-	org.compiere.model.I_C_Invoice getByIdInTrx(InvoiceId invoiceId);
+	org.compiere.model.I_C_Invoice getByIdInTrx(@NonNull InvoiceId invoiceId);
 
 	List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
 
@@ -179,6 +179,8 @@ public interface IInvoiceDAO extends ISingletonService
 
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 
+	<T extends org.compiere.model.I_C_Invoice> T getByIdOutOfTrx(@NonNull InvoiceId invoiceId, @NonNull Class<T> clazz);
+	
 	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
 	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);

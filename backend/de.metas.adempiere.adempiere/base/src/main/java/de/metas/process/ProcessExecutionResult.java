@@ -96,22 +96,25 @@ public class ProcessExecutionResult
 
 	private static final Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
-	private PInstanceId pinstanceId;
+	@Getter private PInstanceId pinstanceId;
 
 	/**
 	 * Summary of Execution
 	 */
-	private String summary = "";
+	@Setter @Getter private String summary = "";
 	/**
-	 * Execution had an error
+	 * -- GETTER --
+	 *
+	 * @return true if the process execution failed
 	 */
-	private boolean error = false;
-	private transient boolean errorWasReportedToUser = false;
+	@Getter private boolean error = false;
+	
+	@Getter private transient boolean errorWasReportedToUser = false;
 
 	/**
 	 * Process timed out
 	 */
-	private boolean timeout = false;
+	@Getter @Setter private boolean timeout = false;
 
 	/**
 	 * Log Info
@@ -122,7 +125,7 @@ public class ProcessExecutionResult
 
 	//
 	// Reporting
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private transient MPrintFormat printFormat;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Nullable
@@ -135,12 +138,18 @@ public class ProcessExecutionResult
 	@Nullable
 	private transient Throwable throwable = null;
 
-	private boolean refreshAllAfterExecution = false;
+	/**
+	 *  Tells if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
+	 */
+	@Setter @Getter private boolean refreshAllAfterExecution = false;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToRefreshAfterExecution = null;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	/**
+	 *  Tells the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
+	 */
+	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToSelectAfterExecution = null;
 
 	/**
@@ -256,21 +265,6 @@ public class ProcessExecutionResult
 		this.pinstanceId = pinstanceId;
 	}
 
-	public PInstanceId getPinstanceId()
-	{
-		return pinstanceId;
-	}
-
-	public String getSummary()
-	{
-		return summary;
-	}
-
-	public void setSummary(final String summary)
-	{
-		this.summary = summary;
-	}
-
 	public void addSummary(final String additionalSummary)
 	{
 		if (summary == null)
@@ -311,14 +305,6 @@ public class ProcessExecutionResult
 		error = true;
 	}
 
-	/**
-	 * @return true if the process execution failed
-	 */
-	public boolean isError()
-	{
-		return error;
-	}
-
 	public void setThrowableIfNotSet(final Throwable throwable)
 	{
 		// Don't set it if it was already set
@@ -345,21 +331,6 @@ public class ProcessExecutionResult
 	public void setErrorWasReportedToUser()
 	{
 		errorWasReportedToUser = true;
-	}
-
-	public boolean isErrorWasReportedToUser()
-	{
-		return errorWasReportedToUser;
-	}
-
-	public void setTimeout(final boolean timeout)
-	{
-		this.timeout = timeout;
-	}
-
-	public boolean isTimeout()
-	{
-		return timeout;
 	}
 
 	/**
@@ -395,48 +366,6 @@ public class ProcessExecutionResult
 				logger.warn("Unknown ShowProcessLogsPolicy: {}. Considering {}", showProcessLogsPolicy, ShowProcessLogs.Always);
 				return true;
 		}
-	}
-
-	/**
-	 * Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
-	 */
-	public void setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
-	{
-		this.refreshAllAfterExecution = refreshAllAfterExecution;
-	}
-
-	/**
-	 * @return if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
-	 */
-	public boolean isRefreshAllAfterExecution()
-	{
-		return refreshAllAfterExecution;
-	}
-
-	public void setRecordToRefreshAfterExecution(final TableRecordReference recordToRefreshAfterExecution)
-	{
-		this.recordToRefreshAfterExecution = recordToRefreshAfterExecution;
-	}
-
-	public TableRecordReference getRecordToRefreshAfterExecution()
-	{
-		return recordToRefreshAfterExecution;
-	}
-
-	/**
-	 * @return the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 */
-	public TableRecordReference getRecordToSelectAfterExecution()
-	{
-		return recordToSelectAfterExecution;
-	}
-
-	/**
-	 * Sets the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 */
-	public void setRecordToSelectAfterExecution(final TableRecordReference recordToSelectAfterExecution)
-	{
-		this.recordToSelectAfterExecution = recordToSelectAfterExecution;
 	}
 
 	public void setRecordsToOpen(final Collection<TableRecordReference> records, final int adWindowId)
@@ -563,23 +492,13 @@ public class ProcessExecutionResult
 		return recordsToOpen;
 	}
 
-	public void setPrintFormat(final MPrintFormat printFormat)
-	{
-		this.printFormat = printFormat;
-	}
-
-	public MPrintFormat getPrintFormat()
-	{
-		return printFormat;
-	}
-
 	public void setReportData(@NonNull final Resource data)
 	{
 		final String filename = Check.assumeNotNull(data.getFilename(), "Resource shall have the filename set: {}", data);
 		setReportData(data, filename, MimeType.getMimeType(data.getFilename()));
 	}
 
-	public void setReportData(@NonNull final Resource data, @Nullable final String filename, final String contentType)
+	public void setReportData(@NonNull final Resource data, @NonNull final String filename, @NonNull final String contentType)
 	{
 		setReportData(ReportResultData.builder()
 				.reportData(data)
