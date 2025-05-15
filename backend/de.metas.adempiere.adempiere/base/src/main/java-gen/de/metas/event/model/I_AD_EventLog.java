@@ -26,7 +26,7 @@ import org.adempiere.model.ModelColumn;
 import javax.annotation.Nullable;
 
 /** Generated Interface for AD_EventLog
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public interface I_AD_EventLog
@@ -164,7 +164,7 @@ public interface I_AD_EventLog
 	/**
 	 * Set Event Name.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -173,7 +173,7 @@ public interface I_AD_EventLog
 	/**
 	 * Get Event Name.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
