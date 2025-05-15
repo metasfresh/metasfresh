@@ -22,11 +22,16 @@
 
 package de.metas.edi.process.export.json;
 
+import de.metas.document.engine.DocStatus;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -41,6 +46,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 
+import javax.annotation.Nullable;
 import java.util.stream.Stream;
 
 import static de.metas.edi.process.export.json.C_Invoice_EDI_Export_JSON.PARAM_C_INVOICE_ID;
@@ -50,8 +56,13 @@ import static de.metas.edi.process.export.json.C_Invoice_EDI_Export_JSON.PARAM_C
  */
 public class C_Invoice_Selection_Export_JSON extends JavaProcess implements IProcessPrecondition
 {
+	private static final AdMessageKey errorMsg = AdMessageKey.of("de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_ProcessingError");
+	private static final AdMessageKey notReadyInfo = AdMessageKey.of("de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_InvoiceNotReady");
+
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	private int countExported;
 	private int countErrors;
@@ -64,8 +75,30 @@ public class C_Invoice_Selection_Export_JSON extends JavaProcess implements IPro
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
+		if (context.isSingleSelection())
+		{
+			final InvoiceId invoiceId = extractSingleSelectedInvoiceId(context);
+			if (invoiceId == null)
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("No invoice selected");
+			}
+			final I_C_Invoice invoiceRecord = invoiceDAO.getByIdOutOfTrx(invoiceId, I_C_Invoice.class);
+			final boolean singleInvoiceCanBeEdiSent = DocStatus.ofCode(invoiceRecord.getDocStatus()).isCompleted()
+					&& invoiceRecord.isEdiEnabled()
+					&& EDIExportStatus.ofCode(invoiceRecord.getEDI_ExportStatus()).isPending();
+			if (!singleInvoiceCanBeEdiSent)
+			{
+				return ProcessPreconditionsResolution.reject(notReadyInfo);
+			}
+		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Nullable
+	protected InvoiceId extractSingleSelectedInvoiceId(final @NonNull IProcessPreconditionsContext context)
+	{
+		return InvoiceId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
 	}
 
 	@Override
@@ -75,7 +108,11 @@ public class C_Invoice_Selection_Export_JSON extends JavaProcess implements IPro
 		countErrors = 0;
 		retrieveValidSelectedDocuments().forEach(this::performNestedProcessInvocation);
 
-		return countExported > 0 && countErrors == 0 ? MSG_OK : MSG_Error;
+		if (countExported > 0 && countErrors == 0)
+		{
+			return MSG_OK;
+		}
+		return MSG_Error + Services.get(IMsgBL.class).getMsg(getCtx(), errorMsg, new Object[] { countExported, countErrors });
 	}
 
 	private void performNestedProcessInvocation(@NonNull final InvoiceId invoiceId)

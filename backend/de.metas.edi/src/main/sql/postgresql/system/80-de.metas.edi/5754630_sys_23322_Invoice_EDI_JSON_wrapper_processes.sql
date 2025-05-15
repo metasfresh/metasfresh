@@ -113,3 +113,86 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585470,318,541556,TO_TIMESTAMP('2025-05-15 09:31:19.907000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.esb.edi','Y',TO_TIMESTAMP('2025-05-15 09:31:19.907000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N')
 ;
 
+-------------------
+---- Messages for export-process
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_ProcessingError
+-- 2025-05-15T10:14:46.540Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545548,0,TO_TIMESTAMP('2025-05-15 10:14:46.390000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.esb.edi','Y','Es wurden {0} Rechnungen exportiert, {1} mit Fehler.','E',TO_TIMESTAMP('2025-05-15 10:14:46.390000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_ProcessingError')
+;
+
+-- 2025-05-15T10:14:46.551Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545548 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_ProcessingError
+-- 2025-05-15T10:37:42.323Z
+UPDATE AD_Message SET MsgText='Es wurden {0} Rechnungen exportiert, {1} davon mit Fehler.',Updated=TO_TIMESTAMP('2025-05-15 10:37:42.321000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Message_ID=545548
+;
+
+-- 2025-05-15T10:37:42.325Z
+UPDATE AD_Message_Trl trl SET MsgText='Es wurden {0} Rechnungen exportiert, {1} davon mit Fehler.' WHERE AD_Message_ID=545548 AND AD_Language='de_DE'
+;
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_ProcessingError
+-- 2025-05-15T10:37:46.401Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-05-15 10:37:46.401000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545548
+;
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_ProcessingError
+-- 2025-05-15T10:37:51.554Z
+UPDATE AD_Message_Trl SET MsgText='Es wurden {0} Rechnungen exportiert, {1} davon mit Fehler.',Updated=TO_TIMESTAMP('2025-05-15 10:37:51.554000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545548
+;
+
+-- 2025-05-15T10:37:51.555Z
+UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_ProcessingError
+-- 2025-05-15T10:37:55.390Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Es wurden {0} Rechnungen exportiert, {1} davon mit Fehler.',Updated=TO_TIMESTAMP('2025-05-15 10:37:55.389000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Message_ID=545548
+;
+
+-- 2025-05-15T10:37:55.391Z
+UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_ProcessingError
+-- 2025-05-15T10:38:00.886Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-05-15 10:38:00.886000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545548
+;
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_ProcessingError
+-- 2025-05-15T10:38:24.876Z
+UPDATE AD_Message_Trl SET MsgText='There were {0} invoices exported, {1} of them with an error.',Updated=TO_TIMESTAMP('2025-05-15 10:38:24.876000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545548
+;
+
+-- 2025-05-15T10:38:24.878Z
+UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_InvoiceNotReady
+-- 2025-05-15T10:42:44.608Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545549,0,TO_TIMESTAMP('2025-05-15 10:42:44.433000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.esb.edi','Y','Rechnung muss fertiggestellt, "Soll per EDI übermittelt werden"=Ja und den EDI-Status "Noch nicht gesendet" haben.','I',TO_TIMESTAMP('2025-05-15 10:42:44.433000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_InvoiceNotReady')
+;
+
+-- 2025-05-15T10:42:44.610Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545549 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_InvoiceNotReady
+-- 2025-05-15T10:42:54.796Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-05-15 10:42:54.796000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545549
+;
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_InvoiceNotReady
+-- 2025-05-15T10:42:57.621Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-05-15 10:42:57.621000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Message_ID=545549
+;
+
+-- Value: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON_InvoiceNotReady
+-- 2025-05-15T10:43:00.192Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-05-15 10:43:00.192000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545549
+;
+
