@@ -27,11 +27,11 @@ UPDATE AD_Process_Trl SET Name='Clone Selection',Updated=TO_TIMESTAMP('2025-05-1
 ;
 
 -- 2025-05-14T18:56:42.991Z
-UPDATE AD_Process SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:56:42.99','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585468
+UPDATE AD_Process SET Description='Klont die ausgewählten Belegarten in die unten stehende Organisation. Falls die Belegart nummerngesteuert ist und eine Nummernfolge hat, klont der Prozess auch die Nummernfolge in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:56:42.99','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585468
 ;
 
 -- 2025-05-14T18:56:43Z
-UPDATE AD_Process_Trl trl SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.' WHERE AD_Process_ID=585468 AND AD_Language='de_DE'
+UPDATE AD_Process_Trl trl SET Description='Klont die ausgewählten Belegarten in die unten stehende Organisation. Falls die Belegart nummerngesteuert ist und eine Nummernfolge hat, klont der Prozess auch die Nummernfolge in die unten stehende Organisation.' WHERE AD_Process_ID=585468 AND AD_Language='de_DE'
 ;
 
 -- Process: C_DocType_Clone_Selection(de.metas.document.process.C_DocType_Clone_Selection)
@@ -41,15 +41,15 @@ UPDATE AD_Process_Trl SET Description='Clone selected document types to the belo
 
 -- Process: C_DocType_Clone_Selection(de.metas.document.process.C_DocType_Clone_Selection)
 -- 2025-05-14T18:57:04.903Z
-UPDATE AD_Process_Trl SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:57:04.903','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585468
+UPDATE AD_Process_Trl SET Description='Klont die ausgewählten Belegarten in die unten stehende Organisation. Falls die Belegart nummerngesteuert ist und eine Nummernfolge hat, klont der Prozess auch die Nummernfolge in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:57:04.903','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585468
 ;
 
 -- Process: C_DocType_Clone_Selection(de.metas.document.process.C_DocType_Clone_Selection)
 -- 2025-05-14T18:57:08.526Z
-UPDATE AD_Process_Trl SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:57:08.526','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585468
+UPDATE AD_Process_Trl SET Description='Klont die ausgewählten Belegarten in die unten stehende Organisation. Falls die Belegart nummerngesteuert ist und eine Nummernfolge hat, klont der Prozess auch die Nummernfolge in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:57:08.526','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585468
 ;
 
 -- Process: C_DocType_Clone_Selection(de.metas.document.process.C_DocType_Clone_Selection)
 -- 2025-05-14T18:57:09.882Z
-UPDATE AD_Process_Trl SET Description='Klonen Sie ausgewählte Dokumenttypen in die unten stehende Organisation. Falls das Dokument nummerngesteuert ist und eine Sequenz hat, klonen Sie auch die Sequenz in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:57:09.882','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND AD_Process_ID=585468
+UPDATE AD_Process_Trl SET Description='Klont die ausgewählten Belegarten in die unten stehende Organisation. Falls die Belegart nummerngesteuert ist und eine Nummernfolge hat, klont der Prozess auch die Nummernfolge in die unten stehende Organisation.',Updated=TO_TIMESTAMP('2025-05-14 21:57:09.882','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND AD_Process_ID=585468
 ;
