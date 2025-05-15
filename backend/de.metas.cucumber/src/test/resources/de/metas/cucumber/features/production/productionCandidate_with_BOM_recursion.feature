@@ -312,6 +312,12 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
     And the order identified by o_1_S0460_30 is reactivated
 
+    Then after not more than 60s, PP_Order_Candidates are found
+      | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
+      | oc_1_S0460_30 | product_1_1_S0460_30 | bom_1_S0460_30    | ppln_1_1_S0460_30      | resource_S0460 | 0 PCE      | 0 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      ## because ppo_2_S0460_30 was not voided, the candidate qty cannot be decreased
+      | oc_2_S0460_30 | product_2_1_S0460_30 | bom_2_S0460_30    | ppln_2_1_S0460_30      | resource_S0460 | 20 PCE     | 0 PCE        | 20 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
+
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1_S0460_30             | 3              |
@@ -320,15 +326,15 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_1_S0460_30 | product_1_1_S0460_30 | bom_1_S0460_30    | ppln_1_1_S0460_30      | resource_S0460 | 1 PCE      | 1 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      | oc_1_S0460_30 | product_1_1_S0460_30 | bom_1_S0460_30    | ppln_1_1_S0460_30      | resource_S0460 | 0 PCE      | 0 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
       | oc_2_S0460_30 | product_2_1_S0460_30 | bom_2_S0460_30    | ppln_2_1_S0460_30      | resource_S0460 | 20 PCE     | 0 PCE        | 20 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
-      | oc_3_S0460_30 | product_1_1_S0460_30 | bom_1_S0460_30    | ppln_1_1_S0460_30      | resource_S0460 | 2 PCE      | 0 PCE        | 2 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
+      | oc_3_S0460_30 | product_1_1_S0460_30 | bom_1_S0460_30    | ppln_1_1_S0460_30      | resource_S0460 | 3 PCE      | 0 PCE        | 3 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
       | oc_4_S0460_30 | product_2_1_S0460_30 | bom_2_S0460_30    | ppln_2_1_S0460_30      | resource_S0460 | 40 PCE     | 0 PCE        | 40 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
 
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
-      | oc_1_S0460_30         | product_2_1_S0460_30 | 20 PCE     | CO            | boml_2_1_S0460_30     |
-      | oc_1_S0460_30         | product_2_2_S0460_30 | 10 PCE     | CO            | boml_2_2_S0460_30     |
+      | oc_1_S0460_30         | product_2_1_S0460_30 | 0 PCE      | CO            | boml_2_1_S0460_30     |
+      | oc_1_S0460_30         | product_2_2_S0460_30 | 0 PCE      | CO            | boml_2_2_S0460_30     |
       | oc_2_S0460_30         | product_3_1_S0460_30 | 0 PCE      | CO            | boml_3_1_S0460_30     |
       | oc_3_S0460_30         | product_2_1_S0460_30 | 0 PCE      | CO            | boml_2_1_S0460_30     |
       | oc_3_S0460_30         | product_2_2_S0460_30 | 0 PCE      | CO            | boml_2_2_S0460_30     |
@@ -338,7 +344,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | Identifier     | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyOrdered | C_BPartner_ID     | DatePromised         | DocStatus |
       | ppo_1_S0460_30 | product_1_1_S0460_30 | bom_1_S0460_30    | ppln_1_1_S0460_30      | resource_S0460 | 0 PCE      | 0          | customer_S0460_30 | 2024-09-22T21:00:00Z | VO        |
       | ppo_2_S0460_30 | product_2_1_S0460_30 | bom_2_S0460_30    | ppln_2_1_S0460_30      | resource_S0460 | 20 PCE     | 20         | customer_S0460_30 | 2024-09-22T21:00:00Z | CO        |
-      | ppo_3_S0460_30 | product_1_1_S0460_30 | bom_1_S0460_30    | ppln_1_1_S0460_30      | resource_S0460 | 2 PCE      | 2          | customer_S0460_30 | 2024-09-22T21:00:00Z | CO        |
+      | ppo_3_S0460_30 | product_1_1_S0460_30 | bom_1_S0460_30    | ppln_1_1_S0460_30      | resource_S0460 | 3 PCE      | 3          | customer_S0460_30 | 2024-09-22T21:00:00Z | CO        |
       | ppo_4_S0460_30 | product_2_1_S0460_30 | bom_2_S0460_30    | ppln_2_1_S0460_30      | resource_S0460 | 40 PCE     | 40         | customer_S0460_30 | 2024-09-22T21:00:00Z | CO        |
 
 
@@ -454,19 +460,28 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_1_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 2 PCE      | 2 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      # oc_1_S0460_40 was emptied when o_1_S0460_40 was reactivated
+      | oc_1_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 0 PCE      | 0 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      # because ppo_2_S0460_40 was not voided, oc_2_S0460_40 was not emptied
       | oc_2_S0460_40 | product_2_1_S0460_40 | bom_2_S0460_40    | ppln_2_1_S0460_40      | resource_S0460 | 40 PCE     | 0 PCE        | 40 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
+      # oc_3_S0460_40 was created when o_1_S0460_40 was completed
+      | oc_3_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 1 PCE      | 0 PCE        | 1 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      # because oc_2_S0460_40 will provide enough qty of product_2_1_S0460_40, no child PP_Order_candidate is created for oc_3_S0460_40
 
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
-      | oc_1_S0460_40         | product_2_1_S0460_40 | 40 PCE     | CO            | boml_2_1_S0460_40     |
-      | oc_1_S0460_40         | product_2_2_S0460_40 | 20 PCE     | CO            | boml_2_2_S0460_40     |
+      | oc_1_S0460_40         | product_2_1_S0460_40 | 0 PCE      | CO            | boml_2_1_S0460_40     |
+      | oc_1_S0460_40         | product_2_2_S0460_40 | 0 PCE      | CO            | boml_2_2_S0460_40     |
+      | oc_2_S0460_40         | product_3_1_S0460_40 | 0 PCE      | CO            | boml_3_1_S0460_40     |
+      | oc_1_S0460_40         | product_2_1_S0460_40 | 20 PCE     | CO            | boml_2_1_S0460_40     |
+      | oc_1_S0460_40         | product_2_2_S0460_40 | 10 PCE     | CO            | boml_2_2_S0460_40     |
       | oc_2_S0460_40         | product_3_1_S0460_40 | 0 PCE      | CO            | boml_3_1_S0460_40     |
 
     And after not more than 60s, PP_Orders are found
       | Identifier     | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyOrdered | C_BPartner_ID     | DatePromised         | DocStatus |
       | ppo_1_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 0 PCE      | 0          | customer_S0460_40 | 2024-09-22T21:00:00Z | VO        |
       | ppo_2_S0460_40 | product_2_1_S0460_40 | bom_2_S0460_40    | ppln_2_1_S0460_40      | resource_S0460 | 40 PCE     | 40         | customer_S0460_40 | 2024-09-22T21:00:00Z | CO        |
+      | ppo_3_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 1 PCE      | 1          | customer_S0460_40 | 2024-09-22T21:00:00Z | CO        |
 
 ##################################################
 

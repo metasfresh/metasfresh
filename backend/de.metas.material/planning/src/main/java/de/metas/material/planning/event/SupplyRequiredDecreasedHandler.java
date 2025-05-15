@@ -66,7 +66,10 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 		{
 			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
 			{
-				remainingQtyToHandle = advisor.handleQuantityDecrease(event, remainingQtyToHandle);
+				if (remainingQtyToHandle.signum() > 0)
+				{
+					remainingQtyToHandle = advisor.handleQuantityDecrease(event, remainingQtyToHandle);
+				}
 			}
 		}
 
