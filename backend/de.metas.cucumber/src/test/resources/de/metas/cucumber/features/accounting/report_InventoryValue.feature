@@ -57,11 +57,11 @@ Feature: Inventory Value report / Lagerwert
       | inv6           | 2024-03-30   | wh             | P1           | 100     | 0        | PCE          |           | hu2     |
 
     Then expect inventory valuation report
-      | Date       | M_Product_ID | M_Warehouse_ID | Qty | TotalAmt | CostPrice |
-      | 2024-03-07 | P1           | wh             | 100 | 1000.00  | 10.0000   |
-      | 2024-03-12 | P1           | wh             | 90  | 900.00   | 10.0000   |
-      | 2024-03-17 | P1           | wh             | 190 | 2000.00  | 10.5263   |
-      | 2024-03-22 | P1           | wh             | 180 | 1894.74  | 10.5263   |
-      | 2024-03-27 | P1           | wh             | 100 | 1052.64  | 10.5264   |
-      | 2024-04-01 | P1           | wh             | 0   | 0.01     | 0.0000    |
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_ExpectedAmt | Acct_CostPrice |
+      | 2024-03-07 | P1           | wh             | 100 | 1000.00          | 10.0000        |
+      | 2024-03-12 | P1           | wh             | 90  | 900.00           | 10.0000        |
+      | 2024-03-17 | P1           | wh             | 190 | 2000.00          | 10.5263        |
+      | 2024-03-22 | P1           | wh             | 180 | 1894.74          | 10.5263        |
+      | 2024-03-27 | P1           | wh             | 100 | 1052.64          | 10.5264        |
+      | 2024-04-01 | P1           | wh             | 0   | 0.01             | 0.0000         |
     

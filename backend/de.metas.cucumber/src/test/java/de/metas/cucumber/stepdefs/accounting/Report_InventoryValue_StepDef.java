@@ -17,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @RequiredArgsConstructor
 public class Report_InventoryValue_StepDef
 {
@@ -44,9 +42,9 @@ public class Report_InventoryValue_StepDef
 		final SoftAssertions softly = new SoftAssertions();
 
 		row.getAsOptionalBigDecimal("Qty").ifPresent(qty -> softly.assertThat(inventoryValue.getQty()).as("Qty").isEqualByComparingTo(qty));
-		row.getAsOptionalBigDecimal("TotalAmt").ifPresent(totalAmt -> softly.assertThat(inventoryValue.getTotalAmt()).as("TotalAmt").isEqualByComparingTo(totalAmt));
-		row.getAsOptionalBigDecimal("CostPrice").ifPresent(costPrice -> softly.assertThat(inventoryValue.getCostPrice()).as("CostPrice").isEqualByComparingTo(costPrice));
-		
+		row.getAsOptionalBigDecimal("Acct_ExpectedAmt").ifPresent(totalAmt -> softly.assertThat(inventoryValue.getAccounted().getExpectedAmt()).as("Acct_ExpectedAmt").isEqualByComparingTo(totalAmt));
+		row.getAsOptionalBigDecimal("Acct_CostPrice").ifPresent(costPrice -> softly.assertThat(inventoryValue.getAccounted().getCostPrice()).as("Acct_CostPrice").isEqualByComparingTo(costPrice));
+
 		softly.assertAll();
 	}
 
