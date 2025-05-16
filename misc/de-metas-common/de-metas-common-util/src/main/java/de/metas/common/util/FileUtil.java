@@ -180,13 +180,29 @@ public class FileUtil
 		}
 	}
 
+	/**
+	 * Copies the content from a given {@link InputStream} to the specified {@link File}.
+	 * The method writes the data to a temporary file first, and then renames it to the target file.
+	 * This ensures that we don'T end up with a partially written file that's then already processed by some other component.
+	 *
+	 * @throws IOException if an I/O error occurs during reading, writing, or renaming the file
+	 */
 	public static void copy(@NonNull final InputStream in, @NonNull final File to) throws IOException
 	{
-		try (final FileOutputStream out = new FileOutputStream(to))
+		final File tempFile = new File(to.getAbsolutePath() + ".part");
+		try (final FileOutputStream out = new FileOutputStream(tempFile))
 		{
 			copy(in, out);
 		}
+
+		// rename the temporary file to the final destination
+		if (!tempFile.renameTo(to))
+		{
+			throw new IOException("Failed to rename the temporary file "
+					+ tempFile.getAbsolutePath() + " to " + to.getAbsolutePath());
+		}
 	}
+
 
 	public static void copy(@NonNull final InputStream in, @NonNull final OutputStream out) throws IOException
 	{
