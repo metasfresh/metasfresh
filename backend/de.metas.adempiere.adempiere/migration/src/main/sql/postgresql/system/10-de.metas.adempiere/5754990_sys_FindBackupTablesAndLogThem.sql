@@ -22,7 +22,7 @@ $$
                     EXCEPTION
                         WHEN OTHERS THEN
                             RAISE WARNING 'Could not parse timestamp from %', r.tablename;
-                            CONTINUE;
+                            v_created_at := now();
                     END;
 
                     -- Extract source table name from prefix
