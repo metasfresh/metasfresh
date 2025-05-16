@@ -48,7 +48,7 @@ DROP FUNCTION IF EXISTS cleanup_backup_tables(p_SourceTableName  text,
 
 CREATE OR REPLACE FUNCTION cleanup_backup_tables(p_SourceTableName  text,
                                                  p_DaysToKeepBackup integer)
-    RETURNS void
+    RETURNS text
     LANGUAGE plpgsql
 AS
 $$
@@ -61,7 +61,7 @@ BEGIN
         SELECT backup_table_name
         FROM backup.backup_tables
         WHERE created_at <= NOW() - (p_DaysToKeepBackup || ' days')::interval
-          AND source_table_name = p_SourceTableName
+          AND lower(source_table_name) = lower(p_SourceTableName)
         LOOP
             RAISE NOTICE 'Dropping table %', r.backup_table_name;
             EXECUTE 'DROP TABLE IF EXISTS ' || r.backup_table_name;
@@ -72,6 +72,12 @@ BEGIN
         END LOOP;
 
     RAISE NOTICE 'Total backup table entries removed: %', v_totalDeleted;
+
+    RETURN format('Cleaned up %s: %s tables deleted.', p_SourceTableName, v_totalDeleted);
 END
 $$
 ;
+
+-- Usage example:
+-- SELECT cleanup_backup_tables('M_Product', 0);
+-- => select * from backup.backup_tables where source_table_name='M_Product'
