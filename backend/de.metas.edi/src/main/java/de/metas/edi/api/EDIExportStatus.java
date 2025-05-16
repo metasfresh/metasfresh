@@ -62,4 +62,9 @@ public enum EDIExportStatus implements ReferenceListAwareEnum
 	private static final ReferenceListAwareEnums.ValuesIndex<EDIExportStatus> index = ReferenceListAwareEnums.index(values());
 
 	public static final int AD_Reference_ID = X_EDI_Desadv.EDI_EXPORTSTATUS_AD_Reference_ID;
+
+	public boolean isPending()
+	{
+		return this == Pending;
+	}
 }

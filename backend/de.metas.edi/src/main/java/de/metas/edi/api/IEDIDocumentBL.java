@@ -22,18 +22,16 @@ package de.metas.edi.api;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.service.ClientId;
-
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.process.export.IExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.util.ISingletonService;
+import org.adempiere.service.ClientId;
+
+import java.util.List;
+import java.util.Properties;
 
 public interface IEDIDocumentBL extends ISingletonService
 {
@@ -43,7 +41,6 @@ public interface IEDIDocumentBL extends ISingletonService
 	/**
 	 * Update EDI status, but do not save
 	 *
-	 * @param document
 	 * @return true if document.IsEdiEnabled=Y, false otherwise
 	 */
 	boolean updateEdiEnabled(I_EDI_Document_Extension document);
@@ -55,9 +52,6 @@ public interface IEDIDocumentBL extends ISingletonService
 	List<Exception> isValidPartner(org.compiere.model.I_C_BPartner partner);
 
 	/**
-	 * @param document
-	 * @param EDI_ExportStatus
-	 * @param feedback
 	 * @param saveLocally if true, also save document here
 	 * @return {@link ValidationState#INVALID} if document is invalid due to feedback,<br>
 	 *         {@link ValidationState#ALREADY_VALID} if document is already valid, or<br>
@@ -71,7 +65,6 @@ public interface IEDIDocumentBL extends ISingletonService
 	IExport<? extends I_EDI_Document> createExport(Properties ctx, ClientId clientId, int tableId, int recordId, String trxName);
 
 	/**
-	 * @param feedback
 	 * @return feedback error message
 	 */
 	String buildFeedback(List<Exception> feedback);

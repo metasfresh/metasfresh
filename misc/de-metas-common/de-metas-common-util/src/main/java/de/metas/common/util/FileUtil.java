@@ -27,7 +27,12 @@ import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -39,24 +44,12 @@ public class FileUtil
 {
 	private static final String FILENAME_ILLEGAL_CHARACTERS = new String(new char[] { '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' });
 
-	@Nullable
-	public String stripIllegalCharacters(@Nullable String filename)
+	@NonNull
+	public String stripIllegalCharacters(@Nullable final String filename)
 	{
-		if (filename == null)
+		if (Check.isBlank(filename))
 		{
 			return "";
-		}
-
-		if (filename.length() == 0)
-		{
-			return filename;
-		}
-
-		// Strip white spaces from filename
-		filename = filename.trim();
-		if (filename.length() == 0)
-		{
-			return filename;
 		}
 
 		final StringBuilder sb = new StringBuilder();
@@ -156,5 +149,53 @@ public class FileUtil
 		{
 			return null;
 		}
+	}
+
+	/**
+	 * Creates a file path for the given {@code baseDirectory} and {@code subdirectory}.
+	 *
+	 * @throws RuntimeException if the resulting file path is not within the given {@code baseDirectory}.
+	 */
+	@NonNull
+	public static Path createAndValidatePath(@NonNull final Path baseDirectory,
+											  @NonNull final Path subdirectory)
+	{
+		final Path baseDirectoryAbs = baseDirectory.normalize().toAbsolutePath();
+		final Path outputFilePath = baseDirectoryAbs.resolve(
+				subdirectory).normalize().toAbsolutePath();
+
+		// Validate that the outputFilePath is within the base directory
+		if (!outputFilePath.startsWith(baseDirectoryAbs))
+		{
+			throw new RuntimeException("Invalid path " + outputFilePath + "! The result of baseDirectory=" + baseDirectory + " and subdirectory=" + subdirectory + " needs to be within baseDirectory");
+		}
+		return outputFilePath;
+	}
+
+	public static void copy(@NonNull final File from, @NonNull final OutputStream out) throws IOException
+	{
+		try (final InputStream in = Files.newInputStream(from.toPath()))
+		{
+			copy(in, out);
+		}
+	}
+
+	public static void copy(@NonNull final InputStream in, @NonNull final File to) throws IOException
+	{
+		try (final FileOutputStream out = new FileOutputStream(to))
+		{
+			copy(in, out);
+		}
+	}
+
+	public static void copy(@NonNull final InputStream in, @NonNull final OutputStream out) throws IOException
+	{
+		final byte[] buf = new byte[4096];
+		int len;
+		while ((len = in.read(buf)) > 0)
+		{
+			out.write(buf, 0, len);
+		}
+		out.flush();
 	}
 }

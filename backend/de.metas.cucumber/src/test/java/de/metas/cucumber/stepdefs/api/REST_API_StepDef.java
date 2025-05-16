@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +20,13 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonTestResponse;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
@@ -258,7 +260,7 @@ public class REST_API_StepDef
 
 		assertThat(actualResponseBody.getMessageBody()).isEqualTo(expectedResponseBody.getMessageBody());
 	}
-
+		
 	@And("the actual response body is empty")
 	public void validate_empty_response_body()
 	{
@@ -275,17 +277,17 @@ public class REST_API_StepDef
 		assertThat(content).isEqualTo(responseBody);
 	}
 
-	@When("add HTTP header")
+	@When("add HTTP headers")
 	public void add_http_header(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
-
-		final String key = DataTableUtil.extractStringForColumnName(tableRow, "Key");
-		final String value = DataTableUtil.extractStringForColumnName(tableRow, "Value");
+		final DataTableRows dataTableRows = DataTableRows.of(dataTable);
 
 		final Map<String, String> additionalHeaders = new HashMap<>();
 
-		additionalHeaders.put(key, value);
+		for (final DataTableRow dataTableRow : dataTableRows.toList())
+		{
+			additionalHeaders.put(dataTableRow.getAsString("Key"), dataTableRow.getAsString("Value"));
+		}
 
 		testContext.setHttpHeaders(additionalHeaders);
 	}
