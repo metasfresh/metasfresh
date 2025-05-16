@@ -44,6 +44,7 @@ public class Report_InventoryValue_StepDef
 		row.getAsOptionalBigDecimal("Qty").ifPresent(qty -> softly.assertThat(inventoryValue.getQty()).as("Qty").isEqualByComparingTo(qty));
 		row.getAsOptionalBigDecimal("Acct_ExpectedAmt").ifPresent(totalAmt -> softly.assertThat(inventoryValue.getAccounted().getExpectedAmt()).as("Acct_ExpectedAmt").isEqualByComparingTo(totalAmt));
 		row.getAsOptionalBigDecimal("Acct_CostPrice").ifPresent(costPrice -> softly.assertThat(inventoryValue.getAccounted().getCostPrice()).as("Acct_CostPrice").isEqualByComparingTo(costPrice));
+		row.getAsOptionalBigDecimal("InventoryValueAcctAmt").ifPresent(inventoryValueAcctAmt -> softly.assertThat(inventoryValue.getInventoryValueAcctAmt()).as("InventoryValueAcctAmt").isEqualByComparingTo(inventoryValueAcctAmt));
 
 		softly.assertAll();
 	}
