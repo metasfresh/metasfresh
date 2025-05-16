@@ -79,14 +79,6 @@ UNION
 SELECT cleanup_backup_tables(''Fact_Acct_EndingBalance'', 7);',Updated=TO_TIMESTAMP('2025-05-16 11:19:30.930000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585472
 ;
 
--- 2025-05-16T11:20:00.557Z
-DELETE FROM T_ES_FTS_Search_Result t 
- WHERE EXISTS (SELECT 1 FROM T_WEBUI_ViewSelection_ToDelete s 
-       WHERE 
-           s.View_UUID=t.Search_UUID
-           AND s.Executor_UUID='a1d99645-6681-425c-bbf2-19477db17e74'
- )
-;
 
 -- Value: cleanup_backup_tables
 -- Classname: de.metas.process.ExecuteUpdateSQL
@@ -96,4 +88,14 @@ UPDATE AD_Process SET Description='Clean backup tables for  Fact_Acct_Summary, F
 
 -- 2025-05-16T11:20:20.386Z
 UPDATE AD_Process_Trl trl SET Description='Clean backup tables for  Fact_Acct_Summary, Fact_Acct_Log and Fact_Acct_EndingBalance older then 7 days' WHERE AD_Process_ID=585472 AND AD_Language='de_CH'
+;
+
+-- Value: cleanup_backup_tables
+-- Classname: de.metas.process.ExecuteUpdateSQL
+-- 2025-05-16T11:35:33.905Z
+UPDATE AD_Process SET SQLStatement='SELECT cleanup_backup_tables(p_SourceTableName => ''Fact_Acct_Summary'', p_DaysToKeepBackup => 7)
+UNION
+SELECT cleanup_backup_tables(p_SourceTableName => ''Fact_Acct_Log'', p_DaysToKeepBackup => 7)
+UNION
+SELECT cleanup_backup_tables(p_SourceTableName => ''Fact_Acct_EndingBalance'', p_DaysToKeepBackup => 7);',Updated=TO_TIMESTAMP('2025-05-16 11:35:33.905000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585472
 ;
