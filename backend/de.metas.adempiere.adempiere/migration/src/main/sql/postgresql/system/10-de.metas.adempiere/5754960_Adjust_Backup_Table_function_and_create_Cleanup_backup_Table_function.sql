@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS backup.backup_tables
 ;
 
 
+DROP FUNCTION IF EXISTS backup_table(p_TableName text);
+
 DROP FUNCTION IF EXISTS backup_table(p_TableName text,
                                      p_suffix    text)
 ;
