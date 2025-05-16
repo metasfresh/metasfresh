@@ -35,7 +35,7 @@ UPDATE AD_Process_Trl trl SET Description='Clean backup tables for Fact_Acct old
 ;
 
 -- 2025-05-16T10:24:36.705Z
-INSERT INTO AD_Scheduler (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,AD_Scheduler_ID,Created,CreatedBy,CronPattern,EntityType,Frequency,IsActive,IsIgnoreProcessingTime,KeepLogDays,Name,Processing,SchedulerProcessType,ScheduleType,Status,Supervisor_ID,Updated,UpdatedBy) VALUES (0,0,585472,0,550119,TO_TIMESTAMP('2025-05-16 10:24:36.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'0 2 * * 1,4','de.metas.sp80',0,'Y','N',7,'cleanup_backup_tables','N','P','C','NEW',100,TO_TIMESTAMP('2025-05-16 10:24:36.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Scheduler (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,AD_Scheduler_ID,Created,CreatedBy,CronPattern,EntityType,Frequency,IsActive,IsIgnoreProcessingTime,KeepLogDays,Name,Processing,SchedulerProcessType,ScheduleType,Status,Supervisor_ID,Updated,UpdatedBy) VALUES (0,0,585472,0,550119,TO_TIMESTAMP('2025-05-16 10:24:36.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'0 2 * * 1,4','D',0,'Y','N',7,'cleanup_backup_tables','N','P','C','NEW',100,TO_TIMESTAMP('2025-05-16 10:24:36.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-05-16T10:24:51.261Z
