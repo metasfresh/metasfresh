@@ -196,3 +196,19 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-05-15 10:4
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-05-15 10:43:00.192000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545549
 ;
 
+-- Run mode: SWING_CLIENT
+
+-- Process: C_Doc_Outbound_Log_Selection_Export_JSON(de.metas.edi.process.export.json.C_Doc_Outbound_Log_Selection_Export_JSON)
+-- Table: C_Doc_Outbound_Log
+-- EntityType: de.metas.esb.edi
+-- 2025-05-16T09:53:41.366Z
+UPDATE AD_Table_Process SET WEBUI_DocumentAction='Y',Updated=TO_TIMESTAMP('2025-05-16 09:53:41.366000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_Process_ID=541555
+;
+
+-- Process: C_Invoice_EDI_Export_JSON(de.metas.edi.process.export.json.C_Invoice_EDI_Export_JSON)
+-- Table: C_Invoice
+-- EntityType: de.metas.esb.edi
+-- 2025-05-16T09:54:01.025Z
+UPDATE AD_Table_Process SET EntityType='de.metas.esb.edi',Updated=TO_TIMESTAMP('2025-05-16 09:54:01.025000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_Process_ID=541557
+;
+
