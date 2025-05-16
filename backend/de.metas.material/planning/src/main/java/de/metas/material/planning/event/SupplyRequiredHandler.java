@@ -1,39 +1,20 @@
 package de.metas.material.planning.event;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.logging.LogManager;
-import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.NoSupplyAdviceEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.MaterialPlanningContext;
-import de.metas.material.planning.ProductPlanning;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Warehouse;
-import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -65,13 +46,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
-	private static final Logger logger = LogManager.getLogger(SupplyRequiredHandler.class);
-	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull private final PostMaterialEventService postMaterialEventService;
-	@NonNull private final MainDataRequestHandler mainDataRequestHandler;
 	@NonNull private final List<SupplyRequiredAdvisor> supplyRequiredAdvisors;
+	@NonNull private final SupplyRequiredHandlerHelper helper;
 
 	@Override
 	public Collection<Class<? extends SupplyRequiredEvent>> getHandledEventType()
@@ -89,7 +66,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	{
 		final ArrayList<MaterialEvent> events = new ArrayList<>();
 
-		final MaterialPlanningContext context = createContextOrNull(descriptor);
+		final MaterialPlanningContext context = helper.createContextOrNull(descriptor);
 		if (context != null)
 		{
 			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
@@ -109,50 +86,5 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		{
 			events.forEach(postMaterialEventService::enqueueEventNow);
 		}
-	}
-
-	@Nullable
-	private MaterialPlanningContext createContextOrNull(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
-	{
-		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
-
-		final WarehouseId warehouseId = supplyRequiredDescriptor.getWarehouseId();
-		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-
-		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
-		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(supplyRequiredDescriptor.getAttributeSetInstanceId());
-		final ResourceId plantId = productPlanningDAO.findPlantIfExists(orgId, warehouse, productId, attributeSetInstanceId).orElse(null);
-		if (plantId == null)
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("No plant found for {}, {}, {}, {}", orgId, warehouse, productId, attributeSetInstanceId);
-			return null;
-		}
-
-		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
-				.orgId(orgId)
-				.warehouseId(warehouseId)
-				.plantId(plantId)
-				.productId(productId)
-				.includeWithNullProductId(false)
-				.attributeSetInstanceId(attributeSetInstanceId)
-				.build();
-
-		final ProductPlanning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
-		if (productPlanning == null)
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("No PP_Product_Planning record found => nothing to do; query={}", productPlanningQuery);
-			return null;
-		}
-
-		final I_AD_Org org = orgDAO.getById(orgId);
-
-		return MaterialPlanningContext.builder()
-				.productId(productId)
-				.attributeSetInstanceId(attributeSetInstanceId)
-				.warehouseId(warehouseId)
-				.productPlanning(productPlanning)
-				.plantId(plantId)
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(org.getAD_Client_ID(), org.getAD_Org_ID()))
-				.build();
 	}
 }

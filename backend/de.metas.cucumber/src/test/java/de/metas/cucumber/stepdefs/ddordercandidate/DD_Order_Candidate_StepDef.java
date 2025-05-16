@@ -195,7 +195,7 @@ public class DD_Order_Candidate_StepDef
 		{
 			final PPOrderCandidateId expectedPPOrderCandidateId = ppOrderCandidateIdentifier.lookupIdIn(ppOrderCandidateTable);
 			final PPOrderRef ppOrderRef = actual.getForwardPPOrderRef();
-			final PPOrderCandidateId actualPPOrderCandidateId = ppOrderRef != null ? PPOrderCandidateId.ofRepoIdOrNull(ppOrderRef.getPpOrderCandidateId()) : null;
+			final PPOrderCandidateId actualPPOrderCandidateId = ppOrderRef != null ? ppOrderRef.getPpOrderCandidateId() : null;
 			if (!PPOrderCandidateId.equals(actualPPOrderCandidateId, expectedPPOrderCandidateId))
 			{
 				return ItemProvider.ProviderResult.resultWasNotFound("Forward_PP_Order_Candidate_ID not matching, expected " + expectedPPOrderCandidateId + " but found " + actualPPOrderCandidateId

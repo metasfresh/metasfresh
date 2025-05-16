@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-material-planning
+ * de.metas.manufacturing
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +20,21 @@
  * #L%
  */
 
-package de.metas.material.planning.ppordercandidate;
+package org.eevolution.productioncandidate.material.planning;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
+import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
@@ -40,9 +47,15 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -51,6 +64,9 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
 	@NonNull private final PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
+	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
+	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	@NonNull private final PPOrderCandidateDAO ppOrderCandidateDAO;
 
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createAdvisedEvents(
@@ -74,7 +90,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		boolean firstRequest = true;
 		for (final MaterialRequest request : partialRequests)
 		{
-			final int parentPPOrderCandidateId = supplyRequiredDescriptor.getPpOrderCandidateId();
+			final PPOrderCandidateId parentPPOrderCandidateId = supplyRequiredDescriptor.getPpOrderCandidateId();
 
 			// this is the PPOrderCandidate which we advise the system to create! 
 			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request)
@@ -102,7 +118,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 		return result.build();
 	}
-	
+
 	@Nullable
 	private static Quantity extractMaxQuantityPerOrder(@NonNull final ProductPlanning productPlanning)
 	{
@@ -158,5 +174,65 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 			partialRequests = partialRequestsBuilder.build();
 		}
 		return partialRequests;
+	}
+
+	@Override
+	public BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
+											 @NonNull final BigDecimal qtyToDistribute)
+	{
+		final Collection<PPOrderCandidateId> ppOrderCandidateIds = getPpOrderCandidateIds(event);
+		if (qtyToDistribute.signum() <= 0 || ppOrderCandidateIds.isEmpty())
+		{
+			return BigDecimal.ZERO;
+		}
+
+		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
+		BigDecimal remainingQtyToDistribute = qtyToDistribute;
+
+		for (final I_PP_Order_Candidate ppOrderCandidate : candidates)
+		{
+			remainingQtyToDistribute = doDecreaseQty(ppOrderCandidate, remainingQtyToDistribute);
+
+			if (remainingQtyToDistribute.signum() <= 0)
+			{
+				return BigDecimal.ZERO;
+			}
+		}
+
+		return remainingQtyToDistribute;
+	}
+
+	private @NonNull Collection<PPOrderCandidateId> getPpOrderCandidateIds(final @NonNull SupplyRequiredDecreasedEvent event)
+	{
+		final Candidate demandCandidate = candidateRepositoryRetrieval.retrieveById(CandidateId.ofRepoId(event.getSupplyRequiredDescriptor().getDemandCandidateId()));
+		return candidateRepositoryWriteService.getSupplyCandidatesForDemand(demandCandidate, CandidateBusinessCase.PRODUCTION)
+				.stream()
+				.map(candidate -> ProductionDetail.cast(candidate.getBusinessCaseDetail()).getPpOrderCandidateId())
+				.collect(Collectors.toSet());
+	}
+
+	private BigDecimal doDecreaseQty(final I_PP_Order_Candidate ppOrderCandidate, final BigDecimal remainingQtyToDistribute)
+	{
+		if (remainingQtyToDistribute.signum() <= 0)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		if (isCandidateEligibleForBeingDecreased(ppOrderCandidate))
+		{
+			final BigDecimal qtyToDecrease = remainingQtyToDistribute.min(ppOrderCandidate.getQtyToProcess());
+			ppOrderCandidate.setQtyToProcess(ppOrderCandidate.getQtyToProcess().subtract(qtyToDecrease));
+			ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyEntered().subtract(qtyToDecrease));
+			ppOrderCandidateDAO.save(ppOrderCandidate);
+			return remainingQtyToDistribute.subtract(qtyToDecrease);
+		}
+		return remainingQtyToDistribute;
+	}
+
+	private static boolean isCandidateEligibleForBeingDecreased(final I_PP_Order_Candidate ppOrderCandidate)
+	{
+		return ppOrderCandidate.isActive() &&
+				!ppOrderCandidate.isClosed() &&
+				ppOrderCandidate.getQtyToProcess().signum() > 0;
 	}
 }

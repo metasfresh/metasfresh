@@ -71,6 +71,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -249,7 +250,7 @@ public class MaterialEventSerializerTests
 	private static PPOrderRef newPPOrderRef()
 	{
 		return PPOrderRef.builder()
-				.ppOrderCandidateId(1)
+				.ppOrderCandidateId(PPOrderCandidateId.ofRepoId(1))
 				.ppOrderLineCandidateId(2)
 				.ppOrderId(PPOrderId.ofRepoId(3))
 				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(4))

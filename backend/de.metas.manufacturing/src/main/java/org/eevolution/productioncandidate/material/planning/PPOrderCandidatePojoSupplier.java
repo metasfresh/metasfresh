@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-material-planning
+ * de.metas.manufacturing
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.material.planning.ppordercandidate;
+package org.eevolution.productioncandidate.material.planning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.IdConstants;

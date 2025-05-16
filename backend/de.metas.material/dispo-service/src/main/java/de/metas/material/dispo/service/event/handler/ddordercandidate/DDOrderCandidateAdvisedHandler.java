@@ -182,7 +182,7 @@ public class DDOrderCandidateAdvisedHandler
 			return Optional.of(ppOrderRef.getPpOrderId());
 		}
 
-		if (ppOrderRef.getPpOrderCandidateId() <= 0)
+		if (ppOrderRef.getPpOrderCandidateId() == null)
 		{
 			return Optional.empty();
 		}
