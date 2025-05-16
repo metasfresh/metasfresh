@@ -4,7 +4,7 @@ DROP FUNCTION IF EXISTS cleanup_backup_tables(p_SourceTableName  text,
 
 
 CREATE OR REPLACE FUNCTION cleanup_backup_tables(p_SourceTableName  text = NULL,
-                                                 p_DaysToKeepBackup integer = 0)
+                                                 p_DaysToKeepBackup integer = 7)
     RETURNS text
     LANGUAGE plpgsql
 AS
