@@ -119,6 +119,7 @@ public class ProcessExecutionResult
 	// Reporting
 	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private transient MPrintFormat printFormat;
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Nullable
 	private ReportResultData reportData;
@@ -505,6 +506,7 @@ public class ProcessExecutionResult
 		return reportData != null ? reportData.getReportData() : null;
 	}
 
+	@JsonIgnore
 	public boolean isReportDataResourceAvailable()
 	{
 		return reportData != null;
