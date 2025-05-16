@@ -103,6 +103,7 @@ public enum CandidateType implements ReferenceListAwareEnum
 		return DECREASING_STOCK_TYPES.contains(this);
 	}
 
+	public boolean isDemand () {return DEMAND.equals(this);}
 	public boolean isSupply() {return SUPPLY.equals(this);}
 
 	public boolean isStock() {return STOCK.equals(this);}

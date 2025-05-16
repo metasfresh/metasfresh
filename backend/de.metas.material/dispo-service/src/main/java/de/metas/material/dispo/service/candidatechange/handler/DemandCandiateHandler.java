@@ -147,7 +147,17 @@ public class DemandCandiateHandler implements CandidateHandler
 			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
 		}
 
+		if (candidateSaveResult.getQtyDelta().signum() < 0)
+		{
+			fireSupplyRequiredDecreasedEventIfNeeded(savedCandidate, candidateSaveResult.getQtyDelta().negate());
+		}
+
 		return candidateSaveResult;
+	}
+
+	private void fireSupplyRequiredDecreasedEventIfNeeded(final Candidate savedCandidate, final BigDecimal decreasedQty)
+	{
+		materialEventService.enqueueEventAfterNextCommit(SupplyRequiredEventCreator.createSupplyRequiredDecreasedEvent(savedCandidate, decreasedQty));
 	}
 
 	@Override

@@ -30,6 +30,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class TestPOJOs
 	private PPOrderCandidate getMockPPOrderCandidate()
 	{
 		return PPOrderCandidate.builder()
-				.ppOrderCandidateId(1)
+				.ppOrderCandidateId(PPOrderCandidateId.ofRepoId(1))
 				.ppOrderData(PPOrderData.builder()
 									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(2, 3))
 									 .plantId(ResourceId.ofRepoId(4))
