@@ -1,10 +1,7 @@
-DROP FUNCTION IF EXISTS de_metas_acct.InventoryValue_Correct_CostPrice(
-    IN p_DateAcct            timestamp WITH TIME ZONE,
-    IN p_M_Product_ID        numeric(10, 0),
-    IN p_C_AcctSchema_ID     numeric(10, 0),
-    IN p_GL_Journal_DateAcct TIMESTAMP WITH TIME ZONE,
-    IN p_GL_Journal_ID       NUMERIC(10, 0)
-)
+-- noinspection SqlWithoutWhereForFile
+-- noinspection SqlResolveForFile @ table/"tmp_inventory_valuation"
+
+SELECT db_drop_functions('de_metas_acct.InventoryValue_Correct_CostPrice')
 ;
 
 
@@ -55,6 +52,16 @@ BEGIN
             p_M_Product_ID => p_M_Product_ID,
             p_ad_language => 'en_US'
             );
+
+
+    --
+    -- Select from where are we taking the CostPrice
+    ALTER TABLE tmp_inventory_valuation
+        ADD COLUMN CostPrice numeric;
+    ALTER TABLE tmp_inventory_valuation
+        ADD COLUMN ErrorAmt numeric;
+    UPDATE tmp_inventory_valuation SET CostPrice = Acct_CostPrice;
+
 
     --
     -- Remove not relevant cases
@@ -128,8 +135,6 @@ BEGIN
         ADD COLUMN costprice_new numeric;
     ALTER TABLE tmp_inventory_valuation
         ADD COLUMN InventoryValue_new numeric;
-    ALTER TABLE tmp_inventory_valuation
-        ALTER COLUMN ErrorAmt SET NOT NULL;
     --
     UPDATE tmp_inventory_valuation t
     SET costprice_new=getCurrentCost(
@@ -144,6 +149,8 @@ BEGIN
     UPDATE tmp_inventory_valuation t SET InventoryValue_new=ROUND(t.costprice_new * t.qty, t.StdPrecision);
     -- ErrorAmt: how much to add to get the accounted value to newly calc. inventory value
     UPDATE tmp_inventory_valuation t SET ErrorAmt=t.InventoryValue_new - t.AmtAcctBalance;
+    ALTER TABLE tmp_inventory_valuation
+        ALTER COLUMN ErrorAmt SET NOT NULL;
     --
     ALTER TABLE tmp_inventory_valuation
         ALTER COLUMN costprice_new SET NOT NULL;
