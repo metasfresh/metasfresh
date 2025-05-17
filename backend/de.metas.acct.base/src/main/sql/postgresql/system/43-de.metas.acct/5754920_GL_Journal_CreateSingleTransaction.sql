@@ -103,11 +103,11 @@ BEGIN
     --
     BEGIN
         -- Make sure the period is open!
-        SELECT "de_metas_acct".assert_period_open(
-                       p_DateAcct=>j.dateacct,
-                       p_DocBaseType =>dt.docbasetype,
-                       p_AD_Client_ID =>j.ad_client_id,
-                       p_AD_Org_ID =>j.ad_org_id)
+        PERFORM "de_metas_acct".assert_period_open(
+                p_DateAcct=>j.dateacct,
+                p_DocBaseType =>dt.docbasetype,
+                p_AD_Client_ID =>j.ad_client_id,
+                p_AD_Org_ID =>j.ad_org_id)
         FROM gl_journal j
                  INNER JOIN c_doctype dt ON dt.c_doctype_id = j.c_doctype_id
         WHERE j.gl_journal_id = v_GL_Journal_ID
@@ -118,7 +118,6 @@ BEGIN
         DELETE FROM gl_journalline jl WHERE jl.gl_journal_id = v_GL_Journal_ID;
         DELETE FROM gl_journal j WHERE j.gl_journal_id = v_GL_Journal_ID;
     END;
-
 
 
     --
