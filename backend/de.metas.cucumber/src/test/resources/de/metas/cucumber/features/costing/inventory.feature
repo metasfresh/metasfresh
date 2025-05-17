@@ -52,9 +52,9 @@ Feature: Inventory Costing
       | inv2           | inv2_l1            | 2024-03-10   | wh             | P1           | 100     | 90       | PCE          | 8         | hu1     |
 
     Then expect inventory valuation report
-      | Date       | M_Product_ID | M_Warehouse_ID | Qty | TotalAmt | CostPrice |
-      | 2024-03-07 | P1           | wh             | 100 | 1000.00  | 10.0000   |
-      | 2024-03-12 | P1           | wh             | 90  | 920.00   | 10.2222   |
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_ExpectedAmt | Acct_CostPrice |
+      | 2024-03-07 | P1           | wh             | 100 | 1000.00          | 10.0000        |
+      | 2024-03-12 | P1           | wh             | 90  | 920.00           | 10.2222        |
     And after not more than 10s, M_CostDetails are found for product P1 and cost element AveragePO,MovingAverageInvoice
       | TableName       | Record_ID | IsSOTrx | Amt      | Qty     | IsChangingCosts |
       | M_InventoryLine | inv1_l1   | N       | 1000 CHF | 100 PCE | Y               |
