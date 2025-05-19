@@ -78,7 +78,6 @@ public class PurchaseCandidate
 	@NonNull
 	private Quantity qtyToPurchase;
 
-	@Setter(AccessLevel.NONE)
 	private Quantity qtyToPurchaseInitial;
 
 	@Nullable

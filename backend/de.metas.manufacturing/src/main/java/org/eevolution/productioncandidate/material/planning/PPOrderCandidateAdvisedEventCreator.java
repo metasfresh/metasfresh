@@ -213,11 +213,6 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 	private BigDecimal doDecreaseQty(final I_PP_Order_Candidate ppOrderCandidate, final BigDecimal remainingQtyToDistribute)
 	{
-		if (remainingQtyToDistribute.signum() <= 0)
-		{
-			return BigDecimal.ZERO;
-		}
-
 		if (isCandidateEligibleForBeingDecreased(ppOrderCandidate))
 		{
 			final BigDecimal qtyToDecrease = remainingQtyToDistribute.min(ppOrderCandidate.getQtyToProcess());

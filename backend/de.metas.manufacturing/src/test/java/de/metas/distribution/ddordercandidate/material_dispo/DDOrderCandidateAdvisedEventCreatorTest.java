@@ -1,9 +1,36 @@
-package de.metas.material.planning.ddordercandidate;
+/*
+ * #%L
+ * de.metas.manufacturing
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
+package de.metas.distribution.ddordercandidate.material_dispo;
+
+import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.material.event.EventTestHelper;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
@@ -11,6 +38,8 @@ import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.material.planning.ddordercandidate.DDOrderCandidateDataFactory;
+import de.metas.material.planning.ddordercandidate.DDOrderCandidateDemandMatcher;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -43,9 +72,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DDOrderCandidateAdvisedEventCreatorTest
 {
-	DDOrderCandidateDemandMatcher demandMatcher;
-	DDOrderCandidateDataFactory ddOrderCandidateDataFactory;
-	DDOrderCandidateAdvisedEventCreator advisedEventCreator;
+	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofString("1");
+	public static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(25);
+
+	private DDOrderCandidateDemandMatcher demandMatcher;
+	private DDOrderCandidateDataFactory ddOrderCandidateDataFactory;
+	private DDOrderCandidateService ddOrderCandidateService;
+	private CandidateRepositoryWriteService candidateRepositoryWriteService;
+	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private DDOrderCandidateAdvisedEventCreator advisedEventCreator;
 
 	private ProductId productId;
 	private final ShipperId shipperId = ShipperId.ofRepoId(33);
@@ -56,9 +92,11 @@ class DDOrderCandidateAdvisedEventCreatorTest
 		AdempiereTestHelper.get().init();
 
 		demandMatcher = Mockito.mock(DDOrderCandidateDemandMatcher.class);
-		//ddOrderCandidateDataFactory = Mockito.mock(DDOrderCandidateDataFactory.class);
+		ddOrderCandidateService = Mockito.mock(DDOrderCandidateService.class);
+		candidateRepositoryWriteService = Mockito.mock(CandidateRepositoryWriteService.class);
+		candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
 		ddOrderCandidateDataFactory = new DDOrderCandidateDataFactory(new DistributionNetworkRepository(), new ReplenishInfoRepository());
-		advisedEventCreator = new DDOrderCandidateAdvisedEventCreator(demandMatcher, ddOrderCandidateDataFactory);
+		advisedEventCreator = new DDOrderCandidateAdvisedEventCreator(demandMatcher, ddOrderCandidateDataFactory, ddOrderCandidateService, candidateRepositoryWriteService, candidateRepositoryRetrieval);
 
 		createMasterData();
 	}
@@ -100,9 +138,9 @@ class DDOrderCandidateAdvisedEventCreatorTest
 
 	@Builder(builderMethodName = "distributionNetwork", builderClassName = "$DistributionNetwork")
 	private DistributionNetworkAndLineId createDistributionNetwork(
-			@NonNull WarehouseId sourceWarehouseId,
-			@NonNull WarehouseId targetWarehouseId,
-			int durationInDays)
+			@NonNull final WarehouseId sourceWarehouseId,
+			@NonNull final WarehouseId targetWarehouseId,
+			final int durationInDays)
 	{
 		final I_DD_NetworkDistribution distributionNetwork = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistribution.class);
 		distributionNetwork.setName("dummy");
@@ -151,9 +189,9 @@ class DDOrderCandidateAdvisedEventCreatorTest
 				.demandCandidateId(41)
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.MAIN)))
 				.materialDescriptor(MaterialDescriptor.builder()
-						.productDescriptor(EventTestHelper.createProductDescriptorWithProductId(productId1))
+						.productDescriptor(createProductDescriptorWithProductId(productId1))
 						.warehouseId(WarehouseId.ofRepoId(9999999)) // does not matter
-						.customerId(EventTestHelper.BPARTNER_ID)
+						.customerId(BPARTNER_ID)
 						.quantity(new BigDecimal("123"))
 						.date(Instant.parse("2024-04-15T00:00:00Z"))
 						.build())
@@ -186,5 +224,13 @@ class DDOrderCandidateAdvisedEventCreatorTest
 		// assertThat(event.).isEqualTo();
 
 		assertThat(event.getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+	}
+
+	private ProductDescriptor createProductDescriptorWithProductId(final int productId)
+	{
+		return ProductDescriptor.forProductAndAttributes(
+				productId,
+				STORAGE_ATTRIBUTES_KEY,
+				ATTRIBUTE_SET_INSTANCE_ID);
 	}
 }

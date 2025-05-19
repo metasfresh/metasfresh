@@ -123,9 +123,9 @@ public class DD_Order_Candidate_StepDef
 		}
 
 		final Quantity qtyEntered = expected.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null);
-		if (qtyEntered != null && qtyEntered.compareTo(actual.getQty()) != 0)
+		if (qtyEntered != null && qtyEntered.compareTo(actual.getQtyEntered()) != 0)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("qty not matching, expected " + qtyEntered + " but found " + actual.getQty()
+			return ItemProvider.ProviderResult.resultWasNotFound("qty not matching, expected " + qtyEntered + " but found " + actual.getQtyEntered()
 					+ "\n\trow=" + expected
 					+ "\n\tcandidate=" + actual);
 		}
