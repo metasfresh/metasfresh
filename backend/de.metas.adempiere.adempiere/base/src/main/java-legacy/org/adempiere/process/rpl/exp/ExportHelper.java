@@ -249,7 +249,7 @@ public class ExportHelper
 		}
 
 		// metas: tsa: validate if this PO respects Export Format's WhereClause
-		if (!Check.isEmpty(exportFormat.getWhereClause()))
+		if (Check.isNotBlank(exportFormat.getWhereClause()))
 		{
 			final String whereClause = "(" + po.get_WhereClause(true) + ") AND (" + exportFormat.getWhereClause() + ")";
 			final boolean match = new Query(po.getCtx(), po.get_TableName(), whereClause, po.get_TrxName())
@@ -304,11 +304,11 @@ public class ExportHelper
 
 		// metas: begin: build where clause
 		final StringBuilder whereClause = new StringBuilder("1=1");
-		if (!Check.isEmpty(exportFormat.getWhereClause(), true))
+		if (Check.isNotBlank(exportFormat.getWhereClause()))
 		{
-			whereClause.append(" AND (").append(exportFormat.getWhereClause()).append(")");
+			whereClause.append(" AND /*EXP_Format.WhereClause=*/(").append(exportFormat.getWhereClause()).append(")");
 		}
-		if (!Check.isEmpty(where))
+		if (Check.isNotBlank(where))
 		{
 			whereClause.append(" AND (").append(where).append(")");
 		}
@@ -491,7 +491,7 @@ public class ExportHelper
 
 			if (Check.isNotBlank(embeddedFormat.getWhereClause()))
 			{
-				whereClause.append(" AND ").append(embeddedFormat.getWhereClause());
+				whereClause.append(" AND /*EXP_Format.WhereClause=*/( ").append(embeddedFormat.getWhereClause()).append(" )");
 			}
 
 			final Query query = new Query(masterPO.getCtx(), tableEmbedded.getTableName(), whereClause.toString(), masterPO.get_TrxName());

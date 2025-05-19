@@ -56,3 +56,13 @@ UPDATE EXP_Format SET WhereClause='IsActive=''Y'' and EDI_Desadv_Pack_ID in (sel
 UPDATE EXP_Format SET WhereClause='IsActive=''Y'' and EDI_DesadvLine_ID in (select dl.EDI_DesadvLine_ID from EDI_DesadvLine dl where dl.IsActive=''Y'' and dl.QtyDeliveredInUOM>0)',Updated=TO_TIMESTAMP('2025-05-19 12:54:50.636000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE EXP_Format_ID=540418
 ;
 
+-- Run mode: SWING_CLIENT
+
+-- 2025-05-19T14:00:45.021Z
+UPDATE EXP_Format SET WhereClause='IsActive=''N'' OR QtyDeliveredInUOM<=0 OR EDI_DesadvLine_ID not in (select EDI_DesadvLine_ID from EDI_Desadv_Pack_Item pi join EDI_Desadv_Pack p on p.EDI_Desadv_Pack_ID=pi.EDI_Desadv_Pack_ID where pi.IsActive=''Y'' and p.IsActive=''Y'')',Updated=TO_TIMESTAMP('2025-05-19 14:00:45.018000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE EXP_Format_ID=540422
+;
+
+-- 2025-05-19T14:43:31.012Z
+UPDATE EXP_Format SET WhereClause='IsActive=''N'' OR QtyDeliveredInUOM<=0 OR EDI_DesadvLine_ID not in (select EDI_DesadvLine_ID from EDI_Desadv_Pack_Item pi join EDI_Desadv_Pack p on p.EDI_Desadv_Pack_ID=pi.EDI_Desadv_Pack_ID where pi.IsActive=''Y'' and p.IsActive=''Y'' and p.edi_desadv_id=EDI_DesadvLine.EDI_Desadv_ID)',Updated=TO_TIMESTAMP('2025-05-19 14:43:31.009000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE EXP_Format_ID=540422
+;
+
