@@ -93,6 +93,25 @@ Feature: Empties returns
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 10               |
 
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
+      | invoiceCand_1                     | -10             |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | invoiceCand_1                     | inv_100                 |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | processed | docStatus |
+      | inv_100                 | bpartner                 | location                          | true      | CO        |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier  | QtyInvoiced | Processed | PriceEntered | PriceActual |
+      | invl_100                    | inv_100                 | packingProductTU_returns | -10         | true      | 2  EUR       | -2 EUR      |
+
+    And Fact_Acct records are matching
+      | AccountConceptualName    | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID |
+      | V_Liability_Acct         | 23.8  EUR   |             | bpartner      | inv_100   |
+      | P_InventoryClearing_Acct |             | -20 EUR     | bpartner      | inv_100   |
+      | P_Expense_Acct           |             | 40 EUR      | bpartner      | inv_100   |
+      | T_Credit_Acct            |             | 3.8 EUR     | bpartner      | inv_100   |
 
   @from:cucumber
   @Id:S0160.4_230
