@@ -40,17 +40,17 @@ public class ProductsProposalRowReducers
 			@NonNull final ProductsProposalRow row,
 			@NonNull final ProductsProposalRowChangeRequest request)
 	{
-		if (request instanceof UserChange)
+		if (request instanceof UserChange change)
 		{
-			return reduceUserRequest(row, (UserChange)request);
+			return reduceUserRequest(row, change);
 		}
-		else if (request instanceof RowUpdate)
+		else if (request instanceof RowUpdate update)
 		{
-			return reduceRowUpdate(row, (RowUpdate)request);
+			return reduceRowUpdate(row, update);
 		}
-		if (request instanceof RowSaved)
+		if (request instanceof RowSaved saved)
 		{
-			return reduceRowSaved(row, (RowSaved)request);
+			return reduceRowSaved(row, saved);
 		}
 		else
 		{

@@ -130,7 +130,7 @@ public class RefundInvoiceCandidateServiceTest
 	{
 		final List<I_C_Flatrate_RefundConfig> refundConfigRecords = RefundConfigRepositoryTest.createThreeRefundConfigRecords(conditionsId);
 
-		assertThat(refundConfigRecords.get(0).getMinQty()).isZero(); // guard
+		assertThat(refundConfigRecords.getFirst().getMinQty()).isZero(); // guard
 
 		assertThat(refundConfigRecords).hasSize(3); // guard
 
@@ -144,8 +144,8 @@ public class RefundInvoiceCandidateServiceTest
 	{
 		if (RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundMode))
 		{
-			refundConfigRecords.get(0).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Tiered);
-			saveRecord(refundConfigRecords.get(0));
+			refundConfigRecords.getFirst().setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Tiered);
+			saveRecord(refundConfigRecords.getFirst());
 			refundConfigRecords.get(1).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Tiered);
 			saveRecord(refundConfigRecords.get(1));
 			refundConfigRecords.get(2).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Tiered);
@@ -153,8 +153,8 @@ public class RefundInvoiceCandidateServiceTest
 		}
 		else
 		{
-			refundConfigRecords.get(0).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
-			saveRecord(refundConfigRecords.get(0));
+			refundConfigRecords.getFirst().setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
+			saveRecord(refundConfigRecords.getFirst());
 			refundConfigRecords.get(1).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
 			saveRecord(refundConfigRecords.get(1));
 			refundConfigRecords.get(2).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
@@ -198,7 +198,7 @@ public class RefundInvoiceCandidateServiceTest
 		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, refundContract);
 
 		assertThat(result).hasSize(1);
-		final RefundInvoiceCandidate refundCandidate = result.get(0);
+		final RefundInvoiceCandidate refundCandidate = result.getFirst();
 
 		assertThat(refundCandidate.getRefundContract().getId()).isEqualTo(contractId);
 
@@ -209,11 +209,11 @@ public class RefundInvoiceCandidateServiceTest
 
 		// not 100% sure it's a must, but the candidate's configs should be ordered by minQty desc
 		final I_C_Flatrate_RefundConfig secondConfigRecord = refundConfigRecords.get(1);
-		assertThat(refundConfigs.get(0).getConditionsId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_Conditions_ID());
-		assertThat(refundConfigs.get(0).getMinQty()).isEqualByComparingTo(secondConfigRecord.getMinQty());
-		assertThat(refundConfigs.get(0).getPercent().toBigDecimal()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
+		assertThat(refundConfigs.getFirst().getConditionsId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_Conditions_ID());
+		assertThat(refundConfigs.getFirst().getMinQty()).isEqualByComparingTo(secondConfigRecord.getMinQty());
+		assertThat(refundConfigs.getFirst().getPercent().toBigDecimal()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
 
-		final I_C_Flatrate_RefundConfig firstConfigRecord = refundConfigRecords.get(0);
+		final I_C_Flatrate_RefundConfig firstConfigRecord = refundConfigRecords.getFirst();
 		assertThat(refundConfigs.get(1).getConditionsId().getRepoId()).isEqualTo(firstConfigRecord.getC_Flatrate_Conditions_ID());
 		assertThat(refundConfigs.get(1).getMinQty()).isEqualByComparingTo(firstConfigRecord.getMinQty());
 		assertThat(refundConfigs.get(1).getPercent().toBigDecimal()).isEqualByComparingTo(firstConfigRecord.getRefundPercent());
@@ -228,7 +228,7 @@ public class RefundInvoiceCandidateServiceTest
 
 		final RefundInvoiceCandidate refundInvoiceCandidate = assignableCandidate
 				.getAssignmentsToRefundCandidates()
-				.get(0)
+				.getFirst()
 				.getRefundInvoiceCandidate();
 
 		// invoke the method under test
@@ -237,7 +237,7 @@ public class RefundInvoiceCandidateServiceTest
 				refundInvoiceCandidate.getRefundContract());
 
 		assertThat(result).hasSize(1);
-		final RefundInvoiceCandidate resultElement = result.get(0);
+		final RefundInvoiceCandidate resultElement = result.getFirst();
 
 		assertThat(resultElement).isEqualTo(refundInvoiceCandidate);
 	}
@@ -271,8 +271,8 @@ public class RefundInvoiceCandidateServiceTest
 
 		assertThat(result).hasSize(2);
 
-		final RefundInvoiceCandidate firstResultElement = result.get(0);
-		final I_C_Flatrate_RefundConfig firstConfigRecord = refundConfigRecords.get(0);
+		final RefundInvoiceCandidate firstResultElement = result.getFirst();
+		final I_C_Flatrate_RefundConfig firstConfigRecord = refundConfigRecords.getFirst();
 
 		assertThat(firstResultElement.getRefundContract().getId()).isEqualTo(contractId);
 		assertThat(firstResultElement.getId()).isEqualTo(existingRefundCandidate.getId());
@@ -317,8 +317,8 @@ public class RefundInvoiceCandidateServiceTest
 
 		// set up assignment records; this is usually done elsewhere; we need them in place when loading/retrieving those existing records
 		final I_C_Invoice_Candidate_Assignment firstAssigmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
-		firstAssigmentRecord.setC_Invoice_Candidate_Term_ID(perScaleRefundCandidates.get(0).getId().getRepoId());
-		firstAssigmentRecord.setC_Flatrate_RefundConfig_ID(extractSingleConfig(perScaleRefundCandidates.get(0)).getId().getRepoId());
+		firstAssigmentRecord.setC_Invoice_Candidate_Term_ID(perScaleRefundCandidates.getFirst().getId().getRepoId());
+		firstAssigmentRecord.setC_Flatrate_RefundConfig_ID(extractSingleConfig(perScaleRefundCandidates.getFirst()).getId().getRepoId());
 		firstAssigmentRecord.setAssignedQuantity(FIVE);
 		firstAssigmentRecord.setIsAssignedQuantityIncludedInSum(true);
 		saveRecord(firstAssigmentRecord);
@@ -344,8 +344,8 @@ public class RefundInvoiceCandidateServiceTest
 		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, contract);
 
 		assertThat(result).hasSize(3);
-		final RefundInvoiceCandidate firstResultElement = result.get(0);
-		assertThat(firstResultElement.getId()).isEqualTo(perScaleRefundCandidates.get(0).getId());
+		final RefundInvoiceCandidate firstResultElement = result.getFirst();
+		assertThat(firstResultElement.getId()).isEqualTo(perScaleRefundCandidates.getFirst().getId());
 		assertThat(extractSingleConfig(firstResultElement).getMinQty()).isEqualByComparingTo("0");
 
 		final RefundInvoiceCandidate secondResultElement = result.get(1);
@@ -353,7 +353,7 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(extractSingleConfig(secondResultElement).getMinQty()).isEqualByComparingTo("10");
 
 		final RefundInvoiceCandidate thirdResultElement = result.get(2);
-		assertThat(thirdResultElement.getId()).isNotIn(perScaleRefundCandidates.get(0).getId(), perScaleRefundCandidates.get(1).getId());
+		assertThat(thirdResultElement.getId()).isNotIn(perScaleRefundCandidates.getFirst().getId(), perScaleRefundCandidates.get(1).getId());
 		assertThat(extractSingleConfig(thirdResultElement).getMinQty()).isEqualByComparingTo("16");
 	}
 

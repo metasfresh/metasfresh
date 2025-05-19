@@ -35,6 +35,10 @@
 			<artifactId>de.metas.shipper.gateway.spi</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+		</dependency>
 
 		<!-- needed for its common business logic -->
 		<dependency>
@@ -68,6 +72,11 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 	</dependencies>

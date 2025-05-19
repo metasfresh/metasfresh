@@ -64,7 +64,7 @@ public class MPrintPaper extends X_AD_PrintPaper
 	 */
 	static public MPrintPaper get (int AD_PrintPaper_ID)
 	{
-		Integer key = new Integer(AD_PrintPaper_ID);
+		Integer key = Integer.valueOf(AD_PrintPaper_ID);
 		MPrintPaper pp = (MPrintPaper)s_papers.get(key);
 		if (pp == null)
 		{

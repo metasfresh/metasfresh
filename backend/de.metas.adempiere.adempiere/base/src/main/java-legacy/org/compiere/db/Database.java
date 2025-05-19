@@ -10,6 +10,7 @@ import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -235,7 +236,7 @@ public class Database
 		final int scale = DisplayType.getDefaultPrecision(displayType);
 		if (scale > number.scale())
 		{
-			result = number.setScale(scale, BigDecimal.ROUND_HALF_UP);
+			result = number.setScale(scale, RoundingMode.HALF_UP);
 		}
 		return result.toString();
 	}

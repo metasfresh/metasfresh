@@ -29,9 +29,9 @@ public class Cell
 
 	public static Cell ofNullable(@Nullable final Object valueObj)
 	{
-		if (valueObj instanceof Cell)
+		if (valueObj instanceof Cell cell)
 		{
-			return (Cell)valueObj;
+			return cell;
 		}
 
 		final String valueStr = valueObj != null ? valueObj.toString() : null;

@@ -261,7 +261,7 @@ class Worker extends Thread
 			InputStream is = conn.getInputStream();
 			HTMLEditorKit kit = new HTMLEditorKit();
 			HTMLDocument doc = (HTMLDocument)kit.createDefaultDocument();
-			doc.putProperty("IgnoreCharsetDirective", new Boolean(true));
+			doc.putProperty("IgnoreCharsetDirective", Boolean.valueOf(true));
 			kit.read(new InputStreamReader(is), doc, 0);
 
 			// Get The Links to the Help Pages

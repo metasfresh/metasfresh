@@ -36,9 +36,9 @@ public class SpringResourceUtils
 	public byte[] toByteArray(@NonNull final Resource resource)
 	{
 		final byte[] byteArray;
-		if (resource instanceof ByteArrayResource)
+		if (resource instanceof ByteArrayResource arrayResource)
 		{
-			return ((ByteArrayResource)resource).getByteArray();
+			return arrayResource.getByteArray();
 		}
 
 		try

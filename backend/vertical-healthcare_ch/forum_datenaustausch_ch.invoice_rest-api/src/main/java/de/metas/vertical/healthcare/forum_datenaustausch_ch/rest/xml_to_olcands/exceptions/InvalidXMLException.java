@@ -25,8 +25,11 @@ package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands
 import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 public class InvalidXMLException extends AdempiereException implements ExceptionWithOwnHeaderMessage
 {
+	@Serial
 	private static final long serialVersionUID = 6370799498905180084L;
 
 	public InvalidXMLException(String msg)

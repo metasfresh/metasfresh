@@ -99,9 +99,9 @@ public class CandidateRepositoryRetrievalTest
 		System.out.println("Got result: " + result);
 
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getId()).isEqualTo(candidateId);
+		assertThat(result.getFirst().getId()).isEqualTo(candidateId);
 
-		final ProductionDetail productionDetail = ProductionDetail.cast(result.get(0).getBusinessCaseDetailNotNull());
+		final ProductionDetail productionDetail = ProductionDetail.cast(result.getFirst().getBusinessCaseDetailNotNull());
 		assertThat(productionDetail.getPpOrderRef().getPpOrderId().getRepoId()).isEqualTo(23);
 	}
 

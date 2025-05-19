@@ -102,9 +102,8 @@ public class MSV3ClientFactoryV2 implements MSV3ClientFactory
 	@VisibleForTesting
 	public static FaultInfo extractFaultInfoOrNull(final Object value)
 	{
-		if (value instanceof Msv3FaultInfo)
+		if (value instanceof Msv3FaultInfo msv3FaultInfo)
 		{
-			final Msv3FaultInfo msv3FaultInfo = (Msv3FaultInfo)value;
 			return MiscJAXBConvertersV2.fromJAXB(msv3FaultInfo);
 		}
 		else

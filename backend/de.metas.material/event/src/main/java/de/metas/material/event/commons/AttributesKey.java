@@ -215,8 +215,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 			return ATTRIBUTEVALUEIDS_SPLITTER.splitToList(attributesKeyString.trim())
 					.stream()
 					.map(AttributesKeyPart::parseString)
-					.filter(Optional::isPresent)
-					.map(Optional::get)
+					.flatMap(Optional::stream)
 					.collect(ImmutableSet.toImmutableSet());
 		}
 		catch (final Exception ex)

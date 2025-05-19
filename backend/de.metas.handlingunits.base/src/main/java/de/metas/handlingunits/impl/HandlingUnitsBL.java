@@ -638,7 +638,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.hus(ImmutableList.of(hu))
 				.includeAll(false)
 				.build();
-		return getTopLevelHUs(query).get(0);
+		return getTopLevelHUs(query).getFirst();
 	}
 
 	@Override

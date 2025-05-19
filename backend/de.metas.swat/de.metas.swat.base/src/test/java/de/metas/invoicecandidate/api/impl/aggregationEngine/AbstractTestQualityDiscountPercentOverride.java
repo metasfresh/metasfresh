@@ -90,7 +90,7 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 	@OverridingMethodsMustInvokeSuper
 	protected void step_validate_before_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines)
 	{
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		if (config_getQualityDiscount_Override() == null)
 		{
@@ -111,7 +111,7 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 	{
 		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
 
-		final IInvoiceHeader invoice1 = invoices.get(0); // don't remove, because the subclass implementation might also want to get it.
+		final IInvoiceHeader invoice1 = invoices.getFirst(); // don't remove, because the subclass implementation might also want to get it.
 
 		assertThat(invoice1.getPOReference(), is(IC_PO_REFERENCE));
 		assertThat(invoice1.getDateAcct(), is(IC_DATE_ACCT));

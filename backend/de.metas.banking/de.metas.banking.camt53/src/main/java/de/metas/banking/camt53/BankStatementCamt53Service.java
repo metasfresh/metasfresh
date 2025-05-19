@@ -182,7 +182,7 @@ public class BankStatementCamt53Service
 		}
 		else
 		{
-			return Optional.of(invoiceList.get(0));
+			return Optional.of(invoiceList.getFirst());
 		}
 	}
 
@@ -472,7 +472,7 @@ public class BankStatementCamt53Service
 				.statementLineDate(request.getStatementDate())
 				.build();
 
-		lineRequests.add(0, summaryRequest);
+		lineRequests.addFirst(summaryRequest);
 
 		return lineRequests;
 	}

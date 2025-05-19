@@ -91,7 +91,7 @@ public class GLCategoryRepository
 		public Optional<GLCategoryId> getDefaultId()
 		{
 			return !list.isEmpty()
-					? Optional.of(list.get(0).getId())
+					? Optional.of(list.getFirst().getId())
 					: Optional.empty();
 		}
 	}

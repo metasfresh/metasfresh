@@ -20,6 +20,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Optional;
@@ -60,6 +61,7 @@ import java.util.Properties;
 @lombok.Data
 		/* package */ class InternalUserSessionData implements Serializable
 {
+	@Serial
 	private static final long serialVersionUID = 4046535476486036184L;
 
 	// ---------------------------------------------------------------------------------------------

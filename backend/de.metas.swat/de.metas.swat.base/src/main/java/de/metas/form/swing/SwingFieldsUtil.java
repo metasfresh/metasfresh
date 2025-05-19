@@ -52,17 +52,17 @@ public final class SwingFieldsUtil
 	
 	public static void setSelectAllOnFocus(final JComponent c)
 	{
-		if (c instanceof JTextComponent)
+		if (c instanceof JTextComponent component1)
 		{
-			setSelectAllOnFocus((JTextComponent)c);
+			setSelectAllOnFocus(component1);
 		}
 		else
 		{
 			for (Component cc : c.getComponents())
 			{
-				if (cc instanceof JTextComponent)
+				if (cc instanceof JTextComponent component)
 				{
-					setSelectAllOnFocus((JTextComponent)cc);
+					setSelectAllOnFocus(component);
 					break;
 				}
 			}
@@ -83,24 +83,20 @@ public final class SwingFieldsUtil
 		{
 			return false;
 		}
-		if (editor instanceof CComboBox)
+		if (editor instanceof CComboBox c)
 		{
-			final CComboBox c = (CComboBox)editor;
 			return c.isSelectionNone();
 		}
-		else if (editor instanceof VDate)
+		else if (editor instanceof VDate c)
 		{
-			VDate c = (VDate)editor;
 			return c.getTimestamp() == null;
 		}
-		else if (editor instanceof VLookup)
+		else if (editor instanceof VLookup c)
 		{
-			VLookup c = (VLookup)editor;
 			return c.getValue() == null;
 		}
-		else if (editor instanceof JTextComponent)
+		else if (editor instanceof JTextComponent c)
 		{
-			JTextComponent c = (JTextComponent)editor;
 			return Check.isEmpty(c.getText(), true);
 		}
 		//
@@ -114,10 +110,10 @@ public final class SwingFieldsUtil
 			return false;
 		if (!c.isEnabled())
 			return false;
-		if (c instanceof CEditor)
-			return ((CEditor)c).isReadWrite();
-		if (c instanceof JTextComponent)
-			return ((JTextComponent)c).isEditable();
+		if (c instanceof CEditor editor)
+			return editor.isReadWrite();
+		if (c instanceof JTextComponent component)
+			return component.isEditable();
 		//
 		log.warn("Unknown component type - "+c.getClass());
 		return false;

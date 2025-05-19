@@ -59,19 +59,22 @@ public class JsonEnqueueForInvoicingRequest
 	String poReference;
 
 	@ApiModelProperty(position = 50, required = false, //
-			value = "This is needed when the user wants to invoice candidates that have their `DateToInvoice` sometime in the future.\n"
-					+ "If this is not set and the DateToInvoice is in the future then an error will occur \"no invoicable ICs selected\n"
-					+ "Default = `false`")
+			value = """
+					This is needed when the user wants to invoice candidates that have their `DateToInvoice` sometime in the future.
+					If this is not set and the DateToInvoice is in the future then an error will occur "no invoicable ICs selected
+					Default = `false`""")
 	Boolean ignoreInvoiceSchedule;
 
 	@ApiModelProperty(position = 60, required = false,//
-			value = "Specifies whether invoice candidate that have no payment term shall be updated with the reference of another selected invoice candidate.\n"
-					+ "Default = `true`")
+			value = """
+					Specifies whether invoice candidate that have no payment term shall be updated with the reference of another selected invoice candidate.
+					Default = `true`""")
 	Boolean supplementMissingPaymentTermIds;
 
 	@ApiModelProperty(position = 70, required = false,//
-			value = "If this parameter is activated, the invoices to be created receive the current users and locations of their business partners, regardless of the values in `Bill_Location_ID` and `Bill_User_ID` that are set in the queued billing candidates.\n"
-					+ "Default = `false`")
+			value = """
+					If this parameter is activated, the invoices to be created receive the current users and locations of their business partners, regardless of the values in `Bill_Location_ID` and `Bill_User_ID` that are set in the queued billing candidates.
+					Default = `false`""")
 	Boolean updateLocationAndContactForInvoice;
 
 	@JsonCreator

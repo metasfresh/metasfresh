@@ -25,6 +25,8 @@ package de.metas.device.scales.endpoint;
 
 import de.metas.device.api.DeviceException;
 
+import java.io.Serial;
+
 /**
  * 
  * @author ts
@@ -35,6 +37,7 @@ public class EndPointException extends DeviceException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 6848121846151167198L;
 
 	public EndPointException(String message, Throwable cause)

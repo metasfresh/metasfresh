@@ -162,7 +162,7 @@ public class TcpConnectionReadLineEndPointTest
 
 		assertThat(result, is(expectedResult));
 		assertThat(serverSocketReceived.size(), is(1));
-		assertThat(serverSocketReceived.get(0), is(cmd));
+		assertThat(serverSocketReceived.getFirst(), is(cmd));
 	}
 
 	@Test
@@ -176,7 +176,7 @@ public class TcpConnectionReadLineEndPointTest
 		String expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
 		assertThat(result, is(expectedResult));
 		assertThat(serverSocketReceived.size(), is(1));
-		assertThat(serverSocketReceived.get(0), is(cmd));
+		assertThat(serverSocketReceived.getFirst(), is(cmd));
 
 		weight = 220;
 		result = tcpConnectionEndPoint.sendCmd(cmd);

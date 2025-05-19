@@ -104,7 +104,7 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 		IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
 		List<I_M_ReceiptSchedule> rcs = producer.createOrUpdateReceiptSchedules(order, Collections.<I_M_ReceiptSchedule> emptyList());
 		Assert.assertEquals(1, rcs.size());
-		I_M_ReceiptSchedule rc = rcs.get(0);
+		I_M_ReceiptSchedule rc = rcs.getFirst();
 		Assert.assertEquals("AD_Org_IDs do not match", ol.getAD_Org_ID(), rc.getAD_Org_ID());
 		Assert.assertEquals("AD_Client_IDs do not match", ol.getAD_Client_ID(), rc.getAD_Client_ID());
 		Assert.assertEquals("C_BPartner_IDs do not match", ol.getC_BPartner_ID(), rc.getC_BPartner_ID());
@@ -125,7 +125,7 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 		IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
 		List<I_M_ReceiptSchedule> rcs = producer.createOrUpdateReceiptSchedules(order, Collections.<I_M_ReceiptSchedule> emptyList());
 		Assert.assertEquals(1, rcs.size());
-		I_M_ReceiptSchedule rc = rcs.get(0);
+		I_M_ReceiptSchedule rc = rcs.getFirst();
 		Assert.assertEquals("AD_Org_IDs do not match", order.getAD_Org_ID(), rc.getAD_Org_ID());
 		Assert.assertEquals("AD_Client_IDs do not match", order.getAD_Client_ID(), rc.getAD_Client_ID());
 		Assert.assertEquals("AD_User_IDs do not match", order.getAD_User_ID(), rc.getAD_User_ID());

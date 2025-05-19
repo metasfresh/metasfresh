@@ -36,8 +36,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>javax.annotation</groupId>
-			<artifactId>javax.annotation-api</artifactId>
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
 		</dependency>
 
 		<dependency>
@@ -97,6 +97,12 @@
 					<!-- collides with org.springframework:spring-aop:jar:4.3.8.RELEASE:compile -->
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.ws</groupId>
+			<artifactId>jaxws-rt</artifactId>
+			<version>2.3.7</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Database -->

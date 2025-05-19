@@ -74,7 +74,7 @@ public class C_Invoice_Clearing_Alloc
 		}
 		else
 		{
-			dataEntry = entries.get(0);
+			dataEntry = entries.getFirst();
 			Check.assume(entries.size() == 1, "There is only one non-sim entry");
 		}
 		return dataEntry;

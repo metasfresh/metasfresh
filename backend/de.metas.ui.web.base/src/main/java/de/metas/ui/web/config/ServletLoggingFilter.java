@@ -137,9 +137,8 @@ public class ServletLoggingFilter implements Filter
 
 	private static final String extractRequestInfo(final ServletRequest request)
 	{
-		if (request instanceof HttpServletRequest)
+		if (request instanceof HttpServletRequest httpRequest)
 		{
-			final HttpServletRequest httpRequest = (HttpServletRequest)request;
 
 			final String httpMethod = httpRequest.getMethod();
 

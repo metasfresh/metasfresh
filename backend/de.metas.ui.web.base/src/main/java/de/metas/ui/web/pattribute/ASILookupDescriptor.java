@@ -236,9 +236,8 @@ public final class ASILookupDescriptor implements ISqlLookupDescriptor, LookupDa
 	@Override
 	public SqlForFetchingLookupById getSqlForFetchingLookupByIdExpression()
 	{
-		if (attributeValuesProvider instanceof DefaultAttributeValuesProvider)
+		if (attributeValuesProvider instanceof DefaultAttributeValuesProvider defaultAttributeValuesProvider)
 		{
-			final DefaultAttributeValuesProvider defaultAttributeValuesProvider = (DefaultAttributeValuesProvider)attributeValuesProvider;
 			final AttributeId attributeId = defaultAttributeValuesProvider.getAttributeId();
 
 			return SqlForFetchingLookupById.builder()

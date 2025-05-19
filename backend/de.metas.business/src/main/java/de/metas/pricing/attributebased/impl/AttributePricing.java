@@ -95,7 +95,7 @@ public class AttributePricing implements IPricingRule
 			return false;
 		}
 
-		if (!pricingCtx.getAttributeSetInstanceAware().isPresent())
+		if (pricingCtx.getAttributeSetInstanceAware().isEmpty())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("applies - Not applying because not ASI aware: {}", pricingCtx);
 			return false;
@@ -104,7 +104,7 @@ public class AttributePricing implements IPricingRule
 		//
 		// Gets the "attributed" "product price, if any.
 		// If nothing found, this pricing rule does not apply.
-		if (!getProductPriceAttribute(pricingCtx).isPresent())
+		if (getProductPriceAttribute(pricingCtx).isEmpty())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("applies - Not applying because no product price with an attribute found: {}" + pricingCtx);
 			return false;

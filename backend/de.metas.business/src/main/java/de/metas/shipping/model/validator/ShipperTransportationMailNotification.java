@@ -79,9 +79,8 @@ public class ShipperTransportationMailNotification implements ModelValidator
 	@Override
 	public String docValidate(PO po, int type)
 	{
-		if (po instanceof MMShipperTransportation && type == TIMING_AFTER_COMPLETE)
+		if (po instanceof MMShipperTransportation ship && type == TIMING_AFTER_COMPLETE)
 		{
-			MMShipperTransportation ship = (MMShipperTransportation)po;
 			{
 				Properties ctx = Env.getCtx();
 				int AD_BoilerPlate_ID = Services.get(ISysConfigBL.class).getIntValue(SYS_CONFIG_SHIP, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));

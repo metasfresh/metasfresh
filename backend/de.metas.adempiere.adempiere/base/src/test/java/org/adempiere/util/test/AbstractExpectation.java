@@ -97,9 +97,9 @@ public class AbstractExpectation<ParentExpectationType>
 		}
 
 		final ParentExpectationType parent = getParentExpectation();
-		if (parent instanceof AbstractExpectation<?>)
+		if (parent instanceof AbstractExpectation<?> expectation)
 		{
-			return ((AbstractExpectation<?>)parent).getContext();
+			return expectation.getContext();
 		}
 		else
 		{

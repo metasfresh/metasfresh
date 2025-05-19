@@ -347,7 +347,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		if (m_pLocation != null)
 		{
 			int location = m_pLocation.getC_Location_ID();
-			fAddress.setValue(new Integer(location));
+			fAddress.setValue(Integer.valueOf(location));
 			//
 			fPhone.setText(m_pLocation.getPhone());
 			fPhone2.setText(m_pLocation.getPhone2());

@@ -2,20 +2,23 @@ package org.adempiere.ad.callout.exceptions;
 
 import de.metas.util.Check;
 
+import java.io.Serial;
+
 public class CalloutExecutionException extends CalloutException
-{	
+{
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -1716015503981966091L;
 
 	public static CalloutExecutionException wrapIfNeeded(final Throwable throwable)
 	{
 		Check.assumeNotNull(throwable, "throwable not null");
 		
-		if (throwable instanceof CalloutExecutionException)
+		if (throwable instanceof CalloutExecutionException exception)
 		{
-			return (CalloutExecutionException)throwable;
+			return exception;
 		}
 		
 		final Throwable cause = extractCause(throwable);

@@ -46,7 +46,7 @@ class URLsSQLRowLoader implements SQLRowLoader
 		// Try: in case we have only one field and that field is of type string then consider it
 		if (fields.size() == 1)
 		{
-			final KPIField field = fields.get(0);
+			final KPIField field = fields.getFirst();
 			if (field.getValueType().isString())
 			{
 				return field;

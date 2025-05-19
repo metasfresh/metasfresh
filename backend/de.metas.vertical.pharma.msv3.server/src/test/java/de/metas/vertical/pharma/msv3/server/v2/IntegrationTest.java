@@ -298,8 +298,8 @@ public class IntegrationTest
 		soapRequest.setBestellung(soapOrder);
 
 		final BestellenResponse soapResponse = orderWebService.createOrder(jaxbObjectFactory.createBestellen(soapRequest)).getValue();
-		final BestellungAntwortAuftrag soapResponseOrderPackage = soapResponse.getReturn().getAuftraege().get(0);
-		final BestellungAntwortPosition soapResponseOrderPackageItem = soapResponseOrderPackage.getPositionen().get(0);
+		final BestellungAntwortAuftrag soapResponseOrderPackage = soapResponse.getReturn().getAuftraege().getFirst();
+		final BestellungAntwortPosition soapResponseOrderPackageItem = soapResponseOrderPackage.getPositionen().getFirst();
 		assertThat(soapResponseOrderPackageItem.getBestellPzn()).isEqualTo(pzn.getValueAsLong());
 		assertThat(soapResponseOrderPackageItem.getBestellMenge()).isEqualTo(qtyOrderedExpected);
 	}
@@ -352,11 +352,11 @@ public class IntegrationTest
 	private void testStockAvailability(final PZN pzn, final int qtyRequired, final int qtyExpected)
 	{
 		final VerfuegbarkeitAnfragenResponse soapResponse = stockAvailabilityWebService.getStockAvailability(createStockAvailabilityQuery(pzn, qtyRequired)).getValue();
-		final VerfuegbarkeitsantwortArtikel item = soapResponse.getReturn().getArtikel().get(0);
+		final VerfuegbarkeitsantwortArtikel item = soapResponse.getReturn().getArtikel().getFirst();
 		assertThat(item.getAnfragePzn()).isEqualTo(pzn.getValueAsLong());
 		assertThat(item.getAnfrageMenge()).isEqualTo(qtyRequired);
 
-		final VerfuegbarkeitAnteil itemPart = item.getAnteile().get(0);
+		final VerfuegbarkeitAnteil itemPart = item.getAnteile().getFirst();
 		if (qtyExpected == 0)
 		{
 			assertThat(itemPart.getMenge()).isEqualTo(qtyRequired);

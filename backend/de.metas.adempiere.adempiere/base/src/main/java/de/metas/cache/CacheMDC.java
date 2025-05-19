@@ -1,16 +1,13 @@
 package de.metas.cache;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import lombok.experimental.UtilityClass;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
-import com.google.common.collect.ImmutableList;
-
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -58,9 +55,8 @@ public class CacheMDC
 			closables.add(MDC.putCloseable("de.metas.cache.cacheId", cacheId));
 		}
 
-		if (cache instanceof CCache)
+		if (cache instanceof CCache<?, ?> ccache)
 		{
-			final CCache<?, ?> ccache = (CCache<?, ?>)cache;
 			final String cacheName = ccache.getCacheName();
 			if (!Objects.equals(MDC.get("de.metas.cache.cacheName"), cacheName))
 			{

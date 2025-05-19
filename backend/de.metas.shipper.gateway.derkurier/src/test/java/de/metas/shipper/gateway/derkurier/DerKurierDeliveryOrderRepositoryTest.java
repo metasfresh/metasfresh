@@ -79,7 +79,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final List<I_DerKurier_DeliveryOrder> headerRecords = POJOLookupMap.get().getRecords(I_DerKurier_DeliveryOrder.class);
 		assertThat(headerRecords).hasSize(1);
 
-		final I_DerKurier_DeliveryOrder headerRecord = headerRecords.get(0);
+		final I_DerKurier_DeliveryOrder headerRecord = headerRecords.getFirst();
 		assertThat(headerRecord.getDK_Sender_Street()).isEqualTo(deliveryOrder.getPickupAddress().getStreet1());
 		assertThat(headerRecord.getDerKurier_DeliveryOrder_ID()).isEqualTo(savedDeliveryOrder.getOrderId().getOrderIdAsInt());
 		assertThat(headerRecord.getM_Shipper_ID()).isEqualTo(M_SHIPPER_ID.getRepoId());

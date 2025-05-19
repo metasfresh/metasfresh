@@ -119,7 +119,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		assertThat(1).isEqualTo(shippingPackages.size());
 
-		final I_M_ShippingPackage shippingPackage = shippingPackages.get(0);
+		final I_M_ShippingPackage shippingPackage = shippingPackages.getFirst();
 
 		assertThat(order.getRepoId()).isEqualTo(shippingPackage.getC_Order_ID());
 		assertThat(shippingPackage.isToBeFetched());
@@ -162,7 +162,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		assertThat(1).isEqualTo(shippingPackages.size());
 
-		final I_M_ShippingPackage shippingPackage = shippingPackages.get(0);
+		final I_M_ShippingPackage shippingPackage = shippingPackages.getFirst();
 
 		assertThat(order.getRepoId()).isEqualTo(shippingPackage.getC_Order_ID());
 		assertThat(shippingPackage.isToBeFetched());

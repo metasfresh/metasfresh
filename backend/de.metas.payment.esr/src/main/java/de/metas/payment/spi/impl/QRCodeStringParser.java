@@ -44,7 +44,7 @@ public final class QRCodeStringParser extends AbstractESRPaymentStringParser
 	{
 		final List<String> lines = SPLITTER.splitToList(qrCode);
 		
-		Check.assumeEquals(lines.get(0), "SPC"); // QR Type
+		Check.assumeEquals(lines.getFirst(), "SPC"); // QR Type
 		Check.assumeEquals(lines.get(1), "0200"); // Version
 		Check.assumeEquals(lines.get(2), "1"); // Coding
 		

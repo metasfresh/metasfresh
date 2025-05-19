@@ -206,7 +206,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final List<I_C_Order> createdPurchaseOrders = aggregator.getCreatedPurchaseOrders();
 		assertThat(createdPurchaseOrders).hasSize(1);
 
-		final I_C_Order purchaseOrder = createdPurchaseOrders.get(0);
+		final I_C_Order purchaseOrder = createdPurchaseOrders.getFirst();
 		assertThat(purchaseOrder.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 
 		// these properties are currently set by MOrder.beforeSafe, which is not called in our test

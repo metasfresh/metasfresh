@@ -94,8 +94,7 @@ public class RabbitMQDestinationResolver
 
 		anonymousQueueConfigurationList.stream()
 				.map(IEventBusQueueConfiguration::getTopicName)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.forEach(topicName -> {
 					if (collectedTopicNames.contains(topicName))
 					{

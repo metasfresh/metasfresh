@@ -1680,7 +1680,7 @@ public class HUTestHelper
 			}
 			else if (luHUs.size() == 1)
 			{
-				return luHUs.get(0);
+				return luHUs.getFirst();
 			}
 			else
 			{
@@ -1830,8 +1830,8 @@ public class HUTestHelper
 				.collect(Collectors.toList());
 		assertThat("This method only works if the given 'huPI' has exactly one child-HU item", piItemsForChildHU.size(), is(1));
 
-		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));
-		lutuProducer.setTUPI(handlingUnitsDAO.getIncludedPI(piItemsForChildHU.get(0)));
+		lutuProducer.setLUItemPI(piItemsForChildHU.getFirst());
+		lutuProducer.setTUPI(handlingUnitsDAO.getIncludedPI(piItemsForChildHU.getFirst()));
 
 		final HULoader loader = HULoader.of(source, lutuProducer);
 

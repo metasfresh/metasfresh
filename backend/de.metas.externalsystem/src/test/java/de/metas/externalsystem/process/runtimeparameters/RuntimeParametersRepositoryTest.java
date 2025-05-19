@@ -104,7 +104,7 @@ public class RuntimeParametersRepositoryTest
 
 		assertThat(allParams).isNotNull();
 		assertThat(allParams.size()).isEqualTo(1);
-		assertThat(allParams.get(0).getExternalSystem_RuntimeParameter_ID()).isEqualTo(runtimeParameter.getRuntimeParameterId().getRepoId());
+		assertThat(allParams.getFirst().getExternalSystem_RuntimeParameter_ID()).isEqualTo(runtimeParameter.getRuntimeParameterId().getRepoId());
 		expect.serializer("orderedJson").toMatchSnapshot(runtimeParameter);
 	}
 

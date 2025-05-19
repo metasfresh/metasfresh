@@ -45,6 +45,7 @@ package org.compiere.model;
  * #L%
  */
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -54,6 +55,7 @@ public class MWebProperties extends X_U_Web_Properties
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -4051314529871227830L;
 
 	public MWebProperties(Properties ctx, int uWebProperties , String trxName)

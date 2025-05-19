@@ -54,7 +54,7 @@ class TUPackingInfo implements IHUPackingInfo
 					.getProductStorages();
 			if (productStorages.size() == 1)
 			{
-				return productStorages.get(0);
+				return productStorages.getFirst();
 			}
 			else
 			{

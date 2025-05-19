@@ -205,16 +205,14 @@ public class GOClient implements ShipperGatewayClient
 				objectFactory.createGOWebServiceSendungsnummern(goRequest),
 				"getPackageLabelsList",
 				deliveryOrder.getId().getRepoId());
-		if (goResponseObj instanceof Label)
+		if (goResponseObj instanceof Label goLabels)
 		{
-			final Label goLabels = (Label)goResponseObj;
 			final List<PackageLabels> packageLabels = createDeliveryPackageLabels(goLabels);
 			logger.trace("getPackageLabelsList: got packageLabels={}", packageLabels);
 			return packageLabels;
 		}
-		else if (goResponseObj instanceof Fehlerbehandlung)
+		else if (goResponseObj instanceof Fehlerbehandlung errorResponse)
 		{
-			final Fehlerbehandlung errorResponse = (Fehlerbehandlung)goResponseObj;
 			throw extractException(errorResponse);
 		}
 		else
@@ -451,7 +449,7 @@ public class GOClient implements ShipperGatewayClient
 		{
 			throw new ShipperGatewayException("Only one delivery position was expected but got " + goResponseDeliveryPositions);
 		}
-		final SendungsRueckmeldung.Sendung.Position goResponseDeliveryPosition = goResponseDeliveryPositions.get(0);
+		final SendungsRueckmeldung.Sendung.Position goResponseDeliveryPosition = goResponseDeliveryPositions.getFirst();
 
 		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
 				.hwbNumber(HWBNumber.of(goResponseContent.getFrachtbriefnummer()))

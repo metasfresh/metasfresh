@@ -72,9 +72,8 @@ public class DeliveryDayBL implements IDeliveryDayBL
 	{
 		deliveryDayHandlers.addDeliveryDayHandler(handler);
 
-		if (handler instanceof IDeliveryDayCreateHandler)
+		if (handler instanceof IDeliveryDayCreateHandler createHandler)
 		{
-			final IDeliveryDayCreateHandler createHandler = (IDeliveryDayCreateHandler)handler;
 			final DeliveryDayAllocableInterceptor interceptor = new DeliveryDayAllocableInterceptor(createHandler);
 			final DeliveryDayAllocableInterceptor interceptorOld = tableName2deliveryDayAllocableInteceptor.get(interceptor.getModelTableName());
 			if (interceptorOld != null)

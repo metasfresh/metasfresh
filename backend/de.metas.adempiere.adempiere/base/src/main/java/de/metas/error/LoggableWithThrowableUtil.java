@@ -1,10 +1,5 @@
 package de.metas.error;
 
-import java.util.Arrays;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
@@ -12,6 +7,10 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+import org.slf4j.Logger;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 /*
  * #%L
@@ -89,8 +88,8 @@ public class LoggableWithThrowableUtil
 		}
 
 		final Object lastEntry = msgParameters[msgParameters.length - 1];
-		return lastEntry instanceof Throwable
-				? (Throwable)lastEntry
+		return lastEntry instanceof Throwable t
+				? t
 				: null;
 	}
 

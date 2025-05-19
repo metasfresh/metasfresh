@@ -50,9 +50,9 @@ final class MailContentCollector
 
 	public static MailContent toMailContent(final Object contentObj)
 	{
-		if (contentObj instanceof MailContent)
+		if (contentObj instanceof MailContent content)
 		{
-			return (MailContent)contentObj;
+			return content;
 		}
 		else
 		{
@@ -93,24 +93,20 @@ final class MailContentCollector
 		{
 			// nothing
 		}
-		else if (contentObj instanceof String)
+		else if (contentObj instanceof String content)
 		{
-			final String content = (String)contentObj;
 			collectText(content, contentType);
 		}
-		else if (contentObj instanceof Multipart)
+		else if (contentObj instanceof Multipart content)
 		{
-			final Multipart content = (Multipart)contentObj;
 			collectMultipart(content);
 		}
-		else if (contentObj instanceof Part)
+		else if (contentObj instanceof Part content)
 		{
-			final Part content = (Part)contentObj;
 			collectPart(content);
 		}
-		else if (contentObj instanceof MailContent)
+		else if (contentObj instanceof MailContent content)
 		{
-			final MailContent content = (MailContent)contentObj;
 			collectMailContent(content);
 		}
 		else
@@ -151,9 +147,9 @@ final class MailContentCollector
 			else if (Part.INLINE.equalsIgnoreCase(disposition))
 			{
 				final Object contentObj = part.getContent();
-				if (contentObj instanceof InputStream)
+				if (contentObj instanceof InputStream stream)
 				{
-					collectAttachment(part.getFileName(), contentType, (InputStream)contentObj);
+					collectAttachment(part.getFileName(), contentType, stream);
 				}
 				else
 				{

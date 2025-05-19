@@ -25,6 +25,7 @@ package org.adempiere.apps.graph;
 
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.io.Serial;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
@@ -39,6 +40,7 @@ public class FCHtmlEditorKit extends HTMLEditorKit {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -3371176452691681668L;
 	
 	public ViewFactory getViewFactory() {

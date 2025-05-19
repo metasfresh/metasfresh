@@ -89,13 +89,13 @@ public class DataEntryRestController
 		final DataEntryLayout layout = layoutRepo.getByWindowId(windowId);
 		if (layout.isEmpty())
 		{
-			return JsonDataEntryResponse.notFound(String.format("No dataentry for windowId '%d'.", windowId.getRepoId()));
+			return JsonDataEntryResponse.notFound("No dataentry for windowId '%d'.".formatted(windowId.getRepoId()));
 		}
 
 		final DataEntryRecordsMap records = dataRecords.get(recordId, layout.getSubTabIds());
 		if (records.getSubTabIds().isEmpty())
 		{
-			return JsonDataEntryResponse.notFound(String.format("No dataentry for windowId '%d' and recordId '%s'.", windowId.getRepoId(), recordId));
+			return JsonDataEntryResponse.notFound("No dataentry for windowId '%d' and recordId '%s'.".formatted(windowId.getRepoId(), recordId));
 		}
 
 		final JsonDataEntry jsonDataEntry = JsonDataEntryFactory.builder()

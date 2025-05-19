@@ -224,7 +224,7 @@ public class FTSFilterDescriptorRepository
 				throw new AdempiereException("No more available key columns left for valueType=" + valueType + " in " + this);
 			}
 
-			return availableKeys.remove(0);
+			return availableKeys.removeFirst();
 		}
 	}
 }

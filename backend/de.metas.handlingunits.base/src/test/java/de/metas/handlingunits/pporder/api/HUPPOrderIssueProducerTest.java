@@ -345,7 +345,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 			huStatusBL.setHUStatusActive(newHUs);
 
-			final I_M_HU newHU = newHUs.get(0);
+			final I_M_HU newHU = newHUs.getFirst();
 
 			newHU.setM_Locator_ID(ppOrder.getM_Locator_ID());
 			handlingUnitsDAO.saveHU(newHU);
@@ -404,7 +404,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		if (expectedIssuedQtyOnBOMLine.signum() != 0)
 		{
 			assertThat(costCollectors).withFailMessage("Invalid cost collectors count").hasSize(1);
-			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
+			final I_PP_Cost_Collector costCollector = costCollectors.getFirst();
 			Assertions.assertEquals(CostCollectorType.ComponentIssue.getCode(), costCollector.getCostCollectorType(), "Invalid Cost Collector Type");
 			Assertions.assertEquals(TimeUtil.asTimestamp(movementDate), costCollector.getMovementDate(), "Invalid Cost Collector MovementDate");
 			Assertions.assertEquals(ppOrder, costCollector.getPP_Order(), "Invalid Cost Collector PP_Order");
@@ -579,7 +579,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				.createIssues(hus);
 		assertThat(result).hasSize(2);
 
-		final I_PP_Order_Qty ppOrderQty1 = result.get(0);
+		final I_PP_Order_Qty ppOrderQty1 = result.getFirst();
 		assertThat(ppOrderQty1.getM_HU_ID()).isEqualTo(hu1.getM_HU_ID());
 		assertThat(ppOrderQty1.getQty()).isEqualByComparingTo("100");
 
@@ -615,7 +615,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				.createIssues(hus);
 		assertThat(result).hasSize(2);
 
-		final I_PP_Order_Qty ppOrderQty1 = result.get(0);
+		final I_PP_Order_Qty ppOrderQty1 = result.getFirst();
 		assertThat(ppOrderQty1.getM_HU_ID()).isEqualTo(hu1.getM_HU_ID());
 		assertThat(ppOrderQty1.getQty()).isEqualByComparingTo("100");
 

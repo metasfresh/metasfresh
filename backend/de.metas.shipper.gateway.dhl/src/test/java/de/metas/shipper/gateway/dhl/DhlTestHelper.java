@@ -351,7 +351,7 @@ class DhlTestHelper
 
 	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder, @NonNull final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator)
 	{
-		final DeliveryOrderLine firstDeliveryOrderLine = deliveryOrder.getDeliveryOrderLines().get(0);
+		final DeliveryOrderLine firstDeliveryOrderLine = deliveryOrder.getDeliveryOrderLines().getFirst();
 
 		//
 		final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo = CreateDraftDeliveryOrderRequest.PackageInfo.builder()

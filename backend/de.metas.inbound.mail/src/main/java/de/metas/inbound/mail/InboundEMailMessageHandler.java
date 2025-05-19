@@ -124,7 +124,7 @@ class InboundEMailMessageHandler implements MessageHandler
 		}
 		else if (values.size() == 1)
 		{
-			return convertValueToJson(values.get(0));
+			return convertValueToJson(values.getFirst());
 		}
 		else
 		{

@@ -165,7 +165,7 @@ import lombok.NonNull;
 			return;
 		}
 
-		final I_M_InOutLine firstInOutLine = inOutLines.get(0);
+		final I_M_InOutLine firstInOutLine = inOutLines.getFirst();
 		//
 		// Vendor Product
 		final int productId = _product.getM_Product_ID();

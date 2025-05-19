@@ -109,9 +109,8 @@ public final class ErrorMessage
 	{
 		String nameToUse = name == null ? "" : name;
 		Object valueToUse = value;
-		if (value instanceof Collection<?>)
+		if (value instanceof Collection<?> collection)
 		{
-			final Collection<?> collection = (Collection<?>)value;
 			final int count = collection.size();
 			nameToUse += " ("+count+" items)";
 			

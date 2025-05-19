@@ -203,7 +203,7 @@ public class MSV3StockAvailabilityService
 	{
 		Check.assumeNotEmpty(records, "records is not empty");
 
-		final PZN pzn = getPZNByProductValue(records.get(0).getProductValue());
+		final PZN pzn = getPZNByProductValue(records.getFirst().getProductValue());
 		final int qtyOnHand = calculateQtyOnHand(serverConfig, records);
 
 		return MSV3StockAvailability.builder()

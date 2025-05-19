@@ -101,9 +101,9 @@ public class HostKeyConfig
 		private ServletRequestAttributes getRequestAttributes()
 		{
 			final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-			if (requestAttributes instanceof ServletRequestAttributes)
+			if (requestAttributes instanceof ServletRequestAttributes attributes)
 			{
-				return (ServletRequestAttributes)requestAttributes;
+				return attributes;
 			}
 			else
 			{

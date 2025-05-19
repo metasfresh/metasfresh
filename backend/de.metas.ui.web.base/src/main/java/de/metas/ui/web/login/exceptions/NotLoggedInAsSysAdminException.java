@@ -2,6 +2,8 @@ package de.metas.ui.web.login.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -26,6 +28,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 public class NotLoggedInAsSysAdminException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -2528134231184643520L;
 
 	public NotLoggedInAsSysAdminException()

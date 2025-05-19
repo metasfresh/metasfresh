@@ -1,18 +1,15 @@
 package org.adempiere.plaf;
 
-import java.awt.Component;
+import org.compiere.util.DisplayType;
+
+import javax.swing.*;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.metal.MetalScrollPaneUI;
+import java.awt.*;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import javax.swing.JComponent;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.metal.MetalScrollPaneUI;
-
-import org.compiere.util.DisplayType;
 
 /*
  * #%L
@@ -215,9 +212,9 @@ public class AdempiereScrollPaneUI extends MetalScrollPaneUI
 			Component parent = scrollPane.getParent();
 			while (parent != null)
 			{
-				if (parent instanceof JScrollPane)
+				if (parent instanceof JScrollPane pane)
 				{
-					return (JScrollPane)parent;
+					return pane;
 				}
 				parent = parent.getParent();
 			}

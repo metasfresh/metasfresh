@@ -252,7 +252,7 @@ public class OrderCheckupTestHelper
 		Assertions.assertThat(printingItem.isActive()).as("Printing queue item - IsActive").isTrue();
 
 		assertThat("Printout recipients - wrong number", printoutRecipients.size(), is(1));
-		assertThat("Printout recipient - wrong AD_User_ToPrint_ID", printoutRecipients.get(0).getAD_User_ToPrint_ID(), is(report.getAD_User_Responsible_ID()));
+		assertThat("Printout recipient - wrong AD_User_ToPrint_ID", printoutRecipients.getFirst().getAD_User_ToPrint_ID(), is(report.getAD_User_Responsible_ID()));
 	}
 
 }

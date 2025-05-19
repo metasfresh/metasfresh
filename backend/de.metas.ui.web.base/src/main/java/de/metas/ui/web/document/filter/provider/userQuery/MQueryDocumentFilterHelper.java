@@ -58,9 +58,9 @@ public final class MQueryDocumentFilterHelper
 		}
 
 		final String filterId;
-		if (parameters.size() == 1 && !parameters.get(0).isSqlFilter())
+		if (parameters.size() == 1 && !parameters.getFirst().isSqlFilter())
 		{
-			filterId = parameters.get(0).getFieldName();
+			filterId = parameters.getFirst().getFieldName();
 		}
 		else
 		{

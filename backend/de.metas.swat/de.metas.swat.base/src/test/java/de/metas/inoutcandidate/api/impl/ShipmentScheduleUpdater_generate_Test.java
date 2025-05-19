@@ -82,7 +82,7 @@ public class ShipmentScheduleUpdater_generate_Test
 	private AbstractBigDecimalAssert<?> assertOneResultWithQtyToDeliver(@NonNull final ShipmentSchedulesDuringUpdate result)
 	{
 		assertThat(result.getAllLines()).hasSize(1);
-		final DeliveryLineCandidate deliveryLineCandidate = result.getAllLines().get(0);
+		final DeliveryLineCandidate deliveryLineCandidate = result.getAllLines().getFirst();
 
 		return assertThat(deliveryLineCandidate.getQtyToDeliver());
 	}
@@ -345,10 +345,10 @@ public class ShipmentScheduleUpdater_generate_Test
 			final ShipmentSchedulesDuringUpdate result = setup("5");
 
 			assertThat(result.getCandidates()).hasSize(1);
-			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().get(0).getLines());
+			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().getFirst().getLines());
 			assertThat(lines).hasSize(1);
 
-			final DeliveryLineCandidate line1 = lines.get(0);
+			final DeliveryLineCandidate line1 = lines.getFirst();
 			assertThat(line1.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
 			assertThat(line1.getQtyToDeliver()).isEqualTo("5");
 			assertThat(line1.getCompleteStatus()).isEqualTo(CompleteStatus.INCOMPLETE_LINE);
@@ -360,10 +360,10 @@ public class ShipmentScheduleUpdater_generate_Test
 			final ShipmentSchedulesDuringUpdate result = setup("15");
 
 			assertThat(result.getCandidates()).hasSize(1);
-			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().get(0).getLines());
+			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().getFirst().getLines());
 			assertThat(lines).hasSize(2);
 
-			final DeliveryLineCandidate line1 = lines.get(0);
+			final DeliveryLineCandidate line1 = lines.getFirst();
 			assertThat(line1.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
 			assertThat(line1.getQtyToDeliver()).isEqualTo("10");
 			assertThat(line1.getCompleteStatus()).isEqualTo(CompleteStatus.OK);
@@ -380,10 +380,10 @@ public class ShipmentScheduleUpdater_generate_Test
 			final ShipmentSchedulesDuringUpdate result = setup("100");
 
 			assertThat(result.getCandidates()).hasSize(1);
-			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().get(0).getLines());
+			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().getFirst().getLines());
 			assertThat(lines).hasSize(2);
 
-			final DeliveryLineCandidate line1 = lines.get(0);
+			final DeliveryLineCandidate line1 = lines.getFirst();
 			assertThat(line1.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
 			assertThat(line1.getQtyToDeliver()).isEqualTo("10");
 			assertThat(line1.getCompleteStatus()).isEqualTo(CompleteStatus.OK);

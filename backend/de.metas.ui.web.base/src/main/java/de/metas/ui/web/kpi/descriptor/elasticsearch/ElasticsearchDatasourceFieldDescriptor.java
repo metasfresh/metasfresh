@@ -72,7 +72,7 @@ public class ElasticsearchDatasourceFieldDescriptor
 	{
 		if (path.size() == 1)
 		{
-			final String fieldName = path.get(0);
+			final String fieldName = path.getFirst();
 			if ("doc_count".equals(fieldName))
 			{
 				return (containingAggName, bucket) -> KPIDataValue.ofValueAndType(bucket.getDocCount(), valueType);
@@ -85,9 +85,8 @@ public class ElasticsearchDatasourceFieldDescriptor
 
 		return (containingAggName, bucket) -> {
 			final Object value;
-			if (bucket instanceof InternalMultiBucketAggregation.InternalBucket)
+			if (bucket instanceof InternalMultiBucketAggregation.InternalBucket internalBucket)
 			{
-				final InternalMultiBucketAggregation.InternalBucket internalBucket = (InternalMultiBucketAggregation.InternalBucket)bucket;
 				value = internalBucket.getProperty(containingAggName, path);
 			}
 			else
@@ -107,22 +106,20 @@ public class ElasticsearchDatasourceFieldDescriptor
 		Check.assumeNotEmpty(path, "path shall not be empty");
 
 		final Aggregations aggregations = bucket.getAggregations();
-		final String aggName = path.get(0);
+		final String aggName = path.getFirst();
 		final Aggregation aggregation = aggregations.get(aggName);
 		if (aggregation == null)
 		{
 			throw new InvalidAggregationPathException("Cannot find an aggregation named [" + aggName + "] in [" + containingAggName + "]");
 		}
-		else if (aggregation instanceof InternalAggregation)
+		else if (aggregation instanceof InternalAggregation internalAggregation)
 		{
-			final InternalAggregation internalAggregation = (InternalAggregation)aggregation;
 			return internalAggregation.getProperty(path.subList(1, path.size()));
 		}
-		else if (aggregation instanceof NumericMetricsAggregation.SingleValue)
+		else if (aggregation instanceof NumericMetricsAggregation.SingleValue singleValue)
 		{
-			final NumericMetricsAggregation.SingleValue singleValue = (NumericMetricsAggregation.SingleValue)aggregation;
 			final List<String> subPath = path.subList(1, path.size());
-			if (subPath.size() == 1 && "value".equals(subPath.get(0)))
+			if (subPath.size() == 1 && "value".equals(subPath.getFirst()))
 			{
 				return singleValue.value();
 			}

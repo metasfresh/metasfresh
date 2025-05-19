@@ -98,9 +98,8 @@ final class DateTimeTranslatableString implements ITranslatableString
 
 	static DateTimeTranslatableString ofObject(@NonNull final Object obj, final int displayType)
 	{
-		if (obj instanceof java.util.Date)
+		if (obj instanceof java.util.Date date)
 		{
-			final java.util.Date date = (java.util.Date)obj;
 
 			if (displayType == DisplayType.Date)
 			{
@@ -115,33 +114,33 @@ final class DateTimeTranslatableString implements ITranslatableString
 				return ofDateTime(date);
 			}
 		}
-		else if (obj instanceof LocalDate)
+		else if (obj instanceof LocalDate date)
 		{
-			return ofDate((LocalDate)obj);
+			return ofDate(date);
 		}
-		else if (obj instanceof LocalTime)
+		else if (obj instanceof LocalTime time2)
 		{
-			return ofTime((LocalTime)obj);
+			return ofTime(time2);
 		}
-		else if (obj instanceof LocalDateTime)
+		else if (obj instanceof LocalDateTime time1)
 		{
-			return ofDateTime((LocalDateTime)obj);
+			return ofDateTime(time1);
 		}
-		else if (obj instanceof Instant)
+		else if (obj instanceof Instant instant1)
 		{
-			return ofDateTime((Instant)obj);
+			return ofDateTime(instant1);
 		}
-		else if (obj instanceof ZonedDateTime)
+		else if (obj instanceof ZonedDateTime time)
 		{
-			return ofDateTime((ZonedDateTime)obj);
+			return ofDateTime(time);
 		}
-		else if (obj instanceof InstantAndOrgId)
+		else if (obj instanceof InstantAndOrgId id1)
 		{
-			return ofDateTime(((InstantAndOrgId)obj).toInstant());
+			return ofDateTime(id1.toInstant());
 		}
-		else if (obj instanceof LocalDateAndOrgId)
+		else if (obj instanceof LocalDateAndOrgId id)
 		{
-			return ofDate(((LocalDateAndOrgId)obj).toLocalDate());
+			return ofDate(id.toLocalDate());
 		}
 		else
 		{

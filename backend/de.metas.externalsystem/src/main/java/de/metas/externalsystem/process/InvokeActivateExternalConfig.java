@@ -88,7 +88,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 		{
 			final Optional<ExternalSystemParentConfig> config = getSelectedExternalSystemConfig(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()));
 
-			if (!config.isPresent())
+			if (config.isEmpty())
 			{
 				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getExternalSystemType().getName()));
 			}

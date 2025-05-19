@@ -371,7 +371,7 @@ public class BPartnerBL implements IBPartnerBL
 				return user;
 			}
 		}
-		return users.get(0);
+		return users.getFirst();
 	}
 
 	@Override
@@ -835,7 +835,7 @@ public class BPartnerBL implements IBPartnerBL
 		{
 			if (!shipLocations.isEmpty())
 			{
-				bPartnerLocation = shipLocations.get(0);
+				bPartnerLocation = shipLocations.getFirst();
 			}
 			//No longer setting any location when no shipping location exists for the bpartner
 		}

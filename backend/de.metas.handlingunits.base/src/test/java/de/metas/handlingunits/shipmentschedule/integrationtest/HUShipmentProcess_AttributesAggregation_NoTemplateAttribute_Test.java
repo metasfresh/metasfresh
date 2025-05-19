@@ -85,13 +85,13 @@ public class HUShipmentProcess_AttributesAggregation_NoTemplateAttribute_Test
 		//
 		// Get generated shipment
 		Assert.assertEquals("Invalid generated shipments count", 1, generatedShipments.size());
-		final I_M_InOut shipment = generatedShipments.get(0);
+		final I_M_InOut shipment = generatedShipments.getFirst();
 
 		//
 		// Retrieve generated shipment lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
 		Assert.assertEquals("Invalid generated shipment lines count", 1, shipmentLines.size());
-		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
+		final I_M_InOutLine shipmentLine1 = shipmentLines.getFirst();
 
 		assertShipmentLineDoesNotHaveAttribute(shipmentLine1, attribute);
 

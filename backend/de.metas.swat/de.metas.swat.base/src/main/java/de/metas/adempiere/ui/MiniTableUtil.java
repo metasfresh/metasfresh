@@ -159,7 +159,7 @@ public class MiniTableUtil
 			if (ci != null)
 			{
 				if (isID)
-					list.add(0, ci);
+					list.addFirst(ci);
 				else
 					list.add(ci);
 			}

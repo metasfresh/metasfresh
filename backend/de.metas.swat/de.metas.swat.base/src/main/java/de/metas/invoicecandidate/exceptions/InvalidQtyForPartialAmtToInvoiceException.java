@@ -3,6 +3,8 @@ package de.metas.invoicecandidate.exceptions;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+
+import java.io.Serial;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 
@@ -17,6 +19,7 @@ public class InvalidQtyForPartialAmtToInvoiceException extends AdempiereExceptio
 {
 	public static final String MSG = "de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException";
 
+	@Serial
 	private static final long serialVersionUID = -5898986603226414781L;
 
 	public InvalidQtyForPartialAmtToInvoiceException(

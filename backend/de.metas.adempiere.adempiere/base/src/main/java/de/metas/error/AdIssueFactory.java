@@ -67,9 +67,8 @@ public class AdIssueFactory
 		issue.setLocal_Host(NetUtils.getLocalHost().toString());
 
 		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		if (requestAttributes instanceof ServletRequestAttributes)
+		if (requestAttributes instanceof ServletRequestAttributes servletRequestAttributes)
 		{
-			final ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)requestAttributes;
 			final HttpServletRequest httpServletRequest = servletRequestAttributes.getRequest();
 			issue.setRemote_Addr(httpServletRequest.getRemoteAddr());
 			issue.setRemote_Host(httpServletRequest.getRemoteHost());

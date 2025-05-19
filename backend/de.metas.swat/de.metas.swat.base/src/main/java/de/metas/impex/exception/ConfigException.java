@@ -28,6 +28,8 @@ import org.compiere.util.Env;
 
 import de.metas.i18n.Msg;
 
+import java.io.Serial;
+
 /**
  * 
  * Exception to be thrown when an edi export fails dues to (user) config problems. That's why it is a checked exception.
@@ -41,6 +43,7 @@ public final class ConfigException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 333990082991623238L;
 
 	public static final String ARCHIVE_NOT_A_DIR_1P = "EdiArchiveNotADir";

@@ -69,6 +69,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ import java.util.Properties;
 public class InfoSimple extends Info
 		implements IInfoSimple
 {
+	@Serial
 	private static final long serialVersionUID = -2287443834003089204L;
 
 	//
@@ -124,6 +126,7 @@ public class InfoSimple extends Info
 
 	private class EvaluableCtx extends Properties implements Evaluatee
 	{
+		@Serial
 		private static final long serialVersionUID = -752761216437290368L;
 
 		public EvaluableCtx(final Properties ctx)
@@ -387,9 +390,8 @@ public class InfoSimple extends Info
 			for (int i = 0; i < criteria.getParameterCount(); i++)
 			{
 				final Component editor = (Component)criteria.getParameterComponent(i);
-				if (editor instanceof VLookup)
+				if (editor instanceof VLookup lookup)
 				{
-					final VLookup lookup = (VLookup)editor;
 					lookup.enableLookupAutocomplete();
 				}
 
@@ -424,13 +426,13 @@ public class InfoSimple extends Info
 		{
 			c = null;
 		}
-		else if (component instanceof String)
+		else if (component instanceof String string)
 		{
-			c = new CLabel((String)component);
+			c = new CLabel(string);
 		}
-		else if (component instanceof Component)
+		else if (component instanceof Component component1)
 		{
-			c = (Component)component;
+			c = component1;
 		}
 		else
 		{
@@ -799,13 +801,12 @@ public class InfoSimple extends Info
 		{
 			return -1;
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			return ((Number)value).intValue();
+			return number.intValue();
 		}
-		else if (value instanceof KeyNamePair)
+		else if (value instanceof KeyNamePair knp)
 		{
-			final KeyNamePair knp = (KeyNamePair)value;
 			if (knp.getKey() <= 0 && Check.isEmpty(knp.getName()))
 			{
 				return -1;
@@ -1011,17 +1012,17 @@ public class InfoSimple extends Info
 		{
 			return -1;
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			return ((Number)value).intValue();
+			return number.intValue();
 		}
-		else if (value instanceof KeyNamePair)
+		else if (value instanceof KeyNamePair pair)
 		{
-			return ((KeyNamePair)value).getKey();
+			return pair.getKey();
 		}
-		else if (value instanceof IDColumn)
+		else if (value instanceof IDColumn column)
 		{
-			return ((IDColumn)value).getRecord_ID();
+			return column.getRecord_ID();
 		}
 		else
 		{
@@ -1044,9 +1045,8 @@ public class InfoSimple extends Info
 			return -1;
 		}
 		final Object data = getValue(row, column);
-		if (data instanceof IDColumn)
+		if (data instanceof IDColumn dataColumn)
 		{
-			final IDColumn dataColumn = (IDColumn)data;
 			return dataColumn.getRecord_ID();
 		}
 		else
@@ -1127,9 +1127,8 @@ public class InfoSimple extends Info
 			return false;
 		}
 		final Object value = getValue(row, keyColumnIndex);
-		if (value instanceof IDColumn)
+		if (value instanceof IDColumn dataColumn)
 		{
-			final IDColumn dataColumn = (IDColumn)value;
 			return dataColumn.isSelected();
 		}
 		else
@@ -1183,9 +1182,8 @@ public class InfoSimple extends Info
 		{
 			return null;
 		}
-		if (criteria instanceof IInfoColumnController)
+		if (criteria instanceof IInfoColumnController columnController)
 		{
-			final IInfoColumnController columnController = (IInfoColumnController)criteria;
 			return columnController;
 		}
 

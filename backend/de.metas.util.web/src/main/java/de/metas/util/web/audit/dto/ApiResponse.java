@@ -84,13 +84,13 @@ public class ApiResponse
 				throw AdempiereException.wrapIfNeeded(e);
 			}
 		}
-		else if (body instanceof String)
+		else if (body instanceof String string)
 		{
-			return (String)body;
+			return string;
 		}
-		else if (body instanceof byte[])
+		else if (body instanceof byte[] bytes)
 		{
-			return new String((byte[])body, charset);
+			return new String(bytes, charset);
 		}
 		else
 		{

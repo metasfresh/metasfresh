@@ -76,7 +76,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 
 		//
 		// Get shipment schedules
-		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.get(0);
+		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.getFirst();
 		final I_M_ShipmentSchedule shipmentSchedule2 = shipmentSchedules.get(1);
 
 		//
@@ -104,7 +104,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		final List<I_M_HU> splitSS2LUs = splitOnLU(tuHU2, pSaladId, new BigDecimal("10"));
 		assertThat(splitSS2LUs.size(), is(1));
 
-		final I_M_HU splitSS2LU = splitSS2LUs.get(0); // we split full qty on a palette
+		final I_M_HU splitSS2LU = splitSS2LUs.getFirst(); // we split full qty on a palette
 
 		// also add tuHU3 to tuHU6 onto the 2nd LU
 		helper.joinHUs(huContext, splitSS2LU, tuHU3, tuHU4, tuHU5, tuHU6);
@@ -320,13 +320,13 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		//
 		// Get generated shipment
 		assertThat(generatedShipments).as("Invalid generated shipments count").hasSize(1);
-		final I_M_InOut shipment = generatedShipments.get(0);
+		final I_M_InOut shipment = generatedShipments.getFirst();
 
 		//
 		// Retrieve generated shipment lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
 		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(2);
-		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
+		final I_M_InOutLine shipmentLine1 = shipmentLines.getFirst();
 		logger.info("shipmentLine1: {}", shipmentLine1);
 
 		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
@@ -366,7 +366,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		// Get LUs Package
 		assertThat(mpackagesForAggregatedHUs.size()).as("Invalid generated Aggregated HU packages count").isEqualTo(2);
 
-		assertThat(mpackagesForAggregatedHUs.get(0).getPackageWeight()).isEqualByComparingTo("30");
+		assertThat(mpackagesForAggregatedHUs.getFirst().getPackageWeight()).isEqualByComparingTo("30");
 		assertThat(mpackagesForAggregatedHUs.get(1).getPackageWeight()).isEqualByComparingTo("50");
 
 		for (int i = 0; i < generatedShipments.size(); i++)

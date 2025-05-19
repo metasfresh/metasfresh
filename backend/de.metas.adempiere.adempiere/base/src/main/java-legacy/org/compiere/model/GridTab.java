@@ -2555,7 +2555,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return false;
 		}
 		//
-		final Integer key = new Integer(m_mTable.getKeyID(m_currentRow));
+		final Integer key = Integer.valueOf(m_mTable.getKeyID(m_currentRow));
 		return m_Chats.containsKey(key);
 	}	// hasChat
 
@@ -2575,7 +2575,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return 0;
 		}
 		//
-		final Integer key = new Integer(m_mTable.getKeyID(m_currentRow));
+		final Integer key = Integer.valueOf(m_mTable.getKeyID(m_currentRow));
 		final Integer value = m_Chats.get(key);
 		if (value == null)
 		{
@@ -3563,9 +3563,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		else if (m_mTable.getValueAt(from, lineCol) instanceof BigDecimal)
 		{
-			lineNoCurrentRow = new Integer(((BigDecimal)m_mTable.getValueAt(from, lineCol))
+			lineNoCurrentRow = Integer.valueOf(((BigDecimal)m_mTable.getValueAt(from, lineCol))
 					.intValue());
-			lineNoNextRow = new Integer(((BigDecimal)m_mTable.getValueAt(to, lineCol))
+			lineNoNextRow = Integer.valueOf(((BigDecimal)m_mTable.getValueAt(to, lineCol))
 					.intValue());
 		}
 		else
@@ -3972,7 +3972,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				if (queryColumn.endsWith("_ID"))
 				{
 					query.addRestriction(queryColumn, Operator.EQUAL,
-							new Integer(Env.getContextAsInt(ctx, getWindowNo(), queryColumn)),
+							Integer.valueOf(Env.getContextAsInt(ctx, getWindowNo(), queryColumn)),
 							infoName, infoDisplay);
 				}
 				else

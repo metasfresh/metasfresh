@@ -54,9 +54,9 @@ public class MediatedCommissionContract implements CommissionContract
 	@NonNull
 	public static Optional<MediatedCommissionContract> castOrEmpty(@NonNull final CommissionContract commissionContract)
 	{
-		if (commissionContract instanceof MediatedCommissionContract)
+		if (commissionContract instanceof MediatedCommissionContract contract)
 		{
-			return Optional.of((MediatedCommissionContract)commissionContract);
+			return Optional.of(contract);
 		}
 
 		return Optional.empty();

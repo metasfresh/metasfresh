@@ -197,7 +197,7 @@ public class MOrderTax extends X_C_OrderTax
 	 */
 	protected void setPrecision(int precision)
 	{
-		m_precision = new Integer(precision);
+		m_precision = Integer.valueOf(precision);
 	}	// setPrecision
 
 	/**

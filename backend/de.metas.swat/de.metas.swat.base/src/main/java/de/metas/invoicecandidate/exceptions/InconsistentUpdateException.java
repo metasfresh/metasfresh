@@ -31,6 +31,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 
+import java.io.Serial;
+
 /**
  * Model validators can throw this exception if they want to prohibit an update that would lead to inconsistencies. If
  * the update is performed by a scheduled process, that process can use the given <code>adUserToNotifyId</code> to
@@ -43,6 +45,7 @@ public class InconsistentUpdateException extends AdempiereException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 7452910227523552339L;
 
 	@NonNull private final I_AD_User userToNotify;

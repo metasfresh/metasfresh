@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import java.awt.Color;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -55,7 +56,7 @@ public class MColorSchema extends X_PA_ColorSchema
 			&& target != null && target.signum() != 0)
 		{
 			BigDecimal pp = actual.multiply(Env.ONEHUNDRED)
-				.divide(target, 0, BigDecimal.ROUND_HALF_UP);
+				.divide(target, 0, RoundingMode.HALF_UP);
 			percent = pp.intValue();
 		}
 		return getColor(ctx, PA_ColorSchema_ID, percent);
@@ -89,7 +90,7 @@ public class MColorSchema extends X_PA_ColorSchema
 			retValue.setDefault();
 			return retValue;
 		}
-		Integer key = new Integer (PA_ColorSchema_ID);
+		Integer key = Integer.valueOf(PA_ColorSchema_ID);
 		MColorSchema retValue = (MColorSchema)s_cache.get (key);
 		if (retValue != null)
 			return retValue;

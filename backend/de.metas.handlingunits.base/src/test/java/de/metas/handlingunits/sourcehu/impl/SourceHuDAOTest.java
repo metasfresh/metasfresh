@@ -100,7 +100,7 @@ public class SourceHuDAOTest
 				.build();
 
 		final ICompositeQueryFilter<I_M_HU> huFilters = SourceHuDAO.createHuFilter(query);
-		assertThat(huFilters.accept(hus.get(0))).isTrue();
+		assertThat(huFilters.accept(hus.getFirst())).isTrue();
 		assertThat(huFilters.accept(hus.get(1))).isTrue();
 		assertThat(huFilters.accept(hus.get(2))).isFalse();
 		assertThat(huFilters.accept(hus.get(3))).isFalse();
@@ -111,7 +111,7 @@ public class SourceHuDAOTest
 	public void testRetrieveActiveSourceHUs()
 	{
 		final I_M_Source_HU sourceHu = newInstance(I_M_Source_HU.class);
-		sourceHu.setM_HU(hus.get(0));
+		sourceHu.setM_HU(hus.getFirst());
 		save(sourceHu);
 
 		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
@@ -121,7 +121,7 @@ public class SourceHuDAOTest
 		final Set<HuId> resultHUIds = new SourceHuDAO().retrieveActiveSourceHUIds(query);
 
 		assertThat(resultHUIds).hasSize(1);
-		assertThat(resultHUIds.iterator().next().getRepoId()).isEqualTo(hus.get(0).getM_HU_ID());
+		assertThat(resultHUIds.iterator().next().getRepoId()).isEqualTo(hus.getFirst().getM_HU_ID());
 	}
 
 	private static I_M_HU createHU(

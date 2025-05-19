@@ -523,7 +523,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 					}
 					else
 					{
-						final I_PP_Order_NodeNext nodeNextRecord = existingNodeNexts.remove(0);
+						final I_PP_Order_NodeNext nodeNextRecord = existingNodeNexts.removeFirst();
 						updateOrderNodeNextRecord(nodeNextRecord, activity, nextActivity);
 						saveRecord(nodeNextRecord);
 

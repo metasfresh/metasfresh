@@ -50,7 +50,7 @@ public class AvailableForSalesSqlHelper
 				multiQuery.getAvailableForSalesQueries(),
 				"The given multiQuery may not be empty; multiQuery={}", multiQuery);
 
-		final IQuery<I_MD_Available_For_Sales_QueryResult> dbQuery = createDBQueryForAvailableForSalesQuery(0, availableForSalesQueries.get(0));
+		final IQuery<I_MD_Available_For_Sales_QueryResult> dbQuery = createDBQueryForAvailableForSalesQuery(0, availableForSalesQueries.getFirst());
 
 		for (int i = 1; i < availableForSalesQueries.size(); i++)
 		{

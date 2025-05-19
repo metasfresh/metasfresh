@@ -107,6 +107,6 @@ public class BatchBankToCustomerStatementV02Wrapper
 	{
 		return reportEntry.getNtryDtls().size() > 1
 				// dev-note: we consider batch with one trx non-batched as it doesn't make any difference
-				|| reportEntry.getNtryDtls().size() == 1 && reportEntry.getNtryDtls().get(0).getTxDtls().size() > 1;
+				|| reportEntry.getNtryDtls().size() == 1 && reportEntry.getNtryDtls().getFirst().getTxDtls().size() > 1;
 	}
 }

@@ -34,10 +34,9 @@ public class CORSFilter implements Filter
 	@Override
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException
 	{
-		if (response instanceof HttpServletResponse)
+		if (response instanceof HttpServletResponse httpResponse)
 		{
 			final HttpServletRequest httpRequest = (HttpServletRequest)request;
-			final HttpServletResponse httpResponse = (HttpServletResponse)response;
 
 			setCORSHeaders(httpRequest, httpResponse);
 		}
@@ -75,8 +74,9 @@ public class CORSFilter implements Filter
 			}
 			else
 			{
-				logger.warn("Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set."
-								+ "\n Please and set `{}` SysConfig or allow cross-site-usage (`{}` sysconfig).",
+				logger.warn("""
+								Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set.
+								 Please and set `{}` SysConfig or allow cross-site-usage (`{}` sysconfig).""",
 						WebuiURLs.SYSCONFIG_FRONTEND_URL, WebuiURLs.SYSCONFIG_IsCrossSiteUsageAllowed);
 			}
 		}

@@ -82,10 +82,10 @@ public class JSONDocumentFilterDescriptorTest
 
 			final List<JSONDocumentFilterDescriptor> jsonFilters = JSONDocumentFilterDescriptor.ofCollection(filters, options);
 			assertThat(jsonFilters).hasSize(1);
-			assertThat(jsonFilters.get(0).getFilterId()).isNull();
-			assertThat(jsonFilters.get(0).getIncludedFilters().get(0).getFilterId()).isEqualTo("default1");
-			assertThat(jsonFilters.get(0).getIncludedFilters().get(1).getFilterId()).isEqualTo("default2");
-			assertThat(jsonFilters.get(0).getIncludedFilters().get(2).getFilterId()).isEqualTo("default3");
+			assertThat(jsonFilters.getFirst().getFilterId()).isNull();
+			assertThat(jsonFilters.getFirst().getIncludedFilters().getFirst().getFilterId()).isEqualTo("default1");
+			assertThat(jsonFilters.getFirst().getIncludedFilters().get(1).getFilterId()).isEqualTo("default2");
+			assertThat(jsonFilters.getFirst().getIncludedFilters().get(2).getFilterId()).isEqualTo("default3");
 		}
 
 		@Nested
@@ -122,10 +122,10 @@ public class JSONDocumentFilterDescriptorTest
 				final List<JSONDocumentFilterDescriptor> jsonFilters = JSONDocumentFilterDescriptor.ofCollection(filters, options);
 				assertThat(jsonFilters).hasSize(5);
 
-				assertThat(jsonFilters.get(0).getFilterId()).isEqualTo("default-date");
+				assertThat(jsonFilters.getFirst().getFilterId()).isEqualTo("default-date");
 
 				assertThat(jsonFilters.get(1).getFilterId()).isNull();
-				assertThat(jsonFilters.get(1).getIncludedFilters().get(0).getFilterId()).isEqualTo("default1");
+				assertThat(jsonFilters.get(1).getIncludedFilters().getFirst().getFilterId()).isEqualTo("default1");
 				assertThat(jsonFilters.get(1).getIncludedFilters().get(1).getFilterId()).isEqualTo("default2");
 				assertThat(jsonFilters.get(1).getIncludedFilters().get(2).getFilterId()).isEqualTo("default3");
 

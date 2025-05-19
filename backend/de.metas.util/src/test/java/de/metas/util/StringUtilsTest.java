@@ -193,13 +193,14 @@ public class StringUtilsTest
 	public void tokenizeStringToIntegers()
 	{
 		final ImmutableList<Integer> result = StringUtils.tokenizeStringToIntegers(
-				"2195601\n"
-						+ "   \n"
-						+ "2195602, \n"
-						+ "2195603, \n"
-						+ "2195604 ,\n"
-						+ "2199111,2175651\n"
-						+ "2195605,\t 2195606abc2195607");
+				"""
+				2195601
+				  \s
+				2195602,\s
+				2195603,\s
+				2195604 ,
+				2199111,2175651
+				2195605,	 2195606abc2195607""");
 
 		assertThat(result).containsExactly(2195601, 2195602, 2195603, 2195604, 2199111, 2175651, 2195605, 2195606, 2195607);
 	}

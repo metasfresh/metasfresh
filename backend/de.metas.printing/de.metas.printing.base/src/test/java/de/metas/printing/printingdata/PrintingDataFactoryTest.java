@@ -122,12 +122,12 @@ class PrintingDataFactoryTest
 
 		// then
 		assertThat(printingData).hasSize(1);
-		assertThat(printingData.get(0).hasData()).isTrue();
-		assertThat(printingData.get(0).getPrintingQueueItemId()).isEqualTo(PrintingQueueItemId.ofRepoId(printingQueueRecord.getC_Printing_Queue_ID()));
-		assertThat(printingData.get(0).getDocumentFileName()).isEqualTo("C_Order-100007.pdf"); // the file name is not so nice, because there is not documentName, docType etc set up
-		assertThat(printingData.get(0).getNumberOfPages()).isEqualTo(3);
-		assertThat(printingData.get(0).getOrgId()).isEqualTo(OrgId.ofRepoId(23));
-		assertThat(printingData.get(0).getSegments()).isNotEmpty()
+		assertThat(printingData.getFirst().hasData()).isTrue();
+		assertThat(printingData.getFirst().getPrintingQueueItemId()).isEqualTo(PrintingQueueItemId.ofRepoId(printingQueueRecord.getC_Printing_Queue_ID()));
+		assertThat(printingData.getFirst().getDocumentFileName()).isEqualTo("C_Order-100007.pdf"); // the file name is not so nice, because there is not documentName, docType etc set up
+		assertThat(printingData.getFirst().getNumberOfPages()).isEqualTo(3);
+		assertThat(printingData.getFirst().getOrgId()).isEqualTo(OrgId.ofRepoId(23));
+		assertThat(printingData.getFirst().getSegments()).isNotEmpty()
 				.extracting("pageFrom", "pageTo", "printerRoutingId.repoId")
 				.containsExactly(tuple(1, 3, printerRouting.getAD_PrinterRouting_ID()));
 	}

@@ -25,6 +25,8 @@ package de.metas.dunning.exception;
 
 import de.metas.dunning.interfaces.I_C_Dunning;
 
+import java.io.Serial;
+
 /**
  * Exception to be thrown for dunning functionalities that are not implemented yet
  * 
@@ -36,6 +38,7 @@ public class NotImplementedDunningException extends DunningException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 2457493805503996580L;
 	/**
 	 * i.e. {@link I_C_Dunning#isCreateLevelsSequentially()} == false

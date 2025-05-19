@@ -1331,7 +1331,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		int AD_Column_ID = item.getAD_Column_ID();
 		log.info(format + " - Item=" + item.getName() + " (" + AD_Column_ID + ")");
 		//
-		Object obj = data.getNode(new Integer(AD_Column_ID));
+		Object obj = data.getNode(Integer.valueOf(AD_Column_ID));
 		// Object obj = data.getNode(item.getColumnName()); // slower
 		if (obj == null)
 		{
@@ -1365,7 +1365,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 			return null;
 		}
 		MQuery query = new MQuery(format.getAD_Table_ID());
-		query.addRestriction(item.getColumnName(), Operator.EQUAL, new Integer(Record_ID));
+		query.addRestriction(item.getColumnName(), Operator.EQUAL, Integer.valueOf(Record_ID));
 		format.setTranslationViewQuery(query);
 		log.debug(query.toString());
 		//
@@ -1460,7 +1460,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 											String FieldAlignmentType, final boolean isForm)
 	{
 		// Get Data
-		Object obj = m_data.getNode(new Integer(item.getAD_Column_ID()));
+		Object obj = m_data.getNode(Integer.valueOf(item.getAD_Column_ID()));
 		if (obj == null)
 			return null;
 		else if (obj instanceof PrintDataElement)
@@ -1641,7 +1641,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	 */
 	private PrintElement createImageElement(final MPrintFormatItem item)
 	{
-		Object obj = m_data.getNode(new Integer(item.getAD_Column_ID()));
+		Object obj = m_data.getNode(Integer.valueOf(item.getAD_Column_ID()));
 		if (obj == null)
 			return null;
 		else if (obj instanceof PrintDataElement)
@@ -1685,7 +1685,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	private PrintElement createBarcodeElement(final MPrintFormatItem item)
 	{
 		// Get Data
-		Object obj = m_data.getNode(new Integer(item.getAD_Column_ID()));
+		Object obj = m_data.getNode(Integer.valueOf(item.getAD_Column_ID()));
 		if (obj == null)
 			return null;
 		else if (obj instanceof PrintDataElement)
@@ -1788,7 +1788,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 			{
 				if (item.isNextLine() && item.getBelowColumn() != 0)
 				{
-					additionalLines.put(new Integer(col), new Integer(item.getBelowColumn() - 1));
+					additionalLines.put(Integer.valueOf(col), Integer.valueOf(item.getBelowColumn() - 1));
 					if (!item.isSuppressNull())
 					{
 						item.setIsSuppressNull(true);    // display size will be set to 0 in TableElement
@@ -1844,13 +1844,13 @@ public class LayoutEngine implements Pageable, Printable, Doc
 			printData.setRowIndex(row);
 			if (printData.isFunctionRow())
 			{
-				functionRows.add(new Integer(row));
+				functionRows.add(Integer.valueOf(row));
 				rowColFont.put(new Point(row, TableElement.ALL), tf.getFunct_Font());
 				rowColColor.put(new Point(row, TableElement.ALL), tf.getFunctFG_Color());
 				rowColBackground.put(new Point(row, TableElement.ALL), tf.getFunctBG_Color());
 				if (printData.isPageBreak())
 				{
-					pageBreak.add(new Integer(row));
+					pageBreak.add(Integer.valueOf(row));
 					log.trace("PageBreak row=" + row);
 				}
 			}
@@ -1885,7 +1885,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 						{
 							Object obj = null;
 							if (item.getAD_Column_ID() > 0) // teo_sarca, [ 1673542 ]
-								obj = printData.getNode(new Integer(item.getAD_Column_ID()));
+								obj = printData.getNode(Integer.valueOf(item.getAD_Column_ID()));
 							if (obj == null)
 								;
 							else if (obj instanceof PrintDataElement)
@@ -1916,7 +1916,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 					{
 						Object obj = null;
 						if (item.getAD_Column_ID() > 0) // teo_sarca, [ 1673542 ]
-							obj = printData.getNode(new Integer(item.getAD_Column_ID()));
+							obj = printData.getNode(Integer.valueOf(item.getAD_Column_ID()));
 						if (obj == null)
 							;
 						else if (obj instanceof PrintDataElement)
@@ -1949,7 +1949,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 					{
 						Object obj = null;
 						if (item.getAD_Column_ID() > 0) // teo_sarca, [ 1673542 ]
-							obj = printData.getNode(new Integer(item.getAD_Column_ID()));
+							obj = printData.getNode(Integer.valueOf(item.getAD_Column_ID()));
 						if (obj == null)
 							;
 						else if (obj instanceof PrintDataElement)

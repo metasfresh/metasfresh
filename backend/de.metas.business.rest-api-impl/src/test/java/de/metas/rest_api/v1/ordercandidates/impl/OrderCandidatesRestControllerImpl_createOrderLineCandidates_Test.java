@@ -410,7 +410,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final List<JsonOLCand> olCands = response.getResult();
 		assertThat(olCands).hasSize(1);
 
-		final JsonOLCand olCand = olCands.get(0);
+		final JsonOLCand olCand = olCands.getFirst();
 		assertThat(olCand.getDateOrdered()).isEqualTo(dateOrdered);
 	}
 
@@ -497,7 +497,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			final List<JsonOLCand> olCands = response.getResult();
 			assertThat(olCands).hasSize(1);
 
-			final JsonOLCand olCand = olCands.get(0);
+			final JsonOLCand olCand = olCands.getFirst();
 			return olCand;
 		}
 	}
@@ -613,7 +613,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final List<JsonOLCand> olCands = response.getResult();
 		assertThat(olCands).hasSize(1);
 
-		final JsonOLCand olCand = olCands.get(0);
+		final JsonOLCand olCand = olCands.getFirst();
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 		assertThat(olCand.getPricingSystemId()).isEqualTo(pricingSystemId.getRepoId());
@@ -698,7 +698,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final List<JsonOLCand> olCands = response.getResult();
 		assertThat(olCands).hasSize(1);
 
-		final JsonOLCand olCand = olCands.get(0);
+		final JsonOLCand olCand = olCands.getFirst();
 
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
@@ -796,7 +796,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final List<JsonOLCand> olCands = response.getResult();
 		assertThat(olCands).hasSize(1);
 
-		final JsonOLCand olCand = olCands.get(0);
+		final JsonOLCand olCand = olCands.getFirst();
 
 		final JsonMetasfreshId bpartnerMetasfreshId = JsonMetasfreshId.of(olCand.getBpartner().getBpartner().getMetasfreshId().getValue());
 		assertThat(olCand.getBillBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
@@ -904,7 +904,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		final List<JsonOLCand> olCands = response.getResult();
 		assertThat(olCands).hasSize(1);
-		final JsonOLCand olCand = olCands.get(0);
+		final JsonOLCand olCand = olCands.getFirst();
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
 		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
@@ -1028,7 +1028,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		// then
 		final List<JsonOLCand> olCands = response.getResult();
 		assertThat(olCands).hasSize(1);
-		final JsonOLCand olCand = olCands.get(0);
+		final JsonOLCand olCand = olCands.getFirst();
 		assertThat(olCand.getBillBPartner().getBpartner().getChangeInfo().getCreatedMillis()).isEqualTo(FIXED_TIME.toInstant().toEpochMilli());
 		assertThat(olCand.getBillBPartner().getBpartner().getChangeInfo().getLastUpdatedMillis()).isEqualTo(FIXED_TIME.toInstant().toEpochMilli());
 
@@ -1162,7 +1162,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	{
 		assertThat(result.getBody().getResult()).hasSize(1);
 
-		final JsonOLCand jsonOLCand = result.getBody().getResult().get(0);
+		final JsonOLCand jsonOLCand = result.getBody().getResult().getFirst();
 
 		//bpartner's location
 		assertThat(jsonOLCand.getBpartner().getLocation())

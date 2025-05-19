@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -211,7 +212,7 @@ public class MutableQtyAndQualityTest
 	{
 		final BigDecimal min = BigDecimal.ZERO;
 		final BigDecimal max = BigDecimal.valueOf(maxValue);
-		final BigDecimal randomBigDecimal = min.add(new BigDecimal(Math.random()).multiply(max.subtract(min)));
+		final BigDecimal randomBigDecimal = min.add(new BigDecimal(ThreadLocalRandom.current().nextDouble()).multiply(max.subtract(min)));
 		return randomBigDecimal.setScale(precision, RoundingMode.HALF_DOWN);
 	}
 }

@@ -58,9 +58,8 @@ public class RPadQueryFilterModifier implements IQueryFilterModifier
 	public String getValueSql(final Object value, final List<Object> params)
 	{
 		final String valueSql;
-		if (value instanceof ModelColumnNameValue<?>)
+		if (value instanceof ModelColumnNameValue<?> modelValue)
 		{
-			final ModelColumnNameValue<?> modelValue = (ModelColumnNameValue<?>)value;
 			valueSql = modelValue.getColumnName();
 		}
 		else

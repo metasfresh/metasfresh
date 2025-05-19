@@ -49,9 +49,9 @@ public class MaterialEventConverter
 	{
 		final Object materialEventObj = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
 
-		if (materialEventObj instanceof MaterialEvent)
+		if (materialEventObj instanceof MaterialEvent event)
 		{
-			return (MaterialEvent)materialEventObj;
+			return event;
 		}
 
 		if (materialEventObj instanceof String)

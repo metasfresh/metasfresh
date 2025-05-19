@@ -35,6 +35,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -275,7 +276,7 @@ public class MInOutLine extends X_M_InOutLine
 			throw new IllegalArgumentException("M_Locator_ID is mandatory.");
 		}
 		// set to 0 explicitly to reset
-		set_Value(COLUMNNAME_M_Locator_ID, new Integer(M_Locator_ID));
+		set_Value(COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
 	}	// setM_Locator_ID
 
 	/**
@@ -332,7 +333,7 @@ public class MInOutLine extends X_M_InOutLine
 		if (QtyEntered != null && getC_UOM_ID() != 0)
 		{
 			int precision = MUOM.getPrecision(getCtx(), getC_UOM_ID());
-			QtyEntered = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			QtyEntered = QtyEntered.setScale(precision, RoundingMode.HALF_UP);
 		}
 		super.setQtyEntered(QtyEntered);
 	}	// setQtyEntered
@@ -349,7 +350,7 @@ public class MInOutLine extends X_M_InOutLine
 		if (MovementQty != null && product != null)
 		{
 			int precision = product.getUOMPrecision();
-			MovementQty = MovementQty.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			MovementQty = MovementQty.setScale(precision, RoundingMode.HALF_UP);
 		}
 		super.setMovementQty(MovementQty);
 	}	// setMovementQty

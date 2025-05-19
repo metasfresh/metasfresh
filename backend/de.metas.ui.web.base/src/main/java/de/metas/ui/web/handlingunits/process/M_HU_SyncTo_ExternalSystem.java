@@ -56,7 +56,7 @@ public abstract class M_HU_SyncTo_ExternalSystem extends ViewBasedProcessTemplat
 					.collect(ImmutableList.toImmutableList());
 
 			return activeConfigs.size() == 1
-					? activeConfigs.get(0).getChildConfig().getId().getRepoId()
+					? activeConfigs.getFirst().getChildConfig().getId().getRepoId()
 					: IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
 

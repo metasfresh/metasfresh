@@ -29,6 +29,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serial;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import org.slf4j.Logger;
@@ -58,6 +59,7 @@ public class MiniTable2 extends MiniTable
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -8891696378896964926L;
 
 	public static final String PROPERTY_SelectedId = "SelectedId";
@@ -122,9 +124,8 @@ public class MiniTable2 extends MiniTable
 		if (p instanceof JViewport)
 		{
 			Container gp = p.getParent();
-			if (gp instanceof JScrollPane)
+			if (gp instanceof JScrollPane scrollPane)
 			{
-				JScrollPane scrollPane = (JScrollPane)gp;
 				scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(SCROLL_Size, 0));
 				scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, SCROLL_Size));
 			}

@@ -37,6 +37,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.Serial;
 import java.io.StringWriter;
 
 /**
@@ -48,6 +49,7 @@ public class RichTextEditor extends CPanel
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 5543325281948291601L;
 
 	// /** Logger */
@@ -164,6 +166,7 @@ public class RichTextEditor extends CPanel
 		// Toolbar Button: Preview:
 		addToolbarButton("PrintPreview16", new AbstractAction()
 		{
+			@Serial
 			private static final long serialVersionUID = 4942007238006608191L;
 
 			@Override
@@ -176,6 +179,7 @@ public class RichTextEditor extends CPanel
 		// Toolbar Button: Print:
 		butPrint = addToolbarButton("Print16", new AbstractAction()
 		{
+			@Serial
 			private static final long serialVersionUID = 2571639214828243909L;
 
 			@Override
@@ -313,9 +317,9 @@ public class RichTextEditor extends CPanel
 		Container e = getParent();
 		while (e != null)
 		{
-			if (e instanceof Dialog)
+			if (e instanceof Dialog dialog)
 			{
-				parent = (Dialog)e;
+				parent = dialog;
 				break;
 			}
 			e = e.getParent();

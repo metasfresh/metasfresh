@@ -499,7 +499,7 @@ public abstract class FieldAutoCompleter implements MouseListener
 		// return false to not show any popup
 		userObject = getUserOject();
 		if (!truncated && list.size() == 1 && userObject != null
-				&& list.get(0).equals(userObject))
+				&& list.getFirst().equals(userObject))
 		{
 			log.trace("nothing to do 1");
 			return false;
@@ -515,9 +515,9 @@ public abstract class FieldAutoCompleter implements MouseListener
 		// }
 
 		// if first list item matched then select it
-		if (isMatching(list.get(0), search))
+		if (isMatching(list.getFirst(), search))
 		{
-			setUserObject(list.get(0));
+			setUserObject(list.getFirst());
 			return true;
 		}
 

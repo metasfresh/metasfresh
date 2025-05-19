@@ -610,9 +610,8 @@ public class PickingJobPickCommand
 		final IHUQRCode pickFromHUQRCode = Optional.ofNullable(this.pickFromHUQRCode)
 				.orElseThrow(() -> new AdempiereException(NO_QR_CODE_ERROR_MSG));
 
-		if (pickFromHUQRCode instanceof HUQRCode)
+		if (pickFromHUQRCode instanceof HUQRCode huQRCode)
 		{
-			final HUQRCode huQRCode = (HUQRCode)pickFromHUQRCode;
 			final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
 			return HUInfo.ofHuIdAndQRCode(huId, huQRCode);
 		}
@@ -1028,17 +1027,17 @@ public class PickingJobPickCommand
 
 	private void validateQRCode(@Nullable final IHUQRCode pickFromHUQRCode, @NonNull final ProductId productId, @Nullable final BigDecimal catchWeightBD)
 	{
-		if (pickFromHUQRCode instanceof LMQRCode)
+		if (pickFromHUQRCode instanceof LMQRCode code2)
 		{
-			validateQRCodeForLMQRCode((LMQRCode)pickFromHUQRCode, catchWeightBD);
+			validateQRCodeForLMQRCode(code2, catchWeightBD);
 		}
-		else if (pickFromHUQRCode instanceof GS1HUQRCode)
+		else if (pickFromHUQRCode instanceof GS1HUQRCode code1)
 		{
-			validateQRCodeForGS1((GS1HUQRCode)pickFromHUQRCode, productId, catchWeightBD);
+			validateQRCodeForGS1(code1, productId, catchWeightBD);
 		}
-		else if (pickFromHUQRCode instanceof EAN13HUQRCode)
+		else if (pickFromHUQRCode instanceof EAN13HUQRCode code)
 		{
-			final EAN13 ean13 = ((EAN13HUQRCode)pickFromHUQRCode).unbox();
+			final EAN13 ean13 = code.unbox();
 			validateQRCodeForEAN13(ean13, productId, catchWeightBD);
 		}
 	}

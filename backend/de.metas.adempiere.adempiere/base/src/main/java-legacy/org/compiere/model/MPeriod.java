@@ -93,7 +93,7 @@ public class MPeriod extends X_C_Period
 			return null;
 		}
 		//
-		Integer key = new Integer(C_Period_ID);
+		Integer key = Integer.valueOf(C_Period_ID);
 		MPeriod retValue = s_cache.get (key);
 		if (retValue != null)
 		{
@@ -206,7 +206,7 @@ public class MPeriod extends X_C_Period
 			while (rs.next())
 			{
 				MPeriod period = new MPeriod(ctx, rs, trxName);
-				Integer key = new Integer(period.getC_Period_ID());
+				Integer key = Integer.valueOf(period.getC_Period_ID());
 				s_cache.put (key, period);
 				if (calendarBL.isStandardPeriod(period))
 				{

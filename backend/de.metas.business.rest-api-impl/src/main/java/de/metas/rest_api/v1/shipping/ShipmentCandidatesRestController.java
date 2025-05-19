@@ -61,8 +61,9 @@ public class ShipmentCandidatesRestController
 
 	@GetMapping("shipmentCandidates")
 	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates(
-			@ApiParam("Max number orders per request for which shipmentSchedules shall be returned.\n"
-					+ "ShipmentSchedules without an order count as one.") //
+			@ApiParam("""
+					Max number orders per request for which shipmentSchedules shall be returned.
+					ShipmentSchedules without an order count as one.""") //
 			@RequestParam(name = "limit", required = false, defaultValue = "10") //
 			@Nullable final Integer limit)
 	{

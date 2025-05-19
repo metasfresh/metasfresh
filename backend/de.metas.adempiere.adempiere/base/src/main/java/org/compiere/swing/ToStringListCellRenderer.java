@@ -22,12 +22,9 @@ package org.compiere.swing;
  * #L%
  */
 
-
-import java.awt.Component;
-
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
+import javax.swing.*;
+import java.awt.*;
+import java.io.Serial;
 
 /**
  * Convenient class to implement a {@link ListCellRenderer} which is rendering the value to a string label.
@@ -43,6 +40,7 @@ public class ToStringListCellRenderer<T> extends DefaultListCellRenderer
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -3068158390813947550L;
 
 	@Override

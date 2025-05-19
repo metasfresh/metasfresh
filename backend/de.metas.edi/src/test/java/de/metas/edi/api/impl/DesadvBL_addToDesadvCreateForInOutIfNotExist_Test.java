@@ -244,7 +244,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		assertThat(ssccItemRecords)
 				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
-						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10, new BigDecimal("2.500"), new BigDecimal("25.000")),
+						tuple(ssccRecords.getFirst().getEDI_Desadv_Pack_ID(), 10, new BigDecimal("2.500"), new BigDecimal("25.000")),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7, new BigDecimal("2.500"), new BigDecimal("17.000"))//
 				);
 	}
@@ -284,7 +284,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		assertThat(ssccItemRecords)
 				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
-						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10/* TUs */, new BigDecimal("2.500")/* CUsperTU */, new BigDecimal("25.000")/* CUsperLU */),
+						tuple(ssccRecords.getFirst().getEDI_Desadv_Pack_ID(), 10/* TUs */, new BigDecimal("2.500")/* CUsperTU */, new BigDecimal("25.000")/* CUsperLU */),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.000")/* CUperLU - rounded to ceiling */) //
 				);
 	}
@@ -314,7 +314,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		assertThat(ssccItemRecords)
 				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
-						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10, new BigDecimal("5"), new BigDecimal("50")),
+						tuple(ssccRecords.getFirst().getEDI_Desadv_Pack_ID(), 10, new BigDecimal("5"), new BigDecimal("50")),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7, new BigDecimal("5"), new BigDecimal("34")) //
 				);
 	}
@@ -350,7 +350,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		assertThat(ssccItemRecords)
 				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
-						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 
+						tuple(ssccRecords.getFirst().getEDI_Desadv_Pack_ID(), 
 								TimeUtil.parseTimestamp("2019-12-02"), 
 								10, 
 								new BigDecimal("2.500"), 
@@ -387,7 +387,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		assertThat(ssccItemRecords)
 				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
-						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("5"), new BigDecimal("49")),
+						tuple(ssccRecords.getFirst().getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("5"), new BigDecimal("49")),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("5"), new BigDecimal("35")) //
 				);
 	}

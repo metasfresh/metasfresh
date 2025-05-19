@@ -2,6 +2,8 @@ package de.metas.rfq.exceptions;
 
 import de.metas.rfq.model.I_C_RfQ;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.rfq
@@ -26,6 +28,7 @@ import de.metas.rfq.model.I_C_RfQ;
 
 public class NoRfQLinesFoundException extends RfQException
 {
+	@Serial
 	private static final long serialVersionUID = 6281273000475702895L;
 
 	public NoRfQLinesFoundException(final I_C_RfQ rfq)

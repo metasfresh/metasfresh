@@ -131,7 +131,7 @@ public final class WorkflowLaunchersFacetId
 				throw new AdempiereException("Cannot get Quantity from " + this);
 			}
 			
-			return ImmutablePair.of(new BigDecimal(parts.get(0)), Integer.parseInt(parts.get(1)));
+			return ImmutablePair.of(new BigDecimal(parts.getFirst()), Integer.parseInt(parts.get(1)));
 		}
 		catch (AdempiereException ex)
 		{

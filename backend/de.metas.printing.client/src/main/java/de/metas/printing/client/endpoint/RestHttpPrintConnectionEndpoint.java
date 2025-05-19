@@ -239,7 +239,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		}
 		catch (final Exception e)
 		{
-			throw e instanceof PrintConnectionEndpointException ? (PrintConnectionEndpointException)e : new PrintConnectionEndpointException("Cannot POST to " + url, e);
+			throw e instanceof PrintConnectionEndpointException pcee ? pcee : new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 		finally
 		{
@@ -299,7 +299,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		}
 		catch (final Exception e)
 		{
-			throw e instanceof PrintConnectionEndpointException ? (PrintConnectionEndpointException)e : new PrintConnectionEndpointException("Cannot POST to " + url, e);
+			throw e instanceof PrintConnectionEndpointException pcee ? pcee : new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 	}
 
@@ -336,7 +336,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		}
 		catch (final Exception e)
 		{
-			throw e instanceof PrintConnectionEndpointException ? (PrintConnectionEndpointException)e : new PrintConnectionEndpointException("Cannot POST to " + url, e);
+			throw e instanceof PrintConnectionEndpointException pcee ? pcee : new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 		if (PrintJobInstructionsStatusEnum.Gedruckt.equals(response.getStatus()))
 		{
@@ -525,7 +525,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		catch (final Exception e)
 		{
 			log.info("Exception " + e);
-			throw e instanceof LoginFailedPrintConnectionEndpointException ? (LoginFailedPrintConnectionEndpointException)e
+			throw e instanceof LoginFailedPrintConnectionEndpointException lfpcee ? lfpcee
 					: new LoginFailedPrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 		finally

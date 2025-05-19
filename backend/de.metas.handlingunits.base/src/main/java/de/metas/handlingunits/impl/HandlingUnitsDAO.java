@@ -496,7 +496,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
 		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType, bpartnerId, null);
-		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+		return !piItems.isEmpty() ? Optional.of(piItems.getFirst()) : Optional.empty();
 	}
 
 	@Override
@@ -506,7 +506,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType != null ? itemType.getCode() : null, bpartnerId, null);
-		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+		return !piItems.isEmpty() ? Optional.of(piItems.getFirst()) : Optional.empty();
 	}
 
 	@Override
@@ -517,7 +517,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
 		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId, includedPIId);
-		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+		return !piItems.isEmpty() ? Optional.of(piItems.getFirst()) : Optional.empty();
 	}
 
 	@Override
@@ -547,7 +547,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 		else if (materialItems.size() == 1)
 		{
-			return materialItems.get(0);
+			return materialItems.getFirst();
 		}
 		else
 		{
@@ -1135,7 +1135,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		// => perfect, return it
 		else if (parentPIItems.size() == 1)
 		{
-			return parentPIItems.get(0);
+			return parentPIItems.getFirst();
 		}
 		//
 		// Case: more than one Parent PI Items found
@@ -1151,7 +1151,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 							.thenComparing(I_M_HU_PI_Item::getM_HU_PI_Item_ID)) // by ID just to have a deterministic order
 					.collect(Collectors.toList());
 
-			return defaultLUPIItems.get(0);
+			return defaultLUPIItems.getFirst();
 		}
 	}
 
@@ -1211,7 +1211,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 
 		// used for deciding the org and context
-		final I_M_HU firstHU = hus.get(0);
+		final I_M_HU firstHU = hus.getFirst();
 
 		final OrgId orgId = OrgId.ofRepoId(firstHU.getAD_Org_ID());
 

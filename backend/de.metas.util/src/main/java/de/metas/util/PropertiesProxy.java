@@ -23,6 +23,7 @@ package de.metas.util;
  */
 
 
+import java.io.Serial;
 import java.util.Properties;
 
 /**
@@ -36,6 +37,7 @@ public class PropertiesProxy extends AbstractPropertiesProxy
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -6024673003929192592L;
 	private Properties delegate = null;
 

@@ -61,7 +61,7 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
 
 		final Optional<VendorProductInfo> defaultVendorProductInfo = vendorProductInfoService.getDefaultVendorProductInfo(productId, orgId);
-		if (!defaultVendorProductInfo.isPresent())
+		if (defaultVendorProductInfo.isEmpty())
 		{
 			Loggables.addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
 			return ImmutableList.of();

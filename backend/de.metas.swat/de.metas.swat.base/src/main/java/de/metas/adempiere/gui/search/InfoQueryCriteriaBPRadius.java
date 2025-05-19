@@ -117,8 +117,8 @@ public class InfoQueryCriteriaBPRadius extends InfoQueryCriteriaBPRadiusAbstract
 		if (fieldRadius == null)
 			return 0;
 		Object o = fieldRadius.getValue();
-		if (o instanceof Number)
-			return ((Number)o).intValue();
+		if (o instanceof Number number)
+			return number.intValue();
 		return 0;
 	}
 

@@ -430,8 +430,8 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 		final PickingJobLineId pickingLineId = PickingJobLineId.ofString(json.getPickingLineId());
 		final PickingJobStepId pickingStepId = PickingJobStepId.ofNullableString(json.getPickingStepId());
-		final PickingJobStepPickFromKey pickFromKey = pickingStepId != null && (qrCode instanceof HUQRCode)
-				? pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode((HUQRCode)qrCode).getPickFromKey()
+		final PickingJobStepPickFromKey pickFromKey = pickingStepId != null && (qrCode instanceof HUQRCode huqrc)
+				? pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(huqrc).getPickFromKey()
 				: null;
 
 		return PickingJobStepEvent.builder()

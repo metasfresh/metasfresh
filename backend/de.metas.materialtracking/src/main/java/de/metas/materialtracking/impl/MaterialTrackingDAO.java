@@ -141,7 +141,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 			return null;
 		}
 		Check.assume(refs.size() <= 1, "At most one element M_Material_Tracking_Ref was expected for the given model, but we got more; model={}; refs={}", model, refs);
-		return refs.get(0);
+		return refs.getFirst();
 	}
 
 	@Override
@@ -210,7 +210,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 			return null;
 		}
 		Check.assume(refs.size() <= 1, "At most one element M_Material_Tracking_Ref was expected for the given model, but we got more; model={}; refs={}", model, refs);
-		return refs.get(0);
+		return refs.getFirst();
 	}
 
 	@Override
@@ -296,7 +296,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 		}
 		else if (references.size() == 1)
 		{
-			return references.get(0);
+			return references.getFirst();
 		}
 		else
 		{

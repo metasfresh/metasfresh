@@ -249,7 +249,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		final HashMultimap<HuId, HUQRCode> result = HashMultimap.create();
 		if (group.size() == 1)
 		{
-			final HUItemToGroup singleItem = group.get(0);
+			final HUItemToGroup singleItem = group.getFirst();
 			final List<HUQRCode> qrCodes = generateQRCodeForItem(singleItem, existingQRCodesByHuId.get(singleItem.getHuId()));
 			result.putAll(singleItem.getHuId(), qrCodes);
 		}
@@ -280,7 +280,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				final HUQRCode groupHUQrCode = sharedHUQrCode != null
 						? sharedHUQrCode
 						// pick the first one in the group as they are all the same
-						: generateQRCodeForItem(husToGenerateQRFor.get(0), ImmutableSet.of()).get(0);
+						: generateQRCodeForItem(husToGenerateQRFor.getFirst(), ImmutableSet.of()).getFirst();
 
 				huQRCodesRepository.assign(groupHUQrCode, getHuIds(husToGenerateQRFor));
 

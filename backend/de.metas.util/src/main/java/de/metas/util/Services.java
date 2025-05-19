@@ -390,7 +390,7 @@ public class Services
 
 	private static final void loadService(final Class<? extends IService> serviceInterfaceClass, final Object serviceImpl)
 	{
-		if (serviceImpl instanceof IMBeanAwareService)
+		if (serviceImpl instanceof IMBeanAwareService mbeanAwareService)
 		{
 			if (IMultitonService.class.isAssignableFrom(serviceInterfaceClass))
 			{
@@ -405,7 +405,6 @@ public class Services
 			}
 			else
 			{
-				final IMBeanAwareService mbeanAwareService = (IMBeanAwareService)serviceImpl;
 				registerMBean(serviceInterfaceClass, mbeanAwareService);
 			}
 		}
@@ -413,9 +412,8 @@ public class Services
 
 	private static final void unloadService(final Class<? extends IService> serviceInterfaceClass, final Object serviceImpl)
 	{
-		if (serviceImpl instanceof IMBeanAwareService)
+		if (serviceImpl instanceof IMBeanAwareService mbeanAwareService)
 		{
-			final IMBeanAwareService mbeanAwareService = (IMBeanAwareService)serviceImpl;
 			unregisterMBean(serviceInterfaceClass, mbeanAwareService);
 		}
 	}

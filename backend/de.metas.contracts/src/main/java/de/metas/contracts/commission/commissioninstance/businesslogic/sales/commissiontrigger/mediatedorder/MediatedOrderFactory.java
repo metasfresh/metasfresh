@@ -114,7 +114,7 @@
 		 final OrgId orgId = OrgId.ofRepoId(mediatedOrder.getAD_Org_ID());
 
 		 final Optional<BPartnerId> orgBPartnerIdOpt = bPartnerOrgBL.retrieveLinkedBPartnerId(orgId);
-		 if (!orgBPartnerIdOpt.isPresent())
+		 if (orgBPartnerIdOpt.isEmpty())
 		 {
 			 Loggables.withLogger(logger, Level.DEBUG).addLog("C_Order.AD_Org_ID has no linked BPartner! C_OrderId: {}, OrgId: {}", mediatedOrder.getC_Order_ID(), mediatedOrder.getAD_Org_ID());
 			 return Optional.empty();
@@ -122,8 +122,7 @@
 
 		 final ImmutableList<MediatedOrderLine> mediatedOrderLines = orderLines.stream()
 				 .map(orderLine -> toMediatedOrderLine(orderLine, mediatedOrder.isTaxIncluded()))
-				 .filter(Optional::isPresent)
-				 .map(Optional::get)
+				 .flatMap(Optional::stream)
 				 .collect(ImmutableList.toImmutableList());
 
 		 if (mediatedOrderLines.isEmpty())

@@ -136,7 +136,7 @@ public class HUQueryBuilderTest
 		// invoke the method under test
 		final IQueryFilter<I_M_HU> huFilters = huQueryBuilder.createQueryFilter();
 
-		assertThat(huFilters.accept(hus.get(0))).isTrue();
+		assertThat(huFilters.accept(hus.getFirst())).isTrue();
 		assertThat(huFilters.accept(hus.get(1))).isTrue();
 		assertThat(huFilters.accept(hus.get(2))).isFalse();
 		assertThat(huFilters.accept(hus.get(3))).isFalse();
@@ -158,7 +158,7 @@ public class HUQueryBuilderTest
 	{
 
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(10);
-		createReservationRecord(orderLineId, hus.get(0));
+		createReservationRecord(orderLineId, hus.getFirst());
 
 		final OrderLineId otherOrderLineId = OrderLineId.ofRepoId(20);
 		createReservationRecord(otherOrderLineId, hus.get(1));
@@ -168,7 +168,7 @@ public class HUQueryBuilderTest
 		// invoke the method under test
 		final IQueryFilter<I_M_HU> huFilters = huQueryBuilder.createQueryFilter();
 
-		assertThat(huFilters.accept(hus.get(0))).isTrue(); // because it's reserved for "orderLineId"
+		assertThat(huFilters.accept(hus.getFirst())).isTrue(); // because it's reserved for "orderLineId"
 		assertThat(huFilters.accept(hus.get(1))).isFalse(); // because it's reserved for a different order line
 		assertThat(huFilters.accept(hus.get(2))).isTrue(); // because they are not reserved at all
 		assertThat(huFilters.accept(hus.get(3))).isTrue();

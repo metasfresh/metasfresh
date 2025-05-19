@@ -75,13 +75,13 @@ import de.metas.util.Services;
 		{
 			return -1;
 		}
-		else if (asiObj instanceof KeyNamePair)
+		else if (asiObj instanceof KeyNamePair pair)
 		{
-			return ((KeyNamePair)asiObj).getKey();
+			return pair.getKey();
 		}
-		else if (asiObj instanceof Number)
+		else if (asiObj instanceof Number number)
 		{
-			return ((Number)asiObj).intValue();
+			return number.intValue();
 		}
 		else
 		{

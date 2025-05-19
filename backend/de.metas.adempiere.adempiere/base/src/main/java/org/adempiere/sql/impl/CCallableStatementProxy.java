@@ -22,6 +22,8 @@ package org.adempiere.sql.impl;
  * #L%
  */
 
+import org.compiere.util.CCallableStatement;
+import org.compiere.util.CStatementVO;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -42,9 +44,6 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
-
-import org.compiere.util.CCallableStatement;
-import org.compiere.util.CStatementVO;
 
 /* package */final class CCallableStatementProxy extends CPreparedStatementProxy implements CCallableStatement
 {
@@ -747,5 +746,31 @@ import org.compiere.util.CStatementVO;
 	public <T> T getObject(String parameterName, Class<T> type) throws SQLException
 	{
 		return getCCallableStatementImpl().getObject(parameterName, type);
+	}
+
+	public boolean isWrapperFor(Class<?> iface) throws java.sql.SQLException {
+		// TODO Auto-generated method stub
+		return iface != null && iface.isAssignableFrom(this.getClass());
+	}
+
+	public <T> T unwrap(Class<T> iface) throws java.sql.SQLException {
+		// TODO Auto-generated method stub
+		try {
+			if (iface != null && iface.isAssignableFrom(this.getClass())) {
+				return (T)this;
+			}
+			throw new java.sql.SQLException("Auto-generated unwrap failed; Revisit implementation");
+		} catch (Exception e) {
+			throw new java.sql.SQLException(e);
+		}
+	}
+
+	public void closeOnCompletion() {
+		// TODO Auto-generated method stub
+	}
+
+	public boolean isCloseOnCompletion() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

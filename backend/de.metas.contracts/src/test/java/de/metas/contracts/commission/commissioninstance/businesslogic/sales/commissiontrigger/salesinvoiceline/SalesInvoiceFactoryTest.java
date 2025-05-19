@@ -113,7 +113,7 @@ class SalesInvoiceFactoryTest
 		assertThat(result).isPresent();
 		assertThat(result.get().getInvoiceLines()).hasSize(1);
 
-		final SalesInvoiceLine salesInvoiceLine = result.get().getInvoiceLines().get(0);
+		final SalesInvoiceLine salesInvoiceLine = result.get().getInvoiceLines().getFirst();
 		assertThat(salesInvoiceLine.getInvoicedCommissionPoints().toBigDecimal()).isEqualByComparingTo("-100"); // LineNetAmt * 1 because it's a credit memo
 
 		expect.serializer("orderedJson").toMatchSnapshot(result.get());

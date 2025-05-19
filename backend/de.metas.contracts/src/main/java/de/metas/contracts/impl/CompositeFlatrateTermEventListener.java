@@ -43,9 +43,8 @@ final class CompositeFlatrateTermEventListener implements IFlatrateTermEventList
 			return handler;
 		}
 
-		if (handler instanceof CompositeFlatrateTermEventListener)
+		if (handler instanceof CompositeFlatrateTermEventListener handlerComposite)
 		{
-			final CompositeFlatrateTermEventListener handlerComposite = (CompositeFlatrateTermEventListener)handler;
 			handlerComposite.addHandler(handlerToAdd);
 			return handlerComposite;
 		}

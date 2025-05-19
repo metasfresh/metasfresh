@@ -71,7 +71,7 @@ public class HUTraceRepository
 					"Expected only one M_HU_Trace record for the given query, but found {}; query={}, M_HU_Trace records={}",
 					existingDbRecords.size(), query, existingDbRecords);
 
-			HUTraceEvent existingHuTraceEvent = existingDbRecords.get(0);
+			HUTraceEvent existingHuTraceEvent = existingDbRecords.getFirst();
 			logger.debug("Found exiting HUTraceEvent record with ID={}; nothing to do; query={}", existingHuTraceEvent.getHuTraceEventId().getAsInt(), query);
 		}
 

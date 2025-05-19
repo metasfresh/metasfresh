@@ -24,6 +24,7 @@ package de.metas.contracts.model;
 
 
 import java.io.File;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.LocalDate;
@@ -45,6 +46,7 @@ public class MCFlatrateDataEntry extends X_C_Flatrate_DataEntry implements IDocu
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 5991467188908320233L;
 
 	/** Process Message */

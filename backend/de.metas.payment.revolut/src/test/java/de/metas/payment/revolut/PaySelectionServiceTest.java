@@ -82,7 +82,7 @@ public class PaySelectionServiceTest
 		//then
 		assertThat(mappedData.size()).isEqualTo(1);
 
-		final RevolutPaymentExport export = mappedData.get(0);
+		final RevolutPaymentExport export = mappedData.getFirst();
 
 		assertThat(export.getName()).isEqualTo(bPartner.getName());
 		assertThat(export.getRecipientType()).isEqualTo(RecipientType.COMPANY);

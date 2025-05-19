@@ -196,7 +196,7 @@ public class DimensionSpec
 
 		if (!valueForGroup.isEmpty())
 		{
-			return valueForGroup.get(0);
+			return valueForGroup.getFirst();
 		}
 
 		// fallback, in case the groupname was not found

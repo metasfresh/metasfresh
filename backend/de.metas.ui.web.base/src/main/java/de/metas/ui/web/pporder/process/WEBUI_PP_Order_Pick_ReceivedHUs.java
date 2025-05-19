@@ -220,7 +220,7 @@ public class WEBUI_PP_Order_Pick_ReceivedHUs extends WEBUI_PP_Order_Template imp
 
 	private WEBUI_M_HU_Pick_ParametersFiller createNewDefaultParametersFiller()
 	{
-		final HURow row = WEBUI_PP_Order_ProcessHelper.getHURowsFromIncludedRows(getView()).get(0);
+		final HURow row = WEBUI_PP_Order_ProcessHelper.getHURowsFromIncludedRows(getView()).getFirst();
 		return WEBUI_M_HU_Pick_ParametersFiller.defaultFillerBuilder()
 				.huId(row.getHuId())
 				.salesOrderLineId(getSalesOrderLineId())

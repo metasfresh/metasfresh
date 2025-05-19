@@ -104,8 +104,9 @@ public class ExternalSystemRestController
 		return getResponse(externalSystemService.invokeExternalSystem(invokeExternalSystemProcessRequest));
 	}
 
-	@ApiOperation("Enables an external system to create an `AD_PInstance_Log`." 
-			+ "\nThe `AD_PInstance_ID` is the one the external system was invoked with.")
+	@ApiOperation("""
+			Enables an external system to create an `AD_PInstance_Log`.
+			The `AD_PInstance_ID` is the one the external system was invoked with.""")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully stored external AD_PInstance logs"),
 			@ApiResponse(code = 401, message = "You are not authorized to store AD_PInstance logs"),
@@ -122,9 +123,10 @@ public class ExternalSystemRestController
 		return ResponseEntity.ok().build();
 	}
 
-	@ApiOperation("Create an AD_Issue. "
-			+ "\nThe `AD_PInstance_ID` is the one the external system was invoked with."
-			+ "\nNote: it's not necessary that the process in question was started by the `invoke` endpoint.")
+	@ApiOperation("""
+			Create an AD_Issue.\s
+			The `AD_PInstance_ID` is the one the external system was invoked with.
+			Note: it's not necessary that the process in question was started by the `invoke` endpoint.""")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully created issue"),
 			@ApiResponse(code = 401, message = "You are not authorized to create new issue"),

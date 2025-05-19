@@ -42,7 +42,7 @@ public class QtyAndUOMString
 
 		try
 		{
-			return of(new BigDecimal(parts.get(0)), X12DE355.ofCode(parts.get(1)));
+			return of(new BigDecimal(parts.getFirst()), X12DE355.ofCode(parts.get(1)));
 		}
 		catch (Exception ex)
 		{

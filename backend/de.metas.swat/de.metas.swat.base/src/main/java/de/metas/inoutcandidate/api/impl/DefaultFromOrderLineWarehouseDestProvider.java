@@ -128,7 +128,7 @@ import java.util.Optional;
 		}
 
 		// the lines are ordered by PriorityNo, M_Shipper_ID
-		final DistributionNetworkLine firstFoundDistributionNetworkLine = distributionNetworkLines.get(0);
+		final DistributionNetworkLine firstFoundDistributionNetworkLine = distributionNetworkLines.getFirst();
 		return firstFoundDistributionNetworkLine.getTargetWarehouseId();
 	}
 

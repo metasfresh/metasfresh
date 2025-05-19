@@ -142,10 +142,10 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 				break;
 			default:
 				final List<I_C_Flatrate_Matching> matchings = flatrateDAO.retrieveFlatrateMatchings(conditions);
-				if (matchings.size() == 1 && matchings.get(0).getM_Product_ID() > 0)
+				if (matchings.size() == 1 && matchings.getFirst().getM_Product_ID() > 0)
 				{
 					// this is the case for quality-based contracts
-					final I_M_Product productRecord = productDAO.getById(matchings.get(0).getM_Product_ID());
+					final I_M_Product productRecord = productDAO.getById(matchings.getFirst().getM_Product_ID());
 					addProduct(productRecord);
 				}
 		}

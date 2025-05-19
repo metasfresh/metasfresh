@@ -133,7 +133,7 @@ public class PrintPackage
 	@Override
 	public String toString()
 	{
-		return String.format("PrintPackage [transactionId=%s, printPackageId=%s, pageCount=%s, copies=%s, format=%s, printPackageInfos=%s, printJobInstructionsID=%s]", transactionId, printPackageId,
+		return "PrintPackage [transactionId=%s, printPackageId=%s, pageCount=%s, copies=%s, format=%s, printPackageInfos=%s, printJobInstructionsID=%s]".formatted(transactionId, printPackageId,
 				pageCount, copies, format, printPackageInfos, printJobInstructionsID);
 	}
 

@@ -1577,7 +1577,7 @@ public class FlatrateBL implements IFlatrateBL
 						MSG_ORG_WAREHOUSE_MISSING,
 						msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), InterfaceWrapperHelper.loadOutOfTrx(term.getAD_Org_ID(), I_AD_Org.class));
 			}
-			warehouseId = warehousesForOrg.get(0).getM_Warehouse_ID();
+			warehouseId = warehousesForOrg.getFirst().getM_Warehouse_ID();
 		}
 
 		return WarehouseId.ofRepoIdOrNull(warehouseId);

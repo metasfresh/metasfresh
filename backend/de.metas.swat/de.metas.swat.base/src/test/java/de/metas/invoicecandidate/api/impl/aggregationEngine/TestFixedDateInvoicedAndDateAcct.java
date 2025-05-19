@@ -88,7 +88,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 	}
@@ -111,7 +111,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
 	}
@@ -140,7 +140,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 	}

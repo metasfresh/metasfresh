@@ -125,7 +125,7 @@ public class ForecastCreatedHandlerTest
 		final MaterialDescriptor materialDescriptorOfFirstAndOnlyForecastLine = forecastCreatedEvent
 				.getForecast()
 				.getForecastLines()
-				.get(0)
+				.getFirst()
 				.getMaterialDescriptor();
 
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
@@ -139,7 +139,7 @@ public class ForecastCreatedHandlerTest
 
 		assertThat(result).hasSize(1);
 
-		final I_MD_Candidate demandCandidate = result.get(0);
+		final I_MD_Candidate demandCandidate = result.getFirst();
 		assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
 		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID.getRepoId()));
@@ -158,7 +158,7 @@ public class ForecastCreatedHandlerTest
 		final MaterialDescriptor materialDescriptorOfFirstAndOnlyForecastLine = forecastCreatedEvent
 				.getForecast()
 				.getForecastLines()
-				.get(0)
+				.getFirst()
 				.getMaterialDescriptor();
 
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
@@ -172,8 +172,8 @@ public class ForecastCreatedHandlerTest
 
 		assertThat(result).hasSize(1);
 
-		assertThat(result.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
-		assertThat(result.get(0).getQty()).isEqualByComparingTo("8");
+		assertThat(result.getFirst().getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
+		assertThat(result.getFirst().getQty()).isEqualByComparingTo("8");
 		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID.getRepoId()));
 
 		assertEventPostedWithQty("5");

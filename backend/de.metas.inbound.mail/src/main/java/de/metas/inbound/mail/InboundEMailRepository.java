@@ -145,7 +145,7 @@ public class InboundEMailRepository
 		{
 			return null;
 		}
-		return RequestId.ofRepoId(requestIds.get(0));
+		return RequestId.ofRepoId(requestIds.getFirst());
 	}
 
 	private static final class InboundEMailAttachmentDataSource implements DataSource

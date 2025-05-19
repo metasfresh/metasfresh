@@ -43,6 +43,7 @@ package org.compiere.model;
  * #L%
  */
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -52,6 +53,7 @@ public class MRoleMenu extends X_U_RoleMenu
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 9022716123964882452L;
 
 	public MRoleMenu(Properties ctx, int U_RoleMenu_ID, String trxName)

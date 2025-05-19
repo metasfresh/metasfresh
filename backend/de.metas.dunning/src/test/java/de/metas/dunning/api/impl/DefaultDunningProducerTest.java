@@ -133,7 +133,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 		final List<I_C_DunningDoc_Line> docLines = dao.retrieveDunningDocLines(dunningDoc);
 		Assert.assertNotNull("No lines found for" + dunningDoc, docLines);
 		Assert.assertEquals("One line expected for " + dunningDoc, 1, docLines.size());
-		final I_C_DunningDoc_Line docLine = docLines.get(0);
+		final I_C_DunningDoc_Line docLine = docLines.getFirst();
 		assertValid(context, docLine, candidate);
 
 		final List<I_C_DunningDoc_Line_Source> docLineSources = dao.retrieveDunningDocLineSources(docLine);

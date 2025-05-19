@@ -1,32 +1,21 @@
 package org.adempiere.plaf;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Image;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Objects;
-
-import javax.swing.JPanel;
-import javax.swing.RootPaneContainer;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 
 /*
  * #%L
@@ -72,9 +61,8 @@ public class MetasfreshGlassPane extends JPanel
 	public static MetasfreshGlassPane install(final RootPaneContainer rootPaneContainer)
 	{
 		final Component glassPaneComp = rootPaneContainer.getGlassPane();
-		if (glassPaneComp instanceof MetasfreshGlassPane)
+		if (glassPaneComp instanceof MetasfreshGlassPane glassPane)
 		{
-			final MetasfreshGlassPane glassPane = (MetasfreshGlassPane)glassPaneComp;
 			return glassPane;
 		}
 		else
@@ -93,9 +81,9 @@ public class MetasfreshGlassPane extends JPanel
 		}
 
 		final Component glassPaneComp = rootPaneContainer.getGlassPane();
-		if (glassPaneComp instanceof MetasfreshGlassPane)
+		if (glassPaneComp instanceof MetasfreshGlassPane pane)
 		{
-			return (MetasfreshGlassPane)glassPaneComp;
+			return pane;
 		}
 		else
 		{

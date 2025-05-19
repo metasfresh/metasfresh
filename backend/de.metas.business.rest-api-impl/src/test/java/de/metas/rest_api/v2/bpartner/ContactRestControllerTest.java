@@ -300,10 +300,10 @@ class ContactRestControllerTest
 		final JsonResponseUpsert resultBody = result.getBody();
 
 		assertThat(resultBody.getResponseItems()).hasSize(1);
-		assertThat(resultBody.getResponseItems().get(0).getIdentifier()).isEqualTo(contactIdentifier);
-		assertThat(resultBody.getResponseItems().get(0).getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
+		assertThat(resultBody.getResponseItems().getFirst().getIdentifier()).isEqualTo(contactIdentifier);
+		assertThat(resultBody.getResponseItems().getFirst().getSyncOutcome()).isEqualTo(SyncOutcome.CREATED);
 
-		final JsonMetasfreshId insertedMetasfreshId = resultBody.getResponseItems().get(0).getMetasfreshId();
+		final JsonMetasfreshId insertedMetasfreshId = resultBody.getResponseItems().getFirst().getMetasfreshId();
 
 		final BPartnerContactId insertedContactId = BPartnerContactId.ofRepoId(C_BPARTNER_ID, insertedMetasfreshId.getValue());
 
@@ -351,9 +351,9 @@ class ContactRestControllerTest
 		final JsonResponseUpsert resultBody = result.getBody();
 
 		assertThat(resultBody.getResponseItems()).hasSize(1);
-		assertThat(resultBody.getResponseItems().get(0).getIdentifier()).isEqualTo(contactIdentifier);
+		assertThat(resultBody.getResponseItems().getFirst().getIdentifier()).isEqualTo(contactIdentifier);
 
-		final JsonMetasfreshId updatedMetasfreshId = resultBody.getResponseItems().get(0).getMetasfreshId();
+		final JsonMetasfreshId updatedMetasfreshId = resultBody.getResponseItems().getFirst().getMetasfreshId();
 
 		final BPartnerContactId updatedContactId = BPartnerContactId.ofRepoId(C_BPARTNER_ID, updatedMetasfreshId.getValue());
 

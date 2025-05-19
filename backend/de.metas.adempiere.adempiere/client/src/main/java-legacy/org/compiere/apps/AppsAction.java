@@ -110,7 +110,7 @@ public final class AppsAction extends AbstractAction
 				if (ch != ' ')
 				{
 					toolTipText = toolTipText.substring(0, pos) + toolTipText.substring(pos + 1);
-					putValue(Action.MNEMONIC_KEY, new Integer(ch.hashCode()));
+					putValue(Action.MNEMONIC_KEY, Integer.valueOf(ch.hashCode()));
 				}
 			}
 		}

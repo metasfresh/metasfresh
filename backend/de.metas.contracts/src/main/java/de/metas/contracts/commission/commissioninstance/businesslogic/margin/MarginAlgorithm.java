@@ -84,7 +84,7 @@ public class MarginAlgorithm implements CommissionAlgorithm
 					.setParameter("request", request);
 		}
 
-		final MarginConfig marginConfig = configs.get(0);
+		final MarginConfig marginConfig = configs.getFirst();
 
 		final CommissionTrigger commissionTrigger = request.getTrigger();
 		final Beneficiary beneficiary = Beneficiary.of(commissionTrigger.getSalesRepId());
@@ -122,7 +122,7 @@ public class MarginAlgorithm implements CommissionAlgorithm
 
 		Check.assume(sharesToChange.size() == 1, "There should be only one margin commission contract on CreateCommissionSharesRequest");
 
-		createAndAddFacts(sharesToChange.get(0), change.getNewCommissionTriggerData());
+		createAndAddFacts(sharesToChange.getFirst(), change.getNewCommissionTriggerData());
 	}
 
 	private void createAndAddFacts(

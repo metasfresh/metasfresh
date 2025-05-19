@@ -101,7 +101,7 @@ public class PurchaseItemRepositoryTest
 		final List<I_C_PurchaseCandidate_Alloc> records = POJOLookupMap.get().getRecords(I_C_PurchaseCandidate_Alloc.class);
 		assertThat(records).hasSize(1);
 
-		final I_C_PurchaseCandidate_Alloc record = records.get(0);
+		final I_C_PurchaseCandidate_Alloc record = records.getFirst();
 		assertThat(record.getC_PurchaseCandidate_ID()).isEqualTo(10);
 		assertThat(record.getAD_Issue_ID()).isLessThanOrEqualTo(0);
 		assertThat(record.getRemotePurchaseOrderId()).isEqualTo("remotePurchaseOrderId");
@@ -129,7 +129,7 @@ public class PurchaseItemRepositoryTest
 		purchaseItemRepository.loadPurchaseItems(newPurchaseCandidate);
 
 		assertThat(newPurchaseCandidate.getPurchaseOrderItems()).hasSize(1);
-		final PurchaseOrderItem retrievedPurchaseOrderItem = newPurchaseCandidate.getPurchaseOrderItems().get(0);
+		final PurchaseOrderItem retrievedPurchaseOrderItem = newPurchaseCandidate.getPurchaseOrderItems().getFirst();
 		assertThat(retrievedPurchaseOrderItem.getPurchaseItemId()).isNotNull();
 		assertThat(retrievedPurchaseOrderItem.getDatePromised()).isEqualTo(originalPurchaseOrderItem.getDatePromised());
 		assertThat(retrievedPurchaseOrderItem.getPurchasedQty()).isEqualByComparingTo(TEN); // that's the quantity from the purchase order line

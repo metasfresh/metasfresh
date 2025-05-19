@@ -57,7 +57,7 @@ public class TourDAOTest extends TourPlanningTestBase
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 3, tourVersionRanges.size());
 
-		assertTourVersionRange(tourVersionRanges.get(0), tourVersion1, "2014-01-01", "2014-01-31");
+		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-01-01", "2014-01-31");
 		assertTourVersionRange(tourVersionRanges.get(1), tourVersion2, "2014-02-01", "2014-04-30");
 		assertTourVersionRange(tourVersionRanges.get(2), tourVersion3, "2014-05-01", "2014-12-31");
 	}
@@ -75,7 +75,7 @@ public class TourDAOTest extends TourPlanningTestBase
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
 
-		assertTourVersionRange(tourVersionRanges.get(0), tourVersion1, "2014-09-01", "2014-09-30");
+		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-09-01", "2014-09-30");
 	}
 
 	@Test
@@ -91,7 +91,7 @@ public class TourDAOTest extends TourPlanningTestBase
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
 
-		assertTourVersionRange(tourVersionRanges.get(0), tourVersion1, "2014-01-01", "2014-12-31");
+		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-01-01", "2014-12-31");
 	}
 
 	@Test
@@ -107,7 +107,7 @@ public class TourDAOTest extends TourPlanningTestBase
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
 
-		assertTourVersionRange(tourVersionRanges.get(0), tourVersion1, "2014-12-31", "2014-12-31");
+		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-12-31", "2014-12-31");
 	}
 
 	@Test
@@ -137,7 +137,7 @@ public class TourDAOTest extends TourPlanningTestBase
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
 
-		assertTourVersionRange(tourVersionRanges.get(0), tourVersion1, "2014-06-01", "2014-12-31");
+		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-06-01", "2014-12-31");
 	}
 
 	@Test
@@ -154,7 +154,7 @@ public class TourDAOTest extends TourPlanningTestBase
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 2, tourVersionRanges.size());
 
-		assertTourVersionRange(tourVersionRanges.get(0), tourVersion1, "2014-06-01", "2014-06-01");
+		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-06-01", "2014-06-01");
 		assertTourVersionRange(tourVersionRanges.get(1), tourVersion2, "2014-06-02", "2014-12-31");
 	}
 

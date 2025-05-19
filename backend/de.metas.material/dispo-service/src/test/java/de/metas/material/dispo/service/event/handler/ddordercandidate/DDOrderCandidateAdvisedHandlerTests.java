@@ -211,7 +211,7 @@ public class DDOrderCandidateAdvisedHandlerTests
 		ddOrderCandidateAdvisedHandler.handleEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
-		final int groupIdOfFirstRecord = allNonStockRecords.get(0).getMD_Candidate_GroupId();
+		final int groupIdOfFirstRecord = allNonStockRecords.getFirst().getMD_Candidate_GroupId();
 		assertThat(allNonStockRecords).allSatisfy(r -> assertThat(r.getMD_Candidate_GroupId()).as("all four records shall have the same groupId").isEqualTo(groupIdOfFirstRecord));
 
 		assertThat(DispoTestUtils.retrieveAllRecords())
@@ -227,28 +227,28 @@ public class DDOrderCandidateAdvisedHandlerTests
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
 
 		// supplyStockRecord is the parent record of supplyRecord
-		final I_MD_Candidate supplyStockRecord = DispoTestUtils.filter(CandidateType.STOCK, t2).get(0);
+		final I_MD_Candidate supplyStockRecord = DispoTestUtils.filter(CandidateType.STOCK, t2).getFirst();
 		assertThat(supplyStockRecord.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK.toString());
 		assertThat(supplyStockRecord.getMD_Candidate_Parent_ID()).isLessThanOrEqualTo(0); // supplyStockRecord shall have no parent of its own
 		assertThat(supplyStockRecord.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 		assertThat(supplyStockRecord.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(t2)); // shall have the same time as its supply record
 		assertThat(supplyStockRecord.getM_Warehouse_ID()).isEqualTo(toWarehouseId.getRepoId()); // shall have the same wh as its supply record
 
-		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).getFirst();
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(supplyStockRecord.getMD_Candidate_ID());
 		assertThat(supplyRecord.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(t2));
 		assertThat(supplyRecord.getM_Warehouse_ID()).isEqualTo(toWarehouseId.getRepoId());
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isGreaterThan(0); // supplyRecord shall have supplyStockRecord as its parent
 
-		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
 		assertThat(demandRecord.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(t1));
 		// assertThat(demandRecord.getMD_Candidate_Parent_ID()).isEqualTo(supplyRecord.getMD_Candidate_ID()); // demandRecord shall have supplyRecord as its parent
 		assertThat(demandRecord.getM_Warehouse_ID()).isEqualTo(fromWarehouseId.getRepoId());
 		assertThat(demandRecord.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
 		// demandStockRecord is "the other" stock record
-		final I_MD_Candidate demandStockRecord = DispoTestUtils.filter(CandidateType.STOCK, t1).get(0);
+		final I_MD_Candidate demandStockRecord = DispoTestUtils.filter(CandidateType.STOCK, t1).getFirst();
 		assertThat(demandStockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 		assertThat(demandStockRecord.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(t1)); // demandStockRecord shall have the same time as its demand record
 		assertThat(demandStockRecord.getM_Warehouse_ID()).isEqualTo(fromWarehouseId.getRepoId());
@@ -284,7 +284,7 @@ public class DDOrderCandidateAdvisedHandlerTests
 				50);
 		{ // guards
 			assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);
-			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).getFirst();
 			assertThat(supplyRecord.getM_Warehouse_ID()).isEqualTo(toWarehouseId.getRepoId());
 			assertThat(supplyRecord.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(t3));
 
@@ -294,7 +294,7 @@ public class DDOrderCandidateAdvisedHandlerTests
 
 		final List<I_MD_Candidate> demandRecords = DispoTestUtils.filter(CandidateType.DEMAND, intermediateWarehouseId);
 		assertThat(demandRecords).hasSize(1);
-		final int demandCandidateId = demandRecords.get(0).getMD_Candidate_ID();
+		final int demandCandidateId = demandRecords.getFirst().getMD_Candidate_ID();
 
 		final int durationOneDay = 1; // => t2 minus 1day = t1 (expected date of the demand candidate)
 		adviseDistributionFromToStartDuration(ddOrderAdvisedHandler, fromWarehouseId, intermediateWarehouseId,
@@ -317,41 +317,41 @@ public class DDOrderCandidateAdvisedHandlerTests
 		//
 		// we will now verify the records in their chronological (new->old) and child->parent order
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK, t3)).hasSize(1);
-		final I_MD_Candidate t3Stock = DispoTestUtils.filter(CandidateType.STOCK, t3).get(0);
+		final I_MD_Candidate t3Stock = DispoTestUtils.filter(CandidateType.STOCK, t3).getFirst();
 		assertThat(t3Stock.getMD_Candidate_Parent_ID()).isLessThanOrEqualTo(0);
 		assertThat(t3Stock.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY, t3)).hasSize(1);
-		final I_MD_Candidate t3Supply = DispoTestUtils.filter(CandidateType.SUPPLY, t3).get(0);
+		final I_MD_Candidate t3Supply = DispoTestUtils.filter(CandidateType.SUPPLY, t3).getFirst();
 		assertThat(t3Supply.getMD_Candidate_Parent_ID()).isEqualTo(t3Stock.getMD_Candidate_ID()); // t3Supply => t3Stock
 		assertThat(t3Supply.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND, t2)).hasSize(1);
-		final I_MD_Candidate t2Demand = DispoTestUtils.filter(CandidateType.DEMAND, t2).get(0);
+		final I_MD_Candidate t2Demand = DispoTestUtils.filter(CandidateType.DEMAND, t2).getFirst();
 		// assertThat(t2Demand.getMD_Candidate_Parent_ID()).isEqualTo(t3Supply.getMD_Candidate_ID()); // t2Demand => t3Supply
 		assertThat(t2Demand.getMD_Candidate_GroupId()).isEqualTo(t3Supply.getMD_Candidate_GroupId()); // t2Demand and t3Suppy belong to the same group
 		assertThat(t2Demand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK, t2)).hasSize(2);
-		final I_MD_Candidate t2DemandStock = DispoTestUtils.filter(CandidateType.STOCK, t2).get(0);
+		final I_MD_Candidate t2DemandStock = DispoTestUtils.filter(CandidateType.STOCK, t2).getFirst();
 		assertThat(t2DemandStock.getMD_Candidate_Parent_ID()).isEqualTo(t2Demand.getMD_Candidate_ID()); // t2DemandStock => t2Demand
 		assertThat(t2DemandStock.getQty()).isEqualByComparingTo(BigDecimal.TEN.negate());
 		final I_MD_Candidate t2SupplyStock = DispoTestUtils.filter(CandidateType.STOCK, t2).get(1);
 		assertThat(t2SupplyStock.getQty()).isZero();
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY, t2)).hasSize(1);
-		final I_MD_Candidate t2Supply = DispoTestUtils.filter(CandidateType.SUPPLY, t2).get(0);
+		final I_MD_Candidate t2Supply = DispoTestUtils.filter(CandidateType.SUPPLY, t2).getFirst();
 		assertThat(t2Supply.getMD_Candidate_Parent_ID()).isEqualTo(t2SupplyStock.getMD_Candidate_ID()); // t2Supply => t2SupplyStock
 		assertThat(t2Supply.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND, t1)).hasSize(1);
-		final I_MD_Candidate t1Demand = DispoTestUtils.filter(CandidateType.DEMAND, t1).get(0);
+		final I_MD_Candidate t1Demand = DispoTestUtils.filter(CandidateType.DEMAND, t1).getFirst();
 		// assertThat(t1Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID()); // t1Demand => t2Supply
 		assertThat(t1Demand.getMD_Candidate_GroupId()).isEqualTo(t2Supply.getMD_Candidate_GroupId()); // t2Demand and t3Suppy belong to the same group
 		assertThat(t1Demand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK, t1)).hasSize(1);
-		final I_MD_Candidate t1Stock = DispoTestUtils.filter(CandidateType.STOCK, t1).get(0);
+		final I_MD_Candidate t1Stock = DispoTestUtils.filter(CandidateType.STOCK, t1).getFirst();
 		assertThat(t1Stock.getQty()).isEqualByComparingTo(BigDecimal.TEN.negate());
 		assertThat(t1Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Demand.getMD_Candidate_ID());
 

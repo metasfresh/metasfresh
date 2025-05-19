@@ -82,9 +82,9 @@ public class JSONPatchEvent<PathType>
 		{
 			return defaultValueIfNull;
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			return ((Number)value).intValue();
+			return number.intValue();
 		}
 		else
 		{

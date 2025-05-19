@@ -25,6 +25,8 @@ package org.adempiere.ad.persistence.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * Thrown by persistance layer when a model class is not supported.
  * 
@@ -36,6 +38,7 @@ public class ModelClassNotSupportedException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -3746201325167390358L;
 
 	public ModelClassNotSupportedException(final Object model)

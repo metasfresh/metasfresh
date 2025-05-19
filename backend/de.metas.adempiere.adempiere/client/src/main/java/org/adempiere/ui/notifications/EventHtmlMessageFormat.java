@@ -37,7 +37,7 @@ final class EventHtmlMessageFormat extends EventMessageFormatTemplate
 	protected String formatTableRecordReference(final ITableRecordReference recordRef)
 	{
 		final Object suggestedWindowIdObj = getArgumentValue(Event.PROPERTY_SuggestedWindowId);
-		final int suggestedWindowId = (suggestedWindowIdObj instanceof Number) ? ((Number)suggestedWindowIdObj).intValue() : -1;
+		final int suggestedWindowId = (suggestedWindowIdObj instanceof Number n) ? n.intValue() : -1;
 		return new ADHyperlinkBuilder().createShowWindowHTML(recordRef, suggestedWindowId);
 	}
 

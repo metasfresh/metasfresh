@@ -64,7 +64,7 @@ public class RemovePauses
 			return;
 		}
 
-		final I_C_SubscriptionProgress lastPauseRecord = allPauseRecords.get(allPauseRecords.size() - 1);
+		final I_C_SubscriptionProgress lastPauseRecord = allPauseRecords.getLast();
 		final SubscriptionProgressQuery query = SubscriptionProgressQuery.startingWith(lastPauseRecord).build(); // get that query now, because the record is a pause-end record and will be deleted.
 
 		final int seqNoOffset = deletePauseBeginEndRecordsAndUpdatePausedRecords(allPauseRecords);
@@ -91,7 +91,7 @@ public class RemovePauses
 
 		final List<I_C_SubscriptionProgress> allPauseRecords;
 
-		final I_C_SubscriptionProgress firstSp = sps.get(0);
+		final I_C_SubscriptionProgress firstSp = sps.getFirst();
 
 		if (isWithinPause(firstSp))
 		{

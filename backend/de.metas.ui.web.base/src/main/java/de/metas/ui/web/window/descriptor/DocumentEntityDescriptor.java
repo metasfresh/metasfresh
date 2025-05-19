@@ -281,7 +281,7 @@ public class DocumentEntityDescriptor
 	@Nullable
 	public DocumentFieldDescriptor getSingleIdFieldOrNull()
 	{
-		return idFields.size() == 1 ? idFields.get(0) : null;
+		return idFields.size() == 1 ? idFields.getFirst() : null;
 	}
 
 	public DocumentFieldDescriptor getSingleIdField()
@@ -687,14 +687,14 @@ public class DocumentEntityDescriptor
 		public DocumentFieldDescriptor.Builder getSingleIdFieldBuilderOrNull()
 		{
 			final List<DocumentFieldDescriptor.Builder> idFieldBuilders = getIdFieldBuilders();
-			return idFieldBuilders.size() == 1 ? idFieldBuilders.get(0) : null;
+			return idFieldBuilders.size() == 1 ? idFieldBuilders.getFirst() : null;
 		}
 
 		@Nullable
 		public String getSingleIdFieldNameOrNull()
 		{
 			final List<DocumentFieldDescriptor.Builder> idFieldBuilders = getIdFieldBuilders();
-			return idFieldBuilders.size() == 1 ? idFieldBuilders.get(0).getFieldName() : null;
+			return idFieldBuilders.size() == 1 ? idFieldBuilders.getFirst().getFieldName() : null;
 		}
 
 		private List<DocumentFieldDescriptor.Builder> getIdFieldBuilders()
@@ -733,7 +733,7 @@ public class DocumentEntityDescriptor
 			}
 			else if (parentLinkFields.size() == 1)
 			{
-				return parentLinkFields.get(0);
+				return parentLinkFields.getFirst();
 			}
 			else
 			{
@@ -1193,7 +1193,7 @@ public class DocumentEntityDescriptor
 
 		private static boolean isCloneEnabled(@Nullable final Optional<String> tableName)
 		{
-			if (tableName == null || !tableName.isPresent())
+			if (tableName == null || tableName.isEmpty())
 			{
 				return false;
 			}

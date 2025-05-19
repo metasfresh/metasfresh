@@ -22,14 +22,12 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.List;
-
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 
-import lombok.EqualsAndHashCode;
-
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Pass-through modifier (i.e. do nothing)
@@ -74,9 +72,8 @@ public final class NullQueryFilterModifier implements IQueryFilterModifier
 	@Override
 	public String getValueSql(Object value, List<Object> params)
 	{
-		if (value instanceof ModelColumnNameValue<?>)
+		if (value instanceof ModelColumnNameValue<?> modelValue)
 		{
-			final ModelColumnNameValue<?> modelValue = (ModelColumnNameValue<?>)value;
 			return modelValue.getColumnName();
 		}
 

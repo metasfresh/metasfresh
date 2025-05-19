@@ -167,12 +167,12 @@ public class HUTrxBLTests
 
 		final List<I_M_HU_Trx_Line> trxLinesForAgrregateVHU = huTrxDAO.retrieveReferencingTrxLinesForHU(aggregateVHU.getValue());
 		assertThat(trxLinesForAgrregateVHU.size(), is(1)); // we expect that there is just one trx line and not 3
-		assertThat(trxLinesForAgrregateVHU.get(0).getQty(), comparesEqualTo(new BigDecimal("80")));
-		assertThat(TableRecordReference.ofReferenced(trxLinesForAgrregateVHU.get(0)), is(TableRecordReference.of(incomingTrxDoc)));
+		assertThat(trxLinesForAgrregateVHU.getFirst().getQty(), comparesEqualTo(new BigDecimal("80")));
+		assertThat(TableRecordReference.ofReferenced(trxLinesForAgrregateVHU.getFirst()), is(TableRecordReference.of(incomingTrxDoc)));
 
 		final List<I_M_HU_Trx_Line> trxLinesForRealIFCO = huTrxDAO.retrieveReferencingTrxLinesForHU(realIFCO.getValue());
 		assertThat(trxLinesForRealIFCO.size(), is(1)); //
-		assertThat(trxLinesForRealIFCO.get(0).getQty(), comparesEqualTo(new BigDecimal("6")));
-		assertThat(TableRecordReference.ofReferenced(trxLinesForRealIFCO.get(0)), is(TableRecordReference.of(incomingTrxDoc)));
+		assertThat(trxLinesForRealIFCO.getFirst().getQty(), comparesEqualTo(new BigDecimal("6")));
+		assertThat(TableRecordReference.ofReferenced(trxLinesForRealIFCO.getFirst()), is(TableRecordReference.of(incomingTrxDoc)));
 	}
 }

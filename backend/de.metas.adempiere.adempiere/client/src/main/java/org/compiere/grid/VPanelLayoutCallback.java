@@ -128,10 +128,8 @@ class VPanelLayoutCallback extends LayoutCallback
 			return getSize(componentWrapper, labelMinWidth, labelMaxWidth);
 		}
 		// Field editor
-		else if (comp instanceof VEditor)
+		else if (comp instanceof VEditor editor)
 		{
-			// Enforce the field max width ONLY if the editor is not a long field (i.e. it's not span over all columns)
-			final VEditor editor = (VEditor)comp;
 			final GridField gridField = editor.getField();
 			final GridFieldLayoutConstraints layoutConstraints = gridField.getLayoutConstraints();
 			final boolean longField = layoutConstraints != null && layoutConstraints.isLongField();

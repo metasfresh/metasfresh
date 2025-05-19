@@ -64,7 +64,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!streamSelectedHUIds(rowsFilter).findAny().isPresent())
+		if (streamSelectedHUIds(rowsFilter).findAny().isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}

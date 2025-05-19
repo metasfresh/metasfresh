@@ -112,8 +112,8 @@ public class DefaultCheckboxTreeCellRenderer extends JPanel implements CheckboxT
          * DefaultTreeCellRenderer, the rest depends on the TreeCheckingModel
          */
 	this.label.getTreeCellRendererComponent(tree, object, selected, expanded, leaf, row, hasFocus);
-	if (tree instanceof CheckboxTree) {
-	    TreeCheckingModel checkingModel = ((CheckboxTree) tree).getCheckingModel();
+	if (tree instanceof CheckboxTree checkboxTree) {
+	    TreeCheckingModel checkingModel = checkboxTree.getCheckingModel();
 	    TreePath path = tree.getPathForRow(row);
 	    this.checkBox.setEnabled(checkingModel.isPathEnabled(path));
 	    boolean checked = checkingModel.isPathChecked(path);

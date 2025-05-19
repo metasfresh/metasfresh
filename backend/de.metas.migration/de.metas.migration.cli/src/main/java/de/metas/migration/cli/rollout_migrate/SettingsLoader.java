@@ -129,12 +129,15 @@ class SettingsLoader
 
 		private CantLoadSettingsException(final Exception e)
 		{
-			super("Unable to load the settings file. It shall be a properties file that looks as follows:\n\n" +
-					"METASFRESH_DB_SERVER=<DBMS hostname> # e.g. localhost\n" +
-					"METASFRESH_DB_PORT=<DBMS hostname> # e.g. 5432\n" +
-					"METASFRESH_DB_NAME=<DB name> # e.g. metasfresh\n" +
-					"METASFRESH_DB_USER=<DB user name> # e.g. metasfresh\n" +
-					"METASFRESH_DB_PASSWORD=<pasword>\n", e);
+			super("""
+					Unable to load the settings file. It shall be a properties file that looks as follows:
+					
+					METASFRESH_DB_SERVER=<DBMS hostname> # e.g. localhost
+					METASFRESH_DB_PORT=<DBMS hostname> # e.g. 5432
+					METASFRESH_DB_NAME=<DB name> # e.g. metasfresh
+					METASFRESH_DB_USER=<DB user name> # e.g. metasfresh
+					METASFRESH_DB_PASSWORD=<pasword>
+					""", e);
 		}
 	}
 

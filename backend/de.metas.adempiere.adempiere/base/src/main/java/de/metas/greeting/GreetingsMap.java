@@ -99,7 +99,7 @@ class GreetingsMap
 			}
 			else
 			{
-				return Optional.of(composedGreetings.get(0));
+				return Optional.of(composedGreetings.getFirst());
 			}
 		}
 	}

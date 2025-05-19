@@ -88,7 +88,7 @@ public class RelatedDocumentsCandidateGroup
 		}
 		else if (candidatesWithRecordCount.size() == 1)
 		{
-			final RelatedDocuments relatedDocuments = toRelatedDocuments(candidatesWithRecordCount.get(0).withAppendFilterByFieldCaption(false));
+			final RelatedDocuments relatedDocuments = toRelatedDocuments(candidatesWithRecordCount.getFirst().withAppendFilterByFieldCaption(false));
 			return Stream.of(relatedDocuments);
 		}
 		else

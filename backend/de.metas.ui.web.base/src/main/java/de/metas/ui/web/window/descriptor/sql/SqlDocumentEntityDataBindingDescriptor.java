@@ -175,7 +175,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private String getSingleKeyColumnName()
 	{
 		Check.assume(keyFields.size() == 1, "Single key field: {}", this);
-		return keyFields.get(0).getColumnName();
+		return keyFields.getFirst().getColumnName();
 	}
 
 	/**
@@ -532,7 +532,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				return Optional.empty();
 			}
 
-			final String keyColumnName = keyColumns.get(0).getColumnName();
+			final String keyColumnName = keyColumns.getFirst().getColumnName();
 			final String sql = "SELECT " + FIELDNAME_Version + " FROM " + getTableName() + " WHERE " + keyColumnName + "=?";
 			return Optional.of(sql);
 		}

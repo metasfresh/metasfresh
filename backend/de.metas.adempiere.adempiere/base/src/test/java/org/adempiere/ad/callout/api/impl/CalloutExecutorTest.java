@@ -172,9 +172,8 @@ public class CalloutExecutorTest
 		@SuppressWarnings("unchecked")
 		final T exceptionCasted = (T)exception;
 
-		if (exceptionCasted instanceof CalloutException)
+		if (exceptionCasted instanceof CalloutException calloutException)
 		{
-			final CalloutException calloutException = (CalloutException)exceptionCasted;
 			assertCalloutExceptionIsFilled(calloutException, calloutExecutor, field);
 		}
 		return exceptionCasted;

@@ -134,7 +134,7 @@ public class PP_Order_Candidate_SetStartDate extends ViewBasedProcessTemplate im
 	@NonNull
 	private LookupValue.StringLookupValue toStringLookupValue(final int value)
 	{
-		final String formattedValue = String.format("%02d", value);
+		final String formattedValue = "%02d".formatted(value);
 
 		return LookupValue.StringLookupValue.of(formattedValue, formattedValue);
 	}

@@ -188,7 +188,7 @@ public class ProductsRestController
 
 			Check.assumeEquals(response.getProducts().size(), 1, "JsonGetProductsResponse should have only one JsonProduct!");
 
-			return ResponseEntity.ok().body(response.getProducts().get(0));
+			return ResponseEntity.ok().body(response.getProducts().getFirst());
 		}
 		catch (final Exception ex)
 		{

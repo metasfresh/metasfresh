@@ -84,8 +84,7 @@ public class PurchaseCandidateRestController
 		final ImmutableList<JsonPurchaseCandidate> candidates = request.getPurchaseCandidates()
 				.stream()
 				.map(createPurchaseCandidatesService::createCandidate)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonPurchaseCandidateResponse.builder()

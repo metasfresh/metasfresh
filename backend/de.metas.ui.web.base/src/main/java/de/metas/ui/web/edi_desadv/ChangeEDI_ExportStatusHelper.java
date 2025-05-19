@@ -146,7 +146,7 @@ public class ChangeEDI_ExportStatusHelper
 		final List<EDIExportStatus> availableTargetStatuses = ChangeEDI_ExportStatusHelper.getAvailableTargetExportStatuses(fromExportStatus);
 		if (!availableTargetStatuses.isEmpty())
 		{
-			final String code = availableTargetStatuses.get(0).getCode();
+			final String code = availableTargetStatuses.getFirst().getCode();
 			return LookupValue.StringLookupValue.of(code, adReferenceService.retrieveListNameTranslatableString(EDIExportStatus.AD_Reference_ID, code));
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;

@@ -302,7 +302,7 @@ public class HUTransformServiceReservationTests
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
 		data.helper.load(producer, data.helper.pSaladProductId, FOUR, data.helper.uomKg);
 
-		final I_M_HU saladCU = producer.getCreatedHUs().get(0);
+		final I_M_HU saladCU = producer.getCreatedHUs().getFirst();
 
 		// add the standalone-CU to get a mixed TU
 		huTransformService
@@ -319,7 +319,7 @@ public class HUTransformServiceReservationTests
 		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
 
 		assertThat(newCUs).hasSize(1);
-		final I_M_HU newSaladCU = newCUs.get(0);
+		final I_M_HU newSaladCU = newCUs.getFirst();
 
 		assertThat(tuWithMixedCUs)
 				.hasStorage(data.helper.pSaladProductId, Quantity.of(FOUR, data.helper.uomKg))

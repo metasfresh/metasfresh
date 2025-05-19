@@ -40,9 +40,9 @@ public class DeviceConfigException extends AdempiereException
 		}
 
 		final Throwable cause = extractCause(throwable);
-		if (cause instanceof DeviceConfigException)
+		if (cause instanceof DeviceConfigException exception)
 		{
-			return (DeviceConfigException)cause;
+			return exception;
 		}
 		else
 		{

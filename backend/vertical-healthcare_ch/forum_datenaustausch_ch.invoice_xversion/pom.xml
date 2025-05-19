@@ -29,11 +29,20 @@
 			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>

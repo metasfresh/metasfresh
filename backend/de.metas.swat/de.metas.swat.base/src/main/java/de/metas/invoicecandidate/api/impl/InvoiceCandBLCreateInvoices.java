@@ -1010,7 +1010,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		final int USERINCHARGE_NA = -100; // placeholder for user in charge not available
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(affectedCands.get(0));
+		final Properties ctx = InterfaceWrapperHelper.getCtx(affectedCands.getFirst());
 
 		DB.saveConstraints();
 		try

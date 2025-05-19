@@ -3,6 +3,7 @@
  */
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -17,6 +18,7 @@ public class MHRPeriod extends X_HR_Period
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -7787966459848200539L;
 	
 	private static CCache<Integer, MHRPeriod> s_cache = new CCache<Integer, MHRPeriod>(Table_Name, 20);

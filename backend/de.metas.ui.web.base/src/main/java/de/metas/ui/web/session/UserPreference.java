@@ -33,6 +33,7 @@ import org.compiere.model.I_AD_Preference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
@@ -44,6 +45,7 @@ import java.util.Properties;
  */
 public final class UserPreference implements Serializable
 {
+	@Serial
 	private static final long serialVersionUID = -3434473097915381994L;
 
 	/** Language */

@@ -147,7 +147,7 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		// merge 2xCU onto the existing IFCO that has 5xCU
 		// note that splitTradingUnits only contains one IFCO (we removed the other one before we joned it)
-		final I_M_HU sourceTUFromOutside = splitTradingUnits.get(0);
+		final I_M_HU sourceTUFromOutside = splitTradingUnits.getFirst();
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find a TU with 5 x CU
 
 		// we "offer" both TUs to the merge method, but expect it not to touch the second TU since only 2 CU shall be transferred
@@ -158,7 +158,7 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		// Assert data integrity on SOURCE TUs
 		// sourceTUFromOutside is the one we merged from, i.e. it now contains not 10 but 8xCU
-		assertThat("After we merged 2, there shall still be something left on the source IFCO", splitTradingUnits.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
+		assertThat("After we merged 2, there shall still be something left on the source IFCO", splitTradingUnits.getFirst().getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
 		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(sourceTUFromOutside);
 		assertSingleHandlingUnitWeights(attributeStorageTU, newHUWeightsExpectation("7.212", "6.212", "1", "0"));
 

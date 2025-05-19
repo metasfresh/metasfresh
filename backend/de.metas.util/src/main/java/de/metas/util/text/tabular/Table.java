@@ -96,7 +96,7 @@ public class Table
 			final String columnNameToMove = columnNamesToMove[i];
 			if (header.remove(columnNameToMove))
 			{
-				header.add(0, columnNameToMove);
+				header.addFirst(columnNameToMove);
 			}
 		}
 	}
@@ -157,7 +157,7 @@ public class Table
 			return Optional.empty();
 		}
 
-		final Cell firstValue = rowsList.get(0).getCell(columnName);
+		final Cell firstValue = rowsList.getFirst().getCell(columnName);
 
 		for (int i = 1; i < rowsList.size(); i++)
 		{

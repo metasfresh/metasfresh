@@ -164,7 +164,7 @@ class DDOrderCandidateAdvisedEventCreatorTest
 
 		assertThat(events).hasSize(1);
 
-		final DDOrderCandidateAdvisedEvent event = events.get(0);
+		final DDOrderCandidateAdvisedEvent event = events.getFirst();
 
 		final EventDescriptor eventDescriptor = event.getEventDescriptor();
 		System.out.println(eventDescriptor);

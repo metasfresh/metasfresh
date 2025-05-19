@@ -86,17 +86,17 @@
 	 private void invokeServerSyncBL(@NonNull final RequestToMetasfresh requestToMetasfresh)
 	 {
 		 final IServerSyncBL serverSyncBL = Services.get(IServerSyncBL.class);
-		 if (requestToMetasfresh instanceof PutWeeklySupplyRequest)
+		 if (requestToMetasfresh instanceof PutWeeklySupplyRequest request3)
 		 {
-			 serverSyncBL.reportWeekSupply((PutWeeklySupplyRequest)requestToMetasfresh);
+			 serverSyncBL.reportWeekSupply(request3);
 		 }
-		 else if (requestToMetasfresh instanceof PutProductSuppliesRequest)
+		 else if (requestToMetasfresh instanceof PutProductSuppliesRequest request2)
 		 {
-			 serverSyncBL.reportProductSupplies((PutProductSuppliesRequest)requestToMetasfresh);
+			 serverSyncBL.reportProductSupplies(request2);
 		 }
-		 else if (requestToMetasfresh instanceof PutRfQChangeRequest)
+		 else if (requestToMetasfresh instanceof PutRfQChangeRequest request1)
 		 {
-			 serverSyncBL.reportRfQChanges((PutRfQChangeRequest)requestToMetasfresh);
+			 serverSyncBL.reportRfQChanges(request1);
 		 }
 		 else if (requestToMetasfresh instanceof GetAllBPartnersRequest)
 		 {
@@ -122,9 +122,9 @@
 												   .relatedEventId(requestToMetasfresh.getEventId())
 												   .build());
 		 }
-		 else if (requestToMetasfresh instanceof PutUserChangedRequest)
+		 else if (requestToMetasfresh instanceof PutUserChangedRequest request)
 		 {
-			 serverSyncBL.reportUserChanged((PutUserChangedRequest)requestToMetasfresh);
+			 serverSyncBL.reportUserChanged(request);
 		 }
 		 else
 		 {

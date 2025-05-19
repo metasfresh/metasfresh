@@ -324,9 +324,9 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 					where.append(" ").append(whereClauseStr).append(" ");
 				}
 			}
-			else if (value instanceof Integer)
+			else if (value instanceof Integer integer)
 			{
-				final int id = value != null ? ((Integer)value).intValue() : 0;
+				final int id = value != null ? integer.intValue() : 0;
 				{
 					if (isRange)
 					{
@@ -461,9 +461,8 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 			field = getParameterComponent(index);
 		}
 
-		if (field instanceof CEditor)
+		if (field instanceof CEditor editor)
 		{
-			final CEditor editor = (CEditor)field;
 			return editor.getValue();
 		}
 		else

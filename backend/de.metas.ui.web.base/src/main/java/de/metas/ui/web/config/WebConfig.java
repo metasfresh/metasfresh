@@ -70,9 +70,8 @@ public class WebConfig implements WebMvcConfigurer
 				}
 				finally
 				{
-					if (response instanceof HttpServletResponse)
+					if (response instanceof HttpServletResponse httpResponse)
 					{
-						final HttpServletResponse httpResponse = (HttpServletResponse)response;
 
 						//
 						// If the Cache-Control is not set then set it to no-cache.

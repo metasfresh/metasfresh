@@ -92,17 +92,17 @@ public class ElasticsearchConfig extends AbstractElasticsearchConfiguration
 
 	private static Optional<String> getPropertySourceName(final String propertyName, final Environment environment)
 	{
-		if (environment instanceof AbstractEnvironment)
+		if (environment instanceof AbstractEnvironment abstractEnvironment)
 		{
-			final MutablePropertySources propertySources = ((AbstractEnvironment)environment).getPropertySources();
+			final MutablePropertySources propertySources = abstractEnvironment.getPropertySources();
 			for (final PropertySource<?> propertySource : propertySources)
 			{
 				final Object propertyValue = propertySource.getProperty(propertyName);
 				if (propertyValue != null)
 				{
-					if (propertySource instanceof OriginLookup)
+					if (propertySource instanceof OriginLookup lookup)
 					{
-						@SuppressWarnings({ "unchecked", "rawtypes" }) final Origin origin = ((OriginLookup)propertySource).getOrigin(propertyName);
+						@SuppressWarnings({ "unchecked", "rawtypes" }) final Origin origin = lookup.getOrigin(propertyName);
 						return Optional.of(origin.toString());
 					}
 					else

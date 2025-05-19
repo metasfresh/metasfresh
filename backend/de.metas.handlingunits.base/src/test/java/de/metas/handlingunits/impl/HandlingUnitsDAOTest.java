@@ -67,7 +67,7 @@ public class HandlingUnitsDAOTest extends AbstractHUTest
 		final List<I_M_HU_Item> items = dao.retrieveItems(hu);
 
 		Assert.assertEquals("Invalid size: " + items, 1, items.size());
-		Assert.assertEquals("Invalid item: " + items, huItem.getM_HU_Item_ID(), items.get(0).getM_HU_Item_ID());
+		Assert.assertEquals("Invalid item: " + items, huItem.getM_HU_Item_ID(), items.getFirst().getM_HU_Item_ID());
 	}
 
 	@Test

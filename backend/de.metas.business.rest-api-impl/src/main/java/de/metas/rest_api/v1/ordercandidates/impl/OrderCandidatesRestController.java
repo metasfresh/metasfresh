@@ -318,9 +318,10 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@ApiParam(required = true, value = "`externalheaderId` of the order line candidates to which the given file shall be attached") //
 			@PathVariable("externalHeaderId") final String externalHeaderId,
 
-			@ApiParam(value = "List with an even number of items;\n"
-					+ "transformed to a map of key-value pairs and added to the new attachment as tags.\n"
-					+ "If the number of items is odd, the last item is discarded.", allowEmptyValue = true) //
+			@ApiParam(value = """
+					List with an even number of items;
+					transformed to a map of key-value pairs and added to the new attachment as tags.
+					If the number of items is odd, the last item is discarded.""", allowEmptyValue = true) //
 			@RequestParam("tags") //
 			@Nullable final List<String> tagKeyValuePairs,
 

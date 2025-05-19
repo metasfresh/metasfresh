@@ -154,7 +154,7 @@ public class RefundInvoiceCandidateFactoryTest
 
 		final List<RefundConfig> refundConfigs = ofRecord.getRefundConfigs();
 		assertThat(refundConfigs).hasSize(1);
-		assertThat(refundConfigs.get(0).getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
-		assertThat(refundConfigs.get(0).getPercent()).isEqualTo(Percent.of(THREE));
+		assertThat(refundConfigs.getFirst().getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
+		assertThat(refundConfigs.getFirst().getPercent()).isEqualTo(Percent.of(THREE));
 	}
 }

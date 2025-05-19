@@ -389,10 +389,10 @@ public final class Evaluatees
 		{
 			//
 			// This logic applies only to first Evaluatee source
-			final Evaluatee source = sources.get(0);
-			if (source instanceof Evaluatee2)
+			final Evaluatee source = sources.getFirst();
+			if (source instanceof Evaluatee2 evaluatee2)
 			{
-				return ((Evaluatee2)source).get_ValueOldAsString(variableName);
+				return evaluatee2.get_ValueOldAsString(variableName);
 			}
 
 			return null;

@@ -388,9 +388,9 @@ class WorkpackageProcessorTask implements Runnable
 		catch (final AdempiereException e)
 		{
 			final Throwable cause = e.getCause();
-			if (cause instanceof ServiceConnectionException)
+			if (cause instanceof ServiceConnectionException exception)
 			{
-				throw handleServiceConnectionException(trxName, (ServiceConnectionException)cause);
+				throw handleServiceConnectionException(trxName, exception);
 			}
 			throw appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
 		}
@@ -674,9 +674,8 @@ class WorkpackageProcessorTask implements Runnable
 	@Nullable
 	private static IWorkpackageSkipRequest getWorkpackageSkipRequest(final Throwable ex)
 	{
-		if (ex instanceof IWorkpackageSkipRequest)
+		if (ex instanceof IWorkpackageSkipRequest skipRequest)
 		{
-			final IWorkpackageSkipRequest skipRequest = (IWorkpackageSkipRequest)ex;
 			if (!skipRequest.isSkip())
 			{
 				return null;

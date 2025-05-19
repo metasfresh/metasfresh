@@ -103,9 +103,8 @@ public final class IteratorUtils
 			return;
 		}
 
-		if (iterator instanceof Closeable)
+		if (iterator instanceof Closeable closeable)
 		{
-			final Closeable closeable = (Closeable)iterator;
 			try
 			{
 				closeable.close();
@@ -115,9 +114,8 @@ public final class IteratorUtils
 				throw Throwables.propagate(e);
 			}
 		}
-		else if (iterator instanceof AutoCloseable)
+		else if (iterator instanceof AutoCloseable closeable)
 		{
-			final AutoCloseable closeable = (AutoCloseable)iterator;
 			try
 			{
 				closeable.close();
@@ -127,9 +125,8 @@ public final class IteratorUtils
 				throw Throwables.propagate(e);
 			}
 		}
-		else if (iterator instanceof IteratorWrapper)
+		else if (iterator instanceof IteratorWrapper<?> wrapper)
 		{
-			final IteratorWrapper<?> wrapper = (IteratorWrapper<?>)iterator;
 			final Iterator<?> parentIterator = wrapper.getParentIterator();
 			close(parentIterator);
 		}
@@ -157,9 +154,8 @@ public final class IteratorUtils
 			return;
 		}
 
-		if (iterator instanceof Closeable)
+		if (iterator instanceof Closeable closeable)
 		{
-			final Closeable closeable = (Closeable)iterator;
 			try
 			{
 				closeable.close();
@@ -169,9 +165,8 @@ public final class IteratorUtils
 				throw Throwables.propagate(e);
 			}
 		}
-		else if (iterator instanceof AutoCloseable)
+		else if (iterator instanceof AutoCloseable closeable)
 		{
-			final AutoCloseable closeable = (AutoCloseable)iterator;
 			try
 			{
 				closeable.close();
@@ -181,9 +176,8 @@ public final class IteratorUtils
 				throw Throwables.propagate(e);
 			}
 		}
-		else if (iterator instanceof IteratorWrapper)
+		else if (iterator instanceof IteratorWrapper<?> wrapper)
 		{
-			final IteratorWrapper<?> wrapper = (IteratorWrapper<?>)iterator;
 			final Iterator<?> parentIterator = wrapper.getParentIterator();
 			close(parentIterator);
 		}

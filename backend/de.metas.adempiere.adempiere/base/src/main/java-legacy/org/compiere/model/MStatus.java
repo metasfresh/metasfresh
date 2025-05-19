@@ -52,7 +52,7 @@ public class MStatus extends X_R_Status
 	{
 		if (R_Status_ID == 0)
 			return null;
-		Integer key = new Integer (R_Status_ID);
+		Integer key = Integer.valueOf(R_Status_ID);
 		MStatus retValue = (MStatus)s_cache.get(key);
 		if (retValue == null)
 		{
@@ -70,7 +70,7 @@ public class MStatus extends X_R_Status
 	 */
 	public static MStatus getDefault (Properties ctx, int R_RequestType_ID)
 	{
-		Integer key = new Integer(R_RequestType_ID);
+		Integer key = Integer.valueOf(R_RequestType_ID);
 		MStatus retValue = (MStatus)s_cacheDefault.get(key);
 		if (retValue != null)
 			return retValue;

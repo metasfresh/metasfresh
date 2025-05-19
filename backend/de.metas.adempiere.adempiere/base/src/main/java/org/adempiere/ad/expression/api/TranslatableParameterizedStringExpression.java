@@ -1,8 +1,10 @@
 package org.adempiere.ad.expression.api;
 
-import java.util.Objects;
-import java.util.Set;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableParameterizedString;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
@@ -13,12 +15,8 @@ import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableParameterizedString;
-import lombok.NonNull;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -87,9 +85,9 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 
 	public static final IStringExpression getExpressionBaseLang(final IStringExpression expression)
 	{
-		if (expression instanceof TranslatableParameterizedStringExpression)
+		if (expression instanceof TranslatableParameterizedStringExpression stringExpression)
 		{
-			return ((TranslatableParameterizedStringExpression)expression).getExpressionBaseLang();
+			return stringExpression.getExpressionBaseLang();
 		}
 		else
 		{
@@ -99,9 +97,9 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 
 	public static final IStringExpression getExpressionTrl(final IStringExpression expression)
 	{
-		if (expression instanceof TranslatableParameterizedStringExpression)
+		if (expression instanceof TranslatableParameterizedStringExpression stringExpression)
 		{
-			return ((TranslatableParameterizedStringExpression)expression).getExpressionTrl();
+			return stringExpression.getExpressionTrl();
 		}
 		else
 		{
@@ -111,9 +109,9 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 
 	public static final String getAD_LanguageParamName(final IStringExpression expression)
 	{
-		if (expression instanceof TranslatableParameterizedStringExpression)
+		if (expression instanceof TranslatableParameterizedStringExpression stringExpression)
 		{
-			return ((TranslatableParameterizedStringExpression)expression).getAD_LanguageParamName();
+			return stringExpression.getAD_LanguageParamName();
 		}
 		else
 		{

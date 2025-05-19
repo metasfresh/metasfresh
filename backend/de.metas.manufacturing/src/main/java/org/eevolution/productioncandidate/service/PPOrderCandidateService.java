@@ -202,7 +202,7 @@ public class PPOrderCandidateService
 
 		for (final Map.Entry<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> orderLineCandidate2BOMLineEntry : orderLineCandidate2BOMLine.entrySet())
 		{
-			final boolean isOrderLineOutdated = !orderLineCandidate2BOMLineEntry.getValue().isPresent();
+			final boolean isOrderLineOutdated = orderLineCandidate2BOMLineEntry.getValue().isEmpty();
 			if (isOrderLineOutdated)
 			{
 				handleOutdatedLine(orderLineCandidate2BOMLineEntry.getKey());

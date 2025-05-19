@@ -38,8 +38,8 @@ public class DDOrderCandidateCreatedEvent extends AbstractDDOrderCandidateEvent
 
 	public static Optional<DDOrderCandidateCreatedEvent> castIfApplies(@Nullable final AbstractDDOrderCandidateEvent event)
 	{
-		return event instanceof DDOrderCandidateCreatedEvent
-				? Optional.of((DDOrderCandidateCreatedEvent)event)
+		return event instanceof DDOrderCandidateCreatedEvent ddocce
+				? Optional.of(ddocce)
 				: Optional.empty();
 	}
 

@@ -125,7 +125,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 		}
 
 		final Optional<BPartnerId> salesRepId = getSalesRepId(referencedObj);
-		if (!salesRepId.isPresent())
+		if (salesRepId.isEmpty())
 		{
 			loggable.addLog("applies - SalesRepId is null for referenced object={}; -> return false", pricingCtx.getReferencedObject());
 			return false;
@@ -169,7 +169,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 		final Optional<MarginConfig> marginConfig = getMarginConfig(
 				salesRepId.get(),
 				pricingCtx);
-		if (!marginConfig.isPresent())
+		if (marginConfig.isEmpty())
 		{
 			loggable.addLog("applies - salesrep has no MarginConfig; -> return false");
 			return false;
@@ -191,7 +191,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		final Optional<BPartnerLocationAndCaptureId> bPartnerLocationAndCaptureId = getBPartnerLocationAndCaptureId(referencedObj);
 
-		if (!bPartnerLocationAndCaptureId.isPresent())
+		if (bPartnerLocationAndCaptureId.isEmpty())
 		{
 			loggable.addLog("calculate - no bPartnerLocationAndCaptureId could be found for customer; -> skipping!");
 			return;
@@ -212,7 +212,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 	private void calculateCustomerPrice(@NonNull final CustomerPricingContext customerPricingContext, @NonNull final BPartnerId salesRepId)
 	{
 		final Optional<ProductPrice> salesRepNetUnitPriceOpt = getSalesRepNetUnitPrice(customerPricingContext, salesRepId);
-		if (!salesRepNetUnitPriceOpt.isPresent())
+		if (salesRepNetUnitPriceOpt.isEmpty())
 		{
 			loggable.addLog("calculate - Not applying! salesRep price could not be computed in customer currency, salesRepId={}" + salesRepId);
 			return;

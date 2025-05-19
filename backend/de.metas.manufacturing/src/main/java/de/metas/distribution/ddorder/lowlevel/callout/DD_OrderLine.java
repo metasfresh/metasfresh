@@ -23,6 +23,7 @@ import org.eevolution.model.MDDOrderLine;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Properties;
 
 @Callout(I_DD_OrderLine.class)
@@ -81,7 +82,7 @@ public class DD_OrderLine
 		{
 			int C_UOM_To_ID = ddOrderLine.getC_UOM_ID();
 			QtyEntered = ddOrderLine.getQtyEntered();
-			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
+			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), RoundingMode.HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
 				logger.debug("Corrected QtyEntered Scale UOM={}; QtyEntered={}->{}", C_UOM_To_ID, QtyEntered, QtyEntered1);
@@ -101,7 +102,7 @@ public class DD_OrderLine
 		{
 			int C_UOM_To_ID = ddOrderLine.getC_UOM_ID();
 			QtyEntered = ddOrderLine.getQtyEntered();
-			final BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
+			final BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(ctx, C_UOM_To_ID), RoundingMode.HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
 				logger.debug("Corrected QtyEntered Scale UOM={}; QtyEntered={}->{}", C_UOM_To_ID, QtyEntered, QtyEntered1);
@@ -122,7 +123,7 @@ public class DD_OrderLine
 			final int C_UOM_To_ID = ddOrderLine.getC_UOM_ID();
 			QtyOrdered = ddOrderLine.getQtyOrdered();
 			final int precision = MProduct.get(ctx, M_Product_ID).getUOMPrecision();
-			final BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			final BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, RoundingMode.HALF_UP);
 			if (QtyOrdered.compareTo(QtyOrdered1) != 0)
 			{
 				logger.debug("Corrected QtyOrdered Scale: {}->{}", QtyOrdered, QtyOrdered1);

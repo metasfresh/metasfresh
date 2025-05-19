@@ -158,7 +158,7 @@ public class IssueImporterService
 
 			issueRepository.save(issueEntity);
 
-			if (!existingEffortIssue.isPresent())
+			if (existingEffortIssue.isEmpty())
 			{
 				final ExternalReference issueExternalRef = ExternalReference
 						.builder()

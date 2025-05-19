@@ -135,9 +135,9 @@ public abstract class CacheRestControllerTemplate
 		final CacheInterface cacheInterface = cacheMgt.getById(cacheId)
 				.orElseThrow(() -> new AdempiereException("No cache found by cacheId=" + cacheId));
 
-		if (cacheInterface instanceof CCache)
+		if (cacheInterface instanceof CCache<?, ?> cache)
 		{
-			return JsonCache.of((CCache<?, ?>)cacheInterface, limit);
+			return JsonCache.of(cache, limit);
 		}
 		else
 		{

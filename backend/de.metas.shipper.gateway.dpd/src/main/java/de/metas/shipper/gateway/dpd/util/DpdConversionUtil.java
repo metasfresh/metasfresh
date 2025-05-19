@@ -48,7 +48,7 @@ public class DpdConversionUtil
 	 */
 	public static int formatVolume(@NonNull final PackageDimensions packageDimensions)
 	{
-		return Integer.parseInt(String.format("%03d%03d%03d", packageDimensions.getLengthInCM(), packageDimensions.getWidthInCM(), packageDimensions.getHeightInCM()));
+		return Integer.parseInt("%03d%03d%03d".formatted(packageDimensions.getLengthInCM(), packageDimensions.getWidthInCM(), packageDimensions.getHeightInCM()));
 	}
 
 	/**

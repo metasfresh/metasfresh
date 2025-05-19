@@ -337,7 +337,7 @@ public final class EMail implements Serializable
 	@Nullable
 	public EMailAddress getTo()
 	{
-		return _to.isEmpty() ? null : _to.get(0);
+		return _to.isEmpty() ? null : _to.getFirst();
 	}
 
 	public List<InternetAddress> getTos()

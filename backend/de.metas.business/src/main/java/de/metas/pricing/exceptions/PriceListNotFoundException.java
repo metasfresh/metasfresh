@@ -5,6 +5,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
 import java.util.List;
 
 /*
@@ -36,6 +37,7 @@ import java.util.List;
  */
 public class PriceListNotFoundException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -6763638806735067636L;
 
 	private static final AdMessageKey MSG_NO_PO_PRICELIST_FOUND = AdMessageKey.of("NoPOPriceListFound");

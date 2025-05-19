@@ -153,7 +153,7 @@ public class WebuiPushTests
 		assertNotNull(syncBPartnersRequest);
 		assertThat(syncBPartnersRequest.getBpartners().size(), is(1));
 
-		final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().get(0);
+		final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().getFirst();
 		assertThat(syncBPartner.getName(), is(bpartner.getName()));
 		assertThat("syncBPartner.isSyncContracts", syncBPartner.isSyncContracts(), is(false));
 		assertThat("syncBPartner.isDeleted", syncBPartner.isDeleted(), is(true));
@@ -196,14 +196,14 @@ public class WebuiPushTests
 		assertNotNull(syncBPartnersRequest);
 		assertThat(syncBPartnersRequest.getBpartners().size(), is(1));
 
-		final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().get(0);
+		final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().getFirst();
 		assertThat(syncBPartner.getUsers().size(), is(1));
 		assertThat(syncBPartner.getContracts().isEmpty(), is(true));
 		assertThat(syncBPartner.getName(), is(bpartner.getName()));
 		assertThat("syncBPartner.isSyncContracts", syncBPartner.isSyncContracts(), is(false));
 		assertThat("syncBPartner.isDeleted", syncBPartner.isDeleted(), is(false));
 
-		final SyncUser syncUser = syncBPartner.getUsers().get(0);
+		final SyncUser syncUser = syncBPartner.getUsers().getFirst();
 		assertThat(syncUser.isDeleted(), is(false));
 		assertThat(syncUser.getEmail(), is(user.getEMail()));
 		assertThat(syncUser.getPassword(), is(user.getProcurementPassword()));

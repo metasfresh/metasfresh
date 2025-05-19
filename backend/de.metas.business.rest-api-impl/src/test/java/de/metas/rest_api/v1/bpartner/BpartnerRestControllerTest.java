@@ -401,7 +401,7 @@ class BpartnerRestControllerTest
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BPartnerRestControllerTest_Update_BPartner_Name_Insert_Location.json");
 
 		assertThat(bpartnerUpsertRequest.getRequestItems()).hasSize(1);
-		assertThat(bpartnerUpsertRequest.getRequestItems().get(0).getBpartnerComposite().getLocationsNotNull().getRequestItems()).hasSize(1);
+		assertThat(bpartnerUpsertRequest.getRequestItems().getFirst().getBpartnerComposite().getLocationsNotNull().getRequestItems()).hasSize(1);
 
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
@@ -494,7 +494,7 @@ class BpartnerRestControllerTest
 		final JsonResponseBPartnerCompositeUpsert resultBody = result.getBody();
 		assertThat(resultBody.getResponseItems()).hasSize(1);
 
-		final JsonResponseBPartnerCompositeUpsertItem responseCompositeItem = resultBody.getResponseItems().get(0);
+		final JsonResponseBPartnerCompositeUpsertItem responseCompositeItem = resultBody.getResponseItems().getFirst();
 		assertThat(responseCompositeItem.getResponseBPartnerItem().getIdentifier()).isEqualTo(bpartnerIdentifier);
 
 		final JsonMetasfreshId metasfreshId = responseCompositeItem.getResponseBPartnerItem().getMetasfreshId();
@@ -521,7 +521,7 @@ class BpartnerRestControllerTest
 		initialCounts.assertCountsUnchanged();
 
 		assertThat(result.getBody().getResponseItems()).hasSize(1);
-		final JsonResponseBPartnerCompositeUpsertItem jsonResponseCompositeUpsertItem = result.getBody().getResponseItems().get(0);
+		final JsonResponseBPartnerCompositeUpsertItem jsonResponseCompositeUpsertItem = result.getBody().getResponseItems().getFirst();
 
 		assertThat(jsonResponseCompositeUpsertItem.getResponseBPartnerItem().getIdentifier()).isEqualTo("ext-1234567");
 		assertThat(jsonResponseCompositeUpsertItem.getResponseBPartnerItem().getMetasfreshId().getValue()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
@@ -597,7 +597,7 @@ class BpartnerRestControllerTest
 
 		final JsonResponseUpsert response = result.getBody();
 		assertThat(response.getResponseItems()).hasSize(1);
-		final JsonResponseUpsertItem responseItem = response.getResponseItems().get(0);
+		final JsonResponseUpsertItem responseItem = response.getResponseItems().getFirst();
 		assertThat(responseItem.getIdentifier()).isEqualTo(jsonContact.getContactIdentifier());
 
 		final JsonMetasfreshId metasfreshId = responseItem.getMetasfreshId();
@@ -650,7 +650,7 @@ class BpartnerRestControllerTest
 
 		final JsonResponseUpsert response = result.getBody();
 		assertThat(response.getResponseItems()).hasSize(1);
-		final JsonResponseUpsertItem responseItem = response.getResponseItems().get(0);
+		final JsonResponseUpsertItem responseItem = response.getResponseItems().getFirst();
 		assertThat(responseItem.getIdentifier()).isEqualTo(contactIdentifier);
 
 		final JsonMetasfreshId metasfreshId = responseItem.getMetasfreshId();
@@ -684,7 +684,7 @@ class BpartnerRestControllerTest
 
 		final JsonResponseUpsert response = result.getBody();
 		assertThat(response.getResponseItems()).hasSize(1);
-		final JsonResponseUpsertItem responseItem = response.getResponseItems().get(0);
+		final JsonResponseUpsertItem responseItem = response.getResponseItems().getFirst();
 
 		assertThat(responseItem.getIdentifier()).isEqualTo(jsonLocation.getLocationIdentifier());
 
@@ -695,7 +695,7 @@ class BpartnerRestControllerTest
 
 		assertThat(persistedPage).hasSize(1);
 
-		final BPartnerComposite persistedResult = persistedPage.get(0);
+		final BPartnerComposite persistedResult = persistedPage.getFirst();
 		final Optional<BPartnerLocation> persistedLocation = persistedResult.extractLocation(BPartnerLocationId.ofRepoId(persistedResult.getBpartner().getId(), metasfreshId.getValue()));
 		assertThat(persistedLocation).isPresent();
 
@@ -719,7 +719,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 		final JsonResponseUpsert response = result.getBody();
 		assertThat(response.getResponseItems()).hasSize(1);
-		final JsonResponseUpsertItem responseItem = response.getResponseItems().get(0);
+		final JsonResponseUpsertItem responseItem = response.getResponseItems().getFirst();
 		assertThat(responseItem.getIdentifier()).isEqualTo("iban-1");
 		assertThat(responseItem.getMetasfreshId()).isNotNull();
 

@@ -61,7 +61,7 @@ public class TestTwoShipmentsTwoInvoices extends AbstractTwoInOutsTests
 			final List<I_M_InOutLine> inOutLines,
 			final List<IInvoiceHeader> invoices)
 	{
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		assertThat(invoices.size(), is(1));
 
@@ -69,7 +69,7 @@ public class TestTwoShipmentsTwoInvoices extends AbstractTwoInOutsTests
 		// Assume that the invoices are OK
 		{
 			// final IInvoiceHeader invoice1 = removeInvoiceHeaderForInOutId(invoices, inOut1.getM_InOut_ID());
-			final IInvoiceHeader invoice1 = invoices.remove(0);
+			final IInvoiceHeader invoice1 = invoices.removeFirst();
 			assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
 			validateInvoiceHeader("Invoice", invoice1, ic);
 

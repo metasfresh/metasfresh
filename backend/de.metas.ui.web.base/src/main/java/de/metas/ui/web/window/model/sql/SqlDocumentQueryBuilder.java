@@ -386,7 +386,7 @@ public class SqlDocumentQueryBuilder
 			// Single primary key
 			if (keyFields.size() == 1)
 			{
-				final String singleKeyColumnName = keyFields.get(0).getColumnName();
+				final String singleKeyColumnName = keyFields.getFirst().getColumnName();
 				final ImmutableSet<Integer> recordIdsIntSet = recordIds.stream()
 						.map(DocumentId::toInt)
 						.collect(ImmutableSet.toImmutableSet());

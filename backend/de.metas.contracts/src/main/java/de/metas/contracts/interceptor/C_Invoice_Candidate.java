@@ -167,9 +167,9 @@ public class C_Invoice_Candidate
 				final List<I_C_Invoice_Clearing_Alloc> icas = flatrateDAO.retrieveClearingAllocs(invoiceCand);
 				Check.assume(icas.size() <= 1, invoiceCand + " has max 1 C_Invoice_Clearing_Alloc");
 
-				if (!icas.isEmpty() && icas.get(0).getC_Flatrate_DataEntry_ID() > 0)
+				if (!icas.isEmpty() && icas.getFirst().getC_Flatrate_DataEntry_ID() > 0)
 				{
-					final I_C_Flatrate_DataEntry dataEntry = icas.get(0).getC_Flatrate_DataEntry();
+					final I_C_Flatrate_DataEntry dataEntry = icas.getFirst().getC_Flatrate_DataEntry();
 					final BigDecimal diff = invoiceCand.getQtyToInvoice().add(invoiceCand.getQtyInvoiced());
 					dataEntry.setActualQty(dataEntry.getActualQty().subtract(diff));
 					InterfaceWrapperHelper.save(dataEntry);

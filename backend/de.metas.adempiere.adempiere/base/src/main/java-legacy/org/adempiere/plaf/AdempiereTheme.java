@@ -489,8 +489,8 @@ public class AdempiereTheme extends com.jgoodies.looks.plastic.PlasticTheme
 		final Object[] uiDefaults =
 		{
 				"ScrollBar.thumbHighlight", getPrimaryControlHighlight(),
-				PlasticScrollBarUI.MAX_BUMPS_WIDTH_KEY, new Integer(22),
-				PlasticScrollBarUI.MAX_BUMPS_WIDTH_KEY, new Integer(30),
+				PlasticScrollBarUI.MAX_BUMPS_WIDTH_KEY, Integer.valueOf(22),
+				PlasticScrollBarUI.MAX_BUMPS_WIDTH_KEY, Integer.valueOf(30),
 				
 				// TabbedPane
 				// "TabbedPane.selected", getWhite(),

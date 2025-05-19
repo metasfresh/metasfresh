@@ -125,8 +125,8 @@ public class ShipmentScheduleDeletedHandlerTests
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(1);
 
-		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).getFirst();
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo(ZERO);
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(ZERO);

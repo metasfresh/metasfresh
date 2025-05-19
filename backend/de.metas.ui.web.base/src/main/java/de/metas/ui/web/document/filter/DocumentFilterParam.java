@@ -170,13 +170,13 @@ public final class DocumentFilterParam
 		{
 			return null;
 		}
-		else if (value instanceof ReferenceListAwareEnum)
+		else if (value instanceof ReferenceListAwareEnum enum1)
 		{
-			return ((ReferenceListAwareEnum)value).getCode();
+			return enum1.getCode();
 		}
-		else if (value instanceof LookupValue)
+		else if (value instanceof LookupValue lookupValue)
 		{
-			return ((LookupValue)value).getIdAsString();
+			return lookupValue.getIdAsString();
 		}
 		else
 		{
@@ -220,13 +220,13 @@ public final class DocumentFilterParam
 		{
 			throw new AdempiereException("Cannot convert null value to Collection<?>");
 		}
-		else if (value instanceof Collection)
+		else if (value instanceof Collection<?> collection)
 		{
-			return (Collection<?>)value;
+			return collection;
 		}
-		else if (value instanceof LookupValuesList)
+		else if (value instanceof LookupValuesList list)
 		{
-			return ((LookupValuesList)value).getValues();
+			return list.getValues();
 		}
 		else
 		{
@@ -266,17 +266,17 @@ public final class DocumentFilterParam
 			// pass-through, even though it will produce an exception when the list will be converted to immutable list
 			return null;
 		}
-		else if (itemObj instanceof Number)
+		else if (itemObj instanceof Number number)
 		{
-			return ((Number)itemObj).intValue();
+			return number.intValue();
 		}
-		else if (itemObj instanceof LookupValue)
+		else if (itemObj instanceof LookupValue lookupValue)
 		{
-			return ((LookupValue)itemObj).getIdAsInt();
+			return lookupValue.getIdAsInt();
 		}
-		else if (itemObj instanceof RepoIdAware)
+		else if (itemObj instanceof RepoIdAware aware)
 		{
-			return ((RepoIdAware)itemObj).getRepoId();
+			return aware.getRepoId();
 		}
 		else
 		{

@@ -90,7 +90,7 @@ public class GroupTests
 		//
 		// Check compensation line 1: 30%
 		{
-			final GroupCompensationLine compensationLine = group.getCompensationLines().get(0);
+			final GroupCompensationLine compensationLine = group.getCompensationLines().getFirst();
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260)); // 740
 			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-222.00")); // - (480+260) * 30%
@@ -124,7 +124,7 @@ public class GroupTests
 		{
 			group.addNewCompensationLine(newPercentageDiscountRequest(30));
 
-			final GroupCompensationLine compensationLine = group.getCompensationLines().get(0);
+			final GroupCompensationLine compensationLine = group.getCompensationLines().getFirst();
 			assertThat(compensationLine.getBaseAmt()).isEqualByComparingTo(BigDecimal.valueOf(480 + 260)); // 740
 			assertThat(compensationLine.getQtyEntered()).isEqualByComparingTo(BigDecimal.ONE);
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-222.00")); // - (480+260) * 30%

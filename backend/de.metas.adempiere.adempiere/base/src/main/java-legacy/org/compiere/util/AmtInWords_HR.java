@@ -4,8 +4,10 @@ package org.compiere.util;
 import static java.math.BigDecimal.valueOf;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
+
 /******************************************************************************
  * Product: Adempiere ERP & CRM Smart Business Solution                       *
  * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
@@ -75,10 +77,10 @@ između
     StringBuilder rezultat = new StringBuilder();
 
     // zaokruži na dvije decimale
-    broj = broj.setScale(2, BigDecimal.ROUND_HALF_EVEN);
+    broj = broj.setScale(2, RoundingMode.HALF_EVEN);
 
     // kune (dio bez decimala)
-    BigDecimal kune = broj.setScale(0, BigDecimal.ROUND_DOWN);
+    BigDecimal kune = broj.setScale(0, RoundingMode.DOWN);
     rezultat.append(slovima(kune, "kuna", false, false));
 
     rezultat.append(RAZMAK + "i" + RAZMAK);

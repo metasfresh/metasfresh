@@ -128,8 +128,8 @@ public class HUTransformServiceReceiptCandidatesTests
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
 		receiptSchedule.setM_Warehouse_ID(warehouseId.getRepoId());
 		receiptSchedule.setC_BPartner_ID(bpartnerId.getRepoId());
-		receiptSchedule.setM_Product_ID(storages.get(0).getProductId().getRepoId());
-		receiptSchedule.setC_UOM_ID(storages.get(0).getC_UOM().getC_UOM_ID());
+		receiptSchedule.setM_Product_ID(storages.getFirst().getProductId().getRepoId());
+		receiptSchedule.setC_UOM_ID(storages.getFirst().getC_UOM().getC_UOM_ID());
 		InterfaceWrapperHelper.save(receiptSchedule);
 
 		final I_M_HU lu;
@@ -206,7 +206,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI[@HUStatus='P'])", is("1")));
 		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='39.000' and @C_UOM_Name='Kg'])", is("1")));
 
-		final Node newTUXML = HUXmlConverter.toXml(newTUs.get(0));
+		final Node newTUXML = HUXmlConverter.toXml(newTUs.getFirst());
 
 		assertThat(newTUXML, hasXPath("count(HU-TU_Bag[@HUStatus='P'])", is("1")));
 		assertThat(newTUXML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
@@ -226,7 +226,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		{ // verify that cuHU and rs1 are properly linked
 			final List<IHUDocument> rs1HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs1TableRef.getTableName(), rs1TableRef.getRecord_ID());
 			assertThat(rs1HuDocument.size(), is(1));
-			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cuHU.getM_HU_ID() || hu.getM_HU_ID() == tuToSplit.getM_HU_ID()), is(true));
+			assertThat(rs1HuDocument.getFirst().getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cuHU.getM_HU_ID() || hu.getM_HU_ID() == tuToSplit.getM_HU_ID()), is(true));
 		}
 
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
@@ -242,7 +242,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		assertThat(newLUs.size(), is(1)); // we transfered 20kg, the target TUs are still IFCOs one IFCO still holds 40kg, one LU holds 5 IFCOS, so we expect one LU with one IFCO to suffice
 		// data.helper.commitAndDumpHU(newLUs.get(0));
 		// the LU shall contain 'tuToSplit'
-		final Node newLUXML = HUXmlConverter.toXml(newLUs.get(0));
+		final Node newLUXML = HUXmlConverter.toXml(newLUs.getFirst());
 		assertThat(newLUXML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
 		assertThat(newLUXML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 
@@ -273,19 +273,19 @@ public class HUTransformServiceReceiptCandidatesTests
 		{ // verify that cuHU and rs1 are properly linked
 			final List<IHUDocument> rs1HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs1TableRef.getTableName(), rs1TableRef.getRecord_ID());
 			assertThat(rs1HuDocument.size(), is(1));
-			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == existingTU.getM_HU_ID()), is(true));
+			assertThat(rs1HuDocument.getFirst().getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == existingTU.getM_HU_ID()), is(true));
 		}
 
 		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
 				.setLocatorId(data.defaultLocatorId);
 		data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("3"), data.helper.uomKg);
-		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
+		final I_M_HU cu2 = producer.getCreatedHUs().getFirst();
 		final I_M_ReceiptSchedule rs2 = create_receiptSchedule_for_CU(cu2, "3");
 		final TableRecordReference rs2TableRef = TableRecordReference.of(rs2);
 		{ // verify that secondCU and rs2 are properly linked
 			final List<IHUDocument> rs2HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs2TableRef.getTableName(), rs2TableRef.getRecord_ID());
 			assertThat(rs2HuDocument.size(), is(1));
-			assertThat(rs2HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu2.getM_HU_ID() || hu.getM_HU_ID() == existingTU.getM_HU_ID()), is(true));
+			assertThat(rs2HuDocument.getFirst().getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu2.getM_HU_ID() || hu.getM_HU_ID() == existingTU.getM_HU_ID()), is(true));
 		}
 
 		// invoke the method under test.
@@ -319,7 +319,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForCU1, data.helper.getHUContext().getTrxName());
 			final List<I_M_ReceiptSchedule_Alloc> rsas1ForCu1 = rsas1.stream().filter(rsa -> rsa.getM_TU_HU_ID() == existingTU.getM_HU_ID() && rsa.getVHU_ID() == cu1.getM_HU_ID()).collect(Collectors.toList());
 			assertThat(rsas1ForCu1.size(), is(1));
-			assertThat(rsas1ForCu1.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("2")));
+			assertThat(rsas1ForCu1.getFirst().getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("2")));
 		}
 		{
 			// // verify c2 which got 1.6 kg of salad chopped off
@@ -336,7 +336,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		{
 			final List<I_M_HU> siblingsOfCu1 = handlingUnitsDAO.retrieveIncludedHUs(existingTU).stream().filter(hu -> hu.getM_HU_ID() != cu1.getM_HU_ID()).collect(Collectors.toList());
 			assertThat(siblingsOfCu1.size(), is(1));
-			final I_M_HU newlySplitOffCU = siblingsOfCu1.get(0);
+			final I_M_HU newlySplitOffCU = siblingsOfCu1.getFirst();
 			// verify the new cu that was split off cu2 and is now below existingTU
 			final I_M_ReceiptSchedule receiptScheduleForCU2_2 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(newlySplitOffCU);
 			assertThat(receiptScheduleForCU2_2, notNullValue());
@@ -345,7 +345,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForCU2_2, data.helper.getHUContext().getTrxName());
 			final List<I_M_ReceiptSchedule_Alloc> rsas2ForCu2 = rsas2.stream().filter(rsa -> rsa.getM_TU_HU_ID() == existingTU.getM_HU_ID() && rsa.getVHU_ID() == newlySplitOffCU.getM_HU_ID()).collect(Collectors.toList());
 			assertThat(rsas2ForCu2.size(), is(1));
-			assertThat(rsas2ForCu2.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("1.6")));
+			assertThat(rsas2ForCu2.getFirst().getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("1.6")));
 		}
 	}
 
@@ -364,21 +364,21 @@ public class HUTransformServiceReceiptCandidatesTests
 		{ // verify that cu1 and rs1 are properly linked
 			final List<IHUDocument> rs1HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs1TableRef.getTableName(), rs1TableRef.getRecord_ID());
 			assertThat(rs1HuDocument.size(), is(1));
-			assertThat(rs1HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == tuWithMixedCUs.getM_HU_ID()), is(true));
+			assertThat(rs1HuDocument.getFirst().getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu1.getM_HU_ID() || hu.getM_HU_ID() == tuWithMixedCUs.getM_HU_ID()), is(true));
 		}
 		// create a standalone-CU
 		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
 				.setLocatorId(data.defaultLocatorId);
 		data.helper.load(producer, data.helper.pSaladProductId, four, data.helper.uomKg);
 
-		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
+		final I_M_HU cu2 = producer.getCreatedHUs().getFirst();
 
 		final I_M_ReceiptSchedule rs2 = create_receiptSchedule_for_CU(cu2, "4");
 		final TableRecordReference rs2TableRef = TableRecordReference.of(rs2);
 		{ // verify that rs2 and cu2 are properly linked
 			final List<IHUDocument> rs2HuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rs2TableRef.getTableName(), rs2TableRef.getRecord_ID());
 			assertThat(rs2HuDocument.size(), is(1));
-			assertThat(rs2HuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu2.getM_HU_ID()), is(true));
+			assertThat(rs2HuDocument.getFirst().getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == cu2.getM_HU_ID()), is(true));
 		}
 
 		HUTransformService.builderForHUcontext()
@@ -410,7 +410,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForCU1, data.helper.getHUContext().getTrxName());
 			final List<I_M_ReceiptSchedule_Alloc> rsas1ForCu1 = rsas1.stream().filter(rsa -> rsa.getM_TU_HU_ID() == tuWithMixedCUs.getM_HU_ID() && rsa.getVHU_ID() == cu1.getM_HU_ID()).collect(Collectors.toList());
 			assertThat(rsas1ForCu1.size(), is(1));
-			assertThat(rsas1ForCu1.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("5")));
+			assertThat(rsas1ForCu1.getFirst().getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("5")));
 		}
 		{
 			final I_M_ReceiptSchedule receiptScheduleForCU2 = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(cu2);
@@ -420,7 +420,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForCU2, data.helper.getHUContext().getTrxName());
 			final List<I_M_ReceiptSchedule_Alloc> rsas2ForCu2 = rsas2.stream().filter(rsa -> rsa.getM_TU_HU_ID() == tuWithMixedCUs.getM_HU_ID() && rsa.getVHU_ID() == cu2.getM_HU_ID()).collect(Collectors.toList());
 			assertThat(rsas2ForCu2.size(), is(1));
-			assertThat(rsas2ForCu2.get(0).getHU_QtyAllocated(), comparesEqualTo(four));
+			assertThat(rsas2ForCu2.getFirst().getHU_QtyAllocated(), comparesEqualTo(four));
 		}
 	}
 
@@ -459,10 +459,10 @@ public class HUTransformServiceReceiptCandidatesTests
 		final I_M_HU aggregateTU;
 		{
 			assertThat(createdLUs.size(), is(1));
-			firstLU = createdLUs.get(0);
+			firstLU = createdLUs.getFirst();
 			final List<I_M_HU> aggregateTUs = handlingUnitsDAO.retrieveIncludedHUs(firstLU);
 			assertThat(aggregateTUs.size(), is(1));
-			aggregateTU = aggregateTUs.get(0);
+			aggregateTU = aggregateTUs.getFirst();
 			assertThat(handlingUnitsBL.isAggregateHU(aggregateTU), is(true));
 			assertThat(handlingUnitsDAO.retrieveParentItem(aggregateTU).getQty(), comparesEqualTo(new BigDecimal("10")));
 
@@ -483,7 +483,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			// verify that aggregateTU and rs are linked via firstLU
 			final List<IHUDocument> rsHuDocument = huDocumentFactoryService.createHUDocuments(data.helper.getHUContext().getCtx(), rsTableRef.getTableName(), rsTableRef.getRecord_ID());
 			assertThat(rsHuDocument.size(), is(1));
-			assertThat(rsHuDocument.get(0).getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == firstLU.getM_HU_ID()), is(true));
+			assertThat(rsHuDocument.getFirst().getAssignedHandlingUnits().stream().anyMatch(hu -> hu.getM_HU_ID() == firstLU.getM_HU_ID()), is(true));
 
 			// verify that aggregateTU is linked to one I_M_ReceiptSchedule_Alloc with qty=40
 			final I_M_ReceiptSchedule receiptScheduleForAggregateTU = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(aggregateTU);
@@ -495,7 +495,7 @@ public class HUTransformServiceReceiptCandidatesTests
 					.filter(rsa -> rsa.getM_TU_HU_ID() == aggregateTU.getM_HU_ID() && rsa.getVHU_ID() == aggregateTU.getM_HU_ID()) // aggregateTU acts both as TU and VHU
 					.collect(Collectors.toList());
 			assertThat(rsas1ForAggregateTUs.size(), is(1));
-			assertThat(rsas1ForAggregateTUs.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("40")));
+			assertThat(rsas1ForAggregateTUs.getFirst().getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("40")));
 		}
 
 		//
@@ -507,7 +507,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.cuToNewCU(aggregateTU, new Quantity(BigDecimal.valueOf(5), data.helper.uomKg));
 		assertThat(newCUs.size(), is(1));
-		final I_M_HU newCU = newCUs.get(0);
+		final I_M_HU newCU = newCUs.getFirst();
 		// newCU does not have any TU component
 		verifyQuantities(new BigDecimal("5"), new BigDecimal("0"), newCU);
 		// the first action destroyed one TU, because one TU is 4kg and we took out 5kg
@@ -521,7 +521,7 @@ public class HUTransformServiceReceiptCandidatesTests
 				.tuToNewLUs(aggregateTU, QtyTU.ofString("2"), piLU_Item_10_IFCOs, false)
 				.getLURecords();
 		assertThat(secondLUs.size(), is(1));
-		final I_M_HU secondLU = secondLUs.get(0);
+		final I_M_HU secondLU = secondLUs.getFirst();
 		// secondLU contains 2 x 4kg = 8kg
 		verifyQuantities(new BigDecimal("8"), new BigDecimal("2"), secondLU);
 		// aggregateTU now contains 6 x 4kg = 24kg
@@ -533,7 +533,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		// "Split off 1 TU on its own, without new LU"
 		final List<I_M_HU> singleNewTUs = HUTransformService.newInstance(data.helper.getHUContext()).tuToNewTUs(aggregateTU, QtyTU.ONE).getAllTURecords();
 		assertThat(singleNewTUs.size(), is(1));
-		final I_M_HU singleNewTU = singleNewTUs.get(0);
+		final I_M_HU singleNewTU = singleNewTUs.getFirst();
 		verifyQuantities(new BigDecimal("4"), new BigDecimal("1"), singleNewTU);
 		// aggregateTU now contains 5 x 4kg = 20kg
 		verifyQuantities(new BigDecimal("20"), new BigDecimal("5"), aggregateTU);
@@ -646,7 +646,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
 		assertThat(createdCUs.size(), is(1));
 
-		final I_M_HU cuToSplit = createdCUs.get(0);
+		final I_M_HU cuToSplit = createdCUs.getFirst();
 		return cuToSplit;
 	}
 
@@ -663,10 +663,10 @@ public class HUTransformServiceReceiptCandidatesTests
 
 		assertThat(createdTUs.size(), is(1));
 
-		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTUs.get(0));
+		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTUs.getFirst());
 		assertThat(createdCUs.size(), is(1));
 
-		final I_M_HU cuToSplit = createdCUs.get(0);
+		final I_M_HU cuToSplit = createdCUs.getFirst();
 
 		return cuToSplit;
 	}

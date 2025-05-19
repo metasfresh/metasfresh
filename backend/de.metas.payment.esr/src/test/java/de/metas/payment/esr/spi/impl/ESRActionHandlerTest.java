@@ -129,10 +129,10 @@ public class ESRActionHandlerTest extends ESRTestBase
 		assertThat(POJOLookupMap.get().getRecords(I_C_AllocationHdr.class)).hasSize(2);
 		assertThat(POJOLookupMap.get().getRecords(I_C_AllocationLine.class)).hasSize(3);
 
-		final BigDecimal firstAmount = POJOLookupMap.get().getRecords(I_C_Payment.class).get(0).getPayAmt();
+		final BigDecimal firstAmount = POJOLookupMap.get().getRecords(I_C_Payment.class).getFirst().getPayAmt();
 		final BigDecimal secondAmount = POJOLookupMap.get().getRecords(I_C_Payment.class).get(1).getPayAmt();
 		final BigDecimal thirdAmount = POJOLookupMap.get().getRecords(I_C_Payment.class).get(2).getPayAmt();
-		final BigDecimal firstOverUnder = POJOLookupMap.get().getRecords(I_C_Payment.class).get(0).getOverUnderAmt();
+		final BigDecimal firstOverUnder = POJOLookupMap.get().getRecords(I_C_Payment.class).getFirst().getOverUnderAmt();
 		final BigDecimal secondOverUnder = POJOLookupMap.get().getRecords(I_C_Payment.class).get(1).getOverUnderAmt();
 		final BigDecimal thirdOverUnder = POJOLookupMap.get().getRecords(I_C_Payment.class).get(2).getOverUnderAmt();
 
@@ -144,7 +144,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 		assertThat(secondOverUnder).isEqualByComparingTo("30");
 		assertThat(thirdOverUnder).isEqualByComparingTo("0");
 
-		final BigDecimal firstAllocLineAmount = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(0).getAmount();
+		final BigDecimal firstAllocLineAmount = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).getFirst().getAmount();
 		final BigDecimal secondAllocLineAmount = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(1).getAmount();
 		final BigDecimal thirdAllocLineAmount = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(2).getAmount();
 
@@ -174,7 +174,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		save(esrImportLine);
 
-		final I_C_Payment payment = POJOLookupMap.get().getRecords(I_C_Payment.class).get(0);
+		final I_C_Payment payment = POJOLookupMap.get().getRecords(I_C_Payment.class).getFirst();
 		assertThat(payment.getPayAmt()).isEqualByComparingTo("40"); // guard
 
 		// We need to register the action handler
@@ -197,7 +197,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 		save(invoice);
 		assertInvoiceFullyPaid(invoice);
 
-		final I_C_AllocationLine firstAllocationLine = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(0);
+		final I_C_AllocationLine firstAllocationLine = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).getFirst();
 		final I_C_AllocationLine secondAllocationLine = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(1);
 
 		// Test the invoice and allocations.

@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.api.impl.shipmentschedule_test_specs;
 
 import lombok.Builder;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 /*
  * #%L
@@ -28,7 +28,7 @@ import lombok.experimental.Wither;
 
 @Value
 @Builder
-@Wither
+@With
 public class UomSpec
 {
 	String name;

@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.invoicecandidate.ui.spi.impl;
 
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Properties;
@@ -34,17 +35,19 @@ import org.compiere.util.DisplayType;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+
 /** Represent a summary information (immutable) about a selection of invoice candidates */
 public final class HUInvoiceCandidatesSelectionSummaryInfo implements IGridTabSummaryInfo
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/** Cast given {@link IGridTabSummaryInfo} to {@link HUInvoiceCandidatesSelectionSummaryInfo} if possible. If not, null is returned */
 	public static HUInvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
 	{
-		if (gridTabSummaryInfo instanceof HUInvoiceCandidatesSelectionSummaryInfo)
+		if (gridTabSummaryInfo instanceof HUInvoiceCandidatesSelectionSummaryInfo info)
 		{
-			return (HUInvoiceCandidatesSelectionSummaryInfo)gridTabSummaryInfo;
+			return info;
 		}
 		return null;
 	}

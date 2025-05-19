@@ -404,14 +404,13 @@ final class HuTraceQueryCreator
 	{
 		final Object value = Check.assumeNotNull(parameter.getValue(), "Given paramter may not have a null value; parameter={}", parameter);
 
-		if (value instanceof LookupValue)
+		if (value instanceof LookupValue lookupValue)
 		{
-			final LookupValue lookupValue = (LookupValue)value;
 			return lookupValue.getIdAsInt();
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer integer)
 		{
-			return (Integer)value;
+			return integer;
 		}
 		else
 		{
@@ -423,14 +422,13 @@ final class HuTraceQueryCreator
 	{
 		final Object value = Check.assumeNotNull(parameter.getValue(), "Given paramter may not have a null value; parameter={}", parameter);
 
-		if (value instanceof LookupValue)
+		if (value instanceof LookupValue lookupValue)
 		{
-			final LookupValue lookupValue = (LookupValue)value;
 			return lookupValue.getIdAsString();
 		}
-		else if (value instanceof String)
+		else if (value instanceof String string)
 		{
-			return (String)value;
+			return string;
 		}
 
 		throw Check.fail("Unable to extract a String from parameter={}", parameter);
@@ -440,9 +438,9 @@ final class HuTraceQueryCreator
 	{
 		final Object value = Check.assumeNotNull(parameter.getValue(), "Given parameter may not have a null value; parameter={}", parameter);
 
-		if (value instanceof Boolean)
+		if (value instanceof Boolean boolean1)
 		{
-			return (Boolean)value;
+			return boolean1;
 		}
 
 		throw Check.fail("Unable to extract a Boolean from parameter={}", parameter);

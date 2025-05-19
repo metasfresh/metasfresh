@@ -50,9 +50,10 @@ import static de.metas.common.rest_api.v1.SwaggerDocConstants.PRODUCT_IDENTIFIER
 public class JsonCreateInvoiceCandidatesRequestItem
 {
 	@ApiModelProperty(position = 10, required = false, //
-			value = "Optional, to specify the `AD_Org_ID` for a new invoice candidate.\n"
-					+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
-					+ "or the invoking user needs to belong to an organisation, which is then used.")
+			value = """
+					Optional, to specify the `AD_Org_ID` for a new invoice candidate.
+					This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access
+					or the invoking user needs to belong to an organisation, which is then used.""")
 	String orgCode;
 
 	@ApiModelProperty(position = 20, dataType = "java.lang.String", required = true, //
@@ -96,10 +97,11 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	BigDecimal qtyDelivered;
 
 	@ApiModelProperty(position = 90, required = false, //
-			value = "Unit of measurement for the ordered, delivered and invoiced quantites\n"
-					+ "This translates to `C_UOM.X12DE355`.\n"
-					+ "The respective UOM needs to exist in metasfresh and its ID is set as `C_Invoice_candidate.C_UOM_ID`.\n"
-					+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the `product`'s UOM")
+			value = """
+					Unit of measurement for the ordered, delivered and invoiced quantites
+					This translates to `C_UOM.X12DE355`.
+					The respective UOM needs to exist in metasfresh and its ID is set as `C_Invoice_candidate.C_UOM_ID`.
+					Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the `product`'s UOM""")
 	String uomCode;
 
 	@ApiModelProperty(position = 100, required = true, //
@@ -107,8 +109,9 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	JsonSOTrx soTrx;
 
 	@ApiModelProperty(position = 110, required = false,//
-			value = "Can be set if the invoice's target document type is already known from the external system.\n"
-					+ "If specified, the respective doctype needs to be consistent with this instance's `soTrx` value.")
+			value = """
+					Can be set if the invoice's target document type is already known from the external system.
+					If specified, the respective doctype needs to be consistent with this instance's `soTrx` value.""")
 	JsonDocTypeInfo invoiceDocType;
 
 	@ApiModelProperty(position = 120, required = false)
@@ -120,8 +123,9 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	LocalDate presetDateInvoiced;
 
 	@ApiModelProperty(position = 160, required = false, //
-			value = "Optional, to override the price-entered (price per unit before discount) as computed by metasfresh's own pricing engine for the respective invoice candidate.\n"
-					+ "Note that if this is set, then the currency needs to match currency derived by metasfresh's pricing engine.")
+			value = """
+					Optional, to override the price-entered (price per unit before discount) as computed by metasfresh's own pricing engine for the respective invoice candidate.
+					Note that if this is set, then the currency needs to match currency derived by metasfresh's pricing engine.""")
 	JsonPrice priceEnteredOverride;
 
 	@ApiModelProperty(position = 170, required = false, //

@@ -251,9 +251,9 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		}
 
 		//
-		if (documentObj instanceof IDocument)
+		if (documentObj instanceof IDocument document)
 		{
-			return (IDocument)documentObj;
+			return document;
 		}
 
 		final String tableName = InterfaceWrapperHelper.getModelTableNameOrNull(documentObj);
@@ -266,9 +266,9 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			{
 				documentObjToUse = documentObj;
 			}
-			else if (documentObj instanceof TableRecordReference)
+			else if (documentObj instanceof TableRecordReference reference)
 			{
-				documentObjToUse = ((TableRecordReference)documentObj).getModel();
+				documentObjToUse = reference.getModel();
 			}
 			else
 			{
@@ -427,9 +427,9 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			return null;
 		}
 
-		if (model instanceof I_C_OrderLine)
+		if (model instanceof I_C_OrderLine line)
 		{
-			return TimeUtil.asLocalDate(((I_C_OrderLine)model).getDateOrdered());
+			return TimeUtil.asLocalDate(line.getDateOrdered());
 		}
 
 		final IDocument doc = getDocumentOrNull(model);
@@ -519,9 +519,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			{
 				return true;
 			}
-			if (obj instanceof DocActionItem)
+			if (obj instanceof DocActionItem other)
 			{
-				final DocActionItem other = (DocActionItem)obj;
 				return Objects.equal(value, other.value);
 			}
 			else

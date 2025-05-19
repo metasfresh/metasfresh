@@ -19,7 +19,7 @@ public final class TrxRunnable2Wrapper implements TrxRunnable2
 		{
 			return null;
 		}
-		final TrxRunnable2 runnable2 = runnable instanceof TrxRunnable2 ? (TrxRunnable2)runnable : new TrxRunnable2Wrapper(runnable);
+		final TrxRunnable2 runnable2 = runnable instanceof TrxRunnable2 tr ? tr : new TrxRunnable2Wrapper(runnable);
 		return runnable2;
 	}
 	

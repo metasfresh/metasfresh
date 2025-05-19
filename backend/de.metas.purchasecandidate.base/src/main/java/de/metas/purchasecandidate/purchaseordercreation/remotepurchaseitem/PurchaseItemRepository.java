@@ -59,14 +59,12 @@ public class PurchaseItemRepository
 
 	private static void save(@NonNull final PurchaseItem purchaseItem)
 	{
-		if (purchaseItem instanceof PurchaseOrderItem)
+		if (purchaseItem instanceof PurchaseOrderItem purchaseOrderItem)
 		{
-			final PurchaseOrderItem purchaseOrderItem = (PurchaseOrderItem)purchaseItem;
 			savePurchaseOrderItem(purchaseOrderItem);
 		}
-		else if (purchaseItem instanceof PurchaseErrorItem)
+		else if (purchaseItem instanceof PurchaseErrorItem purchaseErrorItem)
 		{
-			final PurchaseErrorItem purchaseErrorItem = (PurchaseErrorItem)purchaseItem;
 			savePurchaseErrorItem(purchaseErrorItem);
 		}
 		else

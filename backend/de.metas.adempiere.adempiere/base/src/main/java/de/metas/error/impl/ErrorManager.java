@@ -220,15 +220,15 @@ public class ErrorManager implements IErrorManager
 
 	private IssueCategory extractIssueCategory(@Nullable final Throwable t)
 	{
-		return t instanceof AdempiereException
-				? ((AdempiereException)t).getIssueCategory()
+		return t instanceof AdempiereException ae
+				? ae.getIssueCategory()
 				: IssueCategory.OTHER;
 	}
 
 	private static TableRecordReference extractRecordRef(@Nullable final Throwable t)
 	{
-		return t instanceof AdempiereException
-				? ((AdempiereException)t).getRecord()
+		return t instanceof AdempiereException ae
+				? ae.getRecord()
 				: null;
 	}
 
@@ -247,9 +247,8 @@ public class ErrorManager implements IErrorManager
 			@NonNull final String name,
 			@NonNull final IntFunction<T> mapper)
 	{
-		if (t instanceof AdempiereException)
+		if (t instanceof AdempiereException metasfreshException)
 		{
-			final AdempiereException metasfreshException = (AdempiereException)t;
 
 			final String mdcValueStr = metasfreshException.getMDC(name);
 			if (mdcValueStr != null && !mdcValueStr.isEmpty())

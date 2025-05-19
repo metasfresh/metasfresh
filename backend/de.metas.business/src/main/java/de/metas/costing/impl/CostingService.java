@@ -514,7 +514,7 @@ public class CostingService implements ICostingService
 		final CurrentCost currentCost = currentCostsRepo.getOrCreate(costSegmentAndElement);
 		if (!costDetails.isEmpty())
 		{
-			final CostDetail firstCostDetail = costDetails.get(0);
+			final CostDetail firstCostDetail = costDetails.getFirst();
 			currentCost.setFrom(firstCostDetail.getPreviousAmounts());
 		}
 		//

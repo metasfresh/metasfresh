@@ -76,7 +76,7 @@ public class MainDataRecordIdentifierTest
 		final List<I_MD_Cockpit> retrievedCockpitRecords = mainDataRecordIdentifier.createQueryBuilder().create().list();
 
 		assertThat(retrievedCockpitRecords).hasSize(1);
-		assertThatModel(retrievedCockpitRecords.get(0)).hasSameIdAs(cockpitRecord);
+		assertThatModel(retrievedCockpitRecords.getFirst()).hasSameIdAs(cockpitRecord);
 	}
 
 }

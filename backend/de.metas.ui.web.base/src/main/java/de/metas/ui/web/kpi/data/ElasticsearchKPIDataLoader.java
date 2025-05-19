@@ -255,13 +255,13 @@ class ElasticsearchKPIDataLoader
 
 			for (final Aggregation agg : aggregations)
 			{
-				if (agg instanceof NumericMetricsAggregation.SingleValue)
+				if (agg instanceof NumericMetricsAggregation.SingleValue value)
 				{
-					loadDataFromSingleValue(data, (NumericMetricsAggregation.SingleValue)agg);
+					loadDataFromSingleValue(data, value);
 				}
-				else if (agg instanceof MultiBucketsAggregation)
+				else if (agg instanceof MultiBucketsAggregation aggregation)
 				{
-					loadDataFromMultiBucketsAggregation(data, timeRange, (MultiBucketsAggregation)agg);
+					loadDataFromMultiBucketsAggregation(data, timeRange, aggregation);
 				}
 				else
 				{
@@ -371,18 +371,18 @@ class ElasticsearchKPIDataLoader
 		{
 			return Instant.ofEpochMilli(0);
 		}
-		else if (valueObj instanceof org.joda.time.DateTime)
+		else if (valueObj instanceof DateTime time)
 		{
-			final long millis = ((DateTime)valueObj).getMillis();
+			final long millis = time.getMillis();
 			return Instant.ofEpochMilli(millis);
 		}
-		else if (valueObj instanceof Long)
+		else if (valueObj instanceof Long long1)
 		{
-			return Instant.ofEpochMilli((Long)valueObj);
+			return Instant.ofEpochMilli(long1);
 		}
-		else if (valueObj instanceof Number)
+		else if (valueObj instanceof Number number)
 		{
-			return Instant.ofEpochMilli(((Number)valueObj).longValue());
+			return Instant.ofEpochMilli(number.longValue());
 		}
 		else
 		{

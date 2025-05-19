@@ -54,35 +54,35 @@ public class JSONDataEntryRecordMapper
 		{
 			record.createdUpdatedInfo(field.getDataEntryFieldId().getRepoId(), field.getCreatedUpdatedInfo());
 
-			if (field instanceof DataEntryRecordFieldYesNo)
+			if (field instanceof DataEntryRecordFieldYesNo no)
 			{
 				record.yesNo(
 						field.getDataEntryFieldId().getRepoId(),
-						((DataEntryRecordFieldYesNo)field).getValue());
+						no.getValue());
 			}
-			else if (field instanceof DataEntryRecordFieldDate)
+			else if (field instanceof DataEntryRecordFieldDate date)
 			{
 				record.date(
 						field.getDataEntryFieldId().getRepoId(),
-						((DataEntryRecordFieldDate)field).getValue());
+						date.getValue());
 			}
-			else if (field instanceof DataEntryRecordFieldListValue)
+			else if (field instanceof DataEntryRecordFieldListValue value)
 			{
 				record.listValue(
 						field.getDataEntryFieldId().getRepoId(),
-						((DataEntryRecordFieldListValue)field).getValue());
+						value.getValue());
 			}
-			else if (field instanceof DataEntryRecordFieldString)
+			else if (field instanceof DataEntryRecordFieldString string)
 			{
 				record.string(
 						field.getDataEntryFieldId().getRepoId(),
-						((DataEntryRecordFieldString)field).getValue());
+						string.getValue());
 			}
-			else if (field instanceof DataEntryRecordFieldNumber)
+			else if (field instanceof DataEntryRecordFieldNumber number)
 			{
 				record.number(
 						field.getDataEntryFieldId().getRepoId(),
-						((DataEntryRecordFieldNumber)field).getValue());
+						number.getValue());
 			}
 		}
 

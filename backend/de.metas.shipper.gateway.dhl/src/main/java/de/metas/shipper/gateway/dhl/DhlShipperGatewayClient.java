@@ -406,7 +406,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					.map(JsonDhlItemResponse::getShipmentNo)
 					.collect(Collectors.joining(", "));
 			getEpicLogger().addLog("Sent {} orders to DHL, but got {} labels for them. Unclear how to perform matching of following AWBs: {}", deliveryOrderLineCount, responseItemsCount, awbs);
-			throw new ShipperGatewayException(String.format("Sent %d orders to DHL, but got %d labels for them. Unclear how to perform matching of following AWBs: %s", deliveryOrderLineCount, responseItemsCount, awbs));
+			throw new ShipperGatewayException("Sent %d orders to DHL, but got %d labels for them. Unclear how to perform matching of following AWBs: %s".formatted(deliveryOrderLineCount, responseItemsCount, awbs));
 		}
 
 		for (int i = 0; i < deliveryOrderLineCount; i++)

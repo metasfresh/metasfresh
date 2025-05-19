@@ -127,7 +127,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	{
 		final List<I_DHL_ShipmentOrder> ordersPo = getAllShipmentOrdersForRequest(deliveryOrderRepoId);
 
-		final I_DHL_ShipmentOrder firstOrder = ordersPo.get(0);
+		final I_DHL_ShipmentOrder firstOrder = ordersPo.getFirst();
 		final I_C_BPartner orgBPartner = bpartnerDAO.retrieveOrgBPartner(InterfaceWrapperHelper.getCtx(firstOrder), firstOrder.getAD_Org_ID(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		final String orgBpEori = orgBPartner.getEORI();
 

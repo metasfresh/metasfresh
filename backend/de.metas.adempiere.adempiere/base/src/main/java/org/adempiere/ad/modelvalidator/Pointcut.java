@@ -66,7 +66,7 @@ import java.lang.reflect.Method;
 			final String[] columnNamesToCheckForChanges,
 			final String[] ignoreColumnNames)
 	{
-		pointcutId = String.format("%s#%s",
+		pointcutId = "%s#%s".formatted(
 				method.getDeclaringClass().getName(),
 				method.getName());
 

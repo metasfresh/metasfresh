@@ -669,7 +669,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 				final POJOLookupMap db = POJOLookupMap.get();
 				final List<I_C_Invoice> invoices = db.getRecords(I_C_Invoice.class);
 				assertThat(invoices).hasSize(1);
-				final I_C_Invoice serviceInvoice = invoices.get(0);
+				final I_C_Invoice serviceInvoice = invoices.getFirst();
 				assertThat(serviceInvoice.getC_Invoice_ID()).isEqualTo(serviceInvoiceId.getRepoId());
 				assertThat(serviceInvoice.getRef_Invoice_ID()).isEqualTo(3);
 				assertThat(serviceInvoice.getC_BPartner_ID()).isEqualTo(serviceCompanyBPartnerAndLocationId.getBpartnerId().getRepoId());
@@ -683,7 +683,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 				// Check service invoice line
 				final List<I_C_InvoiceLine> serviceInvoiceLines = db.getRecords(I_C_InvoiceLine.class);
 				assertThat(serviceInvoiceLines).hasSize(1);
-				final I_C_InvoiceLine serviceInvoiceLine = serviceInvoiceLines.get(0);
+				final I_C_InvoiceLine serviceInvoiceLine = serviceInvoiceLines.getFirst();
 				assertThat(serviceInvoiceLine.getC_Invoice_ID()).isEqualTo(serviceInvoice.getC_Invoice_ID());
 				assertThat(serviceInvoiceLine.getM_Product_ID()).isEqualTo(serviceFeeProductId.getRepoId());
 				assertThat(serviceInvoiceLine.isManualPrice()).isTrue();

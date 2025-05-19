@@ -180,9 +180,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			candidateRepositoryWrite.updateCandidateById(parentOfSupplyCandidate.withSeqNo(seqNoOfDemand - 2));
 		}
 
-		if (ddOrderEvent instanceof DDOrderCreatedEvent)
+		if (ddOrderEvent instanceof DDOrderCreatedEvent event)
 		{
-			handleMainDataUpdates((DDOrderCreatedEvent)ddOrderEvent, ddOrderLine);
+			handleMainDataUpdates(event, ddOrderLine);
 		}
 
 	}

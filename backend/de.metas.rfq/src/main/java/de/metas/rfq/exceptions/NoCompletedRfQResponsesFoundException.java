@@ -2,6 +2,8 @@ package de.metas.rfq.exceptions;
 
 import de.metas.rfq.model.I_C_RfQ;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.rfq
@@ -26,6 +28,7 @@ import de.metas.rfq.model.I_C_RfQ;
 
 public class NoCompletedRfQResponsesFoundException extends RfQException
 {
+	@Serial
 	private static final long serialVersionUID = 4046793962403056093L;
 
 	public NoCompletedRfQResponsesFoundException(final I_C_RfQ rfq)

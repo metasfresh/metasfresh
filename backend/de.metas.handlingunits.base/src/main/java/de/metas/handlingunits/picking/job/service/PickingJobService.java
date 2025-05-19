@@ -422,7 +422,7 @@ public class PickingJobService
 		if (pickingJob.isNothingPicked())
 		{
 			final PickingJob abortedPickingJob = abort(pickingJob);
-			Check.assume(!abortedPickingJob.getPickingSlotId().isPresent(), "Assuming the aborted picking job is no longer assigned to a picking slot.");
+			Check.assume(abortedPickingJob.getPickingSlotId().isEmpty(), "Assuming the aborted picking job is no longer assigned to a picking slot.");
 			return true;
 		}
 		else if (forceRemoveForOngoingPickingJob)

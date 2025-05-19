@@ -59,7 +59,7 @@ public final class OrderCheckupBarcode
 			throw new IllegalArgumentException("Invalid barcode: " + barcode);
 		}
 
-		final String version = barcodeParts.get(0);
+		final String version = barcodeParts.getFirst();
 		if (VERSION_1.equals(version))
 		{
 			return fromBarcodeString_v1(barcodeParts);

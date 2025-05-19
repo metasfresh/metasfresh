@@ -83,8 +83,8 @@ public class PartitionerServiceTests
 		assertThat(augmentedConfig.getLines().size(), is(2));
 		assertThat(augmentedConfig.getLineNotNull(I_AD_Field.Table_Name).getReferences().size(), is(0));
 		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().size(), is(1));
-		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().get(0).getReferencedTableName(), is(I_AD_Field.Table_Name));
-		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().get(0).getReferencingColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
+		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().getFirst().getReferencedTableName(), is(I_AD_Field.Table_Name));
+		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().getFirst().getReferencingColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
 
 		return augmentedConfig;
 	}

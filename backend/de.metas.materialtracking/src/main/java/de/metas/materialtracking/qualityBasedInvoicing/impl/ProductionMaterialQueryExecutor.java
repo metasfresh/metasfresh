@@ -78,7 +78,7 @@ import java.util.Objects;
 		}
 		else if (productionMaterials.size() == 1)
 		{
-			return productionMaterials.get(0);
+			return productionMaterials.getFirst();
 		}
 		else
 		{

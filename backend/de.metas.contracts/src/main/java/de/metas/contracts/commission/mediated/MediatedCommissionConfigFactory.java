@@ -171,7 +171,7 @@ public class MediatedCommissionConfigFactory implements ICommissionConfigFactory
 		final Optional<MediatedCommissionSettingsLine> commissionSettingsLineOpt = mediatedCommissionSettings
 				.getLineForProductCategory(productCategoryId);
 
-		if (!commissionSettingsLineOpt.isPresent())
+		if (commissionSettingsLineOpt.isEmpty())
 		{
 			return Optional.empty();
 		}
@@ -196,7 +196,7 @@ public class MediatedCommissionConfigFactory implements ICommissionConfigFactory
 		//dev-note: see de.metas.contracts.interceptor.C_Flatrate_Term.ensureOneContract
 		Check.assume(mediatedCommissionContracts.size() == 1, "There should always be only one mediated contract at this point!");
 
-		return mediatedCommissionContracts.get(0);
+		return mediatedCommissionContracts.getFirst();
 	}
 
 	@VisibleForTesting

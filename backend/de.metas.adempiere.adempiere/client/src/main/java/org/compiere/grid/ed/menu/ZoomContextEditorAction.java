@@ -126,9 +126,8 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 	private void run0()
 	{
 		final VEditor editor = getEditor();
-		if (editor instanceof IZoomableEditor)
+		if (editor instanceof IZoomableEditor zoomableEditor)
 		{
-			final IZoomableEditor zoomableEditor = (IZoomableEditor)editor;
 			zoomableEditor.actionZoom();
 		}
 		else

@@ -170,8 +170,8 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 				.as("Processed workpackages list shall have same size as initial workpackages list")
 				.hasSize(processedWPs.size());
 
-		assertThat(processedWPs.get(0).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(0)).isTrue();
-		assertThat(processedWPs.get(0).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(0)).isFalse();
+		assertThat(processedWPs.getFirst().isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.getFirst()).isTrue();
+		assertThat(processedWPs.getFirst().isError()).as("Workpackage - Invalid IsError: %s", processedWPs.getFirst()).isFalse();
 
 		assertThat(processedWPs.get(1).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(1)).isTrue();
 		assertThat(processedWPs.get(1).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(1)).isFalse();
@@ -183,8 +183,8 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		assertThat(processedWPs.get(3).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(3)).isFalse();
 		assertThat(processedWPs.get(3).isError()).as("Workpackage - Invalid IsError: " + processedWPs.get(3)).isTrue();
 
-		assertThat(processedWPs.get(4).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(0)).isTrue();
-		assertThat(processedWPs.get(4).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(0)).isFalse();
+		assertThat(processedWPs.get(4).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.getFirst()).isTrue();
+		assertThat(processedWPs.get(4).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.getFirst()).isFalse();
 
 		helper.assertNothingLocked();
 	}
@@ -198,7 +198,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		final int count = 1;
 		final boolean markReadyForProcessing = false;
 		final List<I_C_Queue_WorkPackage> workpackages = helper.createAndEnqueueWorkpackages(workpackageQueue, count, markReadyForProcessing);
-		final I_C_Queue_WorkPackage workpackage0 = workpackages.get(0);
+		final I_C_Queue_WorkPackage workpackage0 = workpackages.getFirst();
 
 		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
 		workpackageProcessor.setDefaultResult(Result.SUCCESS);
@@ -212,7 +212,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 			final List<I_C_Queue_WorkPackage> processedWorkpackages = workpackageProcessor.getProcessedWorkpackages();
 			helper.waitUntilSize(processedWorkpackages, workpackages.size(), 0 * 1000);
 
-			final I_C_Queue_WorkPackage processedWorkpackage0 = processedWorkpackages.get(0);
+			final I_C_Queue_WorkPackage processedWorkpackage0 = processedWorkpackages.getFirst();
 			InterfaceWrapperHelper.refresh(workpackage0);
 			assertThat(processedWorkpackage0).as("Processed package shall be the same as the one enqueued").isEqualTo(workpackage0);
 			assertThat(result.getC_Queue_WorkPackage()).as("Callback shall be called for our workpackage").isEqualTo(processedWorkpackage0);
@@ -246,7 +246,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
 		final List<I_C_Queue_WorkPackage> workpackages = helper.createAndEnqueueWorkpackages(workpackageQueue, 1, false);
-		final I_C_Queue_WorkPackage workpackage0 = workpackages.get(0);
+		final I_C_Queue_WorkPackage workpackage0 = workpackages.getFirst();
 
 		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
 		workpackageProcessor.setRuntimeException(workpackage0, "Fail test");
@@ -301,7 +301,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 
 		//
 		// Create and enqueue the workpackage
-		final I_C_Queue_WorkPackage workpackage0 = helper.createAndEnqueueWorkpackages(workpackageQueue, 1, false).get(0); // count=1, readyForProcessing=false
+		final I_C_Queue_WorkPackage workpackage0 = helper.createAndEnqueueWorkpackages(workpackageQueue, 1, false).getFirst(); // count=1, readyForProcessing=false
 
 		//
 		// Mark ready for processing after transaction is committed
@@ -352,7 +352,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 
 		//
 		// Create and enque the workpackage
-		final I_C_Queue_WorkPackage workpackage0 = helper.createAndEnqueueWorkpackages(workpackageQueue, 1, false).get(0); // readyForProcessing=false
+		final I_C_Queue_WorkPackage workpackage0 = helper.createAndEnqueueWorkpackages(workpackageQueue, 1, false).getFirst(); // readyForProcessing=false
 
 		//
 		// Mark ready for processing after transaction is commited

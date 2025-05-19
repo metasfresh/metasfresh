@@ -132,7 +132,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		{
 			throw new AdempiereException("@Missing@ @" + org.compiere.model.I_C_BPartner_Location.COLUMNNAME_IsShipTo + "@");
 		}
-		final CountryId countryId = CountryId.ofRepoId(shipToLocations.get(0).getC_Location().getC_Country_ID());
+		final CountryId countryId = CountryId.ofRepoId(shipToLocations.getFirst().getC_Location().getC_Country_ID());
 
 		//
 		// Fetch price from pricing engine

@@ -461,17 +461,17 @@ public class Invoice440FromCrossVersionModelTool
 			@NonNull final BodyType bodyType,
 			@NonNull final XmlEsr esr)
 	{
-		if (esr instanceof XmlEsr5)
+		if (esr instanceof XmlEsr5 esr5)
 		{
-			bodyType.setEsr5(createEsr5Type((XmlEsr5)esr));
+			bodyType.setEsr5(createEsr5Type(esr5));
 		}
-		else if (esr instanceof XmlEsr9)
+		else if (esr instanceof XmlEsr9 esr9)
 		{
-			bodyType.setEsr9(createEsr9Type((XmlEsr9)esr));
+			bodyType.setEsr9(createEsr9Type(esr9));
 		}
-		else if (esr instanceof XmlEsrRed)
+		else if (esr instanceof XmlEsrRed red)
 		{
-			bodyType.setEsrRed(createEsrRedType((XmlEsrRed)esr));
+			bodyType.setEsrRed(createEsrRedType(red));
 		}
 		else
 		{
@@ -1056,33 +1056,33 @@ public class Invoice440FromCrossVersionModelTool
 		for (final XmlService service : services)
 		{
 			final Object serviceType;
-			if (service instanceof XmlServiceEx)
+			if (service instanceof XmlServiceEx ex)
 			{
-				serviceType = createRecordTarmedType((XmlServiceEx)service);
+				serviceType = createRecordTarmedType(ex);
 			}
-			else if (service instanceof XmlRecordDrg)
+			else if (service instanceof XmlRecordDrg drg)
 			{
-				serviceType = createRecordDRGType((XmlRecordDrg)service);
+				serviceType = createRecordDRGType(drg);
 			}
-			else if (service instanceof XmlRecordLab)
+			else if (service instanceof XmlRecordLab lab)
 			{
-				serviceType = createRecordLabType((XmlRecordLab)service);
+				serviceType = createRecordLabType(lab);
 			}
-			else if (service instanceof XmlRecordMigel)
+			else if (service instanceof XmlRecordMigel migel)
 			{
-				serviceType = createRecordMigelType((XmlRecordMigel)service);
+				serviceType = createRecordMigelType(migel);
 			}
-			else if (service instanceof XmlRecordParamed)
+			else if (service instanceof XmlRecordParamed paramed)
 			{
-				serviceType = createRecordParamedType((XmlRecordParamed)service);
+				serviceType = createRecordParamedType(paramed);
 			}
-			else if (service instanceof XmlRecordDrug)
+			else if (service instanceof XmlRecordDrug drug)
 			{
-				serviceType = createRecordDrugType((XmlRecordDrug)service);
+				serviceType = createRecordDrugType(drug);
 			}
-			else if (service instanceof XmlRecordOther)
+			else if (service instanceof XmlRecordOther other)
 			{
-				serviceType = createRecordOtherType((XmlRecordOther)service);
+				serviceType = createRecordOtherType(other);
 			}
 			else
 			{

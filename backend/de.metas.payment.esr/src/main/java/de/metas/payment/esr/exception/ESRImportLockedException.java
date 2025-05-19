@@ -25,11 +25,14 @@ package de.metas.payment.esr.exception;
 
 import de.metas.payment.esr.model.I_ESR_Import;
 
+import java.io.Serial;
+
 public class ESRImportLockedException extends ESRException
 {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -4934880824804384245L;
 
 	public ESRImportLockedException(final I_ESR_Import esrImport)

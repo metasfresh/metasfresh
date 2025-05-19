@@ -27,6 +27,7 @@ import de.metas.i18n.TranslatableStrings;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.io.Serial;
 
 /**
  * Exception thrown when we have an expression compilation failure
@@ -35,6 +36,7 @@ import javax.annotation.Nullable;
  */
 public class ExpressionCompileException extends ExpressionException
 {
+	@Serial
 	private static final long serialVersionUID = 7284538289150002848L;
 
 	public ExpressionCompileException(final String msg)

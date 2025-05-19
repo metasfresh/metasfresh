@@ -131,7 +131,7 @@ public class CustomizedWindowInfoMap
 		for (final ArrayList<AdWindowId> group : groups)
 		{
 			final int groupSize = group.size();
-			final AdWindowId baseWindowId = group.get(0);
+			final AdWindowId baseWindowId = group.getFirst();
 			final AdWindowId customizationWindowId = group.get(groupSize - 1);
 			final ImmutableList<AdWindowId> previousCustomizationWindowIds = groupSize > 2
 					? ImmutableList.copyOf(group.subList(1, groupSize - 1))
@@ -197,9 +197,9 @@ public class CustomizedWindowInfoMap
 		}
 	}
 
-	private static AdWindowId first(@NonNull final ArrayList<AdWindowId> group) { return group.get(0); }
+	private static AdWindowId first(@NonNull final ArrayList<AdWindowId> group) { return group.getFirst(); }
 
-	private static AdWindowId last(@NonNull final ArrayList<AdWindowId> group) { return group.get(group.size() - 1); }
+	private static AdWindowId last(@NonNull final ArrayList<AdWindowId> group) { return group.getLast(); }
 
 	public Optional<CustomizedWindowInfo> getCustomizedWindowInfo(@NonNull final AdWindowId baseWindowId)
 	{

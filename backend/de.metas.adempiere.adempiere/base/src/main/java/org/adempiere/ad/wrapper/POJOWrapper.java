@@ -402,16 +402,15 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		if (Proxy.isProxyClass(model.getClass()))
 		{
 			final InvocationHandler ih = Proxy.getInvocationHandler(model);
-			if (ih instanceof POJOWrapper)
+			if (ih instanceof POJOWrapper wrapper)
 			{
-				final POJOWrapper wrapper = (POJOWrapper)ih;
 				return wrapper;
 			}
 			return null;
 		}
-		else if (model instanceof POJOWrapper)
+		else if (model instanceof POJOWrapper wrapper)
 		{
-			return (POJOWrapper)model;
+			return wrapper;
 		}
 
 		return null;
@@ -831,9 +830,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				}
 				sbValues.append(name).append("=").append(valueStr);
 
-				if ("AD_Table_ID".equals(name) && value != null && value instanceof Number)
+				if ("AD_Table_ID".equals(name) && value != null && value instanceof Number number)
 				{
-					final int valueInt = ((Number)value).intValue();
+					final int valueInt = number.intValue();
 					if (valueInt > 0)
 					{
 						final String tableName = Services.get(IADTableDAO.class).retrieveTableName(valueInt);
@@ -1304,9 +1303,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		//
 		// Special case: lookup columns
-		if (columnName.endsWith("_ID") && value instanceof Integer)
+		if (columnName.endsWith("_ID") && value instanceof Integer id)
 		{
-			final int id = (Integer)value;
 			final boolean idIsNotValidForGivenColumnName = POWrapper.getFirstValidIdByColumnName(columnName) > id;
 			if (idIsNotValidForGivenColumnName)
 			{
@@ -1593,9 +1591,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			return idForNewModel();
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer valueInt)
 		{
-			final Integer valueInt = (Integer)value;
 			return Integer.max(valueInt, idForNewModel(columnName));
 		}
 		else if (value instanceof String)
@@ -1604,9 +1601,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			final int valueInt = Integer.parseInt(value.toString());
 			return Integer.max(valueInt, idForNewModel(columnName));
 		}
-		else if (value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware aware)
 		{
-			return ((RepoIdAware)value).getRepoId();
+			return aware.getRepoId();
 		}
 		else
 		{

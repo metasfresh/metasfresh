@@ -68,9 +68,8 @@ public class GlobalActionReadProcess extends JavaProcess
 			return;
 		}
 
-		if (result instanceof OpenViewGlobalActionHandlerResult)
+		if (result instanceof OpenViewGlobalActionHandlerResult openViewResult)
 		{
-			final OpenViewGlobalActionHandlerResult openViewResult = (OpenViewGlobalActionHandlerResult)result;
 			final ViewId viewId = openViewResult.getViewId();
 			final ViewProfileId viewProfileId = openViewResult.getViewProfileId();
 			getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()

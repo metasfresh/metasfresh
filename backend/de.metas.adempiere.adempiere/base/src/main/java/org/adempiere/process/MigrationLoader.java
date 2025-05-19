@@ -22,14 +22,8 @@ package org.adempiere.process;
  * #L%
  */
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.InputStream;
-import java.util.Properties;
-import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-
 import org.adempiere.ad.migration.executor.IMigrationExecutor;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
 import org.adempiere.ad.migration.executor.IMigrationExecutorProvider;
@@ -38,6 +32,12 @@ import org.adempiere.ad.migration.xml.XMLLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.InputStream;
+import java.util.Properties;
 
 public class MigrationLoader
 {
@@ -97,9 +97,8 @@ public class MigrationLoader
 
 		for (Object o : loader.getObjects())
 		{
-			if (o instanceof I_AD_Migration)
+			if (o instanceof I_AD_Migration migration)
 			{
-				final I_AD_Migration migration = (I_AD_Migration)o;
 				execute(migration);
 			}
 			else

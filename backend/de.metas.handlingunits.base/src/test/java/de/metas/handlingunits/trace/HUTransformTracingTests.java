@@ -117,7 +117,7 @@ public class HUTransformTracingTests
 		assertThat(traceEvents.size(), is(2));
 
 		{
-			final HUTraceEvent huTraceEvent = traceEvents.get(0);
+			final HUTraceEvent huTraceEvent = traceEvents.getFirst();
 			assertThat(huTraceEvent.getType(), is(HUTraceType.TRANSFORM_LOAD));
 
 			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getInput().getM_HU_ID()));
@@ -161,12 +161,12 @@ public class HUTransformTracingTests
 				.orgId(OrgId.ofRepoIdOrAny(cuToSplit.getAD_Org_ID()))
 				.vhuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
 				.vhuStatus(cuToSplit.getHUStatus())
-				.eventTime(tuTraceEvents.get(0).getEventTime())
-				.productId(tuTraceEvents.get(0).getProductId())
+				.eventTime(tuTraceEvents.getFirst().getEventTime())
+				.productId(tuTraceEvents.getFirst().getProductId())
 				.type(HUTraceType.TRANSFORM_PARENT);
 
 		// when comparing with "common", we needs to keep the ID out
-		final HUTraceEvent tuTraceEventToCompareWith = tuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
+		final HUTraceEvent tuTraceEventToCompareWith = tuTraceEvents.getFirst().toBuilder().huTraceEventId(OptionalInt.empty()).build();
 		assertThat(tuTraceEventToCompareWith,
 				   is(common
 							  .qty(Quantity.of(new BigDecimal("-3"), uomRecord))
@@ -178,7 +178,7 @@ public class HUTransformTracingTests
 		assertThat(cuTraceEvents.size(), is(1));
 
 		// when comparing with "common", we needs to keep the ID out
-		final HUTraceEvent cuTraceEventToCompareWith = cuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
+		final HUTraceEvent cuTraceEventToCompareWith = cuTraceEvents.getFirst().toBuilder().huTraceEventId(OptionalInt.empty()).build();
 		assertThat(cuTraceEventToCompareWith,
 				   is(common
 							  .qty(Quantity.of(new BigDecimal("3"), uomRecord))

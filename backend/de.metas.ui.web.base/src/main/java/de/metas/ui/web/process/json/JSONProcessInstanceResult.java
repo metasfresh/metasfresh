@@ -98,24 +98,20 @@ public final class JSONProcessInstanceResult
 		{
 			return null;
 		}
-		else if (resultAction instanceof OpenReportAction)
+		else if (resultAction instanceof OpenReportAction openReportAction)
 		{
-			final OpenReportAction openReportAction = (OpenReportAction)resultAction;
 			return new JSONOpenReportAction(openReportAction.getFilename(), openReportAction.getContentType());
 		}
-		else if (resultAction instanceof OpenViewAction)
+		else if (resultAction instanceof OpenViewAction openViewAction)
 		{
-			final OpenViewAction openViewAction = (OpenViewAction)resultAction;
 			return new JSONOpenViewAction(openViewAction.getViewId(), openViewAction.getProfileId(), openViewAction.getTargetTab());
 		}
-		else if (resultAction instanceof OpenIncludedViewAction)
+		else if (resultAction instanceof OpenIncludedViewAction openIncludedViewAction)
 		{
-			final OpenIncludedViewAction openIncludedViewAction = (OpenIncludedViewAction)resultAction;
 			return new JSONOpenIncludedViewAction(openIncludedViewAction.getViewId(), openIncludedViewAction.getProfileId());
 		}
-		else if (resultAction instanceof OpenSingleDocument)
+		else if (resultAction instanceof OpenSingleDocument openDocumentAction)
 		{
-			final OpenSingleDocument openDocumentAction = (OpenSingleDocument)resultAction;
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
 			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson(), openDocumentAction.getTargetTab());
 		}
@@ -123,19 +119,16 @@ public final class JSONProcessInstanceResult
 		{
 			return JSONCloseView.instance;
 		}
-		else if (resultAction instanceof SelectViewRowsAction)
+		else if (resultAction instanceof SelectViewRowsAction selectViewRowsAction)
 		{
-			final SelectViewRowsAction selectViewRowsAction = (SelectViewRowsAction)resultAction;
 			return new JSONSelectViewRowsAction(selectViewRowsAction.getViewId(), selectViewRowsAction.getRowIds());
 		}
-		else if (resultAction instanceof DisplayQRCodeAction)
+		else if (resultAction instanceof DisplayQRCodeAction displayQRCodeAction)
 		{
-			final DisplayQRCodeAction displayQRCodeAction = (DisplayQRCodeAction)resultAction;
 			return new JSONDisplayQRCodeAction(displayQRCodeAction.getCode());
 		}
-		else if (resultAction instanceof NewRecordAction)
+		else if (resultAction instanceof NewRecordAction newRecordAction)
 		{
-			final NewRecordAction newRecordAction = (NewRecordAction)resultAction;
 			return new JSONNewRecordAction(
 					WindowId.fromJson(newRecordAction.getWindowId()),
 					newRecordAction.getFieldValues(),

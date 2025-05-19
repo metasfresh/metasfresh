@@ -190,7 +190,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		}
 
 		Services.get(ITrxManager.class).run(trxName, (TrxRunnable)localTrxName -> {
-			final IContextAware context = Services.get(ITrxManager.class).createThreadContextAware(allocs.get(0));
+			final IContextAware context = Services.get(ITrxManager.class).createThreadContextAware(allocs.getFirst());
 			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
 
 			Services.get(IHUTrxBL.class)
@@ -321,7 +321,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		Check.assumeNotEmpty(receiptSchedules, "receiptSchedules not empty");
 		if (receiptSchedules.size() == 1)
 		{
-			final I_M_ReceiptSchedule receiptSchedule = receiptSchedules.get(0);
+			final I_M_ReceiptSchedule receiptSchedule = receiptSchedules.getFirst();
 			return createLUTUConfigurationManager(receiptSchedule);
 		}
 		else

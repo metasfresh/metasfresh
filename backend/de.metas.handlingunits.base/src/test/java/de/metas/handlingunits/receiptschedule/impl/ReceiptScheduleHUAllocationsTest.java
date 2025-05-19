@@ -132,7 +132,7 @@ public class ReceiptScheduleHUAllocationsTest extends AbstractRSAllocationWithWe
 
 		//
 		// Split first Paloxe
-		final I_M_HU paloxe1 = paloxes.get(0);
+		final I_M_HU paloxe1 = paloxes.getFirst();
 		final List<I_M_HU> createdHUs = helper.newSplitBuilder(huContext,
 				paloxe1,
 				pTomatoId,

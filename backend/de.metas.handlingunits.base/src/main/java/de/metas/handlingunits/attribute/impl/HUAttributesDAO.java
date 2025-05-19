@@ -126,7 +126,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		}
 		else if (huAttributes.size() == 1)
 		{
-			return huAttributes.get(0);
+			return huAttributes.getFirst();
 		}
 		else
 		{

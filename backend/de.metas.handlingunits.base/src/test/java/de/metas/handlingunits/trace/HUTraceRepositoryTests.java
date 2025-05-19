@@ -129,9 +129,9 @@ public class HUTraceRepositoryTests
 
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
 		assertThat(result.size(), is(1));
-		assertThat(result.get(0).getHuTraceEventId().isPresent(), is(true));
-		assertThat(result.get(0).getVhuId().getRepoId(), is(12));
-		assertThat(result.get(0).getOrgId().getRepoId(), is(13));
+		assertThat(result.getFirst().getHuTraceEventId().isPresent(), is(true));
+		assertThat(result.getFirst().getVhuId().getRepoId(), is(12));
+		assertThat(result.getFirst().getOrgId().getRepoId(), is(13));
 
 		// add an equal event, again
 		huTraceRepository.addEvent(HUTraceEvent.builder()
@@ -147,7 +147,7 @@ public class HUTraceRepositoryTests
 
 		final List<HUTraceEvent> result2 = huTraceRepository.query(query);
 		assertThat(result2).hasSize(1); // still just one!
-		assertThat(result.get(0)).isEqualTo(result2.get(0));
+		assertThat(result.getFirst()).isEqualTo(result2.getFirst());
 	}
 
 	/**
@@ -173,9 +173,9 @@ public class HUTraceRepositoryTests
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
 		assertThat(result.size(), is(1));
 
-		assertThat(result.get(0).getTopLevelHuId().getRepoId(), is(2));
-		assertThat(result.get(0).getVhuId().getRepoId(), is(12));
-		assertThat(result.get(0).getVhuSourceId().getRepoId(), is(13));
+		assertThat(result.getFirst().getTopLevelHuId().getRepoId(), is(2));
+		assertThat(result.getFirst().getVhuId().getRepoId(), is(12));
+		assertThat(result.getFirst().getVhuSourceId().getRepoId(), is(13));
 	}
 
 	/**
@@ -209,8 +209,8 @@ public class HUTraceRepositoryTests
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
 		assertThat(result.size(), is(1));
 
-		assertThat(result.get(0).getVhuId().getRepoId(), is(13));
-		assertThat(result.get(0).getVhuSourceId().getRepoId(), is(14));
+		assertThat(result.getFirst().getVhuId().getRepoId(), is(13));
+		assertThat(result.getFirst().getVhuSourceId().getRepoId(), is(14));
 	}
 
 	@Test
@@ -338,7 +338,7 @@ public class HUTraceRepositoryTests
 		// query with the huId of the first event from the "first" group.
 		// that means that we expect a record for each event event we added (because there is one directly preceding group and one indirectly preceding group).
 		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
-																		  .vhuId(events.get(0).getVhuId())
+																		  .vhuId(events.getFirst().getVhuId())
 																		  .recursionMode(RecursionMode.FORWARD)
 																		  .build());
 		result.sort(Comparator.comparing(HUTraceEvent::getEventTime));

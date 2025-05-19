@@ -130,7 +130,7 @@ public class DispoTestUtils
 		{
 			final List<I_MD_Candidate> childStockRecords = POJOLookupMap.get().getRecords(I_MD_Candidate.class, r -> r.getMD_Candidate_Parent_ID() == candidate.getMD_Candidate_ID());
 			assertThat(childStockRecords).hasSize(1);
-			return childStockRecords.get(0);
+			return childStockRecords.getFirst();
 		}
 		else if (hasParentStockRecord)
 		{

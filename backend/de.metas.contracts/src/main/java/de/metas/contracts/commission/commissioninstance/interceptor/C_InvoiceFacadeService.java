@@ -54,7 +54,7 @@ public class C_InvoiceFacadeService
 	public void syncInvoiceToCommissionInstance(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		final Optional<SalesInvoice> salesInvoice = salesInvoiceFactory.forRecord(invoiceRecord);
-		if (!salesInvoice.isPresent())
+		if (salesInvoice.isEmpty())
 		{
 			logger.debug("The C_Invoice is not commission-relevant; -> nothing to do");
 			return;

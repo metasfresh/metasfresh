@@ -88,7 +88,7 @@ public class UserDAO implements IUserDAO
 		}
 		else
 		{
-			return users.get(0);
+			return users.getFirst();
 		}
 	}
 

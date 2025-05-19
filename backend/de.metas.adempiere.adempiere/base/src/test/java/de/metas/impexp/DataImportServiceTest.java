@@ -98,8 +98,9 @@ public class DataImportServiceTest
 
 			context.getDataImportService()
 					.importDataFromResource(DataImportRequest.builder()
-							.data(toResource("value1,name1"
-									+ "\nvalue2,name2"))
+							.data(toResource("""
+									value1,name1
+									value2,name2"""))
 							.dataImportConfigId(context.getDataImportConfigId())
 							.clientId(ClientId.METASFRESH)
 							.orgId(OrgId.ANY)
@@ -110,7 +111,7 @@ public class DataImportServiceTest
 
 			final List<MockedImportProcess<I_I_Product>> processRuns = context.getProcessRuns();
 			assertThat(processRuns).hasSize(1);
-			final MockedImportProcess<I_I_Product> processRun = processRuns.get(0);
+			final MockedImportProcess<I_I_Product> processRun = processRuns.getFirst();
 			assertThat(processRun.isDeleteImportRecordsCalled()).isFalse();
 			assertThat(processRun.isRunCalled()).isTrue();
 			assertThat(processRun.isValidateOnly()).isTrue();
@@ -127,8 +128,9 @@ public class DataImportServiceTest
 
 			final DataImportResult result = context.getDataImportService()
 					.importDataFromResource(DataImportRequest.builder()
-							.data(toResource("value1,name1"
-									+ "\nvalue2,name2"))
+							.data(toResource("""
+									value1,name1
+									value2,name2"""))
 							.dataImportConfigId(context.getDataImportConfigId())
 							.clientId(ClientId.METASFRESH)
 							.orgId(OrgId.ANY)
@@ -187,7 +189,7 @@ public class DataImportServiceTest
 
 			final List<MockedImportProcess<I_I_Product>> processRuns = context.getProcessRuns();
 			assertThat(processRuns).hasSize(1);
-			final MockedImportProcess<I_I_Product> processRun = processRuns.get(0);
+			final MockedImportProcess<I_I_Product> processRun = processRuns.getFirst();
 			assertThat(processRun.isDeleteImportRecordsCalled()).isFalse();
 			assertThat(processRun.isRunCalled()).isTrue();
 			assertThat(processRun.isValidateOnly()).isFalse();
@@ -204,8 +206,9 @@ public class DataImportServiceTest
 
 			context.getDataImportService()
 					.importDataFromResource(DataImportRequest.builder()
-							.data(toResource("value1,name1"
-									+ "\nvalue2,name2"))
+							.data(toResource("""
+									value1,name1
+									value2,name2"""))
 							.dataImportConfigId(context.getDataImportConfigId())
 							.clientId(ClientId.METASFRESH)
 							.orgId(OrgId.ANY)
@@ -216,7 +219,7 @@ public class DataImportServiceTest
 
 			final List<MockedImportProcess<I_I_Product>> processRuns = context.getProcessRuns();
 			assertThat(processRuns).hasSize(1);
-			final MockedImportProcess<I_I_Product> processRun = processRuns.get(0);
+			final MockedImportProcess<I_I_Product> processRun = processRuns.getFirst();
 			assertThat(processRun.isDeleteImportRecordsCalled()).isFalse();
 			assertThat(processRun.isRunCalled()).isTrue();
 			assertThat(processRun.isValidateOnly()).isTrue();

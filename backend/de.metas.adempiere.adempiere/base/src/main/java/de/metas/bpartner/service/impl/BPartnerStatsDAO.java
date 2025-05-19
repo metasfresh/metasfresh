@@ -21,6 +21,7 @@ import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -327,7 +328,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
-		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
+		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, RoundingMode.HALF_UP);
 		final Locale locale = Locale.getDefault();
 		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
 		fmt.setMinimumFractionDigits(1);

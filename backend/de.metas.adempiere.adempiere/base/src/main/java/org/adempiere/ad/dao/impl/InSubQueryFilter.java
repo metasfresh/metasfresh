@@ -22,12 +22,11 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -38,12 +37,11 @@ import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Filters out only records which are present in sub-query.
@@ -268,7 +266,7 @@ public class InSubQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 					.setParameter("filter", this);
 		}
 
-		final ColumnNamePair matcher = matchers.get(0);
+		final ColumnNamePair matcher = matchers.getFirst();
 		final String columnName = matcher.getColumnName();
 		final String subQueryColumnName = matcher.getSubQueryColumnName();
 		final IQueryFilterModifier modifier = matcher.getModifier();

@@ -351,7 +351,7 @@ public class UniformAllocationStrategyTest
 							lutuProducerDestinationTestSupport.piLU_Item_IFCO,
 							true)
 					.getLURecords();
-			lu = lus.get(0);
+			lu = lus.getFirst();
 			for (int i = 0; i < 51; i++)
 			{
 				final I_M_HU tu = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));

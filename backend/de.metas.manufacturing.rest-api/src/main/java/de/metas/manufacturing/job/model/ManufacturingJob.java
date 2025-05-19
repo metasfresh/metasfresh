@@ -92,7 +92,7 @@ public class ManufacturingJob
 
 	public boolean isLastActivity(@NonNull final ManufacturingJobActivityId jobActivityId)
 	{
-		final ManufacturingJobActivity lastActivity = activities.get(activities.size() - 1);
+		final ManufacturingJobActivity lastActivity = activities.getLast();
 		return ManufacturingJobActivityId.equals(lastActivity.getId(), jobActivityId);
 	}
 

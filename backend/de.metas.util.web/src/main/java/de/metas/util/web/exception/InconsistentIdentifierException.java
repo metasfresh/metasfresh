@@ -26,6 +26,8 @@ import static de.metas.util.Check.assumeNotEmpty;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.i18n.ITranslatableString;
+
+import java.io.Serial;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import lombok.Builder;
@@ -34,6 +36,7 @@ import lombok.NonNull;
 /** Thrown if a request could not be processed, because one of the required resources (e.g. product, or business partner) does not exist in metasfresh. */
 public class InconsistentIdentifierException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -3485523266695546853L;
 
 	/**

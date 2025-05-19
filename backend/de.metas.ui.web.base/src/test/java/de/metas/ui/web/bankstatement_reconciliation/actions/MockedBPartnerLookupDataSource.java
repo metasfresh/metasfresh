@@ -74,13 +74,13 @@ final class MockedBPartnerLookupDataSource implements LookupDataSource
 
 	private static int convertIdToInt(@NonNull final Object idObj)
 	{
-		if (idObj instanceof Number)
+		if (idObj instanceof Number number)
 		{
-			return ((Number)idObj).intValue();
+			return number.intValue();
 		}
-		else if (idObj instanceof BPartnerId)
+		else if (idObj instanceof BPartnerId id)
 		{
-			return ((BPartnerId)idObj).getRepoId();
+			return id.getRepoId();
 		}
 		else
 		{

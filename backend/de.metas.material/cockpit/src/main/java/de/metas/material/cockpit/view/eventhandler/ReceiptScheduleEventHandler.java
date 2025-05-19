@@ -142,9 +142,8 @@ public class ReceiptScheduleEventHandler
 		final DetailDataRecordIdentifier detailIdentifier = DetailDataRecordIdentifier
 				.createForReceiptSchedule(identifier, receiptScheduleEvent.getReceiptScheduleId());
 
-		if (receiptScheduleEvent instanceof ReceiptScheduleCreatedEvent)
+		if (receiptScheduleEvent instanceof ReceiptScheduleCreatedEvent receiptScheduleCreatedEvent)
 		{
-			final ReceiptScheduleCreatedEvent receiptScheduleCreatedEvent = (ReceiptScheduleCreatedEvent)receiptScheduleEvent;
 			createAndHandleAddDetailRequest(detailIdentifier, receiptScheduleCreatedEvent);
 		}
 		else if (receiptScheduleEvent instanceof ReceiptScheduleUpdatedEvent)

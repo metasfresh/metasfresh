@@ -22,17 +22,15 @@ package org.adempiere.ad.trx.jmx;
  * #L%
  */
 
-
-import java.lang.ref.WeakReference;
-import java.sql.SQLException;
-import java.util.List;
-
+import de.metas.util.Check;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.jmx.IJMXNameAware;
 
-import de.metas.util.Check;
+import java.lang.ref.WeakReference;
+import java.sql.SQLException;
+import java.util.List;
 
 public class JMXTrxManager implements JMXTrxManagerMBean, IJMXNameAware
 {
@@ -126,7 +124,7 @@ public class JMXTrxManager implements JMXTrxManagerMBean, IJMXNameAware
 		final String[] arr = new String[trxs.size()];
 		for (int i = 0; i < trxs.size(); i++)
 		{
-			final ITrx trx = trxs.get(0);
+			final ITrx trx = trxs.getFirst();
 			if (trx == null)
 			{
 				arr[i] = "null";

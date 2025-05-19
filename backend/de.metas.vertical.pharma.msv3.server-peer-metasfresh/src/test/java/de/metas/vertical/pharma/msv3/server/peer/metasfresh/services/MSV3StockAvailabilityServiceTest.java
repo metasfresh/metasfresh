@@ -83,9 +83,9 @@ public class MSV3StockAvailabilityServiceTest
 		assertThat(result).hasSize(1);
 
 		// we expect that only the valid PZN is present
-		assertThat(result.get(0).getItems()).hasSize(1);
+		assertThat(result.getFirst().getItems()).hasSize(1);
 
-		final MSV3StockAvailability msv3StockAvailabilityItem = result.get(0).getItems().get(0);
+		final MSV3StockAvailability msv3StockAvailabilityItem = result.getFirst().getItems().getFirst();
 		assertThat(msv3StockAvailabilityItem.getPzn()).isEqualTo(12345);
 		assertThat(msv3StockAvailabilityItem.getQty()).isEqualTo(1);
 	}
@@ -111,9 +111,9 @@ public class MSV3StockAvailabilityServiceTest
 		assertThat(result).hasSize(1);
 
 		// new expect that only the valid PZN is present, but with the fixedQtyAvailableToPromise of 10 that we set
-		assertThat(result.get(0).getItems()).hasSize(1);
+		assertThat(result.getFirst().getItems()).hasSize(1);
 
-		final MSV3StockAvailability msv3StockAvailabilityItem = result.get(0).getItems().get(0);
+		final MSV3StockAvailability msv3StockAvailabilityItem = result.getFirst().getItems().getFirst();
 		assertThat(msv3StockAvailabilityItem.getPzn()).isEqualTo(12345);
 		assertThat(msv3StockAvailabilityItem.getQty()).isEqualTo(10);
 	}

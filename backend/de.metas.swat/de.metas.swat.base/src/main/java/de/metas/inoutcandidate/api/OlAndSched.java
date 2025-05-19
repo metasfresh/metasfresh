@@ -167,7 +167,7 @@ public final class OlAndSched
 	@Nullable
 	public InputDataSourceId getSalesOrderADInputDatasourceID()
 	{
-		if(!salesOrder.isPresent())
+		if(salesOrder.isEmpty())
 		{
 			return null;
 		}

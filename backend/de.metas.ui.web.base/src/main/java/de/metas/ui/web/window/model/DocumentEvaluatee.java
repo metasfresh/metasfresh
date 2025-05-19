@@ -189,9 +189,9 @@ import java.util.Properties;
 		{
 			return null;
 		}
-		else if (valueObj instanceof Date)
+		else if (valueObj instanceof Date date)
 		{
-			return (Date)valueObj;
+			return date;
 		}
 		else
 		{
@@ -400,21 +400,20 @@ import java.util.Properties;
 		{
 			return null;
 		}
-		else if (value instanceof Boolean)
+		else if (value instanceof Boolean boolean1)
 		{
-			return DisplayType.toBooleanString((Boolean)value);
+			return DisplayType.toBooleanString(boolean1);
 		}
 		else if (value instanceof String)
 		{
 			return value.toString();
 		}
-		else if (value instanceof LookupValue)
+		else if (value instanceof LookupValue lookupValue)
 		{
-			return ((LookupValue)value).getIdAsString();
+			return lookupValue.getIdAsString();
 		}
-		else if (value instanceof java.util.Date)
+		else if (value instanceof java.util.Date valueDate)
 		{
-			final java.util.Date valueDate = (java.util.Date)value;
 			return Env.toString(valueDate);
 		}
 		else
@@ -429,17 +428,17 @@ import java.util.Properties;
 		{
 			return null;
 		}
-		else if (valueObj instanceof Integer)
+		else if (valueObj instanceof Integer integer)
 		{
-			return (Integer)valueObj;
+			return integer;
 		}
-		else if (valueObj instanceof Number)
+		else if (valueObj instanceof Number number)
 		{
-			return ((Number)valueObj).intValue();
+			return number.intValue();
 		}
-		else if (valueObj instanceof IntegerLookupValue)
+		else if (valueObj instanceof IntegerLookupValue value)
 		{
-			return ((IntegerLookupValue)valueObj).getIdAsInt();
+			return value.getIdAsInt();
 		}
 		else
 		{
@@ -458,9 +457,9 @@ import java.util.Properties;
 		{
 			return null;
 		}
-		else if (valueObj instanceof BigDecimal)
+		else if (valueObj instanceof BigDecimal decimal)
 		{
-			return (BigDecimal)valueObj;
+			return decimal;
 		}
 		else
 		{

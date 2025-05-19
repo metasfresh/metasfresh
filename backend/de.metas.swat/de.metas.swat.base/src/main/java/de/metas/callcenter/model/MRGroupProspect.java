@@ -34,6 +34,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -46,6 +47,7 @@ public class MRGroupProspect extends X_R_Group_Prospect
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -8146063466656352670L;
 	/** Lock expire time (minutes) */
 	public static final int LOCK_EXPIRE_MIN = 24 * 60;

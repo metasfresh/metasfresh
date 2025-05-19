@@ -55,7 +55,7 @@ abstract class WEBUI_M_HU_InternalUse_Template extends HUEditorProcessTemplate i
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		if (!streamSelectedHUIds(HUEditorRowFilter.Select.ONLY_TOPLEVEL).findAny().isPresent())
+		if (streamSelectedHUIds(HUEditorRowFilter.Select.ONLY_TOPLEVEL).findAny().isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}

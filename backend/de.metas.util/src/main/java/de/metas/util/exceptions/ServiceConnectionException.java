@@ -4,6 +4,8 @@ import javax.annotation.Nullable;
 
 import lombok.Getter;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.util
@@ -34,6 +36,7 @@ import lombok.Getter;
  */
 public class ServiceConnectionException extends RuntimeException
 {
+	@Serial
 	private static final long serialVersionUID = -353512891270574392L;
 
 	/** A value less or equals 0 means "a retry is not advised". */

@@ -71,7 +71,7 @@ public class UserGroupRecordAccessServiceTest
 	{
 		final ImmutableList<RecordAccess> recordAcceses = grantAccessesAndTest(recordRef, permission);
 		assertThat(recordAcceses).hasSize(1);
-		return recordAcceses.get(0);
+		return recordAcceses.getFirst();
 	}
 
 	private ImmutableList<RecordAccess> grantAccessesAndTest(@NonNull final TableRecordReference recordRef, final Access... permissions)

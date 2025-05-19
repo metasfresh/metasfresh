@@ -1,5 +1,7 @@
 package org.adempiere.exceptions;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -34,6 +36,7 @@ public class DBNoConnectionException extends DBException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -2725091243007392188L;
 
 	public static final DBNoConnectionException wrapIfNeeded(final Throwable throwable)
@@ -42,9 +45,9 @@ public class DBNoConnectionException extends DBException
 		{
 			return null;
 		}
-		else if (throwable instanceof DBNoConnectionException)
+		else if (throwable instanceof DBNoConnectionException exception)
 		{
-			return (DBNoConnectionException)throwable;
+			return exception;
 		}
 		else
 		{

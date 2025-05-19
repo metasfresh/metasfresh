@@ -67,6 +67,6 @@ public class SystecResultStringElement
 	@Override
 	public String toString()
 	{
-		return String.format("SystecResultStringElement [name=%s, startByte=%s, length=%s, format=%s]", name, startByte, length, format);
+		return "SystecResultStringElement [name=%s, startByte=%s, length=%s, format=%s]".formatted(name, startByte, length, format);
 	}
 }

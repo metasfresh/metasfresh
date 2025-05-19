@@ -42,7 +42,7 @@ public class MAssetGroup extends X_A_Asset_Group
 	 */
 	public static MAssetGroup get (Properties ctx, int A_Asset_Group_ID)
 	{
-		Integer ii = new Integer (A_Asset_Group_ID);
+		Integer ii = Integer.valueOf(A_Asset_Group_ID);
 		MAssetGroup pc = (MAssetGroup)s_cache.get(ii);
 		if (pc == null)
 			pc = new MAssetGroup (ctx, A_Asset_Group_ID, null);

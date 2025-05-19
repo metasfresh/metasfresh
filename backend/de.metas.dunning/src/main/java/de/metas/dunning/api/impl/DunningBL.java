@@ -360,7 +360,7 @@ public class DunningBL implements IDunningBL
 	{
 		Check.errorIf(candidates.isEmpty(), "Error: No candidates selected.");
 
-		I_C_Dunning_Candidate result = candidates.get(0);
+		I_C_Dunning_Candidate result = candidates.getFirst();
 		BigDecimal maxDaysAfterDue = result.getC_DunningLevel().getDaysAfterDue();
 
 		for (final I_C_Dunning_Candidate candidate : candidates)

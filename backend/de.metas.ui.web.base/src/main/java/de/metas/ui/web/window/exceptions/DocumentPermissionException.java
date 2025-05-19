@@ -4,6 +4,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -33,6 +35,7 @@ import org.adempiere.exceptions.AdempiereException;
  */
 public class DocumentPermissionException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -6951387618389868436L;
 
 	public enum DocumentPermission

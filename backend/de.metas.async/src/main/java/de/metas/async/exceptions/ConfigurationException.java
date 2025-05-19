@@ -25,6 +25,8 @@ package de.metas.async.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when some async configuration exception is encountered (e.g. queue processors did not find a particular workpackage processor class)
  * 
@@ -39,9 +41,9 @@ public class ConfigurationException extends AdempiereException
 		{
 			return null;
 		}
-		else if (throwable instanceof ConfigurationException)
+		else if (throwable instanceof ConfigurationException exception)
 		{
-			return (ConfigurationException)throwable;
+			return exception;
 		}
 		
 		final Throwable cause = extractCause(throwable);
@@ -56,6 +58,7 @@ public class ConfigurationException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -5463410167655542710L;
 
 	public ConfigurationException(String message)

@@ -344,9 +344,9 @@ public class BoilerPlateMenu
 		Container e = c.getParent();
 		while (e != null)
 		{
-			if (e instanceof Frame)
+			if (e instanceof Frame frame)
 			{
-				parent = (Frame)e;
+				parent = frame;
 				break;
 			}
 			e = e.getParent();
@@ -360,19 +360,18 @@ public class BoilerPlateMenu
 		{
 			return null;
 		}
-		if (c instanceof JTextComponent)
+		if (c instanceof JTextComponent component)
 		{
-			return (JTextComponent)c;
+			return component;
 		}
 		
-		if (c instanceof Container)
+		if (c instanceof Container container)
 		{
-			final Container container = (Container)c;
 			for (Component cc : container.getComponents())
 			{
-				if (cc instanceof JTextComponent)
+				if (cc instanceof JTextComponent component)
 				{
-					return (JTextComponent)cc;
+					return component;
 				}
 				else if (cc instanceof Container)
 				{

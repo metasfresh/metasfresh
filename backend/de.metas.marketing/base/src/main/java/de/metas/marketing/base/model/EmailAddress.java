@@ -40,8 +40,8 @@ public class EmailAddress implements ContactAddress
 
 	public static Optional<EmailAddress> cast(@Nullable final ContactAddress contactAddress)
 	{
-		return contactAddress instanceof EmailAddress
-				? Optional.of((EmailAddress)contactAddress)
+		return contactAddress instanceof EmailAddress ea
+				? Optional.of(ea)
 				: Optional.empty();
 	}
 

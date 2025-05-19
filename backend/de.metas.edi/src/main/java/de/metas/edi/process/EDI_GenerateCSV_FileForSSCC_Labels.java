@@ -86,7 +86,7 @@ public abstract class EDI_GenerateCSV_FileForSSCC_Labels extends JavaProcess imp
 
 	void generateCSV_FileForSSCC_Labels(@NonNull final List<EDIDesadvPackId> desadvPackIDsToPrint)
 	{
-		final BPartnerId bPartnerId = EDIDesadvPackRepository.retrieveBPartnerFromEdiDesadvPack(desadvPackIDsToPrint.get(0));
+		final BPartnerId bPartnerId = EDIDesadvPackRepository.retrieveBPartnerFromEdiDesadvPack(desadvPackIDsToPrint.getFirst());
 		final ZebraConfigId zebraConfigId = zebraConfigRepository.retrieveZebraConfigId(bPartnerId, zebraConfigRepository.getDefaultZebraConfigId());
 		final ReportResultData reportResultData = zebraPrinterService
 				.createCSV_FileForSSCC18_Labels(desadvPackIDsToPrint, zebraConfigId, getProcessInfo().getPinstanceId());

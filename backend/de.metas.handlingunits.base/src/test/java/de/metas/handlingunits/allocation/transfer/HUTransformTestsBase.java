@@ -109,7 +109,7 @@ public class HUTransformTestsBase
 			final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 
 			Assert.assertThat(createdTUs.size(), is(1));
-			sourceTU = createdTUs.get(0);
+			sourceTU = createdTUs.getFirst();
 
 			huStatusBL.setHUStatus(data.helper.getHUContext(), sourceTU, X_M_HU.HUSTATUS_Active);
 			M_HU.INSTANCE.updateChildren(sourceTU);
@@ -123,10 +123,10 @@ public class HUTransformTestsBase
 			Assert.assertThat(sourceTUBeforeSplitXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("2.000")));
 			Assert.assertThat(sourceTUBeforeSplitXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("2.000")));
 
-			final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTUs.get(0));
+			final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTUs.getFirst());
 			Assert.assertThat(createdCUs.size(), is(1));
 
-			cuToSplit = createdCUs.get(0);
+			cuToSplit = createdCUs.getFirst();
 		}
 
 		// invoke the method under test
@@ -144,7 +144,7 @@ public class HUTransformTestsBase
 		Assert.assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI[@HUStatus='A'])", is("1")));
 		Assert.assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 
-		final Node newCUXML = HUXmlConverter.toXml(newCUs.get(0));
+		final Node newCUXML = HUXmlConverter.toXml(newCUs.getFirst());
 		Assert.assertThat(newCUXML, not(hasXPath("HU-VirtualPI/M_HU_Item_Parent_ID"))); // verify that there is no parent HU
 		Assert.assertThat(newCUXML, hasXPath("count(HU-VirtualPI[@HUStatus='A'])", is("1")));
 		Assert.assertThat(newCUXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
@@ -164,7 +164,7 @@ public class HUTransformTestsBase
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("3"), data.helper.uomKg));
 		assertThat(newCUs).hasSize(1);
-		assertThat(newCUs.get(0)).isSameAs(cuToSplit);
+		assertThat(newCUs.getFirst()).isSameAs(cuToSplit);
 
 		return TestHUs.builder().input(cuToSplit).output(newCUs).build();
 	}
@@ -180,7 +180,7 @@ public class HUTransformTestsBase
 		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.cuToNewCU(cuToSplit, Quantity.of(new BigDecimal("5"), data.helper.uomKg));
 		assertThat(newCUs).hasSize(1);
-		assertThat(newCUs.get(0)).isSameAs(cuToSplit);
+		assertThat(newCUs.getFirst()).isSameAs(cuToSplit);
 
 		return TestHUs.builder().input(cuToSplit).output(newCUs).build();
 	}
@@ -204,7 +204,7 @@ public class HUTransformTestsBase
 								data.helper.uomKg));
 
 		Assert.assertThat(newCUs.size(), is(1));
-		Assert.assertThat(newCUs.get(0).getM_HU_ID(), is(cuToSplit.getM_HU_ID()));
+		Assert.assertThat(newCUs.getFirst().getM_HU_ID(), is(cuToSplit.getM_HU_ID()));
 		Assert.assertThat(handlingUnitsDAO.retrieveIncludedHUs(parentTU).isEmpty(), is(true));
 		Assert.assertThat(cuToSplit.getM_HU_Item_Parent(), nullValue());
 
@@ -243,7 +243,7 @@ public class HUTransformTestsBase
 		Assert.assertThat(parentOfCUToSplitXML, hasXPath("HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("39.000")));
 		Assert.assertThat(parentOfCUToSplitXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("40.000")));
 
-		final Node newTUXML = HUXmlConverter.toXml(newTUs.get(0));
+		final Node newTUXML = HUXmlConverter.toXml(newTUs.getFirst());
 		Assert.assertThat(newTUXML, hasXPath("HU-TU_Bag/@HUStatus", is("A")));
 		Assert.assertThat(newTUXML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		Assert.assertThat(newTUXML, hasXPath("count(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));

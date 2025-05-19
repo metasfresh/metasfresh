@@ -49,7 +49,7 @@ public class TableRecordUtil
 
 		final Optional<AdWindowId> windowId = RecordWindowFinder.findAdWindowId(recordReference);
 
-		if (!windowId.isPresent())
+		if (windowId.isEmpty())
 		{
 			return null;
 		}

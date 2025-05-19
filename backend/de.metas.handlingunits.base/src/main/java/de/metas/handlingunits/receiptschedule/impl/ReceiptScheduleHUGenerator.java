@@ -171,7 +171,7 @@ public class ReceiptScheduleHUGenerator
 		final List<I_M_ReceiptSchedule> receiptSchedules = getReceiptSchedules();
 		if (receiptSchedules.size() == 1)
 		{
-			return receiptSchedules.get(0);
+			return receiptSchedules.getFirst();
 		}
 		else
 		{

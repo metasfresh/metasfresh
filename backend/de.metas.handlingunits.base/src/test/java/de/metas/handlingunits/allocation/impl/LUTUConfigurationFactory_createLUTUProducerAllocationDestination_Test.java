@@ -193,7 +193,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		assertEquals("Invalid created HUs count", 2, hus.size());
 
 		// verify storage of palet1
-		final I_M_HU huPalet1 = hus.get(0);
+		final I_M_HU huPalet1 = hus.getFirst();
 		assertHUStorageLevel(huPalet1, piPalet, 20);
 
 		// verify storage of palet1's aggregate HU
@@ -201,7 +201,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 			final List<I_M_HU> huPalet1_aggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(huPalet1);
 			assertThat(huPalet1_aggregateHUs.size(), is(1));
 
-			final I_M_HU aggregateVhu = huPalet1_aggregateHUs.get(0);
+			final I_M_HU aggregateVhu = huPalet1_aggregateHUs.getFirst();
 			assertTrue(handlingUnitsBL.isAggregateHU(aggregateVhu));
 
 			assertHUStorageLevel(aggregateVhu, piVirtual, 20);
@@ -218,10 +218,10 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 			final List<I_M_HU> huPalet2_includedHUs = handlingUnitsDAO.retrieveIncludedHUs(huPalet2);
 			assertThat(huPalet2_includedHUs.size(), is(2)); // expect two VHUs; the 2nd one is the aggregate HU "item stub"
 
-			assertFalse(handlingUnitsBL.isAggregateHU(huPalet2_includedHUs.get(0)));
+			assertFalse(handlingUnitsBL.isAggregateHU(huPalet2_includedHUs.getFirst()));
 			assertTrue(handlingUnitsBL.isAggregateHU(huPalet2_includedHUs.get(1)));
 
-			final I_M_HU hu = huPalet2_includedHUs.get(0);
+			final I_M_HU hu = huPalet2_includedHUs.getFirst();
 
 			assertHUStorageLevel(hu, piIFCO, 5);
 		}
@@ -247,7 +247,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		final List<I_M_HU> hus = createHUs(piIFCO_Product, 25);
 
 		Assert.assertEquals("Invalid IFCOs count", 3, hus.size());
-		assertHUStorageLevel(hus.get(0), piIFCO, 10);
+		assertHUStorageLevel(hus.getFirst(), piIFCO, 10);
 		assertHUStorageLevel(hus.get(1), piIFCO, 10);
 		assertHUStorageLevel(hus.get(2), piIFCO, 5);
 	}
@@ -272,7 +272,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		final List<I_M_HU> hus = createHUs(piVirtual_Item_Product, 25);
 
 		assertThat(hus).as("Invalid Palets count").hasSize(1);
-		final I_M_HU huPalet = hus.get(0);
+		final I_M_HU huPalet = hus.getFirst();
 		assertHUStorageLevel(huPalet, piPalet, 25);
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -282,8 +282,8 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		assertThat(huPalet_VHUs).as("Invalid VHUs count for Palet").hasSize(2); // expect two VHUs; the 2nd one is the aggregate HU "item stub"
 
 		assertTrue(handlingUnitsBL.isAggregateHU(huPalet_VHUs.get(1)));
-		assertFalse(handlingUnitsBL.isAggregateHU(huPalet_VHUs.get(0)));
-		assertHUStorageLevel(huPalet_VHUs.get(0), piVirtual, 25);
+		assertFalse(handlingUnitsBL.isAggregateHU(huPalet_VHUs.getFirst()));
+		assertHUStorageLevel(huPalet_VHUs.getFirst(), piVirtual, 25);
 	}
 
 	/**
@@ -304,7 +304,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		final List<I_M_HU> hus = createHUs(piVirtual_Item_Product, 25);
 
 		Assert.assertEquals("Invalid HUs count", 1, hus.size());
-		final I_M_HU huVirtual = hus.get(0);
+		final I_M_HU huVirtual = hus.getFirst();
 		assertHUStorageLevel(huVirtual, piVirtual, 25);
 	}
 

@@ -337,7 +337,7 @@ public class ApiAuditService
 	{
 		final Optional<UserGroupId> userGroupToNotify = apiAuditConfig.getUserGroupToNotify(isError);
 
-		if (!userGroupToNotify.isPresent())
+		if (userGroupToNotify.isEmpty())
 		{
 			Loggables.addLog("Notification skipped due to ApiAuditConfig! UserGroupInChargeId = {}, "
 							+ "ApiAuditConfigId = {}, NotifyUserInChargeTrigger = {}",
@@ -381,7 +381,7 @@ public class ApiAuditService
 		final Optional<Boolean> callerWantsToBeProcessedAsync = Optional.ofNullable(request.getHeader(API_ASYNC_HEADER))
 				.map(Boolean::parseBoolean);
 
-		if (!callerWantsToBeProcessedAsync.isPresent())
+		if (callerWantsToBeProcessedAsync.isEmpty())
 		{
 			return apiAuditConfig.isForceProcessedAsync();
 

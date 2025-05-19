@@ -55,7 +55,7 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 		final List<I_M_ReceiptSchedule> schedulesList = IteratorUtils.asList(schedules);
 
 		Assert.assertEquals("Invalid size", 5, schedulesList.size());
-		Assert.assertEquals("Invalid receipt schedule at index 0", rs1, schedulesList.get(0));
+		Assert.assertEquals("Invalid receipt schedule at index 0", rs1, schedulesList.getFirst());
 		Assert.assertEquals("Invalid receipt schedule at index 1", rs5, schedulesList.get(1));
 		Assert.assertEquals("Invalid receipt schedule at index 2", rs2, schedulesList.get(2));
 		Assert.assertEquals("Invalid receipt schedule at index 3", rs3, schedulesList.get(3));

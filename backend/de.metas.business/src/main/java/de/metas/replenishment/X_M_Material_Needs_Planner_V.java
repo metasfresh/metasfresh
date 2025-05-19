@@ -2,6 +2,8 @@
 package de.metas.replenishment;
 
 import javax.annotation.Nullable;
+
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -13,6 +15,7 @@ import java.util.Properties;
 public class X_M_Material_Needs_Planner_V extends org.compiere.model.PO implements I_M_Material_Needs_Planner_V, org.compiere.model.I_Persistent 
 {
 
+	@Serial
 	private static final long serialVersionUID = -949700364L;
 
     /** Standard Constructor */

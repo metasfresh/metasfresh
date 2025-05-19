@@ -27,6 +27,7 @@ import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
 import java.util.Random;
 
 /**
@@ -37,6 +38,7 @@ import java.util.Random;
  */
 public class WorkpackageSkipRequestException extends AdempiereException implements IWorkpackageSkipRequest
 {
+	@Serial
 	private static final long serialVersionUID = 5950712616746434839L;
 
 	private final int skipTimeoutMillis;

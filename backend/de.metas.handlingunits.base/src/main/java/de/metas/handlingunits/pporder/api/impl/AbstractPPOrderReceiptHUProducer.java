@@ -203,7 +203,7 @@ import java.util.Optional;
 		}
 		else if (vhus.size() == 1)
 		{
-			return vhus.get(0);
+			return vhus.getFirst();
 		}
 		else
 		{
@@ -454,9 +454,9 @@ import java.util.Optional;
 
 	private String getOrgUserOrLoggedInUSerLanguage(final Object referencedModel)
 	{
-		if (referencedModel instanceof IClientOrgAware)
+		if (referencedModel instanceof IClientOrgAware aware)
 		{
-			final OrgId orgId = OrgId.ofRepoId(((IClientOrgAware)referencedModel).getAD_Org_ID());
+			final OrgId orgId = OrgId.ofRepoId(aware.getAD_Org_ID());
 			return partnerOrgBL.getOrgLanguageOrLoggedInUserLanguage(orgId);
 		}
 		return Env.getADLanguageOrBaseLanguage();
@@ -466,9 +466,9 @@ import java.util.Optional;
 	{
 		if (receiveUsingTUSpec != null)
 		{
-			if (receiveUsingTUSpec instanceof HUPIItemProductTUSpec)
+			if (receiveUsingTUSpec instanceof HUPIItemProductTUSpec spec)
 			{
-				final HUPIItemProductId receiveUsingHUPIItemProductId = ((HUPIItemProductTUSpec)receiveUsingTUSpec).getHuPIItemProductId();
+				final HUPIItemProductId receiveUsingHUPIItemProductId = spec.getHuPIItemProductId();
 				if (receiveUsingHUPIItemProductId.isVirtualHU())
 				{
 					return HUProducerDestination.ofVirtualPI()
@@ -492,9 +492,8 @@ import java.util.Optional;
 					return tuProducer;
 				}
 			}
-			else if (receiveUsingTUSpec instanceof PreciseTUSpec)
+			else if (receiveUsingTUSpec instanceof PreciseTUSpec preciseTUSpec)
 			{
-				final PreciseTUSpec preciseTUSpec = (PreciseTUSpec)receiveUsingTUSpec;
 
 				final LUTUProducerDestination tuProducer = new LUTUProducerDestination();
 				tuProducer.setLocatorId(getLocatorId());

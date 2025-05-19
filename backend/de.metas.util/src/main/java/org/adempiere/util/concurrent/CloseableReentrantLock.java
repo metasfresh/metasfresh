@@ -23,6 +23,7 @@ package org.adempiere.util.concurrent;
  */
 
 
+import java.io.Serial;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -33,6 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public final class CloseableReentrantLock extends ReentrantLock implements AutoCloseable
 {
+	@Serial
 	private static final long serialVersionUID = 5256938961821141771L;
 
 	/**

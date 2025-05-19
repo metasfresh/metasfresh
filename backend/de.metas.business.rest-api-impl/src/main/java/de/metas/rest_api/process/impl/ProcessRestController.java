@@ -100,7 +100,7 @@ public class ProcessRestController
 	{
 		final Optional<AdProcessId> processId = getProcessIdIfRunnable(processValue);
 
-		if (!processId.isPresent())
+		if (processId.isEmpty())
 		{
 			return ResponseEntity.badRequest().body(Message.of("The requested process is not runnable or it doesn't exist!"));
 		}

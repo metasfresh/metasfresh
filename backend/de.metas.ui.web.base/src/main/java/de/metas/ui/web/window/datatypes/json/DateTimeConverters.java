@@ -237,9 +237,9 @@ public final class DateTimeConverters
 				return fromJsonConverer.apply(json);
 			}
 		}
-		else if (valueObj instanceof StringLookupValue)
+		else if (valueObj instanceof StringLookupValue value)
 		{
-			final String key = ((StringLookupValue)valueObj).getIdAsString();
+			final String key = value.getIdAsString();
 			if (Check.isEmpty(key))
 			{
 				return null;

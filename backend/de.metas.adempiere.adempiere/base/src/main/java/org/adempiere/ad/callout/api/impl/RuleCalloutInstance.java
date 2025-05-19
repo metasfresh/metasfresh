@@ -107,7 +107,7 @@ public final class RuleCalloutInstance implements ICalloutInstance
 		final int windowNo = field.getWindowNo();
 		final Object value = field.getValue();
 		final Object valueOld = field.getOldValue();
-		final GridField gridField = (field instanceof GridField ? (GridField)field : null);
+		final GridField gridField = (field instanceof GridField gf ? gf : null);
 
 		try
 		{

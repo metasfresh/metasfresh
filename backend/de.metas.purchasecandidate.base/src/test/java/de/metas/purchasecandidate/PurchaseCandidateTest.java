@@ -151,7 +151,7 @@ public class PurchaseCandidateTest
 		final List<PurchaseErrorItem> purchaseErrorItems = candidate1.getPurchaseErrorItems();
 		assertThat(purchaseErrorItems).hasSize(1);
 
-		final PurchaseErrorItem purchaseErrorItem = purchaseErrorItems.get(0);
+		final PurchaseErrorItem purchaseErrorItem = purchaseErrorItems.getFirst();
 		assertThat(purchaseErrorItem.getOrgId()).isEqualTo(candidate1.getOrgId());
 		assertThat(purchaseErrorItem.getPurchaseCandidateId()).isEqualTo(candidate1.getId());
 		assertThat(purchaseErrorItem.getThrowable()).isSameAs(throwable);
@@ -181,7 +181,7 @@ public class PurchaseCandidateTest
 		assertThat(purchaseOrderItems).hasSize(2);
 		assertThat(candidate1.getPurchasedQty()).isEqualTo(TEN.add(ONE));
 
-		final PurchaseOrderItem purchaseOrderItem1 = purchaseOrderItems.get(0);
+		final PurchaseOrderItem purchaseOrderItem1 = purchaseOrderItems.getFirst();
 		assertThat(purchaseOrderItem1.getOrgId()).isEqualTo(candidate1.getOrgId());
 		assertThat(purchaseOrderItem1.getRemotePurchaseOrderId()).isEqualTo("remotePurchaseOrderId");
 		assertThat(purchaseOrderItem1.getPurchaseCandidateId()).isEqualTo(candidate1.getId());

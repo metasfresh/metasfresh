@@ -143,7 +143,7 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 		}
 		else if (candidates.size() == 1)
 		{
-			candidates.get(0).setQtyToAllocate(qtyToAllocateTarget);
+			candidates.getFirst().setQtyToAllocate(qtyToAllocateTarget);
 			return;
 		}
 

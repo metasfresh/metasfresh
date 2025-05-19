@@ -177,17 +177,15 @@ public class ContactPersonRepository
 				.orElseThrow(() -> new AdempiereException("Expected to have a contact person: " + syncResult));
 		final I_MKTG_ContactPerson contactPersonRecord = createOrUpdateRecordDontSave(contactPerson);
 
-		if (syncResult instanceof LocalToRemoteSyncResult)
+		if (syncResult instanceof LocalToRemoteSyncResult localToRemoteSyncResult)
 		{
-			final LocalToRemoteSyncResult localToRemoteSyncResult = (LocalToRemoteSyncResult)syncResult;
 
 			contactPersonRecord.setLastSyncOfLocalToRemote(SystemTime.asTimestamp());
 			contactPersonRecord.setLastSyncStatus(localToRemoteSyncResult.getLocalToRemoteStatus().toString());
 			contactPersonRecord.setLastSyncDetailMessage(localToRemoteSyncResult.getErrorMessage());
 		}
-		else if (syncResult instanceof RemoteToLocalSyncResult)
+		else if (syncResult instanceof RemoteToLocalSyncResult remoteToLocalSyncResult)
 		{
-			final RemoteToLocalSyncResult remoteToLocalSyncResult = (RemoteToLocalSyncResult)syncResult;
 
 			contactPersonRecord.setLastSyncOfRemoteToLocal(SystemTime.asTimestamp());
 			contactPersonRecord.setLastSyncStatus(remoteToLocalSyncResult.getRemoteToLocalStatus().toString());

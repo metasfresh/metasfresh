@@ -107,8 +107,8 @@ public class SupplyCandidateHandlerTest
 
 		final List<I_MD_Candidate> records = retrieveAllRecords();
 		assertThat(records).hasSize(2);
-		final I_MD_Candidate stockRecord = filter(CandidateType.STOCK).get(0);
-		final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).get(0);
+		final I_MD_Candidate stockRecord = filter(CandidateType.STOCK).getFirst();
+		final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).getFirst();
 
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(qty);
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(qty); // ..because there was no older record, the "delta" we provided is the current quantity
@@ -142,8 +142,8 @@ public class SupplyCandidateHandlerTest
 
 			final List<I_MD_Candidate> records = retrieveAllRecords();
 			assertThat(records).hasSize(2);
-			final I_MD_Candidate stockRecord = filter(CandidateType.STOCK).get(0);
-			final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).get(0);
+			final I_MD_Candidate stockRecord = filter(CandidateType.STOCK).getFirst();
+			final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).getFirst();
 
 			assertThat(supplyRecord.getQty()).isEqualByComparingTo(qty);
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(qty); // ..because there was no older record, the "delta" we provided is the current quantity
@@ -181,8 +181,8 @@ public class SupplyCandidateHandlerTest
 
 			final List<I_MD_Candidate> records = retrieveAllRecords();
 			assertThat(records).hasSize(2);
-			final I_MD_Candidate stockRecord = filter(CandidateType.STOCK).get(0);
-			final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).get(0);
+			final I_MD_Candidate stockRecord = filter(CandidateType.STOCK).getFirst();
+			final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).getFirst();
 
 			assertThat(supplyRecord.getQty()).isEqualByComparingTo(exptectedQty);
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(exptectedQty); // ..because there was no older record, the "delta" we provided is the current quantity
@@ -234,8 +234,8 @@ public class SupplyCandidateHandlerTest
 
 		final List<I_MD_Candidate> records = retrieveAllRecords();
 		assertThat(records).hasSize(3);
-		final I_MD_Candidate stockRecord = filter(CandidateType.STOCK, AFTER_NOW).get(0);
-		final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).get(0);
+		final I_MD_Candidate stockRecord = filter(CandidateType.STOCK, AFTER_NOW).getFirst();
+		final I_MD_Candidate supplyRecord = filter(CandidateType.SUPPLY).getFirst();
 
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(new BigDecimal("23"));
 		assertThat(CandidateBusinessCase.ofNullableCode(supplyRecord.getMD_Candidate_BusinessCase())).isEqualTo(CandidateBusinessCase.PRODUCTION);
@@ -255,7 +255,7 @@ public class SupplyCandidateHandlerTest
 		final List<I_MD_Candidate> allRecords = retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
 
-		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.get(0);
+		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.getFirst();
 		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_INCREASE);
 		assertThat(unrelatedTransactionCandidate.getQty()).isEqualByComparingTo("10");
 

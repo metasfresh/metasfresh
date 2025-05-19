@@ -256,7 +256,7 @@ public class CurrencyDAO implements ICurrencyDAO
 			return null;
 		}
 
-		final Map<String, Object> record = recordsList.get(0);
+		final Map<String, Object> record = recordsList.getFirst();
 		return (BigDecimal)record.get(I_C_Conversion_Rate.COLUMNNAME_MultiplyRate);
 	}
 }

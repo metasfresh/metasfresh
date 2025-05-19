@@ -951,8 +951,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	@Override
 	public String toString()
 	{
-		return String.format(
-				"SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 [getPainIdentifier()=%s, isSupportsOtherCurrencies()=%s, isSupportsGenericAccountIdentification()=%s]",
+		return "SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 [getPainIdentifier()=%s, isSupportsOtherCurrencies()=%s, isSupportsGenericAccountIdentification()=%s]".formatted(
 				getPainIdentifier(),
 				isSupportsOtherCurrencies(),
 				isSupportsGenericAccountIdentification());

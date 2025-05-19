@@ -121,7 +121,7 @@ public class TestQueue_RetrieveQueueElements
 	{
 		final List<I_C_Queue_Element> elements = queueDAO.retrieveQueueElements(workpackage2, false); // skipAlreadyScheduledItems=false
 		Assert.assertEquals("Invalid elements count", 3, elements.size());
-		Assert.assertEquals("Invalid element at index=0", workpackage2_element1, elements.get(0));
+		Assert.assertEquals("Invalid element at index=0", workpackage2_element1, elements.getFirst());
 		Assert.assertEquals("Invalid element at index=1", workpackage2_element2, elements.get(1));
 		Assert.assertEquals("Invalid element at index=2", workpackage2_element3, elements.get(2));
 	}
@@ -134,7 +134,7 @@ public class TestQueue_RetrieveQueueElements
 
 		final List<I_C_Queue_Element> elements = queueDAO.retrieveQueueElements(workpackage2, true); // skipAlreadyScheduledItems=true
 		Assert.assertEquals("Invalid elements count", 2, elements.size());
-		Assert.assertEquals("Invalid element at index=0", workpackage2_element2, elements.get(0));
+		Assert.assertEquals("Invalid element at index=0", workpackage2_element2, elements.getFirst());
 		Assert.assertEquals("Invalid element at index=1", workpackage2_element3, elements.get(1));
 	}
 
@@ -149,7 +149,7 @@ public class TestQueue_RetrieveQueueElements
 
 		// NOTE: result shall be the same as when we retrieve all elements
 		Assert.assertEquals("Invalid elements count", 3, elements.size());
-		Assert.assertEquals("Invalid element at index=0", workpackage2_element1, elements.get(0));
+		Assert.assertEquals("Invalid element at index=0", workpackage2_element1, elements.getFirst());
 		Assert.assertEquals("Invalid element at index=1", workpackage2_element2, elements.get(1));
 		Assert.assertEquals("Invalid element at index=2", workpackage2_element3, elements.get(2));
 	}

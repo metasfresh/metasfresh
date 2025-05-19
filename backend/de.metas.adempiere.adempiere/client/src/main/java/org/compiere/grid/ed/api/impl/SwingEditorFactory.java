@@ -82,9 +82,9 @@ public final class SwingEditorFactory implements ISwingEditorFactory
 		{
 			return null;
 		}
-		else if (editor instanceof JComponent)
+		else if (editor instanceof JComponent component)
 		{
-			return (JComponent)editor;
+			return component;
 		}
 		else
 		{

@@ -178,8 +178,8 @@ public class MSV3PurchaseOrderClientTest
 
 		final List<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = purchaseOrderResponse.getPurchaseOrderResponseItems();
 		assertThat(purchaseOrderResponseItems).hasSize(1);
-		assertThat(purchaseOrderResponseItems.get(0).getInternalItemId()).isNotNull();
-		assertThat(purchaseOrderResponseItems.get(0).getConfirmedOrderQuantity()).isEqualByComparingTo(context.confirmedOrderQty);
+		assertThat(purchaseOrderResponseItems.getFirst().getInternalItemId()).isNotNull();
+		assertThat(purchaseOrderResponseItems.getFirst().getConfirmedOrderQuantity()).isEqualByComparingTo(context.confirmedOrderQty);
 	}
 
 	private static Source createRequest(final Context context) throws Exception

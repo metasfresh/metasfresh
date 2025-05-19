@@ -72,7 +72,7 @@ public final class ViewId
 			throw new AdempiereException("Invalid viewId: " + viewIdStr);
 		}
 
-		final WindowId windowId = WindowId.fromJson(parts.get(0));
+		final WindowId windowId = WindowId.fromJson(parts.getFirst());
 		if (expectedWindowId != null)
 		{
 			Preconditions.checkArgument(Objects.equals(windowId, expectedWindowId), "Invalid windowId: %s (viewId=%s). Expected windowId was %s", windowId, viewIdStr, expectedWindowId);

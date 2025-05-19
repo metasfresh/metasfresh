@@ -259,7 +259,7 @@ public class CreateDraftIssuesCommand
 					.setParameter("ProductStorages", productStorages);
 		}
 
-		return productStorages.get(0);
+		return productStorages.getFirst();
 	}
 
 	@Nullable

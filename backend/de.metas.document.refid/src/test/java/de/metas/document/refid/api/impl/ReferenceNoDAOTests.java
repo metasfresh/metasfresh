@@ -204,10 +204,10 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 
 		final PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
 		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Invoice.class).size(), is(1));
-		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Invoice.class).get(0), is(invoice));
+		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Invoice.class).getFirst(), is(invoice));
 
 		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Order.class).size(), is(1));
-		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Order.class).get(0), is(order));
+		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Order.class).getFirst(), is(order));
 
 		// create another unused type
 		setupType(Gen2.class);

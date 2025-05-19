@@ -84,7 +84,7 @@ public class PrintingQueueBLTests
 
 		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0).getRepoId(), printRecipient.getAD_User_ID());
+		assertEquals(result.getFirst().getRepoId(), printRecipient.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 
@@ -105,7 +105,7 @@ public class PrintingQueueBLTests
 
 			final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 			assertEquals(result.size(), 1);
-			assertEquals(result.get(0).getRepoId(), printRecipient1.getAD_User_ID());
+			assertEquals(result.getFirst().getRepoId(), printRecipient1.getAD_User_ID());
 			assertTrue(item.isPrintoutForOtherUser());
 		}
 
@@ -117,7 +117,7 @@ public class PrintingQueueBLTests
 		// still expecting one recipient, but printRecipient2
 		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0).getRepoId(), printRecipient2.getAD_User_ID());
+		assertEquals(result.getFirst().getRepoId(), printRecipient2.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 }

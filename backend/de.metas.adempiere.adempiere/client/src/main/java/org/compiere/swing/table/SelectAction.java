@@ -1,5 +1,7 @@
 package org.compiere.swing.table;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.client
@@ -31,6 +33,7 @@ package org.compiere.swing.table;
  */
 class SelectAction extends AbstractManageSelectableRowsAction
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public SelectAction()

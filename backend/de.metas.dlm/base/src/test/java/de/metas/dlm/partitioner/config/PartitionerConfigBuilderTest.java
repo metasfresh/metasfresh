@@ -55,13 +55,13 @@ public class PartitionerConfigBuilderTest
 
 		assertThat(config.getLines().size(), is(2));
 
-		assertThat(config.getLines().get(0).getTableName(), equalToIgnoringCase("ABC"));
+		assertThat(config.getLines().getFirst().getTableName(), equalToIgnoringCase("ABC"));
 		assertThat(config.getLineNotNull("ABC").getTableName(), equalToIgnoringCase("ABC"));
 
 		assertNotNull(config.getLineNotNull("ABC").getReferences());
 		assertThat(config.getLineNotNull("ABC").getReferences().size(), is(2));
 
-		assertThat(config.getLineNotNull("ABC").getReferences().get(0).getReferencedTableName(), equalToIgnoringCase("123"));
+		assertThat(config.getLineNotNull("ABC").getReferences().getFirst().getReferencedTableName(), equalToIgnoringCase("123"));
 		assertThat(config.getLineNotNull("ABC").getReferences().get(1).getReferencedTableName(), equalToIgnoringCase("789"));
 	}
 
@@ -88,8 +88,8 @@ public class PartitionerConfigBuilderTest
 
 		assertThat(extendedConfig.getLineNotNull("XYZ").getTableName(), is("XYZ"));
 		assertNotNull(extendedConfig.getLineNotNull("XYZ").getReferences());
-		assertThat(extendedConfig.getLineNotNull("XYZ").getReferences().get(0).getReferencedTableName(), is("123"));
-		assertThat(extendedConfig.getLineNotNull("XYZ").getReferences().get(0).getReferencingColumnName(), is("XYZ_columnName"));
+		assertThat(extendedConfig.getLineNotNull("XYZ").getReferences().getFirst().getReferencedTableName(), is("123"));
+		assertThat(extendedConfig.getLineNotNull("XYZ").getReferences().getFirst().getReferencingColumnName(), is("XYZ_columnName"));
 	}
 
 	private PartitionConfig createAndCheckBuilder0()
@@ -111,8 +111,8 @@ public class PartitionerConfigBuilderTest
 	private void checkConfig(final PartitionConfig config)
 	{
 		assertThat(config.getDLM_Partition_Config_ID(), is(1));
-		assertThat(config.getLines().get(0).getTableName(), is("ABC"));
-		assertThat(config.getLines().get(0).getDLM_Partition_Config_Line_ID(), is(2));
+		assertThat(config.getLines().getFirst().getTableName(), is("ABC"));
+		assertThat(config.getLines().getFirst().getDLM_Partition_Config_Line_ID(), is(2));
 
 		assertThat(config.getLines().get(1).getTableName(), is("123"));
 		assertThat(config.getLines().get(1).getDLM_Partition_Config_Line_ID(), is(4));
@@ -120,8 +120,8 @@ public class PartitionerConfigBuilderTest
 		assertThat(config.getLineNotNull("ABC").getTableName(), is("ABC"));
 		assertNotNull(config.getLineNotNull("ABC").getReferences());
 
-		assertThat(config.getLineNotNull("ABC").getReferences().get(0).getDLM_Partition_Config_Reference_ID(), is(3));
-		assertThat(config.getLineNotNull("ABC").getReferences().get(0).getReferencedTableName(), is("123"));
-		assertThat(config.getLineNotNull("ABC").getReferences().get(0).getReferencingColumnName(), is("ABC_columnName"));
+		assertThat(config.getLineNotNull("ABC").getReferences().getFirst().getDLM_Partition_Config_Reference_ID(), is(3));
+		assertThat(config.getLineNotNull("ABC").getReferences().getFirst().getReferencedTableName(), is("123"));
+		assertThat(config.getLineNotNull("ABC").getReferences().getFirst().getReferencingColumnName(), is("ABC_columnName"));
 	}
 }

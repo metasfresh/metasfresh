@@ -139,8 +139,8 @@ public class ShipmentScheduleCreatedHandlerTests
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(1);
 
-		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
+		final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).getFirst();
 
 		assertThat(demandRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
@@ -154,7 +154,7 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		final List<I_MD_Candidate_Demand_Detail> demandDetailRecords = POJOLookupMap.get().getRecords(I_MD_Candidate_Demand_Detail.class);
 		assertThat(demandDetailRecords).hasSize(1);
-		assertThat(demandDetailRecords.get(0).getM_ShipmentSchedule_ID()).isEqualTo(event.getShipmentScheduleId());
+		assertThat(demandDetailRecords.getFirst().getM_ShipmentSchedule_ID()).isEqualTo(event.getShipmentScheduleId());
 
 		return event.getShipmentScheduleId();
 	}

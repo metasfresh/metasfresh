@@ -41,6 +41,7 @@ package de.metas.shipping.model;
  */
 
 import java.io.File;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.LocalDate;
@@ -73,6 +74,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -8883936122691193136L;
 
 	/**

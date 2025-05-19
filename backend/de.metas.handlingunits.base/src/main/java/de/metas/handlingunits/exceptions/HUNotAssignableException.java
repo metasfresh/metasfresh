@@ -3,6 +3,8 @@ package de.metas.handlingunits.exceptions;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Check;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when an HU is not assignable to a given document line
  *
@@ -14,6 +16,7 @@ public class HUNotAssignableException extends HUException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -438979286865114772L;
 
 	/**

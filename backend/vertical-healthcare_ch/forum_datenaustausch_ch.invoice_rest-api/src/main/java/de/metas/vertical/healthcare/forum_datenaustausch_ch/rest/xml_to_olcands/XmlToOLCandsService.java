@@ -862,7 +862,7 @@ public class XmlToOLCandsService
 		{
 			return null;
 		}
-		return online.getEmail().get(0);
+		return online.getEmail().getFirst();
 	}
 
 	private JsonExternalId createBPartnerExternalId(@NonNull final String eanParty)

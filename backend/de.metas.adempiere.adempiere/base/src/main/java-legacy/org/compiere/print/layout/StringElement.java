@@ -379,7 +379,7 @@ public class StringElement extends PrintElement
 			String tableName = MQuery.getZoomTableName(columnName);
 			Object code = m_ID.getID();
 			if (m_ID instanceof KeyNamePair)
-				code = new Integer(((KeyNamePair)m_ID).getKey());
+				code = Integer.valueOf(((KeyNamePair)m_ID).getKey());
 			//
 			MQuery query = new MQuery(tableName);
 			query.addRestriction(columnName, Operator.EQUAL, code);

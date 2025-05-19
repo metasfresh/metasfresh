@@ -29,12 +29,15 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 public class CalloutException extends AdempiereException
 {
 
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 2766621229698377244L;
 
 	@Getter private ICalloutInstance calloutInstance = null;

@@ -218,7 +218,7 @@ public class PickingHUsRepositoryTests
 
 			final boolean expectedProcessed = !PickingCandidateStatus.Draft.equals(processingStatus);
 
-			final PickedHUEditorRow resultRow = result.get(pickingSlotId).get(0);
+			final PickedHUEditorRow resultRow = result.get(pickingSlotId).getFirst();
 			final PickedHUEditorRow expectedRow = new PickedHUEditorRow(huEditorRow,
 																		expectedProcessed,
 																		expectedProcessed

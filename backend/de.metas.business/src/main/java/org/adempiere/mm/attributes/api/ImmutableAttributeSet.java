@@ -86,9 +86,9 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 	public static ImmutableAttributeSet copyOf(@NonNull final IAttributeSet attributeSet)
 	{
-		if (attributeSet instanceof ImmutableAttributeSet)
+		if (attributeSet instanceof ImmutableAttributeSet set)
 		{
-			return (ImmutableAttributeSet)attributeSet;
+			return set;
 		}
 
 		return createSubSet(attributeSet, attribute -> true);
@@ -162,9 +162,8 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			return true;
 		}
-		else if (obj instanceof ImmutableAttributeSet)
+		else if (obj instanceof ImmutableAttributeSet other)
 		{
-			final ImmutableAttributeSet other = (ImmutableAttributeSet)obj;
 			return Objects.equals(valuesByAttributeCode, other.valuesByAttributeCode);
 		}
 		else
@@ -321,9 +320,9 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			return 0;
 		}
-		else if (valueObj instanceof Number)
+		else if (valueObj instanceof Number number)
 		{
-			return ((Number)valueObj).intValue();
+			return number.intValue();
 		}
 		else
 		{
@@ -346,13 +345,13 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		{
 			return null;
 		}
-		else if (valueObj instanceof Date)
+		else if (valueObj instanceof Date date)
 		{
-			return (Date)valueObj;
+			return date;
 		}
-		else if (valueObj instanceof Number)
+		else if (valueObj instanceof Number number)
 		{
-			return new Date(((Number)valueObj).longValue());
+			return new Date(number.longValue());
 		}
 		else if (TimeUtil.isDateOrTimeObject(valueObj))
 		{

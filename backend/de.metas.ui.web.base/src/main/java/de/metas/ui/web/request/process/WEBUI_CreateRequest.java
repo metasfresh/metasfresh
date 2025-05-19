@@ -76,7 +76,7 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (!requestWindowId.isPresent())
+		if (requestWindowId.isEmpty())
 		{
 			final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
 			loggable.addLog("No default window for the R_Request table");

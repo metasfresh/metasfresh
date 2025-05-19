@@ -108,12 +108,12 @@ public final class HUEditorRowId
 			final List<String> idParts = ID_SPLITTER.splitToList(idStrPart);
 			if (idParts.size() == 1)
 			{
-				huId = HuId.ofRepoId(Integer.parseInt(idParts.get(0)));
+				huId = HuId.ofRepoId(Integer.parseInt(idParts.getFirst()));
 				storageProductId = null;
 			}
 			else if (idParts.size() == 2)
 			{
-				huId = HuId.ofRepoId(Integer.parseInt(idParts.get(0)));
+				huId = HuId.ofRepoId(Integer.parseInt(idParts.getFirst()));
 				storageProductId = ProductId.ofRepoId(Integer.parseInt(idParts.get(1)));
 			}
 			else

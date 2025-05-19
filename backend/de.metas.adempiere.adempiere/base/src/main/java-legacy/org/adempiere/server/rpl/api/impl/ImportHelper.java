@@ -102,6 +102,7 @@ import javax.annotation.Nullable;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.xpath.XPathExpressionException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -1172,7 +1173,7 @@ public class ImportHelper implements IImportHelper
 				else if (DisplayType.isNumeric(adReferenceId))
 				{
 					columnSQL = "ROUND(" + columnSQL + ", 2)";
-					paramSQL = new BigDecimal((String)cols[col]).setScale(2, BigDecimal.ROUND_HALF_UP);
+					paramSQL = new BigDecimal((String)cols[col]).setScale(2, RoundingMode.HALF_UP);
 				}
 				// metas: cg: task 03749 : start
 				else if (DisplayType.isLOB(adReferenceId))

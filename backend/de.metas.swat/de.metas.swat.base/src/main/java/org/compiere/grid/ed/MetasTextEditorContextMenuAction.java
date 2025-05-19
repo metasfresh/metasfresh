@@ -41,9 +41,8 @@ public class MetasTextEditorContextMenuAction extends TextEditorContextMenuActio
 	protected String startEditor(final GridField gridField, final String text, final boolean editable)
 	{
 		final VEditor editor = getEditor();
-		if ((gridField.getDisplayType() == DisplayType.TextLong) && (editor instanceof Component))
+		if ((gridField.getDisplayType() == DisplayType.TextLong) && (editor instanceof Component editorComp))
 		{
-			final Component editorComp = (Component)editor;
 			final String columnName = gridField.getColumnName();
 			final String title = Services.get(IMsgBL.class).translate(Env.getCtx(), columnName);
 			

@@ -57,6 +57,6 @@ public class SystecResponseStringParser implements IParser<ISystecCmd>
 	@Override
 	public String toString()
 	{
-		return String.format("SystecResponseStringParser []");
+		return "SystecResponseStringParser []".formatted();
 	}
 }

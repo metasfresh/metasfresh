@@ -3,6 +3,7 @@ package org.adempiere.util.beans;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeListenerProxy;
 import java.beans.PropertyChangeSupport;
+import java.io.Serial;
 import java.lang.ref.WeakReference;
 
 import com.google.common.base.MoreObjects;
@@ -20,6 +21,7 @@ import de.metas.util.Check;
  */
 public class WeakPropertyChangeSupport extends PropertyChangeSupport
 {
+	@Serial
 	private static final long serialVersionUID = 309861519819203221L;
 
 	/**
@@ -110,9 +112,8 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 		}
 
 		final PropertyChangeListener listenerToWrap;
-		if (listener instanceof WeakPropertyChangeListener)
+		if (listener instanceof WeakPropertyChangeListener weakListener)
 		{
-			final WeakPropertyChangeListener weakListener = (WeakPropertyChangeListener)listener;
 			if (weakListener.isWeak() == weakActual)
 			{
 				return weakListener;
@@ -123,9 +124,8 @@ public class WeakPropertyChangeSupport extends PropertyChangeSupport
 				Check.assumeNotNull(listenerToWrap, "Listener already expired: {}", weakListener);
 			}
 		}
-		else if (listener instanceof PropertyChangeListenerProxy)
+		else if (listener instanceof PropertyChangeListenerProxy listenerProxy)
 		{
-			final PropertyChangeListenerProxy listenerProxy = (PropertyChangeListenerProxy)listener;
 			final String propertyName = listenerProxy.getPropertyName();
 			final PropertyChangeListener listenerActual = listenerProxy.getListener();
 			final PropertyChangeListener listenerActualWrapped = createWeakPropertyChangeListener(listenerActual, weakActual, scope);

@@ -285,7 +285,7 @@ class PPOrderCandidateAdvisedEventCreatorTest
 
 			final List<PPOrderCandidateAdvisedEvent> events = ppOrderCandidateAdvisedCreator.createAdvisedEvents(supplyRequiredDescriptor, context);
 			assertThat(events).hasSize(1);
-			assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+			assertThat(events.getFirst().getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
 		}
 	}
 }

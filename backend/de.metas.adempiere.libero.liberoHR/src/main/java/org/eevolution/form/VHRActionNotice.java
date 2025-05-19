@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -84,6 +85,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 5905687280280831354L;
 	/**
 	 *	Initialize Panel

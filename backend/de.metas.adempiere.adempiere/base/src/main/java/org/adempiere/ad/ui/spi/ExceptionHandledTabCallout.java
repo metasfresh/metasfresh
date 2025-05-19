@@ -49,9 +49,9 @@ public class ExceptionHandledTabCallout implements ITabCallout
 			return tabCallout;
 		}
 
-		if (tabCallout instanceof IStatefulTabCallout)
+		if (tabCallout instanceof IStatefulTabCallout callout)
 		{
-			return new StatefulExceptionHandledTabCallout((IStatefulTabCallout)tabCallout);
+			return new StatefulExceptionHandledTabCallout(callout);
 		}
 
 		return new ExceptionHandledTabCallout(tabCallout);

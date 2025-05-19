@@ -252,14 +252,14 @@ public class BankStatementImportProcessTest
 		//
 		// Line 1
 		{
-			assertThat(lines.get(0).getC_Currency_ID()).isEqualByComparingTo(euroCurrencyId.getRepoId());
-			assertThat(TimeUtil.asLocalDate(lines.get(0).getStatementLineDate())).isEqualTo("2020-03-22");
-			assertThat(TimeUtil.asLocalDate(lines.get(0).getValutaDate())).isEqualTo("2020-03-22");
-			assertThat(TimeUtil.asLocalDate(lines.get(0).getDateAcct())).isEqualTo("2020-03-22");
+			assertThat(lines.getFirst().getC_Currency_ID()).isEqualByComparingTo(euroCurrencyId.getRepoId());
+			assertThat(TimeUtil.asLocalDate(lines.getFirst().getStatementLineDate())).isEqualTo("2020-03-22");
+			assertThat(TimeUtil.asLocalDate(lines.getFirst().getValutaDate())).isEqualTo("2020-03-22");
+			assertThat(TimeUtil.asLocalDate(lines.getFirst().getDateAcct())).isEqualTo("2020-03-22");
 			//
-			assertThat(lines.get(0).getStmtAmt()).isEqualByComparingTo("100");
-			assertThat(lines.get(0).getTrxAmt()).isEqualByComparingTo("100");
-			assertThat(lines.get(0).getDescription()).isEqualTo("description for line 1");
+			assertThat(lines.getFirst().getStmtAmt()).isEqualByComparingTo("100");
+			assertThat(lines.getFirst().getTrxAmt()).isEqualByComparingTo("100");
+			assertThat(lines.getFirst().getDescription()).isEqualTo("description for line 1");
 		}
 
 		//

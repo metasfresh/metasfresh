@@ -23,10 +23,12 @@ package de.metas.printing.esb.api;
  */
 
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class LoginResponse implements Serializable
 {
+	@Serial
 	private static final long serialVersionUID = 6515589439074746845L;
 
 	private String username;

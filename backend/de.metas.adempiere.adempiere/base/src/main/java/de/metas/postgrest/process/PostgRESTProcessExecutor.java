@@ -138,7 +138,7 @@ public class PostgRESTProcessExecutor extends JavaProcess
 		{
 			final Path outputFilePath = FileUtil.createAndValidatePath(
 					Paths.get(config.getResultDirectory()),
-					Paths.get(processRecord.getValue(), fileName));
+					Path.of(processRecord.getValue(), fileName));
 
 			// store resource to disk
 			Files.createDirectories(outputFilePath.getParent());

@@ -126,7 +126,7 @@ public class MarginAlgorithmTest
 		// then
 		assertThat(shares).hasSize(1);
 
-		expect.serializer("orderedJson").toMatchSnapshot(shares.get(0));
+		expect.serializer("orderedJson").toMatchSnapshot(shares.getFirst());
 	}
 
 	@Builder(builderMethodName = "commissionSharesRequestBuilder")

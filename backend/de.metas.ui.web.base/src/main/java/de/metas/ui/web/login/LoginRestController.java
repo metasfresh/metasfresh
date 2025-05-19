@@ -229,7 +229,7 @@ public class LoginRestController
 		else
 		{
 			jsonAvailableRoles = createJSONLoginRoles(loginService, availableRoles);
-			roleToLoginEffective = jsonAvailableRoles.size() == 1 ? jsonAvailableRoles.get(0) : null;
+			roleToLoginEffective = jsonAvailableRoles.size() == 1 ? jsonAvailableRoles.getFirst() : null;
 		}
 
 		if (roleToLoginEffective != null)

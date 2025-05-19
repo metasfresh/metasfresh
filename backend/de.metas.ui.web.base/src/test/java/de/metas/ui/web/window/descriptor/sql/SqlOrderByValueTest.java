@@ -39,10 +39,11 @@ class SqlOrderByValueTest
 		assertThat(sqlOrderByValue.toSqlUsingColumnNameAlias())
 				.isEqualTo("joinOnTableNameOrAlias2.columnName$Display[2]");
 		assertThat(sqlOrderByValue.toSourceSqlExpression().evaluate(Evaluatees.empty(), IExpressionEvaluator.OnVariableNotFound.Fail))
-				.isEqualTo("SELECT "
-						+ "\n displayColumn"
-						+ "\n FROM sqlFrom"
-						+ "\n WHERE LookupTable.keyColumnName=joinOnTableNameOrAlias2.joinOnColumnName AND additionalWhereClause");
+				.isEqualTo("""
+						SELECT\s
+						 displayColumn
+						 FROM sqlFrom
+						 WHERE LookupTable.keyColumnName=joinOnTableNameOrAlias2.joinOnColumnName AND additionalWhereClause""");
 	}
 
 	@Nested

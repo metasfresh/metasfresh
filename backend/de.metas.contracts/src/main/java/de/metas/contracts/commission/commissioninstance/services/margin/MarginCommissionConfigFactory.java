@@ -189,7 +189,7 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 
 		final Optional<CustomerTradeMarginLine> lineForCustomerOpt = customerTradeMargin.getLineForCustomer(mappingCriteria);
 
-		if (!lineForCustomerOpt.isPresent())
+		if (lineForCustomerOpt.isEmpty())
 		{
 			return Optional.empty();
 		}
@@ -216,7 +216,7 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 		// dev-note: see de.metas.contracts.interceptor.C_Flatrate_Term#ensureOneContract(I_C_Flatrate_Term term)
 		Check.assume(marginCommissionContracts.size() == 1, "One salesRep should have only one margin commission contract for the same time period of time");
 
-		return marginCommissionContracts.get(0);
+		return marginCommissionContracts.getFirst();
 	}
 
 	@VisibleForTesting

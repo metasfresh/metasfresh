@@ -134,7 +134,7 @@ public class HandlingUnitsRestController
 		}
 		else if (hus.size() == 1)
 		{
-			return hus.get(0);
+			return hus.getFirst();
 		}
 		else
 		{

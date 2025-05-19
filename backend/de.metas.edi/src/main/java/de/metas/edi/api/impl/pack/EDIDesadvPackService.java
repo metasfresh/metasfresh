@@ -385,7 +385,7 @@ public class EDIDesadvPackService
 			final I_C_BPartner_Product bPartnerProductRecord = bPartnerProductDAO
 					.retrieveBPartnerProductAssociation(Env.getCtx(),
 							bPartnerId,
-							ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
+							ProductId.ofRepoId(huPackingMaterials.getFirst().getM_Product_ID()),
 							OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
 			if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
 			{
@@ -664,7 +664,7 @@ public class EDIDesadvPackService
 
 		final BigDecimal qtyCUPerTUinInvoiceUOM;
 		final BigDecimal qtyCUPerLUinInvoiceUOM;
-		if (invoicableQtyBasedOn.isCatchWeight() && !qtyCUsPerLU.getUOMQtyOpt().isPresent())
+		if (invoicableQtyBasedOn.isCatchWeight() && qtyCUsPerLU.getUOMQtyOpt().isEmpty())
 		{
 			if (uomToStockRatio == null)
 			{

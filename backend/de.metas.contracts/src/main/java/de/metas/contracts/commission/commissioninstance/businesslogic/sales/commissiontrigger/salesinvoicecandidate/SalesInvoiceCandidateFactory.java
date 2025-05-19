@@ -83,7 +83,7 @@ public class SalesInvoiceCandidateFactory
 	public Optional<SalesInvoiceCandidate> forRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final Optional<BPartnerId> salesRepId = getSalesRepId(icRecord);
-		if (!salesRepId.isPresent())
+		if (salesRepId.isEmpty())
 		{
 			logger.debug("No C_BPartner_SalesRep_ID={} found for C_Invoice_Candidate_ID={}; -> return empty", icRecord.getC_BPartner_SalesRep_ID(), icRecord.getC_Invoice_Candidate_ID());
 			return Optional.empty();
@@ -129,7 +129,7 @@ public class SalesInvoiceCandidateFactory
 		}
 
 		final Optional<CommissionPoints> forecastCommissionPoints = extractForecastCommissionPoints(icRecord);
-		if (!forecastCommissionPoints.isPresent())
+		if (forecastCommissionPoints.isEmpty())
 		{
 			logger.debug("C_Invoice_Candidate {} has no forecast commission points; -> return empty", icRecord.getC_Invoice_Candidate_ID());
 			return Optional.empty();
@@ -164,7 +164,7 @@ public class SalesInvoiceCandidateFactory
 		final Optional<Quantity> forecastQtyInPriceUOM = uomConversionBL
 				.convertQtyTo(forecastQtyStockUOM, priceActual.getUomId());
 
-		if (!forecastQtyInPriceUOM.isPresent())
+		if (forecastQtyInPriceUOM.isEmpty())
 		{
 			logger.debug("C_Invoice_Candidate {}: couldn't convert forecastQty to priceUom; PriceActual: {}, forecastQtyStockUOM: {} -> return empty", icRecord.getC_Invoice_Candidate_ID(), priceActual, forecastQtyStockUOM);
 			return Optional.empty();

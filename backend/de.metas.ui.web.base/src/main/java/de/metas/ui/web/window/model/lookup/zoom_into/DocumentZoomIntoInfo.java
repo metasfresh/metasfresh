@@ -50,7 +50,7 @@ public class DocumentZoomIntoInfo
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public DocumentZoomIntoInfo overrideWindowIdIfPossible(@Nullable final Optional<WindowId> windowId)
 	{
-		if (windowId == null || !windowId.isPresent())
+		if (windowId == null || windowId.isEmpty())
 		{
 			return this;
 		}

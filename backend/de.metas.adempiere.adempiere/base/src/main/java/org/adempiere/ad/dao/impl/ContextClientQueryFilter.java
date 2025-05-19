@@ -141,9 +141,9 @@ public class ContextClientQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 		{
 			return -1;
 		}
-		else if (adClientId instanceof Number)
+		else if (adClientId instanceof Number number)
 		{
-			return ((Number)adClientId).intValue();
+			return number.intValue();
 		}
 		else
 		{

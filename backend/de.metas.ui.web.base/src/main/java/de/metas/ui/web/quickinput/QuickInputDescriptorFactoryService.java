@@ -208,7 +208,7 @@ public class QuickInputDescriptorFactoryService
 			logger.warn("More than one factory found for {}. Using the first one.", matchingFactories);
 		}
 
-		return matchingFactories.get(0);
+		return matchingFactories.getFirst();
 	}
 
 	@lombok.Builder

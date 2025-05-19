@@ -71,8 +71,8 @@ public class OrderLineReceiptScheduleProducerTest extends ReceiptScheduleTestBas
 		final IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
 		final List<I_M_ReceiptSchedule> receiptSched = producer.createOrUpdateReceiptSchedules(order, Collections.<I_M_ReceiptSchedule> emptyList());
 
-		Assert.assertEquals("Invalid M_Warehouse_ID", orderWarehouse.getM_Warehouse_ID(), receiptSched.get(0).getM_Warehouse_ID());
-		Assert.assertEquals("Invalid M_Warehouse_Override_ID", 0, receiptSched.get(0).getM_Warehouse_Override_ID());
-		Assert.assertEquals("Invalid M_Warehouse_Dest_ID", productWarehouse.getM_Warehouse_ID(), receiptSched.get(0).getM_Warehouse_Dest_ID());
+		Assert.assertEquals("Invalid M_Warehouse_ID", orderWarehouse.getM_Warehouse_ID(), receiptSched.getFirst().getM_Warehouse_ID());
+		Assert.assertEquals("Invalid M_Warehouse_Override_ID", 0, receiptSched.getFirst().getM_Warehouse_Override_ID());
+		Assert.assertEquals("Invalid M_Warehouse_Dest_ID", productWarehouse.getM_Warehouse_ID(), receiptSched.getFirst().getM_Warehouse_Dest_ID());
 	}
 }

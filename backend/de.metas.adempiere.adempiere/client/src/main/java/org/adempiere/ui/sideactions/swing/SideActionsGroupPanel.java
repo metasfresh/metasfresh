@@ -25,6 +25,7 @@ package org.adempiere.ui.sideactions.swing;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.io.Serial;
 
 import javax.swing.ListModel;
 import javax.swing.event.ListDataEvent;
@@ -51,6 +52,7 @@ class SideActionsGroupPanel extends JXTaskPane
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -3109115624961497796L;
 
 	public static final String PROPERTY_Visible = SideActionsGroupPanel.class.getName() + ".Visible";

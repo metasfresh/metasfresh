@@ -284,7 +284,7 @@ public class PrintJobBL implements IPrintJobBL
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printJobInstructions.get(0));
+		final Properties ctx = InterfaceWrapperHelper.getCtx(printJobInstructions.getFirst());
 		final AsyncBatchId asyncBatchId = createAsyncBatchForPDFPrinting(ctx, printingAsyncBatch);
 		
 		printJobInstructions.forEach(pji -> enqueuePrintJobInstructions(pji, asyncBatchId));

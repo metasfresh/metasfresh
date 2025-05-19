@@ -201,13 +201,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		{
 			return null;
 		}
-		else if (value instanceof LookupValue)
+		else if (value instanceof LookupValue lookupValue)
 		{
-			return ((LookupValue)value).getIdAsString();
+			return lookupValue.getIdAsString();
 		}
-		else if (value instanceof Boolean)
+		else if (value instanceof Boolean boolean1)
 		{
-			return StringUtils.ofBoolean((Boolean)value);
+			return StringUtils.ofBoolean(boolean1);
 		}
 		else if (TimeUtil.isDateOrTimeObject(value))
 		{
@@ -240,13 +240,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 		try
 		{
-			if (value instanceof Number)
+			if (value instanceof Number number)
 			{
-				return ((Number)value).intValue();
+				return number.intValue();
 			}
-			else if (value instanceof LookupValue)
+			else if (value instanceof LookupValue lookupValue)
 			{
-				return ((LookupValue)value).getIdAsInt();
+				return lookupValue.getIdAsInt();
 			}
 			else
 			{

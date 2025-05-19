@@ -22,6 +22,7 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -54,6 +55,7 @@ import de.metas.util.Services;
  */
 public class ProcessParametersPanel extends CPanel // implements IProcessParameter
 {
+	@Serial
 	private static final long serialVersionUID = -4802635610434891695L;
 
 	private static final Logger log = LogManager.getLogger(ProcessParametersPanel.class);
@@ -247,9 +249,8 @@ public class ProcessParametersPanel extends CPanel // implements IProcessParamet
 	{
 		final boolean tableEditor = false;
 		final VEditor editor = swingEditorFactory.getEditor(gridField, tableEditor);
-		if (editor instanceof VImage)
+		if (editor instanceof VImage imageEditor)
 		{
-			final VImage imageEditor = (VImage)editor;
 			// Enforce a maximum size for image preview, because else it looks very crappy in process parameters panel, mainly when using big images
 			imageEditor.setPreviewMaxSize(new Dimension(300, 100));
 		}

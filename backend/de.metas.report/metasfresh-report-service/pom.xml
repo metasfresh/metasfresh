@@ -162,6 +162,10 @@
             <artifactId>source-code-pro-fonts</artifactId>
             <version>1.0.0</version>
         </dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+		</dependency>
 
         <!-- JXls integration -->
         <dependency>
@@ -188,6 +192,11 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
         <dependency>
             <groupId>de.metas.adempiere.adempiere</groupId>

@@ -133,7 +133,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 		final StoreOrdersResponseType storeOrdersResponse = storeOrdersResponseElement.getValue().getOrderResult();
 
-		final List<FaultCodeType> faults = storeOrdersResponse.getShipmentResponses().get(0).getFaults();
+		final List<FaultCodeType> faults = storeOrdersResponse.getShipmentResponses().getFirst().getFaults();
 		if (!faults.isEmpty())
 		{
 			final String exceptionMessage = faults.stream()
@@ -182,7 +182,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 				.pdfData(storeOrdersResponse.getParcellabelsPDF())
 				.build();
 
-		final String mpsId = storeOrdersResponse.getShipmentResponses().get(0).getMpsId();
+		final String mpsId = storeOrdersResponse.getShipmentResponses().getFirst().getMpsId();
 		return deliveryOrder.toBuilder()
 				.trackingNumber(mpsId)
 				.trackingUrl(config.getTrackingUrlBase() + mpsId)

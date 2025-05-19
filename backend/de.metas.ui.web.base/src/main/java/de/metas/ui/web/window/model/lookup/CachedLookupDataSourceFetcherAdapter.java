@@ -48,9 +48,9 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 {
 	public static CachedLookupDataSourceFetcherAdapter of(final LookupDataSourceFetcher delegate)
 	{
-		if (delegate instanceof CachedLookupDataSourceFetcherAdapter)
+		if (delegate instanceof CachedLookupDataSourceFetcherAdapter adapter)
 		{
-			return (CachedLookupDataSourceFetcherAdapter)delegate;
+			return adapter;
 		}
 		return new CachedLookupDataSourceFetcherAdapter(delegate);
 	}

@@ -190,16 +190,15 @@ public class CopyPasteContextMenuAction extends AbstractContextMenuAction
 
 			//
 			// Check if editor implements our interface
-			if (editor instanceof ICopyPasteSupportEditor)
+			if (editor instanceof ICopyPasteSupportEditor supportEditor)
 			{
-				return (ICopyPasteSupportEditor)editor;
+				return supportEditor;
 			}
 
 			//
 			// Check if editor is aware of ICopyPasteSupport
-			if (editor instanceof ICopyPasteSupportEditorAware)
+			if (editor instanceof ICopyPasteSupportEditorAware copyPasteSupportAware)
 			{
-				final ICopyPasteSupportEditorAware copyPasteSupportAware = (ICopyPasteSupportEditorAware)editor;
 				final ICopyPasteSupportEditor copyPasteSupport = copyPasteSupportAware.getCopyPasteSupport();
 				return copyPasteSupport == null ? NullCopyPasteSupportEditor.instance : copyPasteSupport;
 			}

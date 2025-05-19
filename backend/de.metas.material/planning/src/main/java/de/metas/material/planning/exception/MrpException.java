@@ -2,6 +2,8 @@ package de.metas.material.planning.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * Generic libero-specifc exception. Please subclass this one rather than {@link MrpException} when adding libero related exceptions.
  *
@@ -13,6 +15,7 @@ public class MrpException extends AdempiereException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 4775225739207748132L;
 
 	public MrpException(final String message)

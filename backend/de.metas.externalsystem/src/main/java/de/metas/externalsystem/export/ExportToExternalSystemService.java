@@ -111,7 +111,7 @@ public abstract class ExportToExternalSystemService
 	protected ImmutableSet<IExternalSystemChildConfigId> getExternalSysConfigIdsFromExportAudit(@NonNull final TableRecordReference tableRecordReference)
 	{
 		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(tableRecordReference);
-		if (!dataExportAudit.isPresent())
+		if (dataExportAudit.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No dataExportAudit found for tableRecordReference: {}! No action is performed!", tableRecordReference);
 			return ImmutableSet.of();
@@ -135,8 +135,7 @@ public abstract class ExportToExternalSystemService
 		return dataExportAuditLogRepository.getExternalSystemConfigIds(dataExportAuditId)
 				.stream()
 				.map(id -> externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(id), getExternalSystemType()))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.map(IExternalSystemChildConfig::getId)
 				.collect(ImmutableSet.toImmutableSet());
 	}

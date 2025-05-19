@@ -108,9 +108,8 @@ public final class EMailSentStatus implements Serializable
 		boolean printed = false;
 		do
 		{
-			if (ex instanceof SendFailedException)
+			if (ex instanceof SendFailedException sfex)
 			{
-				final SendFailedException sfex = (SendFailedException)ex;
 				final Address[] invalid = sfex.getInvalidAddresses();
 				if (!printed)
 				{
@@ -187,9 +186,9 @@ public final class EMailSentStatus implements Serializable
 				}
 			}
 			// Next Exception
-			if (ex instanceof MessagingException)
+			if (ex instanceof MessagingException exception)
 			{
-				ex = ((MessagingException)ex).getNextException();
+				ex = exception.getNextException();
 			}
 			else
 			{
@@ -224,9 +223,9 @@ public final class EMailSentStatus implements Serializable
 
 	public static boolean isConnectionError(final Exception e)
 	{
-		if (e instanceof EMailSendException)
+		if (e instanceof EMailSendException exception)
 		{
-			return ((EMailSendException)e).isConnectionError();
+			return exception.isConnectionError();
 		}
 		else
 			return e instanceof java.net.ConnectException;

@@ -185,7 +185,7 @@ import java.util.Set;
 					+ ")");
 			return;
 		}
-		networkLine = networkLines.get(0);
+		networkLine = networkLines.getFirst();
 
 		//
 		// Retrieve Raw materials Warehouse (where we will send our quantitites back)

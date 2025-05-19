@@ -144,7 +144,7 @@ public class EverhourImporterServiceTest
 
 		assertEquals(importTimeBookingInfoImmutableList.size(), 3);
 
-		assertEqual(importTimeBookingInfoImmutableList.get(0), previouslyFailedTimeRecord);
+		assertEqual(importTimeBookingInfoImmutableList.getFirst(), previouslyFailedTimeRecord);
 		assertEqual(importTimeBookingInfoImmutableList.get(1), ghValidTimeRecord_01_07);
 		assertEqual(importTimeBookingInfoImmutableList.get(2), ghValidTimeRecord_08_12);
 
@@ -152,14 +152,14 @@ public class EverhourImporterServiceTest
 
 		assertEquals(failedTimeBookings.size(), 2);
 
-		if (failedTimeBookings.get(0).getExternalId().equals(previouslyFailedTimeRecord.getId()))
+		if (failedTimeBookings.getFirst().getExternalId().equals(previouslyFailedTimeRecord.getId()))
 		{
-			assertEquals(failedTimeBookings.get(0).getJsonValue(), objectMapper.writeValueAsString(previouslyFailedTimeRecord));
+			assertEquals(failedTimeBookings.getFirst().getJsonValue(), objectMapper.writeValueAsString(previouslyFailedTimeRecord));
 			assertEquals(failedTimeBookings.get(1).getJsonValue(), objectMapper.writeValueAsString(ghInvalidTimeRecord));
 		}
 		else
 		{
-			assertEquals(failedTimeBookings.get(0).getJsonValue(), objectMapper.writeValueAsString(ghInvalidTimeRecord));
+			assertEquals(failedTimeBookings.getFirst().getJsonValue(), objectMapper.writeValueAsString(ghInvalidTimeRecord));
 			assertEquals(failedTimeBookings.get(1).getJsonValue(), objectMapper.writeValueAsString(previouslyFailedTimeRecord));
 		}
 	}

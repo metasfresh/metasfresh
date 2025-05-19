@@ -98,7 +98,7 @@ public class AttributesKeyQueryHelper<T>
 		}
 		else if (filters.size() == 1)
 		{
-			return filters.get(0);
+			return filters.getFirst();
 		}
 		else
 		{

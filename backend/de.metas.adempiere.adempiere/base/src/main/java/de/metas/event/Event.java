@@ -219,7 +219,7 @@ public class Event
 		{
 			throw new AdempiereException("Event does not have a single recipient: " + this);
 		}
-		return recipientUserIds.asList().get(0);
+		return recipientUserIds.asList().getFirst();
 	}
 
 	public int getSuggestedWindowId()
@@ -270,9 +270,9 @@ public class Event
 		{
 			return defaultValue != null ? defaultValue.get() : null;
 		}
-		else if (value instanceof Date)
+		else if (value instanceof Date date)
 		{
-			return (Date)value;
+			return date;
 		}
 		else
 		{
@@ -596,9 +596,8 @@ public class Event
 			{
 				return putProperty(name, value);
 			}
-			else if (value instanceof Double)
+			else if (value instanceof Double doubleValue)
 			{
-				final Double doubleValue = (Double)value;
 				final int intValue = doubleValue.intValue();
 				if (doubleValue.doubleValue() == intValue)
 				{
@@ -609,29 +608,29 @@ public class Event
 					return putProperty(name, BigDecimal.valueOf(doubleValue));
 				}
 			}
-			else if (value instanceof String)
+			else if (value instanceof String string)
 			{
-				return putProperty(name, (String)value);
+				return putProperty(name, string);
 			}
-			else if (value instanceof Date)
+			else if (value instanceof Date date)
 			{
-				return putProperty(name, (Date)value);
+				return putProperty(name, date);
 			}
 			else if (value instanceof Boolean)
 			{
 				return putProperty(name, value);
 			}
-			else if (value instanceof ITableRecordReference)
+			else if (value instanceof ITableRecordReference reference)
 			{
-				return putProperty(name, (ITableRecordReference)value);
+				return putProperty(name, reference);
 			}
-			else if (value instanceof BigDecimal)
+			else if (value instanceof BigDecimal decimal)
 			{
-				return putProperty(name, (BigDecimal)value);
+				return putProperty(name, decimal);
 			}
-			else if (value instanceof List)
+			else if (value instanceof List<?> list)
 			{
-				return putProperty(name, (List<?>)value);
+				return putProperty(name, list);
 			}
 			else
 			{

@@ -322,7 +322,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		assertThat(candidates).hasSize(1);
 
-		final I_C_Invoice_Candidate invoiceCandidate = candidates.get(0);
+		final I_C_Invoice_Candidate invoiceCandidate = candidates.getFirst();
 
 		assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(flatrateTerm.getM_Product_ID());
 		assertThat(invoiceCandidate.getRecord_ID()).isEqualByComparingTo(flatrateTerm.getC_Flatrate_Term_ID());

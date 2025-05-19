@@ -42,9 +42,9 @@ public class JsonOpts
 		{
 			return null;
 		}
-		else if (value instanceof ITranslatableString)
+		else if (value instanceof ITranslatableString string)
 		{
-			return ((ITranslatableString)value).translate(adLanguage);
+			return string.translate(adLanguage);
 		}
 		else
 		{

@@ -22,20 +22,18 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.compiere.util.TimeUtil;
 
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Column Value Modifier which adds hours (from specified SQL Column) to the main column value.
@@ -110,7 +108,7 @@ public final class AddHoursQueryFilterModifier implements IQueryFilterModifier
 	private int getHours(final Object model)
 	{
 		final Optional<Number> hours = InterfaceWrapperHelper.getValue(model, hoursColumnSql);
-		if (!hours.isPresent())
+		if (hours.isEmpty())
 		{
 			return 0;
 		}

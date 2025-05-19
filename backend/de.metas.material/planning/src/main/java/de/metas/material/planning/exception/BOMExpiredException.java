@@ -1,5 +1,6 @@
 package de.metas.material.planning.exception;
 
+import java.io.Serial;
 import java.util.Date;
 
 import org.eevolution.model.I_PP_Product_BOM;
@@ -14,6 +15,7 @@ public class BOMExpiredException extends MrpException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -3084324343550833077L;
 
 	public BOMExpiredException(final I_PP_Product_BOM bom, final Date date)

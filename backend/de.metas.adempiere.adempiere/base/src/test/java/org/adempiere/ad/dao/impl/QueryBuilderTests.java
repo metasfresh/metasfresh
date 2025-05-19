@@ -188,7 +188,7 @@ public class QueryBuilderTests
 			final List<I_M_Product> list = query.list(I_M_Product.class);
 			assertThat(list.size(), is(2));
 
-			assertThat(list.get(0), is(product0));
+			assertThat(list.getFirst(), is(product0));
 			assertThat(product0.isActive(), is(true));
 
 			assertThat(list.get(1), is(product2));
@@ -203,7 +203,7 @@ public class QueryBuilderTests
 					.list(I_M_Product.class);
 			assertThat(list.size(), is(3));
 
-			assertThat(list.get(0), is(product0));
+			assertThat(list.getFirst(), is(product0));
 			assertThat(product0.isActive(), is(true));
 
 			assertThat(list.get(1), is(product1_NotActive));
@@ -234,7 +234,7 @@ public class QueryBuilderTests
 			final List<I_M_Product> list = query.list();
 			assertThat(list.size(), is(2));
 
-			assertThat(list.get(0), is(product1_NotActive));
+			assertThat(list.getFirst(), is(product1_NotActive));
 			assertThat(list.get(1), is(product2));
 		}
 
@@ -245,7 +245,7 @@ public class QueryBuilderTests
 			final List<I_M_Product> list = query.list();
 			assertThat(list.size(), is(3));
 
-			assertThat(list.get(0), is(product0));
+			assertThat(list.getFirst(), is(product0));
 			assertThat(list.get(1), is(product1_NotActive));
 			assertThat(list.get(2), is(product2));
 		}
@@ -267,7 +267,7 @@ public class QueryBuilderTests
 				.create()
 				.list();
 		assertThat(list.size(), is(2));
-		assertThat(list.get(0), is(product1_NotActive));
+		assertThat(list.getFirst(), is(product1_NotActive));
 		assertThat(list.get(1), is(product2));
 	}
 

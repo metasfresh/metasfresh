@@ -6,6 +6,8 @@ import de.metas.lock.spi.ExistingLockInfo;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when a lock acquiring failed.
  *
@@ -13,13 +15,14 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  */
 public class LockFailedException extends LockException
 {
+	@Serial
 	private static final long serialVersionUID = -343950791566871398L;
 
 	public static LockFailedException wrapIfNeeded(final Exception e)
 	{
-		if (e instanceof LockFailedException)
+		if (e instanceof LockFailedException exception)
 		{
-			return (LockFailedException)e;
+			return exception;
 		}
 		else
 		{

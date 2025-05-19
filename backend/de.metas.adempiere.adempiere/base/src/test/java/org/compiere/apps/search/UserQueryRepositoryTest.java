@@ -101,7 +101,7 @@ public class UserQueryRepositoryTest
 		final IUserQuery userQuery = repo.createUserQuery(record);
 		System.out.println("User query: " + userQuery);
 
-		final IUserQueryRestriction restriction = userQuery.getRestrictions().get(0);
+		final IUserQueryRestriction restriction = userQuery.getRestrictions().getFirst();
 		assertThat(restriction.isInternalParameter()).isTrue();
 		assertThat(restriction.isMandatory()).isFalse();
 	}
@@ -119,7 +119,7 @@ public class UserQueryRepositoryTest
 		final IUserQuery userQuery = repo.createUserQuery(record);
 		System.out.println("User query: " + userQuery);
 
-		final IUserQueryRestriction restriction = userQuery.getRestrictions().get(0);
+		final IUserQueryRestriction restriction = userQuery.getRestrictions().getFirst();
 		assertThat(restriction.isInternalParameter()).isTrue();
 		assertThat(restriction.isMandatory()).isFalse(); // internal params shall never be mandatory
 	}
@@ -137,7 +137,7 @@ public class UserQueryRepositoryTest
 		final IUserQuery userQuery = repo.createUserQuery(record);
 		System.out.println("User query: " + userQuery);
 
-		final IUserQueryRestriction restriction = userQuery.getRestrictions().get(0);
+		final IUserQueryRestriction restriction = userQuery.getRestrictions().getFirst();
 		assertThat(restriction.isInternalParameter()).isFalse();
 		assertThat(restriction.isMandatory()).isFalse();
 	}
@@ -155,7 +155,7 @@ public class UserQueryRepositoryTest
 		final IUserQuery userQuery = repo.createUserQuery(record);
 		System.out.println("User query: " + userQuery);
 
-		final IUserQueryRestriction restriction = userQuery.getRestrictions().get(0);
+		final IUserQueryRestriction restriction = userQuery.getRestrictions().getFirst();
 		assertThat(restriction.isInternalParameter()).isFalse();
 		assertThat(restriction.isMandatory()).isFalse();
 	}
@@ -173,7 +173,7 @@ public class UserQueryRepositoryTest
 		final IUserQuery userQuery = repo.createUserQuery(record);
 		System.out.println("User query: " + userQuery);
 
-		final IUserQueryRestriction restriction = userQuery.getRestrictions().get(0);
+		final IUserQueryRestriction restriction = userQuery.getRestrictions().getFirst();
 		assertThat(restriction.isInternalParameter()).isFalse();
 		assertThat(restriction.isMandatory()).isTrue();
 	}

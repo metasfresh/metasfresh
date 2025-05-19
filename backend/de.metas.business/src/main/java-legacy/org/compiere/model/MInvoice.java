@@ -160,7 +160,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Deprecated
 	public static MInvoice get(final Properties ctx, final int C_Invoice_ID)
 	{
-		final Integer key = new Integer(C_Invoice_ID);
+		final Integer key = Integer.valueOf(C_Invoice_ID);
 		MInvoice retValue = s_cache.get(key);
 		if (retValue != null)
 		{

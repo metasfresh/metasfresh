@@ -244,9 +244,9 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 
 		//
 		// Set "exceptionAttributes" attribute
-		if (rootError instanceof AdempiereException)
+		if (rootError instanceof AdempiereException exception)
 		{
-			final Map<String, Object> exceptionAttributes = ((AdempiereException)rootError).getParameters();
+			final Map<String, Object> exceptionAttributes = exception.getParameters();
 			if (exceptionAttributes != null && !exceptionAttributes.isEmpty())
 			{
 				final JSONOptions jsonOpts = newJSONOptions();

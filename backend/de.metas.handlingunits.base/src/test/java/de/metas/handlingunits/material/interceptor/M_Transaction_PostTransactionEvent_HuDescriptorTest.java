@@ -109,10 +109,10 @@ public class M_Transaction_PostTransactionEvent_HuDescriptorTest
 		final List<I_M_HU> huPalets = helper.createHUsFromSimplePI(transaction, huDefPalet);
 		assertThat(huPalets).hasSize(1);
 
-		huAssignmentBL.assignHU(inOutLine, huPalets.get(0), ITrx.TRXNAME_ThreadInherited);
+		huAssignmentBL.assignHU(inOutLine, huPalets.getFirst(), ITrx.TRXNAME_ThreadInherited);
 
 		final IAttributeStorageFactory attributeStorageFactory = helper.getHUContext().getHUAttributeStorageFactory();
-		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huPalets.get(0));
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huPalets.getFirst());
 		attributeStorage.setValue(helper.attr_CountryMadeIn, HUTestHelper.COUNTRYMADEIN_RO);
 		attributeStorage.saveChangesIfNeeded();
 
@@ -128,9 +128,9 @@ public class M_Transaction_PostTransactionEvent_HuDescriptorTest
 		final List<HUDescriptor> huDescriptorsForInOutLine = huDescriptorCreator.createHuDescriptorsForInOutLine(inOutLineId, false);
 
 		assertThat(huDescriptorsForInOutLine).hasSize(1);
-		final HUDescriptor huDescriptor = huDescriptorsForInOutLine.get(0);
+		final HUDescriptor huDescriptor = huDescriptorsForInOutLine.getFirst();
 
-		assertThat(huDescriptor.getHuId()).isEqualTo(huPalets.get(0).getM_HU_ID()); // within the palet, everything is homogenous, that's why we expect the palet's ID (and not e.g. the IFCO's).
+		assertThat(huDescriptor.getHuId()).isEqualTo(huPalets.getFirst().getM_HU_ID()); // within the palet, everything is homogenous, that's why we expect the palet's ID (and not e.g. the IFCO's).
 		assertThat(huDescriptor.getQuantity()).isEqualByComparingTo(TOTAL_CU_QTY);
 
 		final ProductDescriptor productDescriptor = huDescriptor.getProductDescriptor();

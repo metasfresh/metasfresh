@@ -220,13 +220,12 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 		{
 			return null;
 		}
-		else if (fieldValue instanceof LookupValue)
+		else if (fieldValue instanceof LookupValue value)
 		{
-			return (LookupValue)fieldValue;
+			return value;
 		}
-		else if (fieldValue instanceof LocalDate)
+		else if (fieldValue instanceof LocalDate date)
 		{
-			final LocalDate date = (LocalDate)fieldValue;
 			return StringLookupValue.of(
 					Values.localDateToJson(date),
 					TranslatableStrings.date(date));
@@ -238,9 +237,8 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 					DisplayType.toBooleanString(booleanValue),
 					msgBL.getTranslatableMsgText(booleanValue));
 		}
-		else if (fieldValue instanceof String)
+		else if (fieldValue instanceof String stringValue)
 		{
-			final String stringValue = (String)fieldValue;
 			return StringLookupValue.of(stringValue, stringValue);
 		}
 		else

@@ -1,18 +1,9 @@
 package org.adempiere.ad.table;
 
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalInt;
-import java.util.stream.Collectors;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.Null;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.AccessLevel;
@@ -20,6 +11,13 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.Null;
+
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -103,9 +101,9 @@ public class ComposedRecordId
 		}
 
 		final Object recordIdObj = keysByColumnName.values().iterator().next();
-		if (recordIdObj instanceof Integer)
+		if (recordIdObj instanceof Integer integer)
 		{
-			return OptionalInt.of((int)recordIdObj);
+			return OptionalInt.of(integer);
 		}
 		else
 		{

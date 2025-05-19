@@ -48,9 +48,9 @@ public class JsonMapperUtil
 
 		try
 		{
-			if (target instanceof String)
+			if (target instanceof String string)
 			{
-				return Optional.of(objectMapper.readValue((String)target, type));
+				return Optional.of(objectMapper.readValue(string, type));
 			}
 
 			final String targetAsString = objectMapper.writeValueAsString(target);

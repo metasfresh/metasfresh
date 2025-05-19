@@ -1147,13 +1147,13 @@ public class Invoice450ToCrossVersionModelTool
 	{
 		final XmlService xService;
 
-		if (service instanceof ServiceType)
+		if (service instanceof ServiceType type1)
 		{
-			xService = createXmlRecordService((ServiceType)service);
+			xService = createXmlRecordService(type1);
 		}
-		else if (service instanceof ServiceExType)
+		else if (service instanceof ServiceExType type)
 		{
-			xService = createServiceEx((ServiceExType)service);
+			xService = createServiceEx(type);
 		}
 		else
 		{

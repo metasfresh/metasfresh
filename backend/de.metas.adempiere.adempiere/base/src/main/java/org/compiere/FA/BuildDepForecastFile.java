@@ -35,14 +35,8 @@ package org.compiere.FA;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import org.compiere.model.X_A_Depreciation;
 import org.compiere.model.X_A_Depreciation_Convention;
 import org.compiere.model.X_A_Depreciation_Exp;
@@ -51,8 +45,13 @@ import org.compiere.model.X_A_Depreciation_Method;
 import org.compiere.model.X_A_Depreciation_Workfile;
 import org.compiere.util.DB;
 
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  *	Build Depreciation Forecast File
@@ -202,7 +201,7 @@ public class BuildDepForecastFile extends JavaProcess
 							depexp.setA_Asset_ID(rs.getInt("A_ASSET_ID"));					
 							depexp.setA_Account_Number(rs2.getInt("A_Depreciation_Acct"));
 							depexp.setPostingType(rs.getString("PostingType"));
-							depexp.setExpense(assetwk.getA_Accumulated_Depr().setScale(5, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(rs2.getFloat("A_Split_Percent"))));
+							depexp.setExpense(assetwk.getA_Accumulated_Depr().setScale(5, RoundingMode.HALF_UP).multiply(new BigDecimal(rs2.getFloat("A_Split_Percent"))));
 							depexp.setDescription("Actual Depreciation Expense Booked");
 							depexp.setA_Period(rs.getInt("A_Period_Posted"));
 							depexp.setIsDepreciated(true);
@@ -297,7 +296,7 @@ public class BuildDepForecastFile extends JavaProcess
 					v_HalfYearConv = v_HalfYearConv.add( v_HalfYearConv_Adj);
 					
 					X_A_Depreciation_Exp depexp2 = new X_A_Depreciation_Exp (getCtx(), 0, null);
-					if (v_total_adjustment.setScale(2, BigDecimal.ROUND_HALF_UP).compareTo(new BigDecimal (0.00))!=0)
+					if (v_total_adjustment.setScale(2, RoundingMode.HALF_UP).compareTo(new BigDecimal (0.00))!=0)
 					{
 						
 						//Record necessary adjustments
@@ -307,51 +306,51 @@ public class BuildDepForecastFile extends JavaProcess
 						depexp1.setA_Asset_ID(rs.getInt("A_ASSET_ID"));					
 						depexp1.setA_Account_Number(rs2.getInt("A_Depreciation_Acct"));
 						depexp1.setPostingType(rs.getString("PostingType"));
-						depexp1.setExpense(v_Dep_Exp_Adjustment.setScale(5, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(rs2.getFloat("A_Split_Percent"))));
+						depexp1.setExpense(v_Dep_Exp_Adjustment.setScale(5, RoundingMode.HALF_UP).multiply(new BigDecimal(rs2.getFloat("A_Split_Percent"))));
 						depexp1.setDescription("Forecasted Depreciation Expense Adj.");					
 						depexp1.setA_Period((int)v_current);
 						depexp1.setIsDepreciated(true);
 						depexp1.setDateAcct(ts);
 						depexp1.save();
-						v_total_adjustment = v_total_adjustment.setScale(5, BigDecimal.ROUND_HALF_UP).subtract(v_Dep_Exp_Adjustment.setScale(5, BigDecimal.ROUND_HALF_UP));
+						v_total_adjustment = v_total_adjustment.setScale(5, RoundingMode.HALF_UP).subtract(v_Dep_Exp_Adjustment.setScale(5, RoundingMode.HALF_UP));
 						
 						//Record adjusted expense							
 						depexp2.setPostingType(DepBuild.getPostingType());
 						depexp2.setA_Asset_ID(rs.getInt("A_ASSET_ID"));						
 						depexp2.setA_Account_Number(rs2.getInt("A_Depreciation_Acct"));
 						depexp2.setPostingType(rs.getString("PostingType"));
-						depexp2.setExpense((v_Dep_Exp_Monthly.setScale(2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(rs2.getFloat("A_Split_Percent"))));
+						depexp2.setExpense((v_Dep_Exp_Monthly.setScale(2, RoundingMode.HALF_UP)).multiply(new BigDecimal(rs2.getFloat("A_Split_Percent"))));
 						depexp2.setDescription("Forecasted Depreciation Expense");					
 						depexp2.setA_Period((int)v_current);
 						depexp2.setIsDepreciated(true);
 						depexp2.setDateAcct(ts);
 						depexp2.setA_Entry_Type("FOR");
 						depexp2.save();						
-						v_Dep_Exp_Inception = v_Dep_Exp_Inception.add((v_Dep_Exp_Monthly.setScale(2, BigDecimal.ROUND_HALF_UP))).setScale(2, BigDecimal.ROUND_HALF_UP);
+						v_Dep_Exp_Inception = v_Dep_Exp_Inception.add((v_Dep_Exp_Monthly.setScale(2, RoundingMode.HALF_UP))).setScale(2, RoundingMode.HALF_UP);
 					}
 					else
 					{
 						//Record expense							
 						depexp2.setPostingType(DepBuild.getPostingType());
 						depexp2.setA_Asset_ID(rs.getInt("A_ASSET_ID"));
-						depexp2.setExpense(v_Dep_Exp_Adjustment.setScale(2, BigDecimal.ROUND_HALF_UP));
+						depexp2.setExpense(v_Dep_Exp_Adjustment.setScale(2, RoundingMode.HALF_UP));
 						depexp2.setA_Account_Number(rs2.getInt("A_Depreciation_Acct"));
 						depexp2.setPostingType(rs.getString("PostingType"));
-						depexp2.setExpense(v_Dep_Exp_Monthly.setScale(2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(rs2.getFloat("A_Split_Percent"))));
+						depexp2.setExpense(v_Dep_Exp_Monthly.setScale(2, RoundingMode.HALF_UP).multiply(new BigDecimal(rs2.getFloat("A_Split_Percent"))));
 						depexp2.setDescription("Forecasted Depreciation Expense");					
 						depexp2.setA_Period((int)v_current);
 						depexp2.setIsDepreciated(true);
 						depexp2.setDateAcct(ts);
 						depexp2.setA_Entry_Type("FOR");
 						depexp2.save();
-						v_Dep_Exp_Inception = v_Dep_Exp_Inception.add(v_Dep_Exp_Monthly).setScale(2, BigDecimal.ROUND_HALF_UP);
+						v_Dep_Exp_Inception = v_Dep_Exp_Inception.add(v_Dep_Exp_Monthly).setScale(2, RoundingMode.HALF_UP);
 					}					
 					lastdepexp2 = depexp2.get_ID();
 					//Advance calender
 					cal.add(Calendar.MONTH, 1);
 					cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
 					ts.setTime(cal.getTimeInMillis());
-					v_current_adj = v_current_adj.add((v_HalfYearConv_Adj)).setScale(2, BigDecimal.ROUND_HALF_UP);
+					v_current_adj = v_current_adj.add((v_HalfYearConv_Adj)).setScale(2, RoundingMode.HALF_UP);
 					
 					//record in workfile
 					assetwk.setA_Period_Forecast(v_current_adj);

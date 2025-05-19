@@ -23,6 +23,7 @@ package org.adempiere.ui.api;
  */
 
 
+import java.io.Serial;
 import java.util.Properties;
 
 /**
@@ -33,6 +34,7 @@ import java.util.Properties;
  */
 /* package */final class NullGridTabSummaryInfo implements IGridTabSummaryInfo
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final transient NullGridTabSummaryInfo instance = new NullGridTabSummaryInfo();

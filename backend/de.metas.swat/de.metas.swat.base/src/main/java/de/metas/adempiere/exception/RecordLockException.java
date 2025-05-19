@@ -25,6 +25,8 @@ package de.metas.adempiere.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * 
  * @author ts
@@ -35,6 +37,7 @@ public class RecordLockException extends AdempiereException {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -3926038133076764766L;
 	
 	public RecordLockException(String message, Throwable cause) {

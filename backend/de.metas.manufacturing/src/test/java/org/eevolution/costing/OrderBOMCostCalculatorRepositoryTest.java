@@ -132,7 +132,7 @@ class OrderBOMCostCalculatorRepositoryTest
 										.productId(componentId)
 										.uomId(helper.uomKgId)
 										.costElementPrice(BOMCostElementPrice.builder()
-												.id(bom.getLines().get(0).getCostPrice().getElementPrices().get(0).getId()) // copy
+												.id(bom.getLines().getFirst().getCostPrice().getElementPrices().getFirst().getId()) // copy
 												.costElementId(helper.costElement.getId())
 												.costPrice(CostPrice.builder()
 														.uomId(helper.uomKgId)

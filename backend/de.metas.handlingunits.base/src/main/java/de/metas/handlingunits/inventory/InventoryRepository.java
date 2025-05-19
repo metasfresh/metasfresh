@@ -559,7 +559,7 @@ public class InventoryRepository
 
 		if (!huProductStorages.isEmpty())
 		{
-			final IHUProductStorage huStorage = huProductStorages.get(0);
+			final IHUProductStorage huStorage = huProductStorages.getFirst();
 
 			final I_C_UOM inventoryLineUOM = uomsRepo.getById(inventoryLineUOMId);
 

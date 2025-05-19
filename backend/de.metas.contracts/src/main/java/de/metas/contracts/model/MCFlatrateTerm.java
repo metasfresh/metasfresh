@@ -26,6 +26,7 @@ import static java.math.BigDecimal.ZERO;
 
 
 import java.io.File;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.LocalDate;
@@ -46,6 +47,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 5991467188908320233L;
 
 	/** Process Message */

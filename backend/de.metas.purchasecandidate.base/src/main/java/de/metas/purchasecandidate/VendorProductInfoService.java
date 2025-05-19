@@ -90,8 +90,8 @@ public class VendorProductInfoService
 				.filter(VendorProductInfo::isDefaultVendor)
 				.findFirst()
 				.orElseGet(() -> {
-					Loggables.addLog("No vendorProductInfo was flagged as default; return the first one: {}", vendorProductInfos.get(0));
-					return vendorProductInfos.get(0);
+					Loggables.addLog("No vendorProductInfo was flagged as default; return the first one: {}", vendorProductInfos.getFirst());
+					return vendorProductInfos.getFirst();
 				});
 		return Optional.of(defaultOrFirst);
 	}

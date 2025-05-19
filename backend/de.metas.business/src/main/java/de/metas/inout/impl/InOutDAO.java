@@ -420,7 +420,7 @@ public class InOutDAO implements IInOutDAO
 
 		if (inOutList.size() == 1)
 		{
-			return inOutList.get(0);
+			return inOutList.getFirst();
 		}
 
 		return null;

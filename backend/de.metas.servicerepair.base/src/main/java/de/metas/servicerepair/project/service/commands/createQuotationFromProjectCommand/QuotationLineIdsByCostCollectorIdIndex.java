@@ -58,7 +58,7 @@ public class QuotationLineIdsByCostCollectorIdIndex
 		}
 		else
 		{
-			return orderAndLineIds.get(0);
+			return orderAndLineIds.getFirst();
 		}
 	}
 }

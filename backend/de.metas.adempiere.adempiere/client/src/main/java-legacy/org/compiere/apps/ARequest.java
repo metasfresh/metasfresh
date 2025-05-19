@@ -257,61 +257,61 @@ public class ARequest implements ActionListener
 		{
 			GridTab tab = frame.getAPanel().getCurrentTab();
 			tab.dataNew(DataNewCopyMode.NoCopy);
-			tab.setValue("AD_Table_ID", new Integer(m_AD_Table_ID));
-			tab.setValue("Record_ID", new Integer(m_Record_ID));
+			tab.setValue("AD_Table_ID", Integer.valueOf(m_AD_Table_ID));
+			tab.setValue("Record_ID", Integer.valueOf(m_Record_ID));
 			//
 			if (m_C_BPartner_ID != 0)
 			{
-				tab.setValue("C_BPartner_ID", new Integer(m_C_BPartner_ID));
+				tab.setValue("C_BPartner_ID", Integer.valueOf(m_C_BPartner_ID));
 			}
 			//
 			if (m_AD_Table_ID == bpartnerTableId)
 			{
-				tab.setValue("C_BPartner_ID", new Integer(m_Record_ID));
+				tab.setValue("C_BPartner_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(I_AD_User.class))
 			{
-				tab.setValue("AD_User_ID", new Integer(m_Record_ID));
+				tab.setValue("AD_User_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(I_C_Project.class))
 			{
-				tab.setValue("C_Project_ID", new Integer(m_Record_ID));
+				tab.setValue("C_Project_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(MAsset.class))
 			{
-				tab.setValue("A_Asset_ID", new Integer(m_Record_ID));
+				tab.setValue("A_Asset_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(I_C_Order.class))
 			{
-				tab.setValue("C_Order_ID", new Integer(m_Record_ID));
+				tab.setValue("C_Order_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(I_C_Invoice.class))
 			{
-				tab.setValue("C_Invoice_ID", new Integer(m_Record_ID));
+				tab.setValue("C_Invoice_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(I_M_Product.class))
 			{
-				tab.setValue("M_Product_ID", new Integer(m_Record_ID));
+				tab.setValue("M_Product_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(I_C_Payment.class))
 			{
-				tab.setValue("C_Payment_ID", new Integer(m_Record_ID));
+				tab.setValue("C_Payment_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(I_M_InOut.class))
 			{
-				tab.setValue("M_InOut_ID", new Integer(m_Record_ID));
+				tab.setValue("M_InOut_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == MRMA.Table_ID)
 			{
-				tab.setValue("M_RMA_ID", new Integer(m_Record_ID));
+				tab.setValue("M_RMA_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == MCampaign.Table_ID)
 			{
-				tab.setValue("C_Campaign_ID", new Integer(m_Record_ID));
+				tab.setValue("C_Campaign_ID", Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(I_R_Request.class))
 			{
-				tab.setValue(MRequest.COLUMNNAME_R_RequestRelated_ID, new Integer(m_Record_ID));
+				tab.setValue(MRequest.COLUMNNAME_R_RequestRelated_ID, Integer.valueOf(m_Record_ID));
 			}
 			else if (m_AD_Table_ID == getTableId(I_C_OrderLine.class))
 			{

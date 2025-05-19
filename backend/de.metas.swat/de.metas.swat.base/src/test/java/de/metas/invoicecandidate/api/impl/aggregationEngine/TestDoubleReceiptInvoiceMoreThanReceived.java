@@ -64,7 +64,7 @@ public class TestDoubleReceiptInvoiceMoreThanReceived extends AbstractDoubleRece
 
 		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
 
-		final IInvoiceHeader invoice1 = invoices.remove(0);
+		final IInvoiceHeader invoice1 = invoices.removeFirst();
 
 		assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
 

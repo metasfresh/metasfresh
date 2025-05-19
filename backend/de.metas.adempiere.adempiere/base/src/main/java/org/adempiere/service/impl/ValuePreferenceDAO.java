@@ -119,13 +119,13 @@ public class ValuePreferenceDAO implements IValuePreferenceDAO
 		{
 			return null;
 		}
-		else if (value instanceof String)
+		else if (value instanceof String string)
 		{
-			return (String)value;
+			return string;
 		}
-		else if (value instanceof Boolean)
+		else if (value instanceof Boolean boolean1)
 		{
-			return DisplayType.toBooleanString((Boolean)value);
+			return DisplayType.toBooleanString(boolean1);
 		}
 		else
 		{

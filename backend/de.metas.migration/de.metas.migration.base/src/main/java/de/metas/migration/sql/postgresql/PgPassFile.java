@@ -208,7 +208,7 @@ public class PgPassFile
 			throw new PgPassParseException("Invalid syntax '" + line + "'. We expected 5 tokens but we got: " + tokens);
 		}
 
-		final String host = normalizedTokenEntry(tokens.get(0));
+		final String host = normalizedTokenEntry(tokens.getFirst());
 		final String port = normalizedTokenEntry(tokens.get(1));
 		final String dbName = normalizedTokenEntry(tokens.get(2));
 		final String user = normalizedTokenEntry(tokens.get(3));

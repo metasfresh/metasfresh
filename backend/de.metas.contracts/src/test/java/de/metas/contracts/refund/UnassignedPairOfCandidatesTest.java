@@ -53,7 +53,7 @@ public class UnassignedPairOfCandidatesTest
 				.assignableInvoiceCandidate(assignableInvoiceCandidate)
 				.refundInvoiceCandidate(assignableInvoiceCandidate
 						.getAssignmentsToRefundCandidates()
-						.get(0)
+						.getFirst()
 						.getRefundInvoiceCandidate());
 
 		final Throwable thrown = catchThrowable(() -> builder.build());

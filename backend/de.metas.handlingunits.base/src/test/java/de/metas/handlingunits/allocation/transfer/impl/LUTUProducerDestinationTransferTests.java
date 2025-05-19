@@ -95,12 +95,12 @@ public class LUTUProducerDestinationTransferTests
 		data.helper.load(lutuProducer2, data.helper.pTomatoProductId, new BigDecimal("20"), data.helper.uomKg);
 
 		assertThat(lutuProducer1.getCreatedHUsCount(), is(1));
-		final Node sourceXML1 = HUXmlConverter.toXml(lutuProducer1.getCreatedHUs().get(0));
+		final Node sourceXML1 = HUXmlConverter.toXml(lutuProducer1.getCreatedHUs().getFirst());
 		// System.out.println(HUXmlConverter.toString(sourceXML1));
 		verifySingleIFCO(sourceXML1, "20.000");
 
 		assertThat(lutuProducer2.getCreatedHUsCount(), is(1));
-		final Node sourceXML2 = HUXmlConverter.toXml(lutuProducer2.getCreatedHUs().get(0));
+		final Node sourceXML2 = HUXmlConverter.toXml(lutuProducer2.getCreatedHUs().getFirst());
 		verifySingleIFCO(sourceXML2, "20.000");
 
 		StaticHUAssert.assertAllStoragesAreValid();
@@ -118,7 +118,7 @@ public class LUTUProducerDestinationTransferTests
 		// lutuProducer.setMaxTUsForRemainingQty(4); // allow four max; we will expect and verify 3
 		transferLutuProducer.setCreateTUsForRemainingQty(true);
 
-		data.helper.transferMaterialToNewHUs(ImmutableList.of(lutuProducer1.getCreatedHUs().get(0), lutuProducer2.getCreatedHUs().get(0)),
+		data.helper.transferMaterialToNewHUs(ImmutableList.of(lutuProducer1.getCreatedHUs().getFirst(), lutuProducer2.getCreatedHUs().getFirst()),
 				transferLutuProducer,
 				new BigDecimal("40"),
 				data.helper.pTomato,
@@ -126,16 +126,16 @@ public class LUTUProducerDestinationTransferTests
 
 		//
 		// Verify the transfer source
-		final Node sourceXML1AfterTransfer = HUXmlConverter.toXml(lutuProducer1.getCreatedHUs().get(0));
+		final Node sourceXML1AfterTransfer = HUXmlConverter.toXml(lutuProducer1.getCreatedHUs().getFirst());
 		verifySingleIFCO(sourceXML1AfterTransfer, "0.000");
 
-		final Node sourceXML2AfterTransfer = HUXmlConverter.toXml(lutuProducer2.getCreatedHUs().get(0));
+		final Node sourceXML2AfterTransfer = HUXmlConverter.toXml(lutuProducer2.getCreatedHUs().getFirst());
 		verifySingleIFCO(sourceXML2AfterTransfer, "0.000");
 
 		//
 		// Verify the transfer destination
 		assertThat(transferLutuProducer.getCreatedHUsCount(), is(1));
-		final Node transferXML = HUXmlConverter.toXml(transferLutuProducer.getCreatedHUs().get(0));
+		final Node transferXML = HUXmlConverter.toXml(transferLutuProducer.getCreatedHUs().getFirst());
 		// System.out.println(HUXmlConverter.toString(transferXML));
 
 		assertThat(transferXML, hasXPath("count(/HU-LU_Palet)", Matchers.equalTo("1")));
@@ -206,7 +206,7 @@ public class LUTUProducerDestinationTransferTests
 			huPalets = lutuProducer.getCreatedHUs();
 
 			assertThat(huPalets.size(), is(1));
-			final I_M_HU huPalet = huPalets.get(0);
+			final I_M_HU huPalet = huPalets.getFirst();
 
 			final IAttributeStorageFactory attrStorageFactory = data.helper.getHUContext().getHUAttributeStorageFactory();
 			final IAttributeStorage huPalet1_Attrs = attrStorageFactory.getAttributeStorage(huPalet);
@@ -255,7 +255,7 @@ public class LUTUProducerDestinationTransferTests
 
 		// Validate the "source" Palets after moving to 17 to Bags
 		{
-			final I_M_HU huPalet = huPalets.get(0);
+			final I_M_HU huPalet = huPalets.getFirst();
 			final Node huPaletXML = HUXmlConverter.toXml(huPalet);
 			// System.out.println("" + HUXmlConverter.toString(huPaletsXML));
 
@@ -468,7 +468,7 @@ public class LUTUProducerDestinationTransferTests
 					assertThat(splitLUs.size(), is(1));
 
 			// Validate splitLUsXML
-			final Node splitLuXML = HUXmlConverter.toXml(splitLUs.get(0));
+			final Node splitLuXML = HUXmlConverter.toXml(splitLUs.getFirst());
 			// System.out.println(HUXmlConverter.toString(splitLUsXML));
 
 			assertThat(splitLuXML, hasXPath("count(/HU-LU_Palet)", is("1")));
@@ -612,7 +612,7 @@ public class LUTUProducerDestinationTransferTests
 			// verify the palet's initial state
 			luPalets = lutuProducer.getCreatedHUs();
 			{
-				final Node huPaletXML = HUXmlConverter.toXml(luPalets.get(0));
+				final Node huPaletXML = HUXmlConverter.toXml(luPalets.getFirst());
 				// System.out.println(HUXmlConverter.toString(huPaletXML));
 
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet[@M_HU_LUTU_Configuration_ID='" + lutu_Configuration_ID + "'])", is("1")));
@@ -651,7 +651,7 @@ public class LUTUProducerDestinationTransferTests
 			// verify the "split target"
 			{
 				assertThat(splitLUs.size(), is(1));
-				final Node splitLuXML = HUXmlConverter.toXml(splitLUs.get(0));
+				final Node splitLuXML = HUXmlConverter.toXml(splitLUs.getFirst());
 				// System.out.println(HUXmlConverter.toString(splitLuXML));
 
 				assertThat(splitLuXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='60.000' and @C_UOM_Name='Kg'])", is("1")));
@@ -677,7 +677,7 @@ public class LUTUProducerDestinationTransferTests
 			// verify the "split source"
 
 			{
-				final Node huPaletXML = HUXmlConverter.toXml(luPalets.get(0));
+				final Node huPaletXML = HUXmlConverter.toXml(luPalets.getFirst());
 				System.out.println(HUXmlConverter.toString(huPaletXML));
 
 				assertThat(huPaletXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='60.000' and @C_UOM_Name='Kg'])", is("1")));
@@ -729,7 +729,7 @@ public class LUTUProducerDestinationTransferTests
 		assertThat(lutuProducer.getCreatedHUsCount(), is(1));
 
 		// verify the palet's initial state
-		final I_M_HU luPalet = lutuProducer.getCreatedHUs().get(0);
+		final I_M_HU luPalet = lutuProducer.getCreatedHUs().getFirst();
 		{
 			final Node luPaletXML = HUXmlConverter.toXml(luPalet);
 			testTransferFromLUWithPartialTUVerifyInitialLU(luPaletXML);
@@ -777,7 +777,7 @@ public class LUTUProducerDestinationTransferTests
 
 		//
 		// verify the destination
-		verifySingleIFCO(HUXmlConverter.toXml(splitTUs.get(0)), "25.000");
+		verifySingleIFCO(HUXmlConverter.toXml(splitTUs.getFirst()), "25.000");
 	}
 
 	/**
@@ -801,7 +801,7 @@ public class LUTUProducerDestinationTransferTests
 		assertThat(lutuProducer.getCreatedHUsCount(), is(1));
 
 		// verify the palet's initial state
-		final I_M_HU luPalet = lutuProducer.getCreatedHUs().get(0);
+		final I_M_HU luPalet = lutuProducer.getCreatedHUs().getFirst();
 		{
 			final Node luPaletXML = HUXmlConverter.toXml(luPalet);
 			testTransferFromLUWithPartialTUVerifyInitialLU(luPaletXML);
@@ -855,7 +855,7 @@ public class LUTUProducerDestinationTransferTests
 		//
 		// verify the destination
 		{
-			final Node splitTUXML = HUXmlConverter.toXml(splitTUs.get(0));
+			final Node splitTUXML = HUXmlConverter.toXml(splitTUs.getFirst());
 			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO)", Matchers.equalTo("1")));
 			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='PM'])", is("1")));
 			assertThat(splitTUXML, hasXPath("count(HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
@@ -927,7 +927,7 @@ public class LUTUProducerDestinationTransferTests
 		// guard: we did not need lutuConfig.
 
 		// verify the palet's initial state
-		final I_M_HU luPalet = lutuProducer.getCreatedHUs().get(0);
+		final I_M_HU luPalet = lutuProducer.getCreatedHUs().getFirst();
 
 		final LUTUProducerDestination transferLutuProducer = new LUTUProducerDestination();
 
@@ -948,7 +948,7 @@ public class LUTUProducerDestinationTransferTests
 
 		assertThat(splitLUs.size(), is(1));
 
-		final Node splitLUsXML = HUXmlConverter.toXml(splitLUs.get(0));
+		final Node splitLUsXML = HUXmlConverter.toXml(splitLUs.getFirst());
 		// System.out.println(HUXmlConverter.toString(splitLUsXML));
 
 		assertThat(splitLUsXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='1'])", is("1")));
@@ -981,11 +981,11 @@ public class LUTUProducerDestinationTransferTests
 		// guards to make sure the HU-tree under test is what we expect
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 		assertThat(createdLUs.size(), is(1));
-		final I_M_HU createdLU = createdLUs.get(0);
+		final I_M_HU createdLU = createdLUs.getFirst();
 
 		final List<I_M_HU> createdAggregateTUs = handlingUnitsDAO.retrieveIncludedHUs(createdLU);
 		assertThat(createdAggregateTUs.size(), is(1));
-		final I_M_HU createdAggregateTU = createdAggregateTUs.get(0);
+		final I_M_HU createdAggregateTU = createdAggregateTUs.getFirst();
 		assertThat(handlingUnitsBL.isAggregateHU(createdAggregateTU), is(true));
 		assertThat(handlingUnitsDAO.retrieveParentItem(createdAggregateTU).getQty(), comparesEqualTo(new BigDecimal("8")));
 
@@ -1001,7 +1001,7 @@ public class LUTUProducerDestinationTransferTests
 
 		final List<I_M_HU> createdTUsAfterSplit = transferLutuProducer.getCreatedHUs();
 		assertThat(createdTUsAfterSplit.size(), is(1));
-		final I_M_HU createdTUAfterSplit = createdTUsAfterSplit.get(0);
+		final I_M_HU createdTUAfterSplit = createdTUsAfterSplit.getFirst();
 
 		final Node createdTUAfterSplitXML = HUXmlConverter.toXml(createdTUAfterSplit);
 		assertThat(createdTUAfterSplitXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("5.000")));

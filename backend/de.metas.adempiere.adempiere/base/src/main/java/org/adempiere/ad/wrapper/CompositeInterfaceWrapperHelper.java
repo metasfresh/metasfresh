@@ -293,9 +293,8 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		{
 			return null;
 		}
-		else if (model instanceof Evaluatee)
+		else if (model instanceof Evaluatee evaluatee)
 		{
-			final Evaluatee evaluatee = (Evaluatee)model;
 			return evaluatee;
 		}
 

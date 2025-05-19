@@ -510,9 +510,9 @@ public final class ProcessExecutor
 				if (para.getParameter_To() == null)
 				{
 					final Object value = para.getParameter();
-					if (name.endsWith("_ID") && (value instanceof Number))
+					if (name.endsWith("_ID") && (value instanceof Number number))
 					{
-						scriptExecutor.putProcessParameter(name, ((Number)value).intValue());
+						scriptExecutor.putProcessParameter(name, number.intValue());
 					}
 					else
 					{
@@ -523,17 +523,17 @@ public final class ProcessExecutor
 				{
 					final Object value1 = para.getParameter();
 					final Object value2 = para.getParameter_To();
-					if (name.endsWith("_ID") && (value1 instanceof Number))
+					if (name.endsWith("_ID") && (value1 instanceof Number number))
 					{
-						scriptExecutor.putProcessParameter(name + "1", ((Number)value1).intValue());
+						scriptExecutor.putProcessParameter(name + "1", number.intValue());
 					}
 					else
 					{
 						scriptExecutor.putProcessParameter(name + "1", value1);
 					}
-					if (name.endsWith("_ID") && (value2 instanceof Number))
+					if (name.endsWith("_ID") && (value2 instanceof Number number))
 					{
-						scriptExecutor.putProcessParameter(name + "2", ((Number)value2).intValue());
+						scriptExecutor.putProcessParameter(name + "2", number.intValue());
 					}
 					else
 					{

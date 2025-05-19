@@ -46,9 +46,10 @@ public class JsonInvoiceCandidateReference
 	JsonExternalId externalHeaderId;
 
 	@ApiModelProperty(position = 20, allowEmptyValue = true, dataType = "java.lang.String", example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]", //
-			value = "Optional, used to select which invoice candidates which have these `C_Invoice_Candidate.ExternalLineId`s should be enqueued.\n"
-					+ "Inherited from order line candidates.\n"
-					+ "If not specified, then all invoice candidate with the specified `externalHeaderId` are matched")
+			value = """
+					Optional, used to select which invoice candidates which have these `C_Invoice_Candidate.ExternalLineId`s should be enqueued.
+					Inherited from order line candidates.
+					If not specified, then all invoice candidate with the specified `externalHeaderId` are matched""")
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonExternalId> externalLineIds;
 

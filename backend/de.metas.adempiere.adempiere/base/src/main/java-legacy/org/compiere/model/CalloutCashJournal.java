@@ -82,7 +82,7 @@ public class CalloutCashJournal extends CalloutEngine
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				mTab.setValue("C_Currency_ID", new Integer(rs.getInt(2)));
+				mTab.setValue("C_Currency_ID", Integer.valueOf(rs.getInt(2)));
 				BigDecimal PayAmt = rs.getBigDecimal(3);
 				BigDecimal DiscountAmt = rs.getBigDecimal(5);
 				boolean isSOTrx = "Y".equals(rs.getString(4));

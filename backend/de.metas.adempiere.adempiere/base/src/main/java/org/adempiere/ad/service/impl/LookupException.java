@@ -25,12 +25,15 @@ package org.adempiere.ad.service.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 public class LookupException extends AdempiereException
 {
 
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -4435723998956779277L;
 
 	public LookupException(final String message)

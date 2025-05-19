@@ -86,7 +86,7 @@ public class FixedAskCallback implements IAskCallback
 	{
 		Assert.assertFalse("No more predefined responses specified (answeredQuestions=" + answeredQuestions + ")", responses.isEmpty());
 
-		final Response response = responses.remove(0);
+		final Response response = responses.removeFirst();
 		answeredQuestions++;
 
 		if (response.getExpectedAD_Message() != null)

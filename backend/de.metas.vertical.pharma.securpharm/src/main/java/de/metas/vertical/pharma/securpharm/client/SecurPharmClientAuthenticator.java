@@ -155,7 +155,7 @@ final class SecurPharmClientAuthenticator
 		try
 		{
 			final char[] password = config.getKeystorePassword().toCharArray();
-			final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+			final KeyStore keyStore = KeyStore.getInstance("jks");
 			final File key = new File(config.getCertificatePath());
 			try (final InputStream in = new FileInputStream(key))
 			{

@@ -70,7 +70,7 @@ public class PlainParametersDAO extends AbstractParametersDAO
 			}
 
 			final Optional<Integer> currentParentId = InterfaceWrapperHelper.getValue(paramPO, parentLinkColumnName);
-			if (!currentParentId.isPresent())
+			if (currentParentId.isEmpty())
 			{
 				continue;
 			}

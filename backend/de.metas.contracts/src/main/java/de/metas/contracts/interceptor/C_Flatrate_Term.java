@@ -255,12 +255,12 @@ public class C_Flatrate_Term
 			}
 			else
 			{
-				if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
+				if (periodsOfTerm.getFirst().getStartDate().after(term.getStartDate()))
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
 							new Object[] { term.getStartDate(), invoicingCal.getName() }));
 				}
-				final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
+				final I_C_Period lastPeriodOfTerm = periodsOfTerm.getLast();
 				if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
@@ -288,8 +288,8 @@ public class C_Flatrate_Term
 		if (terms.size() == 1)
 		{
 			Check.assume(
-					terms.get(0).getC_Flatrate_Term_ID() == term.getC_Flatrate_Term_ID(),
-					"The one term that is left shoud be the current term, but is " + terms.get(0));
+					terms.getFirst().getC_Flatrate_Term_ID() == term.getC_Flatrate_Term_ID(),
+					"The one term that is left shoud be the current term, but is " + terms.getFirst());
 
 			flatrateData.setHasContracts(false);
 			InterfaceWrapperHelper.save(flatrateData);
@@ -410,7 +410,7 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void prohibitReactivatingUnlessAllowed(final I_C_Flatrate_Term term)
 	{
-		final String sysConfigName = String.format(CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE, term.getType_Conditions());
+		final String sysConfigName = CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE.formatted(term.getType_Conditions());
 		final boolean reactivateIsAllowed = Services.get(ISysConfigBL.class).getBooleanValue(sysConfigName, false, term.getAD_Client_ID(), term.getAD_Org_ID());
 		if (reactivateIsAllowed)
 		{

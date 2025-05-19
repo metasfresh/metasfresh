@@ -27,6 +27,8 @@ import javax.swing.JLabel;
 
 import org.adempiere.ui.sideactions.model.ISideAction;
 
+import java.io.Serial;
+
 import de.metas.util.Check;
 
 /**
@@ -40,6 +42,7 @@ class LabelSideActionComponent extends JLabel
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -3033615233129832109L;
 
 	private final ISideAction action;

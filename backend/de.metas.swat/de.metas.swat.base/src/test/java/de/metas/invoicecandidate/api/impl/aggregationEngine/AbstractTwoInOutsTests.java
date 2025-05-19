@@ -77,7 +77,7 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 	@Override
 	protected List<I_M_InOutLine> step_createInOutLines(final List<I_C_Invoice_Candidate> invoiceCandidates)
 	{
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 		//
 		// Partially invoice both at the same time
 		{
@@ -104,7 +104,7 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 	@Override
 	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines)
 	{
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
 		final BigDecimal summedQty = partialQty1_32.add(partialQty2_8).add(partialQty3_4);

@@ -101,7 +101,7 @@ public final class CreateShipmentLatch implements ILatchStragegy
 			return; // nothing to do
 		}
 
-		final boolean currentWpIsHighestPrio = lockedWPs.get(0).getC_Queue_WorkPackage_ID() == currentWorkPackage.getC_Queue_WorkPackage_ID();
+		final boolean currentWpIsHighestPrio = lockedWPs.getFirst().getC_Queue_WorkPackage_ID() == currentWorkPackage.getC_Queue_WorkPackage_ID();
 		if (currentWpIsHighestPrio)
 		{
 			// we only want to look for work packages that shall be processed *before* the current one (higher prio or same prio and lower/earlier ID).

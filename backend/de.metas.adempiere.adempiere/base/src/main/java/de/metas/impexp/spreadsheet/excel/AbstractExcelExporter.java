@@ -449,9 +449,8 @@ public abstract class AbstractExcelExporter
 	{
 		// #5922
 		// This is needed since we changed from 'poi.version 3.12' to 'poi.version 3.15'.
-		if (sheet instanceof SXSSFSheet)
+		if (sheet instanceof SXSSFSheet sxssfSheet)
 		{
-			final SXSSFSheet sxssfSheet = (SXSSFSheet)sheet;
 			sxssfSheet.trackAllColumnsForAutoSizing();
 		}
 

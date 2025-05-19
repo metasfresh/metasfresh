@@ -195,7 +195,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 			{
 				if (infiniteLoop)
 				{
-					transition.setC_Flatrate_Conditions_Next(conditions.get(0));
+					transition.setC_Flatrate_Conditions_Next(conditions.getFirst());
 				}
 				else
 				{
@@ -206,7 +206,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		}
 
 		return createFlatrateTerm(
-				conditions.get(0),
+				conditions.getFirst(),
 				productAndPricingSystem.getProductAndCategoryId(),
 				startDate);
 	}

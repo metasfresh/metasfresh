@@ -86,7 +86,7 @@ public class ExternalProjectRepository
 	{
 		final Optional<ExternalProjectType> externalProjectType = ExternalProjectType.getTypeByValue(record.getProjectType());
 
-		if (!externalProjectType.isPresent())
+		if (externalProjectType.isEmpty())
 		{
 			throw new AdempiereException("Unknown project type!")
 					.appendParametersToMessage()

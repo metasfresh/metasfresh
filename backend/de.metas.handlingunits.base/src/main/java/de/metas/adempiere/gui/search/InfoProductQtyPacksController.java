@@ -352,7 +352,7 @@ public class InfoProductQtyPacksController extends InfoColumnControllerAdapter i
 
 		if (!piItemProductIds.isEmpty() && piItemProductIds != null)
 		{
-			final StringBuilder sb = new StringBuilder(piItemProductIds.get(0).toString());
+			final StringBuilder sb = new StringBuilder(piItemProductIds.getFirst().toString());
 			for (int i = 1; i < piItemProductIds.size(); i++)
 			{
 				sb.append(", " + piItemProductIds.get(i).toString());

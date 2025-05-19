@@ -1,12 +1,12 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.List;
-
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
+
+import java.util.List;
 
 /*
  * #%L
@@ -96,9 +96,9 @@ public final class IntegerStringExpressionSupport extends StringExpressionSuppor
 			{
 				return null;
 			}
-			else if (valueObj instanceof Integer)
+			else if (valueObj instanceof Integer integer)
 			{
-				return (Integer)valueObj;
+				return integer;
 			}
 			else
 			{
@@ -109,7 +109,7 @@ public final class IntegerStringExpressionSupport extends StringExpressionSuppor
 				}
 
 				valueStr = valueStr.trim();
-				return new Integer(valueStr);
+				return Integer.valueOf(valueStr);
 			}
 		}
 	}

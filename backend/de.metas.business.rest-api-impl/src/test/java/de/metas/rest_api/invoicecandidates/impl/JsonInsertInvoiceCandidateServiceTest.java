@@ -185,7 +185,7 @@ class JsonInsertInvoiceCandidateServiceTest
 		assertThat(result.getResponseItems())
 				.extracting("externalHeaderId.value", "externalLineId.value")
 				.containsExactly(tuple("externalHeaderId", "externalLineId"));
-		final MetasfreshId resultMetasfreshId = result.getResponseItems().get(0).getMetasfreshId();
+		final MetasfreshId resultMetasfreshId = result.getResponseItems().getFirst().getMetasfreshId();
 
 		final List<I_C_Invoice_Candidate> records = POJOLookupMap.get().getRecords(I_C_Invoice_Candidate.class);
 		assertThat(records)

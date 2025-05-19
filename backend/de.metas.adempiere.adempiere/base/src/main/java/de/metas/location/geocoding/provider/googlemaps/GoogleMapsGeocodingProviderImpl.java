@@ -28,12 +28,12 @@ import com.google.maps.GeocodingApi;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
 import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
@@ -70,7 +70,7 @@ public class GoogleMapsGeocodingProviderImpl implements GeocodingProvider
 		{
 			return Optional.empty();
 		}
-		return Optional.of(coords.get(0));
+		return Optional.of(coords.getFirst());
 	}
 
 	@NonNull

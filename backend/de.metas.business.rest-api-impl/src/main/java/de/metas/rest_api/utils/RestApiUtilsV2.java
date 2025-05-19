@@ -146,7 +146,7 @@ public class RestApiUtilsV2
 		final JsonQuantity jsonQuantity = request.getQty();
 		final String uomCode = jsonQuantity.getUomCode();
 		final Optional<I_C_UOM> uom = uomDAO.getByX12DE355IfExists(X12DE355.ofCode(uomCode));
-		if (!uom.isPresent())
+		if (uom.isEmpty())
 		{
 			throw MissingResourceException.builder().resourceIdentifier("quantity.uomCode").resourceIdentifier(uomCode).build();
 		}

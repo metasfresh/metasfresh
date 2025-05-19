@@ -115,9 +115,9 @@ public class DhlDatabaseClientLogger
 		{
 			return null;
 		}
-		if (object instanceof String)
+		if (object instanceof String string)
 		{
-			return (String)object;
+			return string;
 		}
 		try
 		{

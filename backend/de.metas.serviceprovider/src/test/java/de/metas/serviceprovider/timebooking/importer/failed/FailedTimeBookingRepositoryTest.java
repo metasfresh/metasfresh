@@ -111,7 +111,7 @@ public class FailedTimeBookingRepositoryTest
 		//then
 		assertNotNull(failedTimeBookings);
 		assertEquals(failedTimeBookings.size(), 1);
-		assertEquals(failedTimeBookings.get(0), failedTimeBookingSysWithId);
+		assertEquals(failedTimeBookings.getFirst(), failedTimeBookingSysWithId);
 	}
 
 	private FailedTimeBooking getMockFailedTimeBooking(final ExternalSystem externalSystem)

@@ -232,13 +232,13 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		assertThat(printJobs).as("Invalid Print Jobs count").hasSize(2);
 
 		// Validate PrintJob 1
-		final I_C_Print_Job printJob1 = printJobs.get(0);
+		final I_C_Print_Job printJob1 = printJobs.getFirst();
 		{
 			final List<I_C_Print_Job_Line> lines = IteratorUtils.toList(helper.getDAO().retrievePrintJobLines(printJob1));
 			Assert.assertEquals("Job1 - Only one line was expected for " + printJob1, 1, lines.size());
 
-			final I_C_Print_Job_Line line = lines.get(0);
-			final I_C_Print_Job_Detail detail = helper.getDAO().retrievePrintJobDetails(line).get(0);
+			final I_C_Print_Job_Line line = lines.getFirst();
+			final I_C_Print_Job_Detail detail = helper.getDAO().retrievePrintJobDetails(line).getFirst();
 			Assert.assertEquals("Job1 - Invalid routing used", routing1.getAD_PrinterRouting_ID(), detail.getAD_PrinterRouting_ID());
 		}
 		// Validate PrintJob 2
@@ -247,8 +247,8 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 			final List<I_C_Print_Job_Line> lines = IteratorUtils.toList(helper.getDAO().retrievePrintJobLines(printJob2));
 			Assert.assertEquals("Job2 - Only one line was expected for " + printJob2, 1, lines.size());
 
-			final I_C_Print_Job_Line line = lines.get(0);
-			final I_C_Print_Job_Detail detail = helper.getDAO().retrievePrintJobDetails(line).get(0);
+			final I_C_Print_Job_Line line = lines.getFirst();
+			final I_C_Print_Job_Detail detail = helper.getDAO().retrievePrintJobDetails(line).getFirst();
 			Assert.assertEquals("Job2 - Invalid routing used", routing2.getAD_PrinterRouting_ID(), detail.getAD_PrinterRouting_ID());
 		}
 
