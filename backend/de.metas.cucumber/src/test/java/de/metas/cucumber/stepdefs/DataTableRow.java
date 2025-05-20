@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @EqualsAndHashCode
 @ToString
@@ -435,6 +436,96 @@ public class DataTableRow
 		return X12DE355.ofCode(valueStr);
 	}
 
+<<<<<<< HEAD
+=======
+	public CurrencyCode getAsCurrencyCode()
+	{
+		return getAsOptionalCurrencyCode()
+				.orElseThrow(() -> new AdempiereException("No currency code found"));
+	}
+
+	public Optional<CurrencyCode> getAsOptionalCurrencyCode()
+	{
+		return Optionals.firstPresentOfSuppliers(
+						() -> getAsOptionalString("C_Currency.ISO_Code"),
+						() -> getAsOptionalString("C_Currency." + StepDefDataIdentifier.SUFFIX),
+						() -> getAsOptionalString("C_Currency_ID")
+				)
+				.map(CurrencyCode::ofThreeLetterCode);
+	}
+
+	public Money getAsMoney(
+			@NonNull final String valueColumnName,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		return getAsOptionalMoney(valueColumnName, currencyCodeMapper)
+				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
+	}
+
+	public Optional<Money> getAsOptionalMoney(
+			@NonNull final String valueColumnName,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		return getAsOptionalAmount(valueColumnName)
+				.map(amount -> amount.toMoney(currencyCodeMapper));
+	}
+
+	public Optional<Money> getAsOptionalMoney(
+			@NonNull final String valueColumnName,
+			@Nullable final Supplier<CurrencyCode> defaultCurrencyCodeSupplier,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		return getAsOptionalAmount(valueColumnName, defaultCurrencyCodeSupplier)
+				.map(amount -> amount.toMoney(currencyCodeMapper));
+	}
+
+	public Optional<Amount> getAsOptionalAmount(@NonNull final String valueColumnName)
+	{
+		return getAsOptionalAmount(valueColumnName, null);
+	}
+
+	public Optional<Amount> getAsOptionalAmount(@NonNull final String valueColumnName, @Nullable final Supplier<CurrencyCode> defaultCurrencyCodeSupplier)
+	{
+		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
+		if (valueStr == null)
+		{
+			return Optional.empty();
+		}
+
+		final int spaceIdx = valueStr.indexOf(" ");
+		final BigDecimal valueBD;
+		CurrencyCode currencyCode;
+		if (spaceIdx <= 0)
+		{
+			valueBD = parseBigDecimal(valueStr, valueColumnName);
+			currencyCode = null;
+		}
+		else
+		{
+			valueBD = parseBigDecimal(valueStr.substring(0, spaceIdx), valueColumnName);
+			final String currencyCodeStr = StringUtils.trimBlankToNull(valueStr.substring(spaceIdx));
+			currencyCode = currencyCodeStr != null ? CurrencyCode.ofThreeLetterCode(currencyCodeStr) : null;
+		}
+
+		if (currencyCode == null)
+		{
+			currencyCode = getAsOptionalCurrencyCode().orElse(null);
+		}
+
+		if (currencyCode == null && defaultCurrencyCodeSupplier != null)
+		{
+			currencyCode = defaultCurrencyCodeSupplier.get();
+		}
+
+		if (currencyCode == null)
+		{
+			throw new AdempiereException("No currency code incorporated into `" + valueColumnName + "`: " + valueStr);
+		}
+
+		return Optional.of(Amount.of(valueBD, currencyCode));
+	}
+
+>>>>>>> 20f4b6f126 (DataTableRow: more helper methods)
 	public LocalDate getAsLocalDate(@NonNull final String columnName)
 	{
 		return parseLocalDate(getAsString(columnName), columnName);
@@ -484,6 +575,14 @@ public class DataTableRow
 		return getAsOptionalString(columnName).map(valueStr -> parseInstant(valueStr, columnName));
 	}
 
+<<<<<<< HEAD
+=======
+	public Optional<Duration> getAsOptionalDuration(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseDuration(valueStr, columnName));
+	}
+
+>>>>>>> 20f4b6f126 (DataTableRow: more helper methods)
 	@NonNull
 	private static Instant parseInstant(@NonNull final String valueStr, final String columnInfo)
 	{
@@ -511,6 +610,22 @@ public class DataTableRow
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	private static Duration parseDuration(@NonNull final String valueStr, final String columnInfo)
+	{
+		try
+		{
+			return Duration.parse(valueStr);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid Duration `" + valueStr + "`");
+		}
+	}
+
+>>>>>>> 20f4b6f126 (DataTableRow: more helper methods)
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
