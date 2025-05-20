@@ -27,6 +27,11 @@ Feature: Empties returns
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | plv_PO                 | TU_Product   | 2.0      | PCE      |
       | plv_PO                 | LU_Product   | 5.0      | PCE      |
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | TU_Product   | 1                |
+      | LU_Product   | 1                |
+
     And metasfresh contains C_BPartners:
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule |
       | bpartner   | N          | Y        | ps_1               | D           |
@@ -86,6 +91,7 @@ Feature: Empties returns
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | inOut                 | CO        |
+
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | null                      | -10              | -10          | inOutLine                     |
@@ -94,24 +100,35 @@ Feature: Empties returns
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 10               |
 
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
-      | invoiceCand_1                     | -10             |
+      | C_Invoice_Candidate_ID | QtyInvoiced |
+      | invoiceCand_1          | -10         |
     Then after not more than 60s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
-      | invoiceCand_1                     | inv_100                 |
+      | C_Invoice_Candidate_ID | C_Invoice_ID     |
+      | invoiceCand_1          | vendorCreditMemo |
     And validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | processed | docStatus | DocBaseType |
-      | inv_100      | bpartner      | location               | true      | CO        | APC         |
+      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | processed | docStatus | DocBaseType |
+      | vendorCreditMemo | bpartner      | location               | true      | CO        | APC         |
     And validate created invoice lines
-      | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID | QtyInvoiced | Processed | PriceEntered | PriceActual |
-      | invl_100         | inv_100      | TU_Product   | -10         | true      | 2 EUR        | -2 EUR      |
+      | C_InvoiceLine_ID     | C_Invoice_ID     | M_Product_ID | QtyInvoiced | Processed | PriceEntered | PriceActual | LineNetAmt |
+      | vendorCreditMemoLine | vendorCreditMemo | TU_Product   | -10         | true      | 2 EUR        | -2 EUR      | 20 EUR     |
+
+    And M_MatchInv are found
+      | M_MatchInv_ID | C_InvoiceLine_ID     | M_InOutLine_ID |
+      | matchInv1     | vendorCreditMemoLine | inOutLine      |
 
     And Fact_Acct records are matching
-      | AccountConceptualName    | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID |
-      | V_Liability_Acct         | 23.8  EUR   |             | bpartner      | inv_100   |
-      | P_InventoryClearing_Acct |             | -20 EUR     | bpartner      | inv_100   |
-      | P_Expense_Acct           |             | 40 EUR      | bpartner      | inv_100   |
-      | T_Credit_Acct            |             | 3.8 EUR     | bpartner      | inv_100   |
+      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty     | M_Product_ID | Record_ID        |
+      | V_Liability_Acct         | 26.89     |           | 23.8 EUR    |             |         | -            | vendorCreditMemo |
+      | P_InventoryClearing_Acct |           | -22.6     |             | -20 EUR     | 10 PCE  | TU_Product   | vendorCreditMemo |
+      | P_Expense_Acct           |           | 45.2      |             | 40 EUR      |         | TU_Product   | vendorCreditMemo |
+      | T_Credit_Acct            |           | 4.29      |             | 3.8 EUR     |         | -            | vendorCreditMemo |
+      #------------------------------------------------------------------------------------------
+      | NotInvoicedReceipts_Acct | 10        |           | 10 CHF      |             | -10 PCE | TU_Product   | inOut            |
+      | P_Asset_Acct             |           | 10        |             | 10 CHF      | 10 PCE  | TU_Product   | inOut            |
+      #------------------------------------------------------------------------------------------
+      | NotInvoicedReceipts_Acct | 10        |           | 10 CHF      |             | -10 PCE |              | matchInv1        |
+      | P_InventoryClearing_Acct |           | -22.6     |             | -20 EUR     | -10 PCE |              | matchInv1        |
+      | P_COGS_Acct              |           | 32.6      |             | 32.6 CHF    | -10 PCE | TU_Product   | matchInv1        |
 
   @from:cucumber
   @Id:S0160.4_230
