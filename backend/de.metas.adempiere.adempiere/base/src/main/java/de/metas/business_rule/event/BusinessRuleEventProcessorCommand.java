@@ -14,12 +14,10 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.Language;
 import de.metas.record.warning.RecordWarningCreateRequest;
 import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
-import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -176,6 +174,7 @@ public class BusinessRuleEventProcessorCommand
 					.recordRef(targetRecordRef)
 					.businessRuleId(rule.getId())
 					.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey))
+					.userId(event.getTriggeringUserId())
 					.build());
 			logger.debug(stopwatch, "=> Created/Updated warning for target record");
 

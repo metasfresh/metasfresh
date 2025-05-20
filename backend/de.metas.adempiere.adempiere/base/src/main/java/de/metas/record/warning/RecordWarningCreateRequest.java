@@ -1,6 +1,7 @@
 package de.metas.record.warning;
 
 import de.metas.business_rule.descriptor.model.BusinessRuleId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -13,4 +14,5 @@ public class RecordWarningCreateRequest
 	@NonNull TableRecordReference recordRef;
 	@NonNull BusinessRuleId businessRuleId;
 	@NonNull String message;
+	@NonNull UserId userId;
 }

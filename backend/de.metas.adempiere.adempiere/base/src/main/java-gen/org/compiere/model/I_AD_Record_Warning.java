@@ -119,6 +119,28 @@ public interface I_AD_Record_Warning
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_ID();
+
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
