@@ -39,6 +39,8 @@ import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -70,6 +72,7 @@ import org.compiere.model.I_C_Project;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Price_UOM_ID;
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_QtyInvoicedInPriceUOM;
@@ -322,12 +325,13 @@ public class C_InvoiceLine_StepDef
 				.ifPresent(processed -> softly.assertThat(invoiceLine.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed));
 >>>>>>> ee1b87243f (QA)
 
-		row.getAsOptionalMoney(I_C_InvoiceLine.COLUMNNAME_PriceEntered, moneyService::getCurrencyIdByCurrencyCode)
+		extractMoney(row, I_C_InvoiceLine.COLUMNNAME_PriceEntered, invoice)
 				.ifPresent(priceEntered -> {
 					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(priceEntered.getCurrencyId().getRepoId());
 					softly.assertThat(invoiceLine.getPriceEntered()).as(COLUMNNAME_PriceEntered).isEqualByComparingTo(priceEntered.toBigDecimal());
 				});
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 		if (priceActual != null)
 		{
@@ -342,23 +346,31 @@ public class C_InvoiceLine_StepDef
 		}
 =======
 		row.getAsOptionalMoney(I_C_InvoiceLine.COLUMNNAME_PriceActual, moneyService::getCurrencyIdByCurrencyCode)
+=======
+		extractMoney(row, I_C_InvoiceLine.COLUMNNAME_PriceActual, invoice)
+>>>>>>> 350aa335c3 (cucumber framework improvements)
 				.ifPresent(priceActual -> {
 					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(priceActual.getCurrencyId().getRepoId());
 					softly.assertThat(invoiceLine.getPriceActual()).as(COLUMNNAME_PriceActual).isEqualByComparingTo(priceActual.toBigDecimal());
 				});
 
-		row.getAsOptionalMoney(I_C_InvoiceLine.COLUMNNAME_LineNetAmt, moneyService::getCurrencyIdByCurrencyCode)
+		extractMoney(row, I_C_InvoiceLine.COLUMNNAME_LineNetAmt, invoice)
 				.ifPresent(lineNetAmt -> {
 					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(lineNetAmt.getCurrencyId().getRepoId());
 					softly.assertThat(invoiceLine.getLineNetAmt()).as(COLUMNNAME_LineNetAmt).isEqualByComparingTo(lineNetAmt.toBigDecimal());
 				});
 >>>>>>> ce978dd873 (improve readability of cucumber tests)
 
+<<<<<<< HEAD
 		final BigDecimal discount = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_Discount);
 		if (discount != null)
 		{
 			assertThat(invoiceLine.getDiscount()).isEqualTo(discount);
 		}
+=======
+		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_Discount)
+				.ifPresent(discount -> softly.assertThat(invoiceLine.getDiscount()).as(COLUMNNAME_Discount).isEqualByComparingTo(discount));
+>>>>>>> 350aa335c3 (cucumber framework improvements)
 
 <<<<<<< HEAD
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -379,11 +391,11 @@ public class C_InvoiceLine_StepDef
 		row.getAsOptionalInt(COLUMNNAME_Line)
 				.ifPresent(line -> softly.assertThat(invoiceLine.getLine()).as(COLUMNNAME_Line).isEqualTo(line));
 
-		final BigDecimal taxAmtInfo = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_TaxAmtInfo);
-		if (taxAmtInfo != null)
-		{
-			softly.assertThat(invoiceLine.getTaxAmtInfo()).as(COLUMNNAME_TaxAmtInfo).isEqualByComparingTo(taxAmtInfo);
-		}
+		extractMoney(row, COLUMNNAME_TaxAmtInfo, invoice)
+				.ifPresent(taxAmtInfo -> {
+					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(taxAmtInfo.getCurrencyId().getRepoId());
+					softly.assertThat(invoiceLine.getTaxAmtInfo()).as(COLUMNNAME_TaxAmtInfo).isEqualByComparingTo(taxAmtInfo.toBigDecimal());
+				});
 
 		final String uomCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		if (Check.isNotBlank(uomCode))
@@ -453,10 +465,22 @@ public class C_InvoiceLine_StepDef
 		// 	softly.assertThat(invoiceLine.isHidePriceAndAmountOnPrint()).as(COLUMNNAME_IsHidePriceAndAmountOnPrint).isEqualTo(isHidePriceAndAmountOnPrint);
 		// }
 
-		row.getAsOptionalIdentifier().ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));
-
 		softly.assertAll();
+<<<<<<< HEAD
 >>>>>>> ce978dd873 (improve readability of cucumber tests)
+=======
+
+		row.getAsOptionalIdentifier().ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));
+	}
+
+	private Optional<Money> extractMoney(final DataTableRow row, final String columnName, final I_C_Invoice invoice)
+	{
+		return row.getAsOptionalMoney(
+				columnName,
+				() -> moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID())),
+				moneyService::getCurrencyIdByCurrencyCode
+		);
+>>>>>>> 350aa335c3 (cucumber framework improvements)
 	}
 
 	private void create_C_InvoiceLine(@NonNull final Map<String, String> row)

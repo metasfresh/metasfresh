@@ -80,8 +80,8 @@ public class M_InOut_Line_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final M_InOut_StepDefData shipmentTable;
-	private final M_InOutLine_StepDefData shipmentLineTable;
+	private final M_InOut_StepDefData inoutTable;
+	private final M_InOutLine_StepDefData inoutLineTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Product_StepDefData productTable;
 	private final M_Locator_StepDefData locatorTable;
@@ -96,9 +96,7 @@ public class M_InOut_Line_StepDef
 
 	private void validateAndLoadInOutLine(final DataTableRow row)
 	{
-		logger.info("validate_created_M_InOutLine: {}", row);
-
-		final InOutId shipmentId = shipmentTable.getId(row.getAsIdentifier("M_InOut_ID"));
+		final InOutId inoutId = inoutTable.getId(row.getAsIdentifier("M_InOut_ID"));
 
 		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
 		final int expectedProductId = productTable.getOptional(productIdentifier)
@@ -107,7 +105,7 @@ public class M_InOut_Line_StepDef
 
 		//dev-note: we assume the tests are not using the same product on different lines
 		final IQueryBuilder<I_M_InOutLine> lineQueryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentId)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inoutId)
 				.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
 
 		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID)
@@ -116,11 +114,15 @@ public class M_InOut_Line_StepDef
 		row.getAsOptionalBigDecimal(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent)
 				.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
 
-		final I_M_InOutLine shipmentLineRecord = getSingleShipmentLine(lineQueryBuilder.create());
-		row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(shipmentLineTable, shipmentLineRecord);
+		final I_M_InOutLine inoutLine = getSingleInOutLine(lineQueryBuilder.create());
+		row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(inoutLineTable, inoutLine);
 	}
 
+<<<<<<< HEAD
 	private static I_M_InOutLine getSingleShipmentLine(final IQuery<I_M_InOutLine> query)
+=======
+	private static I_M_InOutLine getSingleInOutLine(@NonNull final IQuery<I_M_InOutLine> query)
+>>>>>>> 350aa335c3 (cucumber framework improvements)
 	{
 		final List<I_M_InOutLine> lines = query.list();
 		if (lines.isEmpty())
@@ -143,10 +145,10 @@ public class M_InOut_Line_StepDef
 	}
 
 	@And("^validate the created (shipment|material receipt) lines by id$")
-	public void validateShipmentLinesById(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validateInOutLinesById(@NonNull final String model_UNUSED, @NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach((row) -> {
-			final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.create(row.getAsIdentifier().lookupIn(shipmentLineTable), I_M_InOutLine.class);
+			final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.create(row.getAsIdentifier().lookupIn(inoutLineTable), I_M_InOutLine.class);
 			SharedTestContext.put("shipmentLine", shipmentLine);
 
 			validateShipmentLine(shipmentLine, row);
@@ -154,14 +156,14 @@ public class M_InOut_Line_StepDef
 	}
 
 	@And("^validate the (shipment|material receipt) lines do not exist$")
-	public void validate_no_created_M_InOutLine(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validate_not_created_M_InOutLine(@NonNull final String model_UNUSED, @NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
 		{
 			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, "M_InOut_ID.Identifier");
 
-			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
+			final I_M_InOut shipmentRecord = inoutTable.get(shipmentIdentifier);
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final Integer expectedProductId = productTable.get(productIdentifier).getM_Product_ID();
@@ -178,11 +180,11 @@ public class M_InOut_Line_StepDef
 				lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
 			}
 
-			final I_M_InOutLine shipmentLineRecord = lineQueryBuilder
+			final I_M_InOutLine inoutLineRecord = lineQueryBuilder
 					.create()
 					.firstOnlyOrNull(I_M_InOutLine.class);
 
-			assertThat(shipmentLineRecord).isNull();
+			assertThat(inoutLineRecord).isNull();
 		}
 	}
 
@@ -193,7 +195,7 @@ public class M_InOut_Line_StepDef
 		for (final Map<String, String> row : dataTable)
 		{
 			final String shipmentLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_InOutLine shipmentLine = shipmentLineTable.get(shipmentLineIdentifier, I_M_InOutLine.class);
+			final I_M_InOutLine shipmentLine = inoutLineTable.get(shipmentLineIdentifier, I_M_InOutLine.class);
 			assertThat(shipmentLine).isNotNull();
 
 			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_M_InOutLine.COLUMNNAME_QtyEntered);
@@ -204,7 +206,7 @@ public class M_InOut_Line_StepDef
 
 			InterfaceWrapperHelper.saveRecord(shipmentLine);
 
-			shipmentLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
+			inoutLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
 		}
 	}
 
@@ -217,7 +219,7 @@ public class M_InOut_Line_StepDef
 			final de.metas.inout.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.inout.model.I_M_InOutLine.class);
 
 			final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_InOut inOut = shipmentTable.get(inOutIdentifier);
+			final I_M_InOut inOut = inoutTable.get(inOutIdentifier);
 			assertThat(inOut).isNotNull();
 
 			inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
@@ -261,14 +263,14 @@ public class M_InOut_Line_StepDef
 			InterfaceWrapperHelper.saveRecord(inOutLine);
 
 			final String inOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipmentLineTable.putOrReplace(inOutLineIdentifier, inOutLine);
+			inoutLineTable.putOrReplace(inOutLineIdentifier, inOutLine);
 		}
 	}
 
 	@And("^validate no M_InOutLine found for M_InOut identified by (.*)$")
 	public void validate_no_M_InOutLine_for_inOut(@NonNull final String inOutIdentifier)
 	{
-		final I_M_InOut inOut = shipmentTable.get(inOutIdentifier);
+		final I_M_InOut inOut = inoutTable.get(inOutIdentifier);
 		assertThat(inOut).isNotNull();
 
 		final I_M_InOutLine inOutLine = queryBL.createQueryBuilder(I_M_InOutLine.class)
