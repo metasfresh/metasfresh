@@ -125,8 +125,8 @@ public class M_HU_PackingMaterial_StepDef
 						huPackingMaterial.setC_UOM_Dimension_ID(uom.getC_UOM_ID());
 					}
 					saveRecord(huPackingMaterial);
-					final String huPackingMaterialIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
-					huPackingMaterialTable.put(huPackingMaterialIdentifier, huPackingMaterial);
+
+					row.getAsOptionalIdentifier().ifPresent(identifier -> huPackingMaterialTable.put(identifier, huPackingMaterial));
 				});
 	}
 }

@@ -11,50 +11,50 @@ Feature: Empties returns
       | M_Product_Category_ID.Identifier | Name     | Value    |
       | standard_category                | Standard | Standard |
     And metasfresh contains M_Products:
-      | Identifier               | Name                                    | OPT.M_Product_Category_ID.Identifier |
-      | packingProductTU_returns | packingProductTU_returns_S0160_11082022 | standard_category                    |
-      | packingProductLU_returns | packingProductLU_returns_S0160_11082022 | standard_category                    |
+      | Identifier               | M_Product_Category_ID |
+      | packingProductTU_returns | standard_category     |
+      | packingProductLU_returns | standard_category     |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value          |
-      | ps_1       | pricing_system_name | S0160_11082022 |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_PO      | ps_1                          | DE                        | EUR                 | price_list_name_PO | false | false         | 2              |
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | pl_PO      | ps_1               | DE           | EUR           | false |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name         | ValidFrom  |
-      | plv_PO     | pl_PO                     | purchase-PLV | 2022-08-01 |
+      | Identifier | M_PriceList_ID |
+      | plv_PO     | pl_PO          |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_2       | plv_PO                            | packingProductTU_returns | 2.0      | PCE               | Normal                        |
-      | pp_2       | plv_PO                            | packingProductLU_returns | 5.0      | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID             | PriceStd | C_UOM_ID |
+      | plv_PO                 | packingProductTU_returns | 2.0      | PCE      |
+      | plv_PO                 | packingProductLU_returns | 5.0      | PCE      |
     And metasfresh contains C_BPartners:
-      | Identifier | Name         | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | bpartner   | BPartnerName | N              | Y            | ps_1                          | D               |
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule |
+      | bpartner   | N          | Y        | ps_1               | D           |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
-      | location   | 1234567890036 | bpartner                 | true                | true         |
+      | Identifier | GLN           | C_BPartner_ID | IsBillToDefault | IsShipTo |
+      | location   | 1234567890036 | bpartner      | true            | true     |
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value        |
-      | locator                 | warehouseStd              | LocatorValue |
+      | M_Locator_ID | M_Warehouse_ID | Value        |
+      | locator      | warehouseStd   | LocatorValue |
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name                      |
-      | huPackingLU_returns   | huPackingLU_returns_S0160 |
-      | huPackingTU_returns   | huPackingTU_returns_S0160 |
+      | M_HU_PI_ID.Identifier |
+      | huPackingLU_returns   |
+      | huPackingTU_returns   |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                           | HU_UnitType | IsCurrent |
-      | packingVersionLU_returns      | huPackingLU_returns   | packingVersionLU_returns_S0160 | LU          | Y         |
-      | packingVersionTU_returns      | huPackingTU_returns   | packingVersionTU_returns_S0160 | TU          | Y         |
+      | M_HU_PI_Version_ID       | M_HU_PI_ID          | HU_UnitType | IsCurrent |
+      | packingVersionLU_returns | huPackingLU_returns | LU          | Y         |
+      | packingVersionTU_returns | huPackingTU_returns | TU          | Y         |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID.Identifier | Name                              | OPT.M_Product_ID.Identifier |
-      | huPackingMaterialTU_returns        | huPackingMaterialTU_returns_S0160 | packingProductTU_returns    |
-      | huPackingMaterialLU_returns        | huPackingMaterialLU_returns_S0160 | packingProductLU_returns    |
+      | M_HU_PackingMaterial_ID     | M_Product_ID             |
+      | huPackingMaterialTU_returns | packingProductTU_returns |
+      | huPackingMaterialLU_returns | packingProductLU_returns |
     And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
-      | huPiItemLU_returns         | packingVersionLU_returns      | 10  | HU       | huPackingTU_returns              |
-      | huPiItemTU_returns         | packingVersionTU_returns      | 0   | PM       |                                  |
+      | M_HU_PI_Item_ID    | M_HU_PI_Version_ID       | Qty | ItemType | Included_HU_PI_ID   |
+      | huPiItemLU_returns | packingVersionLU_returns | 10  | HU       | huPackingTU_returns |
+      | huPiItemTU_returns | packingVersionTU_returns | 0   | PM       |                     |
 
 
   @from:cucumber
