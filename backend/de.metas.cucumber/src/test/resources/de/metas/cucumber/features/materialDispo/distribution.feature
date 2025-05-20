@@ -351,8 +351,8 @@ Feature: create distribution to balance demand
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID |
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 8   | -8                     | targetWH       |                       |
       | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -8                     | targetWH       | c1                    |
-      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -8                     | sourceWH       | c1                    |
-      | c_4        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 8   | -8                     | targetWH       | c2                    |
+      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |
+      | c_4        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 8   | 0                      | targetWH       | c2                    |
       | c_5        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 8   | -8                     | sourceWH       | c2                    |
 
 

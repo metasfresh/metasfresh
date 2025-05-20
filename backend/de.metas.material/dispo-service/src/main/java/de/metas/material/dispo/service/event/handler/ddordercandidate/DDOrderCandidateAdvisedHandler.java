@@ -146,6 +146,12 @@ public class DDOrderCandidateAdvisedHandler
 			throw new AdempiereException("supplyRequiredDescriptor shall be set for " + event);
 		}
 
+		if (CandidateType.DEMAND.equals(candidateType))
+		{
+			//This is the Advised event, there will be no MD_Candidates yet for it.
+			return CandidatesQuery.FALSE;
+		}
+
 		return CandidatesQuery.builder()
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
