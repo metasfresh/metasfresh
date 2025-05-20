@@ -1,7 +1,9 @@
 package de.metas.cucumber.stepdefs.accounting;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.money.MoneyService;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.IUOMDAO;
@@ -9,6 +11,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctValidator;
@@ -22,7 +25,9 @@ public class Fact_Acct_StepDef
 	public Fact_Acct_StepDef(
 			@NonNull final IdentifiersResolver identifiersResolver,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Tax_StepDefData taxTable)
+			@NonNull final C_Tax_StepDefData taxTable,
+			@NonNull final M_Product_StepDefData productTable
+	)
 	{
 		this.identifiersResolver = identifiersResolver;
 
@@ -36,6 +41,7 @@ public class Fact_Acct_StepDef
 				.identifiersResolver(identifiersResolver)
 				.bpartnerTable(bpartnerTable)
 				.taxTable(taxTable)
+				.productTable(productTable)
 				.build();
 		this.factAcctTabularStringConverter = FactAcctToTabularStringConverter.builder()
 				.uomDAO(uomDAO)
@@ -43,8 +49,18 @@ public class Fact_Acct_StepDef
 				.moneyService(moneyService)
 				.bpartnerTable(bpartnerTable)
 				.taxTable(taxTable)
+				.productTable(productTable)
 				.identifiersResolver(identifiersResolver)
 				.build();
+	}
+
+	@And("^Wait until documents (.*) (is|are) posted$")
+	public void waitUntilPosted(
+			@NonNull final String commaSeparatedIdentifiers,
+			@SuppressWarnings("unused") final String isOrAre) throws InterruptedException
+	{
+		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		AccountingCucumberHelper.waitUtilPosted(recordRefs);
 	}
 
 	/**

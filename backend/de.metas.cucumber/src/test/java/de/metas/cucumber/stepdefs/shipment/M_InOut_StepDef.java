@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -171,40 +172,39 @@ public class M_InOut_StepDef
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 				.orElseGet(bpartnerLocationIdentifier::getAsInt);
 
-		final I_M_InOut shipment = inoutTable.get(identifier);
+		final I_M_InOut inout = inoutTable.get(identifier);
 
-		softly.assertThat(shipment.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
-		softly.assertThat(shipment.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId);
-		softly.assertThat(TimeUtil.asLocalDate(shipment.getDateOrdered())).isEqualTo(dateOrdered);
+		softly.assertThat(inout.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
+		softly.assertThat(inout.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId);
+		softly.assertThat(TimeUtil.asLocalDate(inout.getDateOrdered())).isEqualTo(dateOrdered);
 
 		if (Check.isNotBlank(poReference))
 		{
-			softly.assertThat(shipment.getPOReference()).isEqualTo(poReference);
+			softly.assertThat(inout.getPOReference()).isEqualTo(poReference);
 		}
 
-		softly.assertThat(shipment.isProcessed()).isEqualTo(processed);
-		softly.assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
+		softly.assertThat(inout.isProcessed()).isEqualTo(processed);
+		softly.assertThat(inout.getDocStatus()).isEqualTo(docStatus);
 
 		final String internalName = row.getAsOptionalString(I_M_InOut.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName).orElse(null);
 		if (Check.isNotBlank(internalName))
 		{
 			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
-			softly.assertThat(shipment.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
+			softly.assertThat(inout.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
 		}
 
-		final String docBaseType = row.getAsOptionalString(I_C_DocType.Table_Name + "." + COLUMNNAME_DocBaseType).orElse(null);
-		if (Check.isNotBlank(docBaseType))
-		{
-			final String name = row.getAsString(I_C_DocType.Table_Name + "." + COLUMNNAME_Name);
+		row.getAsOptionalEnum(I_C_DocType.Table_Name + "." + COLUMNNAME_DocBaseType, DocBaseType.class)
+				.ifPresent(docBaseType -> {
+					final String docTypeName = row.getAsString(I_C_DocType.Table_Name + "." + COLUMNNAME_Name);
 
-			final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
-					.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
-					.addEqualsFilter(COLUMNNAME_Name, name)
-					.create()
-					.firstOnlyNotNull(I_C_DocType.class);
+					final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+							.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+							.addEqualsFilter(COLUMNNAME_Name, docTypeName)
+							.create()
+							.firstOnlyNotNull(I_C_DocType.class);
 
-			softly.assertThat(shipment.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
-		}
+					softly.assertThat(inout.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
+				});
 
 		softly.assertAll();
 	}
@@ -388,8 +388,8 @@ public class M_InOut_StepDef
 
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void processInOut(
-			@NonNull @SuppressWarnings("unused") final String model_UNUSED, 
-			@NonNull final String shipmentIdentifier, 
+			@NonNull @SuppressWarnings("unused") final String model_UNUSED,
+			@NonNull final String shipmentIdentifier,
 			@NonNull final String action)
 	{
 		final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);

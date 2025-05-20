@@ -7,9 +7,11 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.money.MoneyService;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
@@ -31,6 +33,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final IdentifiersResolver identifiersResolver;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
+	@NonNull private final M_Product_StepDefData productTable;
 
 	public FactAcctMatchers ofDataTable(@NonNull final DataTable table)
 	{
@@ -75,6 +78,7 @@ public class FactAcctMatchersFactory
 				.documentRef(documentRef)
 				.taxId(extractTaxId(row))
 				.bpartnerId(extractBPartnerId(row))
+				.productId(extractProductId(row))
 				.build();
 	}
 
@@ -113,6 +117,13 @@ public class FactAcctMatchersFactory
 
 		taxId = identifier.getAsId(TaxId.class);
 		return Optional.of(taxId);
+	}
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	private Optional<ProductId> extractProductId(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("M_Product_ID").orElse(null);
+		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(productTable));
 	}
 
 }
