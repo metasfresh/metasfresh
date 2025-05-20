@@ -33,6 +33,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.ddorder.DDOrderRef;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
@@ -52,6 +53,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -103,7 +105,7 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		final Set<DDOrderCandidateId> candidateIds = getDDOrderCandidateIds(event);
 		if (qtyToDistribute.signum() <= 0 || candidateIds.isEmpty())
 		{
-			return BigDecimal.ZERO;
+			return qtyToDistribute;
 		}
 
 		final Collection<DDOrderCandidate> candidates = ddOrderCandidateService.getByIds(candidateIds);
@@ -150,9 +152,25 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		final Candidate demandCandidate = candidateRepositoryRetrieval.retrieveById(CandidateId.ofRepoId(event.getSupplyRequiredDescriptor().getDemandCandidateId()));
 		return candidateRepositoryWriteService.getSupplyCandidatesForDemand(demandCandidate, CandidateBusinessCase.DISTRIBUTION)
 				.stream()
-				.map(candidate -> DistributionDetail.cast(candidate.getBusinessCaseDetail()).getDdOrderRef().getDdOrderCandidateId())
-				.map(DDOrderCandidateId::ofRepoId)
+				.map(this::getDDOrderCandidateIdOrNull)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
+	}
+
+	@Nullable
+	private DDOrderCandidateId getDDOrderCandidateIdOrNull(@NonNull final Candidate candidate)
+	{
+		final DistributionDetail distributionDetail = DistributionDetail.castOrNull(candidate.getBusinessCaseDetail());
+		if (distributionDetail == null)
+		{
+			return null;
+		}
+		final DDOrderRef ddOrderRef = distributionDetail.getDdOrderRef();
+		if (ddOrderRef == null)
+		{
+			return null;
+		}
+		return DDOrderCandidateId.ofRepoId(ddOrderRef.getDdOrderCandidateId());
 	}
 
 	private Quantity doDecreaseQty(final DDOrderCandidate ddOrderCandidate, final Quantity remainingQtyToDistribute)

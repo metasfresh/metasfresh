@@ -55,6 +55,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -183,7 +184,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		final Collection<PPOrderCandidateId> ppOrderCandidateIds = getPpOrderCandidateIds(event);
 		if (qtyToDistribute.signum() <= 0 || ppOrderCandidateIds.isEmpty())
 		{
-			return BigDecimal.ZERO;
+			return qtyToDistribute;
 		}
 
 		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
@@ -207,7 +208,8 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		final Candidate demandCandidate = candidateRepositoryRetrieval.retrieveById(CandidateId.ofRepoId(event.getSupplyRequiredDescriptor().getDemandCandidateId()));
 		return candidateRepositoryWriteService.getSupplyCandidatesForDemand(demandCandidate, CandidateBusinessCase.PRODUCTION)
 				.stream()
-				.map(candidate -> ProductionDetail.cast(candidate.getBusinessCaseDetail()).getPpOrderCandidateId())
+				.map(candidate -> ProductionDetail.castOrNull(candidate.getBusinessCaseDetail()).getPpOrderCandidateId())
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 	}
 

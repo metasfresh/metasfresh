@@ -33,6 +33,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -109,7 +110,7 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		final Set<PurchaseCandidateId> candidateIds = getPurchaseCandidateIds(event);
 		if (qtyToDistribute.signum() <= 0 || candidateIds.isEmpty())
 		{
-			return BigDecimal.ZERO;
+			return qtyToDistribute;
 		}
 
 		final List<PurchaseCandidate> candidates = purchaseCandidateRepository.getAllByIds(candidateIds);
@@ -156,17 +157,29 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		final Candidate demandCandidate = candidateRepositoryRetrieval.retrieveById(CandidateId.ofRepoId(event.getSupplyRequiredDescriptor().getDemandCandidateId()));
 		return candidateRepositoryWriteService.getSupplyCandidatesForDemand(demandCandidate, CandidateBusinessCase.PURCHASE)
 				.stream()
-				.map(candidate -> PurchaseDetail.cast(candidate.getBusinessCaseDetail()).getPurchaseCandidateRepoId())
-				.map(PurchaseCandidateId::ofRepoId)
+				.map(PurchaseCandidateAdvisedEventCreator::getPurchaseCandidateRepoIdOrNull)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
+	}
+
+	@Nullable
+	private static PurchaseCandidateId getPurchaseCandidateRepoIdOrNull(final Candidate candidate)
+	{
+		final PurchaseDetail purchaseDetail = PurchaseDetail.castOrNull(candidate.getBusinessCaseDetail());
+		if (purchaseDetail == null)
+		{
+			return null;
+		}
+		return PurchaseCandidateId.ofRepoId(purchaseDetail.getPurchaseCandidateRepoId());
 	}
 
 	private Quantity doDecreaseQty(final PurchaseCandidate candidate, final Quantity remainingQtyToDistribute)
 	{
 		if (isCandidateEligibleForBeingDecreased(candidate))
 		{
-			final Quantity qtyToDecrease = remainingQtyToDistribute.min(candidate.getQtyToPurchaseInitial());
-			candidate.setQtyToPurchaseInitial(candidate.getQtyToPurchase().subtract(qtyToDecrease));
+			final Quantity qtyToPurchase = candidate.getQtyToPurchase();
+			final Quantity qtyToDecrease = remainingQtyToDistribute.min(qtyToPurchase);
+			candidate.setQtyToPurchase(qtyToPurchase.subtract(qtyToDecrease));
 			purchaseCandidateRepository.save(candidate);
 			return remainingQtyToDistribute.subtract(qtyToDecrease);
 		}
