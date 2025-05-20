@@ -11,9 +11,9 @@ Feature: Empties returns
       | M_Product_Category_ID.Identifier | Name     | Value    |
       | standard_category                | Standard | Standard |
     And metasfresh contains M_Products:
-      | Identifier               | M_Product_Category_ID |
-      | packingProductTU_returns | standard_category     |
-      | packingProductLU_returns | standard_category     |
+      | Identifier | M_Product_Category_ID |
+      | TU_Product | standard_category     |
+      | LU_Product | standard_category     |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_1       |
@@ -24,9 +24,9 @@ Feature: Empties returns
       | Identifier | M_PriceList_ID |
       | plv_PO     | pl_PO          |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID             | PriceStd | C_UOM_ID |
-      | plv_PO                 | packingProductTU_returns | 2.0      | PCE      |
-      | plv_PO                 | packingProductLU_returns | 5.0      | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_PO                 | TU_Product   | 2.0      | PCE      |
+      | plv_PO                 | LU_Product   | 5.0      | PCE      |
     And metasfresh contains C_BPartners:
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule |
       | bpartner   | N          | Y        | ps_1               | D           |
@@ -48,9 +48,9 @@ Feature: Empties returns
       | packingVersionLU_returns | huPackingLU_returns | LU          | Y         |
       | packingVersionTU_returns | huPackingTU_returns | TU          | Y         |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID     | M_Product_ID             |
-      | huPackingMaterialTU_returns | packingProductTU_returns |
-      | huPackingMaterialLU_returns | packingProductLU_returns |
+      | M_HU_PackingMaterial_ID     | M_Product_ID |
+      | huPackingMaterialTU_returns | TU_Product   |
+      | huPackingMaterialLU_returns | LU_Product   |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID    | M_HU_PI_Version_ID       | Qty | ItemType | Included_HU_PI_ID   |
       | huPiItemLU_returns | packingVersionLU_returns | 10  | HU       | huPackingTU_returns |
@@ -73,12 +73,12 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
-      | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
+      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | dateordered | poreference | processed | docStatus | C_DocType.DocBaseType | C_DocType.Name |
+      | inOut      | bpartner      | location               | 2022-08-11  | po_ref_mock | false     | DR        | MMS                   | Leergutausgabe |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductTU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | TU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -100,11 +100,11 @@ Feature: Empties returns
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | inv_100                 |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | processed | docStatus |
-      | inv_100                 | bpartner                 | location                          | true      | CO        |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | processed | docStatus | DocBaseType |
+      | inv_100      | bpartner      | location               | true      | CO        | APC         |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier  | QtyInvoiced | Processed | PriceEntered | PriceActual |
-      | invl_100                    | inv_100                 | packingProductTU_returns | -10         | true      | 2  EUR       | -2 EUR      |
+      | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID | QtyInvoiced | Processed | PriceEntered | PriceActual |
+      | invl_100         | inv_100      | TU_Product   | -10         | true      | 2 EUR        | -2 EUR      |
 
     And Fact_Acct records are matching
       | AccountConceptualName    | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID |
@@ -134,7 +134,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductLU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | LU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -173,7 +173,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductTU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | TU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -195,7 +195,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -224,7 +224,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductLU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | LU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -246,7 +246,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -277,7 +277,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductTU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | TU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -299,7 +299,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -312,7 +312,7 @@ Feature: Empties returns
       | inOut                 | CO        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | -10              | -10          | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | -10              | -10          | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 10               |
@@ -344,7 +344,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductTU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | TU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -366,7 +366,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -381,7 +381,7 @@ Feature: Empties returns
       | inOut                 | CO        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | -20              | -20          | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | -20              | -20          | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 20               |
@@ -413,7 +413,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductTU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | TU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -435,7 +435,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -450,7 +450,7 @@ Feature: Empties returns
       | inOut                 | CO        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | -5               | -5           | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | -5               | -5           | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 5                |
@@ -480,7 +480,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductLU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | LU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -502,7 +502,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -514,7 +514,7 @@ Feature: Empties returns
       | inOut                 | CO        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | -10              | -10          | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | -10              | -10          | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 10               |
@@ -546,7 +546,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductLU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | LU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -568,7 +568,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -583,7 +583,7 @@ Feature: Empties returns
       | inOut                 | CO        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | -20              | -20          | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | -20              | -20          | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 20               |
@@ -615,7 +615,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductLU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | LU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -637,7 +637,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -652,7 +652,7 @@ Feature: Empties returns
       | inOut                 | CO        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | -5               | -5           | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | -5               | -5           | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 5                |
@@ -681,7 +681,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductTU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | TU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -703,7 +703,7 @@ Feature: Empties returns
       | inOut                 | CL        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | -10              | -10          | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | -10              | -10          | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 10               |
@@ -732,7 +732,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductLU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | LU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -754,7 +754,7 @@ Feature: Empties returns
       | inOut                 | CL        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | -10              | -10          | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | -10              | -10          | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 10               |
@@ -783,7 +783,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductTU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | TU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -805,7 +805,7 @@ Feature: Empties returns
       | inOut                 | RE        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -834,7 +834,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductLU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | LU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -856,7 +856,7 @@ Feature: Empties returns
       | inOut                 | RE        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -887,7 +887,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductTU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | TU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -909,7 +909,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -921,7 +921,7 @@ Feature: Empties returns
       | inOut                 | VO        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductTU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | TU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -952,7 +952,7 @@ Feature: Empties returns
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | OPT.M_Locator_ID.Identifier | UomCode | OPT.IsPackagingMaterial | MovementQty |
-      | inOutLine                 | inOut                 | packingProductLU_returns    | 10         | locator                     | PCE     | true                    | 10          |
+      | inOutLine                 | inOut                 | LU_Product                  | 10         | locator                     | PCE     | true                    | 10          |
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: inOutLine
 
     When the return inOut identified by inOut is completed
@@ -974,7 +974,7 @@ Feature: Empties returns
       | inOut                 | IP        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
@@ -986,7 +986,7 @@ Feature: Empties returns
       | inOut                 | VO        |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | null                          | 0                | 0            | packingProductLU_returns    |
+      | invoiceCand_1                     | null                          | 0                | 0            | LU_Product                  |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 0                |
