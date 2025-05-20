@@ -22,12 +22,10 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import org.compiere.model.I_C_BPartner;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.

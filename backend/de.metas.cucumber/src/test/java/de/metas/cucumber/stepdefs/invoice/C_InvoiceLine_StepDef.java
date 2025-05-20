@@ -304,9 +304,7 @@ public class C_InvoiceLine_StepDef
 >>>>>>> ce978dd873 (improve readability of cucumber tests)
 
 		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced)
-				.ifPresent(qtyInvoiced -> {
-					softly.assertThat(invoiceLine.getQtyInvoiced()).as(COLUMNNAME_QtyInvoiced).isEqualTo(qtyInvoiced);
-				});
+				.ifPresent(qtyInvoiced -> softly.assertThat(invoiceLine.getQtyInvoiced()).as(COLUMNNAME_QtyInvoiced).isEqualTo(qtyInvoiced));
 
 <<<<<<< HEAD
 		if (priceEntered != null)
@@ -315,10 +313,14 @@ public class C_InvoiceLine_StepDef
 		}
 =======
 		row.getAsOptionalBoolean(I_C_InvoiceLine.COLUMNNAME_Processed)
+<<<<<<< HEAD
 				.ifPresent(processed -> {
 					softly.assertThat(invoiceLine.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed);
 				});
 >>>>>>> ce978dd873 (improve readability of cucumber tests)
+=======
+				.ifPresent(processed -> softly.assertThat(invoiceLine.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed));
+>>>>>>> ee1b87243f (QA)
 
 		row.getAsOptionalMoney(I_C_InvoiceLine.COLUMNNAME_PriceEntered, moneyService::getCurrencyIdByCurrencyCode)
 				.ifPresent(priceEntered -> {
@@ -372,9 +374,7 @@ public class C_InvoiceLine_StepDef
 
 		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_TaxCategory_ID)
 				.map(taxCategoryTable::getId)
-				.ifPresent(taxCategoryId -> {
-					softly.assertThat(invoiceLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId.getRepoId());
-				});
+				.ifPresent(taxCategoryId -> softly.assertThat(invoiceLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId.getRepoId()));
 
 		row.getAsOptionalInt(COLUMNNAME_Line)
 				.ifPresent(line -> softly.assertThat(invoiceLine.getLine()).as(COLUMNNAME_Line).isEqualTo(line));
