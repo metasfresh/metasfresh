@@ -315,7 +315,6 @@ public class ExportHelper
 		// metas: end
 
 		final Collection<PO> records = new Query(exportFormat.getCtx(), tableName, whereClause.toString(), exportFormat.get_TrxName())
-				.setOnlyActiveRecords(true)
 				.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 				.setLimit(racCtx.getLimit())
 				.list(PO.class);
@@ -497,13 +496,7 @@ public class ExportHelper
 			final Query query = new Query(masterPO.getCtx(), tableEmbedded.getTableName(), whereClause.toString(), masterPO.get_TrxName());
 
 			final boolean hasIsActiveColumn = Services.get(IADTableDAO.class).hasColumnName(tableEmbedded.getTableName(), "IsActive");
-			if (hasIsActiveColumn)
-			{
-				// not exporting inactive records, if the current format's table allow us to check (sometimes not the case for simple views);
-				// hypothetically we might want to export them too, but that case didn't yet occur and i don't really see it. However, the other way round (i.e. *not* exporting inactive records) is
-				// all over.
-				query.setOnlyActiveRecords(true);
-			}
+
 			final List<PO> instances = query
 					.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 					.setParameters(linkId)
