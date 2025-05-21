@@ -1,23 +1,18 @@
 /*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
+ * This function prepares invoice descriptions for inclusion in the Swiss QR Code.
+ * According to the SIX Implementation Guidelines (v2.2), QR Code text fields must be:
+ * - UTF-8 encoded
+ * - limited to the permitted Latin character set (see Chapter 4.1.1 of the guide)
+ * - using only alphanumeric characters (A–Z, a–z, 0–9), the decimal point ".", and space
+ * - free from control characters (e.g. CR, LF, SOH, etc.)
+ * - max 140 characters long
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
+ * The function therefore:
+ * 1. Replaces carriage return (CR) and line feed (LF) with a space
+ * 2. Removes all characters except letters, digits, dot (.), and space
+ * 3. Collapses multiple spaces to a single space
+ * 4. Trims leading and trailing whitespace
+ * 5. Truncates the result to a maximum of 140 characters
  */
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Format_Invoice_Description_For_QR_Code(p_input TEXT)
