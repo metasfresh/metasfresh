@@ -748,7 +748,7 @@ public class DesadvBL implements IDesadvBL
 
 		for (final I_EDI_Desadv desadvRecord : desadvsToSkip)
 		{
-			if (desadvRecord.getFulfillmentPercent().compareTo(desadvRecord.getFulfillmentPercentMin()) <= 0)
+			if (desadvRecord.getFulfillmentPercent().compareTo(desadvRecord.getFulfillmentPercentMin()) < 0)
 			{
 				skippedDesadvsString.append("#")
 						.append(desadvRecord.getDocumentNo())
