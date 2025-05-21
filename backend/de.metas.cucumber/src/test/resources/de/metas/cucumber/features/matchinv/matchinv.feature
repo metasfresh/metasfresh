@@ -148,3 +148,8 @@ Feature: Match Invoice
       #-----------------------------------------------------------------------------------------------------------------------------
       | NotInvoicedReceipts_Acct |           | 1130      |             | 1000 EUR    | -100 PCE | product      | materialReceipt | bpartner_1    |
       | P_Asset_Acct             | 1130      |           | 1000 EUR    |             | +100 PCE | product      | materialReceipt | bpartner_1    |
+    And Fact_Acct records balances for documents vendorInvoice,matchInv1,materialReceipt are matching
+      | AccountConceptualName    | M_Product_ID | SourceBalance | AcctBalance | Qty      |
+      | P_InventoryClearing_Acct | product      | 0 EUR         | 0           | 0 PCE    |
+      | NotInvoicedReceipts_Acct | product      |               | 0           | 0 PCE    |
+      | P_Asset_Acct             | product      | 1000 EUR      | 1130        | +100 PCE |

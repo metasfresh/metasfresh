@@ -48,7 +48,6 @@ import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
-import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.costs.inout.InOutCost;
@@ -290,7 +289,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 				.orgId(OrgId.ofRepoIdOrAny(receiptLine.getAD_Org_ID()))
 				.orgTrxId(OrgId.ofRepoIdOrAny(receiptLine.getAD_OrgTrx_ID()))
 				.locatorId(receiptLine.getM_Locator_ID())
-				.buildAndAdd();
+				.buildAndAddNotNull();
 
 		//dr_NotInvoicedReceipts.setC_UOM_ID(UomId.ofRepoId(receiptLine.getC_UOM_ID()));
 		dr_NotInvoicedReceipts.setFromDimension(services.extractDimensionFromModel(receiptLine));
@@ -298,11 +297,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// InventoryClearing CR
 		// From Invoice
-		final Money invoiceLineMatchedAmt = getInvoiceLineMatchedAmt();
 		final FactLine cr_InventoryClearing = fact.createLine()
 				.setAccount(docLine.getInventoryClearingAccount(as))
 				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-				.setAmtSource((Money)null, invoiceLineMatchedAmt)
+				.setAmtSource((Money)null, getInvoiceLineMatchedAmt())
 				.setQty(getQty().negate())
 				.costElement(costElementId)
 				.bpartnerId(getInvoiceBPartnerId())
@@ -348,9 +346,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// AZ Goodwill
 		// Desc: Source Not Balanced problem because Currency is Difference - PO=CNY but AP=USD
 		// see also Fact.java: checking for isMultiCurrency()
-		if (dr_NotInvoicedReceipts != null
-				&& cr_InventoryClearing != null
-				&& !CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
+		if (cr_InventoryClearing != null && !CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
 		{
 			setIsMultiCurrency();
 		}
@@ -466,7 +462,12 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	private BigDecimal getQtyInvoicedMultiplier()
 	{
-		final BigDecimal qtyInvoiced = getQtyInvoiced();
+		BigDecimal qtyInvoiced = getQtyInvoiced();
+		if (isCreditMemoInvoice())
+		{
+			qtyInvoiced = qtyInvoiced.negate();
+		}
+
 		if (qtyInvoiced.signum() != 0) // task 08337: guard against division by zero
 		{
 			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).toBigDecimal();
@@ -547,8 +548,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
 		final I_M_InOut receipt = getReceipt();
-		final MovementType movementType = MovementType.ofCode(receipt.getMovementType());
-		final Quantity qtyMatched = getQty().negateIf(movementType.isMaterialReturn());
+		final Quantity qtyMatched = getQty();
 
 		final MatchInvType type = matchInv.getType();
 		final Money amtMatched;
