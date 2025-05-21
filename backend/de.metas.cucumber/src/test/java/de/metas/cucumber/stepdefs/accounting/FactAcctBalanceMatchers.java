@@ -9,7 +9,6 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 

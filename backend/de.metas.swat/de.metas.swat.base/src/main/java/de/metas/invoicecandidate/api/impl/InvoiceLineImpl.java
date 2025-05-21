@@ -82,13 +82,13 @@ import java.util.TreeSet;
 	private Money netLineAmt;
 
 	private String description;
-	private Collection<Integer> iciolIds = new TreeSet<>();
+	private final Collection<Integer> iciolIds = new TreeSet<>();
 	private int activityID;
 	private Tax tax;
 	private boolean printed = true;
 	private int lineNo = 0;
 	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
-	private List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
+	private final List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
 	private int C_PaymentTerm_ID;
 
 	@Override
