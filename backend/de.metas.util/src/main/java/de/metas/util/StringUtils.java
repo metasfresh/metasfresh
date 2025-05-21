@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -120,6 +121,7 @@ public final class StringUtils
 	/**
 	 * Truncate string to a given length, if required.
 	 */
+	@Contract("null, _ -> null")
 	@Nullable
 	public static String trunc(
 			@Nullable final String str,
@@ -128,6 +130,7 @@ public final class StringUtils
 		return trunc(str, length, TruncateAt.STRING_END);
 	}
 
+	@Contract("null, _, _ -> null")
 	@Nullable
 	public static String trunc(
 			@Nullable final String string,
@@ -413,8 +416,7 @@ public final class StringUtils
 		{
 			if (param instanceof Supplier)
 			{
-				@SuppressWarnings("rawtypes")
-				final Supplier paramSupplier = (Supplier)param;
+				@SuppressWarnings("rawtypes") final Supplier paramSupplier = (Supplier)param;
 
 				result.add(paramSupplier.get());
 			}
@@ -658,11 +660,10 @@ public final class StringUtils
 		{
 			return in;
 		}
-		
+
 		return CharMatcher.whitespace().removeFrom(in);
 	}    // cleanWhitespace
 
-	
 	/**
 	 * remove white space from the begin
 	 */

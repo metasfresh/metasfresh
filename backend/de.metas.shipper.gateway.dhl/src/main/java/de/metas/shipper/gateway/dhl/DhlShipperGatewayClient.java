@@ -64,6 +64,7 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import de.metas.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -329,13 +330,13 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	private JsonDhlAddress getJsonDhlAddress(final @NonNull Address address, @Nullable final ContactPerson deliveryContact)
 	{
 		final JsonDhlAddress.JsonDhlAddressBuilder addressBuilder = JsonDhlAddress.builder()
-				.name1(address.getCompanyName1())
-				.name2(address.getCompanyName2())
-				.addressStreet(address.getStreet1())
-				.addressHouse(address.getHouseNo())
-				.additionalAddressInformation1(address.getStreet2())
-				.postalCode(address.getZipCode())
-				.city(address.getCity())
+				.name1(StringUtils.trunc(address.getCompanyName1(), 50))
+				.name2(StringUtils.trunc(address.getCompanyName2(), 50))
+				.addressStreet(StringUtils.trunc(address.getStreet1(), 50))
+				.addressHouse(StringUtils.trunc(address.getHouseNo(), 10))
+				.additionalAddressInformation1(StringUtils.trunc(address.getStreet2(), 50))
+				.postalCode(StringUtils.trunc(address.getZipCode(), 10))
+				.city(StringUtils.trunc(address.getCity(), 40))
 				.country(address.getCountry().getAlpha3());
 		if (deliveryContact != null)
 		{
