@@ -5,7 +5,7 @@ Feature: create purchase simulation
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2021-04-11T08:00:00+02:00[Europe/Bucharest]
+    And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier | Name                        |
       | p_1        | product_Purchase_06_07_2022 |
