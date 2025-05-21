@@ -1,5 +1,7 @@
+
 --
 -- We remove the hardcoded "IsActive='Y'" from the export logic and add it to the whereclause - in most cases
+-- Needs to be executed ahead of 5755200_sys_22804_EDI_Desadv_Exp_whereClauses.sql
 
 CREATE TABLE fix.exp_format_whereclause_isactive_20250520 AS
 SELECT exp_format_id,

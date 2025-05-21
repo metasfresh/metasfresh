@@ -130,24 +130,9 @@ public class ExportHelper
 	public static final String MSG_EXPFormatNotFound = "EXPFormatNotFound";
 	public static final String MSG_EXPFormatLineError = "EXPFormatLineError";
 
-	/**
-	 * Logger
-	 */
 	private static final Logger log = LogManager.getLogger(ExportHelper.class);
-
-	/**
-	 * XML Document
-	 */
 	private Document outDocument = null;
-
-	/**
-	 * Client
-	 */
 	private final int m_AD_Client_ID;
-
-	/**
-	 * Replication Strategy
-	 */
 	private final I_AD_ReplicationStrategy m_rplStrategy;
 
 	public ExportHelper(final MClient client, final MReplicationStrategy rplStrategy)
