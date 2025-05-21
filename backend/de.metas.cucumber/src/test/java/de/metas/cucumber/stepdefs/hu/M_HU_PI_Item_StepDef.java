@@ -75,7 +75,7 @@ public class M_HU_PI_Item_StepDef
 				.forEach(row -> {
 					final HuPackingInstructionsVersionId huPiVersionId = row.getAsIdentifier(COLUMNNAME_M_HU_PI_Version_ID).lookupNotNullIdIn(huPiVersionTable);
 
-					final BigDecimal qty = row.getAsBigDecimal(COLUMNNAME_Qty);
+					final BigDecimal qty = row.getAsOptionalBigDecimal(COLUMNNAME_Qty).orElse(null);
 					final String itemType = row.getAsString(COLUMNNAME_ItemType); //dev-note: ITEMTYPE_AD_Reference_ID=540395;
 					final boolean active = row.getAsOptionalBoolean(COLUMNNAME_IsActive).orElseTrue();
 

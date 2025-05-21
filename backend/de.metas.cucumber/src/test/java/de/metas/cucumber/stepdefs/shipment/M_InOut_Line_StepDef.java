@@ -116,6 +116,12 @@ public class M_InOut_Line_StepDef
 				.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
 
 		final I_M_InOutLine inoutLine = getSingleInOutLine(lineQueryBuilder.create());
+
+		final SoftAssertions softly = new SoftAssertions();
+		row.getAsOptionalBoolean("processed").ifPresent(processed -> softly.assertThat(inoutLine.isProcessed()).as("Processed").isEqualTo(processed));
+		row.getAsOptionalBigDecimal("movementqty").ifPresent(movementQty -> softly.assertThat(inoutLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementQty));
+		softly.assertAll();
+
 		row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(inoutLineTable, inoutLine);
 	}
 

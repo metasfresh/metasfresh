@@ -45,6 +45,7 @@ import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -494,16 +495,19 @@ public class M_InOut_StepDef
 	@And("validate M_In_Out status")
 	public void validate_M_In_Out_status(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
-		{
-			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
-			InterfaceWrapperHelper.refresh(shipment);
+		DataTableRows.of(table)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_InOut_ID)
+				.forEach(row -> {
+					final I_M_InOut shipment = row.getAsIdentifier().lookupNotNullIn(inoutTable);
+					InterfaceWrapperHelper.refresh(shipment);
 
-			final String docStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_DocStatus);
-			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
-		}
+					final SoftAssertions softly = new SoftAssertions();
+
+					row.getAsOptionalEnum(COLUMNNAME_DocStatus, DocStatus.class)
+							.ifPresent(docStatus -> assertThat(shipment.getDocStatus()).as("DocStatus").isEqualTo(docStatus.getCode()));
+
+					softly.assertAll();
+				});
 	}
 
 	@And("^reset M_InOut packing lines for shipment (.*)$")

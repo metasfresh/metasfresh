@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
@@ -640,24 +641,20 @@ public class C_Invoice_Candidate_StepDef
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 
-		for (final Map<String, String> row : tableRows)
-		{
-			try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
-			{
-				final String invoiceCandIdentifiers = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+					try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
+					{
+						final @NonNull List<StepDefDataIdentifier> invoiceCandIdentifiers = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).toCommaSeparatedList();
+						final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = invoiceCandIdentifiers.stream()
+								.map(invoiceCandTable::getId)
+								.collect(ImmutableSet.toImmutableSet());
 
-				final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = StepDefUtil.splitIdentifiers(invoiceCandIdentifiers)
-						.stream()
-						.map(invoiceCandTable::get)
-						.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
-						.map(InvoiceCandidateId::ofRepoId)
-						.collect(ImmutableSet.toImmutableSet());
+						final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
 
-				final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
-
-				invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
-			}
-		}
+						invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
+					}
+				});
 	}
 
 	@And("invoice candidates are not billable")
