@@ -29,6 +29,7 @@
  *********************************************************************/
 package org.adempiere.process.rpl.exp;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.attachments.AttachmentEntryService;
@@ -37,6 +38,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -138,7 +140,9 @@ public class ExportHelper
 	 */
 	private Document outDocument = null;
 
-	/** Client */
+	/**
+	 * Client
+	 */
 	private final int m_AD_Client_ID;
 
 	/**
@@ -216,12 +220,12 @@ public class ExportHelper
 	 */
 	// t.schoeneberg@metas.de, 03132
 	// extracted the DOM creating code from 'exportRecord()'
-	public Document createExportDOM(
-			final PO po,
-			MEXPFormat exportFormat,
-			final Integer ReplicationMode,
+	public @Nullable Document createExportDOM(
+			@NonNull final PO po,
+			@Nullable MEXPFormat exportFormat,
+			@NonNull final Integer ReplicationMode,
 			String ReplicationType,
-			final Integer ReplicationEvent)
+			@NonNull final Integer ReplicationEvent)
 	{
 		// metas: tsa: begin
 		if (exportFormat == null)
@@ -256,7 +260,7 @@ public class ExportHelper
 					.anyMatch();
 			if (!match)
 			{
-				log.info("Object " + po + " does not match export format where clause (" + whereClause + ")");
+				Loggables.withLogger(log, Level.INFO).addLog("Object " + po + " does not match export format where clause (" + whereClause + ")");
 				return null;
 			}
 		}
@@ -292,11 +296,11 @@ public class ExportHelper
 	 * Export a limited number of POs for the given format and where clause.
 	 */
 	public Document exportRecord(final MEXPFormat exportFormat,
-			final String where,
-			final Integer ReplicationMode,
-			final String ReplicationType,
-			final Integer ReplicationEvent,
-			final IReplicationAccessContext racCtx)
+								 final String where,
+								 final Integer ReplicationMode,
+								 final String ReplicationType,
+								 final Integer ReplicationEvent,
+								 final IReplicationAccessContext racCtx)
 			throws Exception
 	{
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(exportFormat.getCtx(), m_AD_Client_ID);
@@ -344,8 +348,12 @@ public class ExportHelper
 		return outDocument;
 	}
 
-	private Element generateRootElement(final org.compiere.model.I_EXP_Format exportFormat, final Document outDocument, final Integer ReplicationMode, final String ReplicationType,
-			final Integer ReplicationEvent, final I_AD_Client client)
+	private Element generateRootElement(@NonNull final org.compiere.model.I_EXP_Format exportFormat,
+										@NonNull final Document outDocument,
+										@NonNull final Integer ReplicationMode,
+										final String ReplicationType,
+										@NonNull final Integer ReplicationEvent,
+										@NonNull final I_AD_Client client)
 	{
 		final Element rootElement = outDocument.createElement(exportFormat.getValue());
 		if (exportFormat.getDescription() != null && !"".equals(exportFormat.getDescription()))
@@ -377,7 +385,7 @@ public class ExportHelper
 	 * Trifon Generate Export Format process; RESULT = <C_Invoice> <DocumentNo>101</DocumentNo> </C_Invoice>
 	 */
 	private void generateExportFormat(final Document outDocument, final Element rootElement, final MEXPFormat exportFormat, final PO masterPO, final HashMap<String, Integer> variableMap,
-			final IReplicationAccessContext racCtx)
+									  final IReplicationAccessContext racCtx)
 	{
 		final List<I_EXP_FormatLine> formatLines = exportFormat.getFormatLines();
 
@@ -495,8 +503,6 @@ public class ExportHelper
 
 			final Query query = new Query(masterPO.getCtx(), tableEmbedded.getTableName(), whereClause.toString(), masterPO.get_TrxName());
 
-			final boolean hasIsActiveColumn = Services.get(IADTableDAO.class).hasColumnName(tableEmbedded.getTableName(), "IsActive");
-
 			final List<PO> instances = query
 					.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 					.setParameters(linkId)
@@ -603,15 +609,6 @@ public class ExportHelper
 			}
 
 			final Query query = new Query(masterPO.getCtx(), embeddedTableName, whereClause.toString(), masterPO.get_TrxName());
-
-			final boolean hasIsActiveColumn = Services.get(IADTableDAO.class).hasColumnName(embeddedTableName, "IsActive");
-			if (hasIsActiveColumn)
-			{
-				// not exporting inactive records, if the current format's table allow us to check (sometimes not the case for simple views);
-				// hypothetically we might want to export them too, but that case didn't yet occur and i don't really see it. However, the other way round (i.e. *not* exporting inactive records) is
-				// all over.
-				query.setOnlyActiveRecords(true);
-			}
 
 			final List<PO> instances = query
 					.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
@@ -739,8 +736,8 @@ public class ExportHelper
 	 * @return String encoded value
 	 */
 	private static String encodeValue(final Object value,
-			@NonNull final I_EXP_FormatLine formatLine,
-			@NonNull final I_AD_Column column)
+									  @NonNull final I_EXP_FormatLine formatLine,
+									  @NonNull final I_AD_Column column)
 	{
 		final int displayType = column.getAD_Reference_ID();
 

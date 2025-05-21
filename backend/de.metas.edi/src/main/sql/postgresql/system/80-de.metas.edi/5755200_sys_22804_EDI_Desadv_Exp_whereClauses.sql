@@ -66,3 +66,8 @@ UPDATE EXP_Format SET WhereClause='IsActive=''N'' OR QtyDeliveredInUOM<=0 OR EDI
 UPDATE EXP_Format SET WhereClause='IsActive=''N'' OR QtyDeliveredInUOM<=0 OR EDI_DesadvLine_ID not in (select EDI_DesadvLine_ID from EDI_Desadv_Pack_Item pi join EDI_Desadv_Pack p on p.EDI_Desadv_Pack_ID=pi.EDI_Desadv_Pack_ID where pi.IsActive=''Y'' and p.IsActive=''Y'' and p.edi_desadv_id=EDI_DesadvLine.EDI_Desadv_ID)',Updated=TO_TIMESTAMP('2025-05-19 14:43:31.009000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE EXP_Format_ID=540422
 ;
 
+
+-- 2025-05-21T09:35:48.251Z
+UPDATE EXP_Format SET Help='No IsActive=''Y'' whereClause because we need this desadv-line to show up in EDI_Exp_DesadvLineWithNoPack in case it''s inactive', WhereClause='',Updated=TO_TIMESTAMP('2025-05-21 09:35:48.248000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE EXP_Format_ID=540406
+;
+
