@@ -31,7 +31,6 @@ import de.metas.document.DocBaseType;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 
 import java.math.BigDecimal;
@@ -74,11 +73,13 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	protected void loadDocumentDetails()
 	{
 		setNoCurrency();
+
 		docLine = new DocLine_MatchPO(getModel(I_M_MatchPO.class), this);
 
 		setDateDoc(docLine.getDateDoc());
 
-		this.noFactRecords = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_NoFactRecords, DEFAULT_NoFactRecords);
+		this.noFactRecords = docLine.isNoReceiptLineSet()
+				|| Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_NoFactRecords, DEFAULT_NoFactRecords);
 	}
 
 	@Override
@@ -103,11 +104,9 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	public List<Fact> createFacts(final AcctSchema as)
 	{
 		//
-		// Mark sure inbound costs are created
+		// Mark sure inbound costs are created even if noFactRecords is true (needed for AveragePO costing)
 		docLine.createCostDetails(as);
 
-		// If configured to not create accounting facts for Match PO documents then don't do it (08555)
-		// IMPORTANT: we shall do absolutelly nothing if the sysconfig is enabled (gh6287)
 		if (noFactRecords)
 		{
 			return ImmutableList.of();
@@ -215,10 +214,6 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 		// verify if org of receipt line is different from org of order line
 		// ignoring invoice line org as not used in posting
-		final I_M_InOutLine receiptLine = docLine.getReceiptLine();
-		final I_C_OrderLine orderLine = docLine.getOrderLine();
-		return receiptLine != null
-				&& orderLine != null
-				&& receiptLine.getAD_Org_ID() != orderLine.getAD_Org_ID();
+		return docLine.isReceivingInDifferentOrgThanPurchaseOrder();
 	}
 }   // Doc_MatchPO
