@@ -186,7 +186,7 @@ public class XmlToOLCandsService
 		if (billToLocation != null)
 		{
 			locations.requestItem(JsonRequestLocationUpsertItem.builder()
-					.locationIdentifier("ext-" + JsonExternalId.of(billToLocation.getExternalId().getValue() + "_GUARANTOR"))
+					.locationIdentifier("ext-" + billToLocation.getExternalId().getValue() + "_GUARANTOR")
 					.location(billToLocation)
 					.build());
 		}
