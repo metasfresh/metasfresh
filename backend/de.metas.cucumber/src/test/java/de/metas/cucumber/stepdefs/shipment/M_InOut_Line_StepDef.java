@@ -35,7 +35,13 @@ import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -51,6 +57,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -79,6 +86,7 @@ public class M_InOut_Line_StepDef
 	private final Logger logger = LogManager.getLogger(M_InOut_Line_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final MatchInvoiceService matchInvoiceService = SpringContextHolder.instance.getBean(MatchInvoiceService.class);
 
 	private final M_InOut_StepDefData inoutTable;
 	private final M_InOutLine_StepDefData inoutLineTable;
@@ -219,58 +227,57 @@ public class M_InOut_Line_StepDef
 	@And("metasfresh contains M_InOutLine")
 	public void metasfresh_contains_M_InOutLine(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> table = dataTable.asMaps();
-		for (final Map<String, String> row : table)
-		{
-			final de.metas.inout.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.inout.model.I_M_InOutLine.class);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_InOutLine_ID)
+				.forEach(row -> {
+					final de.metas.inout.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.inout.model.I_M_InOutLine.class);
 
-			final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_InOut inOut = inoutTable.get(inOutIdentifier);
-			assertThat(inOut).isNotNull();
+					final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final I_M_InOut inOut = inoutTable.get(inOutIdentifier);
+					assertThat(inOut).isNotNull();
 
-			inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
+					inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
 
-			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyEntered);
-			inOutLine.setQtyEntered(qtyEntered);
+					final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyEntered);
+					inOutLine.setQtyEntered(qtyEntered);
 
-			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_MovementQty);
-			inOutLine.setMovementQty(movementQty);
+					final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_MovementQty);
+					inOutLine.setMovementQty(movementQty);
 
-			final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
-			final I_C_UOM uom = uomDAO.getByX12DE355(X12DE355.ofCode(uomCode));
-			assertThat(uom).isNotNull();
+					final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
+					final I_C_UOM uom = uomDAO.getByX12DE355(X12DE355.ofCode(uomCode));
+					assertThat(uom).isNotNull();
 
-			inOutLine.setC_UOM_ID(uom.getC_UOM_ID());
+					inOutLine.setC_UOM_ID(uom.getC_UOM_ID());
 
-			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(productIdentifier))
-			{
-				final I_M_Product product = productTable.get(productIdentifier);
-				assertThat(product).isNotNull();
+					final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(productIdentifier))
+					{
+						final I_M_Product product = productTable.get(productIdentifier);
+						assertThat(product).isNotNull();
 
-				inOutLine.setM_Product_ID(product.getM_Product_ID());
-			}
+						inOutLine.setM_Product_ID(product.getM_Product_ID());
+					}
 
-			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(locatorIdentifier))
-			{
-				final I_M_Locator locator = locatorTable.get(locatorIdentifier);
-				assertThat(locator).isNotNull();
+					final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(locatorIdentifier))
+					{
+						final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+						assertThat(locator).isNotNull();
 
-				inOutLine.setM_Locator_ID(locator.getM_Locator_ID());
-			}
+						inOutLine.setM_Locator_ID(locator.getM_Locator_ID());
+					}
 
-			final Boolean isPackingMaterial = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial);
-			if (isPackingMaterial != null)
-			{
-				inOutLine.setIsPackagingMaterial(isPackingMaterial);
-			}
+					final Boolean isPackingMaterial = row.getAsOptionalBoolean(I_M_InOutLine.COLUMNNAME_IsPackagingMaterial).toBooleanOrNull();
+					if (isPackingMaterial != null)
+					{
+						inOutLine.setIsPackagingMaterial(isPackingMaterial);
+					}
 
-			InterfaceWrapperHelper.saveRecord(inOutLine);
+					InterfaceWrapperHelper.saveRecord(inOutLine);
 
-			final String inOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			inoutLineTable.putOrReplace(inOutLineIdentifier, inOutLine);
-		}
+					row.getAsOptionalIdentifier().ifPresent(identifier -> inoutLineTable.putOrReplace(identifier, inOutLine));
+				});
 	}
 
 	@And("^validate no M_InOutLine found for M_InOut identified by (.*)$")
@@ -315,6 +322,12 @@ public class M_InOut_Line_StepDef
 					softly.assertThat(HUPIItemProductId.ofRepoIdOrNull(actual.getM_HU_PI_Item_Product_ID())).as("M_HU_PI_Item_Product_ID").isEqualTo(huPIItemProductId);
 				});
 
+		expected.getAsOptionalQuantity("QtyMatched", uomDAO::getByX12DE355)
+				.ifPresent(qtyMatchedExpected -> {
+					final StockQtyAndUOMQty qtyMatchedActual = getQtyMatched(actual);
+					assertThat(qtyMatchedActual.getUOMQtyNotNull()).as("QtyMatched").isEqualTo(qtyMatchedExpected);
+				});
+
 		expected.getAsOptionalString(I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName())
 				.map(X12DE355::ofCode)
 				.map(uomDAO::getUomIdByX12DE355)
@@ -346,4 +359,21 @@ public class M_InOut_Line_StepDef
 
 		softly.assertAll();
 	}
+
+	private StockQtyAndUOMQty getQtyMatched(final I_M_InOutLine inoutLine)
+	{
+		final MovementType movementType = getMovementType(inoutLine);
+		final StockQtyAndUOMQty initialQtys = StockQtyAndUOMQtys.createZero(ProductId.ofRepoId(inoutLine.getM_Product_ID()), UomId.ofRepoId(inoutLine.getC_UOM_ID()));
+		return matchInvoiceService.getMaterialQtyMatched(InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID()), initialQtys)
+				.negateIf(movementType.isOutboundTransaction());
+	}
+
+	@NonNull
+	private MovementType getMovementType(final I_M_InOutLine inoutLine)
+	{
+		final InOutId inoutId = InOutId.ofRepoId(inoutLine.getM_InOut_ID());
+		final I_M_InOut inout = inoutTable.getFirstById(inoutId).orElseThrow(() -> new AdempiereException("No loaded inout found for " + inoutId));
+		return MovementType.ofCode(inout.getMovementType());
+	}
+
 }

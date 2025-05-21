@@ -14,6 +14,7 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
+import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctBalanceValidator;
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctValidator;
 
 public class Fact_Acct_StepDef
@@ -74,7 +75,7 @@ public class Fact_Acct_StepDef
 	{
 		newFactAcctValidator()
 				.factAcctTabularStringConverter(factAcctTabularStringConverter)
-				.matchers(factAcctMatchersFactory.ofDataTable(table))
+				.matchers(factAcctMatchersFactory.createLineMatchers(table))
 				.validate();
 	}
 
@@ -84,6 +85,20 @@ public class Fact_Acct_StepDef
 		newFactAcctValidator()
 				.factAcctTabularStringConverter(factAcctTabularStringConverter)
 				.matchers(FactAcctMatchers.noRecords(identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(identifiersStr)))
+				.validate();
+	}
+
+	@And("^Fact_Acct records balances for documents (.*) are matching$")
+	public void assertBalances(
+			@NonNull final String commaSeparatedIdentifiers,
+			@NonNull final DataTable table) throws Throwable
+	{
+		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		AccountingCucumberHelper.waitUtilPosted(recordRefs);
+
+		newFactAcctBalanceValidator()
+				.factAcctTabularStringConverter(factAcctTabularStringConverter)
+				.matchers(factAcctMatchersFactory.createBalanceMatchers(table, recordRefs))
 				.validate();
 	}
 }

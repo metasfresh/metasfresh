@@ -75,4 +75,22 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	{
 		return getFirstIdentifierById(extractIdFromRecord(record));
 	}
+<<<<<<< HEAD
 }
+=======
+
+	default Optional<RecordType> getFirstById(@NonNull final ID id) {return getFirstIdentifierById(id, null).map(this::get);}
+
+	default void putOrReplaceIfSameId(final StepDefDataIdentifier identifier, final RecordType newRecord)
+	{
+		final ID newId = extractIdFromRecord(newRecord);
+		final ID currentId = getIdOptional(identifier).orElse(null);
+		if (currentId != null && !Objects.equals(currentId, newId))
+		{
+			throw new RuntimeException("Cannot replace " + identifier + " because its current id is " + currentId + " and the new id is " + newId);
+		}
+
+		putOrReplace(identifier, newRecord);
+	}
+}
+>>>>>>> a9df52a488 (improve cucumber framework)

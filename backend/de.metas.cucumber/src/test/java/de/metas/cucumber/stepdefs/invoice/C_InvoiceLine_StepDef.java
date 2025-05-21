@@ -38,6 +38,8 @@ import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -94,13 +96,18 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 public class C_InvoiceLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 <<<<<<< HEAD
 =======
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+<<<<<<< HEAD
 >>>>>>> ce978dd873 (improve readability of cucumber tests)
+=======
+	private final MatchInvoiceService matchInvoiceService = SpringContextHolder.instance.getBean(MatchInvoiceService.class);
+>>>>>>> a9df52a488 (improve cucumber framework)
 
 	final C_Invoice_StepDefData invoiceTable;
 	final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -465,12 +472,26 @@ public class C_InvoiceLine_StepDef
 		// 	softly.assertThat(invoiceLine.isHidePriceAndAmountOnPrint()).as(COLUMNNAME_IsHidePriceAndAmountOnPrint).isEqualTo(isHidePriceAndAmountOnPrint);
 		// }
 
+		row.getAsOptionalQuantity("QtyMatched", uomDAO::getByX12DE355)
+				.ifPresent(qtyMatchedExpected -> {
+					final Quantity qtyMatchedActual = getQtyMatched(invoiceLine, invoice);
+					assertThat(qtyMatchedActual).as("QtyMatched").isEqualTo(qtyMatchedExpected);
+				});
+
 		softly.assertAll();
 <<<<<<< HEAD
 >>>>>>> ce978dd873 (improve readability of cucumber tests)
 =======
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));
+	}
+
+	private Quantity getQtyMatched(final @NonNull I_C_InvoiceLine invoiceLine, final @NonNull I_C_Invoice invoice)
+	{
+		return matchInvoiceService.getMaterialQtyMatched(invoiceLine)
+				.getUOMQtyNotNull()
+				.negateIf(invoiceBL.isCreditMemo(invoice)) // CM un-adjust
+				;
 	}
 
 	private Optional<Money> extractMoney(final DataTableRow row, final String columnName, final I_C_Invoice invoice)
