@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.accounting.FactAcctBalanceValidator.FactAcctBalanceValidatorBuilder;
 import de.metas.cucumber.stepdefs.accounting.FactAcctValidator.FactAcctValidatorBuilder;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -97,5 +98,10 @@ public class AccountingCucumberHelper
 	public static FactAcctValidatorBuilder newFactAcctValidator()
 	{
 		return FactAcctValidator.builder();
+	}
+
+	public static FactAcctBalanceValidatorBuilder newFactAcctBalanceValidator()
+	{
+		return FactAcctBalanceValidator.builder();
 	}
 }

@@ -80,6 +80,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 		return getFirstIdentifierById(extractIdFromRecord(record));
 	}
 
+	default Optional<RecordType> getFirstById(@NonNull final ID id) {return getFirstIdentifierById(id, null).map(this::get);}
+
 	default void putOrReplaceIfSameId(final StepDefDataIdentifier identifier, final RecordType newRecord)
 	{
 		final ID newId = extractIdFromRecord(newRecord);
