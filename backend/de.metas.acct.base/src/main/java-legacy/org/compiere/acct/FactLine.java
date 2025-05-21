@@ -717,7 +717,6 @@ public class FactLine
 				.map(date -> date.toInstant(doc.getServices()::getTimeZone));
 	}
 
-
 	public CurrencyId getAcctCurrencyId()
 	{
 		return getAcctSchema().getCurrencyId();
@@ -1310,7 +1309,13 @@ public class FactLine
 		this.C_Campaign_ID = dimension.getCampaignId();
 		this.C_Activity_ID = dimension.getActivityId();
 		this.C_OrderSO_ID = dimension.getSalesOrderId();
-		this.M_Product_ID = dimension.getProductId();
+		if (dimension.getProductId() != null)
+		{
+			// NOTE: because the product dimension not usually populated for various other reasons
+			// we are copying it only if is set
+			// if is not set (because we cannot make a distinction between not set or really null) we skip copying it
+			this.M_Product_ID = dimension.getProductId();
+		}
 		this.C_BPartner2_ID = dimension.getBpartnerId2();
 		this.User1_ID = dimension.getUser1_ID();
 		this.User2_ID = dimension.getUser2_ID();

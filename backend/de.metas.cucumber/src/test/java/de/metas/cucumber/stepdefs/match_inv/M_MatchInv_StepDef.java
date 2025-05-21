@@ -12,6 +12,7 @@ import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvQuery;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
+import de.metas.lang.SOTrx;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -51,13 +52,21 @@ public class M_MatchInv_StepDef
 		SharedTestContext.put("matchInvoice", matchInvoice);
 		row.getAsOptionalIdentifier().ifPresent(identifier -> matchInvTable.put(identifier, matchInvoice));
 
+		validateMatchInvoice(row, matchInvoice);
+	}
+
+	private void validateMatchInvoice(@NonNull final DataTableRow row, @NonNull final MatchInv matchInvoice)
+	{
 		SoftAssertions softly = new SoftAssertions();
 
-		row.getAsOptionalIdentifier("M_Product_ID")
+		row.getAsOptionalIdentifier(I_M_MatchInv.COLUMNNAME_M_Product_ID)
 				.map(productTable::getId)
 				.ifPresent(productId -> softly.assertThat(matchInvoice.getProductId()).as("M_Product_ID").isEqualTo(productId));
 		row.getAsOptionalQuantity("QtyInUOM", uomDAO::getByX12DE355)
 				.ifPresent(qtyInUOM -> softly.assertThat(matchInvoice.getQty().getUOMQtyNotNull()).as("QtyInUOM").isEqualTo(qtyInUOM));
+		row.getAsOptionalBoolean(I_M_MatchInv.COLUMNNAME_IsSOTrx)
+				.map(SOTrx::ofBoolean)
+				.ifPresent(soTrx -> softly.assertThat(matchInvoice.getSoTrx()).as("IsSOTrx").isEqualTo(soTrx));
 
 		softly.assertAll();
 	}

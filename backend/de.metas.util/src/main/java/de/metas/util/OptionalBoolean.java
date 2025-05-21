@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /*
@@ -130,6 +131,11 @@ public enum OptionalBoolean
 		{
 			action.accept(false);
 		}
+	}
+
+	public <U> Optional<U> map(@NonNull final BooleanFunction<? extends U> mapper)
+	{
+		return isPresent() ? Optional.ofNullable(mapper.apply(isTrue())) : Optional.empty();
 	}
 
 }
