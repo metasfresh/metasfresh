@@ -7,8 +7,8 @@ Feature: create purchase simulation
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
-      | Identifier | Name                        |
-      | p_1        | product_Purchase_06_07_2022 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
