@@ -65,7 +65,7 @@ FROM edi_cctop_invoic_v invoic_v
                                    'CountryCode', CountryCode,
                                    'Phone', Phone,
                                    'Fax', Fax,
-                                   'BPartner-EDI Merkmale', attr_v.json_data
+                                   'CustomEdiAttributes', attr_v.json_data
                                )) AS json_data
                     FROM edi_cctop_119_v cctop119
                              LEFT JOIN (SELECT bpartner_value,
