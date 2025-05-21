@@ -38,6 +38,7 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.TimeUtil;
@@ -47,10 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public abstract class AbstractMaterialReturnTests extends AbstractNewAggregationEngineTests
@@ -119,25 +117,30 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 	@Override
 	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
 	{
-		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
+		Assertions.assertThat(invoices).hasSize(1);
+
+		final SoftAssertions softly = new SoftAssertions();
 
 		final IInvoiceHeader invoice1 = invoices.remove(0);
+		softly.assertThat(invoice1.getPOReference()).isEqualTo(IC_PO_REFERENCE);
+		softly.assertThat(invoice1.getDateAcct()).isEqualTo(IC_DATE_ACCT); // task 08437
 
-		assertThat(invoice1.getPOReference(), is(IC_PO_REFERENCE));
-		assertThat(invoice1.getDateAcct(), is(IC_DATE_ACCT)); // task 08437
-
-		Assertions.assertThat(invoice1.getDocBaseType().isCreditMemo()).isTrue(); // we are expecting a credit memo
-		assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
+		softly.assertThat(invoice1.getDocBaseType().isCreditMemo()).isTrue(); // we are expecting a credit memo
+		softly.assertThat(invoice1.isSOTrx()).isEqualTo(config_IsSOTrx());
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
-		assertEquals("We are expecting one invoice line: " + invoiceLines1, 1, invoiceLines1.size());
+		softly.assertThat(invoiceLines1).hasSize(1);
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
-		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11, il1);
+		softly.assertThat(il1).isNotNull();
+		if (il1 != null)
+		{
+			softly.assertThat(il1.getPriceActual().toBigDecimal()).as("PriceActual").isEqualByComparingTo("1");
+			softly.assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal()).as("QtyToInvoice.StockQty").isEqualByComparingTo("50");
+			softly.assertThat(il1.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal()).as("QtyToInvoice.UOMQty").isEqualByComparingTo("500");
+			softly.assertThat(il1.getNetLineAmt().toBigDecimal()).as("LineNetAmt").isEqualByComparingTo("500");
+		}
 
-		assertThat(il1.getPriceActual().toBigDecimal(), comparesEqualTo(BigDecimal.ONE.negate()));
-		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY.negate()));
-		assertThat(il1.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET.negate()));
-		assertThat(il1.getNetLineAmt().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET)); /**/
+		softly.assertAll();
 	}
 
 	protected abstract boolean config_IsSOTrx();
