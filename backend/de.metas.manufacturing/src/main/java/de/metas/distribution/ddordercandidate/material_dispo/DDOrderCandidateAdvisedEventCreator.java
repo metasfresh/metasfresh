@@ -100,7 +100,7 @@ public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 										   final Quantity qtyToDistribute)
 	{
 		final Set<DDOrderCandidateId> candidateIds = getDDOrderCandidateIds(event);
-		if (qtyToDistribute.signum() <= 0 || candidateIds.isEmpty())
+		if (candidateIds.isEmpty())
 		{
 			return qtyToDistribute;
 		}

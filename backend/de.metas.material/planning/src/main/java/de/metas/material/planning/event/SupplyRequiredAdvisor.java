@@ -15,10 +15,7 @@ public interface SupplyRequiredAdvisor
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context);
 
-	default Quantity handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
-											final Quantity qtyToDistribute)
-	{
-		return qtyToDistribute;
-	}
+	Quantity handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
+									final Quantity qtyToDistribute);
 
 }
