@@ -42,7 +42,9 @@ import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -178,17 +180,17 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 	}
 
 	@Override
-	public BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
-											 @NonNull final BigDecimal qtyToDistribute)
+	public Quantity handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
+										   final Quantity qtyToDistribute)
 	{
 		final Collection<PPOrderCandidateId> ppOrderCandidateIds = getPpOrderCandidateIds(event);
-		if (qtyToDistribute.signum() <= 0 || ppOrderCandidateIds.isEmpty())
+		if (ppOrderCandidateIds.isEmpty())
 		{
 			return qtyToDistribute;
 		}
 
 		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
-		BigDecimal remainingQtyToDistribute = qtyToDistribute;
+		Quantity remainingQtyToDistribute = qtyToDistribute;
 
 		for (final I_PP_Order_Candidate ppOrderCandidate : candidates)
 		{
@@ -196,7 +198,7 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 			if (remainingQtyToDistribute.signum() <= 0)
 			{
-				return BigDecimal.ZERO;
+				return qtyToDistribute.toZero();
 			}
 		}
 
@@ -208,16 +210,24 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		final Candidate demandCandidate = candidateRepositoryRetrieval.retrieveById(CandidateId.ofRepoId(event.getSupplyRequiredDescriptor().getDemandCandidateId()));
 		return candidateRepositoryWriteService.getSupplyCandidatesForDemand(demandCandidate, CandidateBusinessCase.PRODUCTION)
 				.stream()
-				.map(candidate -> ProductionDetail.castOrNull(candidate.getBusinessCaseDetail()).getPpOrderCandidateId())
+				.map(PPOrderCandidateAdvisedEventCreator::getPpOrderCandidateIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 	}
 
-	private BigDecimal doDecreaseQty(final I_PP_Order_Candidate ppOrderCandidate, final BigDecimal remainingQtyToDistribute)
+	@Nullable
+	private static PPOrderCandidateId getPpOrderCandidateIdOrNull(final Candidate candidate)
+	{
+		final ProductionDetail productionDetail = ProductionDetail.castOrNull(candidate.getBusinessCaseDetail());
+		return productionDetail == null ? null : productionDetail.getPpOrderCandidateId();
+	}
+
+	private Quantity doDecreaseQty(final I_PP_Order_Candidate ppOrderCandidate, final Quantity remainingQtyToDistribute)
 	{
 		if (isCandidateEligibleForBeingDecreased(ppOrderCandidate))
 		{
-			final BigDecimal qtyToDecrease = remainingQtyToDistribute.min(ppOrderCandidate.getQtyToProcess());
+			final Quantity quantityToProcess = Quantitys.of(ppOrderCandidate.getQtyToProcess(), UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID()));
+			final BigDecimal qtyToDecrease = remainingQtyToDistribute.min(quantityToProcess).toBigDecimal();
 			ppOrderCandidate.setQtyToProcess(ppOrderCandidate.getQtyToProcess().subtract(qtyToDecrease));
 			ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyEntered().subtract(qtyToDecrease));
 			ppOrderCandidateDAO.save(ppOrderCandidate);

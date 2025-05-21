@@ -363,7 +363,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-  Scenario: DD_Order_Candidate + DD_Order is created to balance the full demand of the sales order
+  Scenario: DD_Order_Candidate + DD_Order is created to balance the full demand of the sales order. Sales order is reactivated and qty is decreased. The qty on the PP_Order_Candidate is not changed.
     When update existing PP_Product_Plannings
       | Identifier      | IsCreatePlan |
       | productPlanning | Y            |
@@ -375,19 +375,50 @@ Feature: create distribution to balance demand
       | ol_1       | SO         | p_1          | 14         |
     And the order identified by SO is completed
 
-    Then after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
-      # Sales order / shipment schedule:
-      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |
-      # DD_Order_Candidate:
-      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -14                    | targetWH       |
-      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       |
-      # DD_Order:
-      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
-      | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
       | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
     And after not more than 60s, DD_OrderLine found for orderLine ol_1
-      | Identifier   |
-      | ddOrderLine1 |
+      | Identifier   | QtyEntered |
+      | ddOrderLine1 | 14         |
+
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID | DD_OrderLine_ID |
+      # Sales order / shipment schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |                       |                 |
+      # DD_Order_Candidate:
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -14                    | targetWH       | c1                    |                 |
+      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |                 |
+      # DD_Order:
+      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |                       | ddOrderLine1    |
+      | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |
+
+    And the order identified by SO is reactivated
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | ol_1                      | 8              |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID | DD_OrderLine_ID |
+      # Sales order / shipment schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |                       |                 |
+      # DD_Order_Candidate:
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       | c1                    |                 |
+      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |                 |
+      # DD_Order:
+      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 14                     | targetWH       |                       | ddOrderLine1    |
+      | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |
+    And the order identified by SO is completed
+
+    And after not more than 60s, following DD_Order_Candidates are found
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed |
+      | c1         | p_1          | sourceWH            | targetWH         | 14 PCE | Y         |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID | DD_OrderLine_ID |
+      # Sales order / shipment schedule:
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 8   | -8                    | targetWH       |                       |                 |
+      # DD_Order_Candidate:
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -8                     | targetWH       | c1                    |                 |
+      | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |                 |
+      # DD_Order:
+      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 6                      | targetWH       |                       | ddOrderLine1    |
+      | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |

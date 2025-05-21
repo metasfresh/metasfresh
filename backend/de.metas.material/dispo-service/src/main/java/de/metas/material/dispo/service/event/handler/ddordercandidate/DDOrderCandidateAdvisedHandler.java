@@ -148,7 +148,9 @@ public class DDOrderCandidateAdvisedHandler
 
 		if (CandidateType.DEMAND.equals(candidateType))
 		{
-			//This is the Advised event, there will be no MD_Candidates yet for it.
+			//The order of events is Advised -> Requested -> Created.
+			// The DD_Order_Candidate (and its MD_Candidates) will be created in the Requested event.
+			// So we can safely return FALSE here.
 			return CandidatesQuery.FALSE;
 		}
 

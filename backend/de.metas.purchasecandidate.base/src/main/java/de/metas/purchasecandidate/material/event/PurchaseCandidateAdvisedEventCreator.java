@@ -22,16 +22,12 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -104,24 +100,18 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 	}
 
 	@Override
-	public BigDecimal handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
-											 @NonNull final BigDecimal qtyToDistribute)
+	public Quantity handleQuantityDecrease(final @NonNull SupplyRequiredDecreasedEvent event,
+										   final Quantity qtyToDistribute)
 	{
 		final Set<PurchaseCandidateId> candidateIds = getPurchaseCandidateIds(event);
-		if (qtyToDistribute.signum() <= 0 || candidateIds.isEmpty())
+		if (candidateIds.isEmpty())
 		{
 			return qtyToDistribute;
 		}
 
 		final List<PurchaseCandidate> candidates = purchaseCandidateRepository.getAllByIds(candidateIds);
 
-		final UomId uomId = getUniqueUomIdOrNull(candidates);
-		if (uomId == null)
-		{
-			return qtyToDistribute;
-		}
-
-		Quantity remainingQtyToDistribute = Quantitys.of(qtyToDistribute, uomId);
+		Quantity remainingQtyToDistribute = qtyToDistribute;
 
 		for (final PurchaseCandidate candidate : candidates)
 		{
@@ -129,27 +119,11 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 
 			if (remainingQtyToDistribute.signum() <= 0)
 			{
-				return BigDecimal.ZERO;
+				return remainingQtyToDistribute.toZero();
 			}
 		}
 
-		return remainingQtyToDistribute.toBigDecimal();
-	}
-
-	@Nullable
-	private UomId getUniqueUomIdOrNull(final Collection<PurchaseCandidate> candidates)
-	{
-		final List<UomId> uomIds = candidates.stream()
-				.map(PurchaseCandidate::getQtyToPurchase)
-				.map(Quantity::getUomId)
-				.distinct()
-				.collect(Collectors.toList());
-		if (candidates.size() > 1)
-		{
-			throw new IllegalArgumentException("The supply required event contains more than one candidate with different UOMs.");
-		}
-		return uomIds.isEmpty() ? null : uomIds.get(0);
-
+		return remainingQtyToDistribute;
 	}
 
 	private @NonNull Set<PurchaseCandidateId> getPurchaseCandidateIds(final @NonNull SupplyRequiredDecreasedEvent event)

@@ -5,11 +5,7 @@ Feature: create purchase simulation
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
-
-  @from:cucumber
-  @Id:S0171.200
-  Scenario: create purchase simulation, delete order line and validate there is no purchase candidate for deleted line
-    Given metasfresh contains M_Products:
+    And metasfresh contains M_Products:
       | Identifier | Name                        |
       | p_1        | product_Purchase_06_07_2022 |
     And metasfresh contains M_PricingSystems
@@ -40,6 +36,10 @@ Feature: create purchase simulation
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | IsCreatePlan | OPT.IsPurchased |
       | ppln_1     | p_1                     | true         | true            |
+
+  @from:cucumber
+  @Id:S0171.200
+  Scenario: create purchase simulation, delete order line and validate there is no purchase candidate for deleted line
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | customer_1               | 2021-04-04  | 2021-04-04T00:00:00Z |
