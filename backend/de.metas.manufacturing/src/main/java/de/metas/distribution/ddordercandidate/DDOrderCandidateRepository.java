@@ -84,9 +84,9 @@ public class DDOrderCandidateRepository
 		// Product, ASI, UOM, Qty
 		record.setM_Product_ID(from.getProductId().getRepoId());
 		record.setM_HU_PI_Item_Product_ID(from.getHupiItemProductId().getRepoId());
-		record.setC_UOM_ID(from.getQty().getUomId().getRepoId());
-		record.setQtyOrdered(from.getQty().toBigDecimal());
-		record.setQtyEntered(from.getQty().toBigDecimal());
+		record.setC_UOM_ID(from.getQtyEntered().getUomId().getRepoId());
+		record.setQtyOrdered(from.getQtyEntered().toBigDecimal());
+		record.setQtyEntered(from.getQtyEntered().toBigDecimal());
 		record.setQtyEnteredTU(BigDecimal.valueOf(from.getQtyTUs()));
 		record.setQtyProcessed(from.getQtyProcessed().toBigDecimal());
 		record.setQtyToProcess(from.getQtyToProcess().toBigDecimal());
@@ -145,7 +145,7 @@ public class DDOrderCandidateRepository
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.hupiItemProductId(HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID()))
-				.qty(Quantitys.of(record.getQtyEntered(), uomId))
+				.qtyEntered(Quantitys.of(record.getQtyEntered(), uomId))
 				.qtyTUs(record.getQtyEnteredTU().intValueExact())
 				.qtyProcessed(Quantitys.of(record.getQtyProcessed(), uomId))
 				//

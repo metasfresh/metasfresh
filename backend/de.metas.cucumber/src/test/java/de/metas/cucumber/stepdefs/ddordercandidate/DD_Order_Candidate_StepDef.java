@@ -41,6 +41,7 @@ import org.eevolution.productioncandidate.model.PPOrderLineCandidateId;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,13 +88,27 @@ public class DD_Order_Candidate_StepDef
 		}
 		else if (candidates.size() > 1)
 		{
+			return attemptMatchByQty(candidates, row);
+		}
+
+		return validateDDOrderLineCandidate(row, candidates.get(0));
+	}
+
+	private ItemProvider.ProviderResult<DDOrderCandidate> attemptMatchByQty(@NonNull final List<DDOrderCandidate> candidates, @NonNull final DataTableRow row)
+	{
+		final Quantity qtyEntered = row.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null);
+
+		final List<DDOrderCandidate> filteredByQtyList = candidates.stream()
+				.filter(candidate -> qtyEntered != null && qtyEntered.compareTo(candidate.getQtyEntered()) == 0)
+				.collect(Collectors.toList());
+
+		if (filteredByQtyList.size() != 1)
+		{
 			return ItemProvider.ProviderResult.resultWasNotFound("More than one candidate found"
 					+ "\n\trow=" + row
 					+ "\n\tcandidates=" + candidates);
 		}
-
-		final DDOrderCandidate candidate = candidates.get(0);
-		return validateDDOrderLineCandidate(row, candidate);
+		return validateDDOrderLineCandidate(row, filteredByQtyList.get(0));
 	}
 
 	private ItemProvider.@NonNull ProviderResult<DDOrderCandidate> validateDDOrderLineCandidate(final DataTableRow expected, final DDOrderCandidate actual)
@@ -123,9 +138,9 @@ public class DD_Order_Candidate_StepDef
 		}
 
 		final Quantity qtyEntered = expected.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null);
-		if (qtyEntered != null && qtyEntered.compareTo(actual.getQty()) != 0)
+		if (qtyEntered != null && qtyEntered.compareTo(actual.getQtyEntered()) != 0)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("qty not matching, expected " + qtyEntered + " but found " + actual.getQty()
+			return ItemProvider.ProviderResult.resultWasNotFound("qty not matching, expected " + qtyEntered + " but found " + actual.getQtyEntered()
 					+ "\n\trow=" + expected
 					+ "\n\tcandidate=" + actual);
 		}

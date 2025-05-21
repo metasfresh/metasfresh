@@ -27,17 +27,22 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -47,6 +52,7 @@ import java.util.List;
 public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<SupplyRequiredDecreasedEvent>
 {
 	private static final Logger log = LogManager.getLogger(SupplyRequiredDecreasedHandler.class);
+	private static final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final List<SupplyRequiredAdvisor> supplyRequiredAdvisors;
 	@NonNull private final SupplyRequiredHandlerHelper helper;
 
@@ -61,7 +67,8 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 	{
 		final SupplyRequiredDescriptor descriptor = event.getSupplyRequiredDescriptor();
 		final MaterialPlanningContext context = helper.createContextOrNull(descriptor);
-		BigDecimal remainingQtyToHandle = descriptor.getMaterialDescriptor().getQuantity();
+		final MaterialDescriptor materialDescriptor = descriptor.getMaterialDescriptor();
+		Quantity remainingQtyToHandle = Quantitys.of(materialDescriptor.getQuantity(), ProductId.ofRepoId(materialDescriptor.getProductId()));
 		if (context != null)
 		{
 			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
