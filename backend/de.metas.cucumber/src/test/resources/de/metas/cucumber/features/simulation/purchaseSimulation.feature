@@ -5,7 +5,7 @@ Feature: create purchase simulation
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2021-04-14T08:00:00+00:00
+    And metasfresh has date and time 2021-04-11T08:00:00+02:00[Europe/Bucharest]
     And metasfresh contains M_Products:
       | Identifier | Name                        |
       | p_1        | product_Purchase_06_07_2022 |
@@ -31,6 +31,10 @@ Feature: create purchase simulation
       | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
       | customer_1 | Customer | N            | Y              | ps_1                          |                                     |
       | vendor_1   | Vendor   | Y            | N              | ps_1                          | discountSchema_1                    |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.Name     | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | vendor_location_1   | 2311203300000 | vendor_1                 | vendor1Loc   | Y                   | Y                   |
+      | customer_location_1 | 2311203300001 | customer_1               | customer1Loc | Y                   | Y                   |
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_1                 | p_1                     |
@@ -61,7 +65,7 @@ Feature: create purchase simulation
     And no C_PurchaseCandidate found for orderLine ol_1
 
   @from:cucumber
-  Scenario: Create Sales Order. Don't create C_Order automatically. Reactivate and reduce qty.
+  Scenario: Create Sales Order. Create C_PurchaseCandidate automatically. Reactivate and reduce qty. C_PurchaseCandidate total qty is reduced
     When update existing PP_Product_Plannings
       | Identifier | IsCreatePlan |
       | ppln_1     | true         |
@@ -107,3 +111,74 @@ Feature: create purchase simulation
       | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 30  | -30                    |                         |
       | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 0   | -30                    | pc_1                    |
       | c_3        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 30  | 0                      | pc_2                    |
+
+  @from:cucumber
+  Scenario: Create Sales Order. Create C_PurchaseCandidate. Create C_Order for it. Reactivate and reduce qty. C_PurchaseCandidate is not adjusted.
+    When update existing PP_Product_Plannings
+      | Identifier | IsCreatePlan |
+      | ppln_1     | true         |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
+      | o_1        | true    | customer_1               | 2021-04-04  | 2021-04-04T00:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | p_1                     | 100        |
+    And the order identified by o_1 is completed
+    And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
+      | Identifier | QtyToPurchase |
+      | pc_1       | 100           |
+
+    Then after not more than 30s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | C_Purchase_Candidate_ID |
+      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 100 | -100                   |                         |
+      | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100 | 0                      | pc_1                    |
+
+    And the following C_PurchaseCandidates are enqueued for generating C_Orders
+      | C_PurchaseCandidate_ID.Identifier |
+      | pc_1                              |
+
+    And after not more than 60s, C_PurchaseCandidate_Alloc are found
+      | C_PurchaseCandidate_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
+      | pc_1                              | pca_1                                   |
+
+    And load C_OrderLines from C_PurchaseCandidate_Alloc
+      | C_OrderLinePO_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
+      | pol_1                       | pca_1                                   |
+
+    And load C_Order from C_OrderLine
+      | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
+      | po_1                  | pol_1                     |
+
+    Then validate the created orders
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus |
+      | po_1                  | vendor_1                 | vendor_location_1                 | 2021-04-11  | POO         | EUR          | F            | P               | true      | CO        |
+
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | pol_1                     | po_1                  | 2021-04-11      | p_1                     | 100        | 0            | 0           | 10    | 0        | EUR          | true      |
+
+    Then after not more than 30s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 100 | -100                   |
+      | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100 | 0                      |
+
+    And the order identified by o_1 is reactivated
+
+    And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
+      | Identifier | QtyToPurchase |
+      | pc_1       | 0             |
+
+    And after not more than 30s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 0   | 0                      |
+      | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100 | 100                    |
+
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | ol_1                      | 30             |
+    And the order identified by o_1 is completed
+
+    And after not more than 30s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 30  | -30                    |
+      | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100 | 70                     |
