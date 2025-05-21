@@ -55,6 +55,7 @@ import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
@@ -275,6 +276,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// From Receipt
 		final Money receiptAmt = costs.getAmountBeforeAdjustment().toMoney();
 		final I_M_InOutLine receiptLine = getReceiptLine();
+		final ProductId receiptProductId = ProductId.ofRepoId(receiptLine.getM_Product_ID());
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
 				.setAccount(costElementId != null
 						? getCostElementAccount(as, costElementId, CostElementAccountType.P_CostClearing_Acct)
@@ -284,6 +286,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 				.setQty(getQty())
 				.costElement(costElementId)
 				.bpartnerId(getReceiptBPartnerId())
+				.productId(receiptProductId)
 				.orgId(OrgId.ofRepoIdOrAny(receiptLine.getAD_Org_ID()))
 				.orgTrxId(OrgId.ofRepoIdOrAny(receiptLine.getAD_OrgTrx_ID()))
 				.locatorId(receiptLine.getM_Locator_ID())
@@ -300,9 +303,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 				.setAccount(docLine.getInventoryClearingAccount(as))
 				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
 				.setAmtSource((Money)null, invoiceLineMatchedAmt)
-				.setQty(getQty())
+				.setQty(getQty().negate())
 				.costElement(costElementId)
 				.bpartnerId(getInvoiceBPartnerId())
+				.productId(getProductId())
 				.buildAndAdd();
 		updateFromInvoiceLine(cr_InventoryClearing);
 
@@ -319,6 +323,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 					.setQty(getQty())
 					.costElement(costElementId)
 					.bpartnerId(getReceiptBPartnerId())
+					.productId(receiptProductId)
 					.buildAndAdd();
 		}
 
@@ -335,6 +340,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 					.setQty(getQty())
 					.costElement(costElementId)
 					.bpartnerId(getReceiptBPartnerId())
+					.productId(receiptProductId)
 					.buildAndAdd();
 		}
 

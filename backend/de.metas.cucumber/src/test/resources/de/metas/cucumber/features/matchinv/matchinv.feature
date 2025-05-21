@@ -131,20 +131,20 @@ Feature: Match Invoice
       | C_InvoiceLine_ID  | C_Invoice_ID  | M_Product_ID | QtyInvoiced |
       | vendorInvoiceLine | vendorInvoice | product      | 100         |
     And M_MatchInv are found
-      | M_MatchInv_ID | C_InvoiceLine_ID  | M_InOutLine_ID      | M_Product_ID | QytInUOM |
-      | matchInv1     | vendorInvoiceLine | materialReceiptLine | product      | 100      |
+      | M_MatchInv_ID | C_InvoiceLine_ID  | M_InOutLine_ID      | M_Product_ID | QytInUOM | IsSOTrx |
+      | matchInv1     | vendorInvoiceLine | materialReceiptLine | product      | 100      | N       |
 
     #
     # Check the accounting
     #
     And Fact_Acct records are matching
-      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty      | M_Product_ID | Record_ID       |
-      | V_Liability_Acct         |           | 1344.70   |             | 1190 EUR    |          | -            | vendorInvoice   |
-      | P_InventoryClearing_Acct | 1130      |           | 1000 EUR    |             | +100 PCE | product      | vendorInvoice   |
-      | T_Credit_Acct            | 214.70    |           | 190 EUR     |             |          | -            | vendorInvoice   |
+      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty      | M_Product_ID | Record_ID       | C_BPartner_ID |
+      | V_Liability_Acct         |           | 1344.70   |             | 1190 EUR    |          | -            | vendorInvoice   | bpartner_1    |
+      | T_Credit_Acct            | 214.70    |           | 190 EUR     |             |          | -            | vendorInvoice   | bpartner_1    |
+      | P_InventoryClearing_Acct | 1130      |           | 1000 EUR    |             | +100 PCE | product      | vendorInvoice   | bpartner_1    |
       #-----------------------------------------------------------------------------------------------------------------------------
-      | P_Asset_Acct             | 1130      |           | 1000 EUR    |             | +100 PCE | product      | materialReceipt |
-      | NotInvoicedReceipts_Acct |           | 1130      |             | 1000 EUR    | -100 PCE | product      | materialReceipt |
+      | P_InventoryClearing_Acct |           | 1130      |             | 1000 EUR    | -100 PCE | product      | matchInv1       | bpartner_1    |
+      | NotInvoicedReceipts_Acct | 1130      |           | 1130 CHF    |             | +100 PCE | product      | matchInv1       | bpartner_1    |
       #-----------------------------------------------------------------------------------------------------------------------------
-      | NotInvoicedReceipts_Acct | 1130      |           | 1130 CHF    |             | +100 PCE | -            | matchInv1       |
-      | P_InventoryClearing_Acct |           | 1130      |             | 1000 EUR    | +100 PCE | -            | matchInv1       |
+      | NotInvoicedReceipts_Acct |           | 1130      |             | 1000 EUR    | -100 PCE | product      | materialReceipt | bpartner_1    |
+      | P_Asset_Acct             | 1130      |           | 1000 EUR    |             | +100 PCE | product      | materialReceipt | bpartner_1    |

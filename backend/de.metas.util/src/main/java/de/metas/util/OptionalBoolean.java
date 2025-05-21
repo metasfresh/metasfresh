@@ -6,6 +6,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import java.util.Optional;
+import java.util.function.Supplier;
+>>>>>>> a026a8c86f (fix Doc_MatchInv: Product was not set for all lines, Qty was not correct for InventoryClearing line)
 
 /*
  * #%L
@@ -124,6 +129,11 @@ public enum OptionalBoolean
 		{
 			action.accept(false);
 		}
+	}
+
+	public <U> Optional<U> map(@NonNull final BooleanFunction<? extends U> mapper)
+	{
+		return isPresent() ? Optional.ofNullable(mapper.apply(isTrue())) : Optional.empty();
 	}
 
 }
