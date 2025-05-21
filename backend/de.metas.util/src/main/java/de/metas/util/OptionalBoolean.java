@@ -131,9 +131,16 @@ public enum OptionalBoolean
 		}
 	}
 
+	public void ifTrue(@NonNull final Runnable action)
+	{
+		if (this == TRUE)
+		{
+			action.run();
+		}
+	}
+
 	public <U> Optional<U> map(@NonNull final BooleanFunction<? extends U> mapper)
 	{
 		return isPresent() ? Optional.ofNullable(mapper.apply(isTrue())) : Optional.empty();
 	}
-
 }

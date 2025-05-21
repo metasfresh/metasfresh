@@ -17,6 +17,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -25,6 +26,7 @@ import org.compiere.model.I_M_MatchInv;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -111,5 +113,28 @@ public class IdentifiersResolver
 			default:
 				return Optional.empty();
 		}
+	}
+
+	public TableRecordReferenceSet getAccountableDocumentRefs()
+	{
+		final HashSet<TableRecordReference> result = new HashSet<>();
+
+		invoiceTable.streamIds()
+				.map(id -> TableRecordReference.of(I_C_Invoice.Table_Name, id))
+				.forEach(result::add);
+		paymentTable.streamIds()
+				.map(id -> TableRecordReference.of(I_C_Payment.Table_Name, id))
+				.forEach(result::add);
+		allocationTable.streamIds()
+				.map(id -> TableRecordReference.of(I_C_AllocationHdr.Table_Name, id))
+				.forEach(result::add);
+		matchInvTable.streamIds()
+				.map(MatchInvId::toRecordRef)
+				.forEach(result::add);
+		inOutTable.streamIds()
+				.map(InOutId::toRecordRef)
+				.forEach(result::add);
+
+		return TableRecordReferenceSet.of(result);
 	}
 }

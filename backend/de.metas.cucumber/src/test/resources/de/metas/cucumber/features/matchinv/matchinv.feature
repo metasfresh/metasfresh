@@ -135,8 +135,31 @@ Feature: Match Invoice
       | matchInv1     | vendorInvoiceLine | materialReceiptLine | product      | 100      | N       |
 
     #
-    # Check the accounting
+    # Check the accounting (for Moving Average Invoice)
     #
+    And Fact_Acct records are matching
+      | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty      | M_Product_ID | Record_ID       | C_BPartner_ID |
+      | V_Liability_Acct         |           | 1344.70   |             | 1190 EUR    |          | -            | vendorInvoice   | bpartner_1    |
+      | T_Credit_Acct            | 214.70    |           | 190 EUR     |             |          | -            | vendorInvoice   | bpartner_1    |
+      | P_InventoryClearing_Acct | 1130      |           | 1000 EUR    |             | +100 PCE | product      | vendorInvoice   | bpartner_1    |
+      #-----------------------------------------------------------------------------------------------------------------------------
+      | P_InventoryClearing_Acct |           | 1130      |             | 1000 EUR    | -100 PCE | product      | matchInv1       | bpartner_1    |
+      | NotInvoicedReceipts_Acct | 1130      |           | 1130 CHF    |             | +100 PCE | product      | matchInv1       | bpartner_1    |
+      #-----------------------------------------------------------------------------------------------------------------------------
+      | NotInvoicedReceipts_Acct |           | 1130      |             | 1000 EUR    | -100 PCE | product      | materialReceipt | bpartner_1    |
+      | P_Asset_Acct             | 1130      |           | 1000 EUR    |             | +100 PCE | product      | materialReceipt | bpartner_1    |
+    And Fact_Acct records balances for documents vendorInvoice,matchInv1,materialReceipt are matching
+      | AccountConceptualName    | M_Product_ID | SourceBalance | AcctBalance | Qty      |
+      | P_InventoryClearing_Acct | product      | 0 EUR         | 0           | 0 PCE    |
+      | NotInvoicedReceipts_Acct | product      |               | 0           | 0 PCE    |
+      | P_Asset_Acct             | product      | 1000 EUR      | 1130        | +100 PCE |
+
+    #
+    # Check the accounting (for AveragePO)
+    #
+    And load and update C_AcctSchema:
+      | C_AcctSchema_ID | Name                  | CostingMethod |
+      | acctSchema      | metas fresh UN/34 CHF | A             |
     And Fact_Acct records are matching
       | AccountConceptualName    | AmtAcctDr | AmtAcctCr | AmtSourceDr | AmtSourceCr | Qty      | M_Product_ID | Record_ID       | C_BPartner_ID |
       | V_Liability_Acct         |           | 1344.70   |             | 1190 EUR    |          | -            | vendorInvoice   | bpartner_1    |
