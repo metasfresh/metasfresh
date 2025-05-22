@@ -2,6 +2,7 @@ package de.metas.material.event.commons;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
@@ -56,18 +57,21 @@ public class EventDescriptor
 
 	public static EventDescriptor ofClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
+		final String eventId = newEventId();
 		return builder()
-				.eventId(newEventId())
+				.eventId(eventId)
+				.traceId(eventId)
 				.clientAndOrgId(clientAndOrgId)
 				.build();
 	}
 
 	public static EventDescriptor ofClientOrgAndTraceId(@NonNull final ClientAndOrgId clientAndOrgId, @Nullable final String traceId)
 	{
+		final String eventId = newEventId();
 		return builder()
-				.eventId(newEventId())
+				.eventId(eventId)
 				.clientAndOrgId(clientAndOrgId)
-				.traceId(traceId)
+				.traceId(CoalesceUtil.firstNotBlank(traceId, eventId))
 				.build();
 	}
 

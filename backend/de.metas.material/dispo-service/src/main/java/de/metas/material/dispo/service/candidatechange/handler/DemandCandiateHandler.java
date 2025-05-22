@@ -142,7 +142,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandidates);
 
 		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
-		if (savedCandidate.getType() == CandidateType.DEMAND)
+		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
 		{
 			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
 		}
