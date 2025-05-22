@@ -187,8 +187,6 @@ public class BusinessRuleEventProcessorCommand
 
 				BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
 				logger.debug(stopwatch, "=> Created user notification for target record");
-				BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
-				logger.debug(stopwatch, "=> Created user notification for target record");
 			}
 		}
 	}
