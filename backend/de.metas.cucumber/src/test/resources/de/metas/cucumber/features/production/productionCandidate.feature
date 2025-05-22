@@ -113,7 +113,7 @@ Feature: Production dispo scenarios
   @Id:S0129.2_190
   @from:cucumber
   Scenario: Reactivate and reduce QTY for order with negative ATP. Ensure correct qty is used on new PP_Order_Candidate.
-    When metasfresh has date and time 2025-02-25T08:00:00+01:00[Europe/Berlin]
+    When metasfresh has date and time 2025-02-25T08:00:00+02:00[Europe/Bucharest]
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_1       |
@@ -173,16 +173,16 @@ Feature: Production dispo scenarios
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
       | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 200 PCE    | 200 PCE      | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
 
-    And update C_OrderLine:
-      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
-      | ol_2                      | 30             |
-
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP   | M_Warehouse_ID | PP_Order_Candidate_ID |
       | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200  | -200  | warehouseStd   |                       |
       | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-22T21:00:00Z | 0    | -200  | warehouseStd   |                       |
       | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 200  | 0     | warehouseStd   | oc_1                  |
       | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2000 | -2000 | warehouseStd   | oc_1                  |
+
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | ol_2                      | 30             |
 
     And the order identified by o_2 is completed
 
