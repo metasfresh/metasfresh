@@ -75,9 +75,11 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
@@ -91,8 +93,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_DocType;
@@ -100,8 +100,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Project;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -385,40 +383,27 @@ public class C_Invoice_StepDef
 					softly.assertThat(docType.getDocSubType()).as("DocSubType for Identifier=%s", identifierStr).isEqualTo(docSubType);
 				});
 
-		final String bpartnerAddress = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_BPartnerAddress);
-		if (Check.isNotBlank(bpartnerAddress))
-		{
-			softly.assertThat(invoice.getBPartnerAddress()).as("BPartnerAddress for Identifier=%s", identifierStr).isEqualTo(bpartnerAddress);
-		}
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_BPartnerAddress)
+				.ifPresent(bpartnerAddress -> softly.assertThat(invoice.getBPartnerAddress()).as("BPartnerAddress").isEqualTo(bpartnerAddress));
 
-		final String expectedDocTypeName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name);
+		row.getAsOptionalString(COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name)
+				.ifPresent(expectedDocTypeName -> {
+					final I_C_DocType actualInvoiceDocType = docTypeBL.getById(DocTypeId.ofRepoId(invoice.getC_DocType_ID()));
+					softly.assertThat(actualInvoiceDocType.getName()).as("C_DocType_ID for Identifier=%s", identifierStr).isEqualTo(expectedDocTypeName);
+				});
 
-		if (Check.isNotBlank(expectedDocTypeName))
-		{
-			final I_C_DocType actualInvoiceDocType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
+		row.getAsOptionalEnum(I_C_Invoice.COLUMNNAME_PaymentRule, PaymentRule.class)
+				.ifPresent(paymentRule -> softly.assertThat(invoice.getPaymentRule()).as("PaymentRule").isEqualTo(paymentRule.getCode()));
 
-			softly.assertThat(actualInvoiceDocType.getName()).as("C_DocType_ID for Identifier=%s", identifierStr).isEqualTo(expectedDocTypeName);
-		}
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName)
+				.ifPresent(internalName -> {
+					final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
+					softly.assertThat(invoice.getAD_InputDataSource_ID()).as("AD_InputDataSource_ID for Identifier=%s", identifierStr).isEqualTo(dataSource.getAD_InputDataSource_ID());
+				});
 
-		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_PaymentRule);
-		if (Check.isNotBlank(paymentRule))
-		{
-			softly.assertThat(invoice.getPaymentRule()).as("PaymentRule for Identifier=%s", identifierStr).isEqualTo(paymentRule);
-		}
-
-		final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
-		if (Check.isNotBlank(internalName))
-		{
-			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
-			softly.assertThat(invoice.getAD_InputDataSource_ID()).as("AD_InputDataSource_ID for Identifier=%s", identifierStr).isEqualTo(dataSource.getAD_InputDataSource_ID());
-		}
-
-		final String adUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(adUserIdentifier))
-		{
-			final I_AD_User contact = userTable.get(adUserIdentifier);
-			assertThat(invoice.getAD_User_ID()).isEqualTo(contact.getAD_User_ID());
-		}
+		row.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
+				.map(userTable::get)
+				.ifPresent(contact -> assertThat(invoice.getAD_User_ID()).as("AD_User_ID").isEqualTo(contact.getAD_User_ID()));
 
 		row.getAsOptionalMoney(COLUMNNAME_GrandTotal, currencyRepository::getCurrencyIdByCurrencyCode)
 				.ifPresent(grandTotal -> {
@@ -426,19 +411,15 @@ public class C_Invoice_StepDef
 					softly.assertThat(invoice.getC_Currency_ID()).as("C_Currency_ID for Identifier=%s", identifierStr).isEqualByComparingTo(grandTotal.getCurrencyId().getRepoId());
 				});
 
-		final BigDecimal totalLines = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_TotalLines);
-		if (totalLines != null)
-		{
-			softly.assertThat(invoice.getTotalLines()).as("TotalLines for Identifier=%s", identifierStr).isEqualByComparingTo(totalLines);
-		}
+		row.getAsOptionalBigDecimal(COLUMNNAME_TotalLines)
+				.ifPresent(totalLines -> softly.assertThat(invoice.getTotalLines()).as("TotalLines").isEqualByComparingTo(totalLines));
 
-		final String currencyCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Currency_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(currencyCode))
-		{
-			final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
-
-			softly.assertThat(invoice.getC_Currency_ID()).as("CurrencyID for Identifier=%s", identifierStr).isEqualTo(currencyId.getRepoId());
-		}
+		row.getAsOptionalString(COLUMNNAME_C_Currency_ID)
+				.map(CurrencyCode::ofThreeLetterCode)
+				.ifPresent(currencyCode -> {
+					final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+					softly.assertThat(invoice.getC_Currency_ID()).as("CurrencyID").isEqualTo(currencyId.getRepoId());
+				});
 
 		row.getAsOptionalLocalDate(COLUMNNAME_DateInvoiced)
 				.ifPresent(dateInvoiced -> {
@@ -462,29 +443,16 @@ public class C_Invoice_StepDef
 					softly.assertThat(TimeUtil.asLocalDate(invoice.getDateOrdered(), zoneId)).isEqualTo(dateOrdered);
 				});
 
-		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalId);
-		if (Check.isNotBlank(externalId))
-		{
-			softly.assertThat(invoice.getExternalId()).as("ExternalId for Identifier=%s", identifierStr).isEqualTo(externalId);
-		}
+		row.getAsOptionalString(COLUMNNAME_ExternalId)
+				.ifPresent(externalId -> softly.assertThat(invoice.getExternalId()).as("ExternalId").isEqualTo(externalId));
 
-		final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(docTypeIdentifier))
-		{
-			final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
-			softly.assertThat(docTypeRecord).isNotNull();
+		row.getAsOptionalIdentifier(COLUMNNAME_C_DocType_ID)
+				.map(docTypeTable::getId)
+				.ifPresent(docTypeId -> softly.assertThat(invoice.getC_DocType_ID()).as(COLUMNNAME_C_DocType_ID).isEqualTo(docTypeId.getRepoId()));
 
-			softly.assertThat(invoice.getC_DocType_ID()).as(COLUMNNAME_C_DocType_ID).isEqualTo(docTypeRecord.getC_DocType_ID());
-		}
-
-		final String docTypeTargetIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocTypeTarget_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(docTypeTargetIdentifier))
-		{
-			final I_C_DocType docTypeRecord = docTypeTable.get(docTypeTargetIdentifier);
-			softly.assertThat(docTypeRecord).isNotNull();
-
-			softly.assertThat(invoice.getC_DocTypeTarget_ID()).as(COLUMNNAME_C_DocTypeTarget_ID).isEqualTo(docTypeRecord.getC_DocType_ID());
-		}
+		row.getAsOptionalIdentifier(COLUMNNAME_C_DocTypeTarget_ID)
+				.map(docTypeTable::getId)
+				.ifPresent(docTypeId -> softly.assertThat(invoice.getC_DocTypeTarget_ID()).as(COLUMNNAME_C_DocTypeTarget_ID).isEqualTo(docTypeId.getRepoId()));
 
 		row.getAsOptionalBoolean(COLUMNNAME_IsSOTrx)
 				.ifPresent(isSOTrx -> softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx));
@@ -504,42 +472,33 @@ public class C_Invoice_StepDef
 					});
 		}
 
-		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(projectIdentifier))
-		{
-			final I_C_Project project = projectTable.get(projectIdentifier);
-			softly.assertThat(invoice.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isEqualTo(project.getC_Project_ID());
-		}
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_Project_ID)
+				.map(projectTable::getId)
+				.ifPresent(projectId -> softly.assertThat(invoice.getC_Project_ID()).as("C_Project_ID").isEqualTo(projectId.getRepoId()));
 
-		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(costCenterIdentifier))
-		{
-			final I_C_Activity activity = activityTable.get(costCenterIdentifier);
-			softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID for Identifier=%s", identifierStr).isEqualTo(activity.getC_Activity_ID());
-		}
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_Activity_ID)
+				.map(activityTable::get)
+				.ifPresent(activity -> softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID").isEqualTo(activity.getC_Activity_ID()));
 
-		final String expectedSalesRep_ID = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_SalesRep_ID);
-		if (expectedSalesRep_ID != null)
-		{
-			final int expectedSalesRep_RepoId = Optional.ofNullable(DataTableUtil.nullToken2Null(expectedSalesRep_ID))
-					.map(Integer::parseInt)
-					.orElse(0);
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_SalesRep_ID)
+				.ifPresent(expectedSalesRepIdentifier -> {
+					final UserId expectedSalesRepId = expectedSalesRepIdentifier.isNullPlaceholder()
+							? null
+							: expectedSalesRepIdentifier.getAsId(UserId.class);
 
-			softly.assertThat(invoice.getSalesRep_ID()).as("SalesRep_ID for Identifier=%s", identifierStr).isEqualTo(expectedSalesRep_RepoId);
-		}
+					final UserId actualSalesRepId = InterfaceWrapperHelper.isNull(invoice, I_C_Invoice.COLUMNNAME_SalesRep_ID)
+							? null
+							: UserId.ofRepoIdOrNull(invoice.getSalesRep_ID());
+					
+					softly.assertThat(actualSalesRepId).as("SalesRep_ID").isEqualTo(expectedSalesRepId);
+				});
 
-		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocumentNo);
-		if (Check.isNotBlank(documentNo))
-		{
-			softly.assertThat(invoice.getDocumentNo()).as(COLUMNNAME_DocumentNo).isEqualTo(documentNo);
-		}
+		row.getAsOptionalString(COLUMNNAME_DocumentNo)
+				.ifPresent(documentNo -> softly.assertThat(invoice.getDocumentNo()).as(COLUMNNAME_DocumentNo).isEqualTo(documentNo));
 
-		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (de.metas.common.util.Check.isNotBlank(warehouseIdentifier))
-		{
-			final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
-			softly.assertThat(invoice.getM_Warehouse_ID()).as("M_Warehouse_ID for Identifier=%s", identifierStr).isEqualTo(warehouseRecord.getM_Warehouse_ID());
-		}
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getId)
+				.ifPresent(warehouseId -> softly.assertThat(invoice.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(warehouseId.getRepoId()));
 
 		softly.assertAll();
 	}

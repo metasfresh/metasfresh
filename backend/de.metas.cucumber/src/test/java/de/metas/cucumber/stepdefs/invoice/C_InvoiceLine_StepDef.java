@@ -58,6 +58,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -68,6 +69,7 @@ import org.compiere.model.I_C_Project;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_IsManualPrice;
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Price_UOM_ID;
@@ -121,26 +123,51 @@ public class C_InvoiceLine_StepDef
 		DataTableRows.of(table)
 				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID)
 				.forEach(row -> {
+					I_C_InvoiceLine invoiceLineRecord = findInvoiceLineRecord(row);
 					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
-					final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
-					final ProductId expectedProductId = getProductId(row);
-					final BigDecimal qtyInvoiced = row.getAsBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
-
-					//dev-note: we assume the tests are generally not using the same product and qty on different lines...
-					final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-							.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-							.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId)
-							.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyInvoiced);
-
-					// ...or if they do, they have different inoutlines
-					row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
-							.map(inOutLineTable::getId)
-							.ifPresent(inOutLineId -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineId.getRepoId()));
-
-					final I_C_InvoiceLine invoiceLineRecord = queryBuilder.create().firstOnlyNotNull(I_C_InvoiceLine.class);
-
 					validateInvoiceLine(invoiceLineRecord, invoice, row);
 				});
+	}
+
+	private I_C_InvoiceLine findInvoiceLineRecord(final DataTableRow row)
+	{
+		final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
+		final ProductId expectedProductId = getProductId(row);
+		final BigDecimal qtyInvoiced = row.getAsBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
+
+		//dev-note: we assume the tests are generally not using the same product and qty on different lines...
+		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId);
+
+		// ...or if they do, they have different inoutlines
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
+				.map(inOutLineTable::getId)
+				.ifPresent(inOutLineId -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineId.getRepoId()));
+
+		final List<I_C_InvoiceLine> invoiceLineRecords = queryBuilder.create().list(I_C_InvoiceLine.class);
+		if (invoiceLineRecords.isEmpty())
+		{
+			throw new AdempiereException("No invoice line found for " + queryBuilder);
+		}
+		else if (invoiceLineRecords.size() == 1)
+		{
+			return invoiceLineRecords.get(0);
+		}
+
+		final List<I_C_InvoiceLine> invoiceLineRecordsFiltered = invoiceLineRecords.stream()
+				.filter(invoiceLine -> invoiceLine.getQtyInvoiced().compareTo(qtyInvoiced) == 0)
+				.collect(Collectors.toList());
+		if (invoiceLineRecordsFiltered.size() == 1)
+		{
+			return invoiceLineRecordsFiltered.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("Not a single invoice line found for " + queryBuilder)
+					.setParameter("invoiceLineRecords", invoiceLineRecords)
+					.appendParametersToMessage();
+		}
 	}
 
 	@And("^validate invoice lines for (.*):$")
@@ -199,11 +226,8 @@ public class C_InvoiceLine_StepDef
 	{
 		final SoftAssertions softly = new SoftAssertions();
 
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEntered);
-		if (qtyEntered != null)
-		{
-			softly.assertThat(invoiceLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
-		}
+		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyEntered)
+				.ifPresent(qtyEntered -> softly.assertThat(invoiceLine.getQtyEntered()).as("QtyEntered").isEqualByComparingTo(qtyEntered));
 
 		final BigDecimal qtyEnteredInBPartnerUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEnteredInBPartnerUOM);
 		if (qtyEnteredInBPartnerUOM != null)
