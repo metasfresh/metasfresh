@@ -39,7 +39,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -121,21 +124,48 @@ public final class StringUtils
 	/**
 	 * Truncate string to a given length, if required.
 	 */
-	@Contract("null, _ -> null")
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static String trunc(
 			@Nullable final String str,
 			final int length)
 	{
-		return trunc(str, length, TruncateAt.STRING_END);
+		return trunc(str, length, TruncateAt.STRING_END, null);
 	}
 
-	@Contract("null, _, _ -> null")
+	@Contract("!null, _, _ -> !null")
 	@Nullable
 	public static String trunc(
 			@Nullable final String string,
 			final int maxLength,
 			@NonNull final TruncateAt side)
+	{
+		return trunc(string, maxLength, side, null);
+	}
+
+	/**
+	 * @param onTrunc if not {@code null}, then provide the original string and the truncated string to this, in case truncation was made.
+	 */
+	@Contract("!null, _, _ -> !null")
+	@Nullable
+	public static String trunc(
+			@Nullable final String str,
+			final int length,
+			@Nullable final BiConsumer<String, String> onTrunc)
+	{
+		return trunc(str, length, TruncateAt.STRING_END, onTrunc);
+	}
+
+	/**
+	 * @param onTrunc if not {@code null}, then provide the original string and the truncated string to this, in case truncation was made.
+	 */
+	@Contract("!null, _, _, _ -> !null")
+	@Nullable
+	public static String trunc(
+			@Nullable final String string,
+			final int maxLength,
+			@NonNull final TruncateAt side,
+			@Nullable final BiConsumer<String, String> onTrunc)
 	{
 		if (string == null)
 		{
@@ -147,16 +177,25 @@ public final class StringUtils
 			return string;
 		}
 
+		final String result;
 		switch (side)
 		{
 			case STRING_START:
-				return string.substring(string.length() - maxLength);
+				result = string.substring(string.length() - maxLength);
+				break;
 			case STRING_END:
-				return string.substring(0, maxLength);
+				result = string.substring(0, maxLength);
+				break;
 			default:
 				Check.errorIf(true, "Unexpected parameter TruncateAt={}; lenght={}; string={}", side, maxLength, string);
-				return null;
+				result = ""; // won't be reached;
 		}
+		
+		if (onTrunc != null && !Objects.equals(string, result))
+		{
+			onTrunc.accept(string, result);
+		}
+		return result;
 	}
 
 	/**
