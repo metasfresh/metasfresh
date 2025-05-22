@@ -39,8 +39,8 @@ Feature: Empties returns
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule |
       | bpartner   | N          | Y        | ps_1               | D           |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID | IsBillToDefault | IsShipTo |
-      | location   | 1234567890036 | bpartner      | true            | true     |
+      | Identifier | C_BPartner_ID | IsBillToDefault | IsShipTo |
+      | location   | bpartner      | true            | true     |
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
