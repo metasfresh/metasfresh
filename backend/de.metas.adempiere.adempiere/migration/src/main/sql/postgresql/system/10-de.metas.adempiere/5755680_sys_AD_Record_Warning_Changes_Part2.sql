@@ -1,13 +1,5 @@
 
 
--- Migrate existing data: set AD_User_ID to "Migration"
-
-
-UPDATE AD_Record_Warning SET AD_User_ID = 99 WHERE AD_User_ID  IS NULL;
-
------------------------
-
-
 -- Column: AD_Record_Warning.AD_User_ID
 -- 2025-05-20T15:55:43.956Z
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-05-20 15:55:43.955000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590005

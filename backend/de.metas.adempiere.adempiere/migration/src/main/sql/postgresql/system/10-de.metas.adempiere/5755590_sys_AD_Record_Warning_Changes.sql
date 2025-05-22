@@ -93,3 +93,11 @@ ALTER TABLE AD_Record_Warning ADD CONSTRAINT ADUser_ADRecordWarning FOREIGN KEY 
 
 -----------------------
 
+
+
+-- Migrate existing data: set AD_User_ID to "Migration"
+
+
+UPDATE AD_Record_Warning SET AD_User_ID = 99 WHERE AD_User_ID  IS NULL;
+
+-----------------------
