@@ -28,8 +28,8 @@ services:
       - "${RABBITMQ_MGMT_PORT}"
     #restart: always #avoid restart on docker restart, because we use 1 instance per customer now
     environment:
-      RABBITMQ_DEFAULT_USER: "guest"
-      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASS}"
       RABBITMQ_DEFAULT_VHOST: "/"
     ports:
       - "${RABBITMQ_PORT}:5672"
