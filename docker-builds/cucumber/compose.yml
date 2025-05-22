@@ -30,7 +30,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:3.9.13-management
@@ -52,8 +53,21 @@ services:
       - TEST_SMTP_FROM=$TEST_SMTP_FROM
       - TEST_SMTP_USER=$TEST_SMTP_USER
       - TEST_SMTP_PASSWORD=$TEST_SMTP_PASSWORD
+      - CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_HOST=rabbitmq
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_PORT=5672
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_USER=metasfresh
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_PASS=metasfresh
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGRESQL_HOST=db
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGRESQL_PORT=5432
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGREST_HOST=postgrest
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGREST_PORT=3000
     depends_on:
       db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      postgrest:
         condition: service_healthy
     volumes:
       - ./cucumber:/reports
