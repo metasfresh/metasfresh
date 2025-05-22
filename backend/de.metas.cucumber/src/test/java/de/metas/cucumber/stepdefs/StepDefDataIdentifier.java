@@ -41,7 +41,7 @@ import java.util.function.IntFunction;
 @EqualsAndHashCode
 public final class StepDefDataIdentifier
 {
-	public static final StepDefDataIdentifier NULL = new StepDefDataIdentifier(DataTableUtil.NULL_STRING);
+	private static final StepDefDataIdentifier NULL = new StepDefDataIdentifier(DataTableUtil.NULL_STRING);
 
 	public static final String SUFFIX = "Identifier";
 
@@ -108,6 +108,8 @@ public final class StepDefDataIdentifier
 		return this.equals(NULL);
 	}
 
+	public boolean isNotNullPlaceholder() {return !isNullPlaceholder();}
+
 	public String getAsString()
 	{
 		return value;
@@ -155,6 +157,12 @@ public final class StepDefDataIdentifier
 		{
 			return null;
 		}
+		return lookupNotNullIdIn(table);
+	}
+
+	@NonNull
+	public <ID extends RepoIdAware> ID lookupNotNullIdIn(@NonNull final StepDefDataGetIdAware<ID, ?> table)
+	{
 		return table.getId(this);
 	}
 

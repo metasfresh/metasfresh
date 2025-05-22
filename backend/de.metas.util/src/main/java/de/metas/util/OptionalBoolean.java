@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -96,6 +98,11 @@ public enum OptionalBoolean
 		return isPresent() ? this : other;
 	}
 
+	@NonNull
+	public OptionalBoolean ifUnknown(@NonNull final Supplier<OptionalBoolean> otherSupplier)
+	{
+		return isPresent() ? this : otherSupplier.get();
+	}
 
 	@JsonValue
 	@Nullable
@@ -126,4 +133,16 @@ public enum OptionalBoolean
 		}
 	}
 
+	public void ifTrue(@NonNull final Runnable action)
+	{
+		if (this == TRUE)
+		{
+			action.run();
+		}
+	}
+
+	public <U> Optional<U> map(@NonNull final BooleanFunction<? extends U> mapper)
+	{
+		return isPresent() ? Optional.ofNullable(mapper.apply(isTrue())) : Optional.empty();
+	}
 }

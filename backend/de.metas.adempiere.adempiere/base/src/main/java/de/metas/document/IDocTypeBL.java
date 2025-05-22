@@ -15,8 +15,10 @@ public interface IDocTypeBL extends ISingletonService
 	@NonNull
 	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
 
-
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
+
+	@NonNull
+	DocTypeId getDocTypeId(DocTypeQuery docTypeQuery);
 
 	@NonNull
 	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);

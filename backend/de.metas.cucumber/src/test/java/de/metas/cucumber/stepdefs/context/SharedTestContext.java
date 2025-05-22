@@ -9,6 +9,7 @@ import org.slf4j.MDC;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,12 @@ public class SharedTestContext
 		void run() throws Throwable;
 	}
 
+	@FunctionalInterface
+	public interface ThrowingConsumer<E>
+	{
+		void accept(E element) throws Throwable;
+	}
+
 	/**
 	 * Runs given <code>runnable</code> and in case of exception appends the test context to thrown exeception.
 	 * <p>
@@ -118,6 +125,17 @@ public class SharedTestContext
 		finally
 		{
 			threadLocal.set(parent);
+		}
+	}
+
+	public <E> void forEach(@NonNull final Collection<E> collection, String elementName, @NonNull final ThrowingConsumer<E> consumer) throws Throwable
+	{
+		for (final E element : collection)
+		{
+			run(() -> {
+				put(elementName, element);
+				consumer.accept(element);
+			});
 		}
 	}
 

@@ -7,6 +7,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 {
@@ -26,6 +27,10 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	Optional<RecordType> getOptional(@NonNull final StepDefDataIdentifier identifier);
 
 	ImmutableSet<StepDefDataIdentifier> getIdentifiers();
+
+	void put(@NonNull final StepDefDataIdentifier identifier, @NonNull final RecordType newRecord);
+
+	void putOrReplace(@NonNull final StepDefDataIdentifier identifier, @NonNull final RecordType record);
 
 	//
 	// Helper methods
@@ -49,6 +54,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	{
 		return getOptional(identifier).map(this::extractIdFromRecord);
 	}
+
+	default Stream<ID> streamIds() {return getIdentifiers().stream().map(this::getId).distinct();}
 
 	default Optional<StepDefDataIdentifier> getFirstIdentifierById(@NonNull final ID id) {return getFirstIdentifierById(id, null);}
 
@@ -74,5 +81,19 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	default Optional<StepDefDataIdentifier> getFirstIdentifierByRecord(@NonNull final RecordType record)
 	{
 		return getFirstIdentifierById(extractIdFromRecord(record));
+	}
+
+	default Optional<RecordType> getFirstById(@NonNull final ID id) {return getFirstIdentifierById(id, null).map(this::get);}
+
+	default void putOrReplaceIfSameId(final StepDefDataIdentifier identifier, final RecordType newRecord)
+	{
+		final ID newId = extractIdFromRecord(newRecord);
+		final ID currentId = getIdOptional(identifier).orElse(null);
+		if (currentId != null && !Objects.equals(currentId, newId))
+		{
+			throw new RuntimeException("Cannot replace " + identifier + " because its current id is " + currentId + " and the new id is " + newId);
+		}
+
+		putOrReplace(identifier, newRecord);
 	}
 }

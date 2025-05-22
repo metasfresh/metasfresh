@@ -274,7 +274,6 @@ import java.util.Optional;
 	}
 
 	@Override
-	@Nullable
 	public Optional<DocTypeId> getDocTypeInvoiceId()
 	{
 		return Optional.ofNullable(docTypeInvoiceId);

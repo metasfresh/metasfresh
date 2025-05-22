@@ -25,9 +25,13 @@ package de.metas.cucumber.stepdefs.hu;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.uom.IUOMDAO;
@@ -38,6 +42,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -59,42 +64,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@RequiredArgsConstructor
 public class M_HU_PI_Item_Product_StepDef
 {
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final M_HU_PI_Item_StepDefData huPiItemTable;
-	private final M_Product_StepDefData productTable;
-	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
-	private final C_BPartner_StepDefData bpartnerTable;
-
-	public M_HU_PI_Item_Product_StepDef(
-			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_BPartner_StepDefData bpartnerTable)
-	{
-		this.huPiItemTable = huPiItemTable;
-		this.productTable = productTable;
-		this.huPiItemProductTable = huPiItemProductTable;
-		this.huPackagingCodeTable = huPackagingCodeTable;
-		this.bpartnerTable = bpartnerTable;
-	}
+	@NonNull private final M_HU_PI_Item_StepDefData huPiItemTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	@NonNull private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final TestContext restTestContext;
 
 	@Given("metasfresh contains M_HU_PI_Item_Product:")
 	public void metasfresh_contains_m_hu_pi_item_product(@NonNull final DataTable dataTable)
-		{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> tableRow : rows)
-		{
-			createHUPIItemProduct(tableRow);
-		}
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.forEach(this::createHUPIItemProduct);
 	}
 
-	private void createHUPIItemProduct(@NonNull final Map<String, String> tableRow)
+	private void createHUPIItemProduct(@NonNull final DataTableRow tableRow)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_Qty);
@@ -138,7 +129,7 @@ public class M_HU_PI_Item_Product_StepDef
 		}
 
 		final I_M_HU_PI_Item_Product huPiItemProductRecord = CoalesceUtil.coalesceSuppliers(() -> existingHuPiItemProduct,
-																							() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class));
+				() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class));
 
 		assertThat(huPiItemProductRecord).isNotNull();
 
@@ -173,20 +164,20 @@ public class M_HU_PI_Item_Product_StepDef
 		huPiItemProductRecord.setIsDefaultForProduct(Boolean.TRUE.equals(isDefaultForProduct));
 
 		final String huPackagingCodeLUFallbackIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(huPackagingCodeLUFallbackIdentifier))
-			{
-				final int huPackagingCodeId = DataTableUtil.nullToken2Null(huPackagingCodeLUFallbackIdentifier) == null
-						? -1
-						: huPackagingCodeTable.get(huPackagingCodeLUFallbackIdentifier).getM_HU_PackagingCode_ID();
+		if (Check.isNotBlank(huPackagingCodeLUFallbackIdentifier))
+		{
+			final int huPackagingCodeId = DataTableUtil.nullToken2Null(huPackagingCodeLUFallbackIdentifier) == null
+					? -1
+					: huPackagingCodeTable.get(huPackagingCodeLUFallbackIdentifier).getM_HU_PackagingCode_ID();
 
-				huPiItemProductRecord.setM_HU_PackagingCode_LU_Fallback_ID(huPackagingCodeId);
-			}
+			huPiItemProductRecord.setM_HU_PackagingCode_LU_Fallback_ID(huPackagingCodeId);
+		}
 
 		final String gtinLuPackagingMaterialFallback = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_GTIN_LU_PackingMaterial_Fallback);
-			if (Check.isNotBlank(gtinLuPackagingMaterialFallback))
-			{
-				huPiItemProductRecord.setGTIN_LU_PackingMaterial_Fallback(DataTableUtil.nullToken2Null(gtinLuPackagingMaterialFallback));
-			}
+		if (Check.isNotBlank(gtinLuPackagingMaterialFallback))
+		{
+			huPiItemProductRecord.setGTIN_LU_PackingMaterial_Fallback(DataTableUtil.nullToken2Null(gtinLuPackagingMaterialFallback));
+		}
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(bpartnerIdentifier))
@@ -207,6 +198,8 @@ public class M_HU_PI_Item_Product_StepDef
 
 		final String huPiItemProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		huPiItemProductTable.putOrReplace(huPiItemProductIdentifier, huPiItemProductRecord);
+
+		restTestContext.setIdVariableFromRow(tableRow, () -> HUPIItemProductId.ofRepoId(huPiItemProductRecord.getM_HU_PI_Item_Product_ID()));
 	}
 
 	@And("update M_HU_PI_Item_Product:")
@@ -216,8 +209,8 @@ public class M_HU_PI_Item_Product_StepDef
 		for (final Map<String, String> row : rows)
 		{
 			updateItemProduct(row);
+		}
 	}
-}
 
 	private void updateItemProduct(@NonNull final Map<String, String> row)
 	{

@@ -4,19 +4,21 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -102,7 +104,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final CostAmount amtConv = getReceiptAmount(matchInv, request.getQty(), request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
+		final CostAmount amtConv = getReceiptAmount(matchInv, request.getQty(), request.getCostElement(), request.getAcctSchemaId(), currentCost);
 
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmount(amtConv),
@@ -114,7 +116,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			@NonNull final Quantity receiptQty,
 			@NonNull final CostElement costElement,
 			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final CurrencyPrecision precision)
+			@NonNull final CurrentCost currentCost)
 	{
 		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(matchInv.getInOutId());
 
@@ -125,16 +127,35 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
 					.map(orderLineBL::getOrderLineById)
-					.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
+					.orElse(null);
+			if (orderLine != null)
+			{
+				return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+			}
+			else
+			{
+				final CostDetail receiptCostDetail = utils.getSingleCostDetail(CostDetailQuery.builder()
+						.acctSchemaId(acctSchemaId)
+						.costElementId(costElement.getId())
+						.documentRef(CostingDocumentRef.ofReceiptLineId(matchInv.getInoutLineId().getInOutLineId()))
+						.amtType(CostAmountType.MAIN)
+						.productId(matchInv.getProductId())
+						.build());
 
-			return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+				final CostAmount receiptAmount = receiptCostDetail.computePartialCostAmount(receiptQty, currentCost.getPrecision());
+
+				return utils.convertToAcctSchemaCurrency(
+						receiptAmount,
+						() -> currencyConversionContext,
+						acctSchemaId);
+			}
 		}
 		else if (type.isCost())
 		{
 			final InOutCost inoutCost = orderCostService.getInOutCostsById(matchInv.getCostPartNotNull().getInoutCostId());
 			Check.assumeEquals(inoutCost.getCostElementId(), costElement.getId(), "Cost Element shall match: {}, {}", inoutCost, costElement);
 
-			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, precision);
+			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, currentCost.getPrecision());
 
 			return utils.convertToAcctSchemaCurrency(
 					CostAmount.ofMoney(receiptAmount),

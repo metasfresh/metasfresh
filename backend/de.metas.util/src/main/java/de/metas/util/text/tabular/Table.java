@@ -64,6 +64,11 @@ public class Table
 		rowsList.addAll(rows);
 	}
 
+	public void addRows(@NonNull final Table other)
+	{
+		rowsList.addAll(other.rowsList);
+	}
+
 	public void removeColumnsWithBlankValues()
 	{
 		header.removeIf(this::isBlankColumn);

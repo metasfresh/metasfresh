@@ -23,15 +23,32 @@
 package de.metas.cucumber.stepdefs.invoice;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceLineId;
+import lombok.NonNull;
 import org.compiere.model.I_C_InvoiceLine;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_InvoiceLine_StepDefData extends StepDefData<I_C_InvoiceLine>
+public class C_InvoiceLine_StepDefData extends StepDefData<I_C_InvoiceLine> implements StepDefDataGetIdAware<InvoiceLineId, I_C_InvoiceLine>
 {
 	public C_InvoiceLine_StepDefData()
 	{
 		super(I_C_InvoiceLine.class);
+	}
+
+	@Override
+	public InvoiceLineId extractIdFromRecord(final I_C_InvoiceLine record)
+	{
+		return InvoiceLineId.ofRepoId(record.getC_InvoiceLine_ID());
+	}
+
+	public InvoiceAndLineId getInvoiceAndLineId(@NonNull final StepDefDataIdentifier identifier)
+	{
+		final I_C_InvoiceLine invoiceLine = get(identifier);
+		return InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
 	}
 }
