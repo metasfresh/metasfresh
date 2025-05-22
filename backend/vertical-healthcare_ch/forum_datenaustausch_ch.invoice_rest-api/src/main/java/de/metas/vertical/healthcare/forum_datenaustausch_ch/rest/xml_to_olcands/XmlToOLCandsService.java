@@ -186,9 +186,10 @@ public class XmlToOLCandsService
 		if (billToLocation != null)
 		{
 			locations.requestItem(JsonRequestLocationUpsertItem.builder()
-					.locationIdentifier("ext-" + billToLocation.getExternalId().getValue() + "_GUARANTOR")
+					.locationIdentifier("ext-" + billToLocation.getExternalId().getValue())
 					.location(billToLocation)
 					.build());
+			
 		}
 
 		final String orgCode = context.getBillerOrgCode().getValue();
@@ -688,8 +689,7 @@ public class XmlToOLCandsService
 			throw new MissingPropertyException("guarantor/company or guarantor/person", guarantor);
 		}
 
-		final NameAndPostal nameAndPostal = new NameAndPostal(guarantorName, guarantorPostal);
-		return nameAndPostal;
+		return new NameAndPostal(guarantorName, guarantorPostal);
 	}
 
 	@Value
