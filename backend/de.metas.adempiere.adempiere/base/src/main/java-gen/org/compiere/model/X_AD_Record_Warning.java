@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Record_Warning extends org.compiere.model.PO implements I_AD_Record_Warning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1004276011L;
+	private static final long serialVersionUID = 203439282L;
 
     /** Standard Constructor */
     public X_AD_Record_Warning (final Properties ctx, final int AD_Record_Warning_ID, @Nullable final String trxName)
@@ -89,6 +89,33 @@ public class X_AD_Record_Warning extends org.compiere.model.PO implements I_AD_R
 	public int getAD_Table_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
+	}
+
+	@Override
+	public void setAD_User_ID (final int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
+	}
+
+	@Override
+	public int getAD_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	@Override
+	public void setIsAcknowledged (final boolean IsAcknowledged)
+	{
+		set_Value (COLUMNNAME_IsAcknowledged, IsAcknowledged);
+	}
+
+	@Override
+	public boolean isAcknowledged() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAcknowledged);
 	}
 
 	@Override
