@@ -26,11 +26,10 @@ import de.metas.location.CountryCode;
 import de.metas.shipper.gateway.dhl.json.JsonDhlAddress;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DhlAddressMapperTest
 {
@@ -55,16 +54,16 @@ public class DhlAddressMapperTest
 
 		final JsonDhlAddress result = DhlAddressMapper.getShipperAddress(address);
 
-		assertEquals("Company A", result.getName1());
-		assertEquals("Dept A", result.getName2());
-		assertEquals("Main Street", result.getAddressStreet());
-		assertEquals("123A", result.getAddressHouse());
-		assertEquals("12345", result.getPostalCode());
-		assertEquals("Testville", result.getCity());
-		assertEquals("AFG", result.getCountry());
-		assertNull(result.getAdditionalAddressInformation1());
-		assertNull(result.getEmail());
-		assertNull(result.getPhone());
+		assertThat(result.getName1()).isEqualTo("Company A");
+		assertThat(result.getName2()).isEqualTo("Dept A");
+		assertThat(result.getAddressStreet()).isEqualTo("Main Street");
+		assertThat(result.getAddressHouse()).isEqualTo("123A");
+		assertThat(result.getPostalCode()).isEqualTo("12345");
+		assertThat(result.getCity()).isEqualTo("Testville");
+		assertThat(result.getCountry()).isEqualTo("AFG");
+		assertThat(result.getAdditionalAddressInformation1()).isNull();
+		assertThat(result.getEmail()).isNull();
+		assertThat(result.getPhone()).isNull();
 	}
 
 	@Test
@@ -93,16 +92,16 @@ public class DhlAddressMapperTest
 
 		final JsonDhlAddress result = DhlAddressMapper.getConsigneeAddress(address, contactPerson);
 
-		assertEquals("Company B", result.getName1());
-		assertEquals("Dept B", result.getName2());
-		assertEquals("Second Street", result.getAddressStreet());
-		assertEquals("456B", result.getAddressHouse());
-		assertEquals("67890", result.getPostalCode());
-		assertEquals("Exampletown", result.getCity());
-		assertEquals("AFG", result.getCountry());
-		assertEquals("Apt 101", result.getAdditionalAddressInformation1());
-		assertEquals("contact@example.com", result.getEmail());
-		assertEquals("555-1234", result.getPhone());
+		assertThat(result.getName1()).isEqualTo("Company B");
+		assertThat(result.getName2()).isEqualTo("Dept B");
+		assertThat(result.getAddressStreet()).isEqualTo("Second Street");
+		assertThat(result.getAddressHouse()).isEqualTo("456B");
+		assertThat(result.getPostalCode()).isEqualTo("67890");
+		assertThat(result.getCity()).isEqualTo("Exampletown");
+		assertThat(result.getCountry()).isEqualTo("AFG");
+		assertThat(result.getAdditionalAddressInformation1()).isEqualTo("Apt 101");
+		assertThat(result.getEmail()).isEqualTo("contact@example.com");
+		assertThat(result.getPhone()).isEqualTo("555-1234");
 	}
 
 	@Test
@@ -135,7 +134,7 @@ public class DhlAddressMapperTest
 				() -> DhlAddressMapper.getConsigneeAddress(address, contactPerson));
 
 		// then
-		assertEquals("Assumption failure: email has minimum three characters", thrown.getMessage());
+		assertThat(thrown).hasMessage("Assumption failure: email has minimum three characters");
 	}
 
 	@Test
@@ -159,11 +158,11 @@ public class DhlAddressMapperTest
 
 		final JsonDhlAddress result = DhlAddressMapper.getConsigneeAddress(address, null);
 
-		assertEquals("Company C", result.getName1());
-		assertNull(result.getName2()); // if null input, expect null output
-		assertEquals("Office 22", result.getAdditionalAddressInformation1());
-		assertNull(result.getEmail());
-		assertNull(result.getPhone());
+		assertThat(result.getName1()).isEqualTo("Company C");
+		assertThat(result.getName2()).isNull();
+		assertThat(result.getAdditionalAddressInformation1()).isEqualTo("Office 22");
+		assertThat(result.getEmail()).isNull();
+		assertThat(result.getPhone()).isNull();
 	}
 
 	@Test
@@ -207,14 +206,14 @@ public class DhlAddressMapperTest
 
 		final JsonDhlAddress result = DhlAddressMapper.getConsigneeAddress(address, contactPerson);
 
-		assertEquals(fiftyLongString, result.getName1());
-		assertEquals(fiftyLongString, result.getName2());
-		assertEquals(fiftyLongString, result.getAddressStreet());
-		assertEquals(tenLongString, result.getAddressHouse());
-		assertEquals(tenLongString, result.getPostalCode());
-		assertEquals(fortyLongString, result.getCity());
-		assertEquals(twentyLongString, result.getPhone());
-		assertEquals(eightyLongString, result.getEmail());
+		assertThat(result.getName1()).isEqualTo(fiftyLongString);
+		assertThat(result.getName2()).isEqualTo(fiftyLongString);
+		assertThat(result.getAddressStreet()).isEqualTo(fiftyLongString);
+		assertThat(result.getAddressHouse()).isEqualTo(tenLongString);
+		assertThat(result.getPostalCode()).isEqualTo(tenLongString);
+		assertThat(result.getCity()).isEqualTo(fortyLongString);
+		assertThat(result.getPhone()).isEqualTo(twentyLongString);
+		assertThat(result.getEmail()).isEqualTo(eightyLongString);
 	}
 
 	@Test
@@ -242,7 +241,7 @@ public class DhlAddressMapperTest
 				() -> DhlAddressMapper.getShipperAddress(address));
 
 		// then
-		assertEquals("Assumption failure: postalCode has minimum three characters", thrown.getMessage());
+		assertThat(thrown).hasMessage("Assumption failure: postalCode has minimum three characters");
 	}
 
 	@Test
@@ -266,16 +265,16 @@ public class DhlAddressMapperTest
 
 		final JsonDhlAddress result = DhlAddressMapper.getShipperAddress(address);
 
-		assertEquals("Company A", result.getName1());
-		assertEquals("Dept A", result.getName2());
-		assertEquals("Main Street", result.getAddressStreet());
-		assertEquals("123A", result.getAddressHouse());
-		assertEquals("12", result.getPostalCode());
-		assertEquals("Testville", result.getCity());
-		assertEquals("IRL", result.getCountry());
-		assertNull(result.getAdditionalAddressInformation1());
-		assertNull(result.getEmail());
-		assertNull(result.getPhone());
+		assertThat(result.getName1()).isEqualTo("Company A");
+		assertThat(result.getName2()).isEqualTo("Dept A");
+		assertThat(result.getAddressStreet()).isEqualTo("Main Street");
+		assertThat(result.getAddressHouse()).isEqualTo("123A");
+		assertThat(result.getPostalCode()).isEqualTo("12");
+		assertThat(result.getCity()).isEqualTo("Testville");
+		assertThat(result.getCountry()).isEqualTo("IRL");
+		assertThat(result.getAdditionalAddressInformation1()).isNull();
+		assertThat(result.getEmail()).isNull();
+		assertThat(result.getPhone()).isNull();
 	}
 
 	@Test
@@ -303,6 +302,6 @@ public class DhlAddressMapperTest
 				() -> DhlAddressMapper.getShipperAddress(address));
 
 		// then
-		assertEquals("Assumption failure: Invalid ISO alpha-3 country code: DE", thrown.getMessage());
+		assertThat(thrown).hasMessage("Assumption failure: Invalid ISO alpha-3 country code: DE");
 	}
 }
