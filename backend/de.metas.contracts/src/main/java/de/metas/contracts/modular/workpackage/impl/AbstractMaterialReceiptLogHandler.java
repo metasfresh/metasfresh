@@ -105,6 +105,7 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 	{
 		final InOutLineId receiptLineId = getReceiptLineId(request.getRecordRef());
 		final I_M_InOutLine receiptLineRecord = inOutBL.getLineByIdInTrx(receiptLineId);
+		final ProductId initialProductId = ProductId.ofRepoId(receiptLineRecord.getM_Product_ID());
 		final I_M_InOut receiptRecord = inOutBL.getById(InOutId.ofRepoId(receiptLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term contractRecord = flatrateBL.getById(request.getContractId());
 		final Quantity quantity = inOutBL.getQtyEntered(receiptLineRecord);
@@ -128,6 +129,7 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(request.getContractId())
 				.productId(productId)
+				.initialProductId(initialProductId)
 				.referencedRecord(request.getRecordRef())
 				.collectionPointBPartnerId(BPartnerId.ofRepoId(receiptRecord.getC_BPartner_ID()))
 				.producerBPartnerId(BPartnerId.ofRepoId(receiptRecord.getC_BPartner_ID()))
