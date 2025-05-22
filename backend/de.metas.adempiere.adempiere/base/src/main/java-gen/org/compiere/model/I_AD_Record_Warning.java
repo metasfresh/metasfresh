@@ -123,7 +123,7 @@ public interface I_AD_Record_Warning
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setAD_User_ID (int AD_User_ID);
@@ -133,7 +133,7 @@ public interface I_AD_Record_Warning
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_User_ID();
@@ -164,6 +164,27 @@ public interface I_AD_Record_Warning
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Acknowledged.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAcknowledged (boolean IsAcknowledged);
+
+	/**
+	 * Get Acknowledged.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAcknowledged();
+
+	ModelColumn<I_AD_Record_Warning, Object> COLUMN_IsAcknowledged = new ModelColumn<>(I_AD_Record_Warning.class, "IsAcknowledged", null);
+	String COLUMNNAME_IsAcknowledged = "IsAcknowledged";
 
 	/**
 	 * Set Active.
