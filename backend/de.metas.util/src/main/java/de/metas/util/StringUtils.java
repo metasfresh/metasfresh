@@ -121,7 +121,7 @@ public final class StringUtils
 	/**
 	 * Truncate string to a given length, if required.
 	 */
-	@Contract("null, _ -> null")
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static String trunc(
 			@Nullable final String str,
@@ -130,7 +130,7 @@ public final class StringUtils
 		return trunc(str, length, TruncateAt.STRING_END);
 	}
 
-	@Contract("null, _, _ -> null")
+	@Contract("!null, _, _ -> !null")
 	@Nullable
 	public static String trunc(
 			@Nullable final String string,
