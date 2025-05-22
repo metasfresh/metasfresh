@@ -28,6 +28,10 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 
 	ImmutableSet<StepDefDataIdentifier> getIdentifiers();
 
+	void put(@NonNull final StepDefDataIdentifier identifier, @NonNull final RecordType newRecord);
+
+	void putOrReplace(@NonNull final StepDefDataIdentifier identifier, @NonNull final RecordType record);
+
 	//
 	// Helper methods
 	default ID getId(@NonNull final StepDefDataIdentifier identifier)
@@ -78,9 +82,6 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	{
 		return getFirstIdentifierById(extractIdFromRecord(record));
 	}
-<<<<<<< HEAD
-}
-=======
 
 	default Optional<RecordType> getFirstById(@NonNull final ID id) {return getFirstIdentifierById(id, null).map(this::get);}
 
@@ -96,4 +97,3 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 		putOrReplace(identifier, newRecord);
 	}
 }
->>>>>>> a9df52a488 (improve cucumber framework)

@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.location.ICountryDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -46,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Tax_StepDef
 {
@@ -125,6 +126,6 @@ public class C_Tax_StepDef
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_C_Tax.Table_Name);
-		taxTable.putOrReplace(recordIdentifier, taxRecord);
+		taxTable.putOrReplace(recordIdentifier, TaxUtils.from(taxRecord));
 	}
 }

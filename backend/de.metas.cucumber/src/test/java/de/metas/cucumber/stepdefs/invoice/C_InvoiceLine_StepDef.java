@@ -26,12 +26,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-<<<<<<< HEAD
-import de.metas.invoice.service.IInvoiceLineBL;
-=======
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
@@ -49,7 +48,6 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -57,148 +55,78 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-<<<<<<< HEAD
-=======
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
->>>>>>> 6369950e81 (improve/modernize cucumber framework)
 import org.adempiere.model.InterfaceWrapperHelper;
-<<<<<<< HEAD
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-=======
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_IsManualPrice;
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Price_UOM_ID;
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_QtyInvoicedInPriceUOM;
+import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_TaxAmtInfo;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Processed;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Discount;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceActual;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
-<<<<<<< HEAD
-=======
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_Processed;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_UOM_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line;
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
+@RequiredArgsConstructor
 public class C_InvoiceLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-<<<<<<< HEAD
-=======
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
-<<<<<<< HEAD
->>>>>>> ce978dd873 (improve readability of cucumber tests)
-=======
 	private final MatchInvoiceService matchInvoiceService = SpringContextHolder.instance.getBean(MatchInvoiceService.class);
->>>>>>> a9df52a488 (improve cucumber framework)
 
-	final C_Invoice_StepDefData invoiceTable;
-	final C_InvoiceLine_StepDefData invoiceLineTable;
-	final M_Product_StepDefData productTable;
-	final C_Tax_StepDefData taxTable;
-
-	public C_InvoiceLine_StepDef(
-			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_Tax_StepDefData taxTable)
-	{
-		this.invoiceTable = invoiceTable;
-		this.invoiceLineTable = invoiceLineTable;
-		this.productTable = productTable;
-		this.taxTable = taxTable;
-	}
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_InvoiceLine_StepDefData invoiceLineTable;
+	private final M_InOutLine_StepDefData inOutLineTable;
+	private final M_Product_StepDefData productTable;
+	private final C_Project_StepDefData projectTable;
+	private final C_Tax_StepDefData taxTable;
+	private final C_TaxCategory_StepDefData taxCategoryTable;
+	private final C_Activity_StepDefData activityTable;
 
 	@And("metasfresh contains C_InvoiceLines")
 	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			create_C_InvoiceLine(dataTableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID)
+				.forEach(this::create_C_InvoiceLine);
 	}
 
 	@And("validate created invoice lines")
 	public void validate_created_invoice_lines(@NonNull final DataTable table)
 	{
-<<<<<<< HEAD
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-=======
 		DataTableRows.of(table)
 				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID)
 				.forEach(row -> {
 					I_C_InvoiceLine invoiceLineRecord = findInvoiceLineRecord(row);
 					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
-<<<<<<< HEAD
-					final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
-					final ProductId expectedProductId = getProductId(row);
-					final BigDecimal qtyInvoiced = row.getAsBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
->>>>>>> ce978dd873 (improve readability of cucumber tests)
-
-					//dev-note: we assume the tests are generally not using the same product and qty on different lines...
-					final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-							.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-							.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId)
-							.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyInvoiced);
-
-<<<<<<< HEAD
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final int expectedProductId = productTable.getOptional(productIdentifier)
-					.map(I_M_Product::getM_Product_ID)
-					.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyInvoiced);
-
-			//dev-note: we assume the tests are not using the same product and qty on different lines
-			final I_C_InvoiceLine invoiceLineRecord = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId)
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced)
-					.create()
-					.firstOnlyNotNull(I_C_InvoiceLine.class);
-
-			validateInvoiceLine(invoiceLineRecord, row);
-		}
-=======
-					// ...or if they do, they have different inoutlines
-					row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
-							.map(inOutLineTable::getId)
-							.ifPresent(inOutLineId -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineId.getRepoId()));
-
-					final I_C_InvoiceLine invoiceLineRecord = queryBuilder.create().firstOnlyNotNull(I_C_InvoiceLine.class);
-
-=======
->>>>>>> 6369950e81 (improve/modernize cucumber framework)
 					validateInvoiceLine(invoiceLineRecord, invoice, row);
 				});
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 	}
 
 	private I_C_InvoiceLine findInvoiceLineRecord(final DataTableRow row)
@@ -254,11 +182,6 @@ public class C_InvoiceLine_StepDef
 				.create()
 				.list(I_C_InvoiceLine.class);
 
-<<<<<<< HEAD
-		final List<Map<String, String>> dataTable = table.asMaps();
-
-		assertThat(invoiceLines.size()).isEqualTo(dataTable.size());
-=======
 		final StringBuilder invoiceLinesErrorMessage = new StringBuilder("Found the following invoice lines: \n");
 		invoiceLines.forEach(invoiceLine -> {
 			invoiceLinesErrorMessage.append("C_InvoiceLine.QtyInvoiced: ").append(invoiceLine.getQtyInvoiced()).append("; ");
@@ -272,24 +195,9 @@ public class C_InvoiceLine_StepDef
 
 		final DataTableRows rows = DataTableRows.of(table)
 				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID);
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 
 		assertThat(invoiceLines.size()).as(invoiceLinesErrorMessage.toString()).isEqualTo(rows.size());
 
-<<<<<<< HEAD
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer productID = productTable.getOptional(productIdentifier)
-					.map(I_M_Product::getM_Product_ID)
-					.orElseGet(() -> Integer.parseInt(productIdentifier));
-			assertThat(productID).isNotNull();
-
-			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyInvoiced);
-
-			final I_C_InvoiceLine currentInvoiceLine = Check.singleElement(invoiceLines.stream()
-																				   .filter(line -> line.getM_Product_ID() == productID)
-																				   .filter(line -> line.getQtyInvoiced().equals(qtyinvoiced))
-																				   .collect(ImmutableList.toImmutableList()));
-=======
 		rows.forEach(row -> {
 			final ProductId productId = getProductId(row);
 
@@ -299,7 +207,6 @@ public class C_InvoiceLine_StepDef
 					.filter(line -> line.getM_Product_ID() == productId.getRepoId())
 					.filter(line -> line.getQtyInvoiced().equals(qtyInvoiced))
 					.collect(ImmutableList.toImmutableList()));
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 
 			validateInvoiceLine(currentInvoiceLine, invoiceRecord, row);
 		});
@@ -317,76 +224,39 @@ public class C_InvoiceLine_StepDef
 			@NonNull final I_C_Invoice invoice,
 			@NonNull final DataTableRow row)
 	{
-<<<<<<< HEAD
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final int expectedProductId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyInvoiced);
-		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_Processed);
-=======
 		final SoftAssertions softly = new SoftAssertions();
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 
-<<<<<<< HEAD
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEntered);
-		if (qtyEntered != null)
-		{
-			assertThat(invoiceLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
-		}
-=======
 		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyEntered)
 				.ifPresent(qtyEntered -> softly.assertThat(invoiceLine.getQtyEntered()).as("QtyEntered").isEqualByComparingTo(qtyEntered));
->>>>>>> 6369950e81 (improve/modernize cucumber framework)
 
 		final BigDecimal qtyEnteredInBPartnerUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEnteredInBPartnerUOM);
 		if (qtyEnteredInBPartnerUOM != null)
 		{
-			assertThat(invoiceLine.getQtyEnteredInBPartnerUOM()).isEqualTo(qtyEnteredInBPartnerUOM);
+			softly.assertThat(invoiceLine.getQtyEnteredInBPartnerUOM()).isEqualTo(qtyEnteredInBPartnerUOM);
 		}
 
 		final String bPartnerUOMx12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
 		if (Check.isNotBlank(bPartnerUOMx12de355Code))
 		{
 			final UomId bPartnerUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(bPartnerUOMx12de355Code));
-			assertThat(invoiceLine.getC_UOM_BPartner_ID()).isEqualTo(bPartnerUOMId.getRepoId());
+			softly.assertThat(invoiceLine.getC_UOM_BPartner_ID()).isEqualTo(bPartnerUOMId.getRepoId());
 		}
 
 		final String uomX12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		if (Check.isNotBlank(uomX12de355Code))
 		{
 			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomX12de355Code));
-			assertThat(invoiceLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+			softly.assertThat(invoiceLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
 		}
 
-<<<<<<< HEAD
-		assertThat(invoiceLine.getM_Product_ID()).isEqualTo(expectedProductId);
-		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
-		assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
-=======
 		final ProductId expectedProductId = getProductId(row);
 		softly.assertThat(invoiceLine.getM_Product_ID()).as(COLUMNNAME_M_Product_ID).isEqualTo(expectedProductId.getRepoId());
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 
 		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced)
 				.ifPresent(qtyInvoiced -> softly.assertThat(invoiceLine.getQtyInvoiced()).as(COLUMNNAME_QtyInvoiced).isEqualTo(qtyInvoiced));
 
-<<<<<<< HEAD
-		if (priceEntered != null)
-		{
-			assertThat(invoiceLine.getPriceEntered()).isEqualTo(priceEntered);
-		}
-=======
 		row.getAsOptionalBoolean(I_C_InvoiceLine.COLUMNNAME_Processed)
-<<<<<<< HEAD
-				.ifPresent(processed -> {
-					softly.assertThat(invoiceLine.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed);
-				});
->>>>>>> ce978dd873 (improve readability of cucumber tests)
-=======
 				.ifPresent(processed -> softly.assertThat(invoiceLine.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed));
->>>>>>> ee1b87243f (QA)
 
 		extractMoney(row, I_C_InvoiceLine.COLUMNNAME_PriceEntered, invoice)
 				.ifPresent(priceEntered -> {
@@ -394,24 +264,7 @@ public class C_InvoiceLine_StepDef
 					softly.assertThat(invoiceLine.getPriceEntered()).as(COLUMNNAME_PriceEntered).isEqualByComparingTo(priceEntered.toBigDecimal());
 				});
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-		if (priceActual != null)
-		{
-			assertThat(invoiceLine.getPriceActual()).isEqualTo(priceActual);
-		}
-
-		final BigDecimal lineNetAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_LineNetAmt);
-
-		if (lineNetAmt != null)
-		{
-			assertThat(invoiceLine.getLineNetAmt()).isEqualTo(lineNetAmt);
-		}
-=======
-		row.getAsOptionalMoney(I_C_InvoiceLine.COLUMNNAME_PriceActual, moneyService::getCurrencyIdByCurrencyCode)
-=======
 		extractMoney(row, I_C_InvoiceLine.COLUMNNAME_PriceActual, invoice)
->>>>>>> 350aa335c3 (cucumber framework improvements)
 				.ifPresent(priceActual -> {
 					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(priceActual.getCurrencyId().getRepoId());
 					softly.assertThat(invoiceLine.getPriceActual()).as(COLUMNNAME_PriceActual).isEqualByComparingTo(priceActual.toBigDecimal());
@@ -422,27 +275,10 @@ public class C_InvoiceLine_StepDef
 					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(lineNetAmt.getCurrencyId().getRepoId());
 					softly.assertThat(invoiceLine.getLineNetAmt()).as(COLUMNNAME_LineNetAmt).isEqualByComparingTo(lineNetAmt.toBigDecimal());
 				});
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 
-<<<<<<< HEAD
-		final BigDecimal discount = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_Discount);
-		if (discount != null)
-		{
-			assertThat(invoiceLine.getDiscount()).isEqualTo(discount);
-		}
-=======
 		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_Discount)
 				.ifPresent(discount -> softly.assertThat(invoiceLine.getDiscount()).as(COLUMNNAME_Discount).isEqualByComparingTo(discount));
->>>>>>> 350aa335c3 (cucumber framework improvements)
 
-<<<<<<< HEAD
-		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		if (taxIdentifier != null)
-		{
-			final I_C_Tax taxRecord = taxTable.get(taxIdentifier);
-			assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxRecord.getC_Tax_ID());
-=======
 		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Tax_ID)
 				.map(taxTable::getId)
 				.ifPresent(taxId -> softly.assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId()));
@@ -466,7 +302,6 @@ public class C_InvoiceLine_StepDef
 			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomCode));
 
 			softly.assertThat(invoiceLine.getC_UOM_ID()).as(COLUMNNAME_C_UOM_ID).isEqualTo(uomId.getRepoId());
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 		}
 
 		final String priceUOMCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName());
@@ -474,9 +309,6 @@ public class C_InvoiceLine_StepDef
 		{
 			final UomId priceUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(priceUOMCode));
 
-<<<<<<< HEAD
-			assertThat(invoiceLine.getPrice_UOM_ID()).as(COLUMNNAME_Price_UOM_ID).isEqualTo(priceUOMId.getRepoId());
-=======
 			softly.assertThat(invoiceLine.getPrice_UOM_ID()).as(COLUMNNAME_Price_UOM_ID).isEqualTo(priceUOMId.getRepoId());
 		}
 
@@ -484,19 +316,13 @@ public class C_InvoiceLine_StepDef
 		if (isManualPrice != null)
 		{
 			softly.assertThat(invoiceLine.isManualPrice()).as(COLUMNNAME_IsManualPrice).isEqualTo(isManualPrice);
->>>>>>> ce978dd873 (improve readability of cucumber tests)
 		}
 
 		final BigDecimal qtyInvoicedInPriceUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyInvoicedInPriceUOM);
 		if (qtyInvoicedInPriceUOM != null)
 		{
-			assertThat(invoiceLine.getQtyInvoicedInPriceUOM()).as(COLUMNNAME_QtyInvoicedInPriceUOM).isEqualByComparingTo(qtyInvoicedInPriceUOM);
+			softly.assertThat(invoiceLine.getQtyInvoicedInPriceUOM()).as(COLUMNNAME_QtyInvoicedInPriceUOM).isEqualByComparingTo(qtyInvoicedInPriceUOM);
 		}
-<<<<<<< HEAD
-		
-		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
-=======
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
@@ -535,9 +361,6 @@ public class C_InvoiceLine_StepDef
 				});
 
 		softly.assertAll();
-<<<<<<< HEAD
->>>>>>> ce978dd873 (improve readability of cucumber tests)
-=======
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));
 	}
@@ -557,38 +380,46 @@ public class C_InvoiceLine_StepDef
 				() -> moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID())),
 				moneyService::getCurrencyIdByCurrencyCode
 		);
->>>>>>> 350aa335c3 (cucumber framework improvements)
 	}
 
-	private void create_C_InvoiceLine(@NonNull final Map<String, String> row)
+	private void create_C_InvoiceLine(@NonNull final DataTableRow row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
+		final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
 
-		final BigDecimal qtyInvoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyInvoiced);
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_C_InvoiceLine.COLUMNNAME_M_Product_ID);
+		final ProductId productId = productTable.getIdOptional(productIdentifier)
+				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
 
-		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
-		final String x12de355Code = DataTableUtil.extractStringForColumnName(row, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final Quantity qtyEntered = row.getAsQuantity(COLUMNNAME_QtyInvoiced, COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
 
 		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
-
-		invoiceLine.setM_Product_ID(productId);
-		invoiceLine.setQtyInvoiced(qtyInvoiced);
-		invoiceLine.setQtyEntered(qtyInvoiced);
+		invoiceLine.setAD_Org_ID(invoice.getAD_Org_ID());
 		invoiceLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		invoiceLine.setPrice_UOM_ID(productPriceUomId.getRepoId());
+		invoiceLine.setM_Product_ID(productId.getRepoId());
+		invoiceLine.setQtyEntered(qtyEntered.toBigDecimal());
+		invoiceLine.setQtyInvoiced(qtyEntered.toBigDecimal());
+		invoiceLine.setPrice_UOM_ID(qtyEntered.getUomId().getRepoId());
+
+		row.getAsOptionalBigDecimal("Price")
+				.ifPresent(price -> {
+					invoiceLine.setIsManualPrice(true);
+					invoiceLine.setPriceEntered(price);
+					invoiceLine.setPriceActual(price);
+				});
 
 		invoiceLineBL.updatePrices(invoiceLine);
-		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyInvoiced);
+		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyEntered.toBigDecimal());
 
 		InterfaceWrapperHelper.save(invoiceLine);
 
-		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
+		row.getAsOptionalIdentifier("C_Tax_ID")
+				.ifPresent(taxIdentifier -> {
+					final TaxId taxId = TaxId.ofRepoId(invoiceLine.getC_Tax_ID());
+					final Tax tax = taxDAO.getTaxById(taxId);
+					taxTable.putOrReplaceIfSameId(taxIdentifier, tax);
+				});
+
+		row.getAsOptionalIdentifier()
+				.ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));
 	}
 }

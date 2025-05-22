@@ -6,11 +6,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-<<<<<<< HEAD
-=======
 import java.util.Optional;
 import java.util.function.Supplier;
->>>>>>> a026a8c86f (fix Doc_MatchInv: Product was not set for all lines, Qty was not correct for InventoryClearing line)
 
 /*
  * #%L
@@ -101,6 +98,11 @@ public enum OptionalBoolean
 		return isPresent() ? this : other;
 	}
 
+	@NonNull
+	public OptionalBoolean ifUnknown(@NonNull final Supplier<OptionalBoolean> otherSupplier)
+	{
+		return isPresent() ? this : otherSupplier.get();
+	}
 
 	@JsonValue
 	@Nullable

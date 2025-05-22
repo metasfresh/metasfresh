@@ -20,24 +20,26 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.pricing;
 
-import de.metas.tax.api.Tax;
-import de.metas.tax.api.TaxId;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.tax.api.TaxCategoryId;
+import org.compiere.model.I_C_TaxCategory;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_Tax_StepDefData extends StepDefData<Tax> implements StepDefDataGetIdAware<TaxId, Tax>
+public class C_TaxCategory_StepDefData extends StepDefData<I_C_TaxCategory> implements StepDefDataGetIdAware<TaxCategoryId, I_C_TaxCategory>
 {
-	public C_Tax_StepDefData()
+	public C_TaxCategory_StepDefData()
 	{
-		super(Tax.class);
+		super(I_C_TaxCategory.class);
 	}
 
 	@Override
-	public TaxId extractIdFromRecord(final Tax tax)
+	public TaxCategoryId extractIdFromRecord(final I_C_TaxCategory record)
 	{
-		return tax.getTaxId();
+		return TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID());
 	}
 }

@@ -87,22 +87,12 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 8                |
 
-<<<<<<< HEAD
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | inventory                 | 2022-06-16   | inventoryDocNo2 |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |
-
-=======
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | DocumentNo      | M_Warehouse_ID |
       | inventory                 | 2022-06-16   | inventoryDocNo2 | warehouseStd   |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory                 | inventoryLine                 | product_SO              | 0       | 10       | PCE          |
->>>>>>> 1aa7ef7886 (fix cucumber)
     And complete inventory with inventoryIdentifier 'inventory'
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
@@ -269,7 +259,7 @@ Feature: Group invoices and credit memos into a single document
       | schedule_SO | orderLine_SO              | N             | 12               |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
       | inventory                 | 2022-06-16   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
@@ -439,7 +429,7 @@ Feature: Group invoices and credit memos into a single document
       | schedule_SO | orderLine_SO              | N             | 12               |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
       | inventory                 | 2022-06-16   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
@@ -522,15 +512,9 @@ Feature: Group invoices and credit memos into a single document
       | invoice_2               | creditMemo                        |
 
     And validate created invoices
-<<<<<<< HEAD
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 28.56          | dt_si                       |
-      | invoice_2               | customer_SO              | customerLocation_SO               | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 23.8           | dt_cm                       |
-=======
       | C_Invoice_ID | OPT.C_DocType_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID | POReference       | paymentTerm   | processed | docStatus | GrandTotal |
       | invoice_1    | dt_si                       | customer_SO   | customerLocation_SO    | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 28.56 EUR  |
       | invoice_2    | dt_cm                       | customer_SO   | customerLocation_SO    | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 23.8 EUR   |
->>>>>>> 1aa7ef7886 (fix cucumber)
 
     And validate created invoice lines
       | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID | QtyEntered | QtyInvoiced | Processed |

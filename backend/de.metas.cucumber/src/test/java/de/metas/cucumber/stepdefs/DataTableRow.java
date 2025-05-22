@@ -22,7 +22,11 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -33,17 +37,20 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.text.tabular.Row;
+import de.metas.util.text.tabular.Table;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -57,10 +64,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @EqualsAndHashCode
-@ToString
 public class DataTableRow
 {
-	private final int lineNo; // introduced to improve logging/debugging
+	@Getter private final int lineNo; // introduced to improve logging/debugging
 	@NonNull
 	private final Map<String, String> map;
 	@Nullable
@@ -74,6 +80,10 @@ public class DataTableRow
 		this.lineNo = lineNo;
 		this.map = map;
 	}
+
+	@Override
+	@Deprecated
+	public String toString() {return toTabularString();}
 
 	public static DataTableRow singleRow(@NonNull final DataTable dataTable)
 	{
@@ -436,8 +446,6 @@ public class DataTableRow
 		return X12DE355.ofCode(valueStr);
 	}
 
-<<<<<<< HEAD
-=======
 	public CurrencyCode getAsCurrencyCode()
 	{
 		return getAsOptionalCurrencyCode()
@@ -525,7 +533,6 @@ public class DataTableRow
 		return Optional.of(Amount.of(valueBD, currencyCode));
 	}
 
->>>>>>> 20f4b6f126 (DataTableRow: more helper methods)
 	public LocalDate getAsLocalDate(@NonNull final String columnName)
 	{
 		return parseLocalDate(getAsString(columnName), columnName);
@@ -551,7 +558,17 @@ public class DataTableRow
 
 	public Timestamp getAsLocalDateTimestamp(@NonNull final String columnName)
 	{
-		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
+		return toTimestamp(getAsLocalDate(columnName));
+	}
+
+	private static Timestamp toTimestamp(final LocalDate localDate)
+	{
+		return Timestamp.valueOf(localDate.atStartOfDay());
+	}
+
+	public Optional<Timestamp> getAsOptionalLocalDateTimestamp(@NonNull final String columnName)
+	{
+		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
 	}
 
 	@SuppressWarnings("unused")
@@ -575,14 +592,11 @@ public class DataTableRow
 		return getAsOptionalString(columnName).map(valueStr -> parseInstant(valueStr, columnName));
 	}
 
-<<<<<<< HEAD
-=======
 	public Optional<Duration> getAsOptionalDuration(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseDuration(valueStr, columnName));
 	}
 
->>>>>>> 20f4b6f126 (DataTableRow: more helper methods)
 	@NonNull
 	private static Instant parseInstant(@NonNull final String valueStr, final String columnInfo)
 	{
@@ -610,8 +624,6 @@ public class DataTableRow
 		}
 	}
 
-<<<<<<< HEAD
-=======
 	@NonNull
 	private static Duration parseDuration(@NonNull final String valueStr, final String columnInfo)
 	{
@@ -625,7 +637,6 @@ public class DataTableRow
 		}
 	}
 
->>>>>>> 20f4b6f126 (DataTableRow: more helper methods)
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
@@ -669,5 +680,32 @@ public class DataTableRow
 	{
 		return getAsOptionalEnum(columnName, type)
 				.orElseThrow(() -> new AdempiereException("Missing/invalid `" + type.getSimpleName() + "` of column `" + columnName + "`"));
+	}
+
+	public String toTabularString()
+	{
+		return toTabular().toTabularString();
+	}
+
+	public Table toTabular()
+	{
+		final Table table = new Table();
+		table.addRow(toTabularRow());
+		table.updateHeaderFromRows();
+		//table.removeColumnsWithBlankValues(); // to be decided by the caller
+		return table;
+
+	}
+
+	public Row toTabularRow()
+	{
+		final Row row = new Row();
+		if (lineNo > 0)
+		{
+			row.put("#", lineNo);
+		}
+		row.putAll(map);
+		return row;
+
 	}
 }

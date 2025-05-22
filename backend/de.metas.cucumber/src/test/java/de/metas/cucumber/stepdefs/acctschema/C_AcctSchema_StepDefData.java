@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +20,26 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.acctschema;
 
-import de.metas.tax.api.Tax;
-import de.metas.tax.api.TaxId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import org.compiere.model.I_C_AcctSchema;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_Tax_StepDefData extends StepDefData<Tax> implements StepDefDataGetIdAware<TaxId, Tax>
+public class C_AcctSchema_StepDefData extends StepDefData<I_C_AcctSchema> implements StepDefDataGetIdAware<AcctSchemaId, I_C_AcctSchema>
 {
-	public C_Tax_StepDefData()
+	public C_AcctSchema_StepDefData()
 	{
-		super(Tax.class);
+		super(I_C_AcctSchema.class);
 	}
 
 	@Override
-	public TaxId extractIdFromRecord(final Tax tax)
+	public AcctSchemaId extractIdFromRecord(final I_C_AcctSchema record)
 	{
-		return tax.getTaxId();
+		return AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
 	}
 }
