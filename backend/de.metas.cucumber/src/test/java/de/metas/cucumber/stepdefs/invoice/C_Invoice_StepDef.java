@@ -64,10 +64,15 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+<<<<<<< HEAD
 import de.metas.process.PInstanceId;
+=======
+import de.metas.user.UserId;
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -81,8 +86,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+<<<<<<< HEAD
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+=======
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
@@ -91,12 +99,15 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+<<<<<<< HEAD
 import org.compiere.model.I_M_Warehouse;
 <<<<<<< HEAD
 import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 =======
 >>>>>>> 350aa335c3 (cucumber framework improvements)
+=======
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -414,18 +425,27 @@ public class C_Invoice_StepDef
 			softly.assertThat(docType.getDocSubType()).as("DocSubType").isEqualTo(docSubType);
 		}
 
+<<<<<<< HEAD
 		final String bpartnerAddress = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_BPartnerAddress);
 		if (Check.isNotBlank(bpartnerAddress))
 		{
 			softly.assertThat(invoice.getBPartnerAddress()).as("BPartnerAddress").isEqualTo(bpartnerAddress);
 		}
+=======
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_BPartnerAddress)
+				.ifPresent(bpartnerAddress -> softly.assertThat(invoice.getBPartnerAddress()).as("BPartnerAddress").isEqualTo(bpartnerAddress));
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 
-		final String expectedDocTypeName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name);
+		row.getAsOptionalString(COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name)
+				.ifPresent(expectedDocTypeName -> {
+					final I_C_DocType actualInvoiceDocType = docTypeBL.getById(DocTypeId.ofRepoId(invoice.getC_DocType_ID()));
+					softly.assertThat(actualInvoiceDocType.getName()).as("C_DocType_ID for Identifier=%s", identifierStr).isEqualTo(expectedDocTypeName);
+				});
 
-		if (Check.isNotBlank(expectedDocTypeName))
-		{
-			final I_C_DocType actualInvoiceDocType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
+		row.getAsOptionalEnum(I_C_Invoice.COLUMNNAME_PaymentRule, PaymentRule.class)
+				.ifPresent(paymentRule -> softly.assertThat(invoice.getPaymentRule()).as("PaymentRule").isEqualTo(paymentRule.getCode()));
 
+<<<<<<< HEAD
 			softly.assertThat(actualInvoiceDocType.getName()).as("C_DocType_ID").isEqualTo(expectedDocTypeName);
 		}
 
@@ -448,6 +468,17 @@ public class C_Invoice_StepDef
 			final I_AD_User contact = userTable.get(adUserIdentifier);
 			assertThat(invoice.getAD_User_ID()).isEqualTo(contact.getAD_User_ID());
 		}
+=======
+		row.getAsOptionalString(I_C_Invoice.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName)
+				.ifPresent(internalName -> {
+					final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
+					softly.assertThat(invoice.getAD_InputDataSource_ID()).as("AD_InputDataSource_ID for Identifier=%s", identifierStr).isEqualTo(dataSource.getAD_InputDataSource_ID());
+				});
+
+		row.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
+				.map(userTable::get)
+				.ifPresent(contact -> assertThat(invoice.getAD_User_ID()).as("AD_User_ID").isEqualTo(contact.getAD_User_ID()));
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 
 		final BigDecimal grandTotal = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_GrandTotal);
 		if (grandTotal != null)
@@ -455,6 +486,7 @@ public class C_Invoice_StepDef
 			softly.assertThat(invoice.getGrandTotal()).as("GrandTotal").isEqualByComparingTo(grandTotal);
 		}
 
+<<<<<<< HEAD
 		final BigDecimal totalLines = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_TotalLines);
 		if (totalLines != null)
 		{
@@ -468,6 +500,17 @@ public class C_Invoice_StepDef
 
 			softly.assertThat(invoice.getC_Currency_ID()).as("CurrencyID").isEqualTo(currencyId.getRepoId());
 		}
+=======
+		row.getAsOptionalBigDecimal(COLUMNNAME_TotalLines)
+				.ifPresent(totalLines -> softly.assertThat(invoice.getTotalLines()).as("TotalLines").isEqualByComparingTo(totalLines));
+
+		row.getAsOptionalString(COLUMNNAME_C_Currency_ID)
+				.map(CurrencyCode::ofThreeLetterCode)
+				.ifPresent(currencyCode -> {
+					final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+					softly.assertThat(invoice.getC_Currency_ID()).as("CurrencyID").isEqualTo(currencyId.getRepoId());
+				});
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 
 		final LocalDate dateInvoiced = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + COLUMNNAME_DateInvoiced);
 		if (dateInvoiced != null)
@@ -496,29 +539,24 @@ public class C_Invoice_StepDef
 			softly.assertThat(TimeUtil.asLocalDate(invoice.getDateOrdered(), zoneId)).isEqualTo(dateOrdered);
 		}
 
+<<<<<<< HEAD
 		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalId);
 		if (Check.isNotBlank(externalId))
 		{
 			softly.assertThat(invoice.getExternalId()).as("ExternalId").isEqualTo(externalId);
 		}
+=======
+		row.getAsOptionalString(COLUMNNAME_ExternalId)
+				.ifPresent(externalId -> softly.assertThat(invoice.getExternalId()).as("ExternalId").isEqualTo(externalId));
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 
-		final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(docTypeIdentifier))
-		{
-			final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
-			softly.assertThat(docTypeRecord).isNotNull();
+		row.getAsOptionalIdentifier(COLUMNNAME_C_DocType_ID)
+				.map(docTypeTable::getId)
+				.ifPresent(docTypeId -> softly.assertThat(invoice.getC_DocType_ID()).as(COLUMNNAME_C_DocType_ID).isEqualTo(docTypeId.getRepoId()));
 
-			softly.assertThat(invoice.getC_DocType_ID()).as(COLUMNNAME_C_DocType_ID).isEqualTo(docTypeRecord.getC_DocType_ID());
-		}
-
-		final String docTypeTargetIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocTypeTarget_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(docTypeTargetIdentifier))
-		{
-			final I_C_DocType docTypeRecord = docTypeTable.get(docTypeTargetIdentifier);
-			softly.assertThat(docTypeRecord).isNotNull();
-
-			softly.assertThat(invoice.getC_DocTypeTarget_ID()).as(COLUMNNAME_C_DocTypeTarget_ID).isEqualTo(docTypeRecord.getC_DocType_ID());
-		}
+		row.getAsOptionalIdentifier(COLUMNNAME_C_DocTypeTarget_ID)
+				.map(docTypeTable::getId)
+				.ifPresent(docTypeId -> softly.assertThat(invoice.getC_DocTypeTarget_ID()).as(COLUMNNAME_C_DocTypeTarget_ID).isEqualTo(docTypeId.getRepoId()));
 
 		final Boolean isSOTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsSOTrx);
 		if (isSOTrx != null)
@@ -526,6 +564,7 @@ public class C_Invoice_StepDef
 			softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx);
 		}
 
+<<<<<<< HEAD
 		{// payment related
 			final Boolean invoiceIsPaid = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsPaid, null);
 			if (invoiceIsPaid != null)
@@ -551,29 +590,50 @@ public class C_Invoice_StepDef
 				softly.assertThat(invoice.getOpenAmt()).as("C_Invoice.OpenAmt").isEqualByComparingTo(invoiceOpenAmt);
 			}
 		}
+=======
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_Project_ID)
+				.map(projectTable::getId)
+				.ifPresent(projectId -> softly.assertThat(invoice.getC_Project_ID()).as("C_Project_ID").isEqualTo(projectId.getRepoId()));
 
-		final String expectedSalesRep_ID = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_SalesRep_ID);
-		if (expectedSalesRep_ID != null)
-		{
-			final int expectedSalesRep_RepoId = Optional.ofNullable(DataTableUtil.nullToken2Null(expectedSalesRep_ID))
-					.map(Integer::parseInt)
-					.orElse(0);
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_Activity_ID)
+				.map(activityTable::get)
+				.ifPresent(activity -> softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID").isEqualTo(activity.getC_Activity_ID()));
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_SalesRep_ID)
+				.ifPresent(expectedSalesRepIdentifier -> {
+					final UserId expectedSalesRepId = expectedSalesRepIdentifier.isNullPlaceholder()
+							? null
+							: expectedSalesRepIdentifier.getAsId(UserId.class);
+
+<<<<<<< HEAD
 			softly.assertThat(invoice.getSalesRep_ID()).as("SalesRep_ID").isEqualTo(expectedSalesRep_RepoId);
 		}
+=======
+					final UserId actualSalesRepId = InterfaceWrapperHelper.isNull(invoice, I_C_Invoice.COLUMNNAME_SalesRep_ID)
+							? null
+							: UserId.ofRepoIdOrNull(invoice.getSalesRep_ID());
+					
+					softly.assertThat(actualSalesRepId).as("SalesRep_ID").isEqualTo(expectedSalesRepId);
+				});
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 
-		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocumentNo);
-		if (Check.isNotBlank(documentNo))
-		{
-			softly.assertThat(invoice.getDocumentNo()).as(COLUMNNAME_DocumentNo).isEqualTo(documentNo);
-		}
+		row.getAsOptionalString(COLUMNNAME_DocumentNo)
+				.ifPresent(documentNo -> softly.assertThat(invoice.getDocumentNo()).as(COLUMNNAME_DocumentNo).isEqualTo(documentNo));
 
+<<<<<<< HEAD
 		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (de.metas.common.util.Check.isNotBlank(warehouseIdentifier))
 		{
 			final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
 			softly.assertThat(invoice.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(warehouseRecord.getM_Warehouse_ID());
 		}
+=======
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getId)
+				.ifPresent(warehouseId -> softly.assertThat(invoice.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(warehouseId.getRepoId()));
+
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 		softly.assertAll();
 	}
 

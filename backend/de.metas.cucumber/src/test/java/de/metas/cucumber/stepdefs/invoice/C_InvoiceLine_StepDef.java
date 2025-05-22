@@ -58,6 +58,11 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+<<<<<<< HEAD
+=======
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 import org.adempiere.model.InterfaceWrapperHelper;
 <<<<<<< HEAD
 import org.compiere.model.I_C_Invoice;
@@ -75,6 +80,7 @@ import org.compiere.model.I_C_Project;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Price_UOM_ID;
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_QtyInvoicedInPriceUOM;
@@ -148,7 +154,9 @@ public class C_InvoiceLine_StepDef
 		DataTableRows.of(table)
 				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID)
 				.forEach(row -> {
+					I_C_InvoiceLine invoiceLineRecord = findInvoiceLineRecord(row);
 					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+<<<<<<< HEAD
 					final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 					final ProductId expectedProductId = getProductId(row);
 					final BigDecimal qtyInvoiced = row.getAsBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
@@ -186,9 +194,52 @@ public class C_InvoiceLine_StepDef
 
 					final I_C_InvoiceLine invoiceLineRecord = queryBuilder.create().firstOnlyNotNull(I_C_InvoiceLine.class);
 
+=======
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 					validateInvoiceLine(invoiceLineRecord, invoice, row);
 				});
 >>>>>>> ce978dd873 (improve readability of cucumber tests)
+	}
+
+	private I_C_InvoiceLine findInvoiceLineRecord(final DataTableRow row)
+	{
+		final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
+		final ProductId expectedProductId = getProductId(row);
+		final BigDecimal qtyInvoiced = row.getAsBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
+
+		//dev-note: we assume the tests are generally not using the same product and qty on different lines...
+		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId);
+
+		// ...or if they do, they have different inoutlines
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
+				.map(inOutLineTable::getId)
+				.ifPresent(inOutLineId -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineId.getRepoId()));
+
+		final List<I_C_InvoiceLine> invoiceLineRecords = queryBuilder.create().list(I_C_InvoiceLine.class);
+		if (invoiceLineRecords.isEmpty())
+		{
+			throw new AdempiereException("No invoice line found for " + queryBuilder);
+		}
+		else if (invoiceLineRecords.size() == 1)
+		{
+			return invoiceLineRecords.get(0);
+		}
+
+		final List<I_C_InvoiceLine> invoiceLineRecordsFiltered = invoiceLineRecords.stream()
+				.filter(invoiceLine -> invoiceLine.getQtyInvoiced().compareTo(qtyInvoiced) == 0)
+				.collect(Collectors.toList());
+		if (invoiceLineRecordsFiltered.size() == 1)
+		{
+			return invoiceLineRecordsFiltered.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("Not a single invoice line found for " + queryBuilder)
+					.setParameter("invoiceLineRecords", invoiceLineRecords)
+					.appendParametersToMessage();
+		}
 	}
 
 	@And("^validate invoice lines for (.*):$")
@@ -278,11 +329,16 @@ public class C_InvoiceLine_StepDef
 		final SoftAssertions softly = new SoftAssertions();
 >>>>>>> ce978dd873 (improve readability of cucumber tests)
 
+<<<<<<< HEAD
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEntered);
 		if (qtyEntered != null)
 		{
 			assertThat(invoiceLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
 		}
+=======
+		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyEntered)
+				.ifPresent(qtyEntered -> softly.assertThat(invoiceLine.getQtyEntered()).as("QtyEntered").isEqualByComparingTo(qtyEntered));
+>>>>>>> 6369950e81 (improve/modernize cucumber framework)
 
 		final BigDecimal qtyEnteredInBPartnerUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEnteredInBPartnerUOM);
 		if (qtyEnteredInBPartnerUOM != null)
