@@ -3,6 +3,7 @@ package de.metas.business_rule.event;
 import de.metas.business_rule.descriptor.model.BusinessRuleAndTriggerId;
 import de.metas.business_rule.log.BusinessRuleLogger;
 import de.metas.error.AdIssueId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -126,6 +127,7 @@ public class BusinessRuleEventRepository
 				.businessRuleAndTriggerId(BusinessRuleAndTriggerId.ofRepoIds(record.getAD_BusinessRule_ID(), record.getAD_BusinessRule_Trigger_ID()))
 				.processed(record.isProcessed())
 				.errorId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.build();
 	}
 
