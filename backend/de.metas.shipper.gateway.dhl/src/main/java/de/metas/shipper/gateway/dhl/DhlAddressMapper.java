@@ -37,6 +37,9 @@
 
  import static de.metas.shipper.gateway.dhl.DhlConstants.IRL_COUNTRY;
 
+ /**
+  * Make sure the strings are OK as specified by DHL's <a href="https://developer.dhl.com/api-reference/parcel-de-shipping-post-parcel-germany-v2#reference-docs-section">API-Docu</a>.
+  */
  @UtilityClass
  public class DhlAddressMapper
  {
