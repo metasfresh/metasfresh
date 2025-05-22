@@ -36,20 +36,18 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractMaterialReturnTests extends AbstractNewAggregationEngineTests
 {
@@ -94,11 +92,11 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 			iol11 = createInvoiceCandidateInOutLine(ic1, inOut1, qtysDelivered, inOutDocumentNo + "_1");
 			completeInOut(inOut1);
 		}
-		return Arrays.asList(iol11);
+		return Collections.singletonList(iol11);
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> inOutLines)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -111,13 +109,13 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic1);
 
-		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(1));
+		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1))).hasSize(1);
 	}
 
 	@Override
 	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
 	{
-		Assertions.assertThat(invoices).hasSize(1);
+		assertThat(invoices).hasSize(1);
 
 		final SoftAssertions softly = new SoftAssertions();
 
