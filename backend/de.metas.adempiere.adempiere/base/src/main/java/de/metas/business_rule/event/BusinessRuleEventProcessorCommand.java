@@ -36,6 +36,7 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Builder
@@ -168,19 +169,27 @@ public class BusinessRuleEventProcessorCommand
 		}
 		else
 		{
-			final AdMessageKey messageKey = getAdMessageKey(rule);
+			final Properties tempCtx = Env.newTemporaryCtx();
 
-			final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
-					.recordRef(targetRecordRef)
-					.businessRuleId(rule.getId())
-					.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey))
-					.userId(event.getTriggeringUserId())
-					.build());
-			logger.debug(stopwatch, "=> Created/Updated warning for target record");
+			Env.setContext(tempCtx, Env.CTXNAME_AD_Client_ID, event.getClientAndOrgId().getClientId().getRepoId());
+			Env.setContext(tempCtx, Env.CTXNAME_AD_Org_ID, event.getClientAndOrgId().getOrgId().getRepoId());
 
-			BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
-			logger.debug(stopwatch, "=> Created user notification for target record");
+			try (final IAutoCloseable ignored = Env.switchContext(tempCtx))
+			{
+				final AdMessageKey messageKey = getAdMessageKey(rule);
+				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
+						.recordRef(targetRecordRef)
+						.businessRuleId(rule.getId())
+						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey))
+						.userId(event.getTriggeringUserId())
+						.build());
+				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
+				logger.debug(stopwatch, "=> Created user notification for target record");
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
+				logger.debug(stopwatch, "=> Created user notification for target record");
+			}
 		}
 	}
 
