@@ -4,6 +4,7 @@ import de.metas.business_rule.descriptor.model.BusinessRuleAndTriggerId;
 import de.metas.business_rule.descriptor.model.BusinessRuleId;
 import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
 import de.metas.error.AdIssueId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -22,6 +23,7 @@ public class BusinessRuleEvent
 	@NonNull UserId triggeringUserId;
 	boolean processed;
 	@Nullable AdIssueId errorId;
+	@NonNull ClientAndOrgId clientAndOrgId;
 
 	public BusinessRuleId getBusinessRuleId() {return businessRuleAndTriggerId.getBusinessRuleId();}
 
