@@ -22,14 +22,15 @@
 
 package de.metas.cucumber;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.base.Stopwatch;
 import de.metas.logging.LogManager;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
-import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.images.PullPolicy;
@@ -43,7 +44,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class InfrastructureSupport
 {
-	private final static Logger logger = LogManager.getLogger(InfrastructureSupport.class);
+	private final static ILoggable loggable = Loggables.withLogger(
+			Loggables.console("InfrastructureSupport"),
+			LogManager.getLogger(InfrastructureSupport.class),
+			Level.INFO);
 
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
@@ -116,7 +120,7 @@ public class InfrastructureSupport
 		started = true;
 
 		stopwatch.stop();
-		logger.info("Cucumber infrastructure started in {}", stopwatch);
+		loggable.addLog("Cucumber infrastructure started in {}", stopwatch);
 	}
 
 	private void startRabbitMQ()
@@ -127,7 +131,7 @@ public class InfrastructureSupport
 			rabbitPort = getEnvInt(ENV_EXTERNALLY_RUNNING_RABBITMQ_PORT);
 			rabbitUser = getEnv(ENV_EXTERNALLY_RUNNING_RABBITMQ_USER);
 			rabbitPassword = getEnv(ENV_EXTERNALLY_RUNNING_RABBITMQ_PASS);
-			logger.info("Using provided RabbitMQ: host={}, port={} user={}, password={}", rabbitHost, rabbitPort, rabbitUser, rabbitPassword);
+			loggable.addLog("Using provided RabbitMQ: host={}, port={} user={}", rabbitHost, rabbitPort, rabbitUser, rabbitPassword);
 			return;
 		}
 
@@ -142,7 +146,7 @@ public class InfrastructureSupport
 		rabbitPassword = rabbitMQContainer.getAdminPassword();
 
 		stopwatch.stop();
-		logger.info("Started RabbitMQ in {}", stopwatch);
+		loggable.addLog("Started RabbitMQ in {}", stopwatch);
 	}
 
 	private void startDatabase()
@@ -151,7 +155,7 @@ public class InfrastructureSupport
 		{
 			dbHost = getEnv(ENV_EXTERNALLY_RUNNING_POSTGRESQL_HOST);
 			dbPort = getEnvInt(ENV_EXTERNALLY_RUNNING_POSTGRESQL_PORT);
-			logger.info("Using provided postgREST: host={}, port={}", dbHost, dbPort);
+			loggable.addLog("Using provided postgresql: host={}, port={}", dbHost, dbPort);
 			return;
 		}
 
@@ -165,7 +169,7 @@ public class InfrastructureSupport
 		// this image is from release-branch 2021-09-15. it is fairly old,
 		// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image
 		final String fullImageName = "metasfresh/metasfresh-db:5.175.2_559_release";
-		logger.info("Start dockerized metasfresh-db {}", fullImageName);
+		loggable.addLog("Start dockerized metasfresh-db {}", fullImageName);
 
 		// the DB needs to be populated
 		//noinspection resource
@@ -178,7 +182,7 @@ public class InfrastructureSupport
 
 		dbHost = db.getHost();
 		dbPort = db.getFirstMappedPort();
-		logger.info("dockerized metasfresh-db {} runs at {}:{} (took {})", fullImageName, dbHost, dbPort, stopwatch);
+		loggable.addLog("dockerized metasfresh-db {} runs at {}:{} (took {})", fullImageName, dbHost, dbPort, stopwatch);
 
 		stopwatch.reset();
 		// apply our local migration scripts to get our DB up to date
@@ -188,7 +192,7 @@ public class InfrastructureSupport
 						.onScriptFailure(WorkspaceMigrateConfig.OnScriptFailure.FAIL)
 						.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
 						.build());
-		logger.info("Applied migration scripts (took {})", stopwatch);
+		loggable.addLog("Applied migration scripts (took {})", stopwatch);
 
 		// apply our local migration scripts to get our DB up to date
 		final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
@@ -206,7 +210,7 @@ public class InfrastructureSupport
 		{
 			postgRESTHost = getEnv(ENV_EXTERNALLY_RUNNING_POSTGREST_HOST);
 			postgRESTPort = getEnvInt(ENV_EXTERNALLY_RUNNING_POSTGREST_PORT);
-			logger.info("Using provided postgREST: host={}, port={}", postgRESTHost, postgRESTPort);
+			loggable.addLog("Using provided postgREST: host={}, port={}", postgRESTHost, postgRESTPort);
 			return;
 		}
 
@@ -223,14 +227,14 @@ public class InfrastructureSupport
 
 		postgRESTHost = postgREST.getHost();
 		postgRESTPort = postgREST.getFirstMappedPort();
-		logger.info("dockerized postgREST {} runs at {}:{} (took {})", fullImageName, dbHost, dbPort, stopwatch);
+		loggable.addLog("dockerized postgREST {} runs at {}:{} (took {})", fullImageName, dbHost, dbPort, stopwatch);
 	}
 
 	private static Integer getEnvInt(@NonNull final String variableName)
 	{
 		return Integer.parseInt(getEnv(variableName));
 	}
-	
+
 	private static String getEnv(@NonNull final String variableName)
 	{
 		return getEnvOpt(variableName).orElseThrow(() -> new RuntimeException("Missing environment variable " + variableName + " for cucumber-tests!"));
