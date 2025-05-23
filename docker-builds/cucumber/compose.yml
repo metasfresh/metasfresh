@@ -15,8 +15,8 @@ services:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 5s
       timeout: 2s
-      start_period: 10s
-      retries: 120
+      start_period: 300s
+      retries: 10
     deploy:
       mode: replicated
       replicas: 1
@@ -32,12 +32,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
     deploy:
       mode: replicated
       replicas: 1
@@ -83,7 +77,7 @@ services:
       rabbitmq:
         condition: service_healthy
       postgrest:
-        condition: service_healthy
+        condition: service_started
     volumes:
       - ./cucumber:/reports
     deploy:

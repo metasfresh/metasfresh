@@ -1,4 +1,5 @@
-version: '3.9'
+# docker-compose.yml file
+
 services:
   db:
     build:
@@ -27,7 +28,30 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      
+
+  postgrest:
+    build: postgrest
+    image: docker-postgrest
+    container_name: ${BRANCH_NAME}_postgrest
+    environment:
+      PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
+      PGRST_DB_SCHEMA: public
+      PGRST_DB_ANON_ROLE: metasfresh
+    ports:
+      - "${POSTGREST_PORT}:3000"
+    depends_on:
+      db:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      mode: replicated
+      replicas: 1
+
   rabbitmq:
     build: rabbitmq
     image: rabbitmq
@@ -74,28 +98,6 @@ services:
     environment:
       - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
     #restart: always #avoid restart on docker restart, because we use 1 docker-compose per customer now
-
-  postgrest:
-    build: postgrest
-    image: docker-postgrest
-    container_name: ${BRANCH_NAME}_postgrest
-    environment:
-      PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
-      PGRST_DB_SCHEMA: public
-      PGRST_DB_ANON_ROLE: metasfresh
-    ports:
-      - "${POSTGREST_PORT}:3000"
-    depends_on:
-      - db
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    deploy:
-      mode: replicated
-      replicas: 1
 
   papercut-smtp:
     build: papercut-smtp
