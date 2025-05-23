@@ -124,14 +124,14 @@ Feature: Production dispo scenarios
       | Identifier | M_PriceList_ID |
       | plv_1      | pl_1           |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | plv_1                  | p_1          | 10.0     | PCE      | Normal           |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_1                  | p_1          | 10.0     | PCE      |
     And metasfresh contains C_BPartners:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | N        | Y          | ps_1               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN          | C_BPartner_ID |
-      | location_1 | bPLocation_1 | customer      |
+      | Identifier | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | location_1 | customer      | Y               | Y               |
     #past order
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
