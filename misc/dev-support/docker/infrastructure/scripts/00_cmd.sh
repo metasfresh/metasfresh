@@ -2,7 +2,7 @@
 
 #
 # %L
-# metasfresh
+# master
 # %%
 # Copyright (C) 2023 metas GmbH
 # %%
@@ -33,26 +33,18 @@ else
     exit
 fi
 
+if ! [ -z "$2" ]; then
+    COMMAND=$2
+else
+    echo "!! The second parameter needs do be the command for docker-compose !!"
+    exit
+fi
+
 set -u
 
 COMPOSE_FILE=../docker-compose.yml
 ENV_FILE=../env-files/${BRANCH_NAME}.env
 
 # reset the database
-docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure down
+docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure "${@:2}"
 
-set +e # if the volumes don't exist yet, then it's also fine..so, don't fail the script in that case
-docker volume rm ${BRANCH_NAME}_metasfresh_postgres
-docker volume rm ${BRANCH_NAME}_metasfresh_elasticsearch
-set -e
-
-docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} build --pull
-docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure up -d
-
-echo "The local database is now reset to the seed dump."
-echo "Now you can use this command:" 
-echo ""
-echo "./00_cmd.sh ${BRANCH_NAME} logs -f db"
-echo ""
-echo "..to see when the DB is actually up."
-echo "When the DB is up, apply the local migration scripts and then proceed with converting this DB into a template."

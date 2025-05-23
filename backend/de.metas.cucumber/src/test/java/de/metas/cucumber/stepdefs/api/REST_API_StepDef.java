@@ -234,7 +234,14 @@ public class REST_API_StepDef
 	public void the_metasfresh_REST_API_responds_with(@NonNull final String expectedResponse) throws JSONException
 	{
 		final String expectedResponseResolved = resolveContextVariables(expectedResponse);
-		JSONAssert.assertEquals(expectedResponseResolved, testContext.getApiResponseBodyAsString(), JSONCompareMode.LENIENT);
+		try
+		{
+			JSONAssert.assertEquals(expectedResponseResolved, testContext.getApiResponseBodyAsString(), JSONCompareMode.LENIENT);
+		}
+		catch (final AssertionError e)
+		{ // JSONAssert doesn't give us the actual response
+			throw new AssertionError("Actual response:\n" + testContext.getApiResponseBodyAsString(), e);
+		}
 	}
 
 	@When("invoke {string} {string} with response code {string}")
@@ -260,7 +267,7 @@ public class REST_API_StepDef
 
 		assertThat(actualResponseBody.getMessageBody()).isEqualTo(expectedResponseBody.getMessageBody());
 	}
-		
+
 	@And("the actual response body is empty")
 	public void validate_empty_response_body()
 	{

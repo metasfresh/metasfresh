@@ -15,23 +15,26 @@ services:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 5s
       timeout: 2s
-      start_period: 10s
-      retries: 120
+      start_period: 300s
+      retries: 10
     deploy:
       mode: replicated
       replicas: 1
 
-# we don't yet have it in de.metas.cucumber.InfrastructureSupport
-#  postgrest:
-#    image: postgrest/postgrest:latest
-#    environment:
-#      PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
-#      PGRST_DB_SCHEMA: public
-#      PGRST_DB_ANON_ROLE: metasfresh
-#    ports:
-#      - "3000:3000"
-#    depends_on:
-#      - db
+  postgrest:
+    image: postgrest/postgrest:latest
+    environment:
+      PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
+      PGRST_DB_SCHEMA: public
+      PGRST_DB_ANON_ROLE: metasfresh
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
 
   rabbitmq:
     image: rabbitmq:3.9.13-management
@@ -42,6 +45,12 @@ services:
       - RABBITMQ_DEFAULT_USER=metasfresh
       - RABBITMQ_DEFAULT_PASS=metasfresh
       - RABBITMQ_DEFAULT_VHOST=/
+    healthcheck:
+        test: [ "CMD", "rabbitmqctl", "status" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+        start_period: 20s
     deploy:
       mode: replicated
       replicas: 1
@@ -53,9 +62,22 @@ services:
       - TEST_SMTP_FROM=$TEST_SMTP_FROM
       - TEST_SMTP_USER=$TEST_SMTP_USER
       - TEST_SMTP_PASSWORD=$TEST_SMTP_PASSWORD
+      - CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_HOST=rabbitmq
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_PORT=5672
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_USER=metasfresh
+      - CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_PASS=metasfresh
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGRESQL_HOST=db
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGRESQL_PORT=5432
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGREST_HOST=postgrest
+      - CUCUMBER_EXTERNALLY_RUNNING_POSTGREST_PORT=3000
     depends_on:
       db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      postgrest:
+        condition: service_started
     volumes:
       - ./cucumber:/reports
     deploy:
