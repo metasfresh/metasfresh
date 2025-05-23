@@ -22,9 +22,7 @@
 
 package de.metas.cucumber;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.base.Stopwatch;
-import de.metas.logging.LogManager;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -44,10 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class InfrastructureSupport
 {
-	private final static ILoggable loggable = Loggables.withLogger(
-			Loggables.console("InfrastructureSupport"),
-			LogManager.getLogger(InfrastructureSupport.class),
-			Level.INFO);
+	private final static ILoggable loggable = Loggables.console("InfrastructureSupport");
 
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
