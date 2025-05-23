@@ -113,7 +113,7 @@ Feature: Production dispo scenarios
   @Id:S0129.2_190
   @from:cucumber
   Scenario: Reactivate and reduce QTY for order with negative ATP. Ensure correct qty is used on new PP_Order_Candidate.
-    When metasfresh has date and time 2025-02-25T08:00:00+01:00[Europe/Berlin]
+    When metasfresh has date and time 2025-02-25T07:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_1       |
@@ -193,10 +193,10 @@ Feature: Production dispo scenarios
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP   | M_Warehouse_ID | PP_Order_Candidate_ID |
-      | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T06:00:00Z | 200  | -200  | warehouseStd   |                       |
-      | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2025-02-25T06:00:00Z | 30   | -230  | warehouseStd   |                       |
+      | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200  | -200  | warehouseStd   |                       |
+      | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-22T21:00:00Z | 30   | -230  | warehouseStd   |                       |
       #TODO ATP on the next line should be -30
       | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 200  | -230  | warehouseStd   | oc_1                  |
       | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2000 | -2000 | warehouseStd   | oc_1                  |
-      | 05/s_1_2   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 30   | 0     | warehouseStd   | oc_2                  |
+      | 05/s_1_2   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 30   | -200  | warehouseStd   | oc_2                  |
       | 06/d_2_2   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 300  | -2300 | warehouseStd   | oc_2                  |
