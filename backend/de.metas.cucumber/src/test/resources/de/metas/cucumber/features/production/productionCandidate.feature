@@ -112,7 +112,7 @@ Feature: Production dispo scenarios
 
   @Id:S0129.2_190
   @from:cucumber
-  Scenario: Reactivate and reduce QTY for order with negative ATP. Ensure correct qty is used on new PP_Order_Candidate.
+  Scenario: Reactivate and reduce QTY for order with negative ATP and PreparationDate in the past. Ensure correct qty is used on new PP_Order_Candidate.
     When metasfresh has date and time 2025-02-25T07:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
       | Identifier |
