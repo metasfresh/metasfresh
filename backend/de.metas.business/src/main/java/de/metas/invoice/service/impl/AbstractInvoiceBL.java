@@ -58,7 +58,6 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
-import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -854,7 +853,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final boolean setDocTypeTargetId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final InvoiceDocBaseType docBaseType)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(docBaseType.getDocBaseType())
@@ -1109,7 +1107,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 * every block, which are supposed to increase the clear arrangement in the Invoice window. None of these lines are attached to a M_InOutLine which means that the Virtual Column M_InOut_ID is
 	 * NULL. This causes Problems when trying to order the lines, so first we need to allocate an InOut_ID to each InvoiceLine. To do this a hash map is used.
 	 */
-	private final Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
 		final HashMap<Integer, Integer> invoiceLineId2inOutId = new HashMap<>();
 
@@ -1861,7 +1859,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
 		{
 			// task 08627: unlink possible inOutLines because the inOut might now be reactivated and they might be deleted.
-			// Unlinking them now is more performant than selecting an unlinking them when the inOutLine is actually deleted.
+			// Unlinking them now is more performant than selecting and unlinking them when the inOutLine is actually deleted.
 			il.setM_InOutLine(null);
 			InterfaceWrapperHelper.save(il);
 
