@@ -32,6 +32,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      mode: replicated
+      replicas: 1
 
   rabbitmq:
     image: rabbitmq:3.9.13-management
@@ -42,6 +51,12 @@ services:
       - RABBITMQ_DEFAULT_USER=metasfresh
       - RABBITMQ_DEFAULT_PASS=metasfresh
       - RABBITMQ_DEFAULT_VHOST=/
+    healthcheck:
+        test: [ "CMD", "rabbitmqctl", "status" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+        start_period: 20s
     deploy:
       mode: replicated
       replicas: 1
