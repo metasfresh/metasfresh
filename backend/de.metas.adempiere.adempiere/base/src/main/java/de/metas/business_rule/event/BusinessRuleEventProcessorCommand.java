@@ -14,12 +14,10 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.Language;
 import de.metas.record.warning.RecordWarningCreateRequest;
 import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
-import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -38,6 +36,7 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Builder
@@ -170,18 +169,25 @@ public class BusinessRuleEventProcessorCommand
 		}
 		else
 		{
-			final AdMessageKey messageKey = getAdMessageKey(rule);
+			final Properties tempCtx = Env.newTemporaryCtx();
 
-			final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
-					.recordRef(targetRecordRef)
-					.businessRuleId(rule.getId())
-					.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey))
-					.build());
-			logger.debug(stopwatch, "=> Created/Updated warning for target record");
+			Env.setContext(tempCtx, Env.CTXNAME_AD_Client_ID, event.getClientAndOrgId().getClientId().getRepoId());
+			Env.setContext(tempCtx, Env.CTXNAME_AD_Org_ID, event.getClientAndOrgId().getOrgId().getRepoId());
 
-			BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
-			logger.debug(stopwatch, "=> Created user notification for target record");
+			try (final IAutoCloseable ignored = Env.switchContext(tempCtx))
+			{
+				final AdMessageKey messageKey = getAdMessageKey(rule);
+				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
+						.recordRef(targetRecordRef)
+						.businessRuleId(rule.getId())
+						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey))
+						.userId(event.getTriggeringUserId())
+						.build());
+				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
+				logger.debug(stopwatch, "=> Created user notification for target record");
+			}
 		}
 	}
 

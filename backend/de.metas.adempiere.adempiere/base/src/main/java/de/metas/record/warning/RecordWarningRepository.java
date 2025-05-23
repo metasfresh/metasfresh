@@ -28,6 +28,7 @@ public class RecordWarningRepository
 		record.setRecord_ID(request.getRecordRef().getRecord_ID());
 		record.setAD_BusinessRule_ID(request.getBusinessRuleId().getRepoId());
 		record.setMsgText(request.getMessage());
+		record.setAD_User_ID(request.getUserId().getRepoId());
 
 		InterfaceWrapperHelper.save(record);
 
