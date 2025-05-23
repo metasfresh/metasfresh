@@ -118,6 +118,8 @@ Feature: create multiple production candidates
     # Reactivate the order, change quantity from 10 PCE to 12 PCE and completed again.
     # Expect a new PP_Order_Candidate to be generated for those 2 PCE.
     And the order identified by o_1 is reactivated
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 12             |
