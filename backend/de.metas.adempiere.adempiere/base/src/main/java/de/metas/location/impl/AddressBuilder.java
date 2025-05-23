@@ -126,6 +126,7 @@ public class AddressBuilder
 	 *
 	 * @param isLocalAddress true if this is a local address (i.e. location's country is same as our tenant)
 	 */
+	@Nullable
 	public String buildAddressString(
 			final I_C_Location location,
 			final boolean isLocalAddress,
@@ -181,7 +182,19 @@ public class AddressBuilder
 		// variables in brackets already parsed
 		replaceAddrToken(location, inStr, outStr, bPartnerBlock, userBlock, false);
 
-		return StringUtils.replace(outStr.toString().trim(), "\\n", "\n");
+		final String outString = StringUtils.replace(outStr.toString().trim(), "\\n", "\n");
+		if (Check.isBlank(outString))
+		{
+			return null;
+		}
+		else if (country.getMaxLineChars() > 0)
+		{
+			return truncateEachLineAccordingWithMaxLineChars(outString, country.getMaxLineChars());
+		}
+		else
+		{
+			return outString;
+		}
 	}
 
 	/**
@@ -916,4 +929,20 @@ public class AddressBuilder
 		}
 	}
 
+	@NonNull
+	private String truncateEachLineAccordingWithMaxLineChars(@NonNull final String str, final int maxLineChars)
+	{
+		final StringBuilder truncatedResult = new StringBuilder();
+
+		for (String line : str.split("\n"))
+		{
+			if (line.length() > maxLineChars)
+			{
+				line = StringUtils.trunc(line, maxLineChars);
+			}
+			truncatedResult.append(line).append("\n");
+		}
+
+		return truncatedResult.toString().trim();
+	}
 }

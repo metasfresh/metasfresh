@@ -118,27 +118,6 @@ public interface I_C_Country
 	String COLUMNNAME_AllowCitiesOutOfList = "AllowCitiesOutOfList";
 
 	/**
-	 * Set Capture Sequence.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCaptureSequence (@Nullable java.lang.String CaptureSequence);
-
-	/**
-	 * Get Capture Sequence.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCaptureSequence();
-
-	ModelColumn<I_C_Country, Object> COLUMN_CaptureSequence = new ModelColumn<>(I_C_Country.class, "CaptureSequence", null);
-	String COLUMNNAME_CaptureSequence = "CaptureSequence";
-
-	/**
 	 * Set Country.
 	 * Country
 	 *
@@ -182,6 +161,27 @@ public interface I_C_Country
 	int getC_Currency_ID();
 
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Capture Sequence.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCaptureSequence (@Nullable java.lang.String CaptureSequence);
+
+	/**
+	 * Get Capture Sequence.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCaptureSequence();
+
+	ModelColumn<I_C_Country, Object> COLUMN_CaptureSequence = new ModelColumn<>(I_C_Country.class, "CaptureSequence", null);
+	String COLUMNNAME_CaptureSequence = "CaptureSequence";
 
 	/**
 	 * Set ISO Country Code.
@@ -556,6 +556,29 @@ public interface I_C_Country
 
 	ModelColumn<I_C_Country, Object> COLUMN_IsEnforceCorrectionInvoice = new ModelColumn<>(I_C_Country.class, "IsEnforceCorrectionInvoice", null);
 	String COLUMNNAME_IsEnforceCorrectionInvoice = "IsEnforceCorrectionInvoice";
+
+	/**
+	 * Set Maximum Line Characters.
+	 * Specify the maximum line characters for each line of the address
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxLineChars (int MaxLineChars);
+
+	/**
+	 * Get Maximum Line Characters.
+	 * Specify the maximum line characters for each line of the address
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMaxLineChars();
+
+	ModelColumn<I_C_Country, Object> COLUMN_MaxLineChars = new ModelColumn<>(I_C_Country.class, "MaxLineChars", null);
+	String COLUMNNAME_MaxLineChars = "MaxLineChars";
 
 	/**
 	 * Set Media Size.
