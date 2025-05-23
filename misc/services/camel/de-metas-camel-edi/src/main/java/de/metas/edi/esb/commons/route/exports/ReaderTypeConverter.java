@@ -22,17 +22,17 @@
 
 package de.metas.edi.esb.commons.route.exports;
 
+import org.apache.camel.Converter;
+import org.apache.camel.Exchange;
+import org.apache.camel.TypeConverters;
+import org.springframework.stereotype.Component;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-
-import org.apache.camel.Converter;
-import org.apache.camel.Exchange;
-import org.apache.camel.TypeConverters;
-import org.springframework.stereotype.Component;
 
 /**
  * Converts byte arrays to readers, using either the charset set in {@link Exchange#CHARSET_NAME} or <code>UTF-8</code>.<br>
@@ -56,7 +56,7 @@ public class ReaderTypeConverter implements TypeConverters
 		String charSetName = StandardCharsets.UTF_8.name();
 		if (exchange != null)
 		{
-			String exchangeCharsetName = exchange.getProperty(Exchange.CHARSET_NAME, String.class);
+			final String exchangeCharsetName = exchange.getProperty(Exchange.CHARSET_NAME, String.class);
 			if (exchangeCharsetName != null)
 			{
 				charSetName = exchangeCharsetName;

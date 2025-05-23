@@ -26,17 +26,18 @@ import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.ObjectFactory;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Unmarshaller;
 import lombok.NonNull;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.xmlunit.assertj3.XmlAssert;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -59,20 +60,23 @@ class MetasfreshInHouseV2DesadvRouteTest extends CamelTestSupport
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
-		final var properties = new Properties();
+		super.configureContext(camelContextConfiguration); // this is important
+		
+		final Properties properties = new Properties();
 		try
 		{
 			properties.load(MetasfreshInHouseV2DesadvRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			properties.setProperty(MetasfreshInHouseV2DesadvRoute.OUTPUT_DESADV_LOCAL_NEW_VERSION, "mock:fileOutputEndpoint");
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
+		camelContextConfiguration.camelContextSupplier();
 	}
 
 	@Test

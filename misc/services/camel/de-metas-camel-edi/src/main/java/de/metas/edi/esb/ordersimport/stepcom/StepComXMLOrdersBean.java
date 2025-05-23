@@ -22,21 +22,7 @@
 
 package de.metas.edi.esb.ordersimport.stepcom;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-
-import de.metas.edi.esb.ordersimport.AbstractEDIOrdersBean;
-import de.metas.edi.esb.ordersimport.OrderEDI;
-import de.metas.edi.esb.ordersimport.OrderHeader;
-import de.metas.edi.esb.ordersimport.OrderLine;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.util.CollectionUtils;
-
+import de.metas.edi.esb.commons.MeasurementUnit;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.stepcom.orders.DETAILXbest;
 import de.metas.edi.esb.jaxb.stepcom.orders.DPRDE1;
@@ -48,7 +34,10 @@ import de.metas.edi.esb.jaxb.stepcom.orders.HADRE1;
 import de.metas.edi.esb.jaxb.stepcom.orders.HDATE1;
 import de.metas.edi.esb.jaxb.stepcom.orders.HEADERXbest;
 import de.metas.edi.esb.jaxb.stepcom.orders.Xbest4H;
-import de.metas.edi.esb.commons.MeasurementUnit;
+import de.metas.edi.esb.ordersimport.AbstractEDIOrdersBean;
+import de.metas.edi.esb.ordersimport.OrderEDI;
+import de.metas.edi.esb.ordersimport.OrderHeader;
+import de.metas.edi.esb.ordersimport.OrderLine;
 import de.metas.edi.esb.ordersimport.compudata.H000;
 import de.metas.edi.esb.ordersimport.compudata.H100;
 import de.metas.edi.esb.ordersimport.compudata.P100;
@@ -57,6 +46,16 @@ import de.metas.edi.esb.ordersimport.stepcom.qualifier.DateQual;
 import de.metas.edi.esb.ordersimport.stepcom.qualifier.ProductDescQual;
 import de.metas.edi.esb.ordersimport.stepcom.qualifier.ProductQual;
 import de.metas.edi.esb.ordersimport.stepcom.qualifier.QuantityQual;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
 
 public class StepComXMLOrdersBean extends AbstractEDIOrdersBean
 {
