@@ -23,7 +23,7 @@
 	<parameter name="displayhu" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT *
-FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Fixed_Texts($P{m_inout_id})
+FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_ReportElementsToPrint($P{m_inout_id})
 ;]]>
 	</queryString>
 	<field name="isgoodsnotehidden" class="java.lang.String">

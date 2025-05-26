@@ -20,11 +20,11 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Fixed_Texts (IN p_InOut_ID numeric)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_ReportElementsToPrint (IN p_InOut_ID numeric)
 ;
 
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Fixed_Texts(IN p_InOut_ID numeric)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_ReportElementsToPrint(IN p_InOut_ID numeric)
     RETURNS TABLE
             (
                 isGoodsNoteHidden CHAR,
