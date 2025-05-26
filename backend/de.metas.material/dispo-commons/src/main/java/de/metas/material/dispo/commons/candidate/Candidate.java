@@ -392,6 +392,5 @@ public class Candidate
 			default:
 				return false;
 		}
-
 	}
 }
