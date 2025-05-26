@@ -284,7 +284,7 @@ Feature:product get/create/update using metasfresh api
       | Identifier | Name         | OPT.IsVendor | OPT.IsCustomer |
       | bpartner_1 | BPartnerName | N            | Y              |
 
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsExcludedFromSale | OPT.ExclusionFromSaleReason | OPT.IsExcludedFromPurchase | OPT.ExclusionFromPurchaseReason | OPT.ProductNo | OPT.UPC |
       | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | ean     |
 

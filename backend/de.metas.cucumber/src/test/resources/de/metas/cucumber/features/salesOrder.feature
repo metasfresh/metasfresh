@@ -64,7 +64,7 @@ Feature: sales order
       | endcustomer_2   | Endcustomer_72  | N            | Y              | ps_2                          |
       | vendor_2        | vendor_72       | Y            | Y              | ps_2                          |
       | shiptopartner_2 | Shiptopartner_2 | Y            | Y              | ps_2                          |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_2                 | p_2                     |
     And metasfresh contains C_Orders:
@@ -116,7 +116,7 @@ Feature: sales order
       | endcustomer_36   | Endcustomer_36   | N            | Y              | ps_26                         |
       | vendor_26        | vendor_726       | Y            | Y              | ps_26                         |
       | shiptopartner_26 | Shiptopartner_26 | Y            | Y              | ps_26                         |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_26                | p_26                    |
     And metasfresh contains C_BPartner_Locations:
@@ -191,7 +191,7 @@ Feature: sales order
       | Identifier     | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_67 | Endcustomer_67 | N            | Y              | ps_3                          |
       | vendor_67      | vendor_67      | Y            | Y              | ps_3                          |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.UsedForVendor |
       | vendor_67                | p_31                    | true              |
       | vendor_67                | p_32                    | true              |

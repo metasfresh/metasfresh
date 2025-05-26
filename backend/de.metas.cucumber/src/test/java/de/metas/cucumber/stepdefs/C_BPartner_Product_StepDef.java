@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -41,9 +40,8 @@ import org.compiere.model.I_M_Product;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_BPartner_Product_StepDef
 {
@@ -86,11 +84,7 @@ public class C_BPartner_Product_StepDef
 	@Given("metasfresh contains C_BPartner_Product")
 	public void create_C_BPartner_Product(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			createBPartnerProduct(dataTableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createBPartnerProduct);
 	}
 
 	private void locateBPartnerProductByProductAndBPartner(@NonNull final Map<String, String> tableRow)
@@ -142,45 +136,35 @@ public class C_BPartner_Product_StepDef
 		assertThat(bPartnerProduct.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
 	}
 
-	private void createBPartnerProduct(@NonNull final Map<String, String> tableRow)
+	private void createBPartnerProduct(@NonNull final DataTableRow tableRow)
 	{
-		final String bPartnerProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer bPartnerId = bPartnerTable.getOptional(bPartnerIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
-
 		final I_C_BPartner_Product bPartnerProductRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
-
-		bPartnerProductRecord.setM_Product_ID(productId);
-		bPartnerProductRecord.setC_BPartner_ID(bPartnerId);
-
-		final String gtin = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_GTIN);
-
-		if (Check.isNotBlank(gtin))
-		{
-			bPartnerProductRecord.setGTIN(gtin);
-		}
-
-		final String eanCu = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_EAN_CU);
-
-		if (Check.isNotBlank(eanCu))
-		{
-			bPartnerProductRecord.setEAN_CU(eanCu);
-		}
-
+		bPartnerProductRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		bPartnerProductRecord.setUsedForVendor(true);
+		bPartnerProductRecord.setUsedForCustomer(true);
 		bPartnerProductRecord.setShelfLifeMinDays(0);
 		bPartnerProductRecord.setShelfLifeMinPct(0);
 
+		final ProductId productId = tableRow.getAsIdentifier(I_C_BPartner_Product.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
+		bPartnerProductRecord.setM_Product_ID(productId.getRepoId());
+
+		final BPartnerId bpartnerId = tableRow.getAsIdentifier(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bPartnerTable);
+		bPartnerProductRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale).ifPresent(bPartnerProductRecord::setIsExcludedFromSale);
+		tableRow.getAsOptionalString(I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason).ifPresent(bPartnerProductRecord::setExclusionFromSaleReason);
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase).ifPresent(bPartnerProductRecord::setIsExcludedFromPurchase);
+		tableRow.getAsOptionalString(I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason).ifPresent(bPartnerProductRecord::setExclusionFromPurchaseReason);
+		tableRow.getAsOptionalString(I_C_BPartner_Product.COLUMNNAME_ProductNo).ifPresent(bPartnerProductRecord::setProductNo);
+		tableRow.getAsOptionalString(I_C_BPartner_Product.COLUMNNAME_UPC).ifPresent(bPartnerProductRecord::setUPC);
+
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor).ifPresent(bPartnerProductRecord::setIsCurrentVendor);
+		tableRow.getAsOptionalString(I_C_BPartner_Product.COLUMNNAME_GTIN).ifPresent(bPartnerProductRecord::setGTIN);
+		tableRow.getAsOptionalString(I_C_BPartner_Product.COLUMNNAME_EAN_CU).ifPresent(bPartnerProductRecord::setEAN_CU);
+
 		saveRecord(bPartnerProductRecord);
 
-		bpartnerProductTable.put(bPartnerProductIdentifier, ProductRepository.fromRecord(bPartnerProductRecord));
+		tableRow.getAsIdentifier(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
+				.putOrReplace(bpartnerProductTable, ProductRepository.fromRecord(bPartnerProductRecord));
 	}
 }
