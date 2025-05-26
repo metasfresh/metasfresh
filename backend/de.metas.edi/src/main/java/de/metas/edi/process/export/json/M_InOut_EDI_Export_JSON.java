@@ -24,41 +24,39 @@ package de.metas.edi.process.export.json;
 
 import de.metas.common.util.Check;
 import de.metas.edi.model.I_EDI_Document_Extension;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.edi.model.I_M_InOut;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
 import de.metas.process.Param;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
 
 /**
  * Exports one particular invoice to JSON.
  * It directs {@link PostgRESTProcessExecutor} to store the result to disk if not called via API.
  * It also attaches the resulting JSON file to the invoice and sets the invoice's {@code EDI_ExportStatus} to "Sent".
  */
-public class C_Invoice_EDI_Export_JSON extends EDI_Export_JSON
+public class M_InOut_EDI_Export_JSON extends EDI_Export_JSON
 {
-	public static final String PARAM_C_INVOICE_ID = "C_Invoice_ID";
+	public static final String PARAM_M_InOut_ID = "M_InOut_ID";
+	
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
-	@Param(parameterName = PARAM_C_INVOICE_ID, mandatory = true)
-	private int c_invoice_id;
+	@Param(parameterName = PARAM_M_InOut_ID, mandatory = true)
+	private int m_inout_id;
 
 	@Override
 	protected I_EDI_Document_Extension loadRecord()
 	{
-		final I_C_Invoice invoiceRecord = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(c_invoice_id));
-		Check.assumeNotNull(invoiceRecord, "C_Invoice with ID={} shall not be null", c_invoice_id);
-		return InterfaceWrapperHelper.create(invoiceRecord, I_EDI_Document_Extension.class);
+		final I_M_InOut record = inOutDAO.getById(InOutId.ofRepoId(m_inout_id), I_M_InOut.class);
+		return Check.assumeNotNull(record, "M_InOut with ID={} shall not be null", m_inout_id);
 	}
 
 	@Override
-	protected void saveRecord(@NonNull final I_EDI_Document_Extension record)
+	protected void saveRecord(final I_EDI_Document_Extension record)
 	{
-		final I_C_Invoice invoiceRecord = InterfaceWrapperHelper.create(record, I_C_Invoice.class);
-		invoiceDAO.save(invoiceRecord);
+		final I_M_InOut inOutRecord = InterfaceWrapperHelper.create(record, I_M_InOut.class);
+		inOutDAO.save(inOutRecord);
 	}
 }
