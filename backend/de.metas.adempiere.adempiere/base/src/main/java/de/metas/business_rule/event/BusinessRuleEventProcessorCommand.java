@@ -57,6 +57,8 @@ public class BusinessRuleEventProcessorCommand
 	@NonNull private final QueryLimit limit;
 	@Nullable private BusinessRulesCollection rules;
 
+	final AdMessageKey messageKeyPrefix = AdMessageKey.of("de.metas.business_rule.event.BusinessRuleEventProcessorCommand.messageKeyPrefix"); // TODO add ad_message "WARNING"
+
 	public void execute()
 	{
 		try (final IAutoCloseable ignored = setupLoggerContext())
@@ -180,12 +182,23 @@ public class BusinessRuleEventProcessorCommand
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
 						.businessRuleId(rule.getId())
-						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey))
+						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey) + targetRecordRef.getDocumentNo() +  targetRecordRef.getValue() + targetRecordRef.getName())
 						.userId(event.getTriggeringUserId())
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
-				BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
+				final RecordWarningNoticeRequest recordWarningNoticeRequest = RecordWarningNoticeRequest.builder()
+						.userId(event.getTriggeringUserId())
+						.recordWarningId(recordWarningId)
+						.messageKeyPrefix(messageKeyPrefix)
+						.messageKey(messageKey)
+						.contentADMessageParam(targetRecordRef.getTableName())
+						.contentADMessageParam(targetRecordRef.getDocumentNo().orElse(null))
+						.contentADMessageParam(targetRecordRef.getValue().orElse(null))
+						.contentADMessageParam(targetRecordRef.getName().orElse(null))
+						.build();
+
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(recordWarningNoticeRequest);
 				logger.debug(stopwatch, "=> Created user notification for target record");
 			}
 		}

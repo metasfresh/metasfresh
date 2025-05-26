@@ -70,6 +70,7 @@ public class UserNotificationRequest
 	String contentPlain;
 
 	/** Optional */
+	AdMessageKey contentADMessagePrefix;
 	AdMessageKey contentADMessage;
 	List<Object> contentADMessageParams;
 
@@ -94,6 +95,7 @@ public class UserNotificationRequest
 			@Singular final List<Object> subjectADMessageParams,
 			//
 			final String contentPlain,
+			@Nullable final AdMessageKey contentADMessagePrefix,
 			final AdMessageKey contentADMessage,
 			@Singular final List<Object> contentADMessageParams,
 			//
@@ -134,6 +136,7 @@ public class UserNotificationRequest
 		this.subjectADMessageParams = copyADMessageParams(subjectADMessageParams);
 
 		this.contentPlain = contentPlain;
+		this.contentADMessagePrefix = contentADMessagePrefix;
 		this.contentADMessage = contentADMessage;
 		this.contentADMessageParams = copyADMessageParams(contentADMessageParams);
 

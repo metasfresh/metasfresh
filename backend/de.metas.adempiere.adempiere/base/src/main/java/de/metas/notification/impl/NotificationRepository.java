@@ -104,6 +104,8 @@ public class NotificationRepository implements INotificationRepository
 		{
 			adMessageId = Services.get(IMsgBL.class).getIdByAdMessage(DEFAULT_AD_MESSAGE).orElse(null);
 		}
+
+		// TODO : Add messageWarningPrefix to AD_Note
 		notificationPO.setAD_Message_ID(AdMessageId.toRepoId(adMessageId));
 
 		//
@@ -190,6 +192,8 @@ public class NotificationRepository implements INotificationRepository
 				.recipientUserId(notificationPO.getAD_User_ID())
 				.read(notificationPO.isProcessed());
 
+
+		// TODO builder.setMessagePrefix
 		//
 		// detailADMessage
 		final AdMessageId detailADMessageId = AdMessageId.ofRepoIdOrNull(notificationPO.getAD_Message_ID());
@@ -360,6 +364,17 @@ public class NotificationRepository implements INotificationRepository
 
 		deleteNotification(notificationPO);
 		return true;
+	}
+
+	@Override
+	public void deleteByTableRecordRef(final UserId adUserId, final @NonNull TableRecordReference tableRecordReference)
+	{
+		retrieveNotesByUserId(adUserId)
+				.addEqualsFilter(I_AD_Note.COLUMN_AD_Table_ID, tableRecordReference.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Note.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
+				.create()
+				.delete();
+
 	}
 
 	@Override

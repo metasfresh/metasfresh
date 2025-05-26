@@ -24,11 +24,8 @@ package de.metas.business_rule.event;
 
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.record.warning.RecordWarningId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_AD_Record_Warning;
@@ -54,16 +51,16 @@ public final class BusinessRuleEventNotificationProducer
 			.type(Type.DISTRIBUTED)
 			.build();
 
-	public void createNotice(@NonNull final UserId userId,
-							 @NonNull final RecordWarningId recordWarningId,
-							 @NonNull final AdMessageKey messageKey)
+	public void createNotice(final RecordWarningNoticeRequest recordWarningNoticeRequest)
 	{
 		notificationBL.send(
 				UserNotificationRequest.builder()
 						.topic(EVENTBUS_TOPIC)
-						.notificationsConfig(notificationBL.getUserNotificationsConfig(userId))
-						.contentADMessage(messageKey)
-						.targetAction(UserNotificationRequest.TargetRecordAction.of(I_AD_Record_Warning.Table_Name, recordWarningId.getRepoId()))
+						.notificationsConfig(notificationBL.getUserNotificationsConfig(recordWarningNoticeRequest.getUserId()))
+						.contentADMessagePrefix(recordWarningNoticeRequest.getMessageKeyPrefix())
+						.contentADMessage(recordWarningNoticeRequest.getMessageKey())
+						.contentADMessageParam(recordWarningNoticeRequest.getContentADMessageParams())
+						.targetAction(UserNotificationRequest.TargetRecordAction.of(I_AD_Record_Warning.Table_Name, recordWarningNoticeRequest.getRecordWarningId().getRepoId()))
 						.build());
 	}
 

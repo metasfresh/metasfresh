@@ -65,6 +65,8 @@ public class UserNotification
 	private final int recipientUserId;
 	@JsonProperty("detailPlain")
 	private final String detailPlain;
+	@JsonProperty("detailADMessagePrefix")
+	private final String detailADMessagePrefix;
 	@JsonProperty("detailADMessage")
 	private final String detailADMessage;
 	@JsonProperty("detailADMessageParams")
@@ -99,6 +101,7 @@ public class UserNotification
 			@JsonProperty("recipientUserId") @NonNull final Integer recipientUserId,
 			//
 			@JsonProperty("detailPlain") final String detailPlain,
+			@JsonProperty("detailADMessagePrefix") final String detailADMessagePrefix,
 			@JsonProperty("detailADMessage") final String detailADMessage,
 			@JsonProperty("detailADMessageParams") @Singular final List<Object> detailADMessageParams,
 			//
@@ -117,6 +120,7 @@ public class UserNotification
 		this.recipientUserId = recipientUserId;
 
 		this.detailPlain = detailPlain;
+		this.detailADMessagePrefix = detailADMessagePrefix;
 		this.detailADMessage = detailADMessage;
 		this.detailADMessageParams = detailADMessageParams != null ? Collections.unmodifiableList(new ArrayList<>(detailADMessageParams)) : ImmutableList.of();
 

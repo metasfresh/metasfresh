@@ -579,4 +579,28 @@ public final class TableRecordReference implements ITableRecordReference
 		final String modelTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
 		return modelTableName != null && modelTableName.equals(getTableName());
 	}
+
+	public Optional<String> getDocumentNo()
+	{
+		// TODO : find a way around the deprecated method
+		final Object model = getModel();
+
+		return InterfaceWrapperHelper.getValueOptional(model, "DocumentNo");
+	}
+
+
+	public Optional<String> getValue()
+	{
+		final Object model = getModel();
+
+		return InterfaceWrapperHelper.getValueOptional(model, "Value");
+	}
+
+
+	public Optional<String> getName()
+	{
+		final Object model = getModel();
+
+		return InterfaceWrapperHelper.getValueOptional(model, "Name");
+	}
 }
