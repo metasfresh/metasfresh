@@ -20,29 +20,22 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU_BAL (IN p_InOut_ID numeric)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Fixed_Texts (IN p_InOut_ID numeric)
 ;
 
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU_BAL(IN p_InOut_ID numeric)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Fixed_Texts(IN p_InOut_ID numeric)
     RETURNS TABLE
             (
-                CountryCode     Text,
                 isGoodsNoteHidden CHAR,
                 isSignatureHidden CHAR
             )
 AS
 $$
 
-SELECT c.countrycode,
-       report.IsHiddenReportElement(io.C_DocType_ID, 'GoodsNote') AS isGoodsNoteHidden,
+SELECT report.IsHiddenReportElement(io.C_DocType_ID, 'GoodsNote') AS isGoodsNoteHidden,
        report.IsHiddenReportElement(io.C_DocType_ID, 'Signature') AS isSignatureHidden
 FROM m_inout io
-         INNER JOIN AD_Org org ON io.ad_org_id = org.ad_org_id
-         LEFT OUTER JOIN AD_OrgInfo orginfo ON orginfo.ad_org_id = org.ad_org_id
-         LEFT OUTER JOIN C_BPartner_Location org_loc ON orginfo.Orgbp_Location_ID = org_loc.C_BPartner_Location_ID
-         LEFT OUTER JOIN C_Location org_l ON org_loc.C_Location_ID = org_l.C_Location_ID
-         LEFT OUTER JOIN C_Country c ON org_l.C_Country_ID = c.C_Country_ID
 WHERE io.m_inout_id = p_InOut_ID
     ;
 
