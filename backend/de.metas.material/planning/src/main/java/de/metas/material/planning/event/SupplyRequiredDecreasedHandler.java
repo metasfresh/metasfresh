@@ -66,7 +66,7 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 		final MaterialPlanningContext context = helper.createContextOrNull(descriptor);
 		final MaterialDescriptor materialDescriptor = descriptor.getMaterialDescriptor();
 		Quantity remainingQtyToHandle = Quantitys.of(materialDescriptor.getQuantity(), ProductId.ofRepoId(materialDescriptor.getProductId()));
-		Loggables.withLogger(log, Level.DEBUG).addLog("Could not decrease the qty for order {}.", descriptor.getOrderId());
+		Loggables.withLogger(log, Level.DEBUG).addLog("Trying to decrease supply of  {} by {}.", descriptor.getOrderId(), remainingQtyToHandle);
 		if (context != null)
 		{
 			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
@@ -80,7 +80,7 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 
 		if (remainingQtyToHandle.signum() > 0)
 		{
-			Loggables.withLogger(log, Level.WARN).addLog("Could not decrease the qty for order {}.", descriptor.getOrderId());
+			Loggables.withLogger(log, Level.WARN).addLog("Could not decrease the qty for order {}. Qty left: {}", descriptor.getOrderId(), remainingQtyToHandle);
 			//TODO add notification here
 		}
 	}
