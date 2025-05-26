@@ -787,7 +787,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			return BigDecimal.ZERO;
 		}
 
-		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCU();
+		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCUsPerTU();
 		if (qtyCUsPerTU.signum() <= 0)
 		{
 			// Qty TU not available => cannot compute
