@@ -34,9 +34,7 @@ import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Loggables;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -52,7 +50,6 @@ import java.util.List;
 public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<SupplyRequiredDecreasedEvent>
 {
 	private static final Logger log = LogManager.getLogger(SupplyRequiredDecreasedHandler.class);
-	private static final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final List<SupplyRequiredAdvisor> supplyRequiredAdvisors;
 	@NonNull private final SupplyRequiredHandlerHelper helper;
 
@@ -69,6 +66,7 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 		final MaterialPlanningContext context = helper.createContextOrNull(descriptor);
 		final MaterialDescriptor materialDescriptor = descriptor.getMaterialDescriptor();
 		Quantity remainingQtyToHandle = Quantitys.of(materialDescriptor.getQuantity(), ProductId.ofRepoId(materialDescriptor.getProductId()));
+		Loggables.withLogger(log, Level.DEBUG).addLog("Could not decrease the qty for order {}.", descriptor.getOrderId());
 		if (context != null)
 		{
 			for (final SupplyRequiredAdvisor advisor : supplyRequiredAdvisors)
@@ -83,7 +81,7 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 		if (remainingQtyToHandle.signum() > 0)
 		{
 			Loggables.withLogger(log, Level.WARN).addLog("Could not decrease the qty for order {}.", descriptor.getOrderId());
-			//TODO notify and throw error
+			//TODO add notification here
 		}
 	}
 }
