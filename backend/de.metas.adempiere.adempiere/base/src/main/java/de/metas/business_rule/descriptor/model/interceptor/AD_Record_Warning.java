@@ -43,7 +43,7 @@ public class AD_Record_Warning
 	{
 		if (warning.isAcknowledged())
 		{
-			notificationRepository.deleteByTableRecordRef(UserId.ofRepoId(warning.getAD_User_ID()), TableRecordReference.of(warning.getAD_Table_ID(), warning.getRecord_ID()));
+			notificationRepository.deleteByTableRecordRef(TableRecordReference.of(warning.getAD_Table_ID(), warning.getRecord_ID()));
 		}
 	}
 }

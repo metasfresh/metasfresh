@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.notification.impl.NotificationSeverity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AccessLevel;
@@ -18,6 +20,7 @@ import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.X_AD_Note;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -65,8 +68,8 @@ public class UserNotification
 	private final int recipientUserId;
 	@JsonProperty("detailPlain")
 	private final String detailPlain;
-	@JsonProperty("detailADMessagePrefix")
-	private final String detailADMessagePrefix;
+	@JsonProperty("notificationSeverity")
+	private final NotificationSeverity notificationSeverity;
 	@JsonProperty("detailADMessage")
 	private final String detailADMessage;
 	@JsonProperty("detailADMessageParams")
@@ -101,7 +104,7 @@ public class UserNotification
 			@JsonProperty("recipientUserId") @NonNull final Integer recipientUserId,
 			//
 			@JsonProperty("detailPlain") final String detailPlain,
-			@JsonProperty("detailADMessagePrefix") final String detailADMessagePrefix,
+			@JsonProperty("detailADMessagePrefix") final NotificationSeverity notificationSeverity,
 			@JsonProperty("detailADMessage") final String detailADMessage,
 			@JsonProperty("detailADMessageParams") @Singular final List<Object> detailADMessageParams,
 			//
@@ -120,7 +123,7 @@ public class UserNotification
 		this.recipientUserId = recipientUserId;
 
 		this.detailPlain = detailPlain;
-		this.detailADMessagePrefix = detailADMessagePrefix;
+		this.notificationSeverity = notificationSeverity;
 		this.detailADMessage = detailADMessage;
 		this.detailADMessageParams = detailADMessageParams != null ? Collections.unmodifiableList(new ArrayList<>(detailADMessageParams)) : ImmutableList.of();
 
@@ -168,6 +171,12 @@ public class UserNotification
 		if (!Check.isEmpty(detailPlain, true))
 		{
 			detailBuf.append(detailPlain.trim());
+		}
+
+		if(!Check.isEmpty(notificationSeverity))
+		{
+			final String notificationSeverity = TranslatableStrings.adRefList(X_AD_Note.NOTIFICATIONSEVERITY_AD_Reference_ID, getNotificationSeverity().getCode()).translate(adLanguage);
+			detailBuf.append(notificationSeverity); // TODO see how this looks like, needs extra formatting like ":"  and adding spacing
 		}
 
 		// Translate, parse and add detail (AD_Message).

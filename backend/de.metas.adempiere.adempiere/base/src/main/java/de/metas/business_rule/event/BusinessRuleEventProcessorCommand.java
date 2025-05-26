@@ -14,6 +14,7 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.notification.impl.NotificationSeverity;
 import de.metas.record.warning.RecordWarningCreateRequest;
 import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
@@ -137,7 +138,8 @@ public class BusinessRuleEventProcessorCommand
 		logger.debug("Processing event: {}", event);
 
 		final BusinessRuleStopwatch stopwatch = logger.newStopwatch();
-		final TableRecordReference targetRecordRef = retrieveTargetRecordRef(event);
+		// TODO targetRecordInfo
+		final TableRecordReference targetRecordRef = retrieveTargetRecordInfo(event);
 		logger.setTargetRecordRef(targetRecordRef);
 		logger.debug(stopwatch, "Retrieved target record: {}", targetRecordRef);
 		if (targetRecordRef == null)
@@ -179,10 +181,11 @@ public class BusinessRuleEventProcessorCommand
 			try (final IAutoCloseable ignored = Env.switchContext(tempCtx))
 			{
 				final AdMessageKey messageKey = getAdMessageKey(rule);
+				final Object[] parameters ; // TODO
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
 						.businessRuleId(rule.getId())
-						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey) + targetRecordRef.getDocumentNo() +  targetRecordRef.getValue() + targetRecordRef.getName())
+						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey /*, TODO parameters*/))
 						.userId(event.getTriggeringUserId())
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
@@ -190,12 +193,9 @@ public class BusinessRuleEventProcessorCommand
 				final RecordWarningNoticeRequest recordWarningNoticeRequest = RecordWarningNoticeRequest.builder()
 						.userId(event.getTriggeringUserId())
 						.recordWarningId(recordWarningId)
-						.messageKeyPrefix(messageKeyPrefix)
+						.notificationSeverity(NotificationSeverity.Warning)
 						.messageKey(messageKey)
-						.contentADMessageParam(targetRecordRef.getTableName())
-						.contentADMessageParam(targetRecordRef.getDocumentNo().orElse(null))
-						.contentADMessageParam(targetRecordRef.getValue().orElse(null))
-						.contentADMessageParam(targetRecordRef.getName().orElse(null))
+						// TODO .contentADMessageParam(targetRecordInfo ....)
 						.build();
 
 				BusinessRuleEventNotificationProducer.newInstance().createNotice(recordWarningNoticeRequest);
@@ -205,7 +205,9 @@ public class BusinessRuleEventProcessorCommand
 	}
 
 	@Nullable
-	private TableRecordReference retrieveTargetRecordRef(@NonNull final BusinessRuleEvent event)
+	// TODO  Make it return TableRecordInfo
+	//  ask the POInfo if the DOcumentNo, Value, Name columns exists and fetch what we have. see https://github.com/metasfresh/metasfresh/pull/20871#discussion_r2107373961
+	private TableRecordReference  retrieveTargetRecordInfo (@NonNull final BusinessRuleEvent event)
 	{
 		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
 		final BusinessRuleTrigger trigger = rule.getTriggerById(event.getTriggerId());
@@ -217,6 +219,7 @@ public class BusinessRuleEventProcessorCommand
 		final String sql = "SELECT " + trigger.getTargetRecordMappingSQL() + " FROM " + sourceTableName + " WHERE " + keyColumnName + "=?";
 		final Integer targetRecordId = getRecordIdFromSql(sql, sourceRecordId, keyColumnName);
 		return targetRecordId == null ? null : TableRecordReference.of(rule.getAdTableId(), targetRecordId);
+
 	}
 
 	@Nullable

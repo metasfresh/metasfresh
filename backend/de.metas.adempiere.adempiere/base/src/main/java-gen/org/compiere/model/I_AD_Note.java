@@ -1,5 +1,8 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Note
  *  @author Adempiere (generated) 
@@ -728,4 +731,26 @@ public interface I_AD_Note
     public static final org.adempiere.model.ModelColumn<I_AD_Note, Object> COLUMN_WhereClause = new org.adempiere.model.ModelColumn<>(I_AD_Note.class, "WhereClause", null);
     /** Column name WhereClause */
     public static final String COLUMNNAME_WhereClause = "WhereClause";
+
+	/**
+	 * Set Notification Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNotificationSeverity (@Nullable java.lang.String NotificationSeverity);
+
+	/**
+	 * Get Notification Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNotificationSeverity();
+
+	ModelColumn<I_AD_Note, Object> COLUMN_NotificationSeverity = new ModelColumn<>(I_AD_Note.class, "NotificationSeverity", null);
+	String COLUMNNAME_NotificationSeverity = "NotificationSeverity";
+
 }

@@ -57,7 +57,7 @@ public final class BusinessRuleEventNotificationProducer
 				UserNotificationRequest.builder()
 						.topic(EVENTBUS_TOPIC)
 						.notificationsConfig(notificationBL.getUserNotificationsConfig(recordWarningNoticeRequest.getUserId()))
-						.contentADMessagePrefix(recordWarningNoticeRequest.getMessageKeyPrefix())
+						.notificationSeverity(recordWarningNoticeRequest.getNotificationSeverity())
 						.contentADMessage(recordWarningNoticeRequest.getMessageKey())
 						.contentADMessageParam(recordWarningNoticeRequest.getContentADMessageParams())
 						.targetAction(UserNotificationRequest.TargetRecordAction.of(I_AD_Record_Warning.Table_Name, recordWarningNoticeRequest.getRecordWarningId().getRepoId()))

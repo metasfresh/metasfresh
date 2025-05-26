@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.event.EventBusConfig;
 import de.metas.event.Topic;
 import de.metas.i18n.AdMessageKey;
+import de.metas.notification.impl.NotificationSeverity;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -65,6 +66,7 @@ public class UserNotificationRequest
 	/** Optional */
 	AdMessageKey subjectADMessage;
 	List<Object> subjectADMessageParams;
+	NotificationSeverity notificationSeverity;
 
 	/** Optional; takes precedence over {@link #contentADMessage}, if set. */
 	String contentPlain;
@@ -98,6 +100,8 @@ public class UserNotificationRequest
 			@Nullable final AdMessageKey contentADMessagePrefix,
 			final AdMessageKey contentADMessage,
 			@Singular final List<Object> contentADMessageParams,
+
+			@Nullable final NotificationSeverity notificationSeverity,
 			//
 			@Nullable final TargetAction targetAction,
 			//
@@ -139,6 +143,7 @@ public class UserNotificationRequest
 		this.contentADMessagePrefix = contentADMessagePrefix;
 		this.contentADMessage = contentADMessage;
 		this.contentADMessageParams = copyADMessageParams(contentADMessageParams);
+		this.notificationSeverity = notificationSeverity;
 
 		this.targetAction = targetAction;
 

@@ -22,28 +22,8 @@
 
 package de.metas.business_rule.event;
 
-import de.metas.i18n.AdMessageKey;
-import de.metas.notification.impl.NotificationSeverity;
-import de.metas.record.warning.RecordWarningId;
-import de.metas.user.UserId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
-@Builder
-@Value
-public class RecordWarningNoticeRequest
+public class TargetRecordInfo
 {
-
-	// TODO IMPROVE THIS as per review https://github.com/metasfresh/metasfresh/pull/20871#discussion_r2107362428
-	@NonNull UserId userId;
-	@NonNull RecordWarningId recordWarningId;
-	@NonNull NotificationSeverity notificationSeverity;
-	@NonNull AdMessageKey messageKey;
-	@Singular @Nullable	List<Object> contentADMessageParams;
-
+	// TODO
 }

@@ -75,7 +75,7 @@ public class NotificationRepository implements INotificationRepository
 
 	private final AttachmentEntryService attachmentEntryService;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
-
+	private IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public NotificationRepository(
 			@NonNull final AttachmentEntryService attachmentEntryService,
@@ -105,7 +105,7 @@ public class NotificationRepository implements INotificationRepository
 			adMessageId = Services.get(IMsgBL.class).getIdByAdMessage(DEFAULT_AD_MESSAGE).orElse(null);
 		}
 
-		// TODO : Add messageWarningPrefix to AD_Note
+		notificationPO.setNotificationSeverity(request.getNotificationSeverity().getCode());
 		notificationPO.setAD_Message_ID(AdMessageId.toRepoId(adMessageId));
 
 		//
@@ -192,7 +192,6 @@ public class NotificationRepository implements INotificationRepository
 				.recipientUserId(notificationPO.getAD_User_ID())
 				.read(notificationPO.isProcessed());
 
-
 		// TODO builder.setMessagePrefix
 		//
 		// detailADMessage
@@ -256,7 +255,7 @@ public class NotificationRepository implements INotificationRepository
 	private AdWindowId extractAdWindowId(final I_AD_Note notificationPO)
 	{
 		AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(notificationPO.getAD_Window_ID());
-		if(adWindowId == null)
+		if (adWindowId == null)
 		{
 			return null;
 		}
@@ -269,10 +268,10 @@ public class NotificationRepository implements INotificationRepository
 
 	private IQueryBuilder<I_AD_Note> retrieveNotesByUserId(@NonNull final UserId adUserId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Note.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Note.COLUMN_AD_User_ID, adUserId);
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_User_ID, adUserId);
 	}
 
 	@Override
@@ -367,14 +366,12 @@ public class NotificationRepository implements INotificationRepository
 	}
 
 	@Override
-	public void deleteByTableRecordRef(final UserId adUserId, final @NonNull TableRecordReference tableRecordReference)
+	public void deleteByTableRecordRef( final @NonNull TableRecordReference tableRecordReference)
 	{
-		retrieveNotesByUserId(adUserId)
-				.addEqualsFilter(I_AD_Note.COLUMN_AD_Table_ID, tableRecordReference.getAD_Table_ID())
+		queryBL.createQueryBuilder(I_AD_Note.class)
 				.addEqualsFilter(I_AD_Note.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
 				.delete();
-
 	}
 
 	@Override
