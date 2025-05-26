@@ -58,7 +58,7 @@ class PPOrderWeightingRunLoaderAndSaver
 
 	public void updateById(
 			@NonNull final PPOrderWeightingRunId id,
-			@NonNull Consumer<PPOrderWeightingRun> consumer)
+			@NonNull final Consumer<PPOrderWeightingRun> consumer)
 	{
 		final PPOrderWeightingRun run = getById(id);
 		consumer.accept(run);
@@ -104,7 +104,7 @@ class PPOrderWeightingRunLoaderAndSaver
 		return PPOrderWeightingRunCheck.builder()
 				.id(extractId(record))
 				.lineNo(SeqNo.ofInt(record.getLine()))
-				.weight(Quantitys.create(record.getWeight(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.weight(Quantitys.of(record.getWeight(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.isToleranceExceeded(record.isToleranceExceeded())
 				.description(record.getDescription())
 				.build();
@@ -132,10 +132,10 @@ class PPOrderWeightingRunLoaderAndSaver
 				.weightingSpecificationsId(WeightingSpecificationsId.ofRepoId(record.getPP_Weighting_Spec_ID()))
 				.tolerance(Percent.of(record.getTolerance_Perc()))
 				.weightChecksRequired(record.getWeightChecksRequired())
-				.targetWeight(Quantitys.create(record.getTargetWeight(), uomId))
+				.targetWeight(Quantitys.of(record.getTargetWeight(), uomId))
 				.targetWeightRange(Range.closed(
-						Quantitys.create(record.getMinWeight(), uomId),
-						Quantitys.create(record.getMaxWeight(), uomId)))
+						Quantitys.of(record.getMinWeight(), uomId),
+						Quantitys.of(record.getMaxWeight(), uomId)))
 				.isToleranceExceeded(record.isToleranceExceeded())
 				.isProcessed(record.isProcessed())
 				.checks(checks)
@@ -166,7 +166,7 @@ class PPOrderWeightingRunLoaderAndSaver
 		//
 		// UPDATE
 		final HashSet<PPOrderWeightingRunCheckId> savedIds = new HashSet<>();
-		for (PPOrderWeightingRunCheck check : weightingRun.getChecks())
+		for (final PPOrderWeightingRunCheck check : weightingRun.getChecks())
 		{
 			final I_PP_Order_Weighting_RunCheck checkRecord = checkRecordsById.get(check.getId());
 			if (checkRecord == null)
@@ -183,7 +183,7 @@ class PPOrderWeightingRunLoaderAndSaver
 		// DELETE
 		if (checkRecords.size() != savedIds.size())
 		{
-			for (Iterator<I_PP_Order_Weighting_RunCheck> it = checkRecords.iterator(); it.hasNext(); )
+			for (final Iterator<I_PP_Order_Weighting_RunCheck> it = checkRecords.iterator(); it.hasNext(); )
 			{
 				final I_PP_Order_Weighting_RunCheck checkRecord = it.next();
 				final PPOrderWeightingRunCheckId id = extractId(checkRecord);

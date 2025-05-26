@@ -16,6 +16,7 @@ import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -109,7 +110,7 @@ public class PP_Product_Planning
 			ifColumnsChanged = {I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID})
 	public void updateProductFromBomVersions(final I_PP_Product_Planning planning)
 	{
-		final  ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(planning.getPP_Product_BOMVersions_ID());
+		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(planning.getPP_Product_BOMVersions_ID());
 		if (bomVersionsId == null)
 		{
 			return; // nothing to do

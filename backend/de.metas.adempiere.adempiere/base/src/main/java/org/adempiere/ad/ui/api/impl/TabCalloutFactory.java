@@ -1,11 +1,9 @@
 package org.adempiere.ad.ui.api.impl;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
-import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -24,10 +22,8 @@ import org.adempiere.ad.ui.spi.impl.CompositeTabCallout;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -36,12 +32,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 public class TabCalloutFactory implements ITabCalloutFactory
 {
-	private static final transient Logger logger = LogManager.getLogger(TabCalloutFactory.class);
+	private static final Logger logger = LogManager.getLogger(TabCalloutFactory.class);
 	private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 
 	private final SetMultimap<String, Class<? extends ITabCallout>> tableName2tabCalloutClasses = LinkedHashMultimap.create();
@@ -133,7 +128,7 @@ public class TabCalloutFactory implements ITabCalloutFactory
 
 		//
 		// Spring Beans
-		for (final ITabCallout tabCallout : springBeansByTableName.get(TableName.ofString(tableName)))
+		for (final ITabCallout tabCallout : springBeansByTableName.get(tableName))
 		{
 			tabCalloutsList.add(tabCallout);
 			classnamesConsidered.add(tabCallout.getClass().getName());
@@ -192,7 +187,7 @@ public class TabCalloutFactory implements ITabCalloutFactory
 
 		//
 		// Retrieve and instantiate callouts which were programmatically registered
-		final Set<Class<? extends ITabCallout>> tableNameCalloutClasses = tableName2tabCalloutClasses.get(tableName);
+		final Set<Class<? extends ITabCallout>> tableNameCalloutClasses = tableName2tabCalloutClasses.get(tableName.getAsString());
 		if (!tableNameCalloutClasses.isEmpty())
 		{
 			for (final Class<? extends ITabCallout> tabCalloutClass : tableNameCalloutClasses)
@@ -281,7 +276,7 @@ public class TabCalloutFactory implements ITabCalloutFactory
 			@NonNull final Class<? extends ITabCallout> tabCalloutClass)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
-		tableName2tabCalloutClasses.put(TableName.ofString(tableName), tabCalloutClass);
+		tableName2tabCalloutClasses.put(tableName, tabCalloutClass);
 		logger.info("Registered tab callout {} for table {}", tabCalloutClass, tableName);
 	}
 
@@ -291,7 +286,7 @@ public class TabCalloutFactory implements ITabCalloutFactory
 			@NonNull final Class<? extends ITabCallout> tabCalloutClass)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
-		tableName2tabCalloutClasses.remove(TableName.ofString(tableName), tabCalloutClass);
+		tableName2tabCalloutClasses.remove(tableName, tabCalloutClass);
 		logger.info("Unregistered tab callout {} for table {}", tabCalloutClass, tableName);
 	}
 }

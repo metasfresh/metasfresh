@@ -221,39 +221,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		else
 		{
-			return buildSqlFrom();
-		}
-	}
-
-	@Override
-	public TypedSqlQuery<T> setSqlFromParameter(@NonNull final String name, @Nullable final Object value)
-	{
-		if (this.sqlFromParams == null)
-		{
-			this.sqlFromParams = new HashMap<>();
-		}
-		this.sqlFromParams.put(name, value);
-		return this;
-	}
-
-	private String buildSqlFrom()
-	{
-		if (sqlFromParams != null)
-		{
-			final String sqlFunc = getTableName();
-			final StringBuilder sqlFuncParams = new StringBuilder();
-			sqlFromParams.forEach((name, value) -> {
-				if (sqlFuncParams.length() > 0)
-				{
-					sqlFuncParams.append(", ");
-				}
-				sqlFuncParams.append(name).append(" => ").append(DB.TO_SQL(value));
-			});
-
-			return sqlFunc + "(" + sqlFuncParams + ")";
-		}
-		else
-		{
 			return getTableName();
 		}
 	}
