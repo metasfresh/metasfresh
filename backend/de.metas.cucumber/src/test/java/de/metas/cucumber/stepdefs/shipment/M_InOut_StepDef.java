@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
@@ -132,6 +133,7 @@ public class M_InOut_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Message_StepDefData messageTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -283,20 +285,20 @@ public class M_InOut_StepDef
 	@And("^after not more than (.*)s, M_InOut is found:$")
 	public void shipmentIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+		final DataTableRow firstRow = DataTableRows.of(dataTable).getFirstRow();
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(
+				firstRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID).lookupIn(shipmentScheduleTable),
+				I_M_ShipmentSchedule.class);
 
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Optional<String> docStatus = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_InOut.COLUMNNAME_DocStatus));
+		final StepDefDataIdentifier shipmentIdentifier = firstRow.getAsIdentifier(COLUMNNAME_M_InOut_ID);
+		final Optional<String> docStatus = firstRow.getAsOptionalString(I_M_InOut.COLUMNNAME_DocStatus);
 
-		final String alreadyCreatedShipmentIdentifiers = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.IgnoreCreated" + "." + I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final Set<InOutLineId> alreadyCreatedShipmentLines = Optional.ofNullable(alreadyCreatedShipmentIdentifiers)
+		final Optional<String> alreadyCreatedShipmentIdentifiers = firstRow.getAsOptionalString("OPT.IgnoreCreated" + "." + COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+		
+		final Set<InOutLineId> alreadyCreatedShipmentLines = alreadyCreatedShipmentIdentifiers
 				.map(StepDefUtil::extractIdentifiers)
 				.map(this::getShipmentLinesForShipmentIdentifiers)
 				.orElseGet(ImmutableSet::of);
-
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
 
 		final Set<Integer> linesToIgnore = alreadyCreatedShipmentLines.isEmpty()
 				? ImmutableSet.of(-1)
@@ -352,15 +354,12 @@ public class M_InOut_StepDef
 			if (shipment != null)
 			{
 				final I_M_InOut prevShipment = inoutTable.getOptional(shipmentIdentifier).orElse(null);
-				if (prevShipment == null)
-				{
-					inoutTable.put(shipmentIdentifier, shipment);
-				}
-				else
+				if (prevShipment != null)
 				{
 					assertThat(prevShipment.getM_InOut_ID()).isEqualTo(shipment.getM_InOut_ID());
-					inoutTable.putOrReplace(shipmentIdentifier, shipment);
 				}
+				inoutTable.putOrReplace(shipmentIdentifier, shipment);
+				restTestContext.setIntVariableFromRow(firstRow, shipment::getM_InOut_ID);
 
 				return true;
 			}
@@ -388,8 +387,8 @@ public class M_InOut_StepDef
 
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void processInOut(
-			@NonNull @SuppressWarnings("unused") final String model_UNUSED, 
-			@NonNull final String shipmentIdentifier, 
+			@NonNull @SuppressWarnings("unused") final String model_UNUSED,
+			@NonNull final String shipmentIdentifier,
 			@NonNull final String action)
 	{
 		final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
