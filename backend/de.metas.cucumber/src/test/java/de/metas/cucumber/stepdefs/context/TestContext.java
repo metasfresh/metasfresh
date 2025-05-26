@@ -25,8 +25,8 @@ package de.metas.cucumber.stepdefs.context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.api.APIResponse;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Data;
 import lombok.NonNull;
@@ -44,7 +44,10 @@ public class TestContext
 	private static final String ROW_FieldName = "REST.Context";
 
 	private APIResponse apiResponse;
+	
+	@Nullable
 	private String requestPayload;
+	
 	private Map<String, String> httpHeaders;
 	private String endpointPath;
 
@@ -68,7 +71,7 @@ public class TestContext
 				final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 				requestPayloadStr = jsonObjectMapper.writeValueAsString(requestPayload);
 			}
-			catch (JsonProcessingException e)
+			catch (final JsonProcessingException e)
 			{
 				throw new AdempiereException("Failed converting to json string: " + requestPayload, e);
 			}
@@ -77,6 +80,7 @@ public class TestContext
 		this.requestPayload = requestPayloadStr;
 	}
 
+	@Nullable
 	public String getApiResponseBodyAsString()
 	{
 		return apiResponse.getContent();
@@ -117,17 +121,17 @@ public class TestContext
 		row.getAsOptionalString(ROW_FieldName).ifPresent(restVariableName -> setVariable(restVariableName, valueSupplier.get()));
 	}
 
-	public void setVariable(@NonNull String name, int valueInt)
+	public void setVariable(@NonNull final String name, final int valueInt)
 	{
 		setVariable(name, String.valueOf(valueInt));
 	}
 
-	public void setVariableToNull(@NonNull String name)
+	public void setVariableToNull(@NonNull final String name)
 	{
 		variables.put(name, null);
 	}
 
-	public void setVariable(@NonNull String name, @Nullable String value)
+	public void setVariable(@NonNull final String name, @Nullable final String value)
 	{
 		if (variables.containsKey(name))
 		{

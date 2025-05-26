@@ -22,6 +22,8 @@ package org.adempiere.ad.service.impl;
  * #L%
  */
 
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -106,5 +108,22 @@ public class SequenceDAO implements ISequenceDAO
 				.orderByDescending(I_AD_Sequence.COLUMNNAME_AD_Client_ID)
 				.create()
 				.firstNotNull(I_AD_Sequence.class);
+	}
+
+	@Override
+	public DocSequenceId cloneToOrg(@NonNull final DocSequenceId fromDocSequenceId, @NonNull final OrgId toOrgId)
+	{
+		final I_AD_Sequence fromSequence = InterfaceWrapperHelper.load(fromDocSequenceId, I_AD_Sequence.class);
+		final I_AD_Sequence newSequence = InterfaceWrapperHelper.copy()
+				.setFrom(fromSequence)
+				.setSkipCalculatedColumns(true)
+				.copyToNew(I_AD_Sequence.class);
+
+		newSequence.setAD_Org_ID(toOrgId.getRepoId());
+		newSequence.setCurrentNext(100000);
+
+		InterfaceWrapperHelper.save(newSequence);
+
+		return DocSequenceId.ofRepoId(newSequence.getAD_Sequence_ID());
 	}
 }

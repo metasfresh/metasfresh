@@ -242,10 +242,10 @@ ORDER BY param_acct_name, dateacct, unionorder
 	<group name="All" isStartNewPage="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{param_acct_value}]]></groupExpression>
 		<groupHeader>
-			<band height="110">
+			<band height="115">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1 && $F{overallcount} < 150000)]]></printWhenExpression>
 				<rectangle>
-					<reportElement key="rectangle-1" x="1" y="101" width="798" height="9" backcolor="#808080" uuid="3ef21cfa-bb73-47be-a30e-8a909ba6cbb9">
+					<reportElement key="rectangle-1" x="1" y="106" width="798" height="9" backcolor="#808080" uuid="3ef21cfa-bb73-47be-a30e-8a909ba6cbb9">
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					</reportElement>
 					<graphicElement>
@@ -253,7 +253,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 					</graphicElement>
 				</rectangle>
 				<textField isBlankWhenNull="true">
-					<reportElement x="1" y="101" width="56" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<reportElement x="1" y="106" width="56" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					</reportElement>
 					<box rightPadding="3"/>
@@ -263,28 +263,28 @@ ORDER BY param_acct_name, dateacct, unionorder
 					<textFieldExpression><![CDATA[$R{dateacct}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="638" y="101" width="58" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="638" y="106" width="58" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="200" y="101" width="202" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="200" y="106" width="202" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="90" y="101" width="110" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="90" y="106" width="110" height="9" forecolor="#FFFFFF" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="580" y="101" width="58" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="580" y="106" width="58" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
@@ -300,14 +300,14 @@ ORDER BY param_acct_name, dateacct, unionorder
 					<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="57" y="101" width="33" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="57" y="106" width="33" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{record_id}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="696" y="101" width="58" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="696" y="106" width="58" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
@@ -362,7 +362,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 					<textFieldExpression><![CDATA[$F{param_acct_name}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="536" y="101" width="44" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="536" y="106" width="44" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
@@ -387,35 +387,35 @@ ORDER BY param_acct_name, dateacct, unionorder
     $R{all}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="492" y="101" width="44" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="492" y="106" width="44" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{counter_account}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="754" y="101" width="45" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="754" y="106" width="45" height="9" forecolor="#FFFFFF" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{docstatus}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="402" y="101" width="40" height="9" forecolor="#FFFFFF" uuid="6c4a6a90-b02a-4fba-b553-32fe6b6fde32"/>
+					<reportElement x="402" y="106" width="40" height="9" forecolor="#FFFFFF" uuid="6c4a6a90-b02a-4fba-b553-32fe6b6fde32"/>
 					<textElement>
 						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{vatcode}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="442" y="101" width="50" height="9" forecolor="#FFFFFF" uuid="eab5c09d-6d1e-43dd-983b-d87e84847360"/>
+					<reportElement x="442" y="106" width="50" height="9" forecolor="#FFFFFF" uuid="eab5c09d-6d1e-43dd-983b-d87e84847360"/>
 					<textElement>
 						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{tax_rate_name}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement key="line" positionType="FixRelativeToBottom" x="1" y="99" width="798" height="1" forecolor="#000000" uuid="9a7c16e4-9dc1-4669-bd85-e144c245b9a2"/>
+					<reportElement key="line" positionType="FixRelativeToBottom" x="1" y="104" width="798" height="1" forecolor="#000000" uuid="9a7c16e4-9dc1-4669-bd85-e144c245b9a2"/>
 					<graphicElement>
 						<pen lineWidth="1.0" lineStyle="Solid"/>
 					</graphicElement>
@@ -520,7 +520,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 					<textFieldExpression><![CDATA[$R{tax_rate_name}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement key="line" positionType="FixRelativeToBottom" x="1" y="61" width="812" height="1" forecolor="#000000" uuid="29dfc04b-5121-48c4-927f-32b1bd90301d"/>
+					<reportElement key="line" positionType="FixRelativeToBottom" x="1" y="61" width="798" height="1" forecolor="#000000" uuid="29dfc04b-5121-48c4-927f-32b1bd90301d"/>
 					<graphicElement>
 						<pen lineWidth="1.0" lineStyle="Solid"/>
 					</graphicElement>

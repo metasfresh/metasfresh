@@ -49,7 +49,7 @@ public class DDOrderCandidate
 
 	@NonNull private final ProductId productId;
 	@NonNull private final HUPIItemProductId hupiItemProductId;
-	@NonNull private final Quantity qty;
+	@NonNull @Setter private Quantity qtyEntered;
 	private final int qtyTUs;
 	@NonNull private Quantity qtyProcessed;
 
@@ -85,8 +85,8 @@ public class DDOrderCandidate
 			@NonNull final Instant demandDate,
 			@NonNull final ProductId productId,
 			@Nullable final HUPIItemProductId hupiItemProductId,
-			@NonNull final Quantity qty,
-			int qtyTUs,
+			@NonNull final Quantity qtyEntered,
+			final int qtyTUs,
 			@Nullable final Quantity qtyProcessed,
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final WarehouseId sourceWarehouseId,
@@ -105,7 +105,7 @@ public class DDOrderCandidate
 			@Nullable final String traceId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId)
 	{
-		Quantity.assertSameUOM(qty, qtyProcessed);
+		Quantity.assertSameUOM(qtyEntered, qtyProcessed);
 
 		this.id = id;
 		this.clientAndOrgId = clientAndOrgId;
@@ -114,9 +114,9 @@ public class DDOrderCandidate
 		this.demandDate = demandDate;
 		this.productId = productId;
 		this.hupiItemProductId = hupiItemProductId != null ? hupiItemProductId : HUPIItemProductId.VIRTUAL_HU;
-		this.qty = qty;
+		this.qtyEntered = qtyEntered;
 		this.qtyTUs = qtyTUs;
-		this.qtyProcessed = qtyProcessed != null ? qtyProcessed : this.qty.toZero();
+		this.qtyProcessed = qtyProcessed != null ? qtyProcessed : this.qtyEntered.toZero();
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		this.sourceWarehouseId = sourceWarehouseId;
 		this.targetWarehouseId = targetWarehouseId;
@@ -145,7 +145,7 @@ public class DDOrderCandidate
 				//
 				.productId(ProductId.ofRepoId(data.getProductId()))
 				.hupiItemProductId(data.getHupiItemProductId())
-				.qty(Quantitys.of(data.getQty(), UomId.ofRepoId(data.getUomId())))
+				.qtyEntered(Quantitys.of(data.getQty(), UomId.ofRepoId(data.getUomId())))
 				.qtyTUs(1)// TODO
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(data.getAttributeSetInstanceId()))
 				//
@@ -213,11 +213,11 @@ public class DDOrderCandidate
 		return toBuilder().forwardPPOrderRef(forwardPPOrderRefNew).build();
 	}
 
-	public Quantity getQtyToProcess() {return getQty().subtract(getQtyProcessed());}
+	public Quantity getQtyToProcess() {return getQtyEntered().subtract(getQtyProcessed());}
 
 	public void setQtyProcessed(final @NonNull Quantity qtyProcessed)
 	{
-		Quantity.assertSameUOM(this.qty, qtyProcessed);
+		Quantity.assertSameUOM(this.qtyEntered, qtyProcessed);
 		this.qtyProcessed = qtyProcessed;
 
 		updateProcessed();

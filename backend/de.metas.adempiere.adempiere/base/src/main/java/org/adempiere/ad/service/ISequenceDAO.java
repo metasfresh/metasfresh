@@ -22,7 +22,9 @@ package org.adempiere.ad.service;
  * #L%
  */
 
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_AD_Sequence;
@@ -48,4 +50,6 @@ public interface ISequenceDAO extends ISingletonService
 
 	@NonNull
 	I_AD_Sequence retrieveSequenceByName(@NonNull String sequenceName);
+
+	DocSequenceId cloneToOrg(@NonNull DocSequenceId fromDocSequenceId, @NonNull OrgId toOrgId);
 }

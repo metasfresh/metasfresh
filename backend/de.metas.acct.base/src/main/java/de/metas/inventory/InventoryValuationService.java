@@ -3,9 +3,11 @@ package de.metas.inventory;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.Language;
+import lombok.NonNull;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -25,7 +27,7 @@ public class InventoryValuationService
 		final ImmutableList<InventoryValue> rows = DB.retrieveRows(
 				SQL_SELECT,
 				new Object[] { request.getDateAcct(), request.getProductId(), request.getWarehouseId(), adLanguage },
-				this::retrieveInventoryValueRow
+				InventoryValuationService::retrieveInventoryValueRow
 		);
 
 		return InventoryValuationResponse.builder()
@@ -33,7 +35,7 @@ public class InventoryValuationService
 				.build();
 	}
 
-	private InventoryValue retrieveInventoryValueRow(final ResultSet rs) throws SQLException
+	private static InventoryValue retrieveInventoryValueRow(final ResultSet rs) throws SQLException
 	{
 		return InventoryValue.builder()
 				.combination(rs.getString("combination"))
@@ -44,8 +46,24 @@ public class InventoryValuationService
 				.productName(rs.getString("ProductName"))
 				.qty(rs.getBigDecimal("Qty"))
 				.uomSymbol(rs.getString("UOMSymbol"))
-				.costPrice(rs.getBigDecimal("CostPrice"))
-				.totalAmt(rs.getBigDecimal("TotalAmt"))
+				.accounted(retrieveAmounts(rs, "Acct"))
+				.costing(retrieveAmounts(rs, "Costing"))
+				.inventoryValueAcctAmt(retrieveBigDecimalOrZero(rs, "InventoryValueAcctAmt"))
 				.build();
+	}
+
+	private static InventoryValue.Amounts retrieveAmounts(@NonNull final ResultSet rs, @NonNull final String prefix) throws SQLException
+	{
+		return InventoryValue.Amounts.builder()
+				.costPrice(retrieveBigDecimalOrZero(rs, prefix + "_CostPrice"))
+				.expectedAmt(retrieveBigDecimalOrZero(rs, prefix + "_ExpectedAmt"))
+				.errorAmt(retrieveBigDecimalOrZero(rs, prefix + "_ErrorAmt"))
+				.build();
+	}
+
+	@NonNull
+	private static BigDecimal retrieveBigDecimalOrZero(final @NonNull ResultSet rs, final @NonNull String columnName) throws SQLException
+	{
+		return CoalesceUtil.coalesceNotNull(rs.getBigDecimal(columnName), BigDecimal.ZERO);
 	}
 }

@@ -50,6 +50,7 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -571,6 +572,11 @@ public class DataTableRow
 		return getAsOptionalString(columnName).map(valueStr -> parseInstant(valueStr, columnName));
 	}
 
+	public Optional<Duration> getAsOptionalDuration(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseDuration(valueStr, columnName));
+	}
+	
 	@NonNull
 	private static Instant parseInstant(@NonNull final String valueStr, final String columnInfo)
 	{
@@ -598,6 +604,19 @@ public class DataTableRow
 		}
 	}
 
+	@NonNull
+	private static Duration parseDuration(@NonNull final String valueStr, final String columnInfo)
+	{
+		try
+		{
+			return Duration.parse(valueStr);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid Duration `" + valueStr + "`");
+		}
+	}
+	
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()

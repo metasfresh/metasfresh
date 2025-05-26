@@ -24,6 +24,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
@@ -67,8 +68,7 @@ public class M_InOut
 	/**
 	 * Reverse linked movements.
 	 */
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
-	public void reverseMovements(final I_M_InOut inoutRecord)
+	private void reverseMovements(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
@@ -77,8 +77,7 @@ public class M_InOut
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
-	public void deleteMatchInvs(final I_M_InOut inoutRecord)
+	private void deleteMatchInvs(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
@@ -102,13 +101,7 @@ public class M_InOut
 		}
 	}
 
-	@DocValidate(timings = {
-			ModelValidator.TIMING_BEFORE_REACTIVATE,
-			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_VOID,
-			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
-			ModelValidator.TIMING_AFTER_CLOSE
-	})
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_CLOSE)
 	public void removeInoutFromBalance(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
@@ -152,25 +145,35 @@ public class M_InOut
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_DocType_ID})
+			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_DocType_ID })
 	public void beforeSave_updateDescriptionAndDescriptionBottom(final I_M_InOut inoutRecord)
 	{
 		inoutBL.updateDescriptionAndDescriptionBottomFromDocType(inoutRecord);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void forbidVoidingWhenInvoiceExists(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
-		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PreventReversingShipmentsWhenInvoiceExists, false))
-		{
-			return;
-		}
+		final boolean isReversalAllowed = isReversalAllowed(inout);
 
-		final boolean completedOrClosedInvoiceExists = invoiceCandDAO.isCompletedOrClosedInvoice(InOutId.ofRepoId(inout.getM_InOut_ID()));
-
-		if (completedOrClosedInvoiceExists)
+		if (!isReversalAllowed)
 		{
 			throw new AdempiereException(ERR_PreventReversingShipmentsWhenInvoiceExists);
 		}
+		//only perform related logic if not forbidden
+		final I_M_InOut inoutRecord = InterfaceWrapperHelper.create(inout, I_M_InOut.class);
+		deleteMatchInvs(inoutRecord);
+		reverseMovements(inoutRecord);
+		removeInoutFromBalance(inoutRecord);
+	}
+
+	private boolean isReversalAllowed(final org.compiere.model.@NonNull I_M_InOut inout)
+	{
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PreventReversingShipmentsWhenInvoiceExists, false))
+		{
+			return true;
+		}
+
+		return !invoiceCandDAO.isCompletedOrClosedInvoice(InOutId.ofRepoId(inout.getM_InOut_ID()));
 	}
 }

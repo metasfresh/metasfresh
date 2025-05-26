@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
@@ -70,7 +71,6 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -95,7 +95,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
@@ -177,6 +176,7 @@ public class C_Invoice_StepDef
 	private final C_DocType_StepDefData docTypeTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final C_PaymentTerm_StepDefData paymentTermTable;
+	private final TestContext restTestContext;
 
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
@@ -259,6 +259,9 @@ public class C_Invoice_StepDef
 		}
 	}
 
+	/**
+	 * Note that the new invoice's IC is also added to {@link TestContext} for further use in API-requests.
+	 */
 	@And("metasfresh contains C_Invoice:")
 	public void addC_Invoices(@NonNull final DataTable dataTable)
 	{
@@ -340,7 +343,9 @@ public class C_Invoice_StepDef
 
 	private void validateInvoice(@NonNull final DataTableRow row)
 	{
-		final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+		final StepDefDataIdentifier identifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID);
+		final String identifierStr = identifier.getAsString();
+		final I_C_Invoice invoice = identifier.lookupNotNullIn(invoiceTable);
 		InterfaceWrapperHelper.refresh(invoice);
 		SharedTestContext.put("invoice", invoice);
 
@@ -350,7 +355,7 @@ public class C_Invoice_StepDef
 				.ifPresent(bpartnerIdentifier -> {
 					final BPartnerId expectedBPartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
 							.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
-					softly.assertThat(invoice.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId.getRepoId());
+					softly.assertThat(invoice.getC_BPartner_ID()).as("C_BPartner_ID for Identifier=%s", identifierStr).isEqualTo(expectedBPartnerId.getRepoId());
 				});
 
 		row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
@@ -358,35 +363,35 @@ public class C_Invoice_StepDef
 					final Integer expectedBPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
 							.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 							.orElseGet(bpartnerLocationIdentifier::getAsInt);
-					softly.assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocationId);
+					softly.assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID for Identifier=%s", identifierStr).isEqualTo(expectedBPartnerLocationId);
 				});
 
 		row.getAsOptionalString(COLUMNNAME_POReference)
-				.ifPresent(poReference -> softly.assertThat(invoice.getPOReference()).as("POReference").isEqualTo(poReference));
+				.ifPresent(poReference -> softly.assertThat(invoice.getPOReference()).as("POReference for Identifier=%s", identifierStr).isEqualTo(poReference));
 
 		row.getAsOptionalBoolean("processed")
-				.ifPresent(processed -> softly.assertThat(invoice.isProcessed()).as("Processed").isEqualTo(processed));
+				.ifPresent(processed -> softly.assertThat(invoice.isProcessed()).as("Processed for Identifier=%s", identifierStr).isEqualTo(processed));
 		row.getAsOptionalString("docStatus")
-				.ifPresent(docStatus -> softly.assertThat(invoice.getDocStatus()).as("DocStatus").isEqualTo(docStatus));
+				.ifPresent(docStatus -> softly.assertThat(invoice.getDocStatus()).as("DocStatus for Identifier=%s", identifierStr).isEqualTo(docStatus));
 
 		extractPaymentTermId(row)
-				.ifPresent(paymentTermId -> softly.assertThat(PaymentTermId.ofRepoIdOrNull(invoice.getC_PaymentTerm_ID())).as("C_PaymentTerm_ID").isEqualTo(paymentTermId));
+				.ifPresent(paymentTermId -> softly.assertThat(PaymentTermId.ofRepoIdOrNull(invoice.getC_PaymentTerm_ID())).as("C_PaymentTerm_ID for Identifier=%s", identifierStr).isEqualTo(paymentTermId));
 
 		row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocBaseType)
 				.ifPresent(docBaseType -> {
 					final I_C_DocType docType = docTypeBL.getById(DocTypeId.ofRepoId(invoice.getC_DocType_ID()));
-					softly.assertThat(docType.getDocBaseType()).as("DocBaseType").isEqualTo(docBaseType);
+					softly.assertThat(docType.getDocBaseType()).as("DocBaseType for Identifier=%s", identifierStr).isEqualTo(docBaseType);
 				});
 		row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocSubType)
 				.ifPresent(docSubType -> {
 					final I_C_DocType docType = docTypeBL.getById(DocTypeId.ofRepoId(invoice.getC_DocType_ID()));
-					softly.assertThat(docType.getDocSubType()).as("DocSubType").isEqualTo(docSubType);
+					softly.assertThat(docType.getDocSubType()).as("DocSubType for Identifier=%s", identifierStr).isEqualTo(docSubType);
 				});
 
 		final String bpartnerAddress = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_BPartnerAddress);
 		if (Check.isNotBlank(bpartnerAddress))
 		{
-			softly.assertThat(invoice.getBPartnerAddress()).as("BPartnerAddress").isEqualTo(bpartnerAddress);
+			softly.assertThat(invoice.getBPartnerAddress()).as("BPartnerAddress for Identifier=%s", identifierStr).isEqualTo(bpartnerAddress);
 		}
 
 		final String expectedDocTypeName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name);
@@ -395,20 +400,20 @@ public class C_Invoice_StepDef
 		{
 			final I_C_DocType actualInvoiceDocType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
 
-			softly.assertThat(actualInvoiceDocType.getName()).as("C_DocType_ID").isEqualTo(expectedDocTypeName);
+			softly.assertThat(actualInvoiceDocType.getName()).as("C_DocType_ID for Identifier=%s", identifierStr).isEqualTo(expectedDocTypeName);
 		}
 
 		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_PaymentRule);
 		if (Check.isNotBlank(paymentRule))
 		{
-			softly.assertThat(invoice.getPaymentRule()).as("PaymentRule").isEqualTo(paymentRule);
+			softly.assertThat(invoice.getPaymentRule()).as("PaymentRule for Identifier=%s", identifierStr).isEqualTo(paymentRule);
 		}
 
 		final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
 		if (Check.isNotBlank(internalName))
 		{
 			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
-			softly.assertThat(invoice.getAD_InputDataSource_ID()).as("AD_InputDataSource_ID").isEqualTo(dataSource.getAD_InputDataSource_ID());
+			softly.assertThat(invoice.getAD_InputDataSource_ID()).as("AD_InputDataSource_ID for Identifier=%s", identifierStr).isEqualTo(dataSource.getAD_InputDataSource_ID());
 		}
 
 		final String adUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -420,14 +425,14 @@ public class C_Invoice_StepDef
 
 		row.getAsOptionalMoney(COLUMNNAME_GrandTotal, currencyRepository::getCurrencyIdByCurrencyCode)
 				.ifPresent(grandTotal -> {
-					softly.assertThat(invoice.getGrandTotal()).as("GrandTotal").isEqualByComparingTo(grandTotal.toBigDecimal());
-					softly.assertThat(invoice.getC_Currency_ID()).as("C_Currency_ID").isEqualByComparingTo(grandTotal.getCurrencyId().getRepoId());
+					softly.assertThat(invoice.getGrandTotal()).as("GrandTotal for Identifier=%s", identifierStr).isEqualByComparingTo(grandTotal.toBigDecimal());
+					softly.assertThat(invoice.getC_Currency_ID()).as("C_Currency_ID for Identifier=%s", identifierStr).isEqualByComparingTo(grandTotal.getCurrencyId().getRepoId());
 				});
 
 		final BigDecimal totalLines = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_TotalLines);
 		if (totalLines != null)
 		{
-			softly.assertThat(invoice.getTotalLines()).as("TotalLines").isEqualByComparingTo(totalLines);
+			softly.assertThat(invoice.getTotalLines()).as("TotalLines for Identifier=%s", identifierStr).isEqualByComparingTo(totalLines);
 		}
 
 		final String currencyCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Currency_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -435,7 +440,7 @@ public class C_Invoice_StepDef
 		{
 			final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 
-			softly.assertThat(invoice.getC_Currency_ID()).as("CurrencyID").isEqualTo(currencyId.getRepoId());
+			softly.assertThat(invoice.getC_Currency_ID()).as("CurrencyID for Identifier=%s", identifierStr).isEqualTo(currencyId.getRepoId());
 		}
 
 		row.getAsOptionalLocalDate(COLUMNNAME_DateInvoiced)
@@ -463,7 +468,7 @@ public class C_Invoice_StepDef
 		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalId);
 		if (Check.isNotBlank(externalId))
 		{
-			softly.assertThat(invoice.getExternalId()).as("ExternalId").isEqualTo(externalId);
+			softly.assertThat(invoice.getExternalId()).as("ExternalId for Identifier=%s", identifierStr).isEqualTo(externalId);
 		}
 
 		final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -495,10 +500,10 @@ public class C_Invoice_StepDef
 					.ifPresent(invoiceIsPartiallyPaid -> softly.assertThat(invoice.isPartiallyPaid()).as("IsPartiallyPaid").isEqualTo(invoiceIsPartiallyPaid));
 			row.getAsOptionalBigDecimal("OpenAmt")
 					.ifPresent(expectedOpenAmt -> {
-						softly.assertThat(invoice.getOpenAmt()).as("OpenAmt not matching C_Invoice.OpenAmt").isEqualByComparingTo(expectedOpenAmt);
+						softly.assertThat(invoice.getOpenAmt()).as("OpenAmt not matching C_Invoice.OpenAmt for Identifier=%s", identifierStr).isEqualByComparingTo(expectedOpenAmt);
 
 						final BigDecimal computedOpenAmt = computeOpenAmount(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
-						softly.assertThat(computedOpenAmt).as("OpenAmt not matching computed value").isEqualByComparingTo(expectedOpenAmt);
+						softly.assertThat(computedOpenAmt).as("OpenAmt not matching computed value for Identifier=%s", identifierStr).isEqualByComparingTo(expectedOpenAmt);
 					});
 		}
 
@@ -506,14 +511,14 @@ public class C_Invoice_StepDef
 		if (Check.isNotBlank(projectIdentifier))
 		{
 			final I_C_Project project = projectTable.get(projectIdentifier);
-			softly.assertThat(invoice.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
+			softly.assertThat(invoice.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isEqualTo(project.getC_Project_ID());
 		}
 
 		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(costCenterIdentifier))
 		{
 			final I_C_Activity activity = activityTable.get(costCenterIdentifier);
-			softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID").isEqualTo(activity.getC_Activity_ID());
+			softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID for Identifier=%s", identifierStr).isEqualTo(activity.getC_Activity_ID());
 		}
 
 		final String expectedSalesRep_ID = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_SalesRep_ID);
@@ -523,7 +528,7 @@ public class C_Invoice_StepDef
 					.map(Integer::parseInt)
 					.orElse(0);
 
-			softly.assertThat(invoice.getSalesRep_ID()).as("SalesRep_ID").isEqualTo(expectedSalesRep_RepoId);
+			softly.assertThat(invoice.getSalesRep_ID()).as("SalesRep_ID for Identifier=%s", identifierStr).isEqualTo(expectedSalesRep_RepoId);
 		}
 
 		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocumentNo);
@@ -536,7 +541,7 @@ public class C_Invoice_StepDef
 		if (de.metas.common.util.Check.isNotBlank(warehouseIdentifier))
 		{
 			final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
-			softly.assertThat(invoice.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(warehouseRecord.getM_Warehouse_ID());
+			softly.assertThat(invoice.getM_Warehouse_ID()).as("M_Warehouse_ID for Identifier=%s", identifierStr).isEqualTo(warehouseRecord.getM_Warehouse_ID());
 		}
 
 		softly.assertAll();
@@ -732,64 +737,58 @@ public class C_Invoice_StepDef
 
 	private void create_C_Invoice(@NonNull final DataTableRow row)
 	{
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+
+		row
+				.getAsOptionalString(COLUMNNAME_C_ConversionType_ID + "." + I_C_ConversionType.COLUMNNAME_Name)
+				.map(conversionType ->
+						queryBL.createQueryBuilder(I_C_ConversionType.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_ConversionType.COLUMNNAME_Name, conversionType)
+								.orderBy(I_C_ConversionType.COLUMNNAME_Name)
+								.create()
+								.firstIdOnly()
+				)
+				.ifPresent(invoice::setC_ConversionType_ID);
+
+		row
+				.getAsOptionalString(COLUMNNAME_C_DocTypeTarget_ID + "." + I_C_DocType.COLUMNNAME_Name)
+				.map(docTargetName ->
+						queryBL.createQueryBuilder(I_C_DocType.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, docTargetName)
+								.orderBy(I_C_DocType.COLUMNNAME_Name)
+								.create()
+								.firstIdOnly()
+				)
+				.ifPresent(docTypeId -> {
+					invoice.setC_DocType_ID(docTypeId);
+					invoice.setC_DocTypeTarget_ID(docTypeId);
+				});
+
 		final StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
 		final BPartnerId bpartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
 				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
-
-		final String docTargetName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_DocTypeTarget_ID + "." + I_C_DocType.COLUMNNAME_Name);
-		final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, docTargetName)
-				.orderBy(I_C_DocType.COLUMNNAME_Name)
-				.create()
-				.firstId(DocTypeId::ofRepoIdOrNull);
-
-		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnName(row, COLUMNNAME_DateInvoiced);
-
-		final String conversionType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_ConversionType_ID + "." + I_C_ConversionType.COLUMNNAME_Name);
-		final CurrencyConversionTypeId conversionTypeId = queryBL.createQueryBuilder(I_C_ConversionType.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_ConversionType.COLUMNNAME_Name, conversionType)
-				.orderBy(I_C_ConversionType.COLUMNNAME_Name)
-				.create()
-				.firstId(CurrencyConversionTypeId::ofRepoIdOrNull);
-
-		final boolean soTrx = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsSOTrx);
-
-		final String isoCode = DataTableUtil.extractStringForColumnName(row, I_C_Currency.Table_Name + "." + I_C_Currency.COLUMNNAME_ISO_Code);
-		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCode));
-
-		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
-
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
-		invoice.setC_DocTypeTarget_ID(docTypeId.getRepoId());
-		invoice.setC_DocType_ID(docTypeId.getRepoId());
-		invoice.setDateInvoiced(dateInvoiced);
-		invoice.setIsSOTrx(soTrx);
-		invoice.setC_ConversionType_ID(conversionTypeId.getRepoId());
+
+		invoice.setDateInvoiced(row.getAsLocalDateTimestamp(COLUMNNAME_DateInvoiced));
+		invoice.setIsSOTrx(row.getAsBoolean(COLUMNNAME_IsSOTrx));
+
+		final CurrencyCode isoCode = row.getAsCurrencyCode();
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(isoCode);
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
-		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocumentNo);
-		if (Check.isNotBlank(documentNo))
-		{
-			invoice.setDocumentNo(documentNo);
-		}
-
-		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalId);
-		if (Check.isNotBlank(externalId))
-		{
-			invoice.setExternalId(externalId);
-		}
+		row.getAsOptionalString(COLUMNNAME_DocumentNo).ifPresent(invoice::setDocumentNo);
+		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
 
 		invoiceDAO.save(invoice);
 
-		extractPaymentTermId(row)
-				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
+		extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		invoiceDAO.save(invoice);
 
-		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
-		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+		row.getAsIdentifier().putOrReplace(invoiceTable, invoice);
+		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
 	}
 
 	private Optional<PaymentTermId> extractPaymentTermId(final @NonNull DataTableRow row)

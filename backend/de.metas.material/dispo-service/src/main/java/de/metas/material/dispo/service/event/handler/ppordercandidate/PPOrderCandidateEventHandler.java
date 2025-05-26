@@ -50,6 +50,7 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -277,7 +278,7 @@ abstract class  PPOrderCandidateEventHandler
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
 				.productBomLineId(ppOrderLineData.getProductBomLineId())
 				.description(ppOrderLineData.getDescription())
-				.ppOrderRef(PPOrderRef.ofPPOrderLineCandidateId(ppOrderCandidate.getPpOrderCandidateId(), ppOrderLineCandidate.getPpOrderLineCandidateId()))
+				.ppOrderRef(PPOrderRef.ofPPOrderLineCandidateId(PPOrderCandidateId.toRepoId(ppOrderCandidate.getPpOrderCandidateId()), ppOrderLineCandidate.getPpOrderLineCandidateId()))
 				.build();
 	}
 

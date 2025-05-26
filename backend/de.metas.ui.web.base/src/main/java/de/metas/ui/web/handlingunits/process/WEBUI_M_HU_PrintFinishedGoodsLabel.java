@@ -15,6 +15,7 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.PInstanceId;
 import de.metas.process.PInstanceRequest;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -136,6 +137,7 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				.setAD_Process_ID(adProcessId)
 				.setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
 				.setReportLanguage(getProcessInfo().getReportLanguage())

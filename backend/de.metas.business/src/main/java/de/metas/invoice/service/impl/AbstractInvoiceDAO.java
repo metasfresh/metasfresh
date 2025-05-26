@@ -483,6 +483,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
+	public <T extends org.compiere.model.I_C_Invoice> T getByIdOutOfTrx(@NonNull final InvoiceId invoiceId, @NonNull final Class<T> clazz)
+	{
+		return loadOutOfTrx(invoiceId, clazz);
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(@NonNull final Collection<InvoiceId> invoiceIds, @Nullable final DocBaseAndSubType targetDocType)
 	{

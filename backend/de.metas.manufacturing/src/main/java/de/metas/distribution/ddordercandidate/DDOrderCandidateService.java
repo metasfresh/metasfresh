@@ -166,7 +166,7 @@ public class DDOrderCandidateService
 		for (final DDOrderCandidate candidate : candidates.values())
 		{
 			final DDOrderCandidateAllocList alloc = allocationsByCandidateId.getOrDefault(candidate.getId(), DDOrderCandidateAllocList.EMPTY);
-			final Quantity qtyProcessed = alloc.getQtySum().orElseGet(() -> candidate.getQty().toZero());
+			final Quantity qtyProcessed = alloc.getQtySum().orElseGet(() -> candidate.getQtyEntered().toZero());
 			candidate.setQtyProcessed(qtyProcessed);
 			ddOrderCandidateRepository.save(candidate);
 		}
@@ -176,4 +176,6 @@ public class DDOrderCandidateService
 	{
 		return ddOrderCandidateRepository.list(query);
 	}
+
+	public Collection<DDOrderCandidate> getByIds(final @NonNull Set<DDOrderCandidateId> ids) {return ddOrderCandidateRepository.getByIds(ids);}
 }

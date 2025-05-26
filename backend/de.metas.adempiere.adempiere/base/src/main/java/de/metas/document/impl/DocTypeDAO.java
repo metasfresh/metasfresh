@@ -1,5 +1,6 @@
 package de.metas.document.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
@@ -10,6 +11,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
@@ -88,14 +90,14 @@ public class DocTypeDAO implements IDocTypeDAO
 	{
 		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
 		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
-		
+
 		if (docTypeRecord == null)
 		{
 			throw new AdempiereException("No C_DocType record found for ID!")
 					.appendParametersToMessage()
 					.setParameter("DocTypeId", docTypeId);
 		}
-		
+
 		return docTypeRecord;
 	}
 
@@ -330,7 +332,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		InterfaceWrapperHelper.save(dt);
 		return DocTypeId.ofRepoId(dt.getC_DocType_ID());
 	}
-	
+
 	@Override
 	public void save(@NonNull final I_C_DocType docTypeRecord)
 	{
@@ -349,6 +351,17 @@ public class DocTypeDAO implements IDocTypeDAO
 	{
 		final I_C_DocType docTypeRecord = getById(docTypeId);
 		return DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
+	}
+
+	@NonNull
+	public ImmutableList<I_C_DocType> retrieveForSelection(@NonNull final PInstanceId pinstanceId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_DocType.class)
+				.setOnlySelection(pinstanceId)
+				.orderBy(I_C_DocType.COLUMNNAME_C_DocType_ID)
+				.create()
+				.listImmutable();
 	}
 
 	@EqualsAndHashCode
