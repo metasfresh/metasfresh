@@ -11,7 +11,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="m_inout_id" class="java.lang.Integer">
+	<parameter name="m_inout_id" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[$P{m_inout_id}]]></defaultValueExpression>
 	</parameter>
 	<parameter name="ad_language" class="java.lang.String">
@@ -22,17 +22,23 @@
 	</parameter>
 	<parameter name="displayhu" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT c.countrycode
-FROM
-AD_Org org
-LEFT OUTER JOIN AD_OrgInfo orginfo ON orginfo.ad_org_id = org.ad_org_id AND orginfo.isActive = 'Y'
-LEFT OUTER JOIN C_BPartner_Location org_loc ON orginfo.Orgbp_Location_ID = org_loc.C_BPartner_Location_ID AND org_loc.isActive = 'Y'
-LEFT OUTER JOIN C_Location org_l ON org_loc.C_Location_ID = org_l.C_Location_ID AND org_l.isActive = 'Y'
-LEFT OUTER JOIN C_Country c ON org_l.C_Country_ID = c.C_Country_ID AND c.isActive = 'Y'
-
-WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
+		<![CDATA[SELECT *
+FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU_BAL($P{m_inout_id})
+;
+]]>
 	</queryString>
-	<field name="countrycode" class="java.lang.String"/>
+	<field name="countrycode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="countrycode"/>
+		<property name="com.jaspersoft.studio.field.label" value="countrycode"/>
+	</field>
+	<field name="isgoodsnotehidden" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isgoodsnotehidden"/>
+		<property name="com.jaspersoft.studio.field.label" value="isgoodsnotehidden"/>
+	</field>
+	<field name="issignaturehidden" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="issignaturehidden"/>
+		<property name="com.jaspersoft.studio.field.label" value="issignaturehidden"/>
+	</field>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
@@ -85,25 +91,23 @@ WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
 		<band height="69">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
-				<reportElement key="textField-16" x="37" y="10" width="284" height="12" forecolor="#000000" uuid="9d78b242-91b6-4f5c-9e4e-88e8ae98b0e4"/>
+				<reportElement key="textField-16" x="37" y="10" width="486" height="12" forecolor="#000000" uuid="9d78b242-91b6-4f5c-9e4e-88e8ae98b0e4">
+					<printWhenExpression><![CDATA[new Boolean($F{isgoodsnotehidden}.equals( "N" ))]]></printWhenExpression>
+				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{GoodsNote}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="37" y="36" width="125" height="12" forecolor="#000000" uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049"/>
+				<reportElement key="textField-16" x="37" y="36" width="486" height="12" forecolor="#000000" uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049">
+					<printWhenExpression><![CDATA[new Boolean($F{issignaturehidden}.equals( "N" ))]]></printWhenExpression>
+				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Signature} + ":"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Signature} + ": ..........................................................................................."]]></textFieldExpression>
 			</textField>
-			<line>
-				<reportElement x="129" y="48" width="396" height="1" uuid="2d2bef7b-44cf-45d4-b528-93208eb77818"/>
-				<graphicElement>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</graphicElement>
-			</line>
 		</band>
 	</detail>
 	<summary>
