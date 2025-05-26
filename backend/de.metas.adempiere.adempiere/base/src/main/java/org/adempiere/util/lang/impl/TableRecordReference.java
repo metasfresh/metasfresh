@@ -579,5 +579,4 @@ public final class TableRecordReference implements ITableRecordReference
 		final String modelTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
 		return modelTableName != null && modelTableName.equals(getTableName());
 	}
-
 }
