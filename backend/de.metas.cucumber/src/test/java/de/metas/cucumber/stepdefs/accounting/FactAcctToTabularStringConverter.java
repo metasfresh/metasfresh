@@ -4,11 +4,13 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.currency.Amount;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
@@ -36,6 +38,7 @@ public class FactAcctToTabularStringConverter
 	@NonNull private final MoneyService moneyService;
 	@Nullable private final C_BPartner_StepDefData bpartnerTable;
 	@Nullable private final C_Tax_StepDefData taxTable;
+	@Nullable private final M_Product_StepDefData productTable;
 	@Nullable private final IdentifiersResolver identifiersResolver;
 
 	@NonNull private static final ImmutableSet<String> poColumnNamesToIgnore = ImmutableSet.of(
@@ -92,6 +95,7 @@ public class FactAcctToTabularStringConverter
 		row.put("AmtAcctCr", record.getAmtAcctCr());
 		row.put("Qty", extractQuantityString(record));
 		row.put("C_BPartner_ID", extractBPartnerString(record));
+		row.put("M_Product_ID", extractProductString(record));
 		row.put("C_Tax_ID", extractTaxId(record));
 		row.put("Record_ID", extractDocumentRef(record));
 
@@ -219,4 +223,25 @@ public class FactAcctToTabularStringConverter
 
 		return "<" + bpartnerId.getRepoId() + ">";
 	}
+
+	private String extractProductString(final I_Fact_Acct record)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
+		if (productId == null)
+		{
+			return null;
+		}
+
+		if (productTable != null)
+		{
+			final StepDefDataIdentifier identifier = productTable.getFirstIdentifierById(productId).orElse(null);
+			if (identifier != null)
+			{
+				return identifier.getAsString();
+			}
+		}
+
+		return "<" + productId.getRepoId() + ">";
+	}
+
 }

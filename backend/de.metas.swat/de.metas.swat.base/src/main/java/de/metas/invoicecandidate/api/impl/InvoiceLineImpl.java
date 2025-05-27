@@ -46,7 +46,7 @@ import java.util.TreeSet;
 
 /**
  * Default (bean) implementation for {@link IInvoiceLineRW}.
- *
+ * <p>
  * NOTE to developer: if you want to add a new field:
  * <ul>
  * <li>add private field, getter and setter methods
@@ -55,13 +55,12 @@ import java.util.TreeSet;
  * </ul>
  *
  * @author tsa
- *
  */
 
 // The excludes are here because they were this way in the former code. I'm not really sure that we really "must" include e.g. "C_PaymentTerm_ID"..
 @EqualsAndHashCode(exclude = { "activityID", "tax", "lineNo", "invoiceLineAttributes", "iciolsToUpdate", "C_PaymentTerm_ID" })
 @ToString(doNotUseGetters = true)
-/* package */ class InvoiceLineImpl implements IInvoiceLineRW
+		/* package */ class InvoiceLineImpl implements IInvoiceLineRW
 {
 	private int M_Product_ID;
 	private int C_Charge_ID;
@@ -83,13 +82,13 @@ import java.util.TreeSet;
 	private Money netLineAmt;
 
 	private String description;
-	private Collection<Integer> iciolIds = new TreeSet<>();
+	private final Collection<Integer> iciolIds = new TreeSet<>();
 	private int activityID;
 	private Tax tax;
 	private boolean printed = true;
 	private int lineNo = 0;
 	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
-	private List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
+	private final List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
 	private int C_PaymentTerm_ID;
 
 	@Override
@@ -109,7 +108,6 @@ import java.util.TreeSet;
 	{
 		return C_OrderLine_ID;
 	}
-
 
 	@Override
 	public void setM_Product_ID(final int m_Product_ID)
@@ -146,7 +144,6 @@ import java.util.TreeSet;
 
 	}
 
-
 	@Override
 	public String getDescription()
 	{
@@ -159,8 +156,6 @@ import java.util.TreeSet;
 		this.description = description;
 	}
 
-
-
 	@Override
 	public Collection<Integer> getC_InvoiceCandidate_InOutLine_IDs()
 	{
@@ -170,7 +165,7 @@ import java.util.TreeSet;
 	@Override
 	public void negateAmounts()
 	{
-		setPriceActual(getPriceActual().negate());
+		setQtysToInvoice(getQtysToInvoice().negate());
 		setNetLineAmt(getNetLineAmt().negate());
 	}
 

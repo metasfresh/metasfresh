@@ -119,7 +119,7 @@ public class M_HU_PackingMaterial_StepDef
 
 					saveRecord(huPackingMaterial);
 
-					row.getAsIdentifier(COLUMNNAME_M_HU_PackingMaterial_ID).putOrReplace(huPackingMaterialTable, huPackingMaterial);
+					row.getAsOptionalIdentifier().ifPresent(identifier -> huPackingMaterialTable.put(identifier, huPackingMaterial));
 				});
 	}
 }

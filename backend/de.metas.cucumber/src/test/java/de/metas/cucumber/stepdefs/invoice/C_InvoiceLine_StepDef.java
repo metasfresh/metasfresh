@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.invoice;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.common.util.Check;
-import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -37,7 +36,13 @@ import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxDAO;
@@ -53,18 +58,18 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_IsManualPrice;
 import static de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Price_UOM_ID;
@@ -79,6 +84,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_Processed;
+import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_UOM_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -87,9 +93,12 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 public class C_InvoiceLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+	private final MatchInvoiceService matchInvoiceService = SpringContextHolder.instance.getBean(MatchInvoiceService.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -111,39 +120,53 @@ public class C_InvoiceLine_StepDef
 	@And("validate created invoice lines")
 	public void validate_created_invoice_lines(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
+		DataTableRows.of(table)
+				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID)
+				.forEach(row -> {
+					I_C_InvoiceLine invoiceLineRecord = findInvoiceLineRecord(row);
+					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+					validateInvoiceLine(invoiceLineRecord, invoice, row);
+				});
+	}
+
+	private I_C_InvoiceLine findInvoiceLineRecord(final DataTableRow row)
+	{
+		final InvoiceId invoiceId = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIdIn(invoiceTable);
+		final ProductId expectedProductId = getProductId(row);
+		final BigDecimal qtyInvoiced = row.getAsBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
+
+		//dev-note: we assume the tests are generally not using the same product and qty on different lines...
+		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId);
+
+		// ...or if they do, they have different inoutlines
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
+				.map(inOutLineTable::getId)
+				.ifPresent(inOutLineId -> queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineId.getRepoId()));
+
+		final List<I_C_InvoiceLine> invoiceLineRecords = queryBuilder.create().list(I_C_InvoiceLine.class);
+		if (invoiceLineRecords.isEmpty())
 		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			throw new AdempiereException("No invoice line found for " + queryBuilder);
+		}
+		else if (invoiceLineRecords.size() == 1)
+		{
+			return invoiceLineRecords.get(0);
+		}
 
-			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
-
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final int expectedProductId = productTable.getOptional(productIdentifier)
-					.map(I_M_Product::getM_Product_ID)
-					.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
-
-			//dev-note: we assume the tests are generally not using the same product and qty on different lines...
-			final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId)
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced);
-
-			// ...or if they do, they have different inoutlines
-			final String inoutLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (EmptyUtil.isNotBlank(inoutLineIdentifier))
-			{
-				final I_M_InOutLine inOutLineRecord = inOutLineTable.get(inoutLineIdentifier);
-				queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineRecord.getM_InOutLine_ID());
-			}
-
-			final I_C_InvoiceLine invoiceLineRecord = queryBuilder
-					.create()
-					.firstOnlyNotNull(I_C_InvoiceLine.class);
-
-			validateInvoiceLine(invoiceLineRecord, row);
+		final List<I_C_InvoiceLine> invoiceLineRecordsFiltered = invoiceLineRecords.stream()
+				.filter(invoiceLine -> invoiceLine.getQtyInvoiced().compareTo(qtyInvoiced) == 0)
+				.collect(Collectors.toList());
+		if (invoiceLineRecordsFiltered.size() == 1)
+		{
+			return invoiceLineRecordsFiltered.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("Not a single invoice line found for " + queryBuilder)
+					.setParameter("invoiceLineRecords", invoiceLineRecords)
+					.appendParametersToMessage();
 		}
 	}
 
@@ -154,10 +177,10 @@ public class C_InvoiceLine_StepDef
 
 		final List<I_C_InvoiceLine> invoiceLines = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
+				.orderBy(COLUMNNAME_Line)
+				.orderBy(COLUMNNAME_C_InvoiceLine_ID)
 				.create()
 				.list(I_C_InvoiceLine.class);
-
-		final List<Map<String, String>> dataTable = table.asMaps();
 
 		final StringBuilder invoiceLinesErrorMessage = new StringBuilder("Found the following invoice lines: \n");
 		invoiceLines.forEach(invoiceLine -> {
@@ -170,56 +193,49 @@ public class C_InvoiceLine_StepDef
 			invoiceLinesErrorMessage.append("\n");
 		});
 
-		assertThat(invoiceLines.size()).as(invoiceLinesErrorMessage.toString()).isEqualTo(dataTable.size());
+		final DataTableRows rows = DataTableRows.of(table)
+				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID);
 
-		for (final Map<String, String> row : dataTable)
-		{
+		assertThat(invoiceLines.size()).as(invoiceLinesErrorMessage.toString()).isEqualTo(rows.size());
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer productID = productTable.getOptional(productIdentifier)
-					.map(I_M_Product::getM_Product_ID)
-					.orElseGet(() -> Integer.parseInt(productIdentifier));
-			assertThat(productID).isNotNull();
+		rows.forEach(row -> {
+			final ProductId productId = getProductId(row);
 
-			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
+			final BigDecimal qtyInvoiced = row.getAsBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
 
 			final I_C_InvoiceLine currentInvoiceLine = Check.singleElement(invoiceLines.stream()
-					.filter(line -> line.getM_Product_ID() == productID)
-					.filter(line -> line.getQtyInvoiced().equals(qtyinvoiced))
+					.filter(line -> line.getM_Product_ID() == productId.getRepoId())
+					.filter(line -> line.getQtyInvoiced().equals(qtyInvoiced))
 					.collect(ImmutableList.toImmutableList()));
 
-			validateInvoiceLine(currentInvoiceLine, row);
-		}
+			validateInvoiceLine(currentInvoiceLine, invoiceRecord, row);
+		});
 	}
 
-	private void validateInvoiceLine(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final Map<String, String> row)
+	private ProductId getProductId(final DataTableRow row)
+	{
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_C_InvoiceLine.COLUMNNAME_M_Product_ID);
+		return productTable.getIdOptional(productIdentifier)
+				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+	}
+
+	private void validateInvoiceLine(
+			@NonNull final I_C_InvoiceLine invoiceLine,
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final DataTableRow row)
 	{
 		final SoftAssertions softly = new SoftAssertions();
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final int expectedProductId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
-		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, I_C_InvoiceLine.COLUMNNAME_Processed);
-
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEntered);
-
-		if (qtyEntered != null)
-		{
-			softly.assertThat(invoiceLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
-		}
+		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyEntered)
+				.ifPresent(qtyEntered -> softly.assertThat(invoiceLine.getQtyEntered()).as("QtyEntered").isEqualByComparingTo(qtyEntered));
 
 		final BigDecimal qtyEnteredInBPartnerUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEnteredInBPartnerUOM);
-
 		if (qtyEnteredInBPartnerUOM != null)
 		{
 			softly.assertThat(invoiceLine.getQtyEnteredInBPartnerUOM()).isEqualTo(qtyEnteredInBPartnerUOM);
 		}
 
 		final String bPartnerUOMx12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
-
 		if (Check.isNotBlank(bPartnerUOMx12de355Code))
 		{
 			final UomId bPartnerUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(bPartnerUOMx12de355Code));
@@ -227,75 +243,58 @@ public class C_InvoiceLine_StepDef
 		}
 
 		final String uomX12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-
 		if (Check.isNotBlank(uomX12de355Code))
 		{
 			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomX12de355Code));
 			softly.assertThat(invoiceLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
 		}
 
-		softly.assertThat(invoiceLine.getM_Product_ID()).as(COLUMNNAME_M_Product_ID).isEqualTo(expectedProductId);
-		softly.assertThat(invoiceLine.getQtyInvoiced()).as(COLUMNNAME_QtyInvoiced).isEqualTo(qtyinvoiced);
-		softly.assertThat(invoiceLine.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed);
+		final ProductId expectedProductId = getProductId(row);
+		softly.assertThat(invoiceLine.getM_Product_ID()).as(COLUMNNAME_M_Product_ID).isEqualTo(expectedProductId.getRepoId());
 
-		final BigDecimal priceEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_PriceEntered);
+		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced)
+				.ifPresent(qtyInvoiced -> softly.assertThat(invoiceLine.getQtyInvoiced()).as(COLUMNNAME_QtyInvoiced).isEqualTo(qtyInvoiced));
 
-		if (priceEntered != null)
-		{
-			softly.assertThat(invoiceLine.getPriceEntered()).as(COLUMNNAME_PriceEntered).isEqualByComparingTo(priceEntered);
-		}
+		row.getAsOptionalBoolean(I_C_InvoiceLine.COLUMNNAME_Processed)
+				.ifPresent(processed -> softly.assertThat(invoiceLine.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed));
 
-		final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_PriceActual);
+		extractMoney(row, I_C_InvoiceLine.COLUMNNAME_PriceEntered, invoice)
+				.ifPresent(priceEntered -> {
+					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(priceEntered.getCurrencyId().getRepoId());
+					softly.assertThat(invoiceLine.getPriceEntered()).as(COLUMNNAME_PriceEntered).isEqualByComparingTo(priceEntered.toBigDecimal());
+				});
 
-		if (priceActual != null)
-		{
-			softly.assertThat(invoiceLine.getPriceActual()).as(COLUMNNAME_PriceActual).isEqualByComparingTo(priceActual);
-		}
+		extractMoney(row, I_C_InvoiceLine.COLUMNNAME_PriceActual, invoice)
+				.ifPresent(priceActual -> {
+					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(priceActual.getCurrencyId().getRepoId());
+					softly.assertThat(invoiceLine.getPriceActual()).as(COLUMNNAME_PriceActual).isEqualByComparingTo(priceActual.toBigDecimal());
+				});
 
-		final BigDecimal lineNetAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_LineNetAmt);
+		extractMoney(row, I_C_InvoiceLine.COLUMNNAME_LineNetAmt, invoice)
+				.ifPresent(lineNetAmt -> {
+					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(lineNetAmt.getCurrencyId().getRepoId());
+					softly.assertThat(invoiceLine.getLineNetAmt()).as(COLUMNNAME_LineNetAmt).isEqualByComparingTo(lineNetAmt.toBigDecimal());
+				});
 
-		if (lineNetAmt != null)
-		{
-			softly.assertThat(invoiceLine.getLineNetAmt()).as(COLUMNNAME_LineNetAmt).isEqualByComparingTo(lineNetAmt);
-		}
+		row.getAsOptionalBigDecimal(I_C_InvoiceLine.COLUMNNAME_Discount)
+				.ifPresent(discount -> softly.assertThat(invoiceLine.getDiscount()).as(COLUMNNAME_Discount).isEqualByComparingTo(discount));
 
-		final BigDecimal discount = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_Discount);
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_Tax_ID)
+				.map(taxTable::getId)
+				.ifPresent(taxId -> softly.assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId()));
 
-		if (discount != null)
-		{
-			softly.assertThat(invoiceLine.getDiscount()).as(COLUMNNAME_Discount).isEqualByComparingTo(discount);
-		}
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_TaxCategory_ID)
+				.map(taxCategoryTable::getId)
+				.ifPresent(taxCategoryId -> softly.assertThat(invoiceLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId.getRepoId()));
 
-		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (taxIdentifier != null)
-		{
-			final TaxId taxId = taxTable.getId(taxIdentifier);
-			softly.assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
-		}
+		row.getAsOptionalInt(COLUMNNAME_Line)
+				.ifPresent(line -> softly.assertThat(invoiceLine.getLine()).as(COLUMNNAME_Line).isEqualTo(line));
 
-		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		if (Check.isNotBlank(taxCategoryIdentifier))
-		{
-			final Integer taxCategoryId = taxCategoryTable.getOptional(taxCategoryIdentifier)
-					.map(I_C_TaxCategory::getC_TaxCategory_ID)
-					.orElseGet(() -> Integer.parseInt(taxCategoryIdentifier));
-
-			softly.assertThat(invoiceLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
-		}
-
-		final Integer line = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_Line);
-		if (line != null)
-		{
-			softly.assertThat(invoiceLine.getLine()).as(COLUMNNAME_Line).isEqualTo(line);
-		}
-
-		final BigDecimal taxAmtInfo = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_TaxAmtInfo);
-
-		if (taxAmtInfo != null)
-		{
-			softly.assertThat(invoiceLine.getTaxAmtInfo()).as(COLUMNNAME_TaxAmtInfo).isEqualByComparingTo(taxAmtInfo);
-		}
+		extractMoney(row, COLUMNNAME_TaxAmtInfo, invoice)
+				.ifPresent(taxAmtInfo -> {
+					softly.assertThat(invoice.getC_Currency_ID()).as(I_C_Invoice.COLUMNNAME_C_Currency_ID).isEqualTo(taxAmtInfo.getCurrencyId().getRepoId());
+					softly.assertThat(invoiceLine.getTaxAmtInfo()).as(COLUMNNAME_TaxAmtInfo).isEqualByComparingTo(taxAmtInfo.toBigDecimal());
+				});
 
 		final String uomCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		if (Check.isNotBlank(uomCode))
@@ -313,7 +312,7 @@ public class C_InvoiceLine_StepDef
 			softly.assertThat(invoiceLine.getPrice_UOM_ID()).as(COLUMNNAME_Price_UOM_ID).isEqualTo(priceUOMId.getRepoId());
 		}
 
-		final Boolean isManualPrice = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsManualPrice);
+		final Boolean isManualPrice = row.getAsOptionalBoolean(COLUMNNAME_IsManualPrice).toBooleanOrNull();
 		if (isManualPrice != null)
 		{
 			softly.assertThat(invoiceLine.isManualPrice()).as(COLUMNNAME_IsManualPrice).isEqualTo(isManualPrice);
@@ -355,10 +354,32 @@ public class C_InvoiceLine_StepDef
 		// 	softly.assertThat(invoiceLine.isHidePriceAndAmountOnPrint()).as(COLUMNNAME_IsHidePriceAndAmountOnPrint).isEqualTo(isHidePriceAndAmountOnPrint);
 		// }
 
-		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
+		row.getAsOptionalQuantity("QtyMatched", uomDAO::getByX12DE355)
+				.ifPresent(qtyMatchedExpected -> {
+					final Quantity qtyMatchedActual = getQtyMatched(invoiceLine, invoice);
+					assertThat(qtyMatchedActual).as("QtyMatched").isEqualTo(qtyMatchedExpected);
+				});
 
 		softly.assertAll();
+
+		row.getAsOptionalIdentifier().ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));
+	}
+
+	private Quantity getQtyMatched(final @NonNull I_C_InvoiceLine invoiceLine, final @NonNull I_C_Invoice invoice)
+	{
+		return matchInvoiceService.getMaterialQtyMatched(invoiceLine)
+				.getUOMQtyNotNull()
+				.negateIf(invoiceBL.isCreditMemo(invoice)) // CM un-adjust
+				;
+	}
+
+	private Optional<Money> extractMoney(final DataTableRow row, final String columnName, final I_C_Invoice invoice)
+	{
+		return row.getAsOptionalMoney(
+				columnName,
+				() -> moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID())),
+				moneyService::getCurrencyIdByCurrencyCode
+		);
 	}
 
 	private void create_C_InvoiceLine(@NonNull final DataTableRow row)

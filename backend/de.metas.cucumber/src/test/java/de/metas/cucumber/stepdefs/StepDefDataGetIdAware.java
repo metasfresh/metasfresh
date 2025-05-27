@@ -7,6 +7,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 {
@@ -54,6 +55,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 		return getOptional(identifier).map(this::extractIdFromRecord);
 	}
 
+	default Stream<ID> streamIds() {return getIdentifiers().stream().map(this::getId).distinct();}
+
 	default Optional<StepDefDataIdentifier> getFirstIdentifierById(@NonNull final ID id) {return getFirstIdentifierById(id, null);}
 
 	default Optional<StepDefDataIdentifier> getFirstIdentifierById(@NonNull final ID id, @Nullable final StepDefDataIdentifier excludeIdentifier)
@@ -79,6 +82,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	{
 		return getFirstIdentifierById(extractIdFromRecord(record));
 	}
+
+	default Optional<RecordType> getFirstById(@NonNull final ID id) {return getFirstIdentifierById(id, null).map(this::get);}
 
 	default void putOrReplaceIfSameId(final StepDefDataIdentifier identifier, final RecordType newRecord)
 	{
