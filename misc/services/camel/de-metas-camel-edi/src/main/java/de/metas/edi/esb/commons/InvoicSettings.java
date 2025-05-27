@@ -59,7 +59,7 @@ public class InvoicSettings
 
 		return switch (clearingCenter)
 				{
-					case MetasfreshInHouseV2, MetasfreshInHouseV1 -> settings.build();
+					case MetasfreshInHouseV2, MetasfreshInHouseV1, Edifact -> settings.build();
 					case STEPcom -> settings
 							.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.applicationRef", "INVOIC"))
 							.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.partnerId"))

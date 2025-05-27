@@ -11,7 +11,7 @@
     </resource-config>
 
     <ftl:freemarker applyOnElement="#document">
-        <ftl:template>/marshal-config/smooks/invoic/templates/edi-marshal-compudata-fresh.ftl</ftl:template>
+        <ftl:template>/marshal-config/smooks/invoic/compudata/templates/edi-marshal-compudata-fresh.ftl</ftl:template>
     </ftl:freemarker>
 
 </smooks-resource-list>

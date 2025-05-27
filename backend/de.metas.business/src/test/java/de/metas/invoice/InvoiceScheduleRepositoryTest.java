@@ -1,11 +1,12 @@
 package de.metas.invoice;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.service.InvoiceScheduleRepository;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -31,6 +32,11 @@ import de.metas.invoice.service.InvoiceScheduleRepository;
 
 public class InvoiceScheduleRepositoryTest
 {
+	@Before
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+	}
 
 	@Test
 	public void save()
