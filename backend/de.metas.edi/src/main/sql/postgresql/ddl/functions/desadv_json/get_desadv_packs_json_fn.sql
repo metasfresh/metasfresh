@@ -21,7 +21,7 @@
  */
 
 -- Function for desadv packs
-CREATE OR REPLACE FUNCTION "de.metas.edi".fn_get_desadv_packs_json(p_edi_desadv_id NUMERIC)
+CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC)
     RETURNS JSONB AS $$
 DECLARE
     v_packs_json JSONB;

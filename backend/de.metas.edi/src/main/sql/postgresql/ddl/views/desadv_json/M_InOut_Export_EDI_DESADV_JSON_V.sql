@@ -36,7 +36,7 @@ SELECT
             'MovementDate', mio.movementdate,
             'POReference', COALESCE(ed.poreference, mio.poreference),
 
-            'EDI_Exp_Desadv_Pack', "de.metas.edi".fn_get_desadv_packs_json(ed.edi_desadv_id), -- Call function
+            'EDI_Exp_Desadv_Pack', "de.metas.edi".get_desadv_packs_json_fn(ed.edi_desadv_id), -- Call function
 
             'Bill_Location_ID', COALESCE(bpl_bill.bpartner_location_json, '{}'::jsonb),
             'C_Currency_ID', COALESCE(curr.currency_json, '{}'::jsonb),
@@ -54,7 +54,7 @@ SELECT
             ),
             'DeliveryViaRule', COALESCE(ed.deliveryviarule, mio.deliveryviarule),
 
-            'EDI_Exp_DesadvLineWithNoPack', "de.metas.edi".fn_get_desadv_lines_no_pack_json(ed.edi_desadv_id), -- Call function
+            'EDI_Exp_DesadvLineWithNoPack', "de.metas.edi".get_desadv_lines_no_pack_json_fn(ed.edi_desadv_id), -- Call function
 
             'M_InOut_ID', mio.m_inout_id,
             'shipment_documentno', mio.documentno,

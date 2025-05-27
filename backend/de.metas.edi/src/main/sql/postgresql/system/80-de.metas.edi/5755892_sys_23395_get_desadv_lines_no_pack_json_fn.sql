@@ -22,7 +22,7 @@
 
 -- Function for desadv lines with no pack
 -- Ensure v_edi_desadv_line_object is defined and efficient
-CREATE OR REPLACE FUNCTION "de.metas.edi".fn_get_desadv_lines_no_pack_json(p_edi_desadv_id NUMERIC)
+CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC)
     RETURNS JSONB AS $$
 DECLARE
     v_lines_no_pack_json JSONB;
