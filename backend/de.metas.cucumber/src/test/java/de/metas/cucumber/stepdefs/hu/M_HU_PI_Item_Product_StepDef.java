@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.generichumodel.PackagingCodeId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.uom.IUOMDAO;
@@ -52,6 +53,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.PCE_UOM_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -119,7 +121,7 @@ public class M_HU_PI_Item_Product_StepDef
 
 		if (huPiItemProductRecord == null)
 		{
-			huPiItemProductRecord=	InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+			huPiItemProductRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
 		}
 
 		huPiItemProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
@@ -147,14 +149,11 @@ public class M_HU_PI_Item_Product_StepDef
 		huPiItemProductRecord.setIsAllowAnyProduct(isAllowAnyProduct);
 		huPiItemProductRecord.setIsDefaultForProduct(isDefaultForProduct);
 
-		final String huPackagingCodeLUFallbackIdentifier = tableRow.getAsOptionalString(COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID).orElse(null);
-		if (Check.isNotBlank(huPackagingCodeLUFallbackIdentifier))
+		final Optional<StepDefDataIdentifier> huPackagingCodeLUFallbackIdentifier = tableRow.getAsOptionalIdentifier(COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID);
+		if (huPackagingCodeLUFallbackIdentifier.isPresent())
 		{
-			final int huPackagingCodeId = DataTableUtil.nullToken2Null(huPackagingCodeLUFallbackIdentifier) == null
-					? -1
-					: huPackagingCodeTable.get(huPackagingCodeLUFallbackIdentifier).getM_HU_PackagingCode_ID();
-
-			huPiItemProductRecord.setM_HU_PackagingCode_LU_Fallback_ID(huPackagingCodeId);
+			final PackagingCodeId packagingCodeId = huPackagingCodeLUFallbackIdentifier.get().lookupIdIn(huPackagingCodeTable);
+			huPiItemProductRecord.setM_HU_PackagingCode_LU_Fallback_ID(PackagingCodeId.toRepoId(packagingCodeId));
 		}
 
 		final String gtinLuPackagingMaterialFallback = tableRow.getAsOptionalString(COLUMNNAME_GTIN_LU_PackingMaterial_Fallback).orElse(null);
@@ -181,7 +180,7 @@ public class M_HU_PI_Item_Product_StepDef
 		saveRecord(huPiItemProductRecord);
 
 		identifier.putOrReplace(huPiItemProductTable, huPiItemProductRecord);
-		
+
 		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoId(huPiItemProductRecord.getM_HU_PI_Item_Product_ID());
 		restTestContext.setIdVariableFromRow(tableRow, () -> hupiItemProductId);
 	}
