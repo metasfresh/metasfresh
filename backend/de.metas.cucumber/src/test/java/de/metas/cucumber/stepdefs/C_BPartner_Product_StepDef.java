@@ -164,7 +164,7 @@ public class C_BPartner_Product_StepDef
 
 		saveRecord(bPartnerProductRecord);
 
-		tableRow.getAsIdentifier(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
-				.putOrReplace(bpartnerProductTable, ProductRepository.fromRecord(bPartnerProductRecord));
+		tableRow.getAsOptionalIdentifier(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
+				.ifPresent(i -> bpartnerProductTable.putOrReplace(i, ProductRepository.fromRecord(bPartnerProductRecord)));
 	}
 }
