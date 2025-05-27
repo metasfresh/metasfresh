@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -81,10 +80,10 @@ public class M_HU_PI_Item_Product_StepDef
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
-				.forEach(this::createHUPIItemProduct);
+				.forEach(this::createOrUpdateHUPIItemProduct);
 	}
 
-	private void createHUPIItemProduct(@NonNull final DataTableRow tableRow)
+	private void createOrUpdateHUPIItemProduct(@NonNull final DataTableRow tableRow)
 	{
 		final I_M_Product productRecord = tableRow.getAsIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 
@@ -104,21 +103,12 @@ public class M_HU_PI_Item_Product_StepDef
 
 		final String x12de355Code = tableRow.getAsOptionalString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName()).orElse(null);
 
-		final Integer mhupiItemProductID = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_HU_PI_Item_Product_ID);
+		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID);
+		I_M_HU_PI_Item_Product huPiItemProductRecord = huPiItemProductTable.getOptional(identifier).orElse(null);
 
-		final I_M_HU_PI_Item_Product existingHuPiItemProduct;
-
-		if (mhupiItemProductID != null)
+		if (huPiItemProductRecord == null)
 		{
-			existingHuPiItemProduct = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(COLUMNNAME_M_HU_PI_Item_Product_ID, mhupiItemProductID)
-					.create()
-					.firstOnlyOrNull(I_M_HU_PI_Item_Product.class);
-		}
-		else
-		{
-			existingHuPiItemProduct = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+			huPiItemProductRecord = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemId)
 					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_Qty, qty)
@@ -127,15 +117,9 @@ public class M_HU_PI_Item_Product_StepDef
 					.firstOnlyOrNull(I_M_HU_PI_Item_Product.class);
 		}
 
-		final I_M_HU_PI_Item_Product huPiItemProductRecord = CoalesceUtil.coalesceSuppliersNotNull(
-				() -> existingHuPiItemProduct,
-				() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class));
-
-		assertThat(huPiItemProductRecord).isNotNull();
-
-		if (mhupiItemProductID != null)
+		if (huPiItemProductRecord == null)
 		{
-			huPiItemProductRecord.setM_HU_PI_Item_Product_ID(mhupiItemProductID);
+			huPiItemProductRecord=	InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
 		}
 
 		huPiItemProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
@@ -196,8 +180,10 @@ public class M_HU_PI_Item_Product_StepDef
 
 		saveRecord(huPiItemProductRecord);
 
-		tableRow.getAsIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID).putOrReplace(huPiItemProductTable, huPiItemProductRecord);
-		restTestContext.setIdVariableFromRow(tableRow, () -> HUPIItemProductId.ofRepoId(huPiItemProductRecord.getM_HU_PI_Item_Product_ID()));
+		identifier.putOrReplace(huPiItemProductTable, huPiItemProductRecord);
+		
+		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoId(huPiItemProductRecord.getM_HU_PI_Item_Product_ID());
+		restTestContext.setIdVariableFromRow(tableRow, () -> hupiItemProductId);
 	}
 
 	@And("update M_HU_PI_Item_Product:")
