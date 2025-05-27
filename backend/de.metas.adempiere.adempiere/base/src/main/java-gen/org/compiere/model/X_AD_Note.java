@@ -1,7 +1,6 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -672,7 +671,7 @@ public class X_AD_Note extends org.compiere.model.PO implements I_AD_Note, org.c
 	/** Error = Error */
 	public static final String NOTIFICATIONSEVERITY_Error = "Error";
 	@Override
-	public void setNotificationSeverity (final @Nullable java.lang.String NotificationSeverity)
+	public void setNotificationSeverity (final java.lang.String NotificationSeverity)
 	{
 		set_Value (COLUMNNAME_NotificationSeverity, NotificationSeverity);
 	}

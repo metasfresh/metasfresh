@@ -366,12 +366,13 @@ public class NotificationRepository implements INotificationRepository
 	}
 
 	@Override
-	public void deleteByTableRecordRef( final @NonNull TableRecordReference tableRecordReference)
+	public void deleteByTableRecordRef(final @NonNull UserId adUserId, final @NonNull TableRecordReference tableRecordReference)
 	{
-		queryBL.createQueryBuilder(I_AD_Note.class)
-				.addEqualsFilter(I_AD_Note.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
+		retrieveNotesByUserId(adUserId)
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
+				.addEqualsFilter(I_AD_Note.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
-				.delete();
+				.delete(false);
 	}
 
 	@Override

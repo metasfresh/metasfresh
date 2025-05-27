@@ -36,7 +36,7 @@ public interface INotificationRepository extends ISingletonService
 
 	boolean deleteById(int notificationId);
 
-	void deleteByTableRecordRef(@NonNull TableRecordReference tableRecordReference);
+	void deleteByTableRecordRef(UserId userId, TableRecordReference tableRecordReference);
 
 	void deleteAllByUserId(UserId userId);
 

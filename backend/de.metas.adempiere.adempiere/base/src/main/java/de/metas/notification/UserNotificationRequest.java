@@ -58,6 +58,9 @@ public class UserNotificationRequest
 	private static final NotificationGroupName DEFAULT_NotificationGroupName = NotificationGroupName.of(EventBusConfig.TOPIC_GeneralUserNotifications.getName());
 	@NonNull NotificationGroupName notificationGroupName;
 
+	private static final NotificationSeverity DEFAULT_NotificationSeverity = NotificationSeverity.Notice;
+	@NonNull NotificationSeverity notificationSeverity ;
+
 	boolean important;
 
 	/** Optional; takes precedence over {@link #subjectADMessage}, if set. */
@@ -66,13 +69,11 @@ public class UserNotificationRequest
 	/** Optional */
 	AdMessageKey subjectADMessage;
 	List<Object> subjectADMessageParams;
-	NotificationSeverity notificationSeverity;
 
 	/** Optional; takes precedence over {@link #contentADMessage}, if set. */
 	String contentPlain;
 
 	/** Optional */
-	AdMessageKey contentADMessagePrefix;
 	AdMessageKey contentADMessage;
 	List<Object> contentADMessageParams;
 
@@ -97,17 +98,15 @@ public class UserNotificationRequest
 			@Singular final List<Object> subjectADMessageParams,
 			//
 			final String contentPlain,
-			@Nullable final AdMessageKey contentADMessagePrefix,
 			final AdMessageKey contentADMessage,
 			@Singular final List<Object> contentADMessageParams,
-
-			@Nullable final NotificationSeverity notificationSeverity,
 			//
 			@Nullable final TargetAction targetAction,
 			//
 			@Singular final List<Resource> attachments,
 			// Options:
-			final boolean noEmail)
+			final boolean noEmail,
+			@Nullable final NotificationSeverity notificationSeverity)
 	{
 		this.notificationsConfig = notificationsConfig;
 
@@ -140,10 +139,9 @@ public class UserNotificationRequest
 		this.subjectADMessageParams = copyADMessageParams(subjectADMessageParams);
 
 		this.contentPlain = contentPlain;
-		this.contentADMessagePrefix = contentADMessagePrefix;
 		this.contentADMessage = contentADMessage;
 		this.contentADMessageParams = copyADMessageParams(contentADMessageParams);
-		this.notificationSeverity = notificationSeverity;
+		this.notificationSeverity = notificationSeverity != null ? notificationSeverity : DEFAULT_NotificationSeverity;
 
 		this.targetAction = targetAction;
 

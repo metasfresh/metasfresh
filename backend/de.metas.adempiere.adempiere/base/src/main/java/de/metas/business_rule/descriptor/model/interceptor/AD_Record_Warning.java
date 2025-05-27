@@ -24,26 +24,27 @@ package de.metas.business_rule.descriptor.model.interceptor;
 
 import de.metas.notification.INotificationRepository;
 import de.metas.user.UserId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Record_Warning;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_AD_Record_Warning.class)
+@Component
 public class AD_Record_Warning
 {
-
-	final INotificationRepository notificationRepository = Services.get(INotificationRepository.class);
+	final INotificationRepository notificationRepository = SpringContextHolder.instance.getBean(INotificationRepository.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_AD_Record_Warning.COLUMNNAME_IsAcknowledged)
 	public void deleteNotificationOnAknowledgement(@NonNull final I_AD_Record_Warning warning)
 	{
 		if (warning.isAcknowledged())
 		{
-			notificationRepository.deleteByTableRecordRef(TableRecordReference.of(warning.getAD_Table_ID(), warning.getRecord_ID()));
+			notificationRepository.deleteByTableRecordRef(UserId.ofRepoId(warning.getAD_User_ID()), TableRecordReference.of(warning));
 		}
 	}
 }
