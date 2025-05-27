@@ -148,7 +148,10 @@ public class C_BPartner_Product_StepDef
 		final ProductId productId = tableRow.getAsIdentifier(I_C_BPartner_Product.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
 		bPartnerProductRecord.setM_Product_ID(productId.getRepoId());
 
-		final BPartnerId bpartnerId = tableRow.getAsIdentifier(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bPartnerTable);
+		final StepDefDataIdentifier bpartnerIdentifier = tableRow.getAsIdentifier(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID);
+		final BPartnerId bpartnerId = bPartnerTable.getIdOptional(bpartnerIdentifier)
+				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
+		
 		bPartnerProductRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 
 		tableRow.getAsOptionalBoolean(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale).ifPresent(bPartnerProductRecord::setIsExcludedFromSale);
