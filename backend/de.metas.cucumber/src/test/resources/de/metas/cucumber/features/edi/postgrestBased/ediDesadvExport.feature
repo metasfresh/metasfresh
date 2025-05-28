@@ -78,6 +78,9 @@ Feature: EDI DESADV export via postgREST
       | ol_1       | o_1                   | product_S0468_010 | 100        | huAuditProductTU_S0468_010             |
 
     And the order identified by o_1 is completed
+    And store order-values in TestContext
+      | C_Order_ID | Column     | REST.Context   |
+      | o_1        | DocumentNo | o_1_DocumentNo |
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -162,7 +165,7 @@ Feature: EDI DESADV export via postgREST
                   "Name": "Stück",
                   "X12DE355": "PCE"
                 },
-                "OrderDocumentNo": "0001",
+                "OrderDocumentNo": "@o_1_DocumentNo@",
                 "OrderPOReference": "testReference"
               },
               "QtyCUsPerLU": 100,

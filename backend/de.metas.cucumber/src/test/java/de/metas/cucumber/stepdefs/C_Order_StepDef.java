@@ -29,6 +29,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -59,6 +60,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -109,6 +111,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
+@RequiredArgsConstructor
 public class C_Order_StepDef
 {
 	private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
@@ -121,31 +124,14 @@ public class C_Order_StepDef
 	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final C_Order_StepDefData orderTable;
-	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
-	private final AD_User_StepDefData userTable;
-	private final M_PricingSystem_StepDefData pricingSystemDataTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final AD_Org_StepDefData orgTable;
-
-	public C_Order_StepDef(
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
-			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final AD_Org_StepDefData orgTable)
-	{
-		this.bpartnerTable = bpartnerTable;
-		this.bpartnerLocationTable = bpartnerLocationTable;
-		this.orderTable = orderTable;
-		this.userTable = userTable;
-		this.pricingSystemDataTable = pricingSystemDataTable;
-		this.warehouseTable = warehouseTable;
-		this.orgTable = orgTable;
-	}
+	private final @NonNull C_BPartner_StepDefData bpartnerTable;
+	private final @NonNull C_Order_StepDefData orderTable;
+	private final @NonNull C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final @NonNull AD_User_StepDefData userTable;
+	private final @NonNull M_PricingSystem_StepDefData pricingSystemDataTable;
+	private final @NonNull M_Warehouse_StepDefData warehouseTable;
+	private final @NonNull AD_Org_StepDefData orgTable;
+	private final @NonNull TestContext restTestContext;
 
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
@@ -830,5 +816,20 @@ public class C_Order_StepDef
 
 		orderTable.putOrReplace(orderIdentifier, orderRecord);
 		return true;
+	}
+
+	@And("store order-values in TestContext")
+	public void storeValuesFromOrderInTestContext(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+							final I_C_Order order = row.getAsIdentifier(COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+
+							final String column = row.getAsString("Column");
+							final Object value = InterfaceWrapperHelper.getValueOrNull(order, column);
+
+							restTestContext.setStringVariableFromRow(row, () -> value == null ? null : value.toString());
+						}
+				);
 	}
 }
