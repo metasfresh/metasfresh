@@ -351,7 +351,7 @@ p_C_BPartner_ID =>  $P{C_BPartner_ID} )
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Rg.-Nr]]></text>
+				<text><![CDATA[Nr]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-3" x="482" y="75" width="45" height="10" uuid="9ec5746e-25ce-4f11-ba05-7f0f0af48ec9"/>
