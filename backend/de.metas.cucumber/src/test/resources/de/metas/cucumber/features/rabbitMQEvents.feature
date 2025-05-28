@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor4
 Feature: Validate Events are correctly sent to RabbitMQ when enqueued via EventBus
 
   Background:

@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor4
 Feature: sales order
 
   Background:
@@ -85,12 +86,11 @@ Feature: sales order
       | o_2                      | false   | POO         | MED        | DR            |
     And the purchase order with document subtype 'MED' linked to order 'o_2' has lines:
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier |
-      | 10         | 100        | p_2                     | endcustomer_2                |
+      | 10         | 100        | p_2                     | shiptopartner_2              |
     And the sales order identified by 'o_2' is closed
     And the shipment schedule identified by s_ol_2 is processed after not more than 30 seconds
 
   @from:cucumber
-  @ignore
   Scenario: we can generate a mediated purchase order from a sales order with dropship address
     And metasfresh contains M_Products:
       | Identifier | Name             |
@@ -113,21 +113,17 @@ Feature: sales order
     And metasfresh contains C_BPartners:
       | Identifier       | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_26   | Endcustomer_726  | N            | Y              | ps_26                         |
-      | endcustomer_36   | Endcustomer_36   | N            | Y              | ps_26                         |
       | vendor_26        | vendor_726       | Y            | Y              | ps_26                         |
       | shiptopartner_26 | Shiptopartner_26 | Y            | Y              | ps_26                         |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_26                | p_26                    |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier | C_BPartner_ID.Identifier |
-      | bpl_26     | endcustomer_36           |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.IsDropShip | OPT.DropShip_BPartner_ID.Identifier |
-      | o_26       | true    | endcustomer_26           | 2021-04-17  | true           | endcustomer_36                      |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.IsDropShip | DropShip_BPartner_ID | DropShip_Location_ID |
+      | o_26       | true    | endcustomer_26           | 2021-04-17  | true           | shiptopartner_26     | shiptopartner_26     |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_BPartner_ID.Identifier | 
-      | ol_26      | o_26                  | p_26                    | 10         | shiptopartner_26             |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_26      | o_26                  | p_26                    | 10         |
     And the order identified by o_26 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |

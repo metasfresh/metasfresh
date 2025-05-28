@@ -66,7 +66,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -163,14 +162,6 @@ public class C_Order_StepDef
 							() -> !isSOTrx ? Optional.of(DocBaseType.PurchaseOrder) : Optional.empty() // if we don't do this, MOrder.beforeSave will automatically set IsSOTrx=true because C_DocTypeTarget_ID is not set 
 					).orElse(null);
 
-					final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
-					final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
-
-					final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
-							.map(orgTable::get)
-							.map(I_AD_Org::getAD_Org_ID)
-							.orElse(StepDefConstants.ORG_ID.getRepoId());
-
 					final StepDefDataIdentifier bpartnerIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
 					final BPartnerId bpartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
 							.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
@@ -179,9 +170,20 @@ public class C_Order_StepDef
 					order.setC_BPartner_ID(bpartnerId.getRepoId());
 					order.setIsSOTrx(isSOTrx);
 					order.setDateOrdered(tableRow.getAsLocalDateTimestamp(I_C_Order.COLUMNNAME_DateOrdered));
-					order.setDropShip_BPartner_ID(dropShipPartnerId);
-					order.setIsDropShip(isDropShip);
-					order.setAD_Org_ID(orgId);
+
+					// dropship
+					order.setIsDropShip(tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsDropShip).orElse(false));
+					tableRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
+							.map(bpartnerTable::getId)
+							.ifPresent(id -> order.setDropShip_BPartner_ID(id.getRepoId()));
+					tableRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_Location_ID)
+							.map(bpartnerLocationTable::getId)
+							.ifPresent(id -> order.setDropShip_Location_ID(id.getRepoId()));
+
+					order.setAD_Org_ID(tableRow
+							.getAsOptionalIdentifier(COLUMNNAME_AD_Org_ID)
+							.map(orgTable::getId)
+							.orElse(StepDefConstants.ORG_ID).getRepoId());
 
 					if (paymentTermId > 0)
 					{
@@ -429,9 +431,13 @@ public class C_Order_StepDef
 
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
-
-			final int partnerId = DataTableUtil.extractIntOrZeroForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
-			assertThat(purchaseOrder.getDropShip_BPartner_ID()).isEqualTo(partnerId);
+			// TODO: introduce DataTableRows for this whole stepdef
+			DataTableRow.singleRow(tableRow)
+					.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
+					.map(bpartnerTable::getId)
+					.ifPresent(dropShipId -> assertThat(purchaseOrder.getDropShip_BPartner_ID())
+							.as("DropShip_BPartner_ID")
+							.isEqualTo(dropShipId.getRepoId()));
 		}
 	}
 

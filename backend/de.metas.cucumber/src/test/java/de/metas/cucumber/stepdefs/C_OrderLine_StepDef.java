@@ -115,9 +115,7 @@ public class C_OrderLine_StepDef
 					final I_C_Order orderRecord = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
 					orderLine.setC_Order_ID(orderRecord.getC_Order_ID());
 					orderLineBL.setOrder(orderLine, orderRecord); 
-	
-					orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-
+		
 					final StepDefDataIdentifier productIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
 					final ProductId productId = productTable.getIdOptional(productIdentifier)
 							.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
