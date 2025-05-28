@@ -48,9 +48,9 @@ public class C_Invoice_EDI_Export_JSON extends EDI_Export_JSON
 	private int c_invoice_id;
 
 	@Override
-	protected I_EDI_Document_Extension loadRecord()
+	protected I_EDI_Document_Extension loadRecordOutOfTrx()
 	{
-		final I_C_Invoice invoiceRecord = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(c_invoice_id));
+		final I_C_Invoice invoiceRecord = invoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(c_invoice_id), I_C_Invoice.class);
 		Check.assumeNotNull(invoiceRecord, "C_Invoice with ID={} shall not be null", c_invoice_id);
 		return InterfaceWrapperHelper.create(invoiceRecord, I_EDI_Document_Extension.class);
 	}

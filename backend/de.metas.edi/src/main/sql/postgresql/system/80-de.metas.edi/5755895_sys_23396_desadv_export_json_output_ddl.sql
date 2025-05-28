@@ -59,8 +59,7 @@ SELECT edl.edi_desadvline_id,
                'OrderPOReference', o.poreference,
                'OrderDocumentNo', o.documentno,
                'MovementQty', COALESCE(iol.movementqty, 0),
-               'DesadvLine', edl.line,
-               'EDI_DesadvLine_ID', edl.edi_desadvline_id
+               'DesadvLine', edl.line
        ) AS desadv_line_object_json
 FROM edi_desadvline edl
          JOIN m_product p ON p.m_product_id = edl.m_product_id

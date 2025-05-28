@@ -1,2 +1,0 @@
-GET http://localhost:4001/M_InOut_Export_EDI_DESADV_JSON_V?m_inout_id=eq.10000&select=data
-Accept: application/vnd.pgrst.object+json 

@@ -30,6 +30,7 @@ import de.metas.inout.InOutId;
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
 import de.metas.process.Param;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 /**
@@ -47,14 +48,14 @@ public class M_InOut_EDI_Export_JSON extends EDI_Export_JSON
 	private int m_inout_id;
 
 	@Override
-	protected I_EDI_Document_Extension loadRecord()
+	protected I_EDI_Document_Extension loadRecordOutOfTrx()
 	{
-		final I_M_InOut record = inOutDAO.getById(InOutId.ofRepoId(m_inout_id), I_M_InOut.class);
+		final I_M_InOut record = inOutDAO.getByIdOutOfTrx(InOutId.ofRepoId(m_inout_id), I_M_InOut.class);
 		return Check.assumeNotNull(record, "M_InOut with ID={} shall not be null", m_inout_id);
 	}
 
 	@Override
-	protected void saveRecord(final I_EDI_Document_Extension record)
+	protected void saveRecord(@NonNull final I_EDI_Document_Extension record)
 	{
 		final I_M_InOut inOutRecord = InterfaceWrapperHelper.create(record, I_M_InOut.class);
 		inOutDAO.save(inOutRecord);

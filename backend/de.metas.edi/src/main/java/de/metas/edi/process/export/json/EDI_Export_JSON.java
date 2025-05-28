@@ -38,9 +38,7 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 {
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
-	private I_EDI_Document_Extension record;
-
-	protected abstract I_EDI_Document_Extension loadRecord();
+	protected abstract I_EDI_Document_Extension loadRecordOutOfTrx();
 
 	protected abstract void saveRecord(I_EDI_Document_Extension record);
 
@@ -48,9 +46,9 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 	 * Sets invoice's EDI_ExportStatus and tell metasfresh to store the result to disk, unless we are called via API.
 	 */
 	@Override
-	protected CustomPostgRESTParameters beforePostgRESTCall()
+	protected final CustomPostgRESTParameters beforePostgRESTCall()
 	{
-		record = loadRecord();
+		final I_EDI_Document_Extension record = loadRecordOutOfTrx();
 		record.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted);
 		saveRecord(record);
 
@@ -65,10 +63,11 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 	}
 
 	@Override
-	protected String afterPostgRESTCall()
+	protected final String afterPostgRESTCall()
 	{
 		final ReportResultData reportData = Check.assumeNotNull(getResult().getReportData(), "reportData shall not be null after successful invocation");
 
+		final I_EDI_Document_Extension record = loadRecordOutOfTrx();
 		// note that if it was called via API, then the result will also be in API_Response_Audit, but there it will be removed after some time
 		final TableRecordReference recordReference = TableRecordReference.of(record);
 
@@ -92,13 +91,13 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 	@Override
 	protected Exception handleException(@NonNull final Exception e)
 	{
-		if (record != null)
-		{
-			record.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Error);
-			record.setEDIErrorMsg(e.getLocalizedMessage());
-			saveRecord(record);
-		}
-		throw AdempiereException.wrapIfNeeded(e);
+		final I_EDI_Document_Extension record = loadRecordOutOfTrx();
+		
+		record.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Error);
+		record.setEDIErrorMsg(e.getLocalizedMessage());
+		saveRecord(record);
+
+		return AdempiereException.wrapIfNeeded(e);
 	}
 }
 

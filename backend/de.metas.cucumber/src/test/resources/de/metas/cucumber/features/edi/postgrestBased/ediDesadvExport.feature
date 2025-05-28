@@ -137,9 +137,6 @@ Feature: EDI DESADV export via postgREST
               "Line": 10,
               "QtyTU": 10,
               "LotNumber": null,
-              "QtyCUsPerLU": 100,
-              "QtyCUsPerTU": 10,
-              "BestBeforeDate": null,
               "DesadvLine": {
                 "Product": {
                   "UPC": null,
@@ -166,9 +163,11 @@ Feature: EDI DESADV export via postgREST
                   "X12DE355": "PCE"
                 },
                 "OrderDocumentNo": "0001",
-                "OrderPOReference": "testReference",
-                "EDI_DesadvLine_ID": 1000000
+                "OrderPOReference": "testReference"
               },
+              "QtyCUsPerLU": 100,
+              "QtyCUsPerTU": 10,
+              "BestBeforeDate": null,
               "GTIN_TU_PackingMaterial": "bPartnerProductGTIN",
               "QtyCUsPerLU_InInvoiceUOM": 100,
               "QtyCUsPerTU_InInvoiceUOM": 10,
@@ -184,7 +183,7 @@ Feature: EDI DESADV export via postgREST
         "ISO_Code": "EUR",
         "CurSymbol": "€"
       },
-      "M_InOut_ID": "@shipment_S0468_010_ID@",
+      "M_InOut_ID": @shipment_S0468_010_ID@,
       "DateOrdered": "2025-04-17T00:00:00",
       "POReference": "testReference",
       "DatePromised": "2025-05-15T00:00:00",
@@ -194,7 +193,7 @@ Feature: EDI DESADV export via postgREST
         "Name2": null,
         "Value": "desadvReceiverValue"
       },
-      "EDI_Desadv_ID": "@d_1@",
+      "EDI_Desadv_ID": @d_1@,
       "Buyer_Location": {
         "GLN": "1234567890123",
         "City": null,
@@ -241,9 +240,7 @@ Feature: EDI DESADV export via postgREST
 ]
     """
 
-    And after not more than 60s, EDI_Desadv records have the following export status
-      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
-      | d_1                      | S                |
-
- 
-
+#   no need to wait. the process runs synchronously
+    And after not more than 1s, M_InOut records have the following export status
+      | M_InOut_ID | EDI_ExportStatus |
+      | s_1        | S                |
