@@ -1,18 +1,18 @@
 package de.metas.frontend_testing.expectations.assertions;
 
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 
+@SuppressWarnings("UnusedReturnValue")
 public class SoftAssertions
 {
 	private final LinkedHashMap<String, Object> context = new LinkedHashMap<>();
-	private final ArrayList<AdempiereException> errors = new ArrayList<>();
+	private final ArrayList<Failure> failures = new ArrayList<>();
 
-	@SuppressWarnings("unused")
 	public SoftAssertions putContext(@NonNull final String key, @NonNull final Object value)
 	{
 		context.put(key, value);
@@ -22,29 +22,50 @@ public class SoftAssertions
 	public <T> AssertThat<T> assertThat(@Nullable final T actual)
 	{
 		final AssertThat<T> assertThat = new AssertThat<>(actual);
-		assertThat.setExceptionFactory(this::createException);
-		assertThat.setExceptionCollector(this::collectError);
+		assertThat.setFailuresCollector(this::collectFailure);
 		return assertThat;
 	}
 
-	private AdempiereException createException(final String message)
+	private void collectFailure(@NonNull final Failure failure)
 	{
-		return new AdempiereException(message)
-				.appendParametersToMessage()
-				.setParameters(context);
-
+		failures.add(failure);
 	}
 
-	private void collectError(final AdempiereException error)
+	void collectFailures(final SoftAssertions other)
 	{
-		errors.add(error);
+		other.toSingleFailure().ifPresent(this::collectFailure);
 	}
 
 	public void assertAll()
 	{
-		if (!errors.isEmpty())
+		final Failure failure = toSingleFailure().orElse(null);
+		if (failure == null)
 		{
-			throw new AdempiereException("Multiple errors occurred:\n" + errors.stream().map(AdempiereException::getLocalizedMessage).collect(java.util.stream.Collectors.joining("\n")));
+			return;
+		}
+
+		throw failure.toException();
+	}
+
+	private Optional<Failure> toSingleFailure()
+	{
+		if (failures.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (failures.size() == 1)
+		{
+			return Optional.of(failures.get(0));
+		}
+		else
+		{
+			return Optional.of(
+					Failure.builder()
+							.message("Multiple errors occurred")
+							.context(context)
+							.causes(failures)
+							.build()
+			);
 		}
 	}
 

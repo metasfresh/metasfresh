@@ -8,6 +8,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.springframework.http.ResponseEntity;
 
 public class AssertExpectationsCommand
 {
@@ -41,28 +42,35 @@ public class AssertExpectationsCommand
 		return context;
 	}
 
-	public JsonExpectationsResponse execute() throws Exception
+	public ResponseEntity<JsonExpectationsResponse> execute()
 	{
-		if (expectations.getPickings() != null)
+		try
 		{
-			AssertPickingExpectationsCommand.builder()
-					.services(services)
-					.context(context)
-					.expectations(expectations.getPickings())
-					.build()
-					.execute();
-		}
-		if (expectations.getHus() != null)
-		{
-			AssertHUExpectationsCommand.builder()
-					.services(services)
-					.context(context)
-					.expectations(expectations.getHus())
-					.build()
-					.execute();
-		}
+			if (expectations.getPickings() != null)
+			{
+				AssertPickingExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getPickings())
+						.build()
+						.execute();
+			}
+			if (expectations.getHus() != null)
+			{
+				AssertHUExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getHus())
+						.build()
+						.execute();
+			}
 
-		return JsonExpectationsResponse.builder().build();
+			return ResponseEntity.ok().body(JsonExpectationsResponse.OK);
+		}
+		catch (final Exception ex)
+		{
+			return ResponseEntity.badRequest().body(JsonExpectationsResponse.failure(ex));
+		}
 	}
 
 }

@@ -100,7 +100,10 @@ export const loadConfigFromFrontendApp = async () => await test.step(`Fetching f
 });
 
 const assertNoErrors = ({ responseBody }) => {
-    if (responseBody.error || responseBody.errors || responseBody.stackTrace) {
+    if (responseBody.error
+        || responseBody.errors
+        || responseBody.stackTrace
+        || responseBody.failure) {
         throw Error("Got error on last backend call:\n" + JSON.stringify(responseBody, null, 2));
     }
 };

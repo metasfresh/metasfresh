@@ -1,7 +1,6 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.base.Stopwatch;
-import de.metas.frontend_testing.expectations.assertions.SoftAssertions;
 import de.metas.frontend_testing.expectations.request.JsonPickingExpectation;
 import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleExpectation;
 import de.metas.frontend_testing.expectations.request.JsonShipmentScheduleQtyPickedExpectation;
@@ -34,7 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
-import static de.metas.frontend_testing.expectations.assertions.Assertions.newSoftAssertions;
+import static de.metas.frontend_testing.expectations.assertions.Assertions.softly;
+import static de.metas.frontend_testing.expectations.assertions.Assertions.softlyPutContext;
 
 @Builder
 class AssertPickingExpectationsCommand
@@ -198,80 +198,85 @@ class AssertPickingExpectationsCommand
 			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final SoftAssertions softly = newSoftAssertions()
-				.putContext("expectation", expectation)
-				.putContext("qtyPickedRecord", qtyPickedRecord)
-				.putContext("shipmentSchedule", shipmentSchedule);
+		softly(() -> {
+			softlyPutContext("expectation", expectation);
+			softlyPutContext("qtyPickedRecord", qtyPickedRecord);
+			softlyPutContext("shipmentSchedule", shipmentSchedule);
 
-		if (expectation.getQtyPicked() != null || expectation.getCatchWeight() != null)
-		{
-			final StockQtyAndUOMQty actualQtyPicked = services.extractQtyPicked(qtyPickedRecord, extractProductId(shipmentSchedule));
-
-			if (expectation.getQtyPicked() != null)
+			if (expectation.getQtyPicked() != null || expectation.getCatchWeight() != null)
 			{
-				softly.assertThat(actualQtyPicked.getStockQty()).as("qtyPicked").isEqualTo(expectation.getQtyPicked().toQuantity());
+				final StockQtyAndUOMQty actualQtyPicked = services.extractQtyPicked(qtyPickedRecord, extractProductId(shipmentSchedule));
+
+				if (expectation.getQtyPicked() != null)
+				{
+					assertThat(actualQtyPicked.getStockQty()).as("qtyPicked").isEqualTo(expectation.getQtyPicked().toQuantity());
+				}
+				if (expectation.getCatchWeight() != null)
+				{
+					assertThat(actualQtyPicked.getUOMQtyNotNull()).as("catch weight").isEqualTo(expectation.getCatchWeight().toQuantity());
+				}
 			}
-			if (expectation.getCatchWeight() != null)
+
+			if (expectation.getQtyLUs() != null)
 			{
-				softly.assertThat(actualQtyPicked.getUOMQtyNotNull()).as("catch weight").isEqualTo(expectation.getCatchWeight().toQuantity());
+				assertThat(qtyPickedRecord.getQtyLU().intValueExact()).as("QtyLUs").isEqualTo(expectation.getQtyLUs());
 			}
-		}
+			if (expectation.getQtyTUs() != null)
+			{
+				assertThat(qtyPickedRecord.getQtyTU().intValueExact()).as("QtyTUs").isEqualTo(expectation.getQtyTUs().toInt());
+			}
 
-		if (expectation.getQtyLUs() != null)
-		{
-			softly.assertThat(qtyPickedRecord.getQtyLU().intValueExact()).as("QtyLUs").isEqualTo(expectation.getQtyLUs());
-		}
-		if (expectation.getQtyTUs() != null)
-		{
-			softly.assertThat(qtyPickedRecord.getQtyTU().intValueExact()).as("QtyTUs").isEqualTo(expectation.getQtyTUs().toInt());
-		}
+			if (expectation.getProcessed() != null)
+			{
+				assertThat(qtyPickedRecord.isProcessed()).as("Processed").isEqualTo(expectation.getProcessed());
+			}
 
-		if (expectation.getProcessed() != null)
-		{
-			softly.assertThat(qtyPickedRecord.isProcessed()).as("Processed").isEqualTo(expectation.getProcessed());
-		}
+			if (expectation.getVhu() != null)
+			{
+				assertId("VHU_ID", expectation.getVhu(), HuId.ofRepoIdOrNull(qtyPickedRecord.getVHU_ID()), HuId.class);
+			}
+			if (expectation.getTu() != null)
+			{
+				assertId("M_TU_HU_ID", expectation.getTu(), HuId.ofRepoIdOrNull(qtyPickedRecord.getM_TU_HU_ID()), HuId.class);
+			}
+			if (expectation.getLu() != null)
+			{
+				assertId("M_LU_HU_ID", expectation.getLu(), HuId.ofRepoIdOrNull(qtyPickedRecord.getM_LU_HU_ID()), HuId.class);
+			}
 
-		if (expectation.getVhu() != null)
-		{
-			assertId(softly, "VHU_ID", expectation.getVhu(), HuId.ofRepoIdOrNull(qtyPickedRecord.getVHU_ID()), HuId.class);
-		}
-		if (expectation.getTu() != null)
-		{
-			assertId(softly, "M_TU_HU_ID", expectation.getTu(), HuId.ofRepoIdOrNull(qtyPickedRecord.getM_TU_HU_ID()), HuId.class);
-		}
-		if (expectation.getLu() != null)
-		{
-			assertId(softly, "M_LU_HU_ID", expectation.getLu(), HuId.ofRepoIdOrNull(qtyPickedRecord.getM_LU_HU_ID()), HuId.class);
-		}
-
-		if (expectation.getShipmentLineId() != null)
-		{
-			assertId(softly, "M_InOutLine_ID", expectation.getShipmentLineId(), InOutLineId.ofRepoIdOrNull(qtyPickedRecord.getM_InOutLine_ID()), InOutLineId.class);
-		}
-
-		softly.assertAll();
+			if (expectation.getShipmentLineId() != null)
+			{
+				assertId("M_InOutLine_ID", expectation.getShipmentLineId(), InOutLineId.ofRepoIdOrNull(qtyPickedRecord.getM_InOutLine_ID()), InOutLineId.class);
+			}
+		});
 	}
 
 	private <T extends RepoIdAware> void assertId(
-			@NonNull final SoftAssertions softly,
 			@NonNull String what,
 			@NonNull final Identifier identifier,
 			@Nullable final T actualId,
 			@NonNull final Class<T> idType
 	)
 	{
-		final T expectedId = context.getOptionalId(identifier, idType).orElse(null);
-		if (expectedId == null)
+		if (identifier.isNullPlaceholder())
 		{
-			softly.assertThat(actualId).as(what).isNotNull();
-			if (actualId != null)
-			{
-				context.putIdentifier(identifier, actualId);
-			}
+			assertThat(actualId).as(what).isNull();
 		}
 		else
 		{
-			softly.assertThat(actualId).as(what).isEqualTo(expectedId);
+			final T expectedId = context.getOptionalId(identifier, idType).orElse(null);
+			if (expectedId == null)
+			{
+				assertThat(actualId).as(what).isNotNull();
+				if (actualId != null)
+				{
+					context.putIdentifier(identifier, actualId);
+				}
+			}
+			else
+			{
+				assertThat(actualId).as(what).isEqualTo(expectedId);
+			}
 		}
 	}
 

@@ -42,6 +42,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -165,7 +166,7 @@ public class FrontendTestingRestController
 	}
 
 	@PostMapping("expect")
-	public JsonExpectationsResponse expect(@RequestBody @NonNull final JsonExpectations jsonExpectations) throws Exception
+	public ResponseEntity<JsonExpectationsResponse> expect(@RequestBody @NonNull final JsonExpectations jsonExpectations) throws Exception
 	{
 		assertEnabled();
 

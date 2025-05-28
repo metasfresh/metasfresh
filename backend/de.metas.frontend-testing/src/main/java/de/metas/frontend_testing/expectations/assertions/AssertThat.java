@@ -15,22 +15,16 @@ public class AssertThat<T>
 	private final T actual;
 	private String what = "";
 	private final LinkedHashMap<String, Object> context = new LinkedHashMap<>();
-	@Nullable private ExceptionFactory exceptionFactory;
-	@Nullable private ExceptionCollector exceptionCollector;
+	@Nullable private FailuresCollector failuresCollector;
 
 	AssertThat(@Nullable final T actual)
 	{
 		this.actual = actual;
 	}
 
-	void setExceptionFactory(@Nullable final ExceptionFactory exceptionFactory)
+	void setFailuresCollector(@Nullable final FailuresCollector failuresCollector)
 	{
-		this.exceptionFactory = exceptionFactory;
-	}
-
-	void setExceptionCollector(@Nullable final ExceptionCollector exceptionCollector)
-	{
-		this.exceptionCollector = exceptionCollector;
+		this.failuresCollector = failuresCollector;
 	}
 
 	public AssertThat<T> as(@NonNull final String description)
@@ -51,40 +45,26 @@ public class AssertThat<T>
 		fail(message, null);
 	}
 
-	private void fail(@NonNull final String message, @Nullable final Consumer<AdempiereException> customizer)
+	private void fail(@NonNull final String message, @Nullable final Consumer<Failure> customizer)
 	{
-		final AdempiereException exception = newException(message);
+		final Failure failure = Failure.builder()
+				.message(message)
+				.context(context)
+				.build();
+
 		if (customizer != null)
 		{
-			customizer.accept(exception);
+			customizer.accept(failure);
 		}
 
-		if (exceptionCollector != null)
+		if (failuresCollector != null)
 		{
-			exceptionCollector.collect(exception);
+			failuresCollector.collect(failure);
 		}
 		else
 		{
-			throw exception;
+			throw failure.toException();
 		}
-	}
-
-	private AdempiereException newException(final String message)
-	{
-		final AdempiereException exception;
-		if (exceptionFactory != null)
-		{
-			exception = exceptionFactory.createException(message);
-		}
-		else
-		{
-			exception = new AdempiereException(message)
-					.appendParametersToMessage();
-		}
-
-		exception.setParameters(context);
-
-		return exception;
 	}
 
 	public AssertThat<T> isEqualTo(final T expected)
@@ -105,9 +85,9 @@ public class AssertThat<T>
 		if (actualSize != expectedSize)
 		{
 			fail("Expected " + what + " size to be <" + expectedSize + "> but was <" + actualSize + ">",
-					ex -> ex
-							.setParameter("expected", expected)
-							.setParameter("actual", actual)
+					failure -> failure
+							.putContext("expected", expected)
+							.putContext("actual", actual)
 			);
 		}
 
@@ -131,6 +111,14 @@ public class AssertThat<T>
 		if (actual == null)
 		{
 			fail("Expected " + what + " to be not null");
+		}
+	}
+
+	public void isNull()
+	{
+		if (actual != null)
+		{
+			fail("Expected " + what + " to be null");
 		}
 	}
 }
