@@ -66,6 +66,11 @@ public class MasterdataContext
 
 	public <T extends RepoIdAware> Optional<T> getOptionalId(@NonNull final Identifier identifier, final Class<T> idClass)
 	{
+		if (identifier.isNullPlaceholder())
+		{
+			return Optional.empty();
+		}
+		
 		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(idClass, identifier);
 		//noinspection unchecked
 		final T id = (T)identifiers.get(typeAndIdentifier);

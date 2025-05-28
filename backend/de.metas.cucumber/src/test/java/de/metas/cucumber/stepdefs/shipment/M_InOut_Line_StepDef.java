@@ -35,7 +35,13 @@ import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -51,6 +57,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -80,9 +87,10 @@ public class M_InOut_Line_StepDef
 	private final Logger logger = LogManager.getLogger(M_InOut_Line_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final MatchInvoiceService matchInvoiceService = SpringContextHolder.instance.getBean(MatchInvoiceService.class);
 
-	private final M_InOut_StepDefData shipmentTable;
-	private final M_InOutLine_StepDefData shipmentLineTable;
+	private final M_InOut_StepDefData inoutTable;
+	private final M_InOutLine_StepDefData inoutLineTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Product_StepDefData productTable;
 	private final M_Locator_StepDefData locatorTable;
@@ -97,9 +105,7 @@ public class M_InOut_Line_StepDef
 
 	private void validateAndLoadInOutLine(final DataTableRow row)
 	{
-		logger.info("validate_created_M_InOutLine: {}", row);
-
-		final InOutId shipmentId = shipmentTable.getId(row.getAsIdentifier("M_InOut_ID"));
+		final InOutId inoutId = inoutTable.getId(row.getAsIdentifier("M_InOut_ID"));
 
 		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
 		final int expectedProductId = productTable.getOptional(productIdentifier)
@@ -108,7 +114,7 @@ public class M_InOut_Line_StepDef
 
 		//dev-note: we assume the tests are not using the same product on different lines
 		final IQueryBuilder<I_M_InOutLine> lineQueryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentId)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inoutId)
 				.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
 
 		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID)
@@ -117,11 +123,17 @@ public class M_InOut_Line_StepDef
 		row.getAsOptionalBigDecimal(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent)
 				.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
 
-		final I_M_InOutLine shipmentLineRecord = getSingleShipmentLine(lineQueryBuilder.create());
-		row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(shipmentLineTable, shipmentLineRecord);
+		final I_M_InOutLine inoutLine = getSingleInOutLine(lineQueryBuilder.create());
+
+		final SoftAssertions softly = new SoftAssertions();
+		row.getAsOptionalBoolean("processed").ifPresent(processed -> softly.assertThat(inoutLine.isProcessed()).as("Processed").isEqualTo(processed));
+		row.getAsOptionalBigDecimal("movementqty").ifPresent(movementQty -> softly.assertThat(inoutLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementQty));
+		softly.assertAll();
+
+		row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(inoutLineTable, inoutLine);
 	}
 
-	private static I_M_InOutLine getSingleShipmentLine(@NonNull final IQuery<I_M_InOutLine> query)
+	private static I_M_InOutLine getSingleInOutLine(@NonNull final IQuery<I_M_InOutLine> query)
 	{
 		final List<I_M_InOutLine> lines = query.list();
 		if (lines.isEmpty())
@@ -144,10 +156,10 @@ public class M_InOut_Line_StepDef
 	}
 
 	@And("^validate the created (shipment|material receipt) lines by id$")
-	public void validateShipmentLinesById(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validateInOutLinesById(@NonNull final String model_UNUSED, @NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach((row) -> {
-			final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.create(row.getAsIdentifier().lookupIn(shipmentLineTable), I_M_InOutLine.class);
+			final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.create(row.getAsIdentifier().lookupIn(inoutLineTable), I_M_InOutLine.class);
 			SharedTestContext.put("shipmentLine", shipmentLine);
 
 			validateShipmentLine(shipmentLine, row);
@@ -155,14 +167,14 @@ public class M_InOut_Line_StepDef
 	}
 
 	@And("^validate the (shipment|material receipt) lines do not exist$")
-	public void validate_no_created_M_InOutLine(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validate_not_created_M_InOutLine(@NonNull final String model_UNUSED, @NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
 		{
 			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, "M_InOut_ID.Identifier");
 
-			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
+			final I_M_InOut shipmentRecord = inoutTable.get(shipmentIdentifier);
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final Integer expectedProductId = productTable.get(productIdentifier).getM_Product_ID();
@@ -179,11 +191,11 @@ public class M_InOut_Line_StepDef
 				lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
 			}
 
-			final I_M_InOutLine shipmentLineRecord = lineQueryBuilder
+			final I_M_InOutLine inoutLineRecord = lineQueryBuilder
 					.create()
 					.firstOnlyOrNull(I_M_InOutLine.class);
 
-			assertThat(shipmentLineRecord).isNull();
+			assertThat(inoutLineRecord).isNull();
 		}
 	}
 
@@ -194,7 +206,7 @@ public class M_InOut_Line_StepDef
 		for (final Map<String, String> row : dataTable)
 		{
 			final String shipmentLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_InOutLine shipmentLine = shipmentLineTable.get(shipmentLineIdentifier, I_M_InOutLine.class);
+			final I_M_InOutLine shipmentLine = inoutLineTable.get(shipmentLineIdentifier, I_M_InOutLine.class);
 			assertThat(shipmentLine).isNotNull();
 
 			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_M_InOutLine.COLUMNNAME_QtyEntered);
@@ -205,71 +217,70 @@ public class M_InOut_Line_StepDef
 
 			InterfaceWrapperHelper.saveRecord(shipmentLine);
 
-			shipmentLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
+			inoutLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
 		}
 	}
 
 	@And("metasfresh contains M_InOutLine")
 	public void metasfresh_contains_M_InOutLine(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> table = dataTable.asMaps();
-		for (final Map<String, String> row : table)
-		{
-			final de.metas.inout.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.inout.model.I_M_InOutLine.class);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_InOutLine_ID)
+				.forEach(row -> {
+					final de.metas.inout.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.inout.model.I_M_InOutLine.class);
 
-			final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_InOut inOut = shipmentTable.get(inOutIdentifier);
-			assertThat(inOut).isNotNull();
+					final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final I_M_InOut inOut = inoutTable.get(inOutIdentifier);
+					assertThat(inOut).isNotNull();
 
-			inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
+					inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
 
-			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyEntered);
-			inOutLine.setQtyEntered(qtyEntered);
+					final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyEntered);
+					inOutLine.setQtyEntered(qtyEntered);
 
-			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_MovementQty);
-			inOutLine.setMovementQty(movementQty);
+					final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_MovementQty);
+					inOutLine.setMovementQty(movementQty);
 
-			final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
-			final I_C_UOM uom = uomDAO.getByX12DE355(X12DE355.ofCode(uomCode));
-			assertThat(uom).isNotNull();
+					final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
+					final I_C_UOM uom = uomDAO.getByX12DE355(X12DE355.ofCode(uomCode));
+					assertThat(uom).isNotNull();
 
-			inOutLine.setC_UOM_ID(uom.getC_UOM_ID());
+					inOutLine.setC_UOM_ID(uom.getC_UOM_ID());
 
-			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(productIdentifier))
-			{
-				final I_M_Product product = productTable.get(productIdentifier);
-				assertThat(product).isNotNull();
+					final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(productIdentifier))
+					{
+						final I_M_Product product = productTable.get(productIdentifier);
+						assertThat(product).isNotNull();
 
-				inOutLine.setM_Product_ID(product.getM_Product_ID());
-			}
+						inOutLine.setM_Product_ID(product.getM_Product_ID());
+					}
 
-			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(locatorIdentifier))
-			{
-				final I_M_Locator locator = locatorTable.get(locatorIdentifier);
-				assertThat(locator).isNotNull();
+					final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(locatorIdentifier))
+					{
+						final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+						assertThat(locator).isNotNull();
 
-				inOutLine.setM_Locator_ID(locator.getM_Locator_ID());
-			}
+						inOutLine.setM_Locator_ID(locator.getM_Locator_ID());
+					}
 
-			final Boolean isPackingMaterial = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial);
-			if (isPackingMaterial != null)
-			{
-				inOutLine.setIsPackagingMaterial(isPackingMaterial);
-			}
+					final Boolean isPackingMaterial = row.getAsOptionalBoolean(I_M_InOutLine.COLUMNNAME_IsPackagingMaterial).toBooleanOrNull();
+					if (isPackingMaterial != null)
+					{
+						inOutLine.setIsPackagingMaterial(isPackingMaterial);
+					}
 
-			InterfaceWrapperHelper.saveRecord(inOutLine);
+					InterfaceWrapperHelper.saveRecord(inOutLine);
 
-			final String inOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipmentLineTable.putOrReplace(inOutLineIdentifier, inOutLine);
-		}
+					row.getAsOptionalIdentifier().ifPresent(identifier -> inoutLineTable.putOrReplace(identifier, inOutLine));
+				});
 	}
 
 	@And("^validate no M_InOutLine found for M_InOut identified by (.*)$")
 	public void validate_no_M_InOutLine_for_inOut(@NonNull final String inOutIdentifier)
 	{
-		final I_M_InOut inOut = shipmentTable.get(inOutIdentifier);
+		final I_M_InOut inOut = inoutTable.get(inOutIdentifier);
 		assertThat(inOut).isNotNull();
 
 		final I_M_InOutLine inOutLine = queryBL.createQueryBuilder(I_M_InOutLine.class)
@@ -306,6 +317,12 @@ public class M_InOut_Line_StepDef
 				.ifPresent(huPIItemProductIdentifier -> {
 					final HUPIItemProductId huPIItemProductId = huPIItemProductIdentifier.isNullPlaceholder() ? null : huPIItemProductTable.getId(huPIItemProductIdentifier);
 					softly.assertThat(HUPIItemProductId.ofRepoIdOrNull(actual.getM_HU_PI_Item_Product_ID())).as("M_HU_PI_Item_Product_ID").isEqualTo(huPIItemProductId);
+				});
+
+		expected.getAsOptionalQuantity("QtyMatched", uomDAO::getByX12DE355)
+				.ifPresent(qtyMatchedExpected -> {
+					final StockQtyAndUOMQty qtyMatchedActual = getQtyMatched(actual);
+					assertThat(qtyMatchedActual.getUOMQtyNotNull()).as("QtyMatched").isEqualTo(qtyMatchedExpected);
 				});
 
 		expected.getAsOptionalString(I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName())
@@ -345,4 +362,21 @@ public class M_InOut_Line_StepDef
 
 		softly.assertAll();
 	}
+
+	private StockQtyAndUOMQty getQtyMatched(final I_M_InOutLine inoutLine)
+	{
+		final MovementType movementType = getMovementType(inoutLine);
+		final StockQtyAndUOMQty initialQtys = StockQtyAndUOMQtys.createZero(ProductId.ofRepoId(inoutLine.getM_Product_ID()), UomId.ofRepoId(inoutLine.getC_UOM_ID()));
+		return matchInvoiceService.getMaterialQtyMatched(InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID()), initialQtys)
+				.negateIf(movementType.isOutboundTransaction());
+	}
+
+	@NonNull
+	private MovementType getMovementType(final I_M_InOutLine inoutLine)
+	{
+		final InOutId inoutId = InOutId.ofRepoId(inoutLine.getM_InOut_ID());
+		final I_M_InOut inout = inoutTable.getFirstById(inoutId).orElseThrow(() -> new AdempiereException("No loaded inout found for " + inoutId));
+		return MovementType.ofCode(inout.getMovementType());
+	}
+
 }

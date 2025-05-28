@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @EqualsAndHashCode
 public class DataTableRow
@@ -477,7 +478,21 @@ public class DataTableRow
 				.map(amount -> amount.toMoney(currencyCodeMapper));
 	}
 
+	public Optional<Money> getAsOptionalMoney(
+			@NonNull final String valueColumnName,
+			@Nullable final Supplier<CurrencyCode> defaultCurrencyCodeSupplier,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		return getAsOptionalAmount(valueColumnName, defaultCurrencyCodeSupplier)
+				.map(amount -> amount.toMoney(currencyCodeMapper));
+	}
+
 	public Optional<Amount> getAsOptionalAmount(@NonNull final String valueColumnName)
+	{
+		return getAsOptionalAmount(valueColumnName, null);
+	}
+
+	public Optional<Amount> getAsOptionalAmount(@NonNull final String valueColumnName, @Nullable final Supplier<CurrencyCode> defaultCurrencyCodeSupplier)
 	{
 		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
 		if (valueStr == null)
@@ -503,6 +518,11 @@ public class DataTableRow
 		if (currencyCode == null)
 		{
 			currencyCode = getAsOptionalCurrencyCode().orElse(null);
+		}
+
+		if (currencyCode == null && defaultCurrencyCodeSupplier != null)
+		{
+			currencyCode = defaultCurrencyCodeSupplier.get();
 		}
 
 		if (currencyCode == null)
@@ -576,7 +596,7 @@ public class DataTableRow
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseDuration(valueStr, columnName));
 	}
-	
+
 	@NonNull
 	private static Instant parseInstant(@NonNull final String valueStr, final String columnInfo)
 	{
@@ -616,7 +636,7 @@ public class DataTableRow
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid Duration `" + valueStr + "`");
 		}
 	}
-	
+
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()

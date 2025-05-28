@@ -71,6 +71,7 @@ public class SalesOrderCreateCommand
 		final I_C_Order salesOrderRecord = salesOrderFactory.createAndComplete();
 
 		return JsonSalesOrderCreateResponse.builder()
+				.id(String.valueOf(salesOrderRecord.getC_Order_ID()))
 				.documentNo(salesOrderRecord.getDocumentNo())
 				.build();
 	}

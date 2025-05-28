@@ -26,8 +26,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -41,7 +43,6 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.logging.LogManager;
@@ -59,6 +60,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,7 +68,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -111,6 +112,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
+@RequiredArgsConstructor
 public class C_Order_StepDef
 {
 	private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
@@ -122,33 +124,15 @@ public class C_Order_StepDef
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final CopyRecordService copyRecordService = SpringContextHolder.instance.getBean(CopyRecordService.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final C_Order_StepDefData orderTable;
-	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
-	private final AD_User_StepDefData userTable;
-	private final M_PricingSystem_StepDefData pricingSystemDataTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final AD_Org_StepDefData orgTable;
-
-	public C_Order_StepDef(
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
-			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final AD_Org_StepDefData orgTable)
-	{
-		this.bpartnerTable = bpartnerTable;
-		this.bpartnerLocationTable = bpartnerLocationTable;
-		this.orderTable = orderTable;
-		this.userTable = userTable;
-		this.pricingSystemDataTable = pricingSystemDataTable;
-		this.warehouseTable = warehouseTable;
-		this.orgTable = orgTable;
-	}
+	private final @NonNull C_BPartner_StepDefData bpartnerTable;
+	private final @NonNull C_Order_StepDefData orderTable;
+	private final @NonNull C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final @NonNull AD_User_StepDefData userTable;
+	private final @NonNull M_PricingSystem_StepDefData pricingSystemDataTable;
+	private final @NonNull M_Warehouse_StepDefData warehouseTable;
+	private final @NonNull AD_Org_StepDefData orgTable;
+	private final @NonNull TestContext restTestContext;
 
 	@Given("metasfresh contains C_Orders:")
 	public void metasfresh_contains_c_orders(@NonNull final DataTable dataTable)
@@ -165,14 +149,6 @@ public class C_Order_StepDef
 							() -> !isSOTrx ? Optional.of(DocBaseType.PurchaseOrder) : Optional.empty() // if we don't do this, MOrder.beforeSave will automatically set IsSOTrx=true because C_DocTypeTarget_ID is not set
 					).orElse(null);
 
-					final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
-					final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
-
-					final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
-							.map(orgTable::get)
-							.map(I_AD_Org::getAD_Org_ID)
-							.orElse(StepDefConstants.ORG_ID.getRepoId());
-
 					final StepDefDataIdentifier bpartnerIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
 					final BPartnerId bpartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
 							.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
@@ -181,9 +157,20 @@ public class C_Order_StepDef
 					order.setC_BPartner_ID(bpartnerId.getRepoId());
 					order.setIsSOTrx(isSOTrx);
 					order.setDateOrdered(tableRow.getAsLocalDateTimestamp(I_C_Order.COLUMNNAME_DateOrdered));
-					order.setDropShip_BPartner_ID(dropShipPartnerId);
-					order.setIsDropShip(isDropShip);
-					order.setAD_Org_ID(orgId);
+
+					// dropship
+					order.setIsDropShip(tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsDropShip).orElse(false));
+					tableRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
+							.map(bpartnerTable::getId)
+							.ifPresent(id -> order.setDropShip_BPartner_ID(id.getRepoId()));
+					tableRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_Location_ID)
+							.map(bpartnerLocationTable::getId)
+							.ifPresent(id -> order.setDropShip_Location_ID(id.getRepoId()));
+
+					order.setAD_Org_ID(tableRow
+							.getAsOptionalIdentifier(COLUMNNAME_AD_Org_ID)
+							.map(orgTable::getId)
+							.orElse(StepDefConstants.ORG_ID).getRepoId());
 
 					if (paymentTermId > 0)
 					{
@@ -381,8 +368,8 @@ public class C_Order_StepDef
 
 			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
 			processInfoBuilder.setAD_Process_ID(processId.getRepoId());
-			processInfoBuilder.addParameter("DatePromised_From", Timestamp.from(Instant.now()));
-			processInfoBuilder.addParameter("DatePromised_To", Timestamp.from(Instant.now()));
+			processInfoBuilder.addParameter("DatePromised_From", SystemTime.asTimestamp());
+			processInfoBuilder.addParameter("DatePromised_To", SystemTime.asTimestamp());
 			processInfoBuilder.addParameter("C_BPartner_ID", bpartner.getC_BPartner_ID());
 			processInfoBuilder.addParameter("C_Order_ID", order.getC_Order_ID());
 			processInfoBuilder.addParameter("TypeOfPurchase", purchaseType);
@@ -403,16 +390,16 @@ public class C_Order_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String linkedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Link_Order_ID + ".Identifier");
-
+			final int linkedOrderId = orderTable.get(linkedOrderIdentifier).getC_Order_ID();
 			final I_C_Order purchaseOrder = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
+					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId)
 					.create()
 					.firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
-			assertThat(purchaseOrder).isNotNull();
+			assertThat(purchaseOrder).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).isNotNull();
 			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
 
 			final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
@@ -431,9 +418,13 @@ public class C_Order_StepDef
 
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
-
-			final int partnerId = DataTableUtil.extractIntOrZeroForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
-			assertThat(purchaseOrder.getDropShip_BPartner_ID()).isEqualTo(partnerId);
+			// TODO: introduce DataTableRows for this whole stepdef
+			DataTableRow.singleRow(tableRow)
+					.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
+					.map(bpartnerTable::getId)
+					.ifPresent(dropShipId -> assertThat(purchaseOrder.getDropShip_BPartner_ID())
+							.as("DropShip_BPartner_ID")
+							.isEqualTo(dropShipId.getRepoId()));
 		}
 	}
 
@@ -832,5 +823,20 @@ public class C_Order_StepDef
 
 		orderTable.putOrReplace(orderIdentifier, orderRecord);
 		return true;
+	}
+
+	@And("store order-values in TestContext")
+	public void storeValuesFromOrderInTestContext(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+							final I_C_Order order = row.getAsIdentifier(COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+
+							final String column = row.getAsString("Column");
+							final Object value = InterfaceWrapperHelper.getValueOrNull(order, column);
+
+							restTestContext.setStringVariableFromRow(row, () -> value == null ? null : value.toString());
+						}
+				);
 	}
 }

@@ -201,6 +201,8 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 		}
 	}
 
+	public Set<TableRecordReference> toSet() {return recordRefs;}
+
 	public Set<Integer> toIntSet()
 	{
 		// just to make sure that our records are from a single table

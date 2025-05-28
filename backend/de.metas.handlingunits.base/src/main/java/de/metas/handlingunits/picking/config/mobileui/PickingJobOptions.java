@@ -17,6 +17,7 @@ public class PickingJobOptions
 	boolean isAllowPickingAnyHU;
 	boolean isAlwaysSplitHUsEnabled;
 	boolean isPickWithNewLU;
+	boolean isShipOnCloseLU;
 	boolean isAllowNewTU;
 	boolean isCatchWeightTUPickingEnabled;
 	boolean considerSalesOrderCapacity;
@@ -34,7 +35,8 @@ public class PickingJobOptions
 			@Nullable final PickingJobAggregationType aggregationType,
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
-			final boolean isPickWithNewLU,
+			final boolean isPickWithNewLU, 
+			final boolean isShipOnCloseLU,
 			final boolean isAllowNewTU,
 			final boolean isCatchWeightTUPickingEnabled,
 			final boolean considerSalesOrderCapacity,
@@ -51,6 +53,7 @@ public class PickingJobOptions
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
 		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
 		this.isPickWithNewLU = isPickWithNewLU;
+		this.isShipOnCloseLU = isShipOnCloseLU;
 		this.isAllowNewTU = isAllowNewTU;
 		this.isCatchWeightTUPickingEnabled = isCatchWeightTUPickingEnabled;
 		this.considerSalesOrderCapacity = considerSalesOrderCapacity;

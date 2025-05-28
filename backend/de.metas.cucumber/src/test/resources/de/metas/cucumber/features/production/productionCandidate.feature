@@ -126,7 +126,7 @@ Feature: Production dispo scenarios
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | plv_1                  | p_1          | 10.0     | PCE      |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | N        | Y          | ps_1               |
     And metasfresh contains C_BPartner_Locations:
@@ -184,19 +184,20 @@ Feature: Production dispo scenarios
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_2                      | 30             |
 
+    When metasfresh has date and time 2025-02-25T08:00:00+01:00[Europe/Berlin]
+
     And the order identified by o_2 is completed
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
       | oc_1       | p_1          | bom_1             | ppln_1                 | 540006        | 200 PCE    | 200 PCE      | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
-      | oc_2       | p_1          | bom_1             | ppln_1                 | 540006        | 30 PCE     | 30 PCE       | 0 PCE        | 2025-02-25T06:00:00Z | 2025-02-25T06:00:00Z | false        | false         |
+      | oc_2       | p_1          | bom_1             | ppln_1                 | 540006        | 30 PCE     | 30 PCE       | 0 PCE        | 2025-02-25T07:00:00Z | 2025-02-25T07:00:00Z | false        | false         |
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP   | M_Warehouse_ID | PP_Order_Candidate_ID |
       | 01/d_1_1   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-01T21:00:00Z | 200  | -200  | warehouseStd   |                       |
       | 02/d_1_2   | DEMAND            | SHIPMENT                  | p_1          | 2024-08-22T21:00:00Z | 30   | -230  | warehouseStd   |                       |
-      #TODO ATP on the next line should be -30
-      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 200  | -230  | warehouseStd   | oc_1                  |
+      | 03/s_1_1   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 200  | -30   | warehouseStd   | oc_1                  |
       | 04/d_2_1   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 2000 | -2000 | warehouseStd   | oc_1                  |
-      | 05/s_1_2   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T06:00:00Z | 30   | -200  | warehouseStd   | oc_2                  |
-      | 06/d_2_2   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T06:00:00Z | 300  | -2300 | warehouseStd   | oc_2                  |
+      | 05/s_1_2   | SUPPLY            | PRODUCTION                | p_1          | 2025-02-25T07:00:00Z | 30   | -0    | warehouseStd   | oc_2                  |
+      | 06/d_2_2   | DEMAND            | PRODUCTION                | p_2          | 2025-02-25T07:00:00Z | 300  | -2300 | warehouseStd   | oc_2                  |

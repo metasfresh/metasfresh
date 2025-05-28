@@ -35,7 +35,7 @@ Feature: create purchase simulation
       | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.Name     | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | vendor_location_1   | 2311203300000 | vendor_1                 | vendor1Loc   | Y                   | Y                   |
       | customer_location_1 | 2311203300001 | customer_1               | customer1Loc | Y                   | Y                   |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_1                 | p_1                     |
     And metasfresh contains PP_Product_Plannings

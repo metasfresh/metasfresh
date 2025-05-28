@@ -77,6 +77,7 @@ public class ADProcessDAO implements IADProcessDAO
 		return InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
 	}
 
+	@NonNull
 	@Override
 	public AdProcessId retrieveProcessIdByClass(final Class<?> processClass)
 	{

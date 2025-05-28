@@ -37,7 +37,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.order.OrderId;
+import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxId;
@@ -51,6 +51,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -80,53 +81,28 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 
+@RequiredArgsConstructor
 public class C_OrderLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-	private final M_Product_StepDefData productTable;
-	private final C_BPartner_StepDefData partnerTable;
-	private final C_Order_StepDefData orderTable;
-	private final C_OrderLine_StepDefData orderLineTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
-	private final C_Flatrate_Term_StepDefData contractTable;
-	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final M_Attribute_StepDefData attributeTable;
-	private final C_Tax_StepDefData taxTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final IdentifierIds_StepDefData identifierIdsTable;
-
-	public C_OrderLine_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_BPartner_StepDefData partnerTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
-			@NonNull final C_Flatrate_Term_StepDefData contractTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final M_Attribute_StepDefData attributeTable,
-			@NonNull final C_Tax_StepDefData taxTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final IdentifierIds_StepDefData identifierIdsTable)
-	{
-		this.productTable = productTable;
-		this.partnerTable = partnerTable;
-		this.orderTable = orderTable;
-		this.orderLineTable = orderLineTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.flatrateConditionsTable = flatrateConditionsTable;
-		this.contractTable = contractTable;
-		this.huPiItemProductTable = huPiItemProductTable;
-		this.attributeTable = attributeTable;
-		this.taxTable = taxTable;
-		this.warehouseTable = warehouseTable;
-		this.identifierIdsTable = identifierIdsTable;
-	}
-
+	private final IOrderLineBL  orderLineBL = Services.get(IOrderLineBL.class);;
+	
+	private final @NonNull M_Product_StepDefData productTable;
+	private final @NonNull C_BPartner_StepDefData partnerTable;
+	private final @NonNull C_BPartner_Location_StepDefData partnerLocationTable;
+	private final @NonNull C_Order_StepDefData orderTable;
+	private final @NonNull C_OrderLine_StepDefData orderLineTable;
+	private final @NonNull M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final @NonNull C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
+	private final @NonNull C_Flatrate_Term_StepDefData contractTable;
+	private final @NonNull M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final @NonNull M_Attribute_StepDefData attributeTable;
+	private final @NonNull C_Tax_StepDefData taxTable;
+	private final @NonNull M_Warehouse_StepDefData warehouseTable;
+	private final @NonNull IdentifierIds_StepDefData identifierIdsTable;
+	
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
@@ -134,8 +110,12 @@ public class C_OrderLine_StepDef
 				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.forEach(tableRow -> {
 					final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
-					orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 
+					// make sure all defaults are set. If not, this method might be called later, when the orderLine is saved and might then override things set in this stepdef
+					final I_C_Order orderRecord = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+					orderLine.setC_Order_ID(orderRecord.getC_Order_ID());
+					orderLineBL.setOrder(orderLine, orderRecord); 
+		
 					final StepDefDataIdentifier productIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
 					final ProductId productId = productTable.getIdOptional(productIdentifier)
 							.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
@@ -147,13 +127,10 @@ public class C_OrderLine_StepDef
 							.map(attributeSetInstanceTable::getId)
 							.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
 
-					final OrderId orderId = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupIdIn(orderTable);
-					orderLine.setC_Order_ID(orderId.getRepoId());
-
 					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
 							.map(partnerTable::getId)
 							.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
-
+										
 					final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
 					if (Check.isNotBlank(flatrateConditionsIdentifier))
 					{

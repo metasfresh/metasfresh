@@ -48,7 +48,7 @@ public class DataTableRows
 		return new DataTableRows(ImmutableList.copyOf(rows));
 	}
 
-	public DataTableRows setAdditionalRowIdentifierColumnName(String columnName)
+	public DataTableRows setAdditionalRowIdentifierColumnName(@NonNull final String columnName)
 	{
 		list.forEach(row -> row.setAdditionalRowIdentifierColumnName(columnName));
 		return this;
