@@ -124,7 +124,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 		if(!isEdiEnabled && EDIExportStatus.isInProgressOrSend(EDIExportStatus.ofCode(document.getEDI_ExportStatus())))
 		{
-			throw new AdempiereException("EdiEnabled can't be changed, if export is in progress or sent ");
+			throw new AdempiereException("EdiEnabled can't be deactivated, if export is in progress or sent ");
 		}
 
 		document.setIsEdiEnabled(isEdiEnabled);
