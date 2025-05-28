@@ -21,7 +21,7 @@
  */
 
 -- Function for desadv lines with no pack
--- Ensure v_edi_desadv_line_object is defined and efficient
+-- Ensure edi_desadv_line_object_v is defined and efficient
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_lines_no_pack_json_fn(p_edi_desadv_id NUMERIC)
     RETURNS JSONB AS $$
 DECLARE
@@ -30,7 +30,7 @@ BEGIN
     SELECT
         jsonb_agg(
                 jsonb_build_object(
-                        'EDI_DesadvLine_ID', COALESCE(line_obj_no_pack.desadv_line_object_json, '{}'::jsonb)
+                        'EDI_DesadvLine', COALESCE(line_obj_no_pack.desadv_line_object_json, '{}'::jsonb)
                 ) ORDER BY edl_lat.line
         )
     INTO v_lines_no_pack_json

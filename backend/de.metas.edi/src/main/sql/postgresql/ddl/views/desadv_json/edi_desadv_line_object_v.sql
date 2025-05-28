@@ -1,3 +1,4 @@
+-- Required view for desadv line objects
 CREATE OR REPLACE VIEW "de.metas.edi".edi_desadv_line_object_v AS
 SELECT edl.edi_desadvline_id,
        JSONB_BUILD_OBJECT(
@@ -12,11 +13,11 @@ SELECT edl.edi_desadvline_id,
                'NetWeight', p.weight,
                'GrossWeight', p.grossweight,
                'GrossWeightUOM;', JSONB_BUILD_OBJECT(
-                       'UOMSymbol', grossweightUom.uomsymbol,
+                       'X12DE355', grossweightUom.X12DE355,
                        'Name', grossweightUom.name)),
                'QtyEntered', edl.qtyentered,
                'DesadvLineUOM', JSONB_BUILD_OBJECT(
-                       'UOMSymbol', edl_uom.uomsymbol,
+                       'X12DE355', edl_uom.X12DE355,
                        'Name', edl_uom.name),
                'OrderLine', ol.line,
                'ShipmentLine', iol.line,

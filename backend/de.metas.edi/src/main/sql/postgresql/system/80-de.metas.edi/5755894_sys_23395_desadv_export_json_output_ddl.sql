@@ -4,9 +4,7 @@ SELECT bp.c_bpartner_id,
        JSONB_BUILD_OBJECT(
                'Value', bp.value,
                'Name', bp.name,
-               'IsVendor', bp.isvendor,
-               'IsCustomer', bp.iscustomer,
-               'GLN', bp.edidesadvrecipientgln
+               'Name2', bp.name2
        ) AS bpartner_json
 FROM c_bpartner bp
 ;
@@ -87,7 +85,7 @@ BEGIN
                            'SeqNo', edp_lat.seqno,
                            'IPA_SSCC18', edp_lat.ipa_sscc18,
                            'M_HU_PackagingCode_Text', pc_lu.packagingcode,
-                           'EDI_Exp_Desadv_Pack_Item', COALESCE(pack_items_lat.items_data, '[]'::jsonb),
+                           'Line_Item', COALESCE(pack_items_lat.items_data, '[]'::jsonb),
                            'GTIN_PackingMaterial', edp_lat.gtin_packingmaterial
                    ) ORDER BY edp_lat.seqno
            )
@@ -126,27 +124,24 @@ $$
 ;
 
 -- Main view that uses the functions and other views
+drop VIEW if exists M_InOut_Export_EDI_DESADV_JSON_V;
 CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
 SELECT mio.m_inout_id,
-       JSONB_BUILD_OBJECT(
-               '@SequenceNo', ed.edi_desadv_id,
-               'C_BPartner_ID', COALESCE(bp_main.bpartner_json, '{}'::jsonb),
-               'C_BPartner_Location_ID', COALESCE(bpl_main.bpartner_location_json, '{}'::jsonb),
+       JSON_BUILD_OBJECT('metasfresh_DESADV', JSONB_BUILD_OBJECT(
+               'Buyer', COALESCE(bp_main.bpartner_json, '{}'::jsonb),
+               'Buyer_Location', COALESCE(bpl_main.bpartner_location_json, '{}'::jsonb),
                'DateOrdered', ed.dateordered,
-               'DocumentNo', ed.documentno,
                'ShipmentDocumentNo', mio.documentno,
                'EDI_Desadv_ID', ed.edi_desadv_id,
-               'EDI_ExportStatus', ed.edi_exportstatus,
                'MovementDate', mio.movementdate,
                'POReference', COALESCE(ed.poreference, mio.poreference),
-               'EDI_Exp_Desadv_Pack', "de.metas.edi".get_desadv_packs_json_fn(ed.edi_desadv_id), -- Call function
-
-               'Bill_Location_ID', COALESCE(bpl_bill.bpartner_location_json, '{}'::jsonb),
-               'C_Currency_ID', COALESCE(curr.currency_json, '{}'::jsonb),
-               'HandOver_Location_ID', COALESCE(bpl_handover.bpartner_location_json, '{}'::jsonb),
-               'DropShip_BPartner_ID', COALESCE(bp_dropship.bpartner_json, '{}'::jsonb),
-               'DropShip_Location_ID', COALESCE(bpl_dropship.bpartner_location_json, '{}'::jsonb),
-               'HandOver_Partner_ID', COALESCE(bp_handover_partner.bpartner_json, '{}'::jsonb),
+               'Packing', "de.metas.edi".get_desadv_packs_json_fn(ed.edi_desadv_id), -- Call function
+               'Invoicee_Location', COALESCE(bpl_bill.bpartner_location_json, '{}'::jsonb),
+               'Currency', COALESCE(curr.currency_json, '{}'::jsonb),
+               'DeliveryParty_Location', COALESCE(bpl_handover.bpartner_location_json, '{}'::jsonb),
+               'UltimateConsignee', COALESCE(bp_dropship.bpartner_json, '{}'::jsonb),
+               'UltimateConsignee_Location', COALESCE(bpl_dropship.bpartner_location_json, '{}'::jsonb),
+               'DeliveryParty', COALESCE(bp_handover_partner.bpartner_json, '{}'::jsonb),
                'InvoicableQtyBasedOn', (SELECT edl_ib.invoicableqtybasedon
                                         FROM edi_desadvline edl_ib
                                         WHERE edl_ib.edi_desadv_id = ed.edi_desadv_id
@@ -154,12 +149,12 @@ SELECT mio.m_inout_id,
                                         ORDER BY edl_ib.line
                                         LIMIT 1),
                'DeliveryViaRule', COALESCE(ed.deliveryviarule, mio.deliveryviarule),
-               'EDI_Exp_DesadvLineWithNoPack', "de.metas.edi".get_desadv_lines_no_pack_json_fn(ed.edi_desadv_id), -- Call function
+               'DesadvLineWithNoPacking', "de.metas.edi".get_desadv_lines_no_pack_json_fn(ed.edi_desadv_id), -- Call function
 
                'M_InOut_ID', mio.m_inout_id,
-               'shipment_documentno', mio.documentno,
                'DatePromised', mio.movementdate
-       ) AS data
+                                              )
+       ) as embedded_json
 FROM m_inout mio
          JOIN edi_desadv ed ON mio.edi_desadv_id = ed.edi_desadv_id AND ed.isactive = 'Y'
 

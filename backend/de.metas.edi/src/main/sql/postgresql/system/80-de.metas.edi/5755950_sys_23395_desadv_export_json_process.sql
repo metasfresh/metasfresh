@@ -3,13 +3,13 @@
 -- Value: C_Doc_Outbound_Log_Selection_Export_JSON
 -- Classname: de.metas.edi.process.export.json.C_Doc_Outbound_Log_Selection_Export_JSON
 -- 2025-05-26T11:08:09.973Z
-UPDATE AD_Process SET TechnicalNote='Leans on C_Invoice_EDI_Export_JSON to genrate the actual JSON',Updated=TO_TIMESTAMP('2025-05-26 11:08:09.970000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585469
+UPDATE AD_Process SET TechnicalNote='Leans on C_Invoice_EDI_Export_JSON to generate the actual JSON',Updated=TO_TIMESTAMP('2025-05-26 11:08:09.970000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585469
 ;
 
 -- Value: C_Invoice_Selection_Export_JSON
 -- Classname: de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON
 -- 2025-05-26T11:08:18.513Z
-UPDATE AD_Process SET TechnicalNote='Leans on C_Invoice_EDI_Export_JSON to genrate the actual JSON',Updated=TO_TIMESTAMP('2025-05-26 11:08:18.511000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585470
+UPDATE AD_Process SET TechnicalNote='Leans on C_Invoice_EDI_Export_JSON to generate the actual JSON',Updated=TO_TIMESTAMP('2025-05-26 11:08:18.511000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585470
 ;
 
 -- Value: M_InOut_EDI_Export_JSON

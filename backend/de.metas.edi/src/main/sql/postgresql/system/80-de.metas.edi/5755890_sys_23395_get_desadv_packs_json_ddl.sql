@@ -1,6 +1,6 @@
 
 -- Ensure v_edi_desadv_line_object is defined and efficient for single lookups
--- Ensure m_hu_packagingcode has necessary indexes (PK on m_hu_packagingcode_id)
+-- Ensure m_hu_packagingcode has neccessary indexes (PK on m_hu_packagingcode_id)
 
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC)
     RETURNS JSONB AS $$
@@ -31,16 +31,16 @@ BEGIN
                             'QtyCUsPerLU_InInvoiceUOM', edpi_lat.qtycusperlu_ininvoiceuom,
                             'QtyCUsPerTU_InInvoiceUOM', edpi_lat.qtycuspertu_ininvoiceuom,
                             'QtyTU', edpi_lat.qtytu,
-                            'EDI_DesadvLine_ID', COALESCE(line_obj.desadv_line_object_json, '{}'::jsonb),
+                            'EDI_DesadvLine', COALESCE(line_obj.desadv_line_object_json, '{}'::jsonb),
                             'M_HU_PackagingCode_TU_Text', pc_lu.packagingcode,
                             'Line', edpi_lat.line,
                             'GTIN_TU_PackingMaterial', edpi_lat.gtin_tu_packingmaterial
                     ) ORDER BY edpi_lat.line
             ) AS items_data
         FROM edi_desadv_pack_item edpi_lat
-                 -- Crucial: Ensure v_edi_desadv_line_object is efficient or inline its logic.
+                 -- Crucial: Ensure edi_desadv_line_object_v is efficient or inline its logic.
                  -- It must be able to quickly fetch data for a single edpi_lat.edi_desadvline_id
-                 LEFT JOIN "de.metas.edi".v_edi_desadv_line_object line_obj ON line_obj.edi_desadvline_id = edpi_lat.edi_desadvline_id
+                 LEFT JOIN "de.metas.edi".edi_desadv_line_object_v line_obj ON line_obj.edi_desadvline_id = edpi_lat.edi_desadvline_id
                  LEFT JOIN m_hu_packagingcode pc_tu ON pc_tu.m_hu_packagingcode_id = edpi_lat.m_hu_packagingcode_tu_id
         WHERE edpi_lat.edi_desadv_pack_id = edp_lat.edi_desadv_pack_id AND edpi_lat.isactive = 'Y'
         ) pack_items_lat ON true

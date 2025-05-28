@@ -9,7 +9,7 @@ UPDATE AD_Process SET Classname='de.metas.edi.process.export.json.M_InOut_EDI_Ex
 -- Value: M_InOut_EDI_Export_JSON
 -- Classname: de.metas.edi.process.export.json.M_InOut_EDI_Export_JSON
 -- 2025-05-26T11:51:47.029Z
-UPDATE AD_Process SET JSONPath='m_inout_export_edi_desadv_json_v?select=data&m_inout_id=eq.@M_InOut_ID/0@',Updated=TO_TIMESTAMP('2025-05-26 11:51:47.026000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585473
+UPDATE AD_Process SET JSONPath='m_inout_export_edi_desadv_json_v?select=embedded_json->metasfresh_DESADV&m_inout_id=eq.@M_InOut_ID/0@',Updated=TO_TIMESTAMP('2025-05-26 11:51:47.026000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585473
 ;
 
 -- Value: de.metas.edi.process.export.json.M_InOut_Selection_Export_JSON_ProcessingError

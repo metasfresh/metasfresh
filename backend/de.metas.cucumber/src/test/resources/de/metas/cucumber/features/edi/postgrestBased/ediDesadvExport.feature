@@ -132,20 +132,18 @@ Feature: EDI DESADV export via postgREST
         "POReference": "testReference",
         "DatePromised": "2025-05-15T00:00:00",
         "MovementDate": "2025-05-15T00:00:00",
-        "C_BPartner_ID": {
-          "GLN": "1234567890",
+        "Buyer": {
           "Name": "desadvReceiverName",
-          "Value": "desadvReceiverValue",
-          "IsVendor": "N",
-          "IsCustomer": "Y"
+          "Name2": null,
+          "Value": "desadvReceiverValue"
         },
-        "C_Currency_ID": {
+        "Currency": {
           "ISO_Code": "EUR",
           "CurSymbol": "€"
         },
         "EDI_Desadv_ID": @d_1@,
         "DeliveryViaRule": "P",
-        "Bill_Location_ID": {
+        "Invoicee_Location": {
           "GLN": "1234567890123",
           "City": null,
           "Postal": null,
@@ -153,14 +151,13 @@ Feature: EDI DESADV export via postgREST
           "Address2": null,
           "CountryCode": "DE"
         },
-        "EDI_ExportStatus": "P",
-        "EDI_Exp_Desadv_Pack": [
+        "Packing": [
           {
             "SeqNo": 1,
             "IPA_SSCC18": "012345670010000005",
             "GTIN_PackingMaterial": "gtinPiItemProduct",
             "M_HU_PackagingCode_Text": "ISO1",
-            "EDI_Exp_Desadv_Pack_Item": [
+            "Line_Item": [
               {
                 "Line": 10,
                 "QtyTU": 10,
@@ -205,21 +202,17 @@ Feature: EDI DESADV export via postgREST
             ]
           }
         ],
-        "HandOver_Partner": {
-          "GLN": "1234567890",
+        "DeliveryParty": {
           "Name": "desadvReceiverName",
+          "Name2": null,
           "Value": "desadvReceiverValue",
-          "IsVendor": "N",
-          "IsCustomer": "Y"
         },
-        "DropShip_BPartner": {
-          "GLN": "1234567890",
+        "UltimateConsignee": {
           "Name": "desadvReceiverName",
-          "Value": "desadvReceiverValue",
-          "IsVendor": "N",
-          "IsCustomer": "Y"
+          "Name2": null,
+          "Value": "desadvReceiverValue"
         },
-        "DropShip_Location": {
+        "UltimateConsignee_Location": {
           "GLN": "1234567890123",
           "City": null,
           "Postal": null,
@@ -227,7 +220,7 @@ Feature: EDI DESADV export via postgREST
           "Address2": null,
           "CountryCode": "DE"
         },
-        "HandOver_Location": {
+        "DeliveryParty_Location": {
           "GLN": "1234567890123",
           "City": null,
           "Postal": null,
@@ -236,7 +229,7 @@ Feature: EDI DESADV export via postgREST
           "CountryCode": "DE"
         },
         "InvoicableQtyBasedOn": "Nominal",
-        "C_BPartner_Location_ID": {
+        "Buyer_Location": {
           "GLN": "1234567890123",
           "City": null,
           "Postal": null,
