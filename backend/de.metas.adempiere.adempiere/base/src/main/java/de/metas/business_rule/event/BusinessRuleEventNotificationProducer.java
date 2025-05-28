@@ -58,8 +58,8 @@ public final class BusinessRuleEventNotificationProducer
 						.topic(EVENTBUS_TOPIC)
 						.notificationsConfig(notificationBL.getUserNotificationsConfig(recordWarningNoticeRequest.getUserId()))
 						.notificationSeverity(recordWarningNoticeRequest.getNotificationSeverity())
-						.contentPlain(recordWarningNoticeRequest.getMessage())
-						.noDefaultADMessage(true)
+						.contentADMessage(recordWarningNoticeRequest.getMessageKey())
+						.contentADMessageParam(recordWarningNoticeRequest.getAvailableRecordData())
 						.targetAction(UserNotificationRequest.TargetRecordAction.of(I_AD_Record_Warning.Table_Name, recordWarningNoticeRequest.getRecordWarningId().getRepoId()))
 						.build());
 	}

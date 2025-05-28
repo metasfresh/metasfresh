@@ -45,53 +45,20 @@ import java.util.stream.Collectors;
 @Builder
 public class BusinessRuleEventProcessorCommand
 {
-	@NonNull
-	private static final String LOGGER_MODULE = "event-processor";
+	@NonNull private static final String LOGGER_MODULE = "event-processor";
 
-	@NonNull
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	@NonNull
-	private final IUserBL userBL = Services.get(IUserBL.class);
-	@NonNull
-	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	@NonNull
-	private final BusinessRuleRepository ruleRepository;
-	@NonNull
-	private final BusinessRuleEventRepository eventRepository;
-	@NonNull
-	private final RecordWarningRepository recordWarningRepository;
-	@NonNull
-	private final BusinessRuleLogger logger;
-	@NonNull
-	private final BusinessRuleRecordMatcher recordMatcher;
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
+	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull private final BusinessRuleRepository ruleRepository;
+	@NonNull private final BusinessRuleEventRepository eventRepository;
+	@NonNull private final RecordWarningRepository recordWarningRepository;
+	@NonNull private final BusinessRuleLogger logger;
+	@NonNull private final BusinessRuleRecordMatcher recordMatcher;
 
-	@NonNull
-	private final QueryLimit limit;
-	@Nullable
-	private BusinessRulesCollection rules;
-
-	@Nullable
-	private static Integer getRecordIdFromSql(final String sql, final int sourceRecordId, final String keyColumnName)
-	{
-		final Integer targetRecordId = DB.retrieveFirstRowOrNull(sql, Collections.singletonList(sourceRecordId), rs -> {
-			final int intValue = rs.getInt(1);
-			return rs.wasNull() ? null : intValue;
-		});
-
-		if (targetRecordId == null)
-		{
-			return null;
-		}
-
-		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName);
-		if (targetRecordId < firstValidId)
-		{
-			return null;
-		}
-		return targetRecordId;
-	}
+	@NonNull private final QueryLimit limit;
+	@Nullable private BusinessRulesCollection rules;
 
 	public void execute()
 	{
@@ -173,9 +140,9 @@ public class BusinessRuleEventProcessorCommand
 		final BusinessRuleStopwatch stopwatch = logger.newStopwatch();
 
 		final TargetRecordInfo targetRecordInfo = retrieveTargetRecordInfo(event);
-		
-		final TableRecordReference targetRecordRef = targetRecordInfo.getTargetRecordRef();
-		
+
+		final TableRecordReference targetRecordRef = targetRecordInfo == null ? null : targetRecordInfo.getTargetRecordRef();
+
 		logger.setTargetRecordRef(targetRecordRef);
 		logger.debug(stopwatch, "Retrieved target record: {}", targetRecordRef);
 		if (targetRecordRef == null)
@@ -218,23 +185,8 @@ public class BusinessRuleEventProcessorCommand
 			{
 				final AdMessageKey messageKey = getAdMessageKey(rule);
 
-				final StringBuilder msgDetails = new StringBuilder();
-				msgDetails.append(msgBL.translate(Env.getADLanguageOrBaseLanguage(),targetRecordRef.getTableName())).append(" ");
-
-				if (targetRecordInfo.getDocumentNo() != null)
-				{
-					msgDetails.append(targetRecordInfo.getDocumentNo()).append(" ");
-				}
-				if (targetRecordInfo.getValue() != null)
-				{
-					msgDetails.append(targetRecordInfo.getValue()).append(" ");
-				}
-				if (targetRecordInfo.getName() != null)
-				{
-					msgDetails.append(targetRecordInfo.getName());
-				}
-
-				final String msg = msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey);
+				final String availableRecordData = getAvailableRecordData(targetRecordInfo);
+				final String msg = msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, new Object[] { availableRecordData });
 
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
@@ -244,19 +196,12 @@ public class BusinessRuleEventProcessorCommand
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
-				final StringBuilder notificationStringBuilder = new StringBuilder();
-
-				final String notificationMessage = notificationStringBuilder
-						.append(msg)
-						.append(" ")
-						.append(msgDetails)
-						.toString();
-
 				final RecordWarningNoticeRequest recordWarningNoticeRequest = RecordWarningNoticeRequest.builder()
 						.userId(event.getTriggeringUserId())
 						.recordWarningId(recordWarningId)
 						.notificationSeverity(NotificationSeverity.Warning)
-						.message(notificationMessage)
+						.messageKey(messageKey)
+						.availableRecordData(availableRecordData)
 						.build();
 
 				BusinessRuleEventNotificationProducer.newInstance().createNotice(recordWarningNoticeRequest);
@@ -266,26 +211,6 @@ public class BusinessRuleEventProcessorCommand
 	}
 
 	@Nullable
-	// TODO  Make it return TableRecordInfo
-	//  ask the POInfo if the DOcumentNo, Value, Name columns exists and fetch what we have. see https://github.com/metasfresh/metasfresh/pull/20871#discussion_r2107373961
-	private TableRecordReference retrieveTargetRecord(@NonNull final BusinessRuleEvent event)
-	{
-		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
-		final BusinessRuleTrigger trigger = rule.getTriggerById(event.getTriggerId());
-
-		final AdTableId sourceTableId = event.getSourceRecordRef().getAdTableId();
-		final String sourceTableName = TableIdsCache.instance.getTableName(sourceTableId);
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
-		final int sourceRecordId = event.getSourceRecordRef().getRecord_ID();
-		final String sql = "SELECT " + trigger.getTargetRecordMappingSQL() + " FROM " + sourceTableName + " WHERE " + keyColumnName + "=?";
-		final Integer targetRecordId = getRecordIdFromSql(sql, sourceRecordId, keyColumnName);
-		return targetRecordId == null ? null : TableRecordReference.of(rule.getAdTableId(), targetRecordId);
-
-	}
-
-	@Nullable
-	// TODO  Make it return TableRecordInfo
-	//  ask the POInfo if the DOcumentNo, Value, Name columns exists and fetch what we have. see https://github.com/metasfresh/metasfresh/pull/20871#discussion_r2107373961
 	private TargetRecordInfo retrieveTargetRecordInfo(@NonNull final BusinessRuleEvent event)
 	{
 		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
@@ -307,6 +232,28 @@ public class BusinessRuleEventProcessorCommand
 
 		return createTargetRecordInfo(targetTableId, targetRecordId, targetTableName, keyColumnName);
 	}
+
+	@Nullable
+	private static Integer getRecordIdFromSql(final String sql, final int sourceRecordId, final String keyColumnName)
+	{
+		final Integer targetRecordId = DB.retrieveFirstRowOrNull(sql, Collections.singletonList(sourceRecordId), rs -> {
+			final int intValue = rs.getInt(1);
+			return rs.wasNull() ? null : intValue;
+		});
+
+		if (targetRecordId == null)
+		{
+			return null;
+		}
+
+		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName);
+		if (targetRecordId < firstValidId)
+		{
+			return null;
+		}
+		return targetRecordId;
+	}
+
 
 	private static TargetRecordInfo createTargetRecordInfo(@NonNull final AdTableId targetTableId, @NonNull final Integer targetRecordId, @NonNull final String targetTableName, @NonNull final String keyColumnName)
 	{
@@ -349,6 +296,30 @@ public class BusinessRuleEventProcessorCommand
 		}
 		return targetRecordInfoBuilder
 				.build();
+	}
+
+	private @NonNull String getAvailableRecordData(@NonNull final TargetRecordInfo targetRecordInfo)
+	{
+		final TableRecordReference targetRecordRef = targetRecordInfo.getTargetRecordRef();
+
+		final StringBuilder availableRecordDataBuilder = new StringBuilder();
+
+		availableRecordDataBuilder.append(msgBL.translate(Env.getADLanguageOrBaseLanguage(), targetRecordRef.getTableName()));
+
+		if (targetRecordInfo.getDocumentNo() != null)
+		{
+			availableRecordDataBuilder.append(" ").append(targetRecordInfo.getDocumentNo());
+		}
+		if (targetRecordInfo.getValue() != null)
+		{
+			availableRecordDataBuilder.append(" ").append(targetRecordInfo.getValue());
+		}
+		if (targetRecordInfo.getName() != null)
+		{
+			availableRecordDataBuilder.append(" ").append(targetRecordInfo.getName());
+		}
+
+		return availableRecordDataBuilder.toString();
 	}
 
 	private boolean isPreconditionsMet(
