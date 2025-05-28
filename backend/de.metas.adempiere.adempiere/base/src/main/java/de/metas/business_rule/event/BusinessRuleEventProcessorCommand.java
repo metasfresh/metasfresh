@@ -254,13 +254,18 @@ public class BusinessRuleEventProcessorCommand
 		return targetRecordId;
 	}
 
-
 	private static TargetRecordInfo createTargetRecordInfo(@NonNull final AdTableId targetTableId, @NonNull final Integer targetRecordId, @NonNull final String targetTableName, @NonNull final String keyColumnName)
 	{
 		final TargetRecordInfo.TargetRecordInfoBuilder targetRecordInfoBuilder = TargetRecordInfo.builder()
 				.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId));
 
 		final POInfo targetPOInfo = POInfo.getPOInfo(targetTableName);
+
+		if(targetPOInfo == null)
+		{
+			return targetRecordInfoBuilder
+					.build();
+		}
 
 		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
 		{
@@ -304,7 +309,7 @@ public class BusinessRuleEventProcessorCommand
 
 		final StringBuilder availableRecordDataBuilder = new StringBuilder();
 
-		availableRecordDataBuilder.append(msgBL.translate(Env.getADLanguageOrBaseLanguage(), targetRecordRef.getTableName()));
+		availableRecordDataBuilder.append(msgBL.translate(Env.getCtx(), targetRecordRef.getTableName()));
 
 		if (targetRecordInfo.getDocumentNo() != null)
 		{
