@@ -27,9 +27,11 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
@@ -43,6 +45,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -67,6 +70,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.edi.async.spi.impl.EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class EDI_Desadv_StepDef
 {
 	private static final String EDI_EXP_DESADV_PACK_TAGNAME = "EDI_Exp_Desadv_Pack";
@@ -77,26 +81,15 @@ public class EDI_Desadv_StepDef
 	private static final String QTY_TU_TAGNAME = "QtyTU";
 
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final DesadvEnqueuer desadvEnqueuer = SpringContextHolder.instance.getBean(DesadvEnqueuer.class);
 
-	private final EDI_Desadv_StepDefData desadvTable;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final C_Order_StepDefData orderTable;
-	private final EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	public EDI_Desadv_StepDef(
-			@NonNull final EDI_Desadv_StepDefData desadvTable,
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final EDI_Exp_Desadv_StepDefData ediExpDesadvTable)
-	{
-		this.desadvTable = desadvTable;
-		this.bpartnerTable = bpartnerTable;
-		this.orderTable = orderTable;
-		this.ediExpDesadvTable = ediExpDesadvTable;
-	}
+	private final @NonNull EDI_Desadv_StepDefData desadvTable;
+	private final @NonNull C_BPartner_StepDefData bpartnerTable;
+	private final @NonNull C_Order_StepDefData orderTable;
+	private final @NonNull EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
+	private final @NonNull TestContext restTestContext;
 
 	@Given("metasfresh is configured for One-DESADV-Per-ORDERS")
 	public void OneDesadvPerOrders()
@@ -106,7 +99,7 @@ public class EDI_Desadv_StepDef
 		final I_EXP_Format oneDesadvPerShipment = InterfaceWrapperHelper.load(540405, I_EXP_Format.class); // current name=EDI_Exp_Desadv
 		oneDesadvPerShipment.setIsActive(false);
 		InterfaceWrapperHelper.saveRecord(oneDesadvPerShipment);
-		
+
 		final I_EXP_Format oneDesadvPerOrder = InterfaceWrapperHelper.load(540428, I_EXP_Format.class); // current name=EXP_M_InOut_Desadv_V
 		oneDesadvPerOrder.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(oneDesadvPerOrder);
@@ -120,12 +113,12 @@ public class EDI_Desadv_StepDef
 		final I_EXP_Format oneDesadvPerOrder = InterfaceWrapperHelper.load(540428, I_EXP_Format.class); // current name=EXP_M_InOut_Desadv_V
 		oneDesadvPerOrder.setIsActive(false);
 		InterfaceWrapperHelper.saveRecord(oneDesadvPerOrder);
-		
+
 		final I_EXP_Format oneDesadvPerShipment = InterfaceWrapperHelper.load(540405, I_EXP_Format.class); // current name=EDI_Exp_Desadv
 		oneDesadvPerShipment.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(oneDesadvPerShipment);
 	}
-	
+
 	@Then("validate created edi desadv")
 	public void validate_edi_desadv(@NonNull final DataTable dataTable)
 	{
@@ -261,7 +254,7 @@ public class EDI_Desadv_StepDef
 		assertThat(childNode.getNodeType()).isEqualTo(Node.ELEMENT_NODE);
 
 		return (Element)childNode;
-		}
+	}
 
 	private void validateExportStatus(
 			final int timeoutSec,
@@ -308,15 +301,18 @@ public class EDI_Desadv_StepDef
 		final I_C_Order order = orderTable.get(orderIdentifier);
 
 		final I_EDI_Desadv desadvRecord = desadvDAO.retrieveMatchingDesadvOrNull(EDIDesadvQuery.builder()
-																						 .poReference(order.getPOReference())
-																						 .bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-																						 .ctxAware(InterfaceWrapperHelper.getContextAware(order))
-																						 .build());
+				.poReference(order.getPOReference())
+				.bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.ctxAware(InterfaceWrapperHelper.getContextAware(order))
+				.build());
 
 		assertThat(desadvRecord).isNotNull();
 		assertThat(desadvRecord.getC_BPartner_ID()).isEqualTo(bpartnerID);
 
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
 		desadvTable.putOrReplace(identifier, desadvRecord);
+		final DataTableRow dataTableRow = DataTableRow.singleRow(tableRow);
+		restTestContext.setIntVariableFromRow(dataTableRow, desadvRecord::getEDI_Desadv_ID);
+		
 	}
 }

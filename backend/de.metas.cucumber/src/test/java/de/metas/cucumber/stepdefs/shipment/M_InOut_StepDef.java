@@ -362,6 +362,11 @@ public class M_InOut_StepDef
 				inoutTable.putOrReplace(shipmentIdentifier, shipment);
 				restTestContext.setIntVariableFromRow(firstRow, shipment::getM_InOut_ID);
 
+				firstRow.getAsOptionalIdentifier("REST.Context.M_InOut_ID")
+						.ifPresent(id -> restTestContext.setVariable(id.getAsString(), shipment.getM_InOut_ID()));
+				firstRow.getAsOptionalIdentifier("REST.Context.DocumentNo")
+						.ifPresent(id -> restTestContext.setVariable(id.getAsString(), shipment.getDocumentNo()));
+				
 				return true;
 			}
 

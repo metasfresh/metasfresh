@@ -126,7 +126,7 @@ Feature: Production dispo scenarios
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | plv_1                  | p_1          | 10.0     | PCE      |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | N        | Y          | ps_1               |
     And metasfresh contains C_BPartner_Locations:

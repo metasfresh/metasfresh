@@ -67,23 +67,6 @@ Feature: EDI DESADV export via postgREST
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID    | M_HU_PI_Item_ID      | M_Product_ID      | Qty | ValidFrom  | M_HU_PackagingCode_LU_Fallback_ID | GTIN_LU_PackingMaterial_Fallback |
       | huAuditProductTU_S0468_010 | huPiItemTU_S0468_010 | product_S0468_010 | 10  | 2025-01-01 | huPackagingCode_1_S0468_010       | gtinPiItemProduct                |
-
-    And metasfresh contains M_AttributeSetInstance with identifier "orderLineASI_S0468_010":
-  """
-  {
-    "attributeInstances":[
-      {
-        "attributeCode":"Lot-Nummer",
-          "valueStr":"lotNumber"
-      },
-      {
-        "attributeCode":"HU_BestBeforeDate",
-          "valueStr":"2025-05-25"
-      }
-    ]
-  }
-  """
-
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
       | salesPLV               | product_S0468_010 | 5.00     | PCE      |
@@ -109,15 +92,15 @@ Feature: EDI DESADV export via postgREST
       | s_s_1                            | D            | true                | false       |
 
     And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context          |
-      | s_s_1                            | s_1                   | shipment_id_S0468_010 |
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo       |
+      | s_s_1                            | s_1                   | shipment_S0468_010_ID   | shipment_S0468_010_DocumentNo |
 
         # cleanup; otherwise, all HUs with an SSCC18 will have the same SSCC18-value for the remainder of this test-run
     And reset the SSCC18 code generator's next sequence number back to its actual sequence.
 
     And EDI_Desadv is found:
-      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
-      | d_1                      | customer1                | o_1                   | P                |
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus | REST.Context |
+      | d_1                      | customer1                | o_1                   | P                | d_1          |
 
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -129,11 +112,11 @@ Feature: EDI DESADV export via postgREST
 
     When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/M_InOut_EDI_Export_JSON/invoke' and fulfills with '200' status code
     """
-{
-  "processParameters": [
+{  
+    "processParameters": [
     {
       "name": "M_InOut_ID",
-      "value": "@shipment_id_S0468_010@"
+      "value": "@shipment_S0468_010_ID@"
     }
   ]
 }
@@ -141,119 +124,129 @@ Feature: EDI DESADV export via postgREST
 
     Then the metasfresh REST-API responds with
     """
-{
-  "DocumentNo": "1013010",
-  "M_InOut_ID": 1000000,
-  "@SequenceNo": 1000000,
-  "DateOrdered": "2025-04-17T00:00:00",
-  "POReference": "testReference",
-  "DatePromised": "2025-05-15T00:00:00",
-  "MovementDate": "2025-05-15T00:00:00",
-  "C_BPartner_ID": {
-    "GLN": "1234567890",
-    "Name": "desadvReceiverName",
-    "Value": "desadvReceiverValue",
-    "IsVendor": "N",
-    "IsCustomer": "Y"
-  },
-  "C_Currency_ID": {
-    "ISO_Code": "EUR",
-    "CurSymbol": "€"
-  },
-  "EDI_Desadv_ID": 1000000,
-  "DeliveryViaRule": "P",
-  "Bill_Location_ID": {
-    "GLN": "1234567890123",
-    "City": null,
-    "Postal": null,
-    "Address1": null,
-    "Address2": null,
-    "CountryCode": "DE"
-  },
-  "EDI_ExportStatus": "P",
-  "ShipmentDocumentNo": "545147",
-  "EDI_Exp_Desadv_Pack": [
-    {
-      "SeqNo": 1,
-      "IPA_SSCC18": "012345670010000005",
-      "GTIN_PackingMaterial": "gtinPiItemProduct",
-      "M_HU_PackagingCode_Text": "ISO1",
-      "EDI_Exp_Desadv_Pack_Item": [
-        {
-          "Line": 10,
-          "QtyTU": 10,
-          "LotNumber": null,
-          "QtyCUsPerLU": 100,
-          "QtyCUsPerTU": 10,
-          "BestBeforeDate": null,
-          "EDI_DesadvLine_ID": {
-            "Line": 10,
-            "C_UOM_ID": {
-              "Name": "Stück",
-              "UOMSymbol": "Stk"
-            },
-            "IPA_GTIN": null,
-            "QtyEntered": 100,
-            "MovementQty": 100,
-            "M_Product_ID": {
-              "UPC": null,
-              "Name": "postgRESTExportProductName",
-              "Value": "postgRESTExportProductValue"
-            },
-            "C_OrderLine_ID": 10,
-            "M_InOutLine_ID": 10,
-            "OrderDocumentNo": "0001"
-          },
-          "GTIN_TU_PackingMaterial": null,
-          "QtyCUsPerLU_InInvoiceUOM": 100,
-          "QtyCUsPerTU_InInvoiceUOM": 10,
-          "M_HU_PackagingCode_TU_Text": "ISO1"
-        }
-      ]
-    }
-  ],
-  "HandOver_Partner_ID": {
-    "GLN": "1234567890",
-    "Name": "desadvReceiverName",
-    "Value": "desadvReceiverValue",
-    "IsVendor": "N",
-    "IsCustomer": "Y"
-  },
-  "shipment_documentno": "545147",
-  "DropShip_BPartner_ID": {
-    "GLN": "1234567890",
-    "Name": "desadvReceiverName",
-    "Value": "desadvReceiverValue",
-    "IsVendor": "N",
-    "IsCustomer": "Y"
-  },
-  "DropShip_Location_ID": {
-    "GLN": "1234567890123",
-    "City": null,
-    "Postal": null,
-    "Address1": null,
-    "Address2": null,
-    "CountryCode": "DE"
-  },
-  "HandOver_Location_ID": {
-    "GLN": "1234567890123",
-    "City": null,
-    "Postal": null,
-    "Address1": null,
-    "Address2": null,
-    "CountryCode": "DE"
-  },
-  "InvoicableQtyBasedOn": "Nominal",
-  "C_BPartner_Location_ID": {
-    "GLN": "1234567890123",
-    "City": null,
-    "Postal": null,
-    "Address1": null,
-    "Address2": null,
-    "CountryCode": "DE"
-  },
-  "EDI_Exp_DesadvLineWithNoPack": []
-}    
+[ {
+    "metasfresh_DESADV" : {
+        "ShipmentDocumentNo": "@shipment_S0468_010_DocumentNo@",
+        "M_InOut_ID": @shipment_S0468_010_ID@,
+        "DateOrdered": "2025-04-17T00:00:00",
+        "POReference": "testReference",
+        "DatePromised": "2025-05-15T00:00:00",
+        "MovementDate": "2025-05-15T00:00:00",
+        "C_BPartner_ID": {
+          "GLN": "1234567890",
+          "Name": "desadvReceiverName",
+          "Value": "desadvReceiverValue",
+          "IsVendor": "N",
+          "IsCustomer": "Y"
+        },
+        "C_Currency_ID": {
+          "ISO_Code": "EUR",
+          "CurSymbol": "€"
+        },
+        "EDI_Desadv_ID": @d_1@,
+        "DeliveryViaRule": "P",
+        "Bill_Location_ID": {
+          "GLN": "1234567890123",
+          "City": null,
+          "Postal": null,
+          "Address1": null,
+          "Address2": null,
+          "CountryCode": "DE"
+        },
+        "EDI_ExportStatus": "P",
+        "EDI_Exp_Desadv_Pack": [
+          {
+            "SeqNo": 1,
+            "IPA_SSCC18": "012345670010000005",
+            "GTIN_PackingMaterial": "gtinPiItemProduct",
+            "M_HU_PackagingCode_Text": "ISO1",
+            "EDI_Exp_Desadv_Pack_Item": [
+              {
+                "Line": 10,
+                "QtyTU": 10,
+                "LotNumber": null,
+                "QtyCUsPerLU": 100,
+                "QtyCUsPerTU": 10,
+                "BestBeforeDate": null,
+                "EDI_DesadvLine": {
+                  "Product": {
+                    "UPC": null,
+                    "Name": "postgRESTExportProductName",
+                    "Value": "postgRESTExportProductValue",
+                    "GTIN_CU": "bPartnerProductGTIN",
+                    "GTIN_TU": null,
+                    "NetWeight": 0,
+                    "ProductNo": null,
+                    "Description": "postgRESTExportProductDescription",
+                    "GrossWeight": null,
+                    "GrossWeightUOM;": {
+                      "Name": null,
+                      "X12DE355": null
+                    }
+                  },
+                  "OrderLine": 10,
+                  "DesadvLine": 10,
+                  "QtyEntered": 100,
+                  "MovementQty": 100,
+                  "ShipmentLine": 10,
+                  "DesadvLineUOM": {
+                      "Name": "Stück",
+                      "X12DE355": "PCE"
+                  },
+                  "OrderDocumentNo": "0001",
+                  "OrderPOReference": "testReference",
+                  "EDI_DesadvLine_ID": 1000000
+                },
+                "GTIN_TU_PackingMaterial": "bPartnerProductGTIN",
+                "QtyCUsPerLU_InInvoiceUOM": 100,
+                "QtyCUsPerTU_InInvoiceUOM": 10,
+                "M_HU_PackagingCode_TU_Text": "ISO1"
+              }
+            ]
+          }
+        ],
+        "HandOver_Partner": {
+          "GLN": "1234567890",
+          "Name": "desadvReceiverName",
+          "Value": "desadvReceiverValue",
+          "IsVendor": "N",
+          "IsCustomer": "Y"
+        },
+        "DropShip_BPartner": {
+          "GLN": "1234567890",
+          "Name": "desadvReceiverName",
+          "Value": "desadvReceiverValue",
+          "IsVendor": "N",
+          "IsCustomer": "Y"
+        },
+        "DropShip_Location": {
+          "GLN": "1234567890123",
+          "City": null,
+          "Postal": null,
+          "Address1": null,
+          "Address2": null,
+          "CountryCode": "DE"
+        },
+        "HandOver_Location": {
+          "GLN": "1234567890123",
+          "City": null,
+          "Postal": null,
+          "Address1": null,
+          "Address2": null,
+          "CountryCode": "DE"
+        },
+        "InvoicableQtyBasedOn": "Nominal",
+        "C_BPartner_Location_ID": {
+          "GLN": "1234567890123",
+          "City": null,
+          "Postal": null,
+          "Address1": null,
+          "Address2": null,
+          "CountryCode": "DE"
+        },
+        "EDI_Exp_DesadvLineWithNoPack": []
+      }
+  } ]
     """
 
     And after not more than 60s, EDI_Desadv records have the following export status
