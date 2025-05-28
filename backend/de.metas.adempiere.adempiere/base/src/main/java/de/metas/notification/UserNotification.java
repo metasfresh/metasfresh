@@ -167,17 +167,18 @@ public class UserNotification
 		// Build detail message
 		final StringBuilder detailBuf = new StringBuilder();
 
+		if(!Check.isEmpty(notificationSeverity) && notificationSeverity != NotificationSeverity.Notice)
+		{
+			final String notificationSeverity = TranslatableStrings.adRefList(X_AD_Note.NOTIFICATIONSEVERITY_AD_Reference_ID, getNotificationSeverity().getCode()).translate(adLanguage);
+			detailBuf.append(notificationSeverity).append(":");
+		}
+
 		// Add plain detail if any
 		if (!Check.isEmpty(detailPlain, true))
 		{
 			detailBuf.append(detailPlain.trim());
 		}
 
-		if(!Check.isEmpty(notificationSeverity))
-		{
-			final String notificationSeverity = TranslatableStrings.adRefList(X_AD_Note.NOTIFICATIONSEVERITY_AD_Reference_ID, getNotificationSeverity().getCode()).translate(adLanguage);
-			detailBuf.append(notificationSeverity); // TODO see how this looks like, needs extra formatting like ":"  and adding spacing
-		}
 
 		// Translate, parse and add detail (AD_Message).
 		if (!Check.isEmpty(detailADMessage, true))

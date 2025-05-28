@@ -58,8 +58,6 @@ public class BusinessRuleEventProcessorCommand
 	@NonNull private final QueryLimit limit;
 	@Nullable private BusinessRulesCollection rules;
 
-	final AdMessageKey messageKeyPrefix = AdMessageKey.of("de.metas.business_rule.event.BusinessRuleEventProcessorCommand.messageKeyPrefix"); // TODO add ad_message "WARNING"
-
 	public void execute()
 	{
 		try (final IAutoCloseable ignored = setupLoggerContext())

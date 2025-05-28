@@ -192,7 +192,7 @@ public class NotificationRepository implements INotificationRepository
 				.recipientUserId(notificationPO.getAD_User_ID())
 				.read(notificationPO.isProcessed());
 
-		// TODO builder.setMessagePrefix
+		builder.notificationSeverity(NotificationSeverity.ofCode(notificationPO.getNotificationSeverity()));
 		//
 		// detailADMessage
 		final AdMessageId detailADMessageId = AdMessageId.ofRepoIdOrNull(notificationPO.getAD_Message_ID());
