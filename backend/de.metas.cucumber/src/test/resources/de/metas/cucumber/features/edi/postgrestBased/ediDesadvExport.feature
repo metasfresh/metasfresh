@@ -140,7 +140,7 @@ Feature: EDI DESADV export via postgREST
               "QtyCUsPerLU": 100,
               "QtyCUsPerTU": 10,
               "BestBeforeDate": null,
-              "EDI_DesadvLine": {
+              "DesadvLine": {
                 "Product": {
                   "UPC": null,
                   "Name": "postgRESTExportProductName",
