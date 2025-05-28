@@ -72,7 +72,6 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STAND
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
@@ -140,61 +139,7 @@ public class M_Product_StepDef
 					.delete();
 		}
 	}
-
-	@And("metasfresh contains C_BPartner_Products:")
-	public void metasfreshContainsC_BPartner_Product(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-			final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, false);
-			final boolean isExcludedFromPurchase = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase, false);
-			final String exclusionFromSaleReason = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason);
-			final String exclusionFromPurchaseReason = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason);
-			final String productNumber = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_ProductNo);
-			final String upc = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_UPC);
-
-			final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
-			bPartnerProduct.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			bPartnerProduct.setM_Product_ID(productTable.get(productIdentifier).getM_Product_ID());
-			bPartnerProduct.setC_BPartner_ID(bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID());
-			bPartnerProduct.setUsedForVendor(true);
-			bPartnerProduct.setUsedForCustomer(true);
-			bPartnerProduct.setShelfLifeMinPct(0);
-			bPartnerProduct.setShelfLifeMinDays(0);
-			bPartnerProduct.setIsExcludedFromSale(isExcludedFromSale);
-			bPartnerProduct.setIsExcludedFromPurchase(isExcludedFromPurchase);
-
-			final Boolean isCurrentVendor = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true);
-			bPartnerProduct.setIsCurrentVendor(isCurrentVendor);
-
-			if (Check.isNotBlank(exclusionFromSaleReason))
-			{
-				bPartnerProduct.setExclusionFromSaleReason(exclusionFromSaleReason);
-			}
-
-			if (Check.isNotBlank(exclusionFromPurchaseReason))
-			{
-				bPartnerProduct.setExclusionFromPurchaseReason(exclusionFromPurchaseReason);
-			}
-
-			if (Check.isNotBlank(productNumber))
-			{
-				bPartnerProduct.setProductNo(productNumber);
-			}
-
-			if (Check.isNotBlank(upc))
-			{
-				bPartnerProduct.setUPC(upc);
-			}
-
-			InterfaceWrapperHelper.saveRecord(bPartnerProduct);
-		}
-	}
-
+	
 	@And("locate product by external identifier")
 	public void locate_product_by_external_identifier(@NonNull final DataTable dataTable)
 	{

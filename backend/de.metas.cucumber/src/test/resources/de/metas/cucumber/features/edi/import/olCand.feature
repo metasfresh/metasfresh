@@ -70,7 +70,7 @@ Feature: import order candidate to metasfresh
       | bpartner1_1 | MainBPartner_1       | N            | Y              | ps_1                          |
       | bpartner2_1 | SubsidiaryBPartner_1 | N            | Y              | ps_1                          |
       | bpartner3_1 | OrgBPartner_1        | N            | Y              | ps_1                          |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.UPC       | OPT.IsCurrentVendor |
       | bpartner1_1              | product                 | 1111111111111 | false               |
       | bpartner2_1              | product                 | 1111111111111 | false               |

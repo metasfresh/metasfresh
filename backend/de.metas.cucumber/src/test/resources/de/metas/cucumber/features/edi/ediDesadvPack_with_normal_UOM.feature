@@ -56,7 +56,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
       | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
 
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endcustomer              | p_1_S0316_010           |
 
@@ -146,7 +146,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | C_BPartner_ID.Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
       | endcustomer              | true                 | bPartnerDesadvRecipientGLN |
 
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endcustomer              | p_1_11212023_4          |
 
@@ -238,7 +238,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
 
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endcustomer              | p_1_11212023_1          |
 

@@ -92,6 +92,12 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+	public <T extends I_M_InOut> T getByIdOutOfTrx(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutId.getRepoId(), modelClass);
+	}
+	
+	@Override
 	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);

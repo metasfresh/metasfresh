@@ -108,11 +108,9 @@ public class M_HU_PI_Version_StepDef
 										: huPackagingCodeTable.get(huPackagingCodeIdentifier).getM_HU_PackagingCode_ID();
 
 								piVersion.setM_HU_PackagingCode_ID(huPackagingCodeId);
-
 							});
 
 					saveRecord(piVersion);
-
 					huPiVersionTable.put(row.getAsIdentifier(), piVersion);
 				});
 	}

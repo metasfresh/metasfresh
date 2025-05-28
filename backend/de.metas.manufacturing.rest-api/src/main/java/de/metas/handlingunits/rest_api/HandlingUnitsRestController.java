@@ -158,7 +158,7 @@ public class HandlingUnitsRestController
 				final JsonHU jsonHU = toNewJsonHU(huQRCode);
 				return ResponseEntity.ok(JsonGetSingleHUResponse.ofResult(jsonHU));
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				return toBadRequestResponseEntity(ex);
 			}
@@ -418,7 +418,7 @@ public class HandlingUnitsRestController
 				.build();
 	}
 
-	private static JsonHUType toJsonHUType(@NonNull HUQRCodeUnitType huUnitType)
+	private static JsonHUType toJsonHUType(@NonNull final HUQRCodeUnitType huUnitType)
 	{
 		switch (huUnitType)
 		{

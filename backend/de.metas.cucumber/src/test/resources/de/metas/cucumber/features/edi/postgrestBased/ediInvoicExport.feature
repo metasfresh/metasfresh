@@ -1,11 +1,10 @@
 @from:cucumber
 @ghActions:run_on_executor3
-Feature: EDI export via postgREST
+Feature: EDI INVOIC export via postgREST
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And all the API audit data is reset
     And metasfresh has date and time 2025-05-01T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And documents are accounted immediately
@@ -23,13 +22,13 @@ Feature: EDI export via postgREST
     And metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | N        | pricingSystem      |
-    And metasfresh contains C_BPartner_Locations:
+     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | bpartner_location_1 | customer1     | Y               | Y               |
 
   @Id:S0467_010
   @from:cucumber
-  Scenario: create an invoice and exports it to JSON
+  Scenario: create an invoice and export it to JSON
     Given metasfresh contains M_Products:
       | Identifier        | Value                       | Name                       | Description                       |
       | product_S0467_010 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription |

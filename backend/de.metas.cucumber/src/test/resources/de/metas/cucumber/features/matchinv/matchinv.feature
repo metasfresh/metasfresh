@@ -27,7 +27,7 @@ Feature: Match Invoice
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | plv_PO                 | product      | 10.0     | PCE      |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier | M_PricingSystem_ID | IsVendor | IsCustomer |
       | bpartner_1 | ps_1               | Y        | N          |
     And metasfresh contains C_BPartner_Locations:
