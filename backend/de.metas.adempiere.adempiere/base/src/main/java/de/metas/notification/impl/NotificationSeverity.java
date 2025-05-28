@@ -29,8 +29,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_AD_Note;
 
-import javax.annotation.Nullable;
-
 @Getter
 @AllArgsConstructor
 public enum NotificationSeverity implements ReferenceListAwareEnum
@@ -39,21 +37,13 @@ public enum NotificationSeverity implements ReferenceListAwareEnum
 	Warning(X_AD_Note.NOTIFICATIONSEVERITY_Warning),
 	Error(X_AD_Note.NOTIFICATIONSEVERITY_Error);
 
-	@NonNull
-	private static final ReferenceListAwareEnums.ValuesIndex<NotificationSeverity> index = ReferenceListAwareEnums.index(values());
+	@NonNull private static final ReferenceListAwareEnums.ValuesIndex<NotificationSeverity> index = ReferenceListAwareEnums.index(values());
 
-	@Nullable private final String code;
+	@NonNull private final String code;
 
 	@NonNull
 	public static NotificationSeverity ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
-
-	@Nullable
-	public static NotificationSeverity ofNullableCode(@Nullable final String code)
-	{
-		return index.ofNullableCode(code);
-	}
-
 }

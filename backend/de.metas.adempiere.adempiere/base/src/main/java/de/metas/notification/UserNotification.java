@@ -104,7 +104,7 @@ public class UserNotification
 			@JsonProperty("recipientUserId") @NonNull final Integer recipientUserId,
 			//
 			@JsonProperty("detailPlain") final String detailPlain,
-			@JsonProperty("detailADMessagePrefix") final NotificationSeverity notificationSeverity,
+			@JsonProperty("detailADMessagePrefix") @NonNull final NotificationSeverity notificationSeverity,
 			@JsonProperty("detailADMessage") final String detailADMessage,
 			@JsonProperty("detailADMessageParams") @Singular final List<Object> detailADMessageParams,
 			//
@@ -229,6 +229,7 @@ public class UserNotification
 		return targetWindowId != null ? String.valueOf(targetWindowId.getRepoId()) : null;
 	}
 
+	@Nullable
 	public String getTargetDocumentId()
 	{
 		return targetRecord != null ? String.valueOf(targetRecord.getRecord_ID()) : null;

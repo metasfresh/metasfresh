@@ -75,7 +75,7 @@ public class NotificationRepository implements INotificationRepository
 
 	private final AttachmentEntryService attachmentEntryService;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
-	private IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public NotificationRepository(
 			@NonNull final AttachmentEntryService attachmentEntryService,
@@ -170,13 +170,14 @@ public class NotificationRepository implements INotificationRepository
 		return toUserNotification(notificationPO);
 	}
 
+	@Nullable
 	private UserNotification toUserNotificationNoFail(@NonNull final I_AD_Note notificationPO)
 	{
 		try
 		{
 			return toUserNotification(notificationPO);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed creating user notification object from {}", notificationPO, ex);
 			return null;
@@ -190,9 +191,8 @@ public class NotificationRepository implements INotificationRepository
 				.timestamp(TimeUtil.asInstant(notificationPO.getCreated()))
 				.important(notificationPO.isImportant())
 				.recipientUserId(notificationPO.getAD_User_ID())
-				.read(notificationPO.isProcessed());
-
-		builder.notificationSeverity(NotificationSeverity.ofCode(notificationPO.getNotificationSeverity()));
+				.read(notificationPO.isProcessed())
+				.notificationSeverity(NotificationSeverity.ofCode(notificationPO.getNotificationSeverity()));
 		//
 		// detailADMessage
 		final AdMessageId detailADMessageId = AdMessageId.ofRepoIdOrNull(notificationPO.getAD_Message_ID());
@@ -254,7 +254,7 @@ public class NotificationRepository implements INotificationRepository
 	@Nullable
 	private AdWindowId extractAdWindowId(final I_AD_Note notificationPO)
 	{
-		AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(notificationPO.getAD_Window_ID());
+		final AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(notificationPO.getAD_Window_ID());
 		if (adWindowId == null)
 		{
 			return null;

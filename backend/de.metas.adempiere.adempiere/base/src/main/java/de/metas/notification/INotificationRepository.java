@@ -2,7 +2,6 @@ package de.metas.notification;
 
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
