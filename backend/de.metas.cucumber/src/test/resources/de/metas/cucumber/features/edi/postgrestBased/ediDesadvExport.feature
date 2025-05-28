@@ -5,7 +5,6 @@ Feature: EDI DESADV export via postgREST
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And all the API audit data is reset
     And metasfresh has date and time 2025-05-15T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And documents are accounted immediately
