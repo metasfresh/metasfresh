@@ -363,6 +363,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
 
 	/**
+	 * Set Ship after closing LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShipOnCloseLU (boolean IsShipOnCloseLU);
+
+	/**
+	 * Get Ship after closing LU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShipOnCloseLU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShipOnCloseLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShipOnCloseLU", null);
+	String COLUMNNAME_IsShipOnCloseLU = "IsShipOnCloseLU";
+
+	/**
 	 * Set Ask User when Over Picking.
 	 *
 	 * <br>Type: YesNo

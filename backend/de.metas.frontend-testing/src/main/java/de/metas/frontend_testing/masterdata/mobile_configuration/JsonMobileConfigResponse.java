@@ -34,6 +34,7 @@ public class JsonMobileConfigResponse
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean pickWithNewLU;
+		@Nullable Boolean shipOnCloseLU;
 		@Nullable Boolean allowNewTU;
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean allowCompletingPartialPickingJob;

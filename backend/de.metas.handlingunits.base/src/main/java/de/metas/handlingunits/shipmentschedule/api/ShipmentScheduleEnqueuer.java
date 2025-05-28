@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IEnqueueResult;
@@ -34,6 +35,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.common.util.EmptyUtil;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.i18n.IMsgBL;
@@ -49,6 +51,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -215,13 +218,14 @@ public class ShipmentScheduleEnqueuer
 
 					workpackageBuilder
 							.parameters()
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_OnlyLUIds, RepoIdAwares.toCommaSeparatedString(workPackageParameters.getOnlyLUIds()))
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules, workPackageParameters.isCloseShipmentSchedules())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
 
-					// Create a new locker which will grab the locked invoice candidates from 'mainLock'
+					// Create a new locker which will grab the locked shipment candidates from 'mainLock'
 					// and it will move them to a new owner which is created per workpackage
 					final LockOwner workpackageElementsLockOwner = LockOwner.newOwner("ShipmentScheds_" + shipmentSchedule.getHeaderAggregationKey());
 					final ILockCommand workpackageElementsLocker = mainLock
@@ -244,7 +248,7 @@ public class ShipmentScheduleEnqueuer
 		return result;
 	}
 
-	private void addAdvisedShipmentDocumentNo(
+	private static void addAdvisedShipmentDocumentNo(
 			@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters,
 			@NonNull final IWorkPackageBuilder workpackageBuilder,
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -366,6 +370,7 @@ public class ShipmentScheduleEnqueuer
 	@Value
 	public static class ShipmentScheduleWorkPackageParameters
 	{
+		public static final String PARAM_OnlyLUIds = "OnlyLUIds";
 		public static final String PARAM_QuantityType = "QuantityType";
 		public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
@@ -376,11 +381,10 @@ public class ShipmentScheduleEnqueuer
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
-		@NonNull
-		PInstanceId adPInstanceId;
+		@NonNull PInstanceId adPInstanceId;
 
-		@NonNull
-		IQueryFilter<I_M_ShipmentSchedule> queryFilters;
+		@NonNull IQueryFilter<I_M_ShipmentSchedule> queryFilters;
+		@Nullable ImmutableSet<HuId> onlyLUIds;
 
 		@NonNull
 		M_ShipmentSchedule_QuantityTypeToUse quantityType;

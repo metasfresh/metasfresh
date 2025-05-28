@@ -72,4 +72,6 @@ public class Identifier
 	{
 		return RepoIdAwares.ofObject(string, idClass);
 	}
+
+	public boolean isNullPlaceholder() {return string.equals("-");}
 }

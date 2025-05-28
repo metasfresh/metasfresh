@@ -20,6 +20,14 @@ export const PickingJobScreen = {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    getPickingJobId: async () => {
+        const currentUrl = await page.url();
+
+        const regex = /\/picking-(\d+)/;
+        const match = currentUrl.match(regex);
+        return match ? match[1] : null;
+    },
+
     scanPickFromHU: async ({ qrCode }) => await step(`${NAME} - Scan pick from HU ${qrCode}`, async () => {
         const button = page.getByTestId(`scan-activity-${ACTIVITY_ID_ScanPickFromHU}-button`);
         await button.waitFor();
@@ -88,17 +96,17 @@ export const PickingJobScreen = {
 
     expectLineButton: async ({ index, qtyPicked, qtyPickedCatchWeight, qtyToPick, color }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
         const lineButton = locateLineButton({ index });
-        
-        if(qtyPicked !== undefined) {
-            await expectLineButtonAttribute({lineButton, attribute: 'data-qtycurrent', value: qtyPicked});
+
+        if (qtyPicked !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtycurrent', value: qtyPicked });
         }
-        if(qtyPickedCatchWeight !== undefined) {
-            await expectLineButtonAttribute({lineButton, attribute: 'data-qtycurrentcatchweight', value: qtyPickedCatchWeight});
+        if (qtyPickedCatchWeight !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtycurrentcatchweight', value: qtyPickedCatchWeight });
         }
-        if(qtyToPick !== undefined) {
-            await expectLineButtonAttribute({lineButton, attribute: 'data-qtytarget', value: qtyToPick});
+        if (qtyToPick !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtytarget', value: qtyToPick });
         }
-        if(color !== undefined) {
+        if (color !== undefined) {
             await step(`${NAME} - Expect line button color='${color}'`, async () => {
                 const indicator = lineButton.locator(`[data-testid="line-0-${index - 1}-button-Indicator"]`);
                 await expect(indicator).toHaveClass(`indicator-${color}`);

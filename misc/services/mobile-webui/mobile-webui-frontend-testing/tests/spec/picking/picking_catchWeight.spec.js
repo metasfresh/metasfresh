@@ -70,7 +70,7 @@ test('Leich+Mehl', async ({ page }) => {
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
@@ -89,6 +89,23 @@ test('Leich+Mehl', async ({ page }) => {
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '5 Stk', qtyPickedCatchWeight: '505 g' });
 
     await PickingJobScreen.complete();
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu2', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu3', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu4', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu5', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                        ]
+                    }
+                }
+            }
+        }
+    });
 });
 
 // noinspection JSUnusedLocalSymbols

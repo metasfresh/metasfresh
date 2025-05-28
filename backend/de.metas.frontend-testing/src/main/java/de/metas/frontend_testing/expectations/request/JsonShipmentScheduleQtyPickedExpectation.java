@@ -22,4 +22,6 @@ public class JsonShipmentScheduleQtyPickedExpectation
 	@Nullable Identifier vhu;
 	@Nullable Identifier tu;
 	@Nullable Identifier lu;
+
+	@Nullable Identifier shipmentLineId;
 }

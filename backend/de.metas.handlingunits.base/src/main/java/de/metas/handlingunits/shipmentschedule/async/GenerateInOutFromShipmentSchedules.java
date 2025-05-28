@@ -8,12 +8,14 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.ShipmentScheduleId;
@@ -22,6 +24,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -36,6 +39,7 @@ import org.slf4j.Logger;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
@@ -77,7 +81,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
 			// this is a frequent case,
-			// but can be business as usual when user just wants to close some lines without picking something.
+			// but can be business as usual when a user just wants to close some lines without picking anything.
 			// So don't throw an exception, just log it.
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No unprocessed candidates were found");
 		}
@@ -104,7 +108,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.computeShipmentDate(calculateShippingDateRule)
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
 				// Fail on any exception, because we cannot create just a part of those shipments.
-				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
+				// Think about HUs that are linked to multiple shipments: you will not see them in Aggregation POS because they are already assigned, but you're not able to create a shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(shipmentSchedulesWithHU);
 		Loggables.addLog("Generated: {}", result);
@@ -155,7 +159,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 */
 	private List<ShipmentScheduleWithHU> retrieveCandidates(@NonNull final QtyToDeliverMap scheduleId2QtyToDeliverOverride)
 	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return ImmutableList.of();
@@ -171,12 +175,16 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final boolean isCloseShipmentSchedules = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
 		final boolean isFailIfNoPickedHUs = !isCloseShipmentSchedules;
 
-		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
-				shipmentSchedules,
-				quantityTypeToUse,
-				onTheFlyPickToPackingInstructions,
-				scheduleId2QtyToDeliverOverride,
-				isFailIfNoPickedHUs);
+		return shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				PrepareForShipmentSchedulesRequest.builder()
+						.shipmentSchedules(shipmentSchedules)
+						.onlyLUIds(getOnlyLUIds())
+						.quantityTypeToUse(quantityTypeToUse)
+						.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
+						.qtyToDeliverOverrides(scheduleId2QtyToDeliverOverride)
+						.isFailIfNoPickedHUs(isFailIfNoPickedHUs)
+						.build()
+		);
 	}
 
 	private ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
@@ -214,5 +222,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		return queryBuilder
 				.create()
 				.listImmutable(I_M_ShipmentSchedule.class);
+	}
+
+	private Set<HuId> getOnlyLUIds()
+	{
+		final IParams parameters = getParameters();
+		return RepoIdAwares.ofCommaSeparatedSet(
+				parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_OnlyLUIds),
+				HuId.class
+		);
 	}
 }
