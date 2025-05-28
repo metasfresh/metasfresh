@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -45,7 +46,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -62,7 +62,6 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTI
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @RequiredArgsConstructor
 public class M_HU_PI_Item_Product_StepDef
@@ -106,23 +105,20 @@ public class M_HU_PI_Item_Product_StepDef
 		final String x12de355Code = tableRow.getAsOptionalString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName()).orElse(null);
 
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID);
-		I_M_HU_PI_Item_Product huPiItemProductRecord = huPiItemProductTable.getOptional(identifier).orElse(null);
+		final I_M_HU_PI_Item_Product huPiItemProductRecord = huPiItemProductTable.getOptional(identifier)
+				.orElseGet(() ->
+						{
+							final I_M_HU_PI_Item_Product record = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+									.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+									.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemId)
+									.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_Qty, qty)
+									.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsActive, active)
+									.create()
+									.firstOnlyOrNull(I_M_HU_PI_Item_Product.class);
 
-		if (huPiItemProductRecord == null)
-		{
-			huPiItemProductRecord = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
-					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemId)
-					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_Qty, qty)
-					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsActive, active)
-					.create()
-					.firstOnlyOrNull(I_M_HU_PI_Item_Product.class);
-		}
-
-		if (huPiItemProductRecord == null)
-		{
-			huPiItemProductRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
-		}
+							return CoalesceUtil.coalesceSuppliersNotNull(() -> record, () -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class));
+						}
+				);
 
 		huPiItemProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		huPiItemProductRecord.setM_HU_PI_Item_ID(huPiItemId);
@@ -162,21 +158,11 @@ public class M_HU_PI_Item_Product_StepDef
 			huPiItemProductRecord.setGTIN_LU_PackingMaterial_Fallback(DataTableUtil.nullToken2Null(gtinLuPackagingMaterialFallback));
 		}
 
-		final String bpartnerIdentifier = tableRow.getAsOptionalString(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID).orElse(null);
-		if (Check.isNotBlank(bpartnerIdentifier))
-		{
-			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
-			assertThat(bPartner).isNotNull();
+		tableRow.getAsOptionalIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID)
+				.ifPresent(bpartnerIdentifier -> huPiItemProductRecord.setC_BPartner_ID(bpartnerIdentifier.lookupNotNullIdIn(bpartnerTable).getRepoId()));
 
-			huPiItemProductRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
-		}
-
-		final String upc = tableRow.getAsOptionalString(I_M_HU_PI_Item_Product.COLUMNNAME_UPC).orElse(null);
-		if (Check.isNotBlank(upc))
-		{
-			huPiItemProductRecord.setUPC(upc);
-		}
-
+		tableRow.getAsOptionalString(I_M_HU_PI_Item_Product.COLUMNNAME_UPC).ifPresent(huPiItemProductRecord::setUPC);
+		
 		saveRecord(huPiItemProductRecord);
 
 		identifier.putOrReplace(huPiItemProductTable, huPiItemProductRecord);
