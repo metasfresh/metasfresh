@@ -8,17 +8,12 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 @Value
 @Builder
 @Jacksonized
 public class JsonPickingExpectation
 {
-	//
- 	// Match
-	@NonNull Identifier pickingJobId;
-
-	//
-	// Expect
-	@Nullable List<JsonShipmentScheduleExpectation> shipmentSchedules;
+	@Nullable Map<String, JsonShipmentScheduleExpectation> shipmentSchedules;
 }

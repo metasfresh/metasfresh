@@ -165,7 +165,7 @@ public class FrontendTestingRestController
 	}
 
 	@PostMapping("expect")
-	public JsonExpectationsResponse expect(@RequestBody @NonNull final JsonExpectations jsonExpectations)
+	public JsonExpectationsResponse expect(@RequestBody @NonNull final JsonExpectations jsonExpectations) throws Exception
 	{
 		assertEnabled();
 

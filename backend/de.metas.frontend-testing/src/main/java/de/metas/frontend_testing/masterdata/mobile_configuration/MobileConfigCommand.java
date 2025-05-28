@@ -96,6 +96,7 @@ public class MobileConfigCommand
 				.createShipmentPolicy(profile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
+				.shipOnCloseLU(profile.getDefaultPickingJobOptions().isShipOnCloseLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
 				.filterByQRCode(profile.isFilterByBarcode())
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
@@ -126,6 +127,7 @@ public class MobileConfigCommand
 		{
 			builder.isPickWithNewLU(from.getPickWithNewLU());
 		}
+		builder.isShipOnCloseLU(from.getShipOnCloseLU() != null ? from.getShipOnCloseLU() : false);
 		if (from.getAllowNewTU() != null)
 		{
 			builder.isAllowNewTU(from.getAllowNewTU());

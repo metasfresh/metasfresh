@@ -10,5 +10,6 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonSalesOrderCreateResponse
 {
+	@NonNull String id;
 	@NonNull String documentNo;
 }

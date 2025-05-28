@@ -16,6 +16,6 @@ public class JsonExpectations
 {
 	@Nullable JsonCreateMasterdataResponse masterdata;
 
-	@Nullable List<JsonPickingExpectation> pickings;
+	@Nullable Map<String, JsonPickingExpectation> pickings;
 	@Nullable Map<String, JsonHUExpectation> hus;
 }

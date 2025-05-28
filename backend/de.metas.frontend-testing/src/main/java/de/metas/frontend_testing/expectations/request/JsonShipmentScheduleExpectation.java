@@ -13,12 +13,5 @@ import java.util.List;
 @Jacksonized
 public class JsonShipmentScheduleExpectation
 {
-	//
-	// Match
-	@Nullable Identifier product;
-	@Nullable Identifier salesOrder;
-
-	//
-	// Expect
 	@Nullable List<JsonShipmentScheduleQtyPickedExpectation> qtyPicked;
 }

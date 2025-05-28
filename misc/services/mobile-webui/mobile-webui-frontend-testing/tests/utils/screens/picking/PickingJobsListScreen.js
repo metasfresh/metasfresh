@@ -44,11 +44,17 @@ export const PickingJobsListScreen = {
             return await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
                 await locateJobButtons({ documentNo }).tap();
                 await PickingJobScreen.waitForScreen();
+                return {
+                    pickingJobId: await PickingJobScreen.getPickingJobId(),
+                }
             });
         } else if (index != null) {
             return await test.step(`${NAME} - Start job by index ${index - 1}`, async () => {
                 await locateJobButtons({ index, qtyToDeliver, customerLocationId }).tap()
                 await PickingJobScreen.waitForScreen();
+                return {
+                    pickingJobId: await PickingJobScreen.getPickingJobId(),
+                }
             });
         } else {
             throw "No documentNo or index provided";
