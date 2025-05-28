@@ -81,9 +81,10 @@ public class MobileConfigCommand
 			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
 		}
 
-		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
+		MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
 		mobilePickingConfigRepository.save(newProfile);
 
+		newProfile = mobilePickingConfigRepository.getProfile(); // reload to make sure we are returning exactly what's in DB
 		return toJson(newProfile);
 	}
 

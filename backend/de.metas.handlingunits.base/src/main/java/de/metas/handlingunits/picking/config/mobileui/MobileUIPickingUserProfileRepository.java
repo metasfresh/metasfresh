@@ -221,6 +221,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
 		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
 		record.setIsPickingWithNewLU(from.isPickWithNewLU());
+		record.setIsShipOnCloseLU(from.isShipOnCloseLU());
 		record.setIsAllowNewTU(from.isAllowNewTU());
 		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
