@@ -68,7 +68,20 @@ test('Simple picking test', async ({ page }) => {
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: []
+                    }
+                }
+            }
+        }
+    });
+
+
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
@@ -77,6 +90,28 @@ test('Simple picking test', async ({ page }) => {
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
 
     await PickingJobScreen.complete();
+
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{
+                            qtyPicked: "12 PCE",
+                            qtyTUs: 3,
+                            qtyLUs: 1,
+                            processed: true,
+                            vhuId: 'vhu1',
+                            tu: 'tu1',
+                            lu: 'lu1',
+                            shipmentLineId: 'shipmentLineId1',
+                        }]
+                    }
+                }
+            }
+        }
+    });
+
 });
 
 // noinspection JSUnusedLocalSymbols
