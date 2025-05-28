@@ -147,7 +147,7 @@ public class C_OrderLine_StepDef
 							.map(attributeSetInstanceTable::getId)
 							.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
 
-					final OrderId orderId = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupIdIn(orderTable);
+					final OrderId orderId = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIdIn(orderTable);
 					orderLine.setC_Order_ID(orderId.getRepoId());
 
 					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)

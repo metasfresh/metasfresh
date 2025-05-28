@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
@@ -378,8 +379,8 @@ public class C_Order_StepDef
 
 			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
 			processInfoBuilder.setAD_Process_ID(processId.getRepoId());
-			processInfoBuilder.addParameter("DatePromised_From", Timestamp.from(Instant.now()));
-			processInfoBuilder.addParameter("DatePromised_To", Timestamp.from(Instant.now()));
+			processInfoBuilder.addParameter("DatePromised_From", SystemTime.asTimestamp());
+			processInfoBuilder.addParameter("DatePromised_To", SystemTime.asTimestamp());
 			processInfoBuilder.addParameter("C_BPartner_ID", bpartner.getC_BPartner_ID());
 			processInfoBuilder.addParameter("C_Order_ID", order.getC_Order_ID());
 			processInfoBuilder.addParameter("TypeOfPurchase", purchaseType);
@@ -400,16 +401,16 @@ public class C_Order_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String linkedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Link_Order_ID + ".Identifier");
-
+			final int linkedOrderId = orderTable.get(linkedOrderIdentifier).getC_Order_ID();
 			final I_C_Order purchaseOrder = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_Order.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
+					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, linkedOrderId)
 					.create()
 					.firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
-			assertThat(purchaseOrder).isNotNull();
+			assertThat(purchaseOrder).as("purchaseOrder for Link_Order_ID=%s; Identifier=%s", linkedOrderId, linkedOrderIdentifier).isNotNull();
 			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
 
 			final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
