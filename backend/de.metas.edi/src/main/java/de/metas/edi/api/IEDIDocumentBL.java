@@ -26,6 +26,7 @@ package de.metas.edi.api;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.service.ClientId;
 
 import de.metas.edi.model.I_C_Invoice;
@@ -47,6 +48,8 @@ public interface IEDIDocumentBL extends ISingletonService
 	 * @return true if document.IsEdiEnabled=Y, false otherwise
 	 */
 	boolean updateEdiEnabled(I_EDI_Document_Extension document);
+
+	void setEdiEnabled(@NonNull I_EDI_Document_Extension document, boolean isEdiEnabled);
 
 	List<Exception> isValidInvoice(I_C_Invoice invoice);
 
