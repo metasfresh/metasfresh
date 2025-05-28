@@ -224,11 +224,15 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}
 
-		if (Check.isEmpty(ediPartner.getEdiDesadvRecipientGLN(), true))
+		if (ediPartner.isEdiDesadvRecipient() && Check.isBlank(ediPartner.getEdiDesadvRecipientGLN()))
 		{
 			missingFields.add(I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
 		}
-
+		if (ediPartner.isEdiInvoicRecipient() && Check.isBlank(ediPartner.getEdiInvoicRecipientGLN()))
+		{
+			missingFields.add(I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN);
+		}
+		
 		final boolean checkForAggregationRule = !isPartOfInvoiceValidation; // if we validate for an already existing invoice we don't need to bother for the partner's aggregation rule
 		if (checkForAggregationRule && !hasValidInvoiceAggregation(ediPartner))
 		{
@@ -236,10 +240,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		}
 
 		// VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
-//		if (Check.isEmpty(ediPartner.getVATaxID(), true))
-//		{
-//			missingFields.add(de.metas.interfaces.I_C_BPartner.COLUMNNAME_VATaxID);
-//		}
 
 		if (!missingFields.isEmpty())
 		{
