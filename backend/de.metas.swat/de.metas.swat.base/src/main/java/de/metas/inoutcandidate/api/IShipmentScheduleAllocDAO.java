@@ -83,7 +83,6 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	/**
 	 * Retrieve all the schedules of the given InOut, based on the M_ShipmentSchedule_QtyPicked entries
 	 *
-	 * @param inout
 	 * @return the schedules if found, null otherwise.
 	 */
 	List<I_M_ShipmentSchedule> retrieveSchedulesForInOut(org.compiere.model.I_M_InOut inout);

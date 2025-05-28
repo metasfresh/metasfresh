@@ -28,7 +28,7 @@ public class AssertThat<T>
 		this.exceptionFactory = exceptionFactory;
 	}
 
-	void setExceptionCollector(final ExceptionCollector exceptionCollector)
+	void setExceptionCollector(@Nullable final ExceptionCollector exceptionCollector)
 	{
 		this.exceptionCollector = exceptionCollector;
 	}

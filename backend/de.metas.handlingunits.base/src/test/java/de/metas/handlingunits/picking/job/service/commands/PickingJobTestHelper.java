@@ -457,7 +457,7 @@ public class PickingJobTestHelper
 		return huQRCode;
 	}
 
-	public TestRecorder newTestRecorder()
+	public TestRecorder  newTestRecorder()
 	{
 		return new TestRecorder(huTracer, snapshotSerializer::toJson);
 	}
