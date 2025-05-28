@@ -31,7 +31,6 @@ Feature: EDI DESADV export via postgREST
       | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |
 
 
-  @ignore # note yet done making sure that the API's output is always the same (e.g. M_Inout.DocumentNo)
   @Id:S0468_010
   @from:cucumber
   Scenario: create a shipment and export it to JSON
@@ -121,125 +120,125 @@ Feature: EDI DESADV export via postgREST
   ]
 }
     """
-
     Then the metasfresh REST-API responds with
     """
-[ {
-    "metasfresh_DESADV" : {
-        "ShipmentDocumentNo": "@shipment_S0468_010_DocumentNo@",
-        "M_InOut_ID": @shipment_S0468_010_ID@,
-        "DateOrdered": "2025-04-17T00:00:00",
-        "POReference": "testReference",
-        "DatePromised": "2025-05-15T00:00:00",
-        "MovementDate": "2025-05-15T00:00:00",
-        "Buyer": {
-          "Name": "desadvReceiverName",
-          "Name2": null,
-          "Value": "desadvReceiverValue"
-        },
-        "Currency": {
-          "ISO_Code": "EUR",
-          "CurSymbol": "€"
-        },
-        "EDI_Desadv_ID": @d_1@,
-        "DeliveryViaRule": "P",
-        "Invoicee_Location": {
-          "GLN": "1234567890123",
-          "City": null,
-          "Postal": null,
-          "Address1": null,
-          "Address2": null,
-          "CountryCode": "DE"
-        },
-        "Packing": [
-          {
-            "SeqNo": 1,
-            "IPA_SSCC18": "012345670010000005",
-            "GTIN_PackingMaterial": "gtinPiItemProduct",
-            "M_HU_PackagingCode_Text": "ISO1",
-            "Line_Item": [
-              {
-                "Line": 10,
-                "QtyTU": 10,
-                "LotNumber": null,
-                "QtyCUsPerLU": 100,
-                "QtyCUsPerTU": 10,
-                "BestBeforeDate": null,
-                "EDI_DesadvLine": {
-                  "Product": {
-                    "UPC": null,
-                    "Name": "postgRESTExportProductName",
-                    "Value": "postgRESTExportProductValue",
-                    "GTIN_CU": "bPartnerProductGTIN",
-                    "GTIN_TU": null,
-                    "NetWeight": 0,
-                    "ProductNo": null,
-                    "Description": "postgRESTExportProductDescription",
-                    "GrossWeight": null,
-                    "GrossWeightUOM;": {
-                      "Name": null,
-                      "X12DE355": null
-                    }
-                  },
-                  "OrderLine": 10,
-                  "DesadvLine": 10,
-                  "QtyEntered": 100,
-                  "MovementQty": 100,
-                  "ShipmentLine": 10,
-                  "DesadvLineUOM": {
-                      "Name": "Stück",
-                      "X12DE355": "PCE"
-                  },
-                  "OrderDocumentNo": "0001",
-                  "OrderPOReference": "testReference",
-                  "EDI_DesadvLine_ID": 1000000
+[{
+    "metasfresh_DESADV": {
+      "Buyer": {
+        "Name": "desadvReceiverName",
+        "Name2": null,
+        "Value": "desadvReceiverValue"
+      },
+      "Packing": [
+        {
+          "SeqNo": 1,
+          "Line_Item": [
+            {
+              "Line": 10,
+              "QtyTU": 10,
+              "LotNumber": null,
+              "QtyCUsPerLU": 100,
+              "QtyCUsPerTU": 10,
+              "BestBeforeDate": null,
+              "EDI_DesadvLine": {
+                "Product": {
+                  "UPC": null,
+                  "Name": "postgRESTExportProductName",
+                  "Value": "postgRESTExportProductValue",
+                  "GTIN_CU": "bPartnerProductGTIN",
+                  "GTIN_TU": null,
+                  "NetWeight": 0,
+                  "ProductNo": null,
+                  "Description": "postgRESTExportProductDescription",
+                  "GrossWeight": null,
+                  "GrossWeightUOM;": {
+                    "Name": null,
+                    "X12DE355": null
+                  }
                 },
-                "GTIN_TU_PackingMaterial": "bPartnerProductGTIN",
-                "QtyCUsPerLU_InInvoiceUOM": 100,
-                "QtyCUsPerTU_InInvoiceUOM": 10,
-                "M_HU_PackagingCode_TU_Text": "ISO1"
-              }
-            ]
-          }
-        ],
-        "DeliveryParty": {
-          "Name": "desadvReceiverName",
-          "Name2": null,
-          "Value": "desadvReceiverValue",
-        },
-        "UltimateConsignee": {
-          "Name": "desadvReceiverName",
-          "Name2": null,
-          "Value": "desadvReceiverValue"
-        },
-        "UltimateConsignee_Location": {
-          "GLN": "1234567890123",
-          "City": null,
-          "Postal": null,
-          "Address1": null,
-          "Address2": null,
-          "CountryCode": "DE"
-        },
-        "DeliveryParty_Location": {
-          "GLN": "1234567890123",
-          "City": null,
-          "Postal": null,
-          "Address1": null,
-          "Address2": null,
-          "CountryCode": "DE"
-        },
-        "InvoicableQtyBasedOn": "Nominal",
-        "Buyer_Location": {
-          "GLN": "1234567890123",
-          "City": null,
-          "Postal": null,
-          "Address1": null,
-          "Address2": null,
-          "CountryCode": "DE"
-        },
-        "EDI_Exp_DesadvLineWithNoPack": []
+                "OrderLine": 10,
+                "DesadvLine": 10,
+                "QtyEntered": 100,
+                "MovementQty": 100,
+                "ShipmentLine": 10,
+                "DesadvLineUOM": {
+                  "Name": "Stück",
+                  "X12DE355": "PCE"
+                },
+                "OrderDocumentNo": "0001",
+                "OrderPOReference": "testReference",
+                "EDI_DesadvLine_ID": 1000000
+              },
+              "GTIN_TU_PackingMaterial": "bPartnerProductGTIN",
+              "QtyCUsPerLU_InInvoiceUOM": 100,
+              "QtyCUsPerTU_InInvoiceUOM": 10,
+              "M_HU_PackagingCode_TU_Text": "ISO1"
+            }
+          ],
+          "IPA_SSCC18": "012345670010000005",
+          "GTIN_PackingMaterial": "gtinPiItemProduct",
+          "M_HU_PackagingCode_Text": "ISO1"
+        }
+      ],
+      "Currency": {
+        "ISO_Code": "EUR",
+        "CurSymbol": "€"
+      },
+      "M_InOut_ID": "@shipment_S0468_010_ID@",
+      "DateOrdered": "2025-04-17T00:00:00",
+      "POReference": "testReference",
+      "DatePromised": "2025-05-15T00:00:00",
+      "MovementDate": "2025-05-15T00:00:00",
+      "DeliveryParty": {
+        "Name": "desadvReceiverName",
+        "Name2": null,
+        "Value": "desadvReceiverValue"
+      },
+      "EDI_Desadv_ID": "@d_1@",
+      "Buyer_Location": {
+        "GLN": "1234567890123",
+        "City": null,
+        "Postal": null,
+        "Address1": null,
+        "Address2": null,
+        "CountryCode": "DE"
+      },
+      "DeliveryViaRule": "P",
+      "Invoicee_Location": {
+        "GLN": "1234567890123",
+        "City": null,
+        "Postal": null,
+        "Address1": null,
+        "Address2": null,
+        "CountryCode": "DE"
+      },
+      "UltimateConsignee": {
+        "Name": "desadvReceiverName",
+        "Name2": null,
+        "Value": "desadvReceiverValue"
+      },
+      "ShipmentDocumentNo": "@shipment_S0468_010_DocumentNo@",
+      "InvoicableQtyBasedOn": "Nominal",
+      "DeliveryParty_Location": {
+        "GLN": "1234567890123",
+        "City": null,
+        "Postal": null,
+        "Address1": null,
+        "Address2": null,
+        "CountryCode": "DE"
+      },
+      "DesadvLineWithNoPacking": [],
+      "UltimateConsignee_Location": {
+        "GLN": "1234567890123",
+        "City": null,
+        "Postal": null,
+        "Address1": null,
+        "Address2": null,
+        "CountryCode": "DE"
       }
-  } ]
+    }
+  }
+]
     """
 
     And after not more than 60s, EDI_Desadv records have the following export status

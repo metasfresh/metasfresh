@@ -28,7 +28,7 @@ BEGIN
                                'QtyCUsPerLU_InInvoiceUOM', edpi_lat.qtycusperlu_ininvoiceuom,
                                'QtyCUsPerTU_InInvoiceUOM', edpi_lat.qtycuspertu_ininvoiceuom,
                                'QtyTU', edpi_lat.qtytu,
-                               'EDI_DesadvLine_ID', COALESCE(line_obj.desadv_line_object_json, '{}'::jsonb),
+                               'DesadvLine', COALESCE(line_obj.desadv_line_object_json, '{}'::jsonb),
                                'M_HU_PackagingCode_TU_Text', pc_lu.packagingcode,
                                'Line', edpi_lat.line,
                                'GTIN_TU_PackingMaterial', edpi_lat.gtin_tu_packingmaterial

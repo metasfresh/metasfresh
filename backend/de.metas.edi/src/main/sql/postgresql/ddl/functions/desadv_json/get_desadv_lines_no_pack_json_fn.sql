@@ -30,7 +30,7 @@ BEGIN
     SELECT
         jsonb_agg(
                 jsonb_build_object(
-                        'EDI_DesadvLine', COALESCE(line_obj_no_pack.desadv_line_object_json, '{}'::jsonb)
+                        'DesadvLine', COALESCE(line_obj_no_pack.desadv_line_object_json, '{}'::jsonb)
                 ) ORDER BY edl_lat.line
         )
     INTO v_lines_no_pack_json
