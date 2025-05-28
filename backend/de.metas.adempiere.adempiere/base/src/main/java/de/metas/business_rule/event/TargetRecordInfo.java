@@ -22,8 +22,20 @@
 
 package de.metas.business_rule.event;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
+import javax.annotation.Nullable;
+
+@Value
+@Builder
 public class TargetRecordInfo
 {
-	// TODO
+	@NonNull TableRecordReference targetRecordRef;
+	@Nullable String documentNo;
+	@Nullable String value;
+	@Nullable String name;
+
 }

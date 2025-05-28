@@ -26,11 +26,13 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -43,20 +45,53 @@ import java.util.stream.Collectors;
 @Builder
 public class BusinessRuleEventProcessorCommand
 {
-	@NonNull private static final String LOGGER_MODULE = "event-processor";
+	@NonNull
+	private static final String LOGGER_MODULE = "event-processor";
 
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
-	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	@NonNull private final BusinessRuleRepository ruleRepository;
-	@NonNull private final BusinessRuleEventRepository eventRepository;
-	@NonNull private final RecordWarningRepository recordWarningRepository;
-	@NonNull private final BusinessRuleLogger logger;
-	@NonNull private final BusinessRuleRecordMatcher recordMatcher;
+	@NonNull
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull
+	private final IUserBL userBL = Services.get(IUserBL.class);
+	@NonNull
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	@NonNull
+	private final BusinessRuleRepository ruleRepository;
+	@NonNull
+	private final BusinessRuleEventRepository eventRepository;
+	@NonNull
+	private final RecordWarningRepository recordWarningRepository;
+	@NonNull
+	private final BusinessRuleLogger logger;
+	@NonNull
+	private final BusinessRuleRecordMatcher recordMatcher;
 
-	@NonNull private final QueryLimit limit;
-	@Nullable private BusinessRulesCollection rules;
+	@NonNull
+	private final QueryLimit limit;
+	@Nullable
+	private BusinessRulesCollection rules;
+
+	@Nullable
+	private static Integer getRecordIdFromSql(final String sql, final int sourceRecordId, final String keyColumnName)
+	{
+		final Integer targetRecordId = DB.retrieveFirstRowOrNull(sql, Collections.singletonList(sourceRecordId), rs -> {
+			final int intValue = rs.getInt(1);
+			return rs.wasNull() ? null : intValue;
+		});
+
+		if (targetRecordId == null)
+		{
+			return null;
+		}
+
+		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName);
+		if (targetRecordId < firstValidId)
+		{
+			return null;
+		}
+		return targetRecordId;
+	}
 
 	public void execute()
 	{
@@ -136,8 +171,11 @@ public class BusinessRuleEventProcessorCommand
 		logger.debug("Processing event: {}", event);
 
 		final BusinessRuleStopwatch stopwatch = logger.newStopwatch();
-		// TODO targetRecordInfo
-		final TableRecordReference targetRecordRef = retrieveTargetRecordInfo(event);
+
+		final TargetRecordInfo targetRecordInfo = retrieveTargetRecordInfo(event);
+		
+		final TableRecordReference targetRecordRef = targetRecordInfo.getTargetRecordRef();
+		
 		logger.setTargetRecordRef(targetRecordRef);
 		logger.debug(stopwatch, "Retrieved target record: {}", targetRecordRef);
 		if (targetRecordRef == null)
@@ -179,21 +217,46 @@ public class BusinessRuleEventProcessorCommand
 			try (final IAutoCloseable ignored = Env.switchContext(tempCtx))
 			{
 				final AdMessageKey messageKey = getAdMessageKey(rule);
-				final Object[] parameters ; // TODO
+
+				final StringBuilder msgDetails = new StringBuilder();
+				msgDetails.append(msgBL.translate(Env.getADLanguageOrBaseLanguage(),targetRecordRef.getTableName())).append(" ");
+
+				if (targetRecordInfo.getDocumentNo() != null)
+				{
+					msgDetails.append(targetRecordInfo.getDocumentNo()).append(" ");
+				}
+				if (targetRecordInfo.getValue() != null)
+				{
+					msgDetails.append(targetRecordInfo.getValue()).append(" ");
+				}
+				if (targetRecordInfo.getName() != null)
+				{
+					msgDetails.append(targetRecordInfo.getName());
+				}
+
+				final String msg = msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey);
+
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
 						.businessRuleId(rule.getId())
-						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey /*, TODO parameters*/))
+						.message(msg)
 						.userId(event.getTriggeringUserId())
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
+
+				final StringBuilder notificationStringBuilder = new StringBuilder();
+
+				final String notificationMessage = notificationStringBuilder
+						.append(msg)
+						.append(" ")
+						.append(msgDetails)
+						.toString();
 
 				final RecordWarningNoticeRequest recordWarningNoticeRequest = RecordWarningNoticeRequest.builder()
 						.userId(event.getTriggeringUserId())
 						.recordWarningId(recordWarningId)
 						.notificationSeverity(NotificationSeverity.Warning)
-						.messageKey(messageKey)
-						// TODO .contentADMessageParam(targetRecordInfo ....)
+						.message(notificationMessage)
 						.build();
 
 				BusinessRuleEventNotificationProducer.newInstance().createNotice(recordWarningNoticeRequest);
@@ -205,7 +268,7 @@ public class BusinessRuleEventProcessorCommand
 	@Nullable
 	// TODO  Make it return TableRecordInfo
 	//  ask the POInfo if the DOcumentNo, Value, Name columns exists and fetch what we have. see https://github.com/metasfresh/metasfresh/pull/20871#discussion_r2107373961
-	private TableRecordReference  retrieveTargetRecordInfo (@NonNull final BusinessRuleEvent event)
+	private TableRecordReference retrieveTargetRecord(@NonNull final BusinessRuleEvent event)
 	{
 		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
 		final BusinessRuleTrigger trigger = rule.getTriggerById(event.getTriggerId());
@@ -221,24 +284,71 @@ public class BusinessRuleEventProcessorCommand
 	}
 
 	@Nullable
-	private static Integer getRecordIdFromSql(final String sql, final int sourceRecordId, final String keyColumnName)
+	// TODO  Make it return TableRecordInfo
+	//  ask the POInfo if the DOcumentNo, Value, Name columns exists and fetch what we have. see https://github.com/metasfresh/metasfresh/pull/20871#discussion_r2107373961
+	private TargetRecordInfo retrieveTargetRecordInfo(@NonNull final BusinessRuleEvent event)
 	{
-		final Integer targetRecordId = DB.retrieveFirstRowOrNull(sql, Collections.singletonList(sourceRecordId), rs -> {
-			final int intValue = rs.getInt(1);
-			return rs.wasNull() ? null : intValue;
-		});
+		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
+		final BusinessRuleTrigger trigger = rule.getTriggerById(event.getTriggerId());
 
+		final AdTableId sourceTableId = event.getSourceRecordRef().getAdTableId();
+		final String sourceTableName = TableIdsCache.instance.getTableName(sourceTableId);
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
+		final int sourceRecordId = event.getSourceRecordRef().getRecord_ID();
+		final String sql = "SELECT " + trigger.getTargetRecordMappingSQL() + " FROM " + sourceTableName + " WHERE " + keyColumnName + "=?";
+		final Integer targetRecordId = getRecordIdFromSql(sql, sourceRecordId, keyColumnName);
 		if (targetRecordId == null)
 		{
 			return null;
 		}
 
-		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName);
-		if (targetRecordId < firstValidId)
+		final AdTableId targetTableId = rule.getAdTableId();
+		final String targetTableName = TableIdsCache.instance.getTableName(targetTableId);
+
+		return createTargetRecordInfo(targetTableId, targetRecordId, targetTableName, keyColumnName);
+	}
+
+	private static TargetRecordInfo createTargetRecordInfo(@NonNull final AdTableId targetTableId, @NonNull final Integer targetRecordId, @NonNull final String targetTableName, @NonNull final String keyColumnName)
+	{
+		final TargetRecordInfo.TargetRecordInfoBuilder targetRecordInfoBuilder = TargetRecordInfo.builder()
+				.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId));
+
+		final POInfo targetPOInfo = POInfo.getPOInfo(targetTableName);
+
+		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
 		{
-			return null;
+			final String documentNoSQL = "SELECT " + InterfaceWrapperHelper.COLUMNNAME_DocumentNo + " FROM " + targetTableName + " WHERE " + keyColumnName + "=?";
+
+			final String documentNo = DB.getSQLValueStringEx(ITrx.TRXNAME_None, documentNoSQL, targetRecordId);
+			if (documentNo != null)
+			{
+				targetRecordInfoBuilder.documentNo(documentNo);
+			}
 		}
-		return targetRecordId;
+
+		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Value))
+		{
+			final String valueSQL = "SELECT " + InterfaceWrapperHelper.COLUMNNAME_Value + " FROM " + targetTableName + " WHERE " + keyColumnName + "=?";
+
+			final String value = DB.getSQLValueStringEx(ITrx.TRXNAME_None, valueSQL, targetRecordId);
+			if (value != null)
+			{
+				targetRecordInfoBuilder.value(value);
+			}
+		}
+
+		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Name))
+		{
+			final String nameSQL = "SELECT " + InterfaceWrapperHelper.COLUMNNAME_Name + " FROM " + targetTableName + " WHERE " + keyColumnName + "=?";
+
+			final String name = DB.getSQLValueStringEx(ITrx.TRXNAME_None, nameSQL, targetRecordId);
+			if (name != null)
+			{
+				targetRecordInfoBuilder.name(name);
+			}
+		}
+		return targetRecordInfoBuilder
+				.build();
 	}
 
 	private boolean isPreconditionsMet(

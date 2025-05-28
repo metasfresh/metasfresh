@@ -100,7 +100,7 @@ public class NotificationRepository implements INotificationRepository
 		{
 			adMessageId = Services.get(IMsgBL.class).getIdByAdMessage(detailADMessage).orElse(null);
 		}
-		if (adMessageId == null)
+		if (adMessageId == null && !request.isNoDefaultADMessage())
 		{
 			adMessageId = Services.get(IMsgBL.class).getIdByAdMessage(DEFAULT_AD_MESSAGE).orElse(null);
 		}

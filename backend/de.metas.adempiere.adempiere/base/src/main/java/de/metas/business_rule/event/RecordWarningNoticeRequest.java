@@ -43,7 +43,5 @@ public class RecordWarningNoticeRequest
 	@NonNull UserId userId;
 	@NonNull RecordWarningId recordWarningId;
 	@NonNull NotificationSeverity notificationSeverity;
-	@NonNull AdMessageKey messageKey;
-	@Singular @Nullable	List<Object> contentADMessageParams;
-
+	@NonNull String message;
 }

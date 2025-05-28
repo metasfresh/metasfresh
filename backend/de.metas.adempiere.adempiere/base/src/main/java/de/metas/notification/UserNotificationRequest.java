@@ -84,6 +84,8 @@ public class UserNotificationRequest
 	// Options
 	boolean noEmail;
 
+	boolean noDefaultADMessage;
+
 	@Builder(toBuilder = true)
 	private UserNotificationRequest(
 			final Recipient recipient,
@@ -106,6 +108,7 @@ public class UserNotificationRequest
 			@Singular final List<Resource> attachments,
 			// Options:
 			final boolean noEmail,
+			final boolean noDefaultADMessage,
 			@Nullable final NotificationSeverity notificationSeverity)
 	{
 		this.notificationsConfig = notificationsConfig;
@@ -148,6 +151,7 @@ public class UserNotificationRequest
 		this.attachments = ImmutableList.copyOf(attachments);
 
 		this.noEmail = noEmail;
+		this.noDefaultADMessage = noDefaultADMessage;
 	}
 
 	private static List<Object> copyADMessageParams(final List<Object> params)
