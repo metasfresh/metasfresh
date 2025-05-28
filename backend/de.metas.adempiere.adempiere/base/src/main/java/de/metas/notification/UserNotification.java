@@ -104,7 +104,7 @@ public class UserNotification
 			@JsonProperty("recipientUserId") @NonNull final Integer recipientUserId,
 			//
 			@JsonProperty("detailPlain") final String detailPlain,
-			@JsonProperty("detailADMessagePrefix") @NonNull final NotificationSeverity notificationSeverity,
+			@JsonProperty("severity") @NonNull final NotificationSeverity notificationSeverity,
 			@JsonProperty("detailADMessage") final String detailADMessage,
 			@JsonProperty("detailADMessageParams") @Singular final List<Object> detailADMessageParams,
 			//
@@ -178,7 +178,6 @@ public class UserNotification
 		{
 			detailBuf.append(detailPlain.trim());
 		}
-
 
 		// Translate, parse and add detail (AD_Message).
 		if (!Check.isEmpty(detailADMessage, true))

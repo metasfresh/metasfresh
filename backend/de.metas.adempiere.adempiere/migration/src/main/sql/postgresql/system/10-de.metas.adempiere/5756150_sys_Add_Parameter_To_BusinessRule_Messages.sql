@@ -13,8 +13,6 @@ WHERE EXISTS (SELECT 1
   AND m.MsgText NOT LIKE '% {}'
 ;
 
-;
-
 UPDATE AD_Message_Trl mt
 SET MsgText = CONCAT(mt.MsgText, ' {}')
 WHERE EXISTS (SELECT 1

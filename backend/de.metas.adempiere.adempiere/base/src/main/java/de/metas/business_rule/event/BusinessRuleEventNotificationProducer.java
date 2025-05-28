@@ -51,7 +51,7 @@ public final class BusinessRuleEventNotificationProducer
 			.type(Type.DISTRIBUTED)
 			.build();
 
-	public void createNotice(final RecordWarningNoticeRequest recordWarningNoticeRequest)
+	public void createNotice(@NonNull final RecordWarningNoticeRequest recordWarningNoticeRequest)
 	{
 		notificationBL.send(
 				UserNotificationRequest.builder()

@@ -186,12 +186,11 @@ public class BusinessRuleEventProcessorCommand
 				final AdMessageKey messageKey = getAdMessageKey(rule);
 
 				final String availableRecordData = getAvailableRecordData(targetRecordInfo);
-				final String msg = msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, new Object[] { availableRecordData });
 
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
 						.businessRuleId(rule.getId())
-						.message(msg)
+						.message( msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, new Object[] { availableRecordData }))
 						.userId(event.getTriggeringUserId())
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");

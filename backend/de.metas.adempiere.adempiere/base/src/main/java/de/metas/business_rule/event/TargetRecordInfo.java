@@ -37,5 +37,4 @@ public class TargetRecordInfo
 	@Nullable String documentNo;
 	@Nullable String value;
 	@Nullable String name;
-
 }

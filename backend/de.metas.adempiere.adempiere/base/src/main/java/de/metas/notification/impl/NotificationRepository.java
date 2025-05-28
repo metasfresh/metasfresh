@@ -366,7 +366,7 @@ public class NotificationRepository implements INotificationRepository
 	}
 
 	@Override
-	public void deleteByTableRecordRef(final @NonNull UserId adUserId, final @NonNull TableRecordReference tableRecordReference)
+	public void deleteByUserAndTableRecordRef(final @NonNull UserId adUserId, final @NonNull TableRecordReference tableRecordReference)
 	{
 		retrieveNotesByUserId(adUserId)
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
