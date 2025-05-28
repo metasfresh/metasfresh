@@ -177,7 +177,7 @@ class AssertPickingExpectationsCommand
 			//noinspection BusyWait
 			Thread.sleep(1000); // 1s
 
-			InterfaceWrapperHelper.refresh(notProcessed);
+			InterfaceWrapperHelper.refreshAll(notProcessed);
 			notProcessed.removeIf(I_M_ShipmentSchedule_QtyPicked::isProcessed);
 		}
 		stopwatch.stop();
