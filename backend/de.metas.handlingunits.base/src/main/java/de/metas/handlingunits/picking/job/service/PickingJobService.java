@@ -20,6 +20,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -44,6 +45,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
@@ -51,7 +53,6 @@ import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -100,7 +101,7 @@ public class PickingJobService
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
 	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
-	@NonNull private final IShipmentService shipmentService;
+	@NonNull private final PickingShipmentService shipmentService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final InventoryService inventoryService;
@@ -349,7 +350,7 @@ public class PickingJobService
 	}
 
 	/**
-	 * @return true, if all picking jobs have been removed form the slot, false otherwise
+	 * @return true, if all picking jobs have been removed from the slot, false otherwise
 	 */
 	public boolean clearAssignmentsForSlot(@NonNull final PickingSlotId slotId, final boolean forceRemoveForOngoingJobs)
 	{
@@ -388,7 +389,7 @@ public class PickingJobService
 		}
 
 		//
-		// Unassign it from current user
+		// Unassign it from the current user
 		job = job.withLockedBy(null);
 
 		pickingJobRepository.save(job);
@@ -560,23 +561,30 @@ public class PickingJobService
 
 	public PickingJob closeAllLUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
-		return closeLUPickingTargets(pickingJob, true, true, null);
+		return closeLUPickingTargets(pickingJob, true, true, null, false);
 	}
 
 	public PickingJob closeLUPickingTarget(
-			@NonNull final PickingJob pickingJob0,
+			@NonNull final PickingJob pickingJob,
 			@Nullable final PickingJobLineId lineId)
 	{
 		final boolean isCloseOnHeader = lineId == null;
 		final boolean isCloseOnLines = lineId != null;
-		return closeLUPickingTargets(pickingJob0, isCloseOnHeader, isCloseOnLines, lineId);
+		final PickingJobOptions pickingJobOptions = mobileUIPickingUserProfileRepository.getPickingJobOptions(pickingJob.getCustomerId());
+		return closeLUPickingTargets(
+				pickingJob,
+				isCloseOnHeader,
+				isCloseOnLines,
+				lineId,
+				pickingJobOptions.isShipOnCloseLU());
 	}
 
 	private PickingJob closeLUPickingTargets(
 			@NonNull final PickingJob pickingJob,
 			boolean isCloseOnHeader,
 			boolean isCloseOnLines,
-			@Nullable PickingJobLineId onlyLineId)
+			@Nullable PickingJobLineId onlyLineId,
+			boolean isShipLUs)
 	{
 		final LinkedHashSet<HuId> closedLUIds = new LinkedHashSet<>();
 		final PickingJob pickingJobChanged = pickingJob.withClosedLuPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedLUIds::add);
@@ -587,6 +595,10 @@ public class PickingJobService
 		}
 
 		printLULabels(closedLUIds);
+		if (isShipLUs && !closedLUIds.isEmpty())
+		{
+			shipmentService.createShipmentForLUs(pickingJobChanged, closedLUIds);
+		}
 
 		return pickingJobChanged;
 	}

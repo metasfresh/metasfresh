@@ -42,6 +42,7 @@ import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.TestRecorder;
+import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
@@ -56,7 +57,6 @@ import de.metas.handlingunits.report.labels.HULabelConfigService;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
@@ -180,7 +180,7 @@ public class PickingJobTestHelper
 						profileRepository
 				),
 				pickingConfigRepo,
-				ShipmentService.getInstance(),
+				PickingShipmentService.newInstanceForUnitTesting(),
 				huQRCodeService,
 				new HULabelService(
 						new HULabelConfigService(new HULabelConfigRepository()),
@@ -457,7 +457,7 @@ public class PickingJobTestHelper
 		return huQRCode;
 	}
 
-	public TestRecorder newTestRecorder()
+	public TestRecorder  newTestRecorder()
 	{
 		return new TestRecorder(huTracer, snapshotSerializer::toJson);
 	}

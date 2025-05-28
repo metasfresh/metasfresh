@@ -27,19 +27,20 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.apache.commons.collections4.IteratorUtils;
-import org.junit.Assert;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SuppressWarnings("UnusedReturnValue")
 public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation<Object>
 {
 	public static ShipmentScheduleQtyPickedExpectations newInstance()
@@ -63,9 +64,6 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 
 	/**
 	 * Asserts only the expectations for this instance's included shipment schedule. You might rather want to call {@link #assertExpected(String)}.
-	 *
-	 * @param message
-	 * @return
 	 */
 	public ShipmentScheduleQtyPickedExpectations assertExpected_ShipmentSchedule(final String message)
 	{
@@ -80,7 +78,8 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 
 		if (qtyPicked != null)
 		{
-			final BigDecimal qtyPickedActual = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule);
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+			final BigDecimal qtyPickedActual = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentScheduleId);
 
 			assertEquals(prefix + "QtyPicked", qtyPicked, qtyPickedActual);
 		}
@@ -101,7 +100,7 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 		int index = 0;
 		for (final ShipmentScheduleQtyPickedExpectation<ShipmentScheduleQtyPickedExpectations> expectation : expectations)
 		{
-			expectation.assertExpected("" + message + " (index=" + index + ")");
+			expectation.assertExpected(message + " (index=" + index + ")");
 			index++;
 		}
 
@@ -112,11 +111,11 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 	{
 		assertExpected_ShipmentSchedule(message);
 
-		Assert.assertNotNull(message + "qtyPickedRecords not null", qtyPickedRecords);
+		assertThat(qtyPickedRecords).as(message + "qtyPickedRecords not null").isNotNull();
 
 		final int count = qtyPickedRecords.size();
 		final int expectedCount = expectations.size();
-		Assert.assertEquals(message + " records count", expectedCount, count);
+		assertThat(count).as(message + " records count").isEqualTo(expectedCount);
 
 		for (int i = 0; i < count; i++)
 		{
@@ -133,7 +132,8 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 	{
 		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
 
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class);
 
 		return assertExpected(message, qtyPickedRecords);
 	}
@@ -142,12 +142,12 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 			final String message,
 			final List<ShipmentScheduleWithHU> candidates)
 	{
-		Assert.assertNotNull(message + " candidates not null", candidates);
+		assertThat(candidates).as(message + " candidates not null").isNotNull();
 
 		final int count = candidates.size();
 		final int expectedCount = expectations.size();
 
-		Assert.assertEquals(message + " lines count", expectedCount, count);
+		assertThat(count).as(message + " lines count").isEqualTo(expectedCount);
 
 		for (int i = 0; i < count; i++)
 		{
@@ -160,11 +160,12 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 		return this;
 	}
 
+	@SuppressWarnings("unused")
 	public ShipmentScheduleQtyPickedExpectations assertExpected_ShipmentScheduleWithHUs(
 			final String message,
 			final Iterator<ShipmentScheduleWithHU> candidates)
 	{
-		Assert.assertNotNull(message + " candidates not null", candidates);
+		assertThat(candidates).as(message + " candidates not null").isNotNull();
 
 		final List<ShipmentScheduleWithHU> candidatesList = IteratorUtils.toList(candidates);
 		return assertExpected_ShipmentScheduleWithHUs(message, candidatesList);

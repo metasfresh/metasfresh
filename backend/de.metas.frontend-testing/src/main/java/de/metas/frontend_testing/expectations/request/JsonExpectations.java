@@ -6,7 +6,6 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
 
 @Value
@@ -16,6 +15,6 @@ public class JsonExpectations
 {
 	@Nullable JsonCreateMasterdataResponse masterdata;
 
-	@Nullable List<JsonPickingExpectation> pickings;
+	@Nullable Map<String, JsonPickingExpectation> pickings;
 	@Nullable Map<String, JsonHUExpectation> hus;
 }
