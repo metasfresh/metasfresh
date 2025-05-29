@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.qualitymgmt
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -28,19 +28,22 @@ import org.compiere.model.I_QM_Analysis_Report;
 import org.springframework.stereotype.Component;
 
 @Component
-public class QMAnalysisReportDocumentHandlerProvider  implements DocumentHandlerProvider
-{
+public class QMAnalysisReportDocumentHandlerProvider implements DocumentHandlerProvider {
+
+	private final QMAnalysisReportDocumentHandler handler;
+
+	public QMAnalysisReportDocumentHandlerProvider(QMAnalysisReportDocumentHandler handler) {
+		this.handler = handler;
+	}
 
 	@Override
-	public String getHandledTableName()
-	{
+	public String getHandledTableName() {
 		return I_QM_Analysis_Report.Table_Name;
 	}
 
 	@Override
-	public DocumentHandler provideForDocument(final Object model)
-	{
-		return new QMAnalysisReportDocumentHandler();
+	public DocumentHandler provideForDocument(final Object model) {
+		return handler;
 	}
-
 }
+
