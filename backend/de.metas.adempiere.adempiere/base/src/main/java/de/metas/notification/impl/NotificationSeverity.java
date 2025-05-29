@@ -22,6 +22,9 @@
 
 package de.metas.notification.impl;
 
+import de.metas.ad_reference.ReferenceId;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -37,6 +40,8 @@ public enum NotificationSeverity implements ReferenceListAwareEnum
 	Warning(X_AD_Note.NOTIFICATIONSEVERITY_Warning),
 	Error(X_AD_Note.NOTIFICATIONSEVERITY_Error);
 
+	public static final ReferenceId AD_Reference_ID = ReferenceId.ofRepoId(X_AD_Note.NOTIFICATIONSEVERITY_AD_Reference_ID);
+
 	@NonNull private static final ReferenceListAwareEnums.ValuesIndex<NotificationSeverity> index = ReferenceListAwareEnums.index(values());
 
 	@NonNull private final String code;
@@ -51,4 +56,10 @@ public enum NotificationSeverity implements ReferenceListAwareEnum
 	{
 		return this == Notice;
 	}
+
+	public ITranslatableString getNameTrl()
+	{
+		return TranslatableStrings.adRefList(AD_Reference_ID, code);
+	}
+
 }

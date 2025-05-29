@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.notification.impl.NotificationSeverity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -20,7 +19,6 @@ import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.X_AD_Note;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -169,7 +167,7 @@ public class UserNotification
 
 		if(!severity.isNotice())
 		{
-			final String notificationSeverity = TranslatableStrings.adRefList(X_AD_Note.NOTIFICATIONSEVERITY_AD_Reference_ID, getSeverity().getCode()).translate(adLanguage);
+			final String notificationSeverity = getSeverity().getNameTrl().translate(adLanguage);
 			detailBuf.append(notificationSeverity).append(":");
 		}
 
