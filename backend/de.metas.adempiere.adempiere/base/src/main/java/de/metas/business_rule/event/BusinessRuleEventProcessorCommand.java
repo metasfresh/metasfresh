@@ -248,12 +248,6 @@ public class BusinessRuleEventProcessorCommand
 
 		sql.append(" FROM ").append(sourceTableName).append(" WHERE ").append(keyColumnName).append("=?");
 
-		final AdTableId targetTableId = rule.getAdTableId();
-		return loadTargetRecordInfoFromSQL(sql, sourceRecordId, keyColumnName, targetTableId);
-	}
-
-	private static TargetRecordInfo loadTargetRecordInfoFromSQL(@NonNull final StringBuilder sql, final int sourceRecordId, @NonNull final String keyColumnName, @NonNull final AdTableId targetTableId)
-	{
 		return DB.retrieveFirstRowOrNull(sql.toString(), Collections.singletonList(sourceRecordId), rs -> {
 			final int targetRecordId = rs.getInt(1);
 			final String documentSummary = rs.getString(2);
@@ -268,7 +262,7 @@ public class BusinessRuleEventProcessorCommand
 				return null;
 			}
 			return TargetRecordInfo.builder()
-					.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId))
+					.targetRecordRef(TableRecordReference.of(rule.getAdTableId(), targetRecordId))
 					.documentSummary(Check.isEmpty(documentSummary, true) ? " " + targetRecordId : documentSummary)
 					.build();
 		});
