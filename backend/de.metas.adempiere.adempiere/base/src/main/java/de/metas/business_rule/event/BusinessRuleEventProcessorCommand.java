@@ -248,17 +248,9 @@ public class BusinessRuleEventProcessorCommand
 			sql.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_Name);
 		}
 
-		sql.append(" FROM ").append(targetTableName).append(" WHERE ").append(keyColumnName).append("=?");
+		sql.append(" FROM ").append(sourceTableName).append(" WHERE ").append(keyColumnName).append("=?");
 
-
-		return getTargetRecordInfoFromSql(sql.toString(), sourceRecordId, keyColumnName, targetTableId);
-
-	}
-
-	@Nullable
-	private static TargetRecordInfo getTargetRecordInfoFromSql(final String sql, final int sourceRecordId, final String keyColumnName, final AdTableId targetTableId)
-	{
-		return DB.retrieveFirstRowOrNull(sql, Collections.singletonList(sourceRecordId), rs -> {
+		return DB.retrieveFirstRowOrNull(sql.toString(), Collections.singletonList(sourceRecordId), rs -> {
 			final int targetRecordId = rs.getInt(1);
 			final String documentSummary = rs.getString(2);
 			if (rs.wasNull() || targetRecordId <= 0)
@@ -273,7 +265,7 @@ public class BusinessRuleEventProcessorCommand
 			}
 			return TargetRecordInfo.builder()
 					.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId))
-					.documentSummary(Check.isEmpty(documentSummary, true) ?  " " + targetRecordId : documentSummary )
+					.documentSummary(Check.isEmpty(documentSummary, true) ? " " + targetRecordId : documentSummary)
 					.build();
 		});
 	}
