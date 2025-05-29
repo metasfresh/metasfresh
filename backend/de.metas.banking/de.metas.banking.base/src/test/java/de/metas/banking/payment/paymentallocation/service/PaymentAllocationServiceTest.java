@@ -2,7 +2,7 @@
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,7 +26,6 @@ import de.metas.acct.GLCategoryId;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
-import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -451,7 +450,7 @@ public class PaymentAllocationServiceTest
 			@NonNull final SOTrx soTrx)
 	{
 		final boolean creditMemo = isCreditMemo(invoice);
-		final InvoiceAmtMultiplier amtMultiplier = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(soTrx, creditMemo);
+		final InvoiceAmtMultiplier amtMultiplier = InvoiceAmtMultiplier.create(soTrx, creditMemo, false);
 
 		return PaymentAllocationPayableItem.builder()
 				.amtMultiplier(amtMultiplier)
@@ -468,7 +467,6 @@ public class PaymentAllocationServiceTest
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(soTrx)
 				.dateInvoiced(LocalDate.now())
-				.invoiceIsCreditMemo(creditMemo)
 				.build();
 	}
 
@@ -566,7 +564,7 @@ public class PaymentAllocationServiceTest
 	@Test
 	public void checkTestsAreUsingSameInvoiceAmtMultiplierAsRealLife()
 	{
-		final InvoiceAmtMultiplier multiplierInRealLife = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(SOTrx.SALES, false);
+		final InvoiceAmtMultiplier multiplierInRealLife = InvoiceAmtMultiplier.create(SOTrx.SALES, false, false);
 
 		//noinspection AssertThatBooleanCondition
 		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);

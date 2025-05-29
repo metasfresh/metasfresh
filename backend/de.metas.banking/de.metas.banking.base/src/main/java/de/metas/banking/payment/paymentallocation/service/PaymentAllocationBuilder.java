@@ -162,7 +162,7 @@ public class PaymentAllocationBuilder
 			ImmutableList<AllocationLineCandidate> candidatesEffective = ImmutableList.copyOf(candidates);
 
 			candidatesEffective = candidatesEffective.stream()
-					.map(this::processInvoiceProcessingFeeCandidate)
+					.map(this::createServiceFeeInvoiceIfNeeded)
 					.collect(ImmutableList.toImmutableList());
 
 			return candidatesSaver.save(candidatesEffective);
@@ -177,7 +177,7 @@ public class PaymentAllocationBuilder
 	 * If the given candidate has type={@link AllocationLineCandidateType#InvoiceProcessingFee},
 	 * then we create a service-invoice on the fly and return a different candidate that creates the service-invoice as payment-document.
 	 */
-	private AllocationLineCandidate processInvoiceProcessingFeeCandidate(@NonNull final AllocationLineCandidate candidate)
+	private AllocationLineCandidate createServiceFeeInvoiceIfNeeded(@NonNull final AllocationLineCandidate candidate)
 	{
 		if (!AllocationLineCandidateType.InvoiceProcessingFee.equals(candidate.getType()))
 		{
