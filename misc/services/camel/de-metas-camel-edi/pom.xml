@@ -20,7 +20,7 @@
         <guava.version>30.1.1-jre</guava.version>
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
         <jackson.version>2.13.1</jackson.version>
-        <lombok.version>1.18.22</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
         <org.apache.poi.version>4.1.2</org.apache.poi.version>
         <jaxb.inhouse.v2.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev2</jaxb.inhouse.v2.packageName>
         <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>

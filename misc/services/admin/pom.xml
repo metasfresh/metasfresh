@@ -65,8 +65,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                    <source>14</source>
-                    <target>14</target>
+                    <source>21</source>
+                    <target>21</target>
                 </configuration>
             </plugin>
 
@@ -122,7 +122,7 @@
                     </to>
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
-                        <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                        <image>eclipse-temurin:21-jre</image>
                         <auth>
                             <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
                             <!-- we authenticate on pulls to avoid the rate limit -->

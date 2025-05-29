@@ -2888,8 +2888,8 @@ public class GridTable extends AbstractTableModel
 						// give the other processes a chance
 						try
 						{
-							yield();
-							sleep(10); // .01 second
+							Thread.yield();
+							Thread.sleep(10); // .01 second
 						}
 						catch (InterruptedException ie)
 						{

@@ -679,7 +679,7 @@ public final class DisplayType
 			// Integer
 			if (displayType == DisplayType.Integer)
 			{
-				return Integer.valueOf(value);
+				return java.lang.Integer.valueOf(value);
 			}
 			// Number
 			if (DisplayType.isNumeric(displayType))

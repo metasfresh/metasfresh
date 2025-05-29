@@ -36,7 +36,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
-import de.metas.manufacturing.rest_api.v2.ManufacturingOrderReportProcessCommand;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -64,25 +63,6 @@ class ManufacturingOrderReportProcessCommandTest
 	{
 		testHelper = HUTestHelper.newInstanceOutOfTrx();
 	}
-
-	@Nested
-	public class resolveHUId
-	{
-		private ManufacturingOrderReportProcessCommand command;
-
-		@BeforeEach
-		public void beforeEach()
-		{
-			command = ManufacturingOrderReportProcessCommand.builder()
-					.huReservationService(new HUReservationService(new HUReservationRepository()))
-					.auditRepository(new ManufacturingOrderReportAuditRepository())
-					.jsonObjectMapper(JsonObjectMapperHolder.newJsonObjectMapper())
-					.request(JsonRequestManufacturingOrdersReport.builder()
-							.receipts(ImmutableList.of())
-							.issues(ImmutableList.of())
-							.build())
-					.build();
-		}
 
 		@Builder(builderMethodName = "hu", builderClassName = "$HUBuilder")
 		private HuId createHU(
@@ -153,6 +133,25 @@ class ManufacturingOrderReportProcessCommandTest
 			huAttribute.setM_Attribute_ID(testHelper.attr_SerialNo.getM_Attribute_ID());
 			huAttribute.setValue(serialNo);
 			InterfaceWrapperHelper.saveRecord(huAttribute);
+		}
+
+	@Nested
+	public class resolveHUId
+	{
+		private ManufacturingOrderReportProcessCommand command;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			command = ManufacturingOrderReportProcessCommand.builder()
+					.huReservationService(new HUReservationService(new HUReservationRepository()))
+					.auditRepository(new ManufacturingOrderReportAuditRepository())
+					.jsonObjectMapper(JsonObjectMapperHolder.newJsonObjectMapper())
+					.request(JsonRequestManufacturingOrdersReport.builder()
+							.receipts(ImmutableList.of())
+							.issues(ImmutableList.of())
+							.build())
+					.build();
 		}
 
 		@Test
