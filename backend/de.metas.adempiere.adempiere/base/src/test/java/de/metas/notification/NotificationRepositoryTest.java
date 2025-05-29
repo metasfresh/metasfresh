@@ -92,7 +92,7 @@ public class NotificationRepositoryTest
 																									   .recordDisplayText("targetRecordDisplayText")
 																									   .adWindowId(AdWindowId.optionalOfRepoId(444))
 																									   .build())
-																				 .notificationSeverity(NotificationSeverity.Warning)
+																				 .severity(NotificationSeverity.Warning)
 																				 .build());
 
 		final List<UserNotification> userNotifications = notificationRepo.getByUserId(UserId.ofRepoId(123), QueryLimit.NO_LIMIT);

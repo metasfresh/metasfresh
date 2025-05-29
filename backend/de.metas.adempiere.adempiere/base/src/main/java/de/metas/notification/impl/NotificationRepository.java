@@ -105,7 +105,7 @@ public class NotificationRepository implements INotificationRepository
 			adMessageId = Services.get(IMsgBL.class).getIdByAdMessage(DEFAULT_AD_MESSAGE).orElse(null);
 		}
 
-		notificationPO.setNotificationSeverity(request.getNotificationSeverity().getCode());
+		notificationPO.setNotificationSeverity(request.getSeverity().getCode());
 		notificationPO.setAD_Message_ID(AdMessageId.toRepoId(adMessageId));
 
 		//

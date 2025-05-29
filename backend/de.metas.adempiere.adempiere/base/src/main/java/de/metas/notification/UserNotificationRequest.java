@@ -59,7 +59,7 @@ public class UserNotificationRequest
 	@NonNull NotificationGroupName notificationGroupName;
 
 	private static final NotificationSeverity DEFAULT_NotificationSeverity = NotificationSeverity.Notice;
-	@NonNull NotificationSeverity notificationSeverity ;
+	@NonNull NotificationSeverity severity;
 
 	boolean important;
 
@@ -106,7 +106,7 @@ public class UserNotificationRequest
 			@Singular final List<Resource> attachments,
 			// Options:
 			final boolean noEmail,
-			@Nullable final NotificationSeverity notificationSeverity)
+			@Nullable final NotificationSeverity severity)
 	{
 		this.notificationsConfig = notificationsConfig;
 
@@ -141,7 +141,7 @@ public class UserNotificationRequest
 		this.contentPlain = contentPlain;
 		this.contentADMessage = contentADMessage;
 		this.contentADMessageParams = copyADMessageParams(contentADMessageParams);
-		this.notificationSeverity = notificationSeverity != null ? notificationSeverity : DEFAULT_NotificationSeverity;
+		this.severity = severity != null ? severity : DEFAULT_NotificationSeverity;
 
 		this.targetAction = targetAction;
 
