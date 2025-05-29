@@ -192,7 +192,7 @@ public class NotificationRepository implements INotificationRepository
 				.important(notificationPO.isImportant())
 				.recipientUserId(notificationPO.getAD_User_ID())
 				.read(notificationPO.isProcessed())
-				.notificationSeverity(NotificationSeverity.ofCode(notificationPO.getNotificationSeverity()));
+				.severity(NotificationSeverity.ofCode(notificationPO.getNotificationSeverity()));
 		//
 		// detailADMessage
 		final AdMessageId detailADMessageId = AdMessageId.ofRepoIdOrNull(notificationPO.getAD_Message_ID());

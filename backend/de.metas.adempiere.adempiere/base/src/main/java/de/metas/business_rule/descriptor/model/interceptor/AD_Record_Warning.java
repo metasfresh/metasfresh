@@ -25,19 +25,20 @@ package de.metas.business_rule.descriptor.model.interceptor;
 import de.metas.notification.INotificationRepository;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Record_Warning;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_AD_Record_Warning.class)
 @Component
+@RequiredArgsConstructor
 public class AD_Record_Warning
 {
-	final INotificationRepository notificationRepository = SpringContextHolder.instance.getBean(INotificationRepository.class);
+	private final INotificationRepository notificationRepository;
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_AD_Record_Warning.COLUMNNAME_IsAcknowledged)
 	public void deleteNotificationOnAknowledgement(@NonNull final I_AD_Record_Warning warning)

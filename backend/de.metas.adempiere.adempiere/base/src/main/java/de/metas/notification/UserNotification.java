@@ -68,8 +68,8 @@ public class UserNotification
 	private final int recipientUserId;
 	@JsonProperty("detailPlain")
 	private final String detailPlain;
-	@JsonProperty("notificationSeverity")
-	private final NotificationSeverity notificationSeverity;
+	@JsonProperty("severity")
+	@NonNull private final NotificationSeverity severity;
 	@JsonProperty("detailADMessage")
 	private final String detailADMessage;
 	@JsonProperty("detailADMessageParams")
@@ -104,7 +104,7 @@ public class UserNotification
 			@JsonProperty("recipientUserId") @NonNull final Integer recipientUserId,
 			//
 			@JsonProperty("detailPlain") final String detailPlain,
-			@JsonProperty("severity") @NonNull final NotificationSeverity notificationSeverity,
+			@JsonProperty("severity") @NonNull final NotificationSeverity severity,
 			@JsonProperty("detailADMessage") final String detailADMessage,
 			@JsonProperty("detailADMessageParams") @Singular final List<Object> detailADMessageParams,
 			//
@@ -123,7 +123,7 @@ public class UserNotification
 		this.recipientUserId = recipientUserId;
 
 		this.detailPlain = detailPlain;
-		this.notificationSeverity = notificationSeverity;
+		this.severity = severity;
 		this.detailADMessage = detailADMessage;
 		this.detailADMessageParams = detailADMessageParams != null ? Collections.unmodifiableList(new ArrayList<>(detailADMessageParams)) : ImmutableList.of();
 
@@ -167,9 +167,9 @@ public class UserNotification
 		// Build detail message
 		final StringBuilder detailBuf = new StringBuilder();
 
-		if(!Check.isEmpty(notificationSeverity) && notificationSeverity != NotificationSeverity.Notice)
+		if(!severity.isNotice())
 		{
-			final String notificationSeverity = TranslatableStrings.adRefList(X_AD_Note.NOTIFICATIONSEVERITY_AD_Reference_ID, getNotificationSeverity().getCode()).translate(adLanguage);
+			final String notificationSeverity = TranslatableStrings.adRefList(X_AD_Note.NOTIFICATIONSEVERITY_AD_Reference_ID, getSeverity().getCode()).translate(adLanguage);
 			detailBuf.append(notificationSeverity).append(":");
 		}
 

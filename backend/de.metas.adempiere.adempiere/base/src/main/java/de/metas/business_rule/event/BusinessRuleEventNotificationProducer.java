@@ -51,16 +51,16 @@ public final class BusinessRuleEventNotificationProducer
 			.type(Type.DISTRIBUTED)
 			.build();
 
-	public void createNotice(@NonNull final RecordWarningNoticeRequest recordWarningNoticeRequest)
+	public void createNotice(@NonNull final RecordWarningNoticeRequest request)
 	{
 		notificationBL.send(
 				UserNotificationRequest.builder()
 						.topic(EVENTBUS_TOPIC)
-						.notificationsConfig(notificationBL.getUserNotificationsConfig(recordWarningNoticeRequest.getUserId()))
-						.notificationSeverity(recordWarningNoticeRequest.getNotificationSeverity())
-						.contentADMessage(recordWarningNoticeRequest.getMessageKey())
-						.contentADMessageParam(recordWarningNoticeRequest.getAvailableRecordData())
-						.targetAction(UserNotificationRequest.TargetRecordAction.of(I_AD_Record_Warning.Table_Name, recordWarningNoticeRequest.getRecordWarningId().getRepoId()))
+						.notificationsConfig(notificationBL.getUserNotificationsConfig(request.getUserId()))
+						.notificationSeverity(request.getNotificationSeverity())
+						.contentADMessage(request.getMessageKey())
+						.contentADMessageParam(request.getAvailableRecordData())
+						.targetAction(UserNotificationRequest.TargetRecordAction.of(I_AD_Record_Warning.Table_Name, request.getRecordWarningId().getRepoId()))
 						.build());
 	}
 

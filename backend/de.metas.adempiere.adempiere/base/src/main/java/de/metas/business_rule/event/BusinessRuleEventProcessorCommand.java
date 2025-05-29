@@ -195,15 +195,14 @@ public class BusinessRuleEventProcessorCommand
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
-				final RecordWarningNoticeRequest recordWarningNoticeRequest = RecordWarningNoticeRequest.builder()
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(RecordWarningNoticeRequest.builder()
 						.userId(event.getTriggeringUserId())
 						.recordWarningId(recordWarningId)
 						.notificationSeverity(NotificationSeverity.Warning)
 						.messageKey(messageKey)
 						.availableRecordData(availableRecordData)
-						.build();
+						.build());
 
-				BusinessRuleEventNotificationProducer.newInstance().createNotice(recordWarningNoticeRequest);
 				logger.debug(stopwatch, "=> Created user notification for target record");
 			}
 		}

@@ -46,4 +46,9 @@ public enum NotificationSeverity implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	public boolean isNotice()
+	{
+		return this == Notice;
+	}
 }
