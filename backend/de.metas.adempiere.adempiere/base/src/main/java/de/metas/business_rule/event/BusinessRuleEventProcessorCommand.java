@@ -20,6 +20,7 @@ import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
 import de.metas.user.api.IUserBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,7 +38,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -186,12 +186,24 @@ public class BusinessRuleEventProcessorCommand
 			{
 				final AdMessageKey messageKey = getAdMessageKey(rule);
 
-				final String documentSummary = getAvailableRecordData(targetRecordInfo);
+				final StringBuilder documentSummaryBuilder = new StringBuilder();
+
+				if(!Check.isEmpty(targetRecordRef.getTableName()))
+				{
+					documentSummaryBuilder.append(msgBL.translate(Env.getCtx(), targetRecordRef.getTableName()));
+				}
+
+				if(!Check.isEmpty(targetRecordInfo.getDocumentSummary()))
+				{
+					documentSummaryBuilder.append(" ").append(targetRecordInfo.getDocumentSummary());
+				}
+
+				final String documentSummary = documentSummaryBuilder.toString();
 
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
 						.businessRuleId(rule.getId())
-						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, new Object[] { documentSummary }))
+						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, Collections.singletonList(documentSummary)))
 						.userId(event.getTriggeringUserId())
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
@@ -201,7 +213,7 @@ public class BusinessRuleEventProcessorCommand
 						.recordWarningId(recordWarningId)
 						.notificationSeverity(NotificationSeverity.Warning)
 						.messageKey(messageKey)
-						.messageParams(Arrays.asList(new Object[] {documentSummary }))
+						.messageParams(Collections.singletonList(documentSummary))
 						.build());
 
 				logger.debug(stopwatch, "=> Created user notification for target record");
@@ -291,22 +303,6 @@ public class BusinessRuleEventProcessorCommand
 
 		return targetRecordInfoBuilder.documentSummary(documentSummary)
 				.build();
-	}
-
-	private @NonNull String getAvailableRecordData(@NonNull final TargetRecordInfo targetRecordInfo)
-	{
-		final TableRecordReference targetRecordRef = targetRecordInfo.getTargetRecordRef();
-
-		final StringBuilder availableRecordDataBuilder = new StringBuilder();
-
-		availableRecordDataBuilder.append(msgBL.translate(Env.getCtx(), targetRecordRef.getTableName()));
-
-		if (targetRecordInfo.getDocumentSummary() != null)
-		{
-			availableRecordDataBuilder.append(" ").append(targetRecordInfo.getDocumentSummary());
-		}
-
-		return availableRecordDataBuilder.toString();
 	}
 
 	private boolean isPreconditionsMet(
