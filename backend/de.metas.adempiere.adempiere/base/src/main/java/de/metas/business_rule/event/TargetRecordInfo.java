@@ -32,6 +32,5 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 public class TargetRecordInfo
 {
 	@NonNull TableRecordReference targetRecordRef;
-	@NonNull String targetTableName;
 	@NonNull String documentSummary;
 }
