@@ -59,7 +59,7 @@ public final class BusinessRuleEventNotificationProducer
 						.notificationsConfig(notificationBL.getUserNotificationsConfig(request.getUserId()))
 						.notificationSeverity(request.getNotificationSeverity())
 						.contentADMessage(request.getMessageKey())
-						.contentADMessageParam(request.getAvailableRecordData())
+						.contentADMessageParams(request.getMessageParams())
 						.targetAction(UserNotificationRequest.TargetRecordAction.of(I_AD_Record_Warning.Table_Name, request.getRecordWarningId().getRepoId()))
 						.build());
 	}

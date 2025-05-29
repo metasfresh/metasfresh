@@ -34,7 +34,5 @@ import javax.annotation.Nullable;
 public class TargetRecordInfo
 {
 	@NonNull TableRecordReference targetRecordRef;
-	@Nullable String documentNo;
-	@Nullable String value;
-	@Nullable String name;
+	@Nullable String documentSummary;
 }

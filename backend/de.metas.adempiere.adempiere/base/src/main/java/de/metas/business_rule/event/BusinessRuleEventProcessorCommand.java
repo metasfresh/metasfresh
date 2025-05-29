@@ -37,6 +37,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -185,12 +186,12 @@ public class BusinessRuleEventProcessorCommand
 			{
 				final AdMessageKey messageKey = getAdMessageKey(rule);
 
-				final String availableRecordData = getAvailableRecordData(targetRecordInfo);
+				final String documentSummary = getAvailableRecordData(targetRecordInfo);
 
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
 						.businessRuleId(rule.getId())
-						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, new Object[] { availableRecordData }))
+						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, new Object[] { documentSummary }))
 						.userId(event.getTriggeringUserId())
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
@@ -200,7 +201,7 @@ public class BusinessRuleEventProcessorCommand
 						.recordWarningId(recordWarningId)
 						.notificationSeverity(NotificationSeverity.Warning)
 						.messageKey(messageKey)
-						.availableRecordData(availableRecordData)
+						.messageParams(Arrays.asList(new Object[] {documentSummary }))
 						.build());
 
 				logger.debug(stopwatch, "=> Created user notification for target record");
@@ -259,45 +260,36 @@ public class BusinessRuleEventProcessorCommand
 
 		final POInfo targetPOInfo = POInfo.getPOInfo(targetTableName);
 
-		if(targetPOInfo == null)
+		if (targetPOInfo == null)
 		{
 			return targetRecordInfoBuilder
 					.build();
 		}
 
+		final StringBuilder recordSummaryBuilder = new StringBuilder();
+		recordSummaryBuilder.append("SELECT '' ");
 		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
 		{
-			final String documentNoSQL = "SELECT " + InterfaceWrapperHelper.COLUMNNAME_DocumentNo + " FROM " + targetTableName + " WHERE " + keyColumnName + "=?";
-
-			final String documentNo = DB.getSQLValueStringEx(ITrx.TRXNAME_None, documentNoSQL, targetRecordId);
-			if (documentNo != null)
-			{
-				targetRecordInfoBuilder.documentNo(documentNo);
-			}
+			recordSummaryBuilder.append("|| ").append(InterfaceWrapperHelper.COLUMNNAME_DocumentNo);
 		}
 
 		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Value))
 		{
-			final String valueSQL = "SELECT " + InterfaceWrapperHelper.COLUMNNAME_Value + " FROM " + targetTableName + " WHERE " + keyColumnName + "=?";
+			recordSummaryBuilder.append("|| ").append(InterfaceWrapperHelper.COLUMNNAME_Value);
 
-			final String value = DB.getSQLValueStringEx(ITrx.TRXNAME_None, valueSQL, targetRecordId);
-			if (value != null)
-			{
-				targetRecordInfoBuilder.value(value);
-			}
 		}
 
 		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Name))
 		{
-			final String nameSQL = "SELECT " + InterfaceWrapperHelper.COLUMNNAME_Name + " FROM " + targetTableName + " WHERE " + keyColumnName + "=?";
+			recordSummaryBuilder.append("|| ").append(InterfaceWrapperHelper.COLUMNNAME_Name);
 
-			final String name = DB.getSQLValueStringEx(ITrx.TRXNAME_None, nameSQL, targetRecordId);
-			if (name != null)
-			{
-				targetRecordInfoBuilder.name(name);
-			}
 		}
-		return targetRecordInfoBuilder
+
+		recordSummaryBuilder.append(" FROM ").append(targetTableName).append(" WHERE ").append(keyColumnName).append("=?");
+
+		final String documentSummary = DB.getSQLValueStringEx(ITrx.TRXNAME_None, recordSummaryBuilder.toString(), targetRecordId);
+
+		return targetRecordInfoBuilder.documentSummary(documentSummary)
 				.build();
 	}
 
@@ -309,17 +301,9 @@ public class BusinessRuleEventProcessorCommand
 
 		availableRecordDataBuilder.append(msgBL.translate(Env.getCtx(), targetRecordRef.getTableName()));
 
-		if (targetRecordInfo.getDocumentNo() != null)
+		if (targetRecordInfo.getDocumentSummary() != null)
 		{
-			availableRecordDataBuilder.append(" ").append(targetRecordInfo.getDocumentNo());
-		}
-		if (targetRecordInfo.getValue() != null)
-		{
-			availableRecordDataBuilder.append(" ").append(targetRecordInfo.getValue());
-		}
-		if (targetRecordInfo.getName() != null)
-		{
-			availableRecordDataBuilder.append(" ").append(targetRecordInfo.getName());
+			availableRecordDataBuilder.append(" ").append(targetRecordInfo.getDocumentSummary());
 		}
 
 		return availableRecordDataBuilder.toString();

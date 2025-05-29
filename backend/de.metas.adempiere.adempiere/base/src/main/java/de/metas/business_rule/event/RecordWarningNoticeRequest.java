@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Builder
 @Value
@@ -40,5 +41,5 @@ public class RecordWarningNoticeRequest
 	@NonNull RecordWarningId recordWarningId;
 	@NonNull NotificationSeverity notificationSeverity;
 	@NonNull AdMessageKey messageKey;
-	@Nullable String availableRecordData;
+	@Nullable List<Object> messageParams;
 }
