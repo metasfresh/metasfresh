@@ -121,8 +121,12 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	@Override
 	public void setEdiEnabled(@NonNull final I_EDI_Document_Extension document, final boolean isEdiEnabled)
 	{
+		if(!InterfaceWrapperHelper.isNullOrEmpty(document, I_EDI_Document_Extension.COLUMNNAME_IsEdiEnabled) && document.isEdiEnabled() == isEdiEnabled)
+		{
+			return;
+		}
 
-		if(!isEdiEnabled && EDIExportStatus.isInProgressOrSend(EDIExportStatus.ofCode(document.getEDI_ExportStatus())))
+		if(!isEdiEnabled && EDIExportStatus.isInProgressOrSend(EDIExportStatus.ofNullableCode(document.getEDI_ExportStatus())))
 		{
 			throw new AdempiereException("EdiEnabled can't be deactivated, if export is in progress or sent ");
 		}

@@ -45,7 +45,7 @@ public enum EDIExportStatus implements ReferenceListAwareEnum
 	DontSend(X_EDI_Desadv.EDI_EXPORTSTATUS_DontSend),
 	;
 
-	private static final ImmutableSet<EDIExportStatus> STARTED_OR_IN_PROGRESS = ImmutableSet.of(Enqueued, SendingStarted, Sent);
+	private static final ImmutableSet<EDIExportStatus> SENT_OR_IN_PROGRESS = ImmutableSet.of(Enqueued, SendingStarted, Sent);
 
 	private final String code;
 
@@ -64,7 +64,7 @@ public enum EDIExportStatus implements ReferenceListAwareEnum
 
 	public static final int AD_Reference_ID = X_EDI_Desadv.EDI_EXPORTSTATUS_AD_Reference_ID;
 
-	public static boolean isInProgressOrSend(final EDIExportStatus ediExportStatus){return STARTED_OR_IN_PROGRESS.contains(ediExportStatus);}
+	public static boolean isInProgressOrSend(@Nullable final EDIExportStatus ediExportStatus){return SENT_OR_IN_PROGRESS.contains(ediExportStatus);}
 
 
 }
