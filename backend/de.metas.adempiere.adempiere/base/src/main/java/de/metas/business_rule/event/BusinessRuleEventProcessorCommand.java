@@ -219,10 +219,8 @@ public class BusinessRuleEventProcessorCommand
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
 		final int sourceRecordId = event.getSourceRecordRef().getRecord_ID();
 
-		final AdTableId targetTableId = rule.getAdTableId();
-		final String targetTableName = TableIdsCache.instance.getTableName(targetTableId);
-		final POInfo targetPOInfo = POInfo.getPOInfo(targetTableName);
-		if (targetPOInfo == null)
+		final POInfo poInfo = POInfo.getPOInfo(sourceTableName);
+		if (poInfo == null)
 		{
 			return null;
 		}
@@ -233,23 +231,29 @@ public class BusinessRuleEventProcessorCommand
 				.append(trigger.getTargetRecordMappingSQL())
 				.append(" , ''");
 
-		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
+		if (poInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
 		{
 			sql.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_DocumentNo);
 		}
 
-		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Value))
+		if (poInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Value))
 		{
 			sql.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_Value);
 		}
 
-		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Name))
+		if (poInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Name))
 		{
 			sql.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_Name);
 		}
 
 		sql.append(" FROM ").append(sourceTableName).append(" WHERE ").append(keyColumnName).append("=?");
 
+		final AdTableId targetTableId = rule.getAdTableId();
+		return loadTargetRecordInfoFromSQL(sql, sourceRecordId, keyColumnName, targetTableId);
+	}
+
+	private static TargetRecordInfo loadTargetRecordInfoFromSQL(@NonNull final StringBuilder sql, final int sourceRecordId, @NonNull final String keyColumnName, @NonNull final AdTableId targetTableId)
+	{
 		return DB.retrieveFirstRowOrNull(sql.toString(), Collections.singletonList(sourceRecordId), rs -> {
 			final int targetRecordId = rs.getInt(1);
 			final String documentSummary = rs.getString(2);
