@@ -10,6 +10,7 @@ import de.metas.business_rule.descriptor.model.Validation;
 import de.metas.business_rule.log.BusinessRuleLogger;
 import de.metas.business_rule.log.BusinessRuleStopwatch;
 import de.metas.business_rule.util.BusinessRuleRecordMatcher;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
@@ -20,7 +21,6 @@ import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
 import de.metas.user.api.IUserBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -186,19 +186,8 @@ public class BusinessRuleEventProcessorCommand
 			{
 				final AdMessageKey messageKey = getAdMessageKey(rule);
 
-				final StringBuilder documentSummaryBuilder = new StringBuilder();
-
-				if(!Check.isEmpty(targetRecordRef.getTableName()))
-				{
-					documentSummaryBuilder.append(msgBL.translate(Env.getCtx(), targetRecordRef.getTableName()));
-				}
-
-				if(!Check.isEmpty(targetRecordInfo.getDocumentSummary()))
-				{
-					documentSummaryBuilder.append(" ").append(targetRecordInfo.getDocumentSummary());
-				}
-
-				final String documentSummary = documentSummaryBuilder.toString();
+				final String documentSummary = msgBL.translate(Env.getCtx(), targetRecordInfo.getTargetTableName())
+						+ " " + targetRecordInfo.getDocumentSummary();
 
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
@@ -268,7 +257,8 @@ public class BusinessRuleEventProcessorCommand
 	private static TargetRecordInfo createTargetRecordInfo(@NonNull final AdTableId targetTableId, @NonNull final Integer targetRecordId, @NonNull final String targetTableName, @NonNull final String keyColumnName)
 	{
 		final TargetRecordInfo.TargetRecordInfoBuilder targetRecordInfoBuilder = TargetRecordInfo.builder()
-				.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId));
+				.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId))
+				.targetTableName(targetTableName);
 
 		final POInfo targetPOInfo = POInfo.getPOInfo(targetTableName);
 
@@ -301,7 +291,7 @@ public class BusinessRuleEventProcessorCommand
 
 		final String documentSummary = DB.getSQLValueStringEx(ITrx.TRXNAME_None, documentSummarySQL.toString(), targetRecordId).trim();
 
-		return targetRecordInfoBuilder.documentSummary(documentSummary)
+		return targetRecordInfoBuilder.documentSummary(CoalesceUtil.firstNotBlank(documentSummary, targetRecordId.toString()))
 				.build();
 	}
 

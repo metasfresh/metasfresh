@@ -27,12 +27,11 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
 public class TargetRecordInfo
 {
 	@NonNull TableRecordReference targetRecordRef;
-	@Nullable String documentSummary;
+	@NonNull String targetTableName;
+	@NonNull String documentSummary;
 }
