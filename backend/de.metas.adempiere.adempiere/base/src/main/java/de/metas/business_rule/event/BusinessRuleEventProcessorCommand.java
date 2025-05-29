@@ -278,28 +278,28 @@ public class BusinessRuleEventProcessorCommand
 					.build();
 		}
 
-		final StringBuilder recordSummaryBuilder = new StringBuilder();
-		recordSummaryBuilder.append("SELECT '' ");
+		final StringBuilder documentSummarySQL = new StringBuilder();
+
+		documentSummarySQL.append("SELECT '' ");
+
 		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
 		{
-			recordSummaryBuilder.append("|| ").append(InterfaceWrapperHelper.COLUMNNAME_DocumentNo);
+			documentSummarySQL.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_DocumentNo);
 		}
 
 		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Value))
 		{
-			recordSummaryBuilder.append("|| ").append(InterfaceWrapperHelper.COLUMNNAME_Value);
-
+			documentSummarySQL.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_Value);
 		}
 
 		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Name))
 		{
-			recordSummaryBuilder.append("|| ").append(InterfaceWrapperHelper.COLUMNNAME_Name);
-
+			documentSummarySQL.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_Name);
 		}
 
-		recordSummaryBuilder.append(" FROM ").append(targetTableName).append(" WHERE ").append(keyColumnName).append("=?");
+		documentSummarySQL.append(" FROM ").append(targetTableName).append(" WHERE ").append(keyColumnName).append("=?");
 
-		final String documentSummary = DB.getSQLValueStringEx(ITrx.TRXNAME_None, recordSummaryBuilder.toString(), targetRecordId);
+		final String documentSummary = DB.getSQLValueStringEx(ITrx.TRXNAME_None, documentSummarySQL.toString(), targetRecordId).trim();
 
 		return targetRecordInfoBuilder.documentSummary(documentSummary)
 				.build();
