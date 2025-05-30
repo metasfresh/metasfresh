@@ -79,11 +79,13 @@ final class PricingResult implements IPricingResult
 	private PriceListVersionId priceListVersionId;
 	@Nullable
 	private CurrencyId currencyId;
+	@Nullable
 	private UomId priceUomId;
 	private CurrencyPrecision precision;
 
 	@Nullable
 	private ProductId productId;
+	@Nullable
 	private ProductCategoryId productCategoryId;
 
 	private TaxCategoryId taxCategoryId;

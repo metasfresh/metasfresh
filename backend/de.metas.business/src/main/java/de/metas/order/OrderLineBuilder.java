@@ -75,10 +75,8 @@ public class OrderLineBuilder
 	@Nullable private HUPIItemProductId piItemProductId;
 	private Quantity qty;
 
-	@Nullable
-	private BigDecimal manualPrice;
-	@Nullable
-	private UomId manualPriceUomId;
+	@Nullable private BigDecimal manualPrice;
+	@Nullable private UomId priceUomId;
 	private BigDecimal manualDiscount;
 
 	@Nullable
@@ -124,6 +122,7 @@ public class OrderLineBuilder
 		{
 			orderLine.setIsManualPrice(true);
 			orderLine.setPriceEntered(manualPrice);
+			orderLine.setPrice_UOM_ID(UomId.toRepoId(priceUomId));
 		}
 
 		if (manualDiscount != null)
@@ -135,11 +134,6 @@ public class OrderLineBuilder
 		if (dimension != null)
 		{
 			dimensionService.updateRecord(orderLine, dimension);
-		}
-
-		if (manualPriceUomId != null)
-		{
-			orderLine.setPrice_UOM_ID(manualPriceUomId.getRepoId());
 		}
 
 		orderLineBL.updatePrices(orderLine);
@@ -244,17 +238,17 @@ public class OrderLineBuilder
 		return qty != null ? qty.getUomId() : null;
 	}
 
+	public OrderLineBuilder priceUomId(@Nullable final UomId priceUomId)
+	{
+		assertNotBuilt();
+		this.priceUomId = priceUomId;
+		return this;
+	}
+
 	public OrderLineBuilder manualPrice(@Nullable final BigDecimal manualPrice)
 	{
 		assertNotBuilt();
 		this.manualPrice = manualPrice;
-		return this;
-	}
-
-	public OrderLineBuilder manualPriceUomId(@Nullable final UomId manualPriceUomId)
-	{
-		assertNotBuilt();
-		this.manualPriceUomId = manualPriceUomId;
 		return this;
 	}
 

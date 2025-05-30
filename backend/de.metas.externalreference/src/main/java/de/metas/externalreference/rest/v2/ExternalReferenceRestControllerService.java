@@ -218,7 +218,11 @@ public class ExternalReferenceRestControllerService
 
 	public void performUpsert(@NonNull final JsonRequestExternalReferenceUpsert request, @Nullable final String orgCode)
 	{
-		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+		performUpsert(request, retrieveOrgIdOrDefault(orgCode));
+	}
+
+	public void performUpsert(@NonNull final JsonRequestExternalReferenceUpsert request, @NonNull final OrgId orgId)
+	{
 		final ExternalReference externalReferenceCandidate = mapJsonToExternalReference(request, orgId);
 
 		final GetExternalReferenceByRecordIdReq getExternalRefRequest = GetExternalReferenceByRecordIdReq.builder()

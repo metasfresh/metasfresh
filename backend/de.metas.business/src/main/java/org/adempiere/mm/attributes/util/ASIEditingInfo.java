@@ -446,9 +446,6 @@ public final class ASIEditingInfo
 	}
 
 	/**
-	 * 
-	 * @param attributeSetId
-	 * @param attributeSetInstanceId
 	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
 	 */
 	private List<I_M_Attribute> retrieveAvailableAttributeSetAndInstanceAttributes(

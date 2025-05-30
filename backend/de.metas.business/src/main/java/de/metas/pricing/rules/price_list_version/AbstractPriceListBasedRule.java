@@ -34,7 +34,7 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.util.Loggables;
 
-abstract class AbstractPriceListBasedRule implements IPricingRule
+public abstract class AbstractPriceListBasedRule implements IPricingRule
 {
 	private static final Logger log = LogManager.getLogger(AbstractPriceListBasedRule.class);
 

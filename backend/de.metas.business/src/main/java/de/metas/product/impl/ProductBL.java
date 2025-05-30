@@ -627,19 +627,26 @@ public final class ProductBL implements IProductBL
 
 	@Nullable
 	@Override
-	public I_M_AttributeSet getProductMasterDataSchemaOrNull(final ProductId productId)
+	public I_M_AttributeSet getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = productsRepo.getById(productId);
-
-		final int attributeSetRepoId = product.getM_AttributeSet_ID();
-
-		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
+		final AttributeSetId attributeSetId = getMasterDataSchemaAttributeSetId(productId);
 		if (attributeSetId.isNone())
 		{
 			return null;
 		}
 
 		return attributesRepo.getAttributeSetById(attributeSetId);
+	}
+
+	@NonNull
+	@Override
+	public AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+
+		final int attributeSetRepoId = product.getM_AttributeSet_ID();
+
+		return AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
 	}
 
 	@Override

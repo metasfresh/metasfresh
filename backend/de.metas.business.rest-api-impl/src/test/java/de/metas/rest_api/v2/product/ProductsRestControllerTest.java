@@ -25,11 +25,16 @@ package de.metas.rest_api.v2.product;
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
@@ -39,20 +44,38 @@ import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
 import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
+import de.metas.greeting.GreetingRepository;
+import de.metas.job.JobRepository;
 import de.metas.logging.LogManager;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
+import de.metas.pricing.productprice.ProductPriceRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
+import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
+import de.metas.rest_api.v2.pricing.PriceListRestService;
+import de.metas.rest_api.v2.pricing.ProductPriceRestService;
+import de.metas.rest_api.v2.uomconversion.UomConversionRestService;
+import de.metas.title.TitleRepository;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
@@ -96,7 +119,7 @@ public class ProductsRestControllerTest
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
 		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
 																					  new ExternalSystemExportAuditRepo(),
 																					  new RuntimeParametersRepository(),
 																					  externalServices,
@@ -111,7 +134,45 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
-		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService);
+
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
+				new BPartnerQueryService(),
+				bpartnerCompositeRepository,
+				new BPGroupRepository(),
+				new GreetingRepository(),
+				new TitleRepository(),
+				currencyRepository,
+				new JobRepository(),
+				Mockito.mock(ExternalReferenceRestControllerService.class),
+				Mockito.mock(AlbertaBPartnerCompositeService.class));
+
+		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
+
+		final ProductTaxCategoryRepository productTaxCategoryRepository = new ProductTaxCategoryRepository();
+		final ProductTaxCategoryService productTaxCategoryService = new ProductTaxCategoryService(productTaxCategoryRepository);
+		final ProductPriceRepository productPriceRepository = new ProductPriceRepository(productTaxCategoryService);
+
+		 final PriceListVersionRepository priceListVersionRepository = new PriceListVersionRepository();
+		final PriceListRestService priceListService = new PriceListRestService(externalReferenceRestControllerService, priceListVersionRepository);
+
+		final ProductPriceRestService productPriceRestService= new ProductPriceRestService(externalReferenceRestControllerService,
+																						   productPriceRepository,
+																						   priceListService,
+																						   externalIdentifierResolver,
+																						   new BpartnerPriceListServicesFacade(productPriceRepository),
+																						   jsonServiceFactory);
+
+		final UomConversionRestService uomConversionRestService = new UomConversionRestService();
+		
+		final ProductRestService productRestService = new ProductRestService(productRepository,
+																			 externalReferenceRestControllerService,
+																			 productPriceRestService,
+																			 productTaxCategoryService,
+																			 uomConversionRestService);
 
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}

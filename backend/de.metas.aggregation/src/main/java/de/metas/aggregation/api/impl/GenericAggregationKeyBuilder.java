@@ -22,20 +22,7 @@ package de.metas.aggregation.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.text.annotation.ToStringBuilder;
-import org.compiere.Adempiere;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.AggregationAttribute;
@@ -47,6 +34,17 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.time.SimpleDateFormatThreadLocal;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.compiere.Adempiere;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /* package */
 final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationKeyBuilder<ModelType>
@@ -223,7 +221,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 		}
 		else if (displayType == DisplayType.YesNo)
 		{
-			return DisplayType.toBoolean(value, false);
+			return DisplayType.toBooleanNonNull(value, false);
 		}
 		else
 		{

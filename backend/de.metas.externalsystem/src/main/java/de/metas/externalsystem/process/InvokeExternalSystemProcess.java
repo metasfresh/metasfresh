@@ -106,7 +106,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
 				.parameters(extractParameters(config))
-				.orgCode(getOrgCode())
+				.orgCode(getOrgCode(config))
 				.command(externalRequest)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
 				.traceId(externalSystemConfigService.getTraceId())
@@ -159,7 +159,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	@NonNull
 	protected Timestamp extractEffectiveSinceTimestamp()
 	{
-		return CoalesceUtil.coalesceSuppliers(() -> since, this::retrieveSinceValue, () -> Timestamp.from(Instant.ofEpochSecond(0)));
+		return CoalesceUtil.coalesceSuppliersNotNull(() -> since, this::retrieveSinceValue, () -> Timestamp.from(Instant.ofEpochSecond(0)));
 	}
 
 	private Timestamp retrieveSinceValue()
@@ -185,7 +185,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		return parameters;
 	}
 
-	protected String getOrgCode()
+	protected String getOrgCode(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
 	{
 		return orgDAO.getById(getOrgId()).getValue();
 	}
