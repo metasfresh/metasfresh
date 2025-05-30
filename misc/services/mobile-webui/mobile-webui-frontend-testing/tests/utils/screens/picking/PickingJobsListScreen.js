@@ -39,16 +39,22 @@ export const PickingJobsListScreen = {
         await PickingJobsListScanScreen.waitForScreen();
     }),
 
-    startJob: async ({ documentNo, index, qtyToDeliver }) => {
+    startJob: async ({ index, documentNo, qtyToDeliver, customerLocationId }) => {
         if (documentNo != null) {
             return await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
                 await locateJobButtons({ documentNo }).tap();
                 await PickingJobScreen.waitForScreen();
+                return {
+                    pickingJobId: await PickingJobScreen.getPickingJobId(),
+                }
             });
         } else if (index != null) {
             return await test.step(`${NAME} - Start job by index ${index - 1}`, async () => {
-                await locateJobButtons({ qtyToDeliver, index }).tap()
+                await locateJobButtons({ index, qtyToDeliver, customerLocationId }).tap()
                 await PickingJobScreen.waitForScreen();
+                return {
+                    pickingJobId: await PickingJobScreen.getPickingJobId(),
+                }
             });
         } else {
             throw "No documentNo or index provided";
@@ -76,13 +82,16 @@ export const PickingJobsListScreen = {
     }),
 };
 
-const locateJobButtons = ({ documentNo, index, qtyToDeliver, productId } = {}) => {
+const locateJobButtons = ({ documentNo, index, qtyToDeliver, productId, customerLocationId } = {}) => {
     let selector = '.wflauncher-button';
     if (qtyToDeliver != null) {
         selector += `[data-qtytodeliver="${qtyToDeliver}"]`;
     }
     if (productId != null) {
         selector += `[data-productid="${productId}"]`;
+    }
+    if (customerLocationId != null) {
+        selector += `[data-customerlocationid="${customerLocationId}"]`;
     }
 
     let locator = page.locator(selector);

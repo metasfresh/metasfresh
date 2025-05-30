@@ -111,6 +111,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.isPickWithNewLU(profileRecord.isPickingWithNewLU())
+				.isShipOnCloseLU(profileRecord.isShipOnCloseLU())
 				.isAllowNewTU(profileRecord.isAllowNewTU())
 				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
@@ -220,6 +221,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
 		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
 		record.setIsPickingWithNewLU(from.isPickWithNewLU());
+		record.setIsShipOnCloseLU(from.isShipOnCloseLU());
 		record.setIsAllowNewTU(from.isAllowNewTU());
 		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
@@ -289,6 +291,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(record.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
 				.isPickWithNewLU(record.isPickingWithNewLU())
+				.isShipOnCloseLU(record.isShipOnCloseLU())
 				.isAllowNewTU(record.isAllowNewTU())
 				.considerSalesOrderCapacity(record.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(record.isCatchWeightTUPickingEnabled())

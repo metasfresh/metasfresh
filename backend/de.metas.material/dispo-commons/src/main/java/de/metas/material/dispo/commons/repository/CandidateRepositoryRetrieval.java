@@ -53,6 +53,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -285,9 +286,9 @@ public class CandidateRepositoryRetrieval
 	@Nullable
 	private static PPOrderRef extractPPOrderRef(final I_MD_Candidate_Prod_Detail record)
 	{
-		final int ppOrderCandidateId = record.getPP_Order_Candidate_ID();
+		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(record.getPP_Order_Candidate_ID());
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID());
-		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		if (ppOrderCandidateId == null && ppOrderId == null)
 		{
 			return null;
 		}

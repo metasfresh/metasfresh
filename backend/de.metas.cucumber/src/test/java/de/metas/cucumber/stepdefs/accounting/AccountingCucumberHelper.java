@@ -1,7 +1,15 @@
 package de.metas.cucumber.stepdefs.accounting;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+import de.metas.acct.api.IPostingRequestBuilder;
+import de.metas.acct.api.IPostingService;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.accounting.FactAcctBalanceValidator.FactAcctBalanceValidatorBuilder;
 import de.metas.cucumber.stepdefs.accounting.FactAcctValidator.FactAcctValidatorBuilder;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -9,20 +17,39 @@ import lombok.Value;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.acct.PostingStatus;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class AccountingCucumberHelper
 {
+	public static void repost(final TableRecordReferenceSet recordRefs)
+	{
+		final IPostingService postingService = Services.get(IPostingService.class);
+
+		streamPostingInfo(recordRefs)
+				.forEach(postingInfo -> postingService.newPostingRequest()
+						.setClientId(postingInfo.getClientId())
+						.setDocumentRef(postingInfo.getRecordRef())
+						.setForce(true)
+						.setPostImmediate(IPostingRequestBuilder.PostImmediate.Yes)
+						.setFailOnError(true)
+						.onErrorNotifyUser(Env.getLoggedUserId())
+						.postIt());
+	}
+
 	public static void waitUtilPosted(final Set<TableRecordReference> recordRefs) throws InterruptedException
 	{
 		if (recordRefs.isEmpty())
@@ -61,26 +88,64 @@ public class AccountingCucumberHelper
 		});
 	}
 
-	private static Optional<PostingInfo> retrievePostingInfo(final TableRecordReference recordRef)
+	private static Optional<PostingInfo> retrievePostingInfo(@NonNull final TableRecordReference recordRef)
 	{
-		final String tableName = recordRef.getTableName();
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-		final int recordId = recordRef.getRecord_ID();
+		return streamPostingInfo(TableRecordReferenceSet.of(recordRef))
+				.filter(postingInfo -> postingInfo.getRecordRef().equals(recordRef))
+				.findFirst();
+	}
 
-		final PostingInfo postingInfo = DB.retrieveFirstRowOrNull(
-				"SELECT t.Posted, err.StackTrace FROM " + tableName + " t"
-						+ " LEFT OUTER JOIN AD_Issue err ON err.AD_Issue_ID=t.PostingError_Issue_ID"
-						+ " WHERE t." + keyColumnName + "=?",
-				Collections.singletonList(recordId),
-				AccountingCucumberHelper::retrievePostingInfo
-		);
+	private static Stream<PostingInfo> streamPostingInfo(@NonNull final TableRecordReferenceSet recordRefs)
+	{
+		if (recordRefs.isEmpty())
+		{
+			return Stream.empty();
+		}
 
-		return Optional.ofNullable(postingInfo);
+		final ImmutableListMultimap<String, TableRecordReference> recordRefsByTableName = Multimaps.index(recordRefs.toSet(), TableRecordReference::getTableName);
+
+		final StringBuilder finalSql = new StringBuilder();
+		final ArrayList<Object> finalSqlParams = new ArrayList<>();
+
+		for (final String tableName : recordRefsByTableName.keySet())
+		{
+			final Set<Integer> recordIds = recordRefsByTableName.get(tableName).stream().map(TableRecordReference::getRecord_ID).collect(ImmutableSet.toImmutableSet());
+			if (recordIds.isEmpty())
+			{
+				continue;
+			}
+
+			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+
+			final ArrayList<Object> sqlParams = new ArrayList<>();
+			sqlParams.add(tableName);
+			final String sql = "SELECT "
+					+ " ? as TableName"
+					+ ", t." + keyColumnName + " as Record_ID"
+					+ ", t.AD_Client_ID"
+					+ ", t.Posted"
+					+ ", err.StackTrace"
+					+ " FROM " + tableName + " t"
+					+ " LEFT OUTER JOIN AD_Issue err ON err.AD_Issue_ID=t.PostingError_Issue_ID"
+					+ " WHERE " + DB.buildSqlList("t." + keyColumnName, recordIds, sqlParams);
+
+			if (finalSql.length() > 0)
+			{
+				finalSql.append("\n UNION ALL \n");
+			}
+			finalSql.append(sql);
+			finalSqlParams.addAll(sqlParams);
+		}
+
+		final ImmutableList<PostingInfo> result = DB.retrieveRows(finalSql, finalSqlParams, AccountingCucumberHelper::retrievePostingInfo);
+		return result.stream();
 	}
 
 	private static PostingInfo retrievePostingInfo(final ResultSet rs) throws SQLException
 	{
 		return PostingInfo.builder()
+				.recordRef(TableRecordReference.of(rs.getString("TableName"), rs.getInt("Record_ID")))
+				.clientId(ClientId.ofRepoId(rs.getInt("AD_Client_ID")))
 				.status(StringUtils.trimBlankToOptional(rs.getString("Posted")).map(PostingStatus::ofCode).orElse(PostingStatus.NotPosted))
 				.stackTrace(rs.getString("StackTrace"))
 				.build();
@@ -90,6 +155,8 @@ public class AccountingCucumberHelper
 	@Builder
 	private static class PostingInfo
 	{
+		@NonNull TableRecordReference recordRef;
+		@NonNull ClientId clientId;
 		@NonNull PostingStatus status;
 		@Nullable String stackTrace;
 	}
@@ -97,5 +164,10 @@ public class AccountingCucumberHelper
 	public static FactAcctValidatorBuilder newFactAcctValidator()
 	{
 		return FactAcctValidator.builder();
+	}
+
+	public static FactAcctBalanceValidatorBuilder newFactAcctBalanceValidator()
+	{
+		return FactAcctBalanceValidator.builder();
 	}
 }

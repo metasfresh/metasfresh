@@ -35,9 +35,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import de.metas.common.util.Check;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.apache.camel.RuntimeCamelException;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
@@ -52,14 +52,15 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_19;
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_38;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_67;
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_68;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_90;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOCUMENT_ZONE_ID;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOC_PREFIX;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.GLN_PREFIX;
-import static de.metas.edi.esb.remadvimport.ecosio.JsonRemittanceAdviceLineProducer.InvoiceType.CREDIT_MEMO;
+import static de.metas.edi.esb.remadvimport.ecosio.RemittanceAdviceInvoiceType.SALES_INVOICE;
 import static java.math.BigDecimal.ZERO;
 
 @Value
@@ -67,11 +68,15 @@ public class JsonRemittanceAdviceLineProducer
 {
 	private static final Logger logger = Logger.getLogger(JsonRemittanceAdviceLineProducer.class.getName());
 
+	String lineIdentifier;
+
 	@NonNull REMADVListLineItemExtensionType remadvLineItemExtension;
 
-	public static JsonRemittanceAdviceLineProducer of(@NonNull final REMADVListLineItemExtensionType remadvListLineItemExtensionType)
+	public static JsonRemittanceAdviceLineProducer of(
+			final String lineIdentifier,
+			@NonNull final REMADVListLineItemExtensionType remadvListLineItemExtensionType)
 	{
-		return new JsonRemittanceAdviceLineProducer(remadvListLineItemExtensionType);
+		return new JsonRemittanceAdviceLineProducer(lineIdentifier, remadvListLineItemExtensionType);
 	}
 
 	@NonNull
@@ -93,21 +98,16 @@ public class JsonRemittanceAdviceLineProducer
 			final BigDecimal serviceFeeAmount = getServiceFeeAmount(monetaryAmounts);
 			final BigDecimal paymentDiscountAmount = getPaymentDiscountAmount(monetaryAmounts);
 
-			// the difference might be a few cents, rappen etc. we will add it to the discount
-			final BigDecimal difference = coalesceNotNull(invoiceGrossAmount, ZERO)
-					.subtract(remittedAmount)
-					.subtract(coalesceNotNull(serviceFeeAmount, ZERO))
-					.subtract(coalesceNotNull(paymentDiscountAmount, ZERO));
-
 			return JsonRemittanceAdviceLine.builder()
+					.lineIdentifier(lineIdentifier)
 					.invoiceIdentifier(getInvoiceIdentifier())
 					.bpartnerIdentifier(getBPartnerIdentifier().orElse(null))
-					.invoiceBaseDocType(getInvoiceDocType().orElse(null))
+					.invoiceBaseDocType(getInvoiceDocType())
 					.dateInvoiced(getDateInvoiced().orElse(null))
-					.remittedAmount(remittedAmount)
 					.invoiceGrossAmount(invoiceGrossAmount)
-					.paymentDiscountAmount(sumNullableBigDecimals(paymentDiscountAmount, difference))
+					.remittedAmount(remittedAmount)
 					.serviceFeeAmount(serviceFeeAmount)
+					.paymentDiscountAmount(paymentDiscountAmount)
 					.serviceFeeVatRate(getServiceFeeVATRate(monetaryAmounts).orElse(null))
 					.build();
 		}
@@ -122,48 +122,57 @@ public class JsonRemittanceAdviceLineProducer
 	private BigDecimal getServiceFeeAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
 	{
 		// note that the amounts are negative in the XML, we need to negate them
-		Optional<BigDecimal> serviceFeeAmtTerm_67_opt = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_67);
-		Optional<BigDecimal> serviceFeeAmtTerm_90_opt = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_90);
-		if (!isCreditMemo())
+		Optional<BigDecimal> adjustmentAmt_67 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_67);
+		Optional<BigDecimal> adjustmentAmt_90 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_90);
+		if (isSalesInvoice())
 		{
-			// In a credit memo this amount is *positive*. In a normal invoice it is negative. Either way, we need the invoicable service fee amount to be positive.
-			// Also, I'm afraid of just doing "abs" here, because one day ther might be a yet different case that we might then miss.
-			serviceFeeAmtTerm_67_opt = serviceFeeAmtTerm_67_opt.map(BigDecimal::negate);
-			serviceFeeAmtTerm_90_opt = serviceFeeAmtTerm_90_opt.map(BigDecimal::negate);
+			adjustmentAmt_67 = adjustmentAmt_67.map(BigDecimal::negate);
+			adjustmentAmt_90 = adjustmentAmt_90.map(BigDecimal::negate);
 		}
 
-		final BigDecimal adjustmentServiceFeeAmountTerm1 = serviceFeeAmtTerm_67_opt.orElse(null);
-		final BigDecimal adjustmentServiceFeeAmountTerm2 = serviceFeeAmtTerm_90_opt.orElse(null);
-
-		return sumNullableBigDecimals(adjustmentServiceFeeAmountTerm1, adjustmentServiceFeeAmountTerm2);
+		return sumNullableBigDecimals(adjustmentAmt_67, adjustmentAmt_90).orElse(null);
 	}
 
 	@Nullable
 	private BigDecimal getPaymentDiscountAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
 	{
 		// these amounts are also negative in the XML, we need to negate them
-		final BigDecimal paymentDiscountAmount = asBigDecimalAbs(monetaryAmounts.getPaymentDiscountAmount()).map(BigDecimal::negate).orElse(null);
-		final BigDecimal adjustmentDiscountAmount = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_19).map(BigDecimal::negate).orElse(null);
+		Optional<BigDecimal> paymentDiscountAmount = asBigDecimalAbs(monetaryAmounts.getPaymentDiscountAmount());
+		Optional<BigDecimal> adjustmentAmount_19 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_19);
+		Optional<BigDecimal> adjustmentAmount_38 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_38);
+		Optional<BigDecimal> adjustmentAmount_68 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_68);
 
-		final BigDecimal paymentDiscountTotalAmount = sumNullableBigDecimals(paymentDiscountAmount, adjustmentDiscountAmount);
+		if (isSalesInvoice())
+		{
+			paymentDiscountAmount = paymentDiscountAmount.map(BigDecimal::negate);
+			adjustmentAmount_19 = adjustmentAmount_19.map(BigDecimal::negate);
+			adjustmentAmount_38 = adjustmentAmount_38.map(BigDecimal::negate);
+			adjustmentAmount_68 = adjustmentAmount_68.map(BigDecimal::negate);
+		}
 
-		return paymentDiscountTotalAmount != null ? paymentDiscountTotalAmount.abs() : null;
+		Optional<BigDecimal> result = paymentDiscountAmount;
+		result = sumNullableBigDecimals(result, adjustmentAmount_19);
+		result = sumNullableBigDecimals(result, adjustmentAmount_38);
+		result = sumNullableBigDecimals(result, adjustmentAmount_68);
+
+		return result.orElse(null);
 	}
 
-	@Nullable
-	private BigDecimal sumNullableBigDecimals(@Nullable final BigDecimal term1, @Nullable final BigDecimal term2)
+	@NonNull
+	private Optional<BigDecimal> sumNullableBigDecimals(
+			@NonNull final Optional<BigDecimal> term1,
+			@NonNull final Optional<BigDecimal> term2)
 	{
-		if (term1 == null)
+		if (term1.isEmpty())
 		{
 			return term2;
 		}
-
-		if (term2 == null)
+		if (term2.isEmpty())
 		{
 			return term1;
 		}
 
-		return term1.add(term2);
+		return Optional.of(term1.get().add(term2.get()));
 	}
 
 	@NonNull
@@ -231,28 +240,23 @@ public class JsonRemittanceAdviceLineProducer
 	}
 
 	@NonNull
-	private Optional<String> getInvoiceDocType()
+	private String getInvoiceDocType()
 	{
-		if (Check.isBlank(remadvLineItemExtension.getDocumentName()))
+		if (Check.isBlank(remadvLineItemExtension.getBusinessProcessID()))
 		{
-			logger.log(Level.INFO, "getInvoiceDocType no invoiceDocType found for line! Line: " + remadvLineItemExtension);
-			return Optional.empty();
+			throw new RuntimeCamelException("getInvoiceDocType: Missing BusinessProcessID on line: " + remadvLineItemExtension);
 		}
 
-		final Optional<String> invoiceDocBaseType = InvoiceType.getByEdiCode(remadvLineItemExtension.getDocumentName())
-				.map(InvoiceType::getMetasDocBaseType);
+		final Optional<String> invoiceDocBaseType = RemittanceAdviceInvoiceType.getByEdiCode(remadvLineItemExtension.getBusinessProcessID())
+				.map(RemittanceAdviceInvoiceType::getMetasDocBaseType);
 
-		if (invoiceDocBaseType.isEmpty())
-		{
-			logger.log(Level.INFO, "getInvoiceDocType no invoiceDocType found for line! Line: " + remadvLineItemExtension);
-		}
-
-		return invoiceDocBaseType;
+		return invoiceDocBaseType
+				.orElseThrow(() -> new RuntimeCamelException("getInvoiceDocType: Unclear InvoiceDocType for BusinessProcessID " + remadvLineItemExtension.getBusinessProcessID() + "on line: " + remadvLineItemExtension));
 	}
 
-	private boolean isCreditMemo()
+	private boolean isSalesInvoice()
 	{
-		return getInvoiceDocType().orElse("").equals(CREDIT_MEMO.metasDocBaseType);
+		return getInvoiceDocType().equals(SALES_INVOICE.getMetasDocBaseType());
 	}
 
 	@NonNull
@@ -328,30 +332,4 @@ public class JsonRemittanceAdviceLineProducer
 		}
 	}
 
-	@Getter
-	enum InvoiceType
-	{
-		SALES_INVOICE("RG", "ARI"),
-		CREDIT_MEMO("GS", "ARC");
-
-		@NonNull
-		private final String ediCode;
-
-		@NonNull
-		private final String metasDocBaseType;
-
-		InvoiceType(final @NonNull String ediCode, final @NonNull String metasDocBaseType)
-		{
-			this.ediCode = ediCode;
-			this.metasDocBaseType = metasDocBaseType;
-		}
-
-		@NonNull
-		private static Optional<InvoiceType> getByEdiCode(@NonNull final String ediCode)
-		{
-			return Arrays.stream(values())
-					.filter(type -> type.getEdiCode().equals(ediCode))
-					.findFirst();
-		}
-	}
 }

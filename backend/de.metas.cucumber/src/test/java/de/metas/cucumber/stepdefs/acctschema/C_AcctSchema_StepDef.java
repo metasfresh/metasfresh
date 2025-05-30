@@ -26,6 +26,8 @@ import de.metas.costing.CostingMethod;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
+import de.metas.cucumber.stepdefs.accounting.IdentifiersResolver;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;
@@ -34,6 +36,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -41,17 +44,14 @@ import org.compiere.model.I_C_AcctSchema;
 
 import static de.metas.acct.interceptor.C_AcctSchema.DISABLE_CHECK_CURRENCY;
 
+@RequiredArgsConstructor
 public class C_AcctSchema_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 
-	private final C_AcctSchema_StepDefData acctSchemaTable;
-
-	public C_AcctSchema_StepDef(@NonNull final C_AcctSchema_StepDefData acctSchemaTable)
-	{
-		this.acctSchemaTable = acctSchemaTable;
-	}
+	@NonNull private final IdentifiersResolver identifiersResolver;
+	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
 
 	@And("load C_AcctSchema:")
 	public void load_C_AcctSchemas(@NonNull final DataTable dataTable)
@@ -101,6 +101,9 @@ public class C_AcctSchema_StepDef
 		InterfaceWrapperHelper.saveRecord(acctSchema);
 
 		acctSchemaTable.putOrReplace(identifier, acctSchema);
+
+		row.getAsOptionalBoolean("IsRepostCreatedDocs")
+				.ifTrue(this::repostCreatedDocuments);
 	}
 
 	private void loadAcctSchema(@NonNull final DataTableRow row)
@@ -116,7 +119,13 @@ public class C_AcctSchema_StepDef
 					.create()
 					.firstOnlyNotNull(I_C_AcctSchema.class);
 
-			acctSchemaTable.put(identifier, acctSchemaRecord);
+			acctSchemaTable.putOrReplace(identifier, acctSchemaRecord);
 		}
 	}
+
+	private void repostCreatedDocuments()
+	{
+		AccountingCucumberHelper.repost(identifiersResolver.getAccountableDocumentRefs());
+	}
+
 }

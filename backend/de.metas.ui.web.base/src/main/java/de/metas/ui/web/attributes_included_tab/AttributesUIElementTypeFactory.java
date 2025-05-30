@@ -256,7 +256,7 @@ public class AttributesUIElementTypeFactory
 				.setWidgetType(fieldBinding.getWidgetType())
 				.setValueClass(fieldBinding.getValueClass())
 				.setLookupDescriptorProvider(LookupDescriptorProviders.ofNullableInstance(fieldBinding.getLookupDescriptor()))
-				.setReadonlyLogic(false)
+				.setReadonlyLogic(true)
 				.setVirtualField(fieldBinding.isVirtualColumn())
 				.setDataBinding(fieldBinding)
 				.setDefaultFilterInfo(DocumentFieldDefaultFilterDescriptor.builder()

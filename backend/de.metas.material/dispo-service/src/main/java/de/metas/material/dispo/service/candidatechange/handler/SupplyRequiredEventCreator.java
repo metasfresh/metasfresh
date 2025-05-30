@@ -11,6 +11,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor.SupplyRequiredDescriptorBuilder;
 import de.metas.material.event.pporder.PPOrderRef;
+import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -59,6 +60,22 @@ public class SupplyRequiredEventCreator
 		return SupplyRequiredEvent.of(descriptor);
 	}
 
+	@NonNull
+	public static SupplyRequiredDecreasedEvent createSupplyRequiredDecreasedEvent(
+			@NonNull final Candidate demandCandidate,
+			@NonNull final BigDecimal decreasedQty)
+	{
+		verifyCandidateType(demandCandidate);
+
+		final SupplyRequiredDescriptor descriptor = createSupplyRequiredDescriptor(
+				demandCandidate,
+				decreasedQty,
+				null);
+		return SupplyRequiredDecreasedEvent.builder()
+				.supplyRequiredDescriptor(descriptor)
+				.build();
+	}
+
 	private static void verifyCandidateType(final Candidate demandCandidate)
 	{
 		final CandidateType candidateType = demandCandidate.getType();
@@ -67,7 +84,7 @@ public class SupplyRequiredEventCreator
 	}
 
 	@NonNull
-	private static SupplyRequiredDescriptor createSupplyRequiredDescriptor(
+	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty,
 			@Nullable final CandidateId supplyCandidateId)

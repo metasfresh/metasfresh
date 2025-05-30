@@ -40,10 +40,13 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -132,6 +135,7 @@ public class M_InOut_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Message_StepDefData messageTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -171,40 +175,39 @@ public class M_InOut_StepDef
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 				.orElseGet(bpartnerLocationIdentifier::getAsInt);
 
-		final I_M_InOut shipment = inoutTable.get(identifier);
+		final I_M_InOut inout = inoutTable.get(identifier);
 
-		softly.assertThat(shipment.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
-		softly.assertThat(shipment.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId);
-		softly.assertThat(TimeUtil.asLocalDate(shipment.getDateOrdered())).isEqualTo(dateOrdered);
+		softly.assertThat(inout.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
+		softly.assertThat(inout.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId);
+		softly.assertThat(TimeUtil.asLocalDate(inout.getDateOrdered())).isEqualTo(dateOrdered);
 
 		if (Check.isNotBlank(poReference))
 		{
-			softly.assertThat(shipment.getPOReference()).isEqualTo(poReference);
+			softly.assertThat(inout.getPOReference()).isEqualTo(poReference);
 		}
 
-		softly.assertThat(shipment.isProcessed()).isEqualTo(processed);
-		softly.assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
+		softly.assertThat(inout.isProcessed()).isEqualTo(processed);
+		softly.assertThat(inout.getDocStatus()).isEqualTo(docStatus);
 
 		final String internalName = row.getAsOptionalString(I_M_InOut.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName).orElse(null);
 		if (Check.isNotBlank(internalName))
 		{
 			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
-			softly.assertThat(shipment.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
+			softly.assertThat(inout.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
 		}
 
-		final String docBaseType = row.getAsOptionalString(I_C_DocType.Table_Name + "." + COLUMNNAME_DocBaseType).orElse(null);
-		if (Check.isNotBlank(docBaseType))
-		{
-			final String name = row.getAsString(I_C_DocType.Table_Name + "." + COLUMNNAME_Name);
+		row.getAsOptionalEnum(I_C_DocType.Table_Name + "." + COLUMNNAME_DocBaseType, DocBaseType.class)
+				.ifPresent(docBaseType -> {
+					final String docTypeName = row.getAsString(I_C_DocType.Table_Name + "." + COLUMNNAME_Name);
 
-			final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
-					.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
-					.addEqualsFilter(COLUMNNAME_Name, name)
-					.create()
-					.firstOnlyNotNull(I_C_DocType.class);
+					final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+							.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+							.addEqualsFilter(COLUMNNAME_Name, docTypeName)
+							.create()
+							.firstOnlyNotNull(I_C_DocType.class);
 
-			softly.assertThat(shipment.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
-		}
+					softly.assertThat(inout.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
+				});
 
 		softly.assertAll();
 	}
@@ -283,20 +286,20 @@ public class M_InOut_StepDef
 	@And("^after not more than (.*)s, M_InOut is found:$")
 	public void shipmentIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+		final DataTableRow firstRow = DataTableRows.of(dataTable).getFirstRow();
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(
+				firstRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID).lookupIn(shipmentScheduleTable),
+				I_M_ShipmentSchedule.class);
 
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Optional<String> docStatus = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_InOut.COLUMNNAME_DocStatus));
+		final StepDefDataIdentifier shipmentIdentifier = firstRow.getAsIdentifier(COLUMNNAME_M_InOut_ID);
+		final Optional<String> docStatus = firstRow.getAsOptionalString(I_M_InOut.COLUMNNAME_DocStatus);
 
-		final String alreadyCreatedShipmentIdentifiers = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.IgnoreCreated" + "." + I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final Set<InOutLineId> alreadyCreatedShipmentLines = Optional.ofNullable(alreadyCreatedShipmentIdentifiers)
+		final Optional<String> alreadyCreatedShipmentIdentifiers = firstRow.getAsOptionalString("OPT.IgnoreCreated" + "." + COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+		
+		final Set<InOutLineId> alreadyCreatedShipmentLines = alreadyCreatedShipmentIdentifiers
 				.map(StepDefUtil::extractIdentifiers)
 				.map(this::getShipmentLinesForShipmentIdentifiers)
 				.orElseGet(ImmutableSet::of);
-
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
 
 		final Set<Integer> linesToIgnore = alreadyCreatedShipmentLines.isEmpty()
 				? ImmutableSet.of(-1)
@@ -352,16 +355,18 @@ public class M_InOut_StepDef
 			if (shipment != null)
 			{
 				final I_M_InOut prevShipment = inoutTable.getOptional(shipmentIdentifier).orElse(null);
-				if (prevShipment == null)
-				{
-					inoutTable.put(shipmentIdentifier, shipment);
-				}
-				else
+				if (prevShipment != null)
 				{
 					assertThat(prevShipment.getM_InOut_ID()).isEqualTo(shipment.getM_InOut_ID());
-					inoutTable.putOrReplace(shipmentIdentifier, shipment);
 				}
+				inoutTable.putOrReplace(shipmentIdentifier, shipment);
+				restTestContext.setIntVariableFromRow(firstRow, shipment::getM_InOut_ID);
 
+				firstRow.getAsOptionalIdentifier("REST.Context.M_InOut_ID")
+						.ifPresent(id -> restTestContext.setVariable(id.getAsString(), shipment.getM_InOut_ID()));
+				firstRow.getAsOptionalIdentifier("REST.Context.DocumentNo")
+						.ifPresent(id -> restTestContext.setVariable(id.getAsString(), shipment.getDocumentNo()));
+				
 				return true;
 			}
 
@@ -388,8 +393,8 @@ public class M_InOut_StepDef
 
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void processInOut(
-			@NonNull @SuppressWarnings("unused") final String model_UNUSED, 
-			@NonNull final String shipmentIdentifier, 
+			@NonNull @SuppressWarnings("unused") final String model_UNUSED,
+			@NonNull final String shipmentIdentifier,
 			@NonNull final String action)
 	{
 		final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
@@ -494,16 +499,19 @@ public class M_InOut_StepDef
 	@And("validate M_In_Out status")
 	public void validate_M_In_Out_status(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
-		{
-			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
-			InterfaceWrapperHelper.refresh(shipment);
+		DataTableRows.of(table)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_InOut_ID)
+				.forEach(row -> {
+					final I_M_InOut shipment = row.getAsIdentifier().lookupNotNullIn(inoutTable);
+					InterfaceWrapperHelper.refresh(shipment);
 
-			final String docStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_DocStatus);
-			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
-		}
+					final SoftAssertions softly = new SoftAssertions();
+
+					row.getAsOptionalEnum(COLUMNNAME_DocStatus, DocStatus.class)
+							.ifPresent(docStatus -> assertThat(shipment.getDocStatus()).as("DocStatus").isEqualTo(docStatus.getCode()));
+
+					softly.assertAll();
+				});
 	}
 
 	@And("^reset M_InOut packing lines for shipment (.*)$")

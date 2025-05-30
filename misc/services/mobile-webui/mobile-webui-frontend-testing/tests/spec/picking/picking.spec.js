@@ -9,8 +9,11 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 
-const createMasterdata = async ({ allowCompletingPartialPickingJob } = {}) => {
-    const response = await Backend.createMasterdata({
+const createMasterdata = async ({
+                                    allowCompletingPartialPickingJob = false,
+                                    shipOnCloseLU = false,
+                                } = {}) => {
+    return await Backend.createMasterdata({
         language: "en_US",
         request: {
             login: {
@@ -23,6 +26,7 @@ const createMasterdata = async ({ allowCompletingPartialPickingJob } = {}) => {
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
                     pickWithNewLU: true,
+                    shipOnCloseLU,
                     allowNewTU: false,
                     allowCompletingPartialPickingJob: allowCompletingPartialPickingJob ?? false,
                 }
@@ -30,6 +34,9 @@ const createMasterdata = async ({ allowCompletingPartialPickingJob } = {}) => {
             bpartners: { "BP1": {} },
             warehouses: {
                 "wh": {},
+            },
+            pickingSlots: {
+                slot1: {},
             },
             products: {
                 "P1": { prices: [{ price: 1 }] },
@@ -50,62 +57,100 @@ const createMasterdata = async ({ allowCompletingPartialPickingJob } = {}) => {
             },
         }
     })
-
-    const { pickingSlotQRCode } = await Backend.getFreePickingSlot({
-        bpartnerCode: response.bpartners.BP1.bpartnerCode
-    });
-
-    return {
-        login: response.login.user,
-        pickingSlotQRCode,
-        documentNo: response.salesOrders.SO1.documentNo,
-        huQRCode: response.handlingUnits.HU1.qrCode,
-        luPIName: response.packingInstructions.PI.luName,
-    };
 }
 
 // noinspection JSUnusedLocalSymbols
 test('Simple picking test', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
+    const masterdata = await createMasterdata();
 
-    await LoginScreen.login(login);
+    await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
-    await PickingJobScreen.setTargetLU({ lu: luPIName });
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: []
+                    }
+                }
+            }
+        }
+    });
+
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
-    await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '3' });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                    }
+                }
+            }
+        }
+    });
 
     await PickingJobScreen.complete();
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                    }
+                }
+            }
+        }
+    });
+
 });
 
 // noinspection JSUnusedLocalSymbols
 test('Pick - unpick', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
+    const masterdata = await createMasterdata();
 
-    await LoginScreen.login(login);
+    await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
-    await PickingJobScreen.setTargetLU({ lu: luPIName });
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
-    await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '3' });
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+    await test.step("Pick the HU", async () => {
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        }
+                    }
+                }
+            }
+        });
+    });
 
-    await PickingJobScreen.clickLineButton({ index: 1 });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickStepButton({ index: 0 });
-    await PickingJobStepScreen.unpick();
-    await PickingJobLineScreen.goBack();
+    await test.step("Un-pick the HU", async () => {
+        await PickingJobScreen.clickLineButton({ index: 1 });
+        await PickingJobLineScreen.waitForScreen();
+        await PickingJobLineScreen.clickStepButton({ index: 0 });
+        await PickingJobStepScreen.unpick();
+        await PickingJobLineScreen.goBack();
+    });
 
     await PickingJobScreen.waitForScreen();
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
@@ -113,18 +158,34 @@ test('Pick - unpick', async ({ page }) => {
     await PickingJobScreen.closeTargetLU();
 
     await PickingJobScreen.abort();
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
+                            { qtyPicked: "-4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
+                            { qtyPicked: "-4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
+                            { qtyPicked: "-4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-', },
+                        ]
+                    }
+                }
+            }
+        }
+    });
 });
 
 // noinspection JSUnusedLocalSymbols
 test('Scan invalid picking slot QR code', async ({ page }) => {
-    const { login, documentNo } = await createMasterdata();
+    const masterdata = await createMasterdata();
 
-    await LoginScreen.login(login);
+    await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await expectErrorToast('Invalid QR code', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: 'invalid QR code' });
     });
@@ -132,23 +193,23 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Test picking line complete status - draft | in progress | complete', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
+    const masterdata = await createMasterdata();
 
-    await LoginScreen.login(login);
+    await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
-    await PickingJobScreen.setTargetLU({ lu: luPIName });
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
     await PickingJobScreen.expectLineButton({ index: 1, color: 'red', qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
 
-    await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '2', expectQtyEntered: '3', qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: '2', expectQtyEntered: '3', qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
     await PickingJobScreen.expectLineButton({ index: 1, color: 'yellow', qtyToPick: '3 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
 
-    await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '1', expectQtyEntered: '0' });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: '1', expectQtyEntered: '0' });
     await PickingJobScreen.expectLineButton({ index: 1, color: 'green', qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
 
     await PickingJobScreen.complete();
@@ -158,21 +219,18 @@ test.describe('Picking Job Completion', () => {
 
     // noinspection JSUnusedLocalSymbols
     test("Should fail when partial picking and allowCompletingPartialPickingJob = N", async ({ page }) => {
-        const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
-            await createMasterdata({
-                allowCompletingPartialPickingJob: false,
-            });
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: false });
 
-        await LoginScreen.login(login);
+        await LoginScreen.login(masterdata.login.user);
         await ApplicationsListScreen.expectVisible();
         await ApplicationsListScreen.startApplication("picking");
         await PickingJobsListScreen.waitForScreen();
-        await PickingJobsListScreen.filterByDocumentNo(documentNo);
-        await PickingJobsListScreen.startJob({ documentNo });
-        await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
-        await PickingJobScreen.setTargetLU({ lu: luPIName });
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
         await PickingJobScreen.pickHU({
-            qrCode: huQRCode,
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
             qtyEntered: 2,
             expectQtyEntered: "3",
             qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND
@@ -180,25 +238,34 @@ test.describe('Picking Job Completion', () => {
         await expectErrorToast('All steps must be completed in order to complete the job.', async () => {
             await PickingJobScreen.complete();
         });
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: "8 PCE", qtyTUs: 2, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        }
+                    }
+                }
+            }
+        });
+
     });
 
     // noinspection JSUnusedLocalSymbols
     test("Should succeed when partial picking and allowCompletingPartialPickingJob = Y", async ({ page }) => {
-        const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
-            await createMasterdata({
-                allowCompletingPartialPickingJob: true,
-            });
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
 
-        await LoginScreen.login(login);
+        await LoginScreen.login(masterdata.login.user);
         await ApplicationsListScreen.expectVisible();
         await ApplicationsListScreen.startApplication("picking");
         await PickingJobsListScreen.waitForScreen();
-        await PickingJobsListScreen.filterByDocumentNo(documentNo);
-        await PickingJobsListScreen.startJob({ documentNo });
-        await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
-        await PickingJobScreen.setTargetLU({ lu: luPIName });
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
         await PickingJobScreen.pickHU({
-            qrCode: huQRCode,
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
             qtyEntered: 2,
             expectQtyEntered: "3",
             qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
@@ -206,4 +273,38 @@ test.describe('Picking Job Completion', () => {
         await PickingJobScreen.complete()
     });
 
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Ship on close LU', async ({ page }) => {
+    const masterdata = await createMasterdata({ shipOnCloseLU: true });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+
+    await test.step("Pick and close to first LU", async () => {
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+        await PickingJobScreen.closeTargetLU();
+    });
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                    }
+                }
+            }
+        }
+    });
+
+    await PickingJobScreen.complete();
 });

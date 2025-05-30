@@ -6,6 +6,10 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.frontend_testing.expectations.AssertExpectationsCommand;
+import de.metas.frontend_testing.expectations.AssertExpectationsCommandServices;
+import de.metas.frontend_testing.expectations.request.JsonExpectations;
+import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
@@ -38,6 +42,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,6 +75,7 @@ public class FrontendTestingRestController
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final DDOrderService ddOrderService;
+	@NonNull private final AssertExpectationsCommandServices assertExpectationsCommandServices;
 
 	private boolean isEnabled()
 	{
@@ -157,5 +163,17 @@ public class FrontendTestingRestController
 							.qrCode(qrCode.toGlobalQRCodeJsonString())
 							.build();
 				});
+	}
+
+	@PostMapping("expect")
+	public ResponseEntity<JsonExpectationsResponse> expect(@RequestBody @NonNull final JsonExpectations jsonExpectations) throws Exception
+	{
+		assertEnabled();
+
+		return AssertExpectationsCommand.builder()
+				.services(assertExpectationsCommandServices)
+				.expectations(jsonExpectations)
+				.build()
+				.execute();
 	}
 }

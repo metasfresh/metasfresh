@@ -19,6 +19,8 @@ COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml
 COPY --chmod=700 docker-builds/cucumber/entrypoint.sh .
 
+# As we set this to true, the container will expect a number of env variables to be provided at runtime.
+# Those should be specified in the cucumber/docker-compose.yml file
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
 
 VOLUME /reports

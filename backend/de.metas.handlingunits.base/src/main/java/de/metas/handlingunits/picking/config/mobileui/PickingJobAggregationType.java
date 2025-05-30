@@ -17,7 +17,7 @@ public enum PickingJobAggregationType implements ReferenceListAwareEnum
 {
 	SALES_ORDER(X_MobileUI_UserProfile_Picking_Job.PICKINGJOBAGGREGATIONTYPE_Sales_order, true),
 	PRODUCT(X_MobileUI_UserProfile_Picking_Job.PICKINGJOBAGGREGATIONTYPE_Product, true),
-	;
+	DELIVERY_LOCATION(X_MobileUI_UserProfile_Picking_Job.PICKINGJOBAGGREGATIONTYPE_Delivery_location, true);
 
 	public static final PickingJobAggregationType DEFAULT = SALES_ORDER;
 

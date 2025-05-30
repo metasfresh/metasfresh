@@ -2,28 +2,28 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import classnames from 'classnames';
 
-/**
- * @file functional component
- * @module SpinnerOverlay
- */
-const SpinnerOverlay = (props) => {
-  const { iconSize, spinnerType } = props;
-  let style = {};
+const SpinnerOverlay = ({ iconSize, spinnerType = 'overlay' } = {}) => {
+  const style = {};
+  const iconStyle = {};
 
   if (iconSize) {
-    style = {
-      width: `${iconSize}px`,
-      height: `${iconSize}px`,
-    };
+    if (spinnerType === 'inline') {
+      style.minHeight = iconSize;
+    }
+
+    iconStyle.width = `${iconSize}px`;
+    iconStyle.height = `${iconSize}px`;
   }
 
   return (
     <div
-      className={classnames('screen-freeze screen-prompt-freeze spinner', {
-        'modal-spinner': spinnerType === 'modal',
+      style={style}
+      className={classnames('spinner', `spinner-wrapper-${spinnerType}`, {
+        'screen-freeze': spinnerType === 'overlay',
+        'screen-prompt-freeze': spinnerType === 'overlay',
       })}
     >
-      <i style={style} className="icon spinner" />
+      <i style={iconStyle} className="icon spinner" />
     </div>
   );
 };
@@ -32,10 +32,6 @@ SpinnerOverlay.defaultProps = {
   iconSize: 32,
 };
 
-/**
- * @typedef {object} Props Component props
- * @prop {number} [iconSize]
- */
 SpinnerOverlay.propTypes = {
   iconSize: PropTypes.number,
   spinnerType: PropTypes.string,

@@ -210,6 +210,13 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
+	@NonNull
+	public I_C_Doc_Outbound_Log retrieveLog(@NonNull final DocOutboundLogId logId)
+	{
+		return InterfaceWrapperHelper.load(logId, I_C_Doc_Outbound_Log.class);
+	}
+
+	@Override
 	@Nullable
 	public I_C_Doc_Outbound_Log retrieveLog(@NonNull final TableRecordReference tableRecordReference)
 	{
@@ -254,7 +261,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 		updateLogDocStatus(tableRecordReference, docStatus);
 		updateLogLineDocStatus(tableRecordReference, docStatus);
 	}
-	
+
 	private void updateLogDocStatus(@NonNull final TableRecordReference tableRecordReference, @Nullable final DocStatus docStatus)
 	{
 		final ICompositeQueryUpdater<I_C_Doc_Outbound_Log> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Doc_Outbound_Log.class)

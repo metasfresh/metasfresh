@@ -194,8 +194,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 			setPaymentRule(invoiceBL.getDefaultPaymentRule().getCode());
 
-			setDateInvoiced(new Timestamp(System.currentTimeMillis()));
-			setDateAcct(new Timestamp(System.currentTimeMillis()));
+			setDateInvoiced(SystemTime.asTimestamp());
+			setDateAcct(SystemTime.asTimestamp());
 			//
 			setChargeAmt(BigDecimal.ZERO);
 			setTotalLines(BigDecimal.ZERO);

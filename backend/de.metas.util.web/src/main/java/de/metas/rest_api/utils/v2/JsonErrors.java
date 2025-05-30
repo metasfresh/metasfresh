@@ -1,5 +1,6 @@
 package de.metas.rest_api.utils.v2;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.rest_api.v2.JsonErrorItem.JsonErrorItemBuilder;
 import de.metas.i18n.ITranslatableString;
@@ -71,7 +72,18 @@ public class JsonErrors
 
 	private static Map<String, String> extractParameters(@NonNull final Throwable throwable, @NonNull final String adLanguage)
 	{
-		return AdempiereException.extractParameters(throwable)
+		return convertParametersMapToJson(AdempiereException.extractParameters(throwable), adLanguage);
+	}
+
+	@NonNull
+	public static Map<String, String> convertParametersMapToJson(@Nullable final Map<String, Object> map, @NonNull final String adLanguage)
+	{
+		if (map == null || map.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return map
 				.entrySet()
 				.stream()
 				.map(e -> GuavaCollectors.entry(e.getKey(), convertParameterToJson(e.getValue(), adLanguage)))
@@ -79,9 +91,9 @@ public class JsonErrors
 	}
 
 	@NonNull
-	private static String convertParameterToJson(final Object value, final String adLanguage)
+	private static String convertParameterToJson(@Nullable final Object value, @NonNull final String adLanguage)
 	{
-		if (Null.isNull(value))
+		if (value == null || Null.isNull(value))
 		{
 			return "<null>";
 		}

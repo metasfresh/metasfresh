@@ -355,7 +355,7 @@ Feature: create or update BPartner v2
               "accountStreet": "test-accountStreet_1_updated",
               "accountZip": "test-accountZip_1_up",
               "accountCity": "test-accountCity_1_updated",
-              "accountCountry": "test-accountCountry_1_updated" 
+              "accountCountry": "DE"
             },
             {
               "iban": "DE54500105178721351673",
@@ -372,7 +372,7 @@ Feature: create or update BPartner v2
               "active": true,
               "accountZip": "test-accountZip_3",
               "accountCity": "test-accountCity_3_updated",
-              "accountCountry": "test-accountCountry_3_updated"
+              "accountCountry": "DE"
             }
           ]
         }
@@ -410,9 +410,9 @@ Feature: create or update BPartner v2
     """
     And validate C_BP_BankAccount:
       | C_BP_BankAccount_ID           | C_BPartner_ID | IBAN                   | ISO_Code | IsActive | A_Name                     | A_Street                     | A_Zip                | A_City                     | A_Country                     |
-      | BPA_Via_ExternalRef_S0285_700 | bpartner      | DE15500105171114521777 | EUR      | false    | test-accountName_1_updated | test-accountStreet_1_updated | test-accountZip_1_up | test-accountCity_1_updated | test-accountCountry_1_updated |
+      | BPA_Via_ExternalRef_S0285_700 | bpartner      | DE15500105171114521777 | EUR      | false    | test-accountName_1_updated | test-accountStreet_1_updated | test-accountZip_1_up | test-accountCity_1_updated | DE							 |
       | BPA_Via_IBAN_S0285_700        | bpartner      | DE54500105178721351673 | EUR      | false    | test-accountName_2_updated | test-accountStreet_2_updated | test-accountZip_2_up | test-accountCity_2         | null                          |
-      | BPA_Via_QR_IBAN_S0285_700     | bpartner      | DE26500105174427157327 | EUR      | true     | null                       | null                         | test-accountZip_3    | test-accountCity_3_updated | test-accountCountry_3_updated |
+      | BPA_Via_QR_IBAN_S0285_700     | bpartner      | DE26500105174427157327 | EUR      | true     | null                       | null                         | test-accountZip_3    | test-accountCity_3_updated | DE							 |
 
 
     When the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-001' receives a 'GET' request with the headers from context, expecting status='200'
@@ -428,7 +428,7 @@ Feature: create or update BPartner v2
       "accountStreet": "test-accountStreet_1_updated",
       "accountZip": "test-accountZip_1_up",
       "accountCity": "test-accountCity_1_updated",
-      "accountCountry": "test-accountCountry_1_updated" 
+      "accountCountry": "DE"
     },
     {
       "currencyId": 102,
@@ -445,7 +445,7 @@ Feature: create or update BPartner v2
       "active": true,
       "accountZip": "test-accountZip_3",
       "accountCity": "test-accountCity_3_updated",
-      "accountCountry": "test-accountCountry_3_updated"
+      "accountCountry": "DE"
     }
   ]
 }

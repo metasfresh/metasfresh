@@ -454,7 +454,7 @@ class DDOrderCandidateProcessCommand
 					.productId(candidate.getProductId())
 					.hupiItemProductId(candidate.getHupiItemProductId())
 					.attributeSetInstanceId(candidate.getAttributeSetInstanceId())
-					.uomId(candidate.getQty().getUomId())
+					.uomId(candidate.getQtyEntered().getUomId())
 					.distributionNetworkAndLineId(candidate.getDistributionNetworkAndLineId())
 					.salesOrderLineId(candidate.getSalesOrderLineId())
 					.isAllowPush(candidate.isAllowPush())

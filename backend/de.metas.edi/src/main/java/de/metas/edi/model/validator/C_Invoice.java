@@ -22,21 +22,6 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Component;
-
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
@@ -51,6 +36,20 @@ import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
 
 @Interceptor(I_C_Invoice.class)
 @Component
@@ -70,7 +69,7 @@ public class C_Invoice
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateEdiStatus(final I_C_Invoice document)
 	{
-		try (final MDCCloseable mdcCloseable = TableRecordMDC.putTableRecordReference(document))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(document))
 		{
 			final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 			if (!ediDocumentBL.updateEdiEnabled(document))
@@ -80,8 +79,10 @@ public class C_Invoice
 
 			final List<Exception> feedback = ediDocumentBL.isValidInvoice(document);
 
-			final String EDIStatus = document.getEDI_ExportStatus();
-			final ValidationState validationState = ediDocumentBL.updateInvalid(document, EDIStatus, feedback, false); // saveLocally=false
+			final ValidationState validationState = ediDocumentBL.updateInvalid(document, 
+					document.getEDI_ExportStatus(), 
+					feedback, 
+					false); // saveLocally=false
 
 			if (ValidationState.INVALID == validationState)
 			{

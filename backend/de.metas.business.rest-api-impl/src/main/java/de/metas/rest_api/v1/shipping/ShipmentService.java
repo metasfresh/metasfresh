@@ -39,9 +39,10 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
-import de.metas.handlingunits.shipping.PackageInfo;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
+import de.metas.handlingunits.shipping.PackageInfo;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -345,12 +346,14 @@ public class ShipmentService
 	{
 		final ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = ImmutableList.copyOf(shipmentScheduleBL.getByIds(request.getScheduleIds()).values());
 
-		final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
-				shipmentSchedules,
-				request.getQuantityTypeToUse(),
-				false /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */,
-				QtyToDeliverMap.EMPTY,
-				true  /* backwards compatibility: true - fail if no picked HUs found*/
+		final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				PrepareForShipmentSchedulesRequest.builder()
+						.shipmentSchedules(shipmentSchedules)
+						.quantityTypeToUse(request.getQuantityTypeToUse())
+						.onTheFlyPickToPackingInstructions(false) // backwards compatibility: on-the-fly-pick to (anonymous) CUs
+						.qtyToDeliverOverrides(QtyToDeliverMap.EMPTY)
+						.isFailIfNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found
+						.build()
 		);
 
 		return huShipmentScheduleBL

@@ -227,7 +227,7 @@ public class ProductionSimulationRowsLoader
 	@NonNull
 	private ImmutableList<I_PP_OrderLine_Candidate> getPPOrderLineCandidates(@NonNull final ProductionDetail productionDetail)
 	{
-		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(productionDetail.getPpOrderCandidateId());
+		final PPOrderCandidateId ppOrderCandidateId = productionDetail.getPpOrderCandidateId();
 
 		if (ppOrderCandidateId == null)
 		{

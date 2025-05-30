@@ -1037,6 +1037,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsFullLURequired (final boolean IsFullLURequired)
+	{
+		set_Value (COLUMNNAME_IsFullLURequired, IsFullLURequired);
+	}
+
+	@Override
+	public boolean isFullLURequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFullLURequired);
+	}
+
+	@Override
 	public void setIsHaddexCheck (final boolean IsHaddexCheck)
 	{
 		set_Value (COLUMNNAME_IsHaddexCheck, IsHaddexCheck);

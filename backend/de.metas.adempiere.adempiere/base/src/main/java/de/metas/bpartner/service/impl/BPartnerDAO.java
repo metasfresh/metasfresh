@@ -689,7 +689,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public LocationId getLocationId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
+		final I_C_BPartner_Location bpLocation = Check.assumeNotNull(
+				getBPartnerLocationByIdEvenInactive(bpLocationId),
+				"bpLocation not null for C_BPartner_Location_ID={}", bpLocationId.getRepoId());
 		return LocationId.ofRepoId(bpLocation.getC_Location_ID());
 	}
 

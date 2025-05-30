@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.logging.LogManager;
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -44,8 +43,10 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -80,7 +81,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -88,6 +88,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -114,8 +115,6 @@ public class PPOrderCandidateService
 	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
 	private final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo;
-	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;
-	private final PostMaterialEventService materialEventService;
 
 	private static final Logger logger = LogManager.getLogger(PPOrderCandidateService.class);
 
@@ -160,9 +159,29 @@ public class PPOrderCandidateService
 		ppOrderCandidateDAO.save(ppOrderCandidate);
 	}
 
-	public void closeCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
+	public void closeCandidates(@NonNull final PInstanceId selectionId)
 	{
-		ppOrderCandidateDAO.closeCandidate(extractPPOrderCandidateId(ppOrderCandidate));
+		final Iterator<I_PP_Order_Candidate> candidates = retrieveOCForSelection(selectionId);
+		while (candidates.hasNext())
+		{
+			final I_PP_Order_Candidate candidate = candidates.next();
+			closeCandidateNoSave(candidate);
+			ppOrderCandidateDAO.save(candidate);
+		}
+	}
+
+	public void closeCandidate(@NonNull final PPOrderCandidateId candidateId)
+	{
+		final I_PP_Order_Candidate candidate = ppOrderCandidateDAO.getById(candidateId);
+		closeCandidateNoSave(candidate);
+		ppOrderCandidateDAO.save(candidate);
+	}
+
+	private static void closeCandidateNoSave(final I_PP_Order_Candidate ppOrderCandidate)
+	{
+		ppOrderCandidate.setIsClosed(true);
+		ppOrderCandidate.setProcessed(true);
+		ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyProcessed());
 	}
 
 	public void syncLines(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -352,6 +371,7 @@ public class PPOrderCandidateService
 	private PPOrderProducerFromCandidate createPPOrderProducerFromCandidate()
 	{
 		return PPOrderProducerFromCandidate.builder()
+				.ppOrderCandidateService(this)
 				.ppOrderAllocatorBuilderService(ppOrderAllocatorBuilderService)
 				.ppOrderService(ppOrderService)
 				.trxManager(trxManager)
@@ -518,13 +538,27 @@ public class PPOrderCandidateService
 		saveRecord(newAllocationRecord);
 	}
 
-	public void updateOrderCandidateById(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	public void updateOrderCandidateAfterCommit(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
-		updateOrderCandidatesByIds(ImmutableSet.of(ppOrderCandidateId));
+		updateOrderCandidateAfterCommit(PPOrderCandidateUpdateFlagsRequest.builder().ppOrderCandidateId(ppOrderCandidateId).build());
 	}
 
-	private void updateOrderCandidatesByIds(@NonNull final Collection<PPOrderCandidateId> ppOrderCandidateIds)
+	public void updateOrderCandidateAfterCommit(@NonNull final PPOrderCandidateUpdateFlagsRequest request)
 	{
+		trxManager.accumulateAndProcessAfterCommit(
+				"PPOrderCandidateService.candidatesToUpdate",
+				ImmutableSet.of(request),
+				this::updateOrderCandidates
+		);
+	}
+
+	private void updateOrderCandidates(@NonNull final List<PPOrderCandidateUpdateFlagsRequest> requests)
+	{
+		// Index requests by candidateId, always keeping the last request for a given candidate
+		final HashMap<PPOrderCandidateId, PPOrderCandidateUpdateFlagsRequest> requestsByCandidateId = new HashMap<>();
+		requests.forEach(request -> requestsByCandidateId.put(request.getPpOrderCandidateId(), request));
+
+		final Set<PPOrderCandidateId> ppOrderCandidateIds = requestsByCandidateId.keySet();
 		final ImmutableList<I_PP_Order_Candidate> ppOrderCandidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
 		final ImmutableListMultimap<PPOrderCandidateId, I_PP_OrderCandidate_PP_Order> allocationsByCandidateId = Multimaps.index(
 				ppOrderCandidateDAO.getOrderAllocationsByCandidateIds(ppOrderCandidateIds),
@@ -533,9 +567,10 @@ public class PPOrderCandidateService
 
 		for (final I_PP_Order_Candidate ppOrderCandidate : ppOrderCandidates)
 		{
-			final UomId ppOrderCandidateUomId = UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID());
+			final PPOrderCandidateId candidateId = extractPPOrderCandidateId(ppOrderCandidate);
 
-			final Quantity qtyProcessed = allocationsByCandidateId.get(extractPPOrderCandidateId(ppOrderCandidate))
+			final UomId ppOrderCandidateUomId = UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID());
+			final Quantity qtyProcessed = allocationsByCandidateId.get(candidateId)
 					.stream()
 					.map(PPOrderCandidateService::extractQtyEntered)
 					.reduce(Quantity::add)
@@ -547,8 +582,20 @@ public class PPOrderCandidateService
 				throw new AdempiereException("QtyProcessed " + qtyProcessed + " from allocations has a different UOM than the PP_Order_Candidate's UOM: " + ppOrderCandidateUomId);
 			}
 
-			ppOrderCandidate.setQtyToProcess(BigDecimal.ZERO); // will be recalculated
+			final Quantity qtyEntered = extractQtyEntered(ppOrderCandidate);
+			final Quantity qtyToProcess = qtyEntered.subtract(qtyProcessed).toZeroIfNegative();
+
+			final PPOrderCandidateUpdateFlagsRequest request = requestsByCandidateId.get(candidateId);
+			final boolean isFullyProcessed = request.isForceMarkProcessed() || qtyProcessed.compareTo(qtyEntered) >= 0;
+
+			ppOrderCandidate.setQtyToProcess(qtyToProcess.toBigDecimal());
 			ppOrderCandidate.setQtyProcessed(qtyProcessed.toBigDecimal());
+			ppOrderCandidate.setProcessed(isFullyProcessed);
+
+			if (request.isForceClose())
+			{
+				closeCandidateNoSave(ppOrderCandidate);
+			}
 
 			ppOrderCandidateDAO.save(ppOrderCandidate);
 		}
@@ -569,5 +616,24 @@ public class PPOrderCandidateService
 	private static Quantity extractQtyEntered(@NonNull final I_PP_OrderCandidate_PP_Order record)
 	{
 		return Quantitys.of(record.getQtyEntered(), UomId.ofRepoId(record.getC_UOM_ID()));
+	}
+
+	private static Quantity extractQtyEntered(@NonNull final I_PP_Order_Candidate record)
+	{
+		return Quantitys.of(record.getQtyEntered(), UomId.ofRepoId(record.getC_UOM_ID()));
+	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	public static class PPOrderCandidateUpdateFlagsRequest
+	{
+		@NonNull PPOrderCandidateId ppOrderCandidateId;
+		boolean forceMarkProcessed;
+		boolean forceClose;
+
 	}
 }

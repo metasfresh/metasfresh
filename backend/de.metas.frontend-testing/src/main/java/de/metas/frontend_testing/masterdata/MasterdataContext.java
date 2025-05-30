@@ -60,14 +60,21 @@ public class MasterdataContext
 
 	public <T extends RepoIdAware> T getId(@NonNull final Identifier identifier, final Class<T> idClass)
 	{
+		return getOptionalId(identifier, idClass)
+				.orElseThrow(() -> new IllegalArgumentException("No actual ID found for " + identifier + "/" + idClass.getSimpleName() + " in " + identifiers.keySet()));
+	}
+
+	public <T extends RepoIdAware> Optional<T> getOptionalId(@NonNull final Identifier identifier, final Class<T> idClass)
+	{
+		if (identifier.isNullPlaceholder())
+		{
+			return Optional.empty();
+		}
+		
 		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(idClass, identifier);
 		//noinspection unchecked
 		final T id = (T)identifiers.get(typeAndIdentifier);
-		if (id == null)
-		{
-			throw new IllegalArgumentException("No identifier found for " + typeAndIdentifier + " in " + identifiers.keySet());
-		}
-		return id;
+		return Optional.ofNullable(id);
 	}
 
 	public <T extends RepoIdAware> T getIdOfType(@NonNull final Class<T> idClass)
