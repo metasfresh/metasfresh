@@ -14,12 +14,14 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.notification.impl.NotificationSeverity;
 import de.metas.record.warning.RecordWarningCreateRequest;
 import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -30,6 +32,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -135,7 +138,11 @@ public class BusinessRuleEventProcessorCommand
 		logger.debug("Processing event: {}", event);
 
 		final BusinessRuleStopwatch stopwatch = logger.newStopwatch();
-		final TableRecordReference targetRecordRef = retrieveTargetRecordRef(event);
+
+		final TargetRecordInfo targetRecordInfo = retrieveTargetRecordInfo(event);
+
+		final TableRecordReference targetRecordRef = targetRecordInfo == null ? null : targetRecordInfo.getTargetRecordRef();
+
 		logger.setTargetRecordRef(targetRecordRef);
 		logger.debug(stopwatch, "Retrieved target record: {}", targetRecordRef);
 		if (targetRecordRef == null)
@@ -177,54 +184,112 @@ public class BusinessRuleEventProcessorCommand
 			try (final IAutoCloseable ignored = Env.switchContext(tempCtx))
 			{
 				final AdMessageKey messageKey = getAdMessageKey(rule);
+
+				final String documentSummary = msgBL.translate(Env.getCtx(), targetRecordRef.getTableName()) + " " + targetRecordInfo.getDocumentSummary();
+
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
 						.businessRuleId(rule.getId())
-						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey))
+						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, Collections.singletonList(documentSummary)))
 						.userId(event.getTriggeringUserId())
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
-				BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(RecordWarningNoticeRequest.builder()
+						.userId(event.getTriggeringUserId())
+						.recordWarningId(recordWarningId)
+						.notificationSeverity(NotificationSeverity.Warning)
+						.messageKey(messageKey)
+						.messageParams(Collections.singletonList(documentSummary))
+						.build());
+
 				logger.debug(stopwatch, "=> Created user notification for target record");
 			}
 		}
 	}
 
 	@Nullable
-	private TableRecordReference retrieveTargetRecordRef(@NonNull final BusinessRuleEvent event)
+	private TargetRecordInfo retrieveTargetRecordInfo(@NonNull final BusinessRuleEvent event)
 	{
 		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
 		final BusinessRuleTrigger trigger = rule.getTriggerById(event.getTriggerId());
 
 		final AdTableId sourceTableId = event.getSourceRecordRef().getAdTableId();
 		final String sourceTableName = TableIdsCache.instance.getTableName(sourceTableId);
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
+		final String sourceKeyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
 		final int sourceRecordId = event.getSourceRecordRef().getRecord_ID();
-		final String sql = "SELECT " + trigger.getTargetRecordMappingSQL() + " FROM " + sourceTableName + " WHERE " + keyColumnName + "=?";
-		final Integer targetRecordId = getRecordIdFromSql(sql, sourceRecordId, keyColumnName);
-		return targetRecordId == null ? null : TableRecordReference.of(rule.getAdTableId(), targetRecordId);
-	}
 
-	@Nullable
-	private static Integer getRecordIdFromSql(final String sql, final int sourceRecordId, final String keyColumnName)
-	{
-		final Integer targetRecordId = DB.retrieveFirstRowOrNull(sql, Collections.singletonList(sourceRecordId), rs -> {
-			final int intValue = rs.getInt(1);
-			return rs.wasNull() ? null : intValue;
+		final AdTableId targetTableId = rule.getAdTableId();
+		final String targetTableName = TableIdsCache.instance.getTableName(targetTableId);
+		final String targetKeyColumnName =  InterfaceWrapperHelper.getKeyColumnName(targetTableName);
+
+		final POInfo targetPOInfo = POInfo.getPOInfo(targetTableName);
+		if (targetPOInfo == null)
+		{
+			return null;
+		}
+
+		final String targetRecordMappingSQL = trigger.getTargetRecordMappingSQL();
+		if(targetRecordMappingSQL == null)
+		{
+			return null;
+		}
+
+		final StringBuilder sql = new StringBuilder();
+
+
+
+		sql.append("SELECT target.")
+				.append(targetKeyColumnName)
+	.append(", ''");
+
+		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
+		{
+			sql.append(" || ' ' || target.").append(InterfaceWrapperHelper.COLUMNNAME_DocumentNo);
+		}
+
+		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Value))
+		{
+			sql.append(" || ' ' || target.").append(InterfaceWrapperHelper.COLUMNNAME_Value);
+		}
+
+		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Name))
+		{
+			sql.append(" || ' ' || target.").append(InterfaceWrapperHelper.COLUMNNAME_Name);
+		}
+
+		sql.append(" FROM ").append(sourceTableName).append(" JOIN ")
+				.append(targetTableName).append(" target ")
+				.append(" ON ").append("target.").append(targetKeyColumnName).append(" = ");
+
+		if(targetRecordMappingSQL.startsWith("("))
+		{
+			sql.append(targetRecordMappingSQL);
+		}
+		else
+		{
+			sql.append(sourceTableName).append(".").append(targetRecordMappingSQL);
+		}
+		sql.append(" WHERE ").append(sourceTableName).append(".").append(sourceKeyColumnName).append("=?");
+
+		return DB.retrieveFirstRowOrNull(sql.toString(), Collections.singletonList(sourceRecordId), rs -> {
+			final int targetRecordId = rs.getInt(1);
+			final String documentSummary =  StringUtils.trimBlankToNull(rs.getString(2));
+			if (targetRecordId <= 0)
+			{
+				return null;
+			}
+
+			final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(targetKeyColumnName);
+			if (targetRecordId < firstValidId)
+			{
+				return null;
+			}
+			return TargetRecordInfo.builder()
+					.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId))
+					.documentSummary(documentSummary != null ? documentSummary : "" + targetRecordId)
+					.build();
 		});
-
-		if (targetRecordId == null)
-		{
-			return null;
-		}
-
-		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName);
-		if (targetRecordId < firstValidId)
-		{
-			return null;
-		}
-		return targetRecordId;
 	}
 
 	private boolean isPreconditionsMet(
