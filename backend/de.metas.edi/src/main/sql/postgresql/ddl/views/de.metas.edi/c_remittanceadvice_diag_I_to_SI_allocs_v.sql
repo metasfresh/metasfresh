@@ -24,27 +24,27 @@ DROP VIEW IF EXISTS "de.metas.edi".c_remittanceadvice_diag_I_to_SI_allocs_v
 ;
 
 CREATE OR REPLACE VIEW "de.metas.edi".c_remittanceadvice_diag_I_to_SI_allocs_v AS
-SELECT 'invoice-to-serviceInvoice'      AS allocation_type,
-       ral.created                      AS ral_created,
+SELECT 'invoice-to-serviceInvoice'::text AS allocation_type,
+       ral.created                       AS ral_created,
        ral.c_remittanceadvice_id,
        ral.c_remittanceadvice_line_id,
-       inv.c_invoice_id                 AS inv_c_invoice_id,
-       inv.docstatus                    AS inv_docstatus,
-       inv.docstatus = 'CO'             AS inv_docstatus_ok,
-       inv_dt.docbasetype               AS inv_c_invoice_docbasetype,
-       inv_dt.name                      AS inv_c_invoice_doctypename,
-       sinv.c_invoice_id                AS sinv_c_invoice_id,
-       sinv.docstatus                   AS sinv_docstatus,
-       al.amount                        AS al_amount,
-       ral.servicefeeamount             AS al_amount_exp,
-       al.amount = ral.servicefeeamount AS al_amount_ok,
-       al.discountamt                   AS al_discountamt,
-       al.discountamt = 0               AS al_discountamt_ok,
-       al.writeoffamt                   AS al_writeoffamt,
-       al.writeoffamt = 0               AS al_writeoffamt_ok,
-       al.overunderamt                  AS al_overunderamt,
-       al.c_allocationhdr_id            AS al_c_allocationhdr_id,
-       al.c_allocationline_id           AS al_c_allocationline_id
+       inv.c_invoice_id                  AS inv_c_invoice_id,
+       inv.docstatus                     AS inv_docstatus,
+       inv.docstatus = 'CO'              AS inv_docstatus_ok,
+       inv_dt.docbasetype                AS inv_c_invoice_docbasetype,
+       inv_dt.name                       AS inv_c_invoice_doctypename,
+       sinv.c_invoice_id                 AS sinv_c_invoice_id,
+       sinv.docstatus                    AS sinv_docstatus,
+       al.amount                         AS al_amount,
+       ral.servicefeeamount              AS al_amount_exp,
+       al.amount = ral.servicefeeamount  AS al_amount_ok,
+       al.discountamt                    AS al_discountamt,
+       al.discountamt = 0                AS al_discountamt_ok,
+       al.writeoffamt                    AS al_writeoffamt,
+       al.writeoffamt = 0                AS al_writeoffamt_ok,
+       al.overunderamt                   AS al_overunderamt,
+       al.c_allocationhdr_id             AS al_c_allocationhdr_id,
+       al.c_allocationline_id            AS al_c_allocationline_id
 FROM c_remittanceadvice_line ral
          JOIN c_remittanceadvice ra ON ral.c_remittanceadvice_id = ra.c_remittanceadvice_id
          JOIN c_invoice inv ON ral.c_invoice_id = inv.c_invoice_id

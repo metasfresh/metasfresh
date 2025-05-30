@@ -210,6 +210,7 @@ public class PPOrderUtil
 				.warehouseId(ppOrderData.getWarehouseId())
 				.plantId(ppOrderData.getPlantId())
 				.productId(productId)
+				.includeWithNullProductId(false)
 				.attributeSetInstanceId(asiId)
 				.build();
 

@@ -15,7 +15,7 @@ UPDATE AD_Val_Rule SET Code='(''@DocBaseType@''=''ARI'' AND AD_Ref_List.ValueNam
 
 -- 2021-12-06T18:51:04.978Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541025,TO_TIMESTAMP('2021-12-06 20:51:04','YYYY-MM-DD HH24:MI:SS'),100,'ARI',1,'de.metas.contracts.commission',1000003,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Lizenzgebühr','Lizenzgebühr',TO_TIMESTAMP('2021-12-06 20:51:04','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541025,TO_TIMESTAMP('2021-12-06 20:51:04','YYYY-MM-DD HH24:MI:SS'),100,'ARI',1,'de.metas.contracts.commission',1000003,'N','N','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Lizenzgebühr','Lizenzgebühr',TO_TIMESTAMP('2021-12-06 20:51:04','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-12-06T18:51:05.043Z
