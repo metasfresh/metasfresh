@@ -27,9 +27,7 @@ import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
-import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -58,8 +56,6 @@ public class C_Invoice
 	private static final Logger logger = LogManager.getLogger(C_Invoice.class);
 
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService;
-
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private C_Invoice(@NonNull final EDIDocOutBoundLogService ediDocOutBoundLogService)
 	{
@@ -112,19 +108,6 @@ public class C_Invoice
 	{
 		final ITranslatableString errorMsgTrl = TranslatableStrings.parse(invoiceRecord.getEDIErrorMsg());
 		invoiceRecord.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void onCompleteEdiNotEnabled(final I_C_Invoice invoice)
-	{
-		// task 08926
-		// Set the export status to "Don't send" if the isEdiEnabled flag is on false
-
-		final boolean isEdiEnabled = invoice.isEdiEnabled();
-		if (!isEdiEnabled)
-		{
-			invoice.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_DontSend);
-		}
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
