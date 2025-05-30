@@ -31,6 +31,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.api.IEDIDocumentBL;
@@ -93,7 +94,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		if (!document.isSOTrx() && document.isEdiEnabled())
 		{
 			loggable.addLog("IsSoTrx=false; => update IsEdiEnabled to false");
-			document.setIsEdiEnabled(false); // 08619: don't assume that the flag is already false from the beginning, but make sure it is false now
+			setEdiEnabled(document, false); // 08619: don't assume that the flag is already false from the beginning, but make sure it is false now
 			return document.isEdiEnabled();
 		}
 
@@ -102,19 +103,36 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		if (docStatus.isReversed() && document.isEdiEnabled())
 		{
 			loggable.addLog("DocStatus={} is reversed; => update IsEdiEnabled to false", docStatus);
-			document.setIsEdiEnabled(false);
+			setEdiEnabled(document, false);
 			return document.isEdiEnabled();
 		}
 
 		if (document.getReversal_ID() > 0 && document.isEdiEnabled())
 		{
 			loggable.addLog("Reversal_ID={} (i.e. >0); => update IsEdiEnabled to false", docStatus);
-			document.setIsEdiEnabled(false);
+			setEdiEnabled(document, false);
 			return document.isEdiEnabled();
 		}
 
 		logger.debug("return non-updated isEdiEnabled={}", document.isEdiEnabled());
 		return document.isEdiEnabled();
+	}
+
+	@Override
+	public void setEdiEnabled(@NonNull final I_EDI_Document_Extension document, final boolean isEdiEnabled)
+	{
+		if(!InterfaceWrapperHelper.isNullOrEmpty(document, I_EDI_Document_Extension.COLUMNNAME_IsEdiEnabled) && document.isEdiEnabled() == isEdiEnabled)
+		{
+			return;
+		}
+
+		if(!isEdiEnabled && EDIExportStatus.isInProgressOrSend(EDIExportStatus.ofNullableCode(document.getEDI_ExportStatus())))
+		{
+			throw new AdempiereException("EdiEnabled can't be deactivated, if export is in progress or sent ");
+		}
+
+		document.setIsEdiEnabled(isEdiEnabled);
+		document.setEDI_ExportStatus(isEdiEnabled ? EDIExportStatus.Pending.getCode() : EDIExportStatus.DontSend.getCode());
 	}
 
 	@Override
