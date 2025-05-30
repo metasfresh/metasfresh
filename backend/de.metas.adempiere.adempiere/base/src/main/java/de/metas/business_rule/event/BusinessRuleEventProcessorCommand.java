@@ -20,8 +20,8 @@ import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
 import de.metas.user.api.IUserBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -185,7 +185,7 @@ public class BusinessRuleEventProcessorCommand
 			{
 				final AdMessageKey messageKey = getAdMessageKey(rule);
 
-				final String documentSummary = msgBL.translate(Env.getCtx(), targetRecordRef.getTableName()) + targetRecordInfo.getDocumentSummary();
+				final String documentSummary = msgBL.translate(Env.getCtx(), targetRecordRef.getTableName()) + " " + targetRecordInfo.getDocumentSummary();
 
 				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
@@ -219,39 +219,58 @@ public class BusinessRuleEventProcessorCommand
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
 		final int sourceRecordId = event.getSourceRecordRef().getRecord_ID();
 
-		final POInfo poInfo = POInfo.getPOInfo(sourceTableName);
-		if (poInfo == null)
+		final AdTableId targetTableId = rule.getAdTableId();
+		final String targetTableName = TableIdsCache.instance.getTableName(targetTableId);
+		final String targetKeyColumnName =  InterfaceWrapperHelper.getKeyColumnName(targetTableName);
+
+		final POInfo targetPOInfo = POInfo.getPOInfo(targetTableName);
+		if (targetPOInfo == null)
+		{
+			return null;
+		}
+
+		final String targetRecordMappingSQL = trigger.getTargetRecordMappingSQL();
+		if(targetRecordMappingSQL == null)
 		{
 			return null;
 		}
 
 		final StringBuilder sql = new StringBuilder();
-
-		sql.append("SELECT ")
-				.append(trigger.getTargetRecordMappingSQL())
-				.append(" , ''");
-
-		if (poInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
+		sql.append("SELECT ");
+		if(targetRecordMappingSQL.startsWith("("))
 		{
-			sql.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_DocumentNo);
+			sql.append(targetRecordMappingSQL);
+		}
+		else
+		{
+				sql.append(sourceTableName).append(".").append(targetRecordMappingSQL);
 		}
 
-		if (poInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Value))
+		sql.append(", ''");
+
+		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
 		{
-			sql.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_Value);
+			sql.append(" || ' ' || target.").append(InterfaceWrapperHelper.COLUMNNAME_DocumentNo);
 		}
 
-		if (poInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Name))
+		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Value))
 		{
-			sql.append(" || ' ' || ").append(InterfaceWrapperHelper.COLUMNNAME_Name);
+			sql.append(" || ' ' || target.").append(InterfaceWrapperHelper.COLUMNNAME_Value);
 		}
 
-		sql.append(" FROM ").append(sourceTableName).append(" WHERE ").append(keyColumnName).append("=?");
+		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Name))
+		{
+			sql.append(" || ' ' || target.").append(InterfaceWrapperHelper.COLUMNNAME_Name);
+		}
+
+		sql.append(" FROM ").append(sourceTableName).append(" ").append(sourceTableName).append(" JOIN ")
+				.append(targetTableName).append(" target ON ").append(sourceTableName).append(".").append(keyColumnName).append("=target.").append(targetKeyColumnName)
+				.append(" WHERE ").append(sourceTableName).append(".").append(keyColumnName).append("=?");
 
 		return DB.retrieveFirstRowOrNull(sql.toString(), Collections.singletonList(sourceRecordId), rs -> {
 			final int targetRecordId = rs.getInt(1);
-			final String documentSummary = rs.getString(2);
-			if (rs.wasNull() || targetRecordId <= 0)
+			final String documentSummary =  StringUtils.trimBlankToNull(rs.getString(2));
+			if (targetRecordId <= 0)
 			{
 				return null;
 			}
@@ -262,8 +281,8 @@ public class BusinessRuleEventProcessorCommand
 				return null;
 			}
 			return TargetRecordInfo.builder()
-					.targetRecordRef(TableRecordReference.of(rule.getAdTableId(), targetRecordId))
-					.documentSummary(Check.isEmpty(documentSummary, true) ? " " + targetRecordId : documentSummary)
+					.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId))
+					.documentSummary(documentSummary != null ? documentSummary : "" + targetRecordId)
 					.build();
 		});
 	}
