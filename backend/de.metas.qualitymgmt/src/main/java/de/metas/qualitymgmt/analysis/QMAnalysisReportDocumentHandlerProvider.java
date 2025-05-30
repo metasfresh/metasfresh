@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.qm.analysis;
+package de.metas.qualitymgmt.analysis;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
