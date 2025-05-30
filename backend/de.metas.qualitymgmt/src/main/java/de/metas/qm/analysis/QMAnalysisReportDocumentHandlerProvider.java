@@ -24,25 +24,28 @@ package de.metas.qm.analysis;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_QM_Analysis_Report;
 import org.springframework.stereotype.Component;
 
 @Component
-public class QMAnalysisReportDocumentHandlerProvider implements DocumentHandlerProvider {
+@RequiredArgsConstructor
+public class QMAnalysisReportDocumentHandlerProvider implements DocumentHandlerProvider
+{
 
+	@NonNull
 	private final QMAnalysisReportDocumentHandler handler;
 
-	public QMAnalysisReportDocumentHandlerProvider(QMAnalysisReportDocumentHandler handler) {
-		this.handler = handler;
-	}
-
 	@Override
-	public String getHandledTableName() {
+	public String getHandledTableName()
+	{
 		return I_QM_Analysis_Report.Table_Name;
 	}
 
 	@Override
-	public DocumentHandler provideForDocument(final Object model) {
+	public DocumentHandler provideForDocument(final Object model)
+	{
 		return handler;
 	}
 }
