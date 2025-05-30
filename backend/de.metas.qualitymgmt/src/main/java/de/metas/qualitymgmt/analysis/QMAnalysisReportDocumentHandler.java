@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.qualitymgmt
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,21 +20,32 @@
  * #L%
  */
 
-package de.metas.qm.analysis;
+package de.metas.qualitymgmt.analysis;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.materialtracking.IMaterialTrackingAttributeBL;
+import de.metas.materialtracking.IMaterialTrackingDAO;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_QM_Analysis_Report;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
+@Component
 public class QMAnalysisReportDocumentHandler implements DocumentHandler
 {
+
+	private final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
+	private final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 
 	@Override
 	public String getSummary(@NonNull final DocumentTableFields docFields)
@@ -74,6 +85,15 @@ public class QMAnalysisReportDocumentHandler implements DocumentHandler
 		if (analysisReport.isProcessed())
 		{
 			throw new AdempiereException("@Processed@=@Y@");
+		}
+
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(analysisReport.getM_AttributeSetInstance_ID());
+		final I_M_Material_Tracking materialTracking = materialTrackingAttributeBL.getMaterialTrackingOrNull(asiId);
+
+		if (materialTracking != null)
+		{
+			final I_M_Material_Tracking_Ref ref = materialTrackingDAO.createMaterialTrackingRefNoSave(materialTracking, analysisReport);
+			InterfaceWrapperHelper.save(ref);
 		}
 
 		analysisReport.setProcessed(true);

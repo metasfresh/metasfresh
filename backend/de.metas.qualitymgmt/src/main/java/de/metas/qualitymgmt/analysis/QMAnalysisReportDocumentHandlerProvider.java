@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.qualitymgmt
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,16 +20,22 @@
  * #L%
  */
 
-package de.metas.qm.analysis;
+package de.metas.qualitymgmt.analysis;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_QM_Analysis_Report;
 import org.springframework.stereotype.Component;
 
 @Component
-public class QMAnalysisReportDocumentHandlerProvider  implements DocumentHandlerProvider
+@RequiredArgsConstructor
+public class QMAnalysisReportDocumentHandlerProvider implements DocumentHandlerProvider
 {
+
+	@NonNull
+	private final QMAnalysisReportDocumentHandler handler;
 
 	@Override
 	public String getHandledTableName()
@@ -40,7 +46,7 @@ public class QMAnalysisReportDocumentHandlerProvider  implements DocumentHandler
 	@Override
 	public DocumentHandler provideForDocument(final Object model)
 	{
-		return new QMAnalysisReportDocumentHandler();
+		return handler;
 	}
-
 }
+
