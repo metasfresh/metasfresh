@@ -258,8 +258,9 @@ public class BusinessRuleEventProcessorCommand
 			sql.append(" || ' ' || target.").append(InterfaceWrapperHelper.COLUMNNAME_Name);
 		}
 
-		sql.append(" FROM ").append(targetTableName).append(" target ").append(" JOIN ")
-				.append(sourceTableName).append(" ON ").append("target.").append(targetKeyColumnName).append(" = ");
+		sql.append(" FROM ").append(sourceTableName).append(" JOIN ")
+				.append(targetTableName).append(" target ")
+				.append(" ON ").append("target.").append(targetKeyColumnName).append(" = ");
 
 		if(targetRecordMappingSQL.startsWith("("))
 		{
@@ -279,7 +280,7 @@ public class BusinessRuleEventProcessorCommand
 				return null;
 			}
 
-			final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(sourceKeyColumnName);
+			final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(targetKeyColumnName);
 			if (targetRecordId < firstValidId)
 			{
 				return null;
