@@ -339,13 +339,11 @@
                 <version>1.5.1</version>
             </dependency>
 
-            <!-- Swagger -->
             <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-boot-starter</artifactId>
-                <version>${springfox-swagger.version}</version>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${org.springdoc.version}</version>
             </dependency>
-
 
             <dependency>
                 <groupId>com.google.guava</groupId>

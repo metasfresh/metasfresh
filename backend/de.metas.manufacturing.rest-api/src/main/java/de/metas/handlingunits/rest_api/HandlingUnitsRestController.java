@@ -59,7 +59,6 @@ import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -179,7 +178,7 @@ public class HandlingUnitsRestController
 
 	@GetMapping("/byIds")
 	public JsonHUList getByIds(
-			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = HU_IDENTIFIER_DOC) //
 			@RequestParam(name = "M_HU_IDs") final List<Integer> huRepoIds)
 	{
 		return handlingUnitsService.getFullHUsList(HuId.ofRepoIds(huRepoIds), Env.getADLanguageOrBaseLanguage());

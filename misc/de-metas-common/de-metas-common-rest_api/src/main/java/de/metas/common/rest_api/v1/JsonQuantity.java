@@ -22,24 +22,23 @@
 
 package de.metas.common.rest_api.v1;
 
-import java.math.BigDecimal;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.math.BigDecimal;
+
 @Value
 public class JsonQuantity
 {
-	@ApiModelProperty(position = 10, required = true)
+	@Schema(required = true)
 	BigDecimal qty;
 
-	@ApiModelProperty(position = 20, required = true, //
-			value = "Unit of measurement; this translates to `C_UOM.X12DE355`.")
+	@Schema(required = true, //
+			description = "Unit of measurement; this translates to `C_UOM.X12DE355`.")
 	String uomCode;
 
 	@JsonCreator

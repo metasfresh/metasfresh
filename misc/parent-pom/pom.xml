@@ -46,11 +46,7 @@
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
-        <springfox-swagger.version>3.0.0</springfox-swagger.version>
-        <!--        Compatibility with Springfox-->
-        <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
-        <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
-        <springfox-enum-plugin.version>3.0.0</springfox-enum-plugin.version>
+        <springdoc-swagger.version>1.8.0</springdoc-swagger.version>
         
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
         <slf4j-api.version>1.7.25</slf4j-api.version>
@@ -75,6 +71,7 @@
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>30.1.1-jre</guava.version>
+        <org.springdoc.version>2.8.8</org.springdoc.version>
     </properties>
 
     <modules>
@@ -140,7 +137,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.34</version>
+                <version>1.18.38</version>
             </dependency>
 
             <dependency>

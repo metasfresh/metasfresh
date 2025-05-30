@@ -69,13 +69,6 @@
                 <artifactId>lombok</artifactId>
                 <version>1.18.38</version>
             </dependency>
-            
-            <!-- https://github.com/hoereth/springfox-enum-plugin -->
-            <dependency>
-                <groupId>de.pentabyte</groupId>
-                <artifactId>springfox-enum-plugin</artifactId>
-                <version>${springfox-enum-plugin.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -145,16 +138,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Swagger -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox-swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox-swagger.version}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${org.springdoc.version}</version>
         </dependency>
     </dependencies>
     

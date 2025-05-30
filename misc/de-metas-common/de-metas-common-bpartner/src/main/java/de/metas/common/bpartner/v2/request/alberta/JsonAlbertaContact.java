@@ -22,7 +22,7 @@
 
 package de.metas.common.bpartner.v2.request.alberta;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -35,25 +35,25 @@ import java.time.Instant;
 @EqualsAndHashCode
 public class JsonAlbertaContact
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	@Nullable
 	private String gender;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean genderSet;
 
-	@ApiModelProperty(position = 10)
+	@Schema
 	@Nullable
 	private String title;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean titleSet;
 
-	@ApiModelProperty(position = 10)
+	@Schema
 	@Nullable
 	private Instant timestamp;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean timestampSet;
 
 	public void setGender(@Nullable final String gender)

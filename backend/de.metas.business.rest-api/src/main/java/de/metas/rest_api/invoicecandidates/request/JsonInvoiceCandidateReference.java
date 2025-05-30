@@ -1,21 +1,19 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.common.rest_api.common.JsonExternalId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -41,12 +39,12 @@ import lombok.Value;
 @Value
 public class JsonInvoiceCandidateReference
 {
-	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.String", example = "ExternalHeaderId_1",//
-			value = "Used to select which invoice candidates should be enqueued.")
+	@Schema(nullable = false, type = "java.lang.String", example = "ExternalHeaderId_1",//
+			description = "Used to select which invoice candidates should be enqueued.")
 	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 20, allowEmptyValue = true, dataType = "java.lang.String", example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]", //
-			value = """
+	@Schema(nullable = true, type = "java.lang.String", example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]", //
+			description = """
 					Optional, used to select which invoice candidates which have these `C_Invoice_Candidate.ExternalLineId`s should be enqueued.
 					Inherited from order line candidates.
 					If not specified, then all invoice candidate with the specified `externalHeaderId` are matched""")

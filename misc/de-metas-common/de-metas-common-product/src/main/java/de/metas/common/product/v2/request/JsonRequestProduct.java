@@ -24,7 +24,7 @@ package de.metas.common.product.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -46,83 +46,83 @@ public class JsonRequestProduct
 		ITEM, SERVICE
 	}
 
-	@ApiModelProperty(position = 20, value = "Corresponding to `M_Product.Value`")
+	@Schema(description = "Corresponding to `M_Product.Value`")
 	private String code;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean codeSet;
 
-	@ApiModelProperty(position = 30, value = "Corresponding to `M_Product.Name`", required = true)
+	@Schema(description = "Corresponding to `M_Product.Name`", required = true)
 	private String name;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean nameSet;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to `M_Product.Type`", required = true)
+	@Schema(description = "Corresponding to `M_Product.Type`", required = true)
 	private Type type;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean typeSet;
 
-	@ApiModelProperty(position = 50, value = "Corresponding to `M_Product.C_UOM_ID`", required = true)
+	@Schema(description = "Corresponding to `M_Product.C_UOM_ID`", required = true)
 	private String uomCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean uomCodeSet;
 
-	@ApiModelProperty(position = 60, value = "Corresponding to `M_Product.UPC`")
+	@Schema(description = "Corresponding to `M_Product.UPC`")
 	private String ean;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean eanSet;
 
-	@ApiModelProperty(position = 70, value = "Corresponding to `M_Product.GTIN`")
+	@Schema(description = "Corresponding to `M_Product.GTIN`")
 	private String gtin;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean gtinSet;
 
-	@ApiModelProperty(position = 80, value = "Corresponding to `M_Product.Description`")
+	@Schema(description = "Corresponding to `M_Product.Description`")
 	private String description;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean descriptionSet;
 
-	@ApiModelProperty(position = 90, value = "Corresponding to `M_Product.isDiscontinued`")
+	@Schema(description = "Corresponding to `M_Product.isDiscontinued`")
 	private Boolean discontinued;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean discontinuedSet;
 
-	@ApiModelProperty(position = 100, value = "Corresponding to `M_Product.discontinuedFrom`", example = "2021-11-08")
+	@Schema(description = "Corresponding to `M_Product.discontinuedFrom`", example = "2021-11-08")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate discontinuedFrom;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean discontinuedFromSet;
 
-	@ApiModelProperty(position = 110, value = "Corresponding to `M_Product.isActive`")
+	@Schema(description = "Corresponding to `M_Product.isActive`")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 120, value = "Corresponding to `M_Product.isStocked`")
+	@Schema(description = "Corresponding to `M_Product.isStocked`")
 	private Boolean stocked;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean stockedSet;
 
-	@ApiModelProperty(position = 130, value = PRODUCT_CATEGORY_IDENTIFIER_DOC)
+	@Schema(description = PRODUCT_CATEGORY_IDENTIFIER_DOC)
 	private String productCategoryIdentifier;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean productCategoryIdentifierSet;
 
-	@ApiModelProperty(position = 140, value = READ_ONLY_SYNC_ADVISE_DOC)
+	@Schema(description = READ_ONLY_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
-	@ApiModelProperty(position = 150)
+	@Schema
 	private List<JsonRequestBPartnerProductUpsert> bpartnerProductItems;
 
 	public void setCode(final @NonNull String code)

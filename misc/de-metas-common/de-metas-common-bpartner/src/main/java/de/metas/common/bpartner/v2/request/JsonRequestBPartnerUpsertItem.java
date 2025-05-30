@@ -24,8 +24,7 @@ package de.metas.common.bpartner.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,26 +36,24 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_D
 
 @Value
 @Builder(toBuilder = true)
-@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+@Schema(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestBPartnerUpsertItem
 {
-	@ApiModelProperty(position = 10,
-			value = BPARTNER_IDENTIFIER_DOC) //
+	@Schema(description = BPARTNER_IDENTIFIER_DOC) //
 	@NonNull
 	String bpartnerIdentifier;
 
-	@ApiModelProperty(position = 20, //
-			value = "The version of the business partner." + EXTERNAL_VERSION_DOC)
+	@Schema(//
+			description = "The version of the business partner." + EXTERNAL_VERSION_DOC)
 	String externalVersion;
 
 
-	@ApiModelProperty(position = 25, //
-			value = "URL of the resource in the target external system.")
+	@Schema(//
+			description = "URL of the resource in the target external system.")
 	@Nullable
 	String externalReferenceUrl;
 
-	@ApiModelProperty(position = 30,
-			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+	@Schema(description = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestComposite bpartnerComposite;
 

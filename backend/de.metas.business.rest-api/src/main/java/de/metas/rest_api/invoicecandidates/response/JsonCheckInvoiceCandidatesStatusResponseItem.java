@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonWorkPackageStatus;
 import de.metas.rest_api.utils.MetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -39,46 +39,46 @@ import java.util.List;
 @Value
 public class JsonCheckInvoiceCandidatesStatusResponseItem
 {
-	@ApiModelProperty(position = 10, dataType = "java.lang.String")
+	@Schema(type = "java.lang.String")
 	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 20, dataType = "java.lang.String")
+	@Schema(type = "java.lang.String")
 	JsonExternalId externalLineId;
 
-	@ApiModelProperty(position = 30, dataType = "java.lang.String")
+	@Schema(type = "java.lang.String")
 	MetasfreshId metasfreshId;
 
-	@ApiModelProperty(position = 40)
+	@Schema
 	@Nullable
 	BigDecimal qtyEntered;
 
-	@ApiModelProperty(position = 50)
+	@Schema
 	@Nullable
 	BigDecimal qtyToInvoice;
 
-	@ApiModelProperty(position = 60)
+	@Schema
 	@Nullable
 	BigDecimal qtyInvoiced;
 
-	@ApiModelProperty(position = 70)
+	@Schema
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	LocalDate dateInvoiced;
 
-	@ApiModelProperty(position = 80)
+	@Schema
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	LocalDate dateToInvoice;
 
-	@ApiModelProperty(position = 90)
+	@Schema
 	boolean processed;
 
-	@ApiModelProperty(position = 100)
+	@Schema
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<JsonInvoiceStatus> invoices;
 
-	@ApiModelProperty(position = 110)
+	@Schema
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<JsonWorkPackageStatus> workPackages;
