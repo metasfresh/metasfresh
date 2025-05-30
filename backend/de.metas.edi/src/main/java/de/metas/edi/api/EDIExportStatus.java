@@ -22,14 +22,18 @@
 
 package de.metas.edi.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.esb.edi.model.X_EDI_Desadv;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
 
+@Getter
+@RequiredArgsConstructor
 public enum EDIExportStatus implements ReferenceListAwareEnum
 {
 	Invalid(X_EDI_Desadv.EDI_EXPORTSTATUS_Invalid),
@@ -40,13 +44,10 @@ public enum EDIExportStatus implements ReferenceListAwareEnum
 	Enqueued(X_EDI_Desadv.EDI_EXPORTSTATUS_Enqueued),
 	DontSend(X_EDI_Desadv.EDI_EXPORTSTATUS_DontSend),
 	;
-	@Getter
-	private final String code;
 
-	EDIExportStatus(final String code)
-	{
-		this.code = code;
-	}
+	private static final ImmutableSet<EDIExportStatus> SENT_OR_IN_PROGRESS = ImmutableSet.of(Enqueued, SendingStarted, Sent);
+
+	private final String code;
 
 	public static EDIExportStatus ofCode(@NonNull final String code)
 	{
@@ -62,4 +63,8 @@ public enum EDIExportStatus implements ReferenceListAwareEnum
 	private static final ReferenceListAwareEnums.ValuesIndex<EDIExportStatus> index = ReferenceListAwareEnums.index(values());
 
 	public static final int AD_Reference_ID = X_EDI_Desadv.EDI_EXPORTSTATUS_AD_Reference_ID;
+
+	public static boolean isInProgressOrSend(@Nullable final EDIExportStatus ediExportStatus){return SENT_OR_IN_PROGRESS.contains(ediExportStatus);}
+
+
 }
