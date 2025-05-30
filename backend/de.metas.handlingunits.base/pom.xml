@@ -121,7 +121,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.metas</groupId>
+            <groupId>de.metas.qualitymgmt</groupId>
             <artifactId>de.metas.qualitymgmt</artifactId>
             <version>10.0.0</version>
             <scope>compile</scope>

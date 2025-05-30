@@ -7,6 +7,7 @@
         <version>10.0.0</version>
     </parent>
 
+    <groupId>de.metas.qualitymgmt</groupId>
     <artifactId>de.metas.qualitymgmt</artifactId>
     <packaging>jar</packaging>
 
@@ -40,10 +41,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
         </dependency>
     </dependencies>
 </project>

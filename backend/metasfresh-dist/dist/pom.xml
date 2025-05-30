@@ -137,7 +137,7 @@
         </dependency>
 
         <dependency>
-            <groupId>de.metas</groupId>
+            <groupId>de.metas.qualitymgmt</groupId>
             <artifactId>de.metas.qualitymgmt</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
