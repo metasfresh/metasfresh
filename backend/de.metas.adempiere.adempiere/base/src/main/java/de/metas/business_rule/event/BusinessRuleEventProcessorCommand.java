@@ -216,7 +216,7 @@ public class BusinessRuleEventProcessorCommand
 
 		final AdTableId sourceTableId = event.getSourceRecordRef().getAdTableId();
 		final String sourceTableName = TableIdsCache.instance.getTableName(sourceTableId);
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
+		final String sourceKeyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
 		final int sourceRecordId = event.getSourceRecordRef().getRecord_ID();
 
 		final AdTableId targetTableId = rule.getAdTableId();
@@ -236,17 +236,12 @@ public class BusinessRuleEventProcessorCommand
 		}
 
 		final StringBuilder sql = new StringBuilder();
-		sql.append("SELECT ");
-		if(targetRecordMappingSQL.startsWith("("))
-		{
-			sql.append(targetRecordMappingSQL);
-		}
-		else
-		{
-				sql.append(sourceTableName).append(".").append(targetRecordMappingSQL);
-		}
 
-		sql.append(", ''");
+
+
+		sql.append("SELECT target.")
+				.append(targetKeyColumnName)
+	.append(", ''");
 
 		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_DocumentNo))
 		{
@@ -263,9 +258,18 @@ public class BusinessRuleEventProcessorCommand
 			sql.append(" || ' ' || target.").append(InterfaceWrapperHelper.COLUMNNAME_Name);
 		}
 
-		sql.append(" FROM ").append(sourceTableName).append(" ").append(sourceTableName).append(" JOIN ")
-				.append(targetTableName).append(" target ON ").append(sourceTableName).append(".").append(keyColumnName).append("=target.").append(targetKeyColumnName)
-				.append(" WHERE ").append(sourceTableName).append(".").append(keyColumnName).append("=?");
+		sql.append(" FROM ").append(targetTableName).append(" target ").append(" JOIN ")
+				.append(sourceTableName).append(" ON ").append("target.").append(targetKeyColumnName).append(" = ");
+
+		if(targetRecordMappingSQL.startsWith("("))
+		{
+			sql.append(targetRecordMappingSQL);
+		}
+		else
+		{
+			sql.append(sourceTableName).append(".").append(targetRecordMappingSQL);
+		}
+		sql.append(" WHERE ").append(sourceTableName).append(".").append(sourceKeyColumnName).append("=?");
 
 		return DB.retrieveFirstRowOrNull(sql.toString(), Collections.singletonList(sourceRecordId), rs -> {
 			final int targetRecordId = rs.getInt(1);
@@ -275,7 +279,7 @@ public class BusinessRuleEventProcessorCommand
 				return null;
 			}
 
-			final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName);
+			final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(sourceKeyColumnName);
 			if (targetRecordId < firstValidId)
 			{
 				return null;
