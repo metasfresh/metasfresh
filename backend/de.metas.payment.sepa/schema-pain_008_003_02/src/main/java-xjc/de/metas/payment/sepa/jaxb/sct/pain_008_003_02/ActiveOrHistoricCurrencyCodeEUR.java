@@ -8,8 +8,8 @@
 
 package de.metas.payment.sepa.jaxb.sct.pain_008_003_02;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlType;
 
 
 /**

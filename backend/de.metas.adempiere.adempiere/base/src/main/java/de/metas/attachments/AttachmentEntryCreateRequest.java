@@ -1,6 +1,7 @@
 package de.metas.attachments;
 
 import com.google.common.collect.ImmutableList;
+import jakarta.activation.DataSource;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -10,7 +11,6 @@ import org.compiere.util.MimeType;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
-import javax.activation.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;

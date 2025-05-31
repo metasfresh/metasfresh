@@ -24,7 +24,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Nullable;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import java.net.URI;
 import java.net.URISyntaxException;

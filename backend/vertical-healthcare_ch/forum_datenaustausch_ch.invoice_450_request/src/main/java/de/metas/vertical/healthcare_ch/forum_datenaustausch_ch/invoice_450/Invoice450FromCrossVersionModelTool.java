@@ -176,7 +176,7 @@ import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;

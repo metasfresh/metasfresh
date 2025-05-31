@@ -30,14 +30,14 @@
  * Note that we run jaxb with <code>-npa</code> to it won't try creating a new package-info.java.
  * Thx to https://dzone.com/articles/jaxb-and-namespace-prefixes
  */
-@javax.xml.bind.annotation.XmlSchema( //
+@jakarta.xml.bind.annotation.XmlSchema( //
 		namespace = "http://www.forum-datenaustausch.ch/invoice", //
 		xmlns = {
 				@XmlNs(prefix = "invoice", namespaceURI = "http://www.forum-datenaustausch.ch/invoice"),
 				@XmlNs(prefix = "xenc", namespaceURI = "http://www.w3.org/2001/04/xmlenc#"),
 				@XmlNs(prefix = "ds", namespaceURI = "http://www.w3.org/2000/09/xmldsig#")
 		}, //
-		elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+		elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request;
 
-import javax.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlNs;

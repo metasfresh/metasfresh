@@ -13,6 +13,7 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -26,7 +27,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;

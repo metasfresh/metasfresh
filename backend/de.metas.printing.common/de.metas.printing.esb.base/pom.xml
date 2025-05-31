@@ -32,8 +32,8 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
@@ -43,10 +43,10 @@
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+        </dependency>
 
     </dependencies>
 
@@ -68,18 +68,20 @@
             </plugin>
 
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>generate-de.metas.printing.esb.base</id>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>${project.basedir}/src/main/xsd</schemaDirectory>
-                            <generatePackage>${jaxb.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                            <sources>
+                                <source>${project.basedir}/src/main/xsd</source>
+                            </sources>
+                            <packageName>${jaxb.packageName}</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

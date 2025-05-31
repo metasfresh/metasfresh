@@ -33,7 +33,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.math.BigInteger;
 import java.util.logging.Level;

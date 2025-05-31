@@ -65,39 +65,44 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>generate-de.metas.banking.camt53.schema.camt053.001.02</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_02</schemaDirectory>
-                            <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_02</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-                            <episode>false</episode>
-                            <noFileHeader>true</noFileHeader>
+                            <sources>
+                                <source>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_02</source>
+                            </sources>
+                            <packageName>de.metas.banking.camt53.jaxb.camt053_001_02</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc</outputDirectory>
+                            <createEpisode>false</createEpisode>
+                            <clearOutputDir>false</clearOutputDir>
+                            <addGeneratedAnnotation>false</addGeneratedAnnotation>
                         </configuration>
                     </execution>
                     <execution>
                         <id>generate-de.metas.banking.camt53.schema.camt053.001.04</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_04</schemaDirectory>
-                            <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_04</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-                            <episode>false</episode>
+                            <sources>
+                                <source>src/main/resources/de/metas/banking/camt53/schema/camt_053_001_04</source>
+                            </sources>
+                            <packageName>de.metas.banking.camt53.jaxb.camt053_001_04</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc</outputDirectory>
+                            <createEpisode>false</createEpisode>
+                            <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
                 </executions>
                 <dependencies>
-                    <!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
                     <dependency>
                         <groupId>org.glassfish.jaxb</groupId>
                         <artifactId>jaxb-runtime</artifactId>

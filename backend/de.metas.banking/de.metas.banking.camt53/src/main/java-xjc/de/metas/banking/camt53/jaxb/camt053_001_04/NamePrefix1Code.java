@@ -8,8 +8,8 @@
 
 package de.metas.banking.camt53.jaxb.camt053_001_04;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlType;
 
 
 /**

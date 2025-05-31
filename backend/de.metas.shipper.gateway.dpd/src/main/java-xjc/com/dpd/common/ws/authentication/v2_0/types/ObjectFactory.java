@@ -8,7 +8,7 @@
 
 package com.dpd.common.ws.authentication.v2_0.types;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import jakarta.xml.bind.annotation.XmlRegistry;
 
 
 /**

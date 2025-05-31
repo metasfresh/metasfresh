@@ -11,13 +11,15 @@ metasfresh is a Free and Open Source ERP System with a 3-tier architecture featu
 - PostgreSQL database
 - Docker-based deployment and CI/CD
 
-### Openrewrite
-The openrewrite recipe [Migrate to Java 21](https://docs.openrewrite.org/recipes/java/migrate/upgradetojava21) was applied to this code-base
+### Ongoing code migration
 
-to re-run it, you can do
-```
-cd ./backend && mvn --settings=../misc/dev-support/maven/settings.xml -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-migrate-java:RELEASE -Drewrite.activeRecipes=org.openrewrite.java.migrate.UpgradeToJava21 -Drewrite.exportDatatables=true
-```
+Important: in this branch we are in the process of migrating the code to java-21 and spring-boot 3.5.0.
+All problems with compiling the code and running tests are related to this.
+
+### Openrewrite
+
+If case you run openrewrite with maven-cli, remember to use `--settings=../misc/dev-support/maven/settings.xml` as with every maven invocation
+
 
 ## Build Commands
 

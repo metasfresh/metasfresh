@@ -1,10 +1,9 @@
 package de.metas.util.web.security;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import javax.servlet.http.HttpServletRequest;
 
 class UserAuthTokenFilterConfigurationTest
 {

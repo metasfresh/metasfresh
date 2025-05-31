@@ -22,32 +22,6 @@ package de.metas.printing.client.endpoint;
  * #L%
  */
 
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.server.rpl.api.IIMPProcessorBL;
-import org.adempiere.server.rpl.api.IImportHelper;
-import org.compiere.util.Env;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
 import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.client.IPrintConnectionEndpoint;
 import de.metas.printing.esb.api.LoginRequest;
@@ -69,6 +43,29 @@ import de.metas.printing.esb.base.jaxb.generated.PRTCPrintPackageDataType;
 import de.metas.printing.esb.base.jaxb.generated.PRTCPrintPackageType;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.util.Services;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.server.rpl.api.IIMPProcessorBL;
+import org.adempiere.server.rpl.api.IImportHelper;
+import org.compiere.util.Env;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
 
 /**
  * Implementation of {@link IPrintConnectionEndpoint} which calls the replication module (i.e. {@link IImportHelper}) directly.

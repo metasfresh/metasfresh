@@ -1,15 +1,13 @@
 package de.metas.hostkey.spi.impl;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-
 import de.metas.hostkey.spi.IHostKeyStorage;
-import de.metas.logging.LogManager;
 import de.metas.hostkey.spi.IHttpSessionProvider;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
 
 /*
  * #%L

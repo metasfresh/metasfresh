@@ -11,6 +11,7 @@ import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Check;
+import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -22,7 +23,6 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;

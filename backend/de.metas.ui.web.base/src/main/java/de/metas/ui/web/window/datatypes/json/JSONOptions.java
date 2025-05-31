@@ -7,6 +7,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,7 +19,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
 import java.time.ZoneId;
 
 /*

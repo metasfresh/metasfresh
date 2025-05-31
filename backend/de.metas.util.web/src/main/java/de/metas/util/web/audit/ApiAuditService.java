@@ -64,6 +64,10 @@ import de.metas.util.web.audit.dto.ApiRequestMapper;
 import de.metas.util.web.audit.dto.ApiResponse;
 import de.metas.util.web.audit.dto.ApiResponseMapper;
 import de.metas.util.web.audit.dto.CachedBodyHttpServletRequest;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -77,14 +81,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
@@ -256,7 +257,7 @@ public class ApiAuditService
 					.setParameter("Path", apiRequestAudit.getPath());
 		}
 
-		final org.springframework.http.HttpMethod httpMethod = org.springframework.http.HttpMethod.resolve(apiRequestAudit.getMethod().getCode());
+		final org.springframework.http.HttpMethod httpMethod = org.springframework.http.HttpMethod.valueOf(apiRequestAudit.getMethod().getCode());
 
 		final WebClient.RequestBodyUriSpec uriSpec = webClient.method(httpMethod);
 
@@ -286,11 +287,23 @@ public class ApiAuditService
 
 		try
 		{
-			return bodySpec.exchangeToMono(cr -> cr
-							.bodyToMono(String.class)
-							.map(body -> ApiResponseMapper.map(cr.rawStatusCode(), cr.headers().asHttpHeaders(), body))
-							.defaultIfEmpty(ApiResponseMapper.map(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
+			return bodySpec.retrieve()
+					.toEntity(String.class)
+					.map(responseEntity -> ApiResponseMapper.map(
+							responseEntity.getStatusCode().value(),
+							responseEntity.getHeaders(),
+							responseEntity.getBody()
+					))
+					.onErrorResume(WebClientResponseException.class, ex -> {
+						// Handle HTTP error responses
+						return Mono.just(ApiResponseMapper.map(
+								ex.getStatusCode().value(),
+								ex.getHeaders(),
+								ex.getResponseBodyAsString()
+						));
+					})
 					.block();
+
 		}
 		catch (final RuntimeException rte)
 		{

@@ -5,5 +5,5 @@
 // Generated on: 2024.11.04 at 03:59:02 PM CET 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "https://wsdemo.ax4.com/ws/GeneralOvernight")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "https://wsdemo.ax4.com/ws/GeneralOvernight")
 package de.metas.shipper.gateway.go.schema;

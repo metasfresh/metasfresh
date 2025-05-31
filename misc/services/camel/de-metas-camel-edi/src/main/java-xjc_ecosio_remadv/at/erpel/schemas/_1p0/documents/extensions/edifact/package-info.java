@@ -5,5 +5,5 @@
 // Generated on: 2024.11.04 at 04:39:21 PM CET 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://erpel.at/schemas/1p0/documents/extensions/edifact", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://erpel.at/schemas/1p0/documents/extensions/edifact", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package at.erpel.schemas._1p0.documents.extensions.edifact;

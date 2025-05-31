@@ -175,11 +175,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.5</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
+
+         <dependency>
             <groupId>de.metas.common.externalreference</groupId>
             <artifactId>de-metas-common-externalreference</artifactId>
             <version>${metasfresh-common.version}</version>

@@ -3,8 +3,8 @@ package de.metas.procurement.webui.model;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import lombok.NonNull;
 
-import javax.persistence.ManyToOne;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MappedSuperclass;
 
 
 

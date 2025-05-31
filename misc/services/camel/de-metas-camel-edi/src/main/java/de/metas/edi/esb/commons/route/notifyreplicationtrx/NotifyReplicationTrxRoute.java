@@ -35,7 +35,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import java.nio.charset.StandardCharsets;
 
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;

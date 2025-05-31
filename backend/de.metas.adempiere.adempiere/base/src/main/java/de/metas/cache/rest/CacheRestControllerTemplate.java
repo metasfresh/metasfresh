@@ -9,6 +9,7 @@ import de.metas.cache.CacheInterface;
 import de.metas.cache.CacheMgt;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Services;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Set;
 
 public abstract class CacheRestControllerTemplate

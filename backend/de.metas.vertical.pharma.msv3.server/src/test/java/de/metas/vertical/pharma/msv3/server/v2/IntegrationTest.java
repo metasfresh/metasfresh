@@ -2,7 +2,7 @@ package de.metas.vertical.pharma.msv3.server.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.junit.Ignore;
 import org.junit.Test;

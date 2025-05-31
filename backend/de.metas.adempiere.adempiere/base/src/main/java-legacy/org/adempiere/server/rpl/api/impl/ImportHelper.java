@@ -36,6 +36,7 @@ import de.metas.monitoring.api.IMeter;
 import de.metas.monitoring.api.IMonitoringBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import jakarta.xml.bind.DatatypeConverter;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.session.ISessionBL;
@@ -99,7 +100,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.xpath.XPathExpressionException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -1493,7 +1493,7 @@ public class ImportHelper implements IImportHelper
 		{
 			try
 			{
-				final Calendar calendar = javax.xml.bind.DatatypeConverter.parseDateTime(valueString);
+				final Calendar calendar = jakarta.xml.bind.DatatypeConverter.parseDateTime(valueString);
 				result = new Timestamp(calendar.getTimeInMillis());
 			}
 			catch (final IllegalArgumentException e)

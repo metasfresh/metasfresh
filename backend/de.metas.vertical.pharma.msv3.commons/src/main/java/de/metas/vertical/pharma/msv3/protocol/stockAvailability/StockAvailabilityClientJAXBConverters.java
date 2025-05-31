@@ -1,9 +1,8 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import javax.xml.bind.JAXBElement;
-
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
+import jakarta.xml.bind.JAXBElement;
 
 /*
  * #%L

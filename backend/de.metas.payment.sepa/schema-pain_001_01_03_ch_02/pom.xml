@@ -21,78 +21,76 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<parent>
-		<groupId>de.metas.payment.sepa</groupId>
-		<artifactId>de.metas.payment.sepa</artifactId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>de.metas.payment.sepa</groupId>
+        <artifactId>de.metas.payment.sepa</artifactId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<modelVersion>4.0.0</modelVersion>
-	<artifactId>de.metas.payment.sepa.schema.pain_001_01_03_ch_02</artifactId>
-	<packaging>jar</packaging>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>de.metas.payment.sepa.schema.pain_001_01_03_ch_02</artifactId>
+    <packaging>jar</packaging>
 
-	<description>SEPA Payments - schema - pain_001_01_03_ch_02 (Direct Credit)</description>
-	<properties>
-		<migration-sql-basedir/>
-	</properties>
+    <description>SEPA Payments - schema - pain_001_01_03_ch_02 (Direct Credit)</description>
+    <properties>
+        <migration-sql-basedir/>
+    </properties>
 
-<dependencies>
-	<dependency>
-		<groupId>org.xmlunit</groupId>
-		<artifactId>xmlunit-core</artifactId>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.projectlombok</groupId>
-		<artifactId>lombok</artifactId>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.assertj</groupId>
-		<artifactId>assertj-core</artifactId>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>javax.xml.bind</groupId>
-		<artifactId>jaxb-api</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>com.sun.xml.bind</groupId>
-		<artifactId>jaxb-core</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>com.sun.xml.bind</groupId>
-		<artifactId>jaxb-impl</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>javax.activation</groupId>
-		<artifactId>activation</artifactId>
-	</dependency>
-</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>generate-de.metas.payment.sepa.jaxb.sct.pain_001_01_03_ch_02</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<schemaDirectory>src/main/xsd</schemaDirectory>
-							<generatePackage>de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</generatePackage>
-							<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-de.metas.payment.sepa.jaxb.sct.pain_001_01_03_ch_02</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/xsd</source>
+                            </sources>
+                            <packageName>de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

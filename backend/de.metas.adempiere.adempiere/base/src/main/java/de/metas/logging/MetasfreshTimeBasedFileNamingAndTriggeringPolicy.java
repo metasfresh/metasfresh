@@ -1,10 +1,10 @@
 package de.metas.logging;
 
-import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ch.qos.logback.core.joran.spi.NoAutoStart;
 import ch.qos.logback.core.rolling.DefaultTimeBasedFileNamingAndTriggeringPolicy;
+
+import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -49,8 +49,10 @@ public class MetasfreshTimeBasedFileNamingAndTriggeringPolicy<E> extends Default
 		// Make sure we are starting a new log file on each boot
 		if (forceRollover.getAndSet(false))
 		{
-			nextCheck = 0; // i.e. check it now
-			//return true; // note: not returning directly because the underlying method is also updating the object status
+			// Force rollover by returning true directly
+			// This ensures a new log file is created on application startup
+			return true;
+
 		}
 
 		return super.isTriggeringEvent(activeFile, event);

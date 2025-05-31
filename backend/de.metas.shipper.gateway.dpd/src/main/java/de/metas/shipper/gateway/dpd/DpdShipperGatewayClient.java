@@ -60,6 +60,7 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import jakarta.xml.bind.JAXBElement;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -68,7 +69,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.JAXBElement;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;

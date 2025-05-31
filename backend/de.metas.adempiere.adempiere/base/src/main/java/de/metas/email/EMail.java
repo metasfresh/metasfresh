@@ -31,14 +31,14 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.StringUtils;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import lombok.NonNull;
 import lombok.Setter;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URI;

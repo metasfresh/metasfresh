@@ -5,5 +5,5 @@
 // Generated on: 2024.11.04 at 03:58:31 PM CET 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package de.metas.payment.camt054_001_02;

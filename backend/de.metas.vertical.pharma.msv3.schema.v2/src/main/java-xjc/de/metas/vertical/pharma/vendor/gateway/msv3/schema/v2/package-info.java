@@ -5,5 +5,5 @@
 // Generated on: 2024.11.04 at 03:52:59 PM CET 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "urn:msv3:v2", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "urn:msv3:v2", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2;

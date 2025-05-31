@@ -8,6 +8,10 @@ import de.metas.email.impl.EMailSendException;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import jakarta.mail.Address;
+import jakarta.mail.AuthenticationFailedException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.SendFailedException;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -16,10 +20,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import javax.mail.Address;
-import javax.mail.AuthenticationFailedException;
-import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
 import java.io.Serializable;
 import java.util.function.Consumer;
 

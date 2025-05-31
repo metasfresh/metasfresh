@@ -147,6 +147,7 @@
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
+            <version>7.17.18</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>

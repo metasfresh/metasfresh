@@ -13,7 +13,6 @@ import de.metas.report.server.ReportResult;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.exceptions.ServiceConnectionException;
-import groovy.transform.ToString;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;

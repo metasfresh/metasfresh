@@ -25,6 +25,7 @@ package de.metas.util.web.audit.dto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.rest_api.utils.v2.JsonErrors;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,7 +35,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 

@@ -32,7 +32,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Locale;
