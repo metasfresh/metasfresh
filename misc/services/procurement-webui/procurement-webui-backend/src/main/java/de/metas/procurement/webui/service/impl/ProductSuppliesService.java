@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import org.threeten.extra.YearWeek;
 
 import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;

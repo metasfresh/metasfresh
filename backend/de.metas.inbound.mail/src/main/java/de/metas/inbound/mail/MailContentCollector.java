@@ -3,14 +3,14 @@ package de.metas.inbound.mail;
 import de.metas.logging.LogManager;
 import de.metas.util.FileUtil;
 import groovy.transform.ToString;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Multipart;
+import jakarta.mail.Part;
+import jakarta.mail.internet.ContentType;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
-import javax.mail.BodyPart;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.internet.ContentType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

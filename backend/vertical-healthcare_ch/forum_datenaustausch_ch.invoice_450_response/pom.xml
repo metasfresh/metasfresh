@@ -85,6 +85,7 @@
 				<!-- source for the request xsd: http://www.forum-datenaustausch.ch/fileadmin/fda_documents/4.5/Rechnungen/XML/XML_Schema_generalInvoiceResponse_450.zip -->
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>jaxb2-maven-plugin</artifactId>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<id>generate-forum-datenaustausch_ch.invoice_450.response</id>
@@ -92,16 +93,39 @@
 						<goals>
 						    <goal>xjc</goal>
 						</goals>
-						<configuration>
-							<args>
-								<arg>-XautoNameResolution</arg>
-							</args>
-							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_450/response</schemaDirectory>
-							<generatePackage>de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.response</generatePackage>
-							<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-						</configuration>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_450/response/generalInvoiceResponse_450.xsd</source>
+                            </sources>
+                            <xjbSources>
+                                <xjbSource>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_450/response/binding.xjb</xjbSource>
+                            </xjbSources>
+                            <packageName>de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.response</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc</outputDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <extension>true</extension>
+						
+                            <!-- needed because we don't want jaxb to create a package-info.java; we have our own custom one -->
+                            <noPackageLevelAnnotations>true</noPackageLevelAnnotations>
+                            <arguments>
+                                <!-- needed to avoid java class name collisions, since the 3 xsds have some equal names -->
+                                <argument>-XautoNameResolution</argument>
+                            </arguments>
+                        </configuration>
 					</execution>
 				</executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>4.0.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.activation</groupId>
+                        <artifactId>jakarta.activation-api</artifactId>
+                        <version>2.1.3</version>
+                    </dependency>
+                </dependencies>
 			</plugin>
 		</plugins>
 	</build>

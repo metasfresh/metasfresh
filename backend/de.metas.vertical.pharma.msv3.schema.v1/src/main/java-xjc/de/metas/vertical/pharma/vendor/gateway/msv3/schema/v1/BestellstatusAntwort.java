@@ -1,0 +1,168 @@
+
+package de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1;
+
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+/**
+ * Dibt an, ob:
+ *         - Bestellkennung unbekannt ist (seit 7 Tagen)
+ *         - Bestellkennung bekannt, aber Bestellantwort ist NICHT MEHR verfügbar
+ *         - Bestellkennung bekannt, Bestellantwort ist verfügbar
+ *       
+ * 
+ * <p>Java class for BestellstatusAntwort complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>{@code
+ * <complexType name="BestellstatusAntwort">
+ *   <complexContent>
+ *     <restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       <sequence>
+ *         <element name="BestellSupportId">
+ *           <simpleType>
+ *             <restriction base="{http://www.w3.org/2001/XMLSchema}int">
+ *               <minInclusive value="1"/>
+ *               <maxInclusive value="999999"/>
+ *             </restriction>
+ *           </simpleType>
+ *         </element>
+ *         <element name="Auftraege" type="{urn:msv3:v1}BestellungAntwortAuftrag" maxOccurs="1000" minOccurs="0"/>
+ *       </sequence>
+ *       <attribute name="Id" use="required" type="{urn:msv3:v1}uuid" />
+ *       <attribute name="Status" use="required" type="{urn:msv3:v1}Bestellstatus" />
+ *     </restriction>
+ *   </complexContent>
+ * </complexType>
+ * }</pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "BestellstatusAntwort", propOrder = {
+    "bestellSupportId",
+    "auftraege"
+})
+public class BestellstatusAntwort {
+
+    @XmlElement(name = "BestellSupportId", required = true, type = Integer.class, nillable = true)
+    protected Integer bestellSupportId;
+    @XmlElement(name = "Auftraege")
+    protected List<BestellungAntwortAuftrag> auftraege;
+    @XmlAttribute(name = "Id", required = true)
+    protected String id;
+    @XmlAttribute(name = "Status", required = true)
+    protected Bestellstatus status;
+
+    /**
+     * Gets the value of the bestellSupportId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Integer }
+     *     
+     */
+    public Integer getBestellSupportId() {
+        return bestellSupportId;
+    }
+
+    /**
+     * Sets the value of the bestellSupportId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Integer }
+     *     
+     */
+    public void setBestellSupportId(Integer value) {
+        this.bestellSupportId = value;
+    }
+
+    /**
+     * Gets the value of the auftraege property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the Jakarta XML Binding object.
+     * This is why there is not a {@code set} method for the auftraege property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getAuftraege().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link BestellungAntwortAuftrag }
+     * 
+     * 
+     * @return
+     *     The value of the auftraege property.
+     */
+    public List<BestellungAntwortAuftrag> getAuftraege() {
+        if (auftraege == null) {
+            auftraege = new ArrayList<>();
+        }
+        return this.auftraege;
+    }
+
+    /**
+     * Gets the value of the id property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+
+    /**
+     * Gets the value of the status property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Bestellstatus }
+     *     
+     */
+    public Bestellstatus getStatus() {
+        return status;
+    }
+
+    /**
+     * Sets the value of the status property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Bestellstatus }
+     *     
+     */
+    public void setStatus(Bestellstatus value) {
+        this.status = value;
+    }
+
+}

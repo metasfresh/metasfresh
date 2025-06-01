@@ -32,16 +32,8 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>jakarta.xml.bind</groupId>
-			<artifactId>jakarta.xml.bind-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
+			<groupId>org.glassfish.jaxb</groupId>
 			<artifactId>jaxb-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
 		</dependency>
         <dependency>
             <groupId>jakarta.activation</groupId>
@@ -70,6 +62,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>generate-de.metas.printing.esb.base</id>
@@ -78,13 +71,25 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>${project.basedir}/src/main/xsd</source>
+                                <source>${project.basedir}/src/main/xsd/schema.xsd</source>
                             </sources>
                             <packageName>${jaxb.packageName}</packageName>
                             <outputDirectory>${project.basedir}/src/main/java-xjc</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>4.0.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.activation</groupId>
+                        <artifactId>jakarta.activation-api</artifactId>
+                        <version>2.1.3</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
         </plugins>

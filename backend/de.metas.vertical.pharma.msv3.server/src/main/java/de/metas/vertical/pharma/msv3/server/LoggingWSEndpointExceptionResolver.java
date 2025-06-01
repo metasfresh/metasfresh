@@ -1,7 +1,6 @@
 package de.metas.vertical.pharma.msv3.server;
 
-import javax.annotation.PostConstruct;
-
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.ws.context.MessageContext;

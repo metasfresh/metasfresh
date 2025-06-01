@@ -29,7 +29,7 @@ import de.metas.procurement.webui.rest.rfq.JsonChangeRfqRequest;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.List;
 
 public interface IRfQService extends UserConfirmationHandler

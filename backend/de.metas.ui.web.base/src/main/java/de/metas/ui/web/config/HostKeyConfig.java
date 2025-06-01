@@ -6,6 +6,7 @@ import de.metas.hostkey.spi.IHttpSessionProvider;
 import de.metas.hostkey.spi.impl.HttpCookieHostKeyStorage;
 import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.adempiere.service.ISysConfigBL;
@@ -13,8 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.annotation.PostConstruct;
 
 /*
  * #%L

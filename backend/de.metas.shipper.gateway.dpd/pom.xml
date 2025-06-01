@@ -35,10 +35,6 @@
             <artifactId>de.metas.shipper.gateway.spi</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-        </dependency>
 
         <!-- needed for its common business logic -->
         <dependency>
@@ -76,16 +72,21 @@
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
+            <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
     </dependencies>
@@ -95,7 +96,7 @@
             <plugin>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-maven-plugin</artifactId>
-                <version>4.0.1</version>
+                <version>4.0.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -103,15 +104,33 @@
                         </goals>
                         <configuration>
                             <wsdlFiles>
-                                <wsdlFile>*.wsdl</wsdlFile>
+                                <wsdlFile>LoginServiceV2_0.wsdl</wsdlFile>
+                                <wsdlFile>ShipmentServiceV3_2.wsdl</wsdlFile>
                             </wsdlFiles>
                             <wsdlDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/dpd/schema</wsdlDirectory>
                             <sourceDestDir>${project.basedir}/src/main/java-xjc</sourceDestDir>
                             <packageName>de.metas.shipper.gateway.dpd.generated</packageName>
                             <keep>true</keep>
+                            <extension>true</extension>
+                            <target>3.0</target>
+                            <vmArgs>
+                                <vmArg>-Djakarta.xml.bind.verbose=true</vmArg>
+                            </vmArgs>
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.ws</groupId>
+                        <artifactId>jakarta.xml.ws-api</artifactId>
+                        <version>4.0.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>4.0.2</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

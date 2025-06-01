@@ -4,13 +4,12 @@ import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
+import jakarta.annotation.PostConstruct;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.eevolution.model.I_PP_WF_Node_Product;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 @Callout(I_PP_WF_Node_Product.class)
 @Component

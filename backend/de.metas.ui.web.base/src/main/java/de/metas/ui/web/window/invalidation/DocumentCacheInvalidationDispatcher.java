@@ -9,6 +9,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -21,7 +22,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.UUID;
 

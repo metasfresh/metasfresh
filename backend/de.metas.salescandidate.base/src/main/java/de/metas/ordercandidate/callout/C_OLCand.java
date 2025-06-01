@@ -22,16 +22,15 @@
 
 package de.metas.ordercandidate.callout;
 
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 @Callout(I_C_OLCand.class)
 @Component

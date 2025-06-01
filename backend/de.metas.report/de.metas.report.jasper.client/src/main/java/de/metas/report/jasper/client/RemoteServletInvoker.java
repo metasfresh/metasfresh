@@ -14,6 +14,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.exceptions.ServiceConnectionException;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ import static de.metas.util.Check.assumeGreaterThanZero;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.assumeNotNull;
 
-@ToString(includes = "reportsRootUrl")
+@ToString
 public class RemoteServletInvoker implements IReportServer
 {
 	private static final Logger logger = LogManager.getLogger(RemoteServletInvoker.class);
@@ -50,6 +51,8 @@ public class RemoteServletInvoker implements IReportServer
 	private static final String PARAM_AD_PInstance_ID = "AD_PInstance_ID";
 	private static final String PARAM_AD_Language = "AD_Language";
 	private static final String PARAM_Output = "output";
+	
+	@ToString.Include
 	private final String reportsRootUrl;
 
 	private final String mgtRootUrl;
