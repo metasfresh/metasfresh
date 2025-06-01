@@ -40,7 +40,7 @@ services:
       replicas: 1
 
   cucumber:
-    image: ${mfregistry:-metasfresh}/metas-cucumber:$mfversion
+    image: ${mfregistry}/metas-cucumber:$mfversion
     environment:
       - TEST_SMTP_HOST=$TEST_SMTP_HOST
       - TEST_SMTP_FROM=$TEST_SMTP_FROM
