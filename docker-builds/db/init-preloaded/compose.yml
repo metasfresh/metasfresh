@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: $mfregistry/metas-db:$mfversion
+    image: $mfregistry/metas-db:$mfversion-preloaded
     ports:
       - "15432:5432"
     environment:
