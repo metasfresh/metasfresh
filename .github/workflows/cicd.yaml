@@ -742,7 +742,6 @@ jobs:
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
-          mfregistry: ${{ github.repository }}
           cucumberparams: ${{ matrix.params }}
           TEST_SMTP_HOST: ${{ secrets.TEST_SMTP_HOST }}
           TEST_SMTP_FROM: ${{ secrets.TEST_SMTP_FROM }}
@@ -797,7 +796,6 @@ jobs:
         working-directory: docker-builds/compose/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
-          mfregistry: ${{ github.repository }}
         run: |
           docker compose up -d
       - name: Make the script files executable
@@ -896,7 +894,6 @@ jobs:
         working-directory: docker-builds/mobile/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
-          mfregistry: ${{ github.repository }}
         run: |
           docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
           docker commit mobile-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest

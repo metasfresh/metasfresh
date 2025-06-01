@@ -17,8 +17,6 @@ RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn clean tes
 
 COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml
-COPY docker-builds/cucumber/.env /.env
-COPY docker-builds/cucumber/db/Dockerfile /db/Dockerfile
 COPY --chmod=700 docker-builds/cucumber/entrypoint.sh .
 
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true

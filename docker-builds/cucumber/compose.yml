@@ -3,12 +3,7 @@
 services:
 
   db:
-    build:
-      context: db
-      args:
-        mfregistry: $mfregistry
-        mfversion: $mfversion
-        dbqualifier: $dbqualifier
+    image: ${mfregistry:-metasfresh}/metas-db:$mfversion-preloaded
     ports:
       - "15432:5432"
     environment:
@@ -40,7 +35,7 @@ services:
       replicas: 1
 
   cucumber:
-    image: ${mfregistry}/metas-cucumber:$mfversion
+    image: ${mfregistry:-metasfresh}/metas-cucumber:$mfversion
     environment:
       - TEST_SMTP_HOST=$TEST_SMTP_HOST
       - TEST_SMTP_FROM=$TEST_SMTP_FROM
