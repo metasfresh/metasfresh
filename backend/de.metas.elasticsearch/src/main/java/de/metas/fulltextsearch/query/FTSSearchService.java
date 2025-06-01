@@ -22,6 +22,11 @@
 
 package de.metas.fulltextsearch.query;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.IESSystem;
@@ -47,28 +52,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.Strings;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.DeprecationHandler;
-import org.elasticsearch.common.xcontent.NamedXContentRegistry;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchModule;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 @Service
@@ -106,27 +95,22 @@ public class FTSSearchService
 
 		try
 		{
-			final SearchModule searchModule = new SearchModule(Settings.EMPTY, false, Collections.emptyList());
+			final ElasticsearchClient elasticsearchClient = elasticsearchSystem.elasticsearchClient();
+			
+			// Build the search request using the new client API with JSON string as InputStream
+			final java.io.ByteArrayInputStream queryStream = new java.io.ByteArrayInputStream(jsonQuery.getBytes());
+			
+			final SearchRequest searchRequest = SearchRequest.of(s -> s
+					.index(ftsConfig.getEsIndexName())
+					.size(getResultMaxSize())
+					.withJson(queryStream));
 
-			final XContentParser parser = XContentFactory
-					.xContent(XContentType.JSON)
-					.createParser(
-							new NamedXContentRegistry(searchModule.getNamedXContents()),
-							DeprecationHandler.THROW_UNSUPPORTED_OPERATION,
-							jsonQuery);
-
-			final RestHighLevelClient elasticsearchClient = elasticsearchSystem.elasticsearchClient();
-			final SearchResponse elasticsearchResponse = elasticsearchClient
-					.search(new SearchRequest()
-									.indices(ftsConfig.getEsIndexName())
-									.source(SearchSourceBuilder.fromXContent(parser)
-											.size(getResultMaxSize())),
-							RequestOptions.DEFAULT
-					);
+			final SearchResponse<JsonNode> elasticsearchResponse = elasticsearchClient
+					.search(searchRequest, JsonNode.class);
 
 			final FTSSearchResult ftsResult = FTSSearchResult.builder()
 					.searchId(request.getSearchId())
-					.items(Arrays.stream(elasticsearchResponse.getHits().getHits())
+					.items(elasticsearchResponse.hits().hits().stream()
 							.map(hit -> extractFTSSearchResultItem(hit, request, ftsConfig))
 							.collect(ImmutableList.toImmutableList()))
 					.build();
@@ -193,7 +177,7 @@ public class FTSSearchService
 	}
 
 	private static FTSSearchResultItem extractFTSSearchResultItem(
-			@NonNull final SearchHit hit,
+			@NonNull final Hit<JsonNode> hit,
 			@NonNull final FTSSearchRequest request,
 			@NonNull final FTSConfig ftsConfig)
 	{
@@ -204,7 +188,7 @@ public class FTSSearchService
 	}
 
 	private static FTSSearchResultItem.KeyValueMap extractKey(
-			@NonNull final SearchHit hit,
+			@NonNull final Hit<JsonNode> hit,
 			@NonNull final FTSFilterDescriptor filterDescriptor,
 			@NonNull final FTSConfig ftsConfig)
 	{
@@ -223,19 +207,28 @@ public class FTSSearchService
 
 	@Nullable
 	private static Object extractValue(
-			@NonNull final SearchHit hit,
+			@NonNull final Hit<JsonNode> hit,
 			@NonNull final ESFieldName esFieldName,
 			@NonNull final FTSJoinColumn.ValueType valueType)
 	{
 		if (ESFieldName.ID.equals(esFieldName))
 		{
-			final String esDocumentId = hit.getId();
+			final String esDocumentId = hit.id();
 			return convertValueToType(esDocumentId, valueType);
 		}
 		else
 		{
-			final Object value = hit.getSourceAsMap().get(esFieldName.getAsString());
-			return convertValueToType(value, valueType);
+			final JsonNode sourceNode = hit.source();
+			if (sourceNode != null && sourceNode.has(esFieldName.getAsString()))
+			{
+				final JsonNode valueNode = sourceNode.get(esFieldName.getAsString());
+				final Object value = valueNode.isTextual() ? valueNode.asText() : 
+					valueNode.isInt() ? valueNode.asInt() : 
+					valueNode.isLong() ? valueNode.asLong() : 
+					valueNode.toString();
+				return convertValueToType(value, valueType);
+			}
+			return null;
 		}
 	}
 
@@ -260,9 +253,10 @@ public class FTSSearchService
 		}
 	}
 
-	private static String toJson(@NonNull final SearchHit hit)
+	private static String toJson(@NonNull final Hit<JsonNode> hit)
 	{
-		return Strings.toString(hit, true, true);
+		final JsonNode source = hit.source();
+		return source != null ? source.toString() : "{}";
 	}
 
 	public FTSConfig getConfigById(@NonNull final FTSConfigId ftsConfigId)

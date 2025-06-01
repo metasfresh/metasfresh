@@ -22,12 +22,17 @@
 
 package de.metas.elasticsearch;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.springframework.boot.origin.Origin;
 import org.springframework.boot.origin.OriginLookup;
@@ -37,14 +42,11 @@ import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-import org.springframework.data.elasticsearch.client.ClientConfiguration;
-import org.springframework.data.elasticsearch.client.RestClients;
-import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration;
 
 import java.util.Optional;
 
 @Configuration
-public class ElasticsearchConfig extends AbstractElasticsearchConfiguration
+public class ElasticsearchConfig
 {
 	private static final Logger logger = LogManager.getLogger(ElasticsearchConfig.class);
 
@@ -59,9 +61,8 @@ public class ElasticsearchConfig extends AbstractElasticsearchConfiguration
 
 	public ElasticsearchConfig(final Environment environment) {this.environment = environment;}
 
-	@Override
 	@Bean
-	public @NonNull RestHighLevelClient elasticsearchClient()
+	public @NonNull ElasticsearchClient elasticsearchClient()
 	{
 		PropertyValueWithOrigin host = getPropertyValueWithOrigin(PROP_host, environment);
 		if (host.isBlankValue())
@@ -71,11 +72,24 @@ public class ElasticsearchConfig extends AbstractElasticsearchConfiguration
 
 		logger.info("Config: {}", host);
 
-		final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-				.connectedTo(host.getPropertyValue())
-				.build();
+		// Parse host and port from the property value
+		final String hostValue = host.getPropertyValue();
+		final String[] hostParts = hostValue.split(":");
+		final String hostname = hostParts[0];
+		final int port = hostParts.length > 1 ? Integer.parseInt(hostParts[1]) : 9200;
 
-		return RestClients.create(clientConfiguration).rest();
+		// Create RestClient
+		final RestClient restClient = RestClient.builder(
+				new HttpHost(hostname, port, "http")
+		).build();
+
+		// Create transport with Jackson mapper
+		final ElasticsearchTransport transport = new RestClientTransport(
+				restClient, new JacksonJsonpMapper()
+		);
+
+		// Create ElasticsearchClient
+		return new ElasticsearchClient(transport);
 	}
 
 	@SuppressWarnings("SameParameterValue")

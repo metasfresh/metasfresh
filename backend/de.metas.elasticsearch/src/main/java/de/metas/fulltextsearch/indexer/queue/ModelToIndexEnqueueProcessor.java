@@ -22,6 +22,15 @@
 
 package de.metas.fulltextsearch.indexer.queue;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.BulkRequest;
+import co.elastic.clients.elasticsearch.core.BulkResponse;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
+import co.elastic.clients.elasticsearch.core.bulk.DeleteOperation;
+import co.elastic.clients.elasticsearch.core.bulk.IndexOperation;
+import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
+import co.elastic.clients.elasticsearch.indices.ExistsRequest;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -39,25 +48,17 @@ import de.metas.fulltextsearch.indexer.handler.FTSModelIndexerRegistry;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.table.api.TableName;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.GetIndexRequest;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -300,16 +301,21 @@ public class ModelToIndexEnqueueProcessor
 	{
 		return configService.elasticsearchClient()
 				.indices()
-				.exists(new GetIndexRequest(config.getEsIndexName()), RequestOptions.DEFAULT);
+				.exists(ExistsRequest.of(e -> e.index(config.getEsIndexName())))
+				.value();
 	}
 
 	private void createESIndex(final FTSConfig config) throws IOException
 	{
+		// Parse the JSON settings and pass as InputStream
+		final String indexSettingsJson = config.getCreateIndexCommand().getAsString();
+		final java.io.ByteArrayInputStream settingsStream = new java.io.ByteArrayInputStream(indexSettingsJson.getBytes());
+
 		configService.elasticsearchClient()
 				.indices()
-				.create(new CreateIndexRequest(config.getEsIndexName())
-								.source(config.getCreateIndexCommand().getAsString(), XContentType.JSON),
-						RequestOptions.DEFAULT);
+				.create(CreateIndexRequest.of(c -> c
+						.index(config.getEsIndexName())
+						.withJson(settingsStream)));
 	}
 
 	private void addDocumentsToIndex(
@@ -326,27 +332,41 @@ public class ModelToIndexEnqueueProcessor
 			@NonNull final FTSConfig config,
 			@NonNull final ESDocumentToIndexChunk chunk) throws IOException
 	{
-		final RestHighLevelClient elasticsearchClient = configService.elasticsearchClient();
+		final ElasticsearchClient elasticsearchClient = configService.elasticsearchClient();
 		final String esIndexName = config.getEsIndexName();
 
-		final BulkRequest bulkRequest = new BulkRequest();
+		final List<BulkOperation> bulkOperations = new ArrayList<>();
 
+		// Add delete operations
 		for (final String documentIdToDelete : chunk.getDocumentIdsToDelete())
 		{
-			bulkRequest.add(new DeleteRequest(esIndexName)
-					.id(documentIdToDelete));
+			bulkOperations.add(BulkOperation.of(b -> b
+					.delete(DeleteOperation.of(d -> d
+							.index(esIndexName)
+							.id(documentIdToDelete)))));
 		}
 
+		// Add index operations
+		final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 		for (final ESDocumentToIndex documentToIndex : chunk.getDocumentsToIndex())
 		{
-			bulkRequest.add(new IndexRequest(esIndexName)
-					.id(documentToIndex.getDocumentId())
-					.source(documentToIndex.getJson(), XContentType.JSON));
+			final JsonNode documentJson = objectMapper.readTree(documentToIndex.getJson());
+			bulkOperations.add(BulkOperation.of(b -> b
+					.index(IndexOperation.of(i -> i
+							.index(esIndexName)
+							.id(documentToIndex.getDocumentId())
+							.document(documentJson)))));
 		}
 
-		if (bulkRequest.numberOfActions() > 0)
+		if (!bulkOperations.isEmpty())
 		{
-			elasticsearchClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+			final BulkRequest bulkRequest = BulkRequest.of(b -> b.operations(bulkOperations));
+			final BulkResponse bulkResponse = elasticsearchClient.bulk(bulkRequest);
+			
+			if (bulkResponse.errors())
+			{
+				logger.warn("Some bulk operations failed. Check individual item responses.");
+			}
 		}
 	}
 

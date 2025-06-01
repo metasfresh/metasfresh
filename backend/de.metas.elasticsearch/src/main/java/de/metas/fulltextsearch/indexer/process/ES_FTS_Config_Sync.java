@@ -22,6 +22,7 @@
 
 package de.metas.fulltextsearch.indexer.process;
 
+import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.config.FTSConfigId;
@@ -40,8 +41,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.TableName;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.client.RequestOptions;
 
 import java.io.IOException;
 import java.util.List;
@@ -76,8 +75,7 @@ public class ES_FTS_Config_Sync extends JavaProcess
 			final String esIndexName = config.getEsIndexName();
 			elasticsearchSystem.elasticsearchClient()
 					.indices()
-					.delete(new DeleteIndexRequest(esIndexName),
-							RequestOptions.DEFAULT);
+					.delete(DeleteIndexRequest.of(d -> d.index(esIndexName)));
 
 			addLog("Elasticsearch index dropped: {}", esIndexName);
 		}
