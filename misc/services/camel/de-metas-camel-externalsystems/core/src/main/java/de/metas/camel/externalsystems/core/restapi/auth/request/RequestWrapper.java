@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.core.restapi.auth.request;
 
 import lombok.NonNull;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;

@@ -2,12 +2,13 @@ package de.metas.inbound.mail;
 
 import de.metas.logging.LogManager;
 import de.metas.util.FileUtil;
-import groovy.transform.ToString;
 import jakarta.mail.BodyPart;
+import jakarta.mail.FolderClosedException;
 import jakarta.mail.Multipart;
 import jakarta.mail.Part;
 import jakarta.mail.internet.ContentType;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -162,7 +163,7 @@ final class MailContentCollector
 				collectObject(contentObj, contentType);
 			}
 		}
-		catch (final javax.mail.FolderClosedException ex)
+		catch (final FolderClosedException ex)
 		{
 			throw new AdempiereException(ex.getLocalizedMessage(), ex)
 					.appendParametersToMessage()

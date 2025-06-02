@@ -1,29 +1,26 @@
 package de.metas.inbound.mail;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.integration.dsl.context.IntegrationFlowContext;
-import org.springframework.integration.mail.dsl.Mail;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-
 import de.metas.inbound.mail.config.InboundEMailConfig;
 import de.metas.inbound.mail.config.InboundEMailConfigChangedListener;
 import de.metas.inbound.mail.config.InboundEMailConfigId;
 import de.metas.inbound.mail.config.InboundEMailConfigRepository;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.integration.dsl.context.IntegrationFlowContext;
+import org.springframework.integration.mail.dsl.Mail;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L
@@ -158,7 +155,7 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 
 	private IntegrationFlow createIntegrationFlow(final InboundEMailConfig config)
 	{
-		return IntegrationFlows
+		return IntegrationFlow
 				.from(Mail.imapIdleAdapter(config.getUrl())
 						.javaMailProperties(p -> p.put("mail.debug", Boolean.toString(config.isDebugProtocol())))
 						.userFlag(IMAP_USER_FLAG)
