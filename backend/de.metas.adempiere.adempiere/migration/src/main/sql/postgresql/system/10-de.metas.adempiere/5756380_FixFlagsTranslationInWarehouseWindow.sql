@@ -375,7 +375,7 @@ UPDATE AD_Element base SET Help=trl.Help, Updated=trl.Updated, UpdatedBy=trl.Upd
 
 -- Element: IsQuarantineWarehouse
 -- 2025-06-02T06:23:36.386Z
-UPDATE AD_Element_Trl SET Help='Ein Quarantänelager dient zur Lagerung von Produkten, die zusätzlichen Qualitätsprüfungen unterzogen werden müssen oder nicht sofort in den regulären Bestand überführt werden dürfen. Wenn dieses Kennzeichen aktiviert ist ('Y'), behandelt das System das Lager als speziellen Ort zur Isolierung von Waren – beispielsweise für eingehende Artikel, die geprüft werden müssen, oder Rücksendungen – bis eine endgültige Entscheidung getroffen wurde (z. B. Annahme, Ablehnung oder Wiedereinlagerung).',Updated=TO_TIMESTAMP('2025-06-02 06:23:36.386000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=543932 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Help='Ein Quarantänelager dient zur Lagerung von Produkten, die zusätzlichen Qualitätsprüfungen unterzogen werden müssen oder nicht sofort in den regulären Bestand überführt werden dürfen. Wenn dieses Kennzeichen aktiviert ist (''Y''), behandelt das System das Lager als speziellen Ort zur Isolierung von Waren – beispielsweise für eingehende Artikel, die geprüft werden müssen, oder Rücksendungen – bis eine endgültige Entscheidung getroffen wurde (z. B. Annahme, Ablehnung oder Wiedereinlagerung).',Updated=TO_TIMESTAMP('2025-06-02 06:23:36.386000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=543932 AND AD_Language='de_DE'
 ;
 
 -- 2025-06-02T06:23:36.387Z
