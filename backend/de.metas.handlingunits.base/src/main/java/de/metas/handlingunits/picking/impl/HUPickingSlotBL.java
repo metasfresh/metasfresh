@@ -1,11 +1,9 @@
 package de.metas.handlingunits.picking.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -14,8 +12,6 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
@@ -41,14 +37,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 
@@ -109,75 +101,10 @@ public class HUPickingSlotBL
 		}
 
 		@Override
-		public I_M_PickingSlot_HU getI_M_PickingSlot_HU()
-		{
-			return pickingSlotHU;
-		}
-
-		@Override
 		public String toString()
 		{
 			return "QueueActionResult [pickingSlotTrx=" + pickingSlotTrx + ", pickingSlotHU=" + pickingSlotHU + "]";
 		}
-	}
-
-	@Override
-	public IQueueActionResult createCurrentHU(final I_M_PickingSlot pickingSlot, final I_M_HU_PI_Item_Product itemProduct)
-	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-		//
-		// Check: there is no current HU in this picking slot
-		if (pickingSlot.getM_HU_ID() > 0)
-		{
-			// We already have an HU in this slot => ERROR
-			final I_M_HU currentHU = pickingSlot.getM_HU();
-			final String currentHUStr = currentHU == null ? "-"
-					: currentHU.getValue() + " - " + handlingUnitsBL.getPIVersion(currentHU).getName();
-			throw new AdempiereException("@HandlingUnitAlreadyOpen@: " + currentHUStr);
-		}
-
-		//
-		// Create HU Context
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(pickingSlot);
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
-
-		//
-		// Create the new HU
-		final I_M_HU[] huArr = new I_M_HU[] { null };
-		Services.get(IHUTrxBL.class)
-				.createHUContextProcessorExecutor(huContext)
-				.run(huContext1 -> {
-					//
-					// Create a new HU instance
-					final IHUBuilder huBuilder = Services.get(IHandlingUnitsDAO.class).createHUBuilder(huContext1);
-					huBuilder.setM_HU_Item_Parent(null); // no parent
-					huBuilder.setM_HU_PI_Item_Product(itemProduct);
-
-					huBuilder.setLocatorId(getLocatorId(pickingSlot));
-
-					// We are creating the new HUs on picking slot as picked, to avoid some allocation business logic to consider them
-					huBuilder.setHUStatus(X_M_HU.HUSTATUS_Picked);
-
-					final I_M_HU_PI huPI = itemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-					huArr[0] = huBuilder.create(huPI);
-					return IHUContextProcessor.NULL_RESULT;
-				});
-		final I_M_HU hu = huArr[0];
-
-		//
-		// Set current picking slot's HU
-		pickingSlot.setM_HU(hu);
-		final I_M_PickingSlot_Trx pickingSlotTrx = createPickingSlotTrx(pickingSlot, hu, X_M_PickingSlot_Trx.ACTION_Set_Current_HU);
-		InterfaceWrapperHelper.save(pickingSlot);
-
-		return new QueueActionResult(pickingSlotTrx, null);
-	}
-
-	private LocatorId getLocatorId(final I_M_PickingSlot pickingSlot)
-	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(pickingSlot.getM_Warehouse_ID());
-		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 	}
 
 	@Override
@@ -496,14 +423,6 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public boolean isAvailableForProduct(@NonNull final I_M_PickingSlot pickingSlot, @NonNull final I_M_HU_PI_Item_Product itemProduct)
-	{
-		// NOTE: itemProduct does not have BP Location so we cannot validate for Location
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(itemProduct.getC_BPartner_ID());
-		return isAvailableForBPartnerId(pickingSlot, bpartnerId);
-	}
-
-	@Override
 	public BooleanWithReason allocatePickingSlotIfPossible(@NonNull final PickingSlotAllocateRequest request)
 	{
 		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(request.getPickingSlotId(), I_M_PickingSlot.class);
@@ -608,23 +527,6 @@ public class HUPickingSlotBL
 		}
 
 		pickingSlotIds.forEach(this::releasePickingSlotIfPossible);
-	}
-
-	@Override
-	public void releasePickingSlotFromJob(@NonNull final PickingSlotId pickingSlotId, @NonNull final PickingJobId pickingJobId)
-	{
-		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
-		final PickingJobId pickingJobIdOfSlot = PickingJobId.ofRepoIdOrNull(pickingSlot.getM_Picking_Job_ID());
-		if (PickingJobId.equals(pickingJobIdOfSlot, pickingJobId))
-		{
-			releaseAndSave(pickingSlot);
-		}
-		else if (pickingJobIdOfSlot != null)
-		{
-			throw new AdempiereException("Cannot release picking slot from " + pickingJobId + " because is allocated for " + pickingJobIdOfSlot);
-		}
-		// do nothing, it's already released from that job
-		// else {}
 	}
 
 	@Override

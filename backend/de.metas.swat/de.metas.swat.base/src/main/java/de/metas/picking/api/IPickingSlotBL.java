@@ -29,4 +29,6 @@ public interface IPickingSlotBL extends ISingletonService
 	boolean isAvailableForAnyBPartner(@NonNull PickingSlotId pickingSlotId);
 
 	I_M_PickingSlot getById(PickingSlotId pickingSlotId);
+
+	boolean isPickingRackSystem(@NonNull PickingSlotId pickingSlotId);
 }

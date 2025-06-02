@@ -1,15 +1,13 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -35,15 +33,13 @@ import lombok.NonNull;
 
 /**
  * Unclose picking candidate.
- * 
+ * <p>
  * The status will be changed from Closed to Processed.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 class UnClosePickingCandidateCommand
 {
-	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	private final PickingCandidate pickingCandidate;
@@ -71,7 +67,7 @@ class UnClosePickingCandidateCommand
 			throw new AdempiereException("Not in a picking slot");
 		}
 
-		if (huPickingSlotDAO.isPickingRackSystem(pickingSlotId))
+		if (huPickingSlotBL.isPickingRackSystem(pickingSlotId))
 		{
 			throw new AdempiereException("Unclosing a picking candidate when picking slot is a rack system is not allowed")
 					.setParameter("M_PickingSlot_ID", pickingSlotId)

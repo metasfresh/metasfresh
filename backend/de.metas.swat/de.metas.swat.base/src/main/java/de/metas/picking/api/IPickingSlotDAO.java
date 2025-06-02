@@ -1,5 +1,6 @@
 package de.metas.picking.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -36,4 +37,8 @@ public interface IPickingSlotDAO extends ISingletonService
 	void save(@NonNull I_M_PickingSlot slot);
 
 	PickingSlotIdAndCaption createPickingSlot(@NonNull PickingSlotCreateRequest request);
+
+	boolean isPickingRackSystem(@NonNull PickingSlotId pickingSlotId);
+
+	ImmutableSet<PickingSlotId> getAllPickingSlotIdsWhichAreRackSystems();
 }

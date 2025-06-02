@@ -1,16 +1,13 @@
 package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -50,16 +47,6 @@ import java.util.List;
  */
 public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 {
-	/**
-	 * Creates a new HU and sets it to the given <code>pickingSlot</code>.
-	 * <p>
-	 * Note: the method does not set the new HU's <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code>. Setting them is the job of the business logic which associates the HU with the
-	 * <code>M_ShipmentSchedule</code> for which we are doing all this.
-	 *
-	 * @param itemProduct the blueprint to use for the new HU.
-	 * @return the result with the created picking slot trx (the trx will have ACTION_Set_Current_HU)
-	 */
-	IQueueActionResult createCurrentHU(I_M_PickingSlot pickingSlot, I_M_HU_PI_Item_Product itemProduct);
 
 	/**
 	 * Adds current picking slot HU to HUs queue.
@@ -111,12 +98,6 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	void removeFromPickingSlotQueueRecursivelly(I_M_HU hu);
 
 	/**
-	 * @return <code>true</code> if the given <code>itemProduct</code> references no <code>C_BPartner</code> or if the referenced BPartner fits with the given <code>pickingSlot</code>.
-	 * @see #isAvailableForBPartnerId(de.metas.picking.model.I_M_PickingSlot, BPartnerId)
-	 */
-	boolean isAvailableForProduct(I_M_PickingSlot pickingSlot, I_M_HU_PI_Item_Product itemProduct);
-
-	/**
 	 * Allocate dynamic picking slot to selected partner and location if the picking slot was not already allocated for a partner.
 	 * If the picking slot is not dynamic, the method does nothing.
 	 * <p>
@@ -145,7 +126,6 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	{
 		I_M_PickingSlot_Trx getM_PickingSlot_Trx();
 
-		I_M_PickingSlot_HU getI_M_PickingSlot_HU();
 	}
 
 	/**
@@ -159,8 +139,6 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	ImmutableList<HuId> retrieveAvailableHUIdsToPick(PickingHUsQuery query);
 
 	ImmutableList<HuId> retrieveAvailableHUIdsToPickForShipmentSchedule(RetrieveAvailableHUIdsToPickRequest retrieveAvailableHUIdsToPickRequest);
-
-	void releasePickingSlotFromJob(@NonNull PickingSlotId pickingSlotId, @NonNull PickingJobId pickingJobId);
 
 	/**
 	 * Search for available fine picking source HUs.<br>

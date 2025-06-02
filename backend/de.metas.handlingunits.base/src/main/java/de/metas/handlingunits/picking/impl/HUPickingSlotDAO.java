@@ -1,50 +1,9 @@
 package de.metas.handlingunits.picking.impl;
 
-import java.util.Collection;
-import java.util.HashSet;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Locator;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
@@ -52,68 +11,35 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
-import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class HUPickingSlotDAO implements IHUPickingSlotDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_M_PickingSlot_HU retrievePickingSlotHU(final de.metas.picking.model.I_M_PickingSlot pickingSlot, final I_M_HU hu)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class, pickingSlot)
-				.filter(new EqualsQueryFilter<I_M_PickingSlot_HU>(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID, pickingSlot.getM_PickingSlot_ID()))
-				.filter(new EqualsQueryFilter<I_M_PickingSlot_HU>(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
+		return queryBL.createQueryBuilder(I_M_PickingSlot_HU.class, pickingSlot)
+				.addEqualsFilter(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID, pickingSlot.getM_PickingSlot_ID())
+				.addEqualsFilter(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create()
 				.firstOnly(I_M_PickingSlot_HU.class);
-	}
-
-	@Override
-	public I_M_PickingSlot_HU retrievePickingSlotHU(final I_M_HU hu)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class, hu)
-				.filter(new EqualsQueryFilter<I_M_PickingSlot_HU>(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
-				.create()
-				.firstOnly(I_M_PickingSlot_HU.class);
-	}
-
-	@Override
-	public List<I_M_PickingSlot_HU> retrievePickingSlotHUsForBPartner(final I_C_BPartner bPartner)
-	{
-		final IQueryOrderBy orderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_PickingSlot_HU.class)
-				.addColumn(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_HU_ID)
-				.createQueryOrderBy();
-
-		final IQuery<I_M_HU> subQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class, bPartner)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
-				.create();
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class, bPartner)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, I_M_HU.COLUMNNAME_M_HU_ID, subQuery)
-				.create()
-				.setOrderBy(orderBy)
-				.list(I_M_PickingSlot_HU.class);
-	}
-
-	private static IQueryBuilder<I_M_HU> retrieveAllHUsQuery(final de.metas.picking.model.I_M_PickingSlot pickingSlot)
-	{
-		final IQuery<I_M_PickingSlot_HU> queryPickingSlotHU = getPickingSlotHUQuery(pickingSlot);
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU.class, pickingSlot)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_M_HU.COLUMNNAME_M_HU_ID, I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, queryPickingSlotHU)
-				//
-				.orderBy()
-				.addColumn(I_M_HU.COLUMNNAME_M_HU_ID)
-				.endOrderBy();
-
 	}
 
 	@Override
 	public List<I_M_HU> retrieveAllHUs(final de.metas.picking.model.I_M_PickingSlot pickingSlot)
 	{
-		final List<I_M_HU> result = retrieveAllHUsQuery(pickingSlot)
+		final List<I_M_HU> result = queryAllHUsOfPickingSlot(pickingSlot)
 				.create()
 				.list(I_M_HU.class);
 
@@ -127,19 +53,12 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 		return result;
 	}
 
-	@Override
-	public Set<Integer> retrieveAllHUIds(final int pickingSlotId)
+	private IQueryBuilder<I_M_HU> queryAllHUsOfPickingSlot(final de.metas.picking.model.I_M_PickingSlot pickingSlot)
 	{
-		final I_M_PickingSlot pickingSlot = InterfaceWrapperHelper.load(pickingSlotId, I_M_PickingSlot.class);
-		final Set<Integer> huIds = new HashSet<>(retrieveAllHUsQuery(pickingSlot).create().listIds());
-
-		final int currentHUId = pickingSlot.getM_HU_ID();
-		if (currentHUId > 0)
-		{
-			huIds.add(currentHUId);
-		}
-
-		return huIds;
+		return queryBL.createQueryBuilder(I_M_HU.class, pickingSlot)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_HU.COLUMNNAME_M_HU_ID, I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, queryPickingSlotHUs(pickingSlot))
+				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID);
 	}
 
 	@Override
@@ -151,7 +70,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 			return ImmutableSetMultimap.of();
 		}
 
-		final Set<Integer> pickingSlotIds = pickingSlots.stream().map(pickingSlot -> pickingSlot.getM_PickingSlot_ID()).collect(ImmutableSet.toImmutableSet());
+		final Set<Integer> pickingSlotIds = pickingSlots.stream().map(de.metas.picking.model.I_M_PickingSlot::getM_PickingSlot_ID).collect(ImmutableSet.toImmutableSet());
 
 		final LinkedHashMultimap<PickingSlotId, HuId> pickingSlotId2huIds = LinkedHashMultimap.create();
 
@@ -164,8 +83,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 						HuId.ofRepoId(pickingSlot.getM_HU_ID())));
 
 		// Retrieve the HUs from picking slot queue.
-		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot_HU.class)
+		queryBL.createQueryBuilder(I_M_PickingSlot_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_PickingSlot_HU.COLUMN_M_PickingSlot_ID, pickingSlotIds)
 				.orderBy(I_M_PickingSlot_HU.COLUMN_M_PickingSlot_HU_ID)
@@ -179,22 +97,11 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
-	public I_M_PickingSlot retrievePickingSlotForCurrentHU(final I_M_HU hu)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class, hu)
-				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
-				.create()
-				.firstOnly(I_M_PickingSlot.class);
-	}
-
-	@Override
 	public I_M_PickingSlot retrievePickingSlotForHU(final I_M_HU hu)
 	{
-		final IQueryBuilder<I_M_PickingSlot> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class, hu);
+		final IQueryBuilder<I_M_PickingSlot> queryBuilder = queryBL.createQueryBuilder(I_M_PickingSlot.class, hu);
 
-		final ICompositeQueryFilter<I_M_PickingSlot> filters = Services.get(IQueryBL.class).createCompositeQueryFilter(I_M_PickingSlot.class);
+		final ICompositeQueryFilter<I_M_PickingSlot> filters = queryBL.createCompositeQueryFilter(I_M_PickingSlot.class);
 		filters.setJoinOr();
 
 		//
@@ -203,7 +110,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 
 		//
 		// or given HU is in Picking Slot queue
-		final IQuery<I_M_PickingSlot_HU> pickingSlotHUQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_PickingSlot_HU.class, hu)
+		final IQuery<I_M_PickingSlot_HU> pickingSlotHUQuery = queryBL.createQueryBuilder(I_M_PickingSlot_HU.class, hu)
 				.addEqualsFilter(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create();
 		filters.addInSubQueryFilter(de.metas.picking.model.I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID,
@@ -221,7 +128,6 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	@Override
 	public IQueryFilter<I_M_HU> createHUOnPickingSlotQueryFilter(final Object contextProvider)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_M_HU> filters = queryBL.createCompositeQueryFilter(I_M_HU.class);
 		filters.setJoinOr();
 
@@ -257,55 +163,14 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	@Override
 	public boolean isEmpty(final de.metas.picking.model.I_M_PickingSlot pickingSlot)
 	{
-		final I_M_PickingSlot huPickingSlot = InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class);
-		final IQuery<I_M_PickingSlot_HU> queryPickingSlotHU = getPickingSlotHUQuery(huPickingSlot);
-
-		//
-		// PickingSlot-HU assignments are empty if there's no entry found (d'uh)
-		final boolean isEmpty = !queryPickingSlotHU.anyMatch();
-		return isEmpty;
+		return !queryPickingSlotHUs(pickingSlot).anyMatch();
 	}
 
-	private static IQuery<I_M_PickingSlot_HU> getPickingSlotHUQuery(final de.metas.picking.model.I_M_PickingSlot pickingSlot)
+	private IQuery<I_M_PickingSlot_HU> queryPickingSlotHUs(final de.metas.picking.model.I_M_PickingSlot pickingSlot)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot_HU.class, pickingSlot)
-				.filter(new EqualsQueryFilter<I_M_PickingSlot_HU>(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID, pickingSlot.getM_PickingSlot_ID()))
-				.create()
-				.setOnlyActiveRecords(true);
-	}
-
-	@Override
-	public List<I_M_PickingSlot> retrievePickingSlots(
-			@NonNull final I_C_BPartner partner,
-			@NonNull final I_M_Locator locator)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_PickingSlot.class, partner)
-				.addEqualsFilter(de.metas.picking.model.I_M_PickingSlot.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
-				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_M_Locator_ID, locator.getM_Locator_ID())
-				.create()
-				.setOnlyActiveRecords(true)
-				.list(I_M_PickingSlot.class);
-	}
-
-	@Override
-	public boolean isPickingRackSystem(@NonNull final PickingSlotId pickingSlotId)
-	{
-		return retrieveAllPickingSlotIdsWhichAreRackSystems().contains(pickingSlotId);
-	}
-
-	@Cached(cacheName = I_M_PickingSlot.Table_Name + "#by#" + I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, expireMinutes = Cached.EXPIREMINUTES_Never)
-	@Override
-	public Set<PickingSlotId> retrieveAllPickingSlotIdsWhichAreRackSystems()
-	{
-		final Set<PickingSlotId> pickingSlotIds = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_M_PickingSlot.class)
-				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, true)
+		return queryBL.createQueryBuilder(I_M_PickingSlot_HU.class, pickingSlot)
 				.addOnlyActiveRecordsFilter()
-				.create()
-				.listIds(PickingSlotId::ofRepoId);
-
-		return ImmutableSet.copyOf(pickingSlotIds);
+				.addEqualsFilter(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID, pickingSlot.getM_PickingSlot_ID())
+				.create();
 	}
 }

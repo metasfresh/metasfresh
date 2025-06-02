@@ -1,18 +1,7 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.logging.LogManager;
@@ -20,6 +9,13 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -45,17 +41,15 @@ import lombok.NonNull;
 
 /**
  * Close picking candidate.
- * 
+ * <p>
  * The status will be changed from Processed to Closed.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class ClosePickingCandidateCommand
 {
-	private static final transient Logger logger = LogManager.getLogger(ClosePickingCandidateCommand.class);
-	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+	private static final Logger logger = LogManager.getLogger(ClosePickingCandidateCommand.class);
+	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -103,7 +97,7 @@ public class ClosePickingCandidateCommand
 	private boolean isPickingSlotRackSystem(final PickingCandidate pickingCandidate)
 	{
 		final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
-		return pickingSlotId != null && huPickingSlotDAO.isPickingRackSystem(pickingSlotId);
+		return pickingSlotId != null && huPickingSlotBL.isPickingRackSystem(pickingSlotId);
 	}
 
 	private void close(final PickingCandidate pickingCandidate)
@@ -111,7 +105,7 @@ public class ClosePickingCandidateCommand
 		try
 		{
 			pickingCandidate.assertProcessed();
-			
+
 			final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
 			if (pickingSlotId != null)
 			{
