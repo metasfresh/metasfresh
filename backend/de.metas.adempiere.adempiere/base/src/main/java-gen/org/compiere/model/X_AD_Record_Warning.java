@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Record_Warning extends org.compiere.model.PO implements I_AD_Record_Warning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 203439282L;
+	private static final long serialVersionUID = 1051608594L;
 
     /** Standard Constructor */
     public X_AD_Record_Warning (final Properties ctx, final int AD_Record_Warning_ID, @Nullable final String trxName)
@@ -143,5 +143,26 @@ public class X_AD_Record_Warning extends org.compiere.model.PO implements I_AD_R
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	/** 
+	 * Severity AD_Reference_ID=541949
+	 * Reference name: Severity
+	 */
+	public static final int SEVERITY_AD_Reference_ID=541949;
+	/** Notice = N */
+	public static final String SEVERITY_Notice = "N";
+	/** Error = E */
+	public static final String SEVERITY_Error = "E";
+	@Override
+	public void setSeverity (final java.lang.String Severity)
+	{
+		set_Value (COLUMNNAME_Severity, Severity);
+	}
+
+	@Override
+	public java.lang.String getSeverity() 
+	{
+		return get_ValueAsString(COLUMNNAME_Severity);
 	}
 }
