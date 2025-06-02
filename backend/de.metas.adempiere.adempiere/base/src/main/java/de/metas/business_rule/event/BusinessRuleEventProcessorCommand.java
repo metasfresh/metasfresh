@@ -192,13 +192,16 @@ public class BusinessRuleEventProcessorCommand
 						.businessRuleId(rule.getId())
 						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, Collections.singletonList(documentSummary)))
 						.userId(event.getTriggeringUserId())
+						.severity(rule.getSeverity())
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
+
+				final NotificationSeverity notificationSeverity = rule.getSeverity().isError() ? NotificationSeverity.Error : NotificationSeverity.Warning;
 
 				BusinessRuleEventNotificationProducer.newInstance().createNotice(RecordWarningNoticeRequest.builder()
 						.userId(event.getTriggeringUserId())
 						.recordWarningId(recordWarningId)
-						.notificationSeverity(NotificationSeverity.Warning)
+						.notificationSeverity(notificationSeverity)
 						.messageKey(messageKey)
 						.messageParams(Collections.singletonList(documentSummary))
 						.build());

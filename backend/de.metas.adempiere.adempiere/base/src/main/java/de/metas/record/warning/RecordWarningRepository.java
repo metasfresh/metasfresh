@@ -1,5 +1,6 @@
 package de.metas.record.warning;
 
+import de.metas.business_rule.descriptor.model.Severity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -29,6 +30,7 @@ public class RecordWarningRepository
 		record.setAD_BusinessRule_ID(request.getBusinessRuleId().getRepoId());
 		record.setMsgText(request.getMessage());
 		record.setAD_User_ID(request.getUserId().getRepoId());
+		record.setSeverity(request.getSeverity().getCode());
 
 		InterfaceWrapperHelper.save(record);
 
@@ -54,7 +56,7 @@ public class RecordWarningRepository
 		toSqlQuery(query).create().delete();
 	}
 
-	private IQueryBuilder<I_AD_Record_Warning> toSqlQuery(final RecordWarningQuery query)
+	private IQueryBuilder<I_AD_Record_Warning> toSqlQuery(@NonNull final RecordWarningQuery query)
 	{
 		final IQueryBuilder<I_AD_Record_Warning> queryBuilder = queryBL.createQueryBuilder(I_AD_Record_Warning.class);
 
@@ -67,6 +69,23 @@ public class RecordWarningRepository
 			queryBuilder.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_AD_BusinessRule_ID, query.getBusinessRuleId());
 		}
 
+		if(query.getSeverity() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Severity, query.getSeverity().getCode());
+		}
+
 		return queryBuilder;
+	}
+
+	public boolean hasRecordWarningsWithErrorSeverity(@NonNull final TableRecordReference recordRef)
+	{
+		final RecordWarningQuery query = RecordWarningQuery.builder()
+				.recordRef(recordRef)
+				.severity(Severity.Error)
+				.build();
+
+		return toSqlQuery(query)
+				.create()
+				.anyMatch();
 	}
 }
