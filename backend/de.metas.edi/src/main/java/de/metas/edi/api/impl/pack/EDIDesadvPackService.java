@@ -34,7 +34,6 @@ import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
-import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.handlingunits.HuId;
@@ -132,10 +131,8 @@ public class EDIDesadvPackService
 	}
 
 	@NonNull
-	public EDIDesadvPackService.Sequences createSequences(@NonNull final I_EDI_Desadv desadv)
+	public EDIDesadvPackService.Sequences createSequences(@NonNull final EDIDesadvId desadvId)
 	{
-		final EDIDesadvId desadvId = EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID());
-
 		final int maxDesadvPackSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(desadvId);
 		final SimpleSequence packSeqNoSequence = SimpleSequence.builder()
 				.initial(maxDesadvPackSeqNo)
