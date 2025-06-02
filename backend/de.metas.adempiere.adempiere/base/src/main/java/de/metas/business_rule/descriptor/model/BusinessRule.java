@@ -32,6 +32,8 @@ public class BusinessRule
 
 	@NonNull AdMessageId warningMessageId;
 
+	@NonNull Severity severity;
+
 	@Nullable BusinessRuleLogLevel logLevel;
 
 	@Builder
@@ -43,7 +45,8 @@ public class BusinessRule
 			@NonNull final Validation validation,
 			@NonNull final ImmutableList<BusinessRuleTrigger> triggers,
 			@NonNull final AdMessageId warningMessageId,
-			@Nullable BusinessRuleLogLevel logLevel)
+			@NonNull final Severity severity,
+			@Nullable final BusinessRuleLogLevel logLevel)
 	{
 		this.id = id;
 		this.name = name;
@@ -53,6 +56,7 @@ public class BusinessRule
 		this.triggers = triggers;
 		this.triggersById = Maps.uniqueIndex(triggers, BusinessRuleTrigger::getId);
 		this.warningMessageId = warningMessageId;
+		this.severity = severity;
 		this.logLevel = logLevel;
 	}
 
