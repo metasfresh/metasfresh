@@ -3,7 +3,12 @@
 services:
 
   db:
-    image: $mfregistry/metas-db:$mfversion
+    build:
+      context: db
+      args:
+        mfregistry: $mfregistry
+        mfversion: $mfversion
+        dbqualifier: $dbqualifier
     ports:
       - "15432:5432"
     environment:
