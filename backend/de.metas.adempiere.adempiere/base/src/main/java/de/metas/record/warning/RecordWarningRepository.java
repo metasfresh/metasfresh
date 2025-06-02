@@ -77,7 +77,7 @@ public class RecordWarningRepository
 		return queryBuilder;
 	}
 
-	public boolean hasRecordWarningsWithErrorSeverity(@NonNull final TableRecordReference recordRef)
+	public boolean hasErrors(@NonNull final TableRecordReference recordRef)
 	{
 		final RecordWarningQuery query = RecordWarningQuery.builder()
 				.recordRef(recordRef)

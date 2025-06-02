@@ -46,7 +46,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.util.Set;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.record.warning.RecordWarningRepository;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -89,8 +91,8 @@ import lombok.NonNull;
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 	private final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 
-	// todo see if I can avoid SpringContextHolder
 	private final RecordWarningRepository recordWarningRepository = SpringContextHolder.instance.getBean(RecordWarningRepository.class);
+	private final AdMessageKey ERR_CannotCompleteBecauseOfErrors = AdMessageKey.of("de.metas.document.engine.impl.DocumentEngine.CannotCompleteBecauseOfErrors");
 
 	private final IDocument _document;
 	private String _docStatus;
@@ -445,9 +447,9 @@ import lombok.NonNull;
 		final IDocument document = getDocument();
 
 		final TableRecordReference documentTableRecordReference = document.toTableRecordReference();
-		if(recordWarningRepository.hasRecordWarningsWithErrorSeverity(documentTableRecordReference))
+		if (recordWarningRepository.hasErrors(documentTableRecordReference))
 		{
-			return getDocStatus();
+			throw new AdempiereException(ERR_CannotCompleteBecauseOfErrors);
 		}
 
 		final String newDocStatus = document.completeIt();

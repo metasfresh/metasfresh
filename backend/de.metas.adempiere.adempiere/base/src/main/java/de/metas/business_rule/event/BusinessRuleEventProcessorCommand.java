@@ -196,8 +196,7 @@ public class BusinessRuleEventProcessorCommand
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
-				final NotificationSeverity notificationSeverity = rule.getSeverity().isError() ? NotificationSeverity.Error : NotificationSeverity.Warning;
-
+				final NotificationSeverity notificationSeverity = rule.getSeverity().toNotificationSeverity();
 				BusinessRuleEventNotificationProducer.newInstance().createNotice(RecordWarningNoticeRequest.builder()
 						.userId(event.getTriggeringUserId())
 						.recordWarningId(recordWarningId)

@@ -23,6 +23,7 @@
 package de.metas.business_rule.descriptor.model;
 
 import de.metas.ad_reference.ReferenceId;
+import de.metas.notification.impl.NotificationSeverity;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -51,8 +52,16 @@ public enum Severity implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
-	public boolean isError()
+	public NotificationSeverity toNotificationSeverity()
 	{
-		return this == Error;
+		switch (this)
+		{
+			case Notice:
+				return NotificationSeverity.Warning;
+			case Error:
+				return NotificationSeverity.Error;
+			default:
+				throw new IllegalArgumentException("Unknown severity: " + this);
+		}
 	}
 }
