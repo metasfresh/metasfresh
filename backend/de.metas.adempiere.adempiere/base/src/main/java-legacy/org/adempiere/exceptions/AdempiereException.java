@@ -42,6 +42,8 @@ import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	/**
 	 * Wraps given <code>throwable</code> as {@link AdempiereException}, if it's not already an {@link AdempiereException}.<br>
 	 * Note that this method also tries to pick the most specific adempiere exception (work in progress).
@@ -273,7 +275,8 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
+		this.messageTrl = msgBL.getTranslatableMsgText(messageKey);
+		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 
 		this.errorCode = messageKey.toAD_Message();
@@ -281,8 +284,9 @@ public class AdempiereException extends RuntimeException
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
 	{
-		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, params);
+		this.messageTrl = msgBL.getTranslatableMsgText(adMessage, params);
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
+		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 
 		setParameter("AD_Language", this.adLanguage);

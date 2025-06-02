@@ -239,9 +239,9 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 		return SUBTRACTED_VALUE_METHODS.contains(this);
 	}
 
-	public boolean isFinalInvoiceSpecificMethod()
+	public boolean isPurchaseFinalInvoiceSpecificMethod()
 	{
-		return FINAL_INVOICE_SPECIFIC_METHODS.contains(this);
+		return PURCHASE_FINAL_INVOICE_SPECIFIC_METHODS.contains(this);
 	}
 
 	public boolean isInterestSpecificMethod() { return INTEREST_SPECIFIC_METHODS.contains(this); }

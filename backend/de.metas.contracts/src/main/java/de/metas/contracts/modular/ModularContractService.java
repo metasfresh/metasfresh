@@ -173,7 +173,7 @@ public class ModularContractService
 		}
 
 		// Stop log creation after final invoice
-		if (flatrateBL.getById(contractId).isFinalInvoiced() && computingMethodType.isFinalInvoiceSpecificMethod())
+		if (flatrateBL.getById(contractId).isFinalInvoiced() && computingMethodType.isPurchaseFinalInvoiceSpecificMethod())
 		{
 			return false;
 		}
@@ -268,24 +268,24 @@ public class ModularContractService
 			return;
 		}
 
-		final Optional<FlatrateTermId> flatrateTermIdOptional = getFlatrateTermIdByInvoiceId(invoiceId);
-		if (flatrateTermIdOptional.isEmpty()) // invoice might have been imported from a csv-file and have no flatrate term 
+		final FlatrateTermId flatrateTermId = getFlatrateTermIdByInvoiceId(invoiceId).orElse(null);
+		if (flatrateTermId == null) // invoice might have been imported from a csv-file and have no flatrate term
 		{
 			return;
 		}
 
-		if (!flatrateBL.isModularContract(flatrateTermIdOptional.get())) // could be interim
+		if (!flatrateBL.isModularContract(flatrateTermId)) // could be interim
 		{
 			return;
 		}
 
 		modularContractSettingsService.getById(modularContractSettingsId).getModuleConfigs().stream()
 				.filter(config -> config.isMatchingAnyOf(AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS))
-				.forEach(config -> modularContractLogService.updateAverageContractSpecificPrice(config, flatrateTermIdOptional.get(), logHandlerRegistry));
+				.forEach(config -> modularContractLogService.updateAverageContractSpecificPrice(config, flatrateTermId, logHandlerRegistry));
 
 		if (invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceRecord))
 		{
-			updateIsFinalInvoiced(flatrateTermIdOptional.get(), false);
+			updateIsFinalInvoiced(flatrateTermId, false);
 		}
 	}
 
@@ -296,15 +296,15 @@ public class ModularContractService
 
 	public void updateIsFinalInvoiced(@NonNull final InvoiceId invoiceId, final boolean isFinalInvoiced)
 	{
-		final Optional<FlatrateTermId> flatrateTermIdOptional = getFlatrateTermIdByInvoiceId(invoiceId);
-		if (flatrateTermIdOptional.isEmpty()) // invoice might have been imported from a csv-file and have no flatrate term 
+		final FlatrateTermId flatrateTermId = getFlatrateTermIdByInvoiceId(invoiceId).orElse(null);
+		if (flatrateTermId == null) // invoice might have been imported from a csv-file and have no flatrate term
 		{
 			return;
 		}
 
 		if (invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceId) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceId))
 		{
-			updateIsFinalInvoiced(flatrateTermIdOptional.get(), isFinalInvoiced);
+			updateIsFinalInvoiced(flatrateTermId, isFinalInvoiced);
 		}
 	}
 

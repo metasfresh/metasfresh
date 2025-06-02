@@ -305,13 +305,6 @@ public class ModularContractLogRepository
 		return reversedLog;
 	}
 
-	public boolean hasAnyModularLogs(@NonNull final TableRecordReference recordRef)
-	{
-		return toSqlQuery(ModularContractLogQuery.builder().referenceSet(TableRecordReferenceSet.of(recordRef)).build())
-				.create()
-				.anyMatch();
-	}
-
 	public void changeBillableStatus(
 			@NonNull final ModularContractLogQuery query,
 			final boolean isBillable)
