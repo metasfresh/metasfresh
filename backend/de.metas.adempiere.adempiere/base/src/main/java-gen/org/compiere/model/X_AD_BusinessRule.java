@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_BusinessRule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -295086656L;
+	private static final long serialVersionUID = 1027035219L;
 
     /** Standard Constructor */
     public X_AD_BusinessRule (final Properties ctx, final int AD_BusinessRule_ID, @Nullable final String trxName)
@@ -86,6 +86,27 @@ public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_Bus
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * Severity AD_Reference_ID=541949
+	 * Reference name: Severity
+	 */
+	public static final int SEVERITY_AD_Reference_ID=541949;
+	/** Notice = N */
+	public static final String SEVERITY_Notice = "N";
+	/** Error = E */
+	public static final String SEVERITY_Error = "E";
+	@Override
+	public void setSeverity (final java.lang.String Severity)
+	{
+		set_Value (COLUMNNAME_Severity, Severity);
+	}
+
+	@Override
+	public java.lang.String getSeverity() 
+	{
+		return get_ValueAsString(COLUMNNAME_Severity);
 	}
 
 	@Override
