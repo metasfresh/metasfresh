@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.impl;
+package de.metas.handlingunits.picking.slot.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
@@ -17,13 +17,13 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
-import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
-import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
-import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
+import de.metas.handlingunits.picking.slot.PickingSlotAllocateRequest;
+import de.metas.handlingunits.picking.slot.PickingSlotConnectedComponent;
+import de.metas.handlingunits.picking.slot.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
+import de.metas.handlingunits.picking.slot.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.picking.slot.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
@@ -11,12 +11,11 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
-import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
@@ -294,8 +293,6 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	/**
 	 * Like {@link #testVhuWithTuAndLuAndPickingCandidateForLu(boolean)}, but the LU is not flagged by a picking candidate but by a {@link I_M_Source_HU}.<br>
 	 * Because of the source HU, LU shall still not be returned.
-	 *
-	 * @param onlyTopLevelHUs
 	 */
 	@Test
 	public void testVhuWithTuAndLuAndSourceHuForLu()
@@ -435,10 +432,6 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 
 	/**
 	 * Set up the storage engine to return the given {@code vhu} and call the method under test.
-	 *
-	 * @param vhu
-	 * @param onlyTopLevelHUs TODO
-	 * @return
 	 */
 	private List<I_M_HU> common(
 			final I_M_HU vhu,

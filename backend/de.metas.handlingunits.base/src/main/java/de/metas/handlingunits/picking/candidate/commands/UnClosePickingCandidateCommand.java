@@ -1,6 +1,6 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.picking.api.PickingSlotId;

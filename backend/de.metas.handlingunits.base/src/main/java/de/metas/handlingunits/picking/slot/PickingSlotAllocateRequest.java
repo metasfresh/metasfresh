@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking;
+package de.metas.handlingunits.picking.slot;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.job.model.PickingJobId;

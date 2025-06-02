@@ -1,9 +1,9 @@
 package de.metas.handlingunits.picking.job.service;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
-import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.PickingSlotAllocateRequest;
+import de.metas.handlingunits.picking.slot.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.i18n.BooleanWithReason;

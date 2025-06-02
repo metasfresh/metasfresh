@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.impl.HUPickingSlotBLs;
+package de.metas.handlingunits.picking.slot.impl.HUPickingSlotBLs;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
@@ -6,9 +6,10 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.impl.HUPickingSlotBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
@@ -55,8 +56,8 @@ import java.util.function.Function;
 
 /**
  * Contains methods used to support
- * {@link HUPickingSlotBL#retrieveAvailableHUsToPick(de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery)} and
- * {@link HUPickingSlotBL#retrieveAvailableSourceHUs(de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery)}.
+ * {@link HUPickingSlotBL#retrieveAvailableHUsToPick(IHUPickingSlotBL.PickingHUsQuery)} and
+ * {@link HUPickingSlotBL#retrieveAvailableSourceHUs(IHUPickingSlotBL.PickingHUsQuery)}.
  *
  * @author metas-dev <dev@metasfresh.com>
  */

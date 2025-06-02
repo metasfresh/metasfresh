@@ -31,7 +31,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.Check;
 import de.metas.util.Services;

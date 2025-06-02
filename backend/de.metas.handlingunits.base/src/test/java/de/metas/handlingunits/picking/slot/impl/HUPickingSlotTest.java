@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.picking.slot.impl;
 
 /*
  * #%L
@@ -26,8 +26,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
-import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.PickingSlotConnectedComponent;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;

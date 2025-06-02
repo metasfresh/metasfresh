@@ -3,7 +3,7 @@ package de.metas.ui.web.picking.husToPick;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;

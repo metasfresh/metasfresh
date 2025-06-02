@@ -10,7 +10,7 @@ import com.google.common.collect.SetMultimap;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;

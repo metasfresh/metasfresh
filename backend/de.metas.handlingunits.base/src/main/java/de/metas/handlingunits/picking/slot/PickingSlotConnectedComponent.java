@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking;
+package de.metas.handlingunits.picking.slot;
 
 import de.metas.picking.api.PickingSlotId;
 import lombok.NonNull;

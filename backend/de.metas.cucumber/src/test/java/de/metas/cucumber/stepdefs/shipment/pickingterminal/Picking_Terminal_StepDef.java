@@ -31,7 +31,7 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;

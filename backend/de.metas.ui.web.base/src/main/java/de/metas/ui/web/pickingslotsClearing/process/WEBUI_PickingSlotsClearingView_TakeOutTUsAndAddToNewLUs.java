@@ -34,7 +34,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking;
+package de.metas.handlingunits.picking.slot;
 
 import com.google.common.collect.SetMultimap;
 import de.metas.handlingunits.HuId;

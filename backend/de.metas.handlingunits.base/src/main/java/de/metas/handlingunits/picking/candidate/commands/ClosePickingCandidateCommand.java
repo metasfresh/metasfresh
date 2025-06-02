@@ -1,7 +1,7 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.logging.LogManager;

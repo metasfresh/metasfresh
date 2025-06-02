@@ -61,7 +61,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;

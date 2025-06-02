@@ -20,9 +20,10 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking;
+package de.metas.handlingunits.picking.slot;
 
 import de.metas.handlingunits.model.I_M_PickingSlot;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.i18n.AdMessageKey;

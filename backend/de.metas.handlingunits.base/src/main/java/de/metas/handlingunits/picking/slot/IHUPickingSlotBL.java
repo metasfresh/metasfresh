@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking;
+package de.metas.handlingunits.picking.slot;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;

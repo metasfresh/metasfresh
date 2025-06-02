@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.impl;
+package de.metas.handlingunits.picking.slot.impl;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -8,7 +8,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
