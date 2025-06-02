@@ -184,6 +184,27 @@ public interface I_AD_BusinessRule
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeverity (java.lang.String Severity);
+
+	/**
+	 * Get Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getSeverity();
+
+	ModelColumn<I_AD_BusinessRule, Object> COLUMN_Severity = new ModelColumn<>(I_AD_BusinessRule.class, "Severity", null);
+	String COLUMNNAME_Severity = "Severity";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
