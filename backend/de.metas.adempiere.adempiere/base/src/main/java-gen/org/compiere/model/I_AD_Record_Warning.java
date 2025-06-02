@@ -256,6 +256,27 @@ public interface I_AD_Record_Warning
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeverity (java.lang.String Severity);
+
+	/**
+	 * Get Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getSeverity();
+
+	ModelColumn<I_AD_Record_Warning, Object> COLUMN_Severity = new ModelColumn<>(I_AD_Record_Warning.class, "Severity", null);
+	String COLUMNNAME_Severity = "Severity";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
