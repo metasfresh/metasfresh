@@ -3,9 +3,16 @@
 services:
 
   db:
-    image: $mfregistry/metas-db:$mfversion-$dbqualifier
+    build:
+      context: db
+      args:
+        mfregistry: $mfregistry
+        mfversion: $mfversion
+        dbqualifier: $dbqualifier
     ports:
       - "15432:5432"
+    environment:
+      - PGDATA=/var/lib/postgresql/data
     healthcheck:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 10s
