@@ -23,6 +23,8 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 */
 	I_M_PickingSlot retrievePickingSlotForHU(I_M_HU hu);
 
+	List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs();
+
 	/**
 	 * Retrieves all HUs that are assigned to the given <code>pickingSlot</code> via {@link I_M_PickingSlot_HU} (i.e. which are in the queue),<br>
 	 * and also the one which is currently open within the picking slot.

@@ -37,6 +37,15 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
+	public List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs()
+	{
+		return queryBL.createQueryBuilder(I_M_PickingSlot_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_M_PickingSlot_HU.class);
+	}
+
+	@Override
 	public List<I_M_HU> retrieveAllHUs(final de.metas.picking.model.I_M_PickingSlot pickingSlot)
 	{
 		final List<I_M_HU> result = queryAllHUsOfPickingSlot(pickingSlot)
