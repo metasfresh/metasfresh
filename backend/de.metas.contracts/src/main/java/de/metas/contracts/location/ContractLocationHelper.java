@@ -35,6 +35,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ContractLocationHelper
 {
+	@NonNull
 	public static DocumentLocation extractBillLocation(@NonNull final I_C_Flatrate_Term contract)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contract.getBill_BPartner_ID());

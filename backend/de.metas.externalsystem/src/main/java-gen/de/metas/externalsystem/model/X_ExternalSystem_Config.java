@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_ExternalSystem_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -571636833L;
+	private static final long serialVersionUID = 1087562295L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config (final Properties ctx, final int ExternalSystem_Config_ID, @Nullable final String trxName)
@@ -35,25 +35,25 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setAuditFileFolder (final java.lang.String AuditFileFolder)
+	public void setAuditFileFolder (final String AuditFileFolder)
 	{
 		set_Value (COLUMNNAME_AuditFileFolder, AuditFileFolder);
 	}
 
 	@Override
-	public java.lang.String getAuditFileFolder() 
+	public String getAuditFileFolder()
 	{
 		return get_ValueAsString(COLUMNNAME_AuditFileFolder);
 	}
 
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (final @Nullable String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public String getDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -74,13 +74,13 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (final String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public String getName()
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
@@ -106,14 +106,16 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_LeichMehl = "LM";
 	/** PrintingClient = PC */
 	public static final String TYPE_PrintingClient = "PC";
+	/** Pro Care Management = PCM */
+	public static final String TYPE_ProCareManagement = "PCM";
 	@Override
-	public void setType (final java.lang.String Type)
+	public void setType (final String Type)
 	{
 		set_Value (COLUMNNAME_Type, Type);
 	}
 
 	@Override
-	public java.lang.String getType() 
+	public String getType()
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
 	}
