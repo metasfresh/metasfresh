@@ -14,7 +14,6 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.notification.impl.NotificationSeverity;
 import de.metas.record.warning.RecordWarningCreateRequest;
 import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
@@ -196,11 +195,10 @@ public class BusinessRuleEventProcessorCommand
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
-				final NotificationSeverity notificationSeverity = rule.getSeverity().toNotificationSeverity();
 				BusinessRuleEventNotificationProducer.newInstance().createNotice(RecordWarningNoticeRequest.builder()
 						.userId(event.getTriggeringUserId())
 						.recordWarningId(recordWarningId)
-						.notificationSeverity(notificationSeverity)
+						.notificationSeverity(rule.getSeverity().toNotificationSeverity())
 						.messageKey(messageKey)
 						.messageParams(Collections.singletonList(documentSummary))
 						.build());

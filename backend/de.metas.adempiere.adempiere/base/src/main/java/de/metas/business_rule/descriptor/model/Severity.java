@@ -52,6 +52,7 @@ public enum Severity implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
+	@NonNull
 	public NotificationSeverity toNotificationSeverity()
 	{
 		switch (this)
