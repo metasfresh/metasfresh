@@ -119,3 +119,83 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('AD_Record_Warning','ALTER TABLE public.AD_Record_Warning ADD COLUMN Root_Record_ID NUMERIC(10)')
 ;
 
+-- UI Column: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> main -> 10
+-- UI Element Group: rootRecord
+-- 2025-06-02T16:19:02.868Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,547677,553089,TO_TIMESTAMP('2025-06-02 16:19:02.660000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','rootRecord',40,TO_TIMESTAMP('2025-06-02 16:19:02.660000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> main -> 10
+-- UI Element Group: rootRecord
+-- 2025-06-02T16:19:14.493Z
+UPDATE AD_UI_ElementGroup SET SeqNo=20,Updated=TO_TIMESTAMP('2025-06-02 16:19:14.492000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=553089
+;
+
+-- UI Column: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> main -> 10
+-- UI Element Group: record
+-- 2025-06-02T16:20:03.182Z
+UPDATE AD_UI_ElementGroup SET SeqNo=30,Updated=TO_TIMESTAMP('2025-06-02 16:20:03.182000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=552187
+;
+
+-- UI Column: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> main -> 10
+-- UI Element Group: business rule
+-- 2025-06-02T16:20:07.045Z
+UPDATE AD_UI_ElementGroup SET SeqNo=40,Updated=TO_TIMESTAMP('2025-06-02 16:20:07.045000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=552259
+;
+
+-- Field: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> Stammtabelle
+-- Column: AD_Record_Warning.Root_AD_Table_ID
+-- 2025-06-02T16:20:38.015Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590150,747487,0,547698,TO_TIMESTAMP('2025-06-02 16:20:37.877000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'D','Y','N','N','N','N','N','N','N','Stammtabelle',TO_TIMESTAMP('2025-06-02 16:20:37.877000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-02T16:20:38.017Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747487 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-02T16:20:38.019Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583682)
+;
+
+-- 2025-06-02T16:20:38.022Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747487
+;
+
+-- 2025-06-02T16:20:38.023Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747487)
+;
+
+-- Field: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> Stammdatensatz
+-- Column: AD_Record_Warning.Root_Record_ID
+-- 2025-06-02T16:20:38.119Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590151,747488,0,547698,TO_TIMESTAMP('2025-06-02 16:20:38.026000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'D','Y','N','N','N','N','N','N','N','Stammdatensatz',TO_TIMESTAMP('2025-06-02 16:20:38.026000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-02T16:20:38.120Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747488 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-02T16:20:38.121Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583683)
+;
+
+-- 2025-06-02T16:20:38.124Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747488
+;
+
+-- 2025-06-02T16:20:38.125Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747488)
+;
+
+-- UI Element: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> main -> 10 -> rootRecord.Stammtabelle
+-- Column: AD_Record_Warning.Root_AD_Table_ID
+-- 2025-06-02T16:20:58.109Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747487,0,547698,553089,633896,'F',TO_TIMESTAMP('2025-06-02 16:20:57.916000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N','Stammtabelle',10,0,0,TO_TIMESTAMP('2025-06-02 16:20:57.916000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> main -> 10 -> rootRecord.Stammdatensatz
+-- Column: AD_Record_Warning.Root_Record_ID
+-- 2025-06-02T16:21:04.719Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747488,0,547698,553089,633897,'F',TO_TIMESTAMP('2025-06-02 16:21:04.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N','Stammdatensatz',20,0,0,TO_TIMESTAMP('2025-06-02 16:21:04.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
