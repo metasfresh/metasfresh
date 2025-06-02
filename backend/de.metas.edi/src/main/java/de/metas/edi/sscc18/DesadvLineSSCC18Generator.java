@@ -223,15 +223,21 @@ public class DesadvLineSSCC18Generator
 		final SSCC18 sscc18 = sscc18CodeBL.generate(OrgId.ofRepoId(desadvLine.getAD_Org_ID()));
 		final String ipaSSCC18 = sscc18.asString(); // humanReadable=false
 
+		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()));
+		
 		// Create SSCC record
-		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = buildCreateEDIDesadvPackItemRequest(desadvLine, luQtys, tuPIItemProduct);
+		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = buildCreateEDIDesadvPackItemRequest(
+				desadvLine, 
+				luQtys, 
+				tuPIItemProduct,
+				sequences);
 
 		// PackagingCodes and PackagingGTINs
 		final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
 
 		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = CreateEDIDesadvPackRequest.builder()
 				.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
-				.seqNo(0) // let the repo fix the next free SeqNo on the fly 
+				.seqNo(sequences.getPackSeqNoSequence().next()) 
 				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
 				.sscc18(ipaSSCC18)
 				.isManualIpaSSCC(true)
@@ -247,7 +253,8 @@ public class DesadvLineSSCC18Generator
 	private CreateEDIDesadvPackItemRequest buildCreateEDIDesadvPackItemRequest(
 			@NonNull final I_EDI_DesadvLine desadvLine,
 			@NonNull final LUQtys luQtys,
-			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct)
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final EDIDesadvPackService.Sequences sequences)
 	{
 		final UomId stockUOMId = UomId.ofRepoId(desadvLine.getC_UOM_ID());
 		final Quantity qtyCUsPerTU = Quantitys.of(luQtys.getQtyCUsPerTU(), stockUOMId);
@@ -307,7 +314,7 @@ public class DesadvLineSSCC18Generator
 
 		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackItemRequest.builder()
 				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
-				.line(desadvLine.getLine())
+				.line(sequences.getPackItemLineSequence().next())
 				.qtyCUsPerTU(qtyCUsPerTU.toBigDecimal())
 				.qtyTu(luQtys.getQtyTUsPerLU().intValueExact())
 				.qtyCUsPerLU(qtyCUsPerLU.toBigDecimal())
