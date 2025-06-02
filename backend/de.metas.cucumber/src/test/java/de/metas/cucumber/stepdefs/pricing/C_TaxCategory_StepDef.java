@@ -24,21 +24,13 @@ package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_TaxCategory;
-
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
-import static org.compiere.model.I_AD_User.COLUMNNAME_Login;
 
 @RequiredArgsConstructor
 public class C_TaxCategory_StepDef
