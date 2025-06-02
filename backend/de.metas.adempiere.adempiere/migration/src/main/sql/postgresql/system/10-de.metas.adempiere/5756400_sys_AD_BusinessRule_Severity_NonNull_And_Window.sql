@@ -57,3 +57,46 @@ UPDATE AD_UI_ElementGroup SET SeqNo=30,Updated=TO_TIMESTAMP('2025-06-02 08:25:31
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747476,0,547699,553086,633890,'F',TO_TIMESTAMP('2025-06-02 08:25:45.168000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N','Schweregrad',10,0,0,TO_TIMESTAMP('2025-06-02 08:25:45.168000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+
+
+-- UI Element: Business Rule(541837,D) -> Business Rule(547699,D) -> main -> 20 -> severity.Schweregrad
+-- Column: AD_BusinessRule.Severity
+-- 2025-06-02T12:47:46.572Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2025-06-02 12:47:46.571000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633890
+;
+
+-- UI Element: Business Rule(541837,D) -> Business Rule(547699,D) -> main -> 20 -> flags.Aktiv
+-- Column: AD_BusinessRule.IsActive
+-- 2025-06-02T12:47:46.606Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2025-06-02 12:47:46.605000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=627407
+;
+
+-- UI Element: Business Rule(541837,D) -> Business Rule(547699,D) -> main -> 20 -> org&client.Mandant
+-- Column: AD_BusinessRule.AD_Client_ID
+-- 2025-06-02T12:47:46.643Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2025-06-02 12:47:46.643000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=627409
+;
+
+
+
+
+-- Column: AD_BusinessRule.IsActive
+-- 2025-06-02T12:50:10.123Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=10,Updated=TO_TIMESTAMP('2025-06-02 12:50:10.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589497
+;
+
+-- Column: AD_BusinessRule.Name
+-- 2025-06-02T12:50:11.856Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=20,Updated=TO_TIMESTAMP('2025-06-02 12:50:11.856000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589501
+;
+
+-- Column: AD_BusinessRule.Severity
+-- 2025-06-02T12:50:13.650Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=30,Updated=TO_TIMESTAMP('2025-06-02 12:50:13.650000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590135
+;
+
+-- Column: AD_BusinessRule.AD_Org_ID
+-- 2025-06-02T12:50:15.351Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=40,Updated=TO_TIMESTAMP('2025-06-02 12:50:15.351000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589494
+;
+
