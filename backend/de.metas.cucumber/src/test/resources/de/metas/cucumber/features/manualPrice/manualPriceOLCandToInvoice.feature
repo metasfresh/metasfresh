@@ -25,9 +25,13 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
 
+    And load C_TaxCategory:
+      | C_TaxCategory_ID | InternalName |
+      | Normal           | Normal       |
+
     And metasfresh contains M_Product_TaxCategory:
       | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000009                     | 101                     | 2000-04-01 |
+      | ptc_1      | p_1                     | Normal                      | 101                     | 2000-04-01 |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -80,7 +84,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_TaxCategory_ID.Identifier |
-      | ol_1                      | order_1               | 2021-04-15      | p_1                     | 10           | 10         | 10          | 10    | 0        | EUR          | true      | 1000009                         |
+      | ol_1                      | order_1               | 2021-04-15      | p_1                     | 10           | 10         | 10          | 10    | 0        | EUR          | true      | Normal                          |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference   | processed | docStatus |
@@ -96,6 +100,6 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.C_TaxCategory_ID.Identifier |
-      | invoiceLine_1_1             | invoice_1               | p_1                     | 10          | true      | 1000009                         |
+      | invoiceLine_1_1             | invoice_1               | p_1                     | 10          | true      | Normal                          |
 
     And set sys config boolean value false for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
