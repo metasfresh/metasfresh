@@ -9,6 +9,7 @@ import de.metas.business_rule.descriptor.model.BusinessRulePreconditionId;
 import de.metas.business_rule.descriptor.model.BusinessRuleTrigger;
 import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
+import de.metas.business_rule.descriptor.model.Severity;
 import de.metas.business_rule.descriptor.model.TriggerTiming;
 import de.metas.business_rule.descriptor.model.Validation;
 import de.metas.business_rule.descriptor.model.ValidationType;
@@ -138,6 +139,7 @@ class BusinessRuleLoader
 						.map(BusinessRuleLoader::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
 				.warningMessageId(AdMessageId.ofRepoId(record.getWarning_Message_ID()))
+				.severity(Severity.ofCode(record.getSeverity()))
 				.logLevel(record.isDebug() ? BusinessRuleLogLevel.DEBUG : null)
 				.build();
 	}
@@ -180,12 +182,12 @@ class BusinessRuleLoader
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static Validation extractValidation(final I_AD_BusinessRule record)
+	private static Validation extractValidation(@NonNull final I_AD_BusinessRule record)
 	{
 		return Validation.adValRule(AdValRuleId.ofRepoId(record.getValidation_Rule_ID()));
 	}
 
-	private static BusinessRulePrecondition fromRecord(I_AD_BusinessRule_Precondition record)
+	private static BusinessRulePrecondition fromRecord(@NonNull final I_AD_BusinessRule_Precondition record)
 	{
 		return BusinessRulePrecondition.builder()
 				.id(BusinessRulePreconditionId.ofRepoId(record.getAD_BusinessRule_Precondition_ID()))
@@ -193,7 +195,7 @@ class BusinessRuleLoader
 				.build();
 	}
 
-	private static Validation extractValidation(I_AD_BusinessRule_Precondition record)
+	private static Validation extractValidation(@NonNull final I_AD_BusinessRule_Precondition record)
 	{
 		final ValidationType type = ValidationType.ofCode(record.getPreconditionType());
 		switch (type)
@@ -208,7 +210,7 @@ class BusinessRuleLoader
 		}
 	}
 
-	private static BusinessRuleTrigger fromRecord(I_AD_BusinessRule_Trigger record)
+	private static BusinessRuleTrigger fromRecord(@NonNull final  I_AD_BusinessRule_Trigger record)
 	{
 		return BusinessRuleTrigger.builder()
 				.id(BusinessRuleTriggerId.ofRepoId(record.getAD_BusinessRule_Trigger_ID()))
@@ -221,7 +223,7 @@ class BusinessRuleLoader
 
 	private static @NonNull ImmutableSet<TriggerTiming> extractTimings(final I_AD_BusinessRule_Trigger record)
 	{
-		ImmutableSet.Builder<TriggerTiming> timings = ImmutableSet.builder();
+		final ImmutableSet.Builder<TriggerTiming> timings = ImmutableSet.builder();
 		if (record.isOnNew())
 		{
 			timings.add(TriggerTiming.NEW);
