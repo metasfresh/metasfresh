@@ -11,18 +11,17 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.handlingunits.picking.slot.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngineService;
-import de.metas.storage.IStorageQuery;
 import de.metas.storage.spi.hu.impl.HUStorageEngine;
 import de.metas.storage.spi.hu.impl.HUStorageRecord;
 import de.metas.storage.spi.hu.impl.HUStorageRecord_HUPart;
@@ -37,7 +36,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import java.util.Collections;
@@ -45,7 +43,9 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 
 /*
  * #%L
@@ -68,6 +68,7 @@ import static org.assertj.core.api.Assertions.*;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+@SuppressWarnings("NewClassNamingConvention")
 public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 {
 	private HUStorageEngine storageEngine;
@@ -77,10 +78,9 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	private I_M_Product product;
 
 	private final int LOCATOR_ID = 10;
-	private I_M_Locator locator;
 
 	@BeforeEach
-	public void init()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -99,13 +99,13 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(product);
 
-		locator = newInstance(I_M_Locator.class);
+		final I_M_Locator locator = newInstance(I_M_Locator.class);
 		locator.setM_Locator_ID(LOCATOR_ID);
 		saveRecord(locator);
 	}
 
 	@Test
-	public void testEmtpySchedulesList()
+	public void testEmptySchedulesList()
 	{
 		final List<I_M_HU> result = new HUPickingSlotBL().retrieveAvailableHUsToPick(PickingHUsQuery.builder().shipmentSchedules(Collections.emptyList()).build());
 		assertThat(result).isEmpty();
@@ -461,15 +461,14 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 
 			Mockito.doReturn(ImmutableList.of(storageRecord))
 					.when(storageEngine)
-					.retrieveStorageRecords(Matchers.any(IContextAware.class), Matchers.anyListOf(IStorageQuery.class));
+					.retrieveStorageRecords(any(IContextAware.class), anyList());
 		}
 
-		final List<I_M_HU> result = new HUPickingSlotBL()
+		return new HUPickingSlotBL()
 				.retrieveAvailableHUsToPick(PickingHUsQuery.builder()
 						.shipmentSchedule(shipmentSchedule)
 						.onlyTopLevelHUs(onlyTopLevelHUs)
 						.build());
-		return result;
 	}
 
 }

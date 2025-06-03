@@ -94,7 +94,7 @@ class HUsToPickViewFilters
 
 	private static class LocatorBarcodeFilterConverter implements SqlDocumentFilterConverter
 	{
-		public static final transient LocatorBarcodeFilterConverter instance = new LocatorBarcodeFilterConverter();
+		public static final LocatorBarcodeFilterConverter instance = new LocatorBarcodeFilterConverter();
 
 		@Override
 		public boolean canConvert(final String filterId)
@@ -141,7 +141,7 @@ class HUsToPickViewFilters
 
 	private static class HUIdsFilterConverter implements SqlDocumentFilterConverter
 	{
-		public static final transient HUIdsFilterConverter instance = new HUIdsFilterConverter();
+		public static final HUIdsFilterConverter instance = new HUIdsFilterConverter();
 
 		@Override
 		public boolean canConvert(final String filterId)

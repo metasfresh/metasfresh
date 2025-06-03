@@ -78,8 +78,6 @@ import java.util.function.Supplier;
 @Service
 public class PickingHURowsRepository
 {
-	private static final Logger logger = LogManager.getLogger(PickingHURowsRepository.class);
-
 	private final ExtendedMemorizingSupplier<HUEditorViewRepository> huEditorRepoSupplier;
 	private final PickingCandidateRepository pickingCandidatesRepo;
 	private final PickingCandidateService pickingCandidateService;

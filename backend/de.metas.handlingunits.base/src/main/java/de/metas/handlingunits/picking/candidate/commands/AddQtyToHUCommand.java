@@ -16,17 +16,16 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.slot.PickingSlotAllocateRequest;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.PickingSlotAllocateRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
@@ -80,7 +79,6 @@ public class AddQtyToHUCommand
 	private final IPackagingDAO packingDAO = Services.get(IPackagingDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -117,7 +115,7 @@ public class AddQtyToHUCommand
 		this.isForbidAggCUsForDifferentOrders = request.isForbidAggCUsForDifferentOrders();
 
 		this.shipmentScheduleId = request.getShipmentScheduleId();
-		shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
 		productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		qtyToDeliverTarget = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
 
@@ -170,9 +168,9 @@ public class AddQtyToHUCommand
 
 		final BPartnerLocationId bpartnerAndLocationId = shipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
 		huPickingSlotBL.allocatePickingSlotIfPossible(PickingSlotAllocateRequest.builder()
-						.pickingSlotId(pickingSlotId)
-						.bpartnerAndLocationId(bpartnerAndLocationId)
-						.build());
+				.pickingSlotId(pickingSlotId)
+				.bpartnerAndLocationId(bpartnerAndLocationId)
+				.build());
 
 		return qtyPicked;
 	}

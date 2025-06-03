@@ -89,14 +89,14 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	IQueueActionResult removeFromPickingSlotQueue(PickingSlotId pickingSlotId, HuId huId);
 
 	/**
-	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, I_M_HU).
+	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, HuId).
 	 */
 	void removeFromPickingSlotQueue(HuId huId);
 
 	/**
 	 * Removes the given <code>hu</code> all of it's children (recursively) from any picking slot (current picking slot HU or in picking slot queue).
 	 *
-	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, I_M_HU)
+	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, HuId)
 	 */
 	void removeFromPickingSlotQueueRecursivelly(I_M_HU hu);
 
@@ -121,7 +121,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	void releasePickingSlotsIfPossible(Collection<PickingSlotId> pickingSlotIds);
 
 	/**
-	 * Ad-Hoc and simple return type for above methods
+	 * Ad-Hoc and simple return type for the above methods
 	 *
 	 * @author ts
 	 */
