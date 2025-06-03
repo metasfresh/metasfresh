@@ -9,6 +9,7 @@ import de.metas.business_rule.descriptor.model.BusinessRulePreconditionId;
 import de.metas.business_rule.descriptor.model.BusinessRuleTrigger;
 import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
 import de.metas.business_rule.descriptor.model.BusinessRuleWarningTarget;
+import de.metas.business_rule.descriptor.model.BusinessRuleWarningTargetId;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
 import de.metas.business_rule.descriptor.model.Severity;
 import de.metas.business_rule.descriptor.model.TriggerTiming;
@@ -42,13 +43,13 @@ class BusinessRuleLoader
 {
 	@NonNull private final IQueryBL queryBL;
 
-	private final HashMap<BusinessRuleId, LinkedHashSet<Integer>> preconditionIdsByRuleId = new HashMap<>();
-	private final HashMap<BusinessRuleId, LinkedHashSet<Integer>> triggerIdsByRuleId = new HashMap<>();
-	private final HashMap<BusinessRuleId, LinkedHashSet<Integer>> warningTargetIdsByRuleId = new HashMap<>();
+	private final HashMap<BusinessRuleId, LinkedHashSet<BusinessRulePreconditionId>> preconditionIdsByRuleId = new HashMap<>();
+	private final HashMap<BusinessRuleId, LinkedHashSet<BusinessRuleTriggerId>> triggerIdsByRuleId = new HashMap<>();
+	private final HashMap<BusinessRuleId, LinkedHashSet<BusinessRuleWarningTargetId>> warningTargetIdsByRuleId = new HashMap<>();
 
-	private final HashMap<Integer, I_AD_BusinessRule_Precondition> preconditionsById = new HashMap<>();
-	private final HashMap<Integer, I_AD_BusinessRule_Trigger> triggersById = new HashMap<>();
-	private final HashMap<Integer, I_AD_BusinessRule_WarningTarget> warningTargetsById = new HashMap<>();
+	private final HashMap<BusinessRulePreconditionId, I_AD_BusinessRule_Precondition> preconditionsById = new HashMap<>();
+	private final HashMap<BusinessRuleTriggerId, I_AD_BusinessRule_Trigger> triggersById = new HashMap<>();
+	private final HashMap<BusinessRuleWarningTargetId, I_AD_BusinessRule_WarningTarget> warningTargetsById = new HashMap<>();
 
 	public void validate(@NonNull final I_AD_BusinessRule record)
 	{
@@ -121,7 +122,7 @@ class BusinessRuleLoader
 
 	private void addToCache(final I_AD_BusinessRule_Precondition record)
 	{
-		final int id = record.getAD_BusinessRule_Precondition_ID();
+		final BusinessRulePreconditionId id = BusinessRulePreconditionId.ofRepoId(record.getAD_BusinessRule_Precondition_ID());
 		preconditionIdsByRuleId.computeIfAbsent(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()), ignored -> new LinkedHashSet<>())
 				.add(id);
 		preconditionsById.putIfAbsent(id, record);
@@ -129,7 +130,7 @@ class BusinessRuleLoader
 
 	private void addToCache(final I_AD_BusinessRule_Trigger record)
 	{
-		final int id = record.getAD_BusinessRule_Trigger_ID();
+		final BusinessRuleTriggerId id = BusinessRuleTriggerId.ofRepoId(record.getAD_BusinessRule_Trigger_ID());
 		triggerIdsByRuleId.computeIfAbsent(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()), ignored -> new LinkedHashSet<>())
 				.add(id);
 		triggersById.putIfAbsent(id, record);
@@ -137,7 +138,7 @@ class BusinessRuleLoader
 
 	private void addToCache(final I_AD_BusinessRule_WarningTarget record)
 	{
-		final int id = record.getAD_BusinessRule_WarningTarget_ID();
+		final BusinessRuleWarningTargetId id = BusinessRuleWarningTargetId.ofRepoId(record.getAD_BusinessRule_WarningTarget_ID());
 		warningTargetIdsByRuleId.computeIfAbsent(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()), ignored -> new LinkedHashSet<>())
 				.add(id);
 		warningTargetsById.putIfAbsent(id, record);
