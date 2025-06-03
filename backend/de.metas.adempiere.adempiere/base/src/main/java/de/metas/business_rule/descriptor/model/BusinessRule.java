@@ -2,6 +2,7 @@ package de.metas.business_rule.descriptor.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.business_rule.log.BusinessRuleLogLevel;
 import de.metas.i18n.AdMessageId;
@@ -30,15 +31,13 @@ public class BusinessRule
 	@NonNull ImmutableList<BusinessRuleTrigger> triggers;
 	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<BusinessRuleTriggerId, BusinessRuleTrigger> triggersById;
 
-	@NonNull ImmutableList<BusinessRuleWarningTarget> warningTargets;
+	@NonNull ImmutableSet<BusinessRuleWarningTarget> warningTargets;
 
 	@NonNull AdMessageId warningMessageId;
 
 	@NonNull Severity severity;
 
 	@Nullable BusinessRuleLogLevel logLevel;
-
-	boolean isCreateWarningOnTarget;
 
 	@Builder
 	private BusinessRule(
@@ -48,11 +47,10 @@ public class BusinessRule
 			@NonNull final ImmutableList<BusinessRulePrecondition> preconditions,
 			@NonNull final Validation validation,
 			@NonNull final ImmutableList<BusinessRuleTrigger> triggers,
-			@NonNull final ImmutableList<BusinessRuleWarningTarget> warningTargets,
+			@NonNull final ImmutableSet<BusinessRuleWarningTarget> warningTargets,
 			@NonNull final AdMessageId warningMessageId,
 			@NonNull final Severity severity,
-			@Nullable final BusinessRuleLogLevel logLevel,
-			final boolean isCreateWarningOnTarget)
+			@Nullable final BusinessRuleLogLevel logLevel)
 	{
 		this.id = id;
 		this.name = name;
@@ -65,7 +63,6 @@ public class BusinessRule
 		this.warningMessageId = warningMessageId;
 		this.severity = severity;
 		this.logLevel = logLevel;
-		this.isCreateWarningOnTarget = isCreateWarningOnTarget;
 	}
 
 	@NonNull

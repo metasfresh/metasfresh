@@ -22,17 +22,50 @@
 
 package de.metas.business_rule.descriptor.model;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.table.api.AdTableId;
 
+import javax.annotation.Nullable;
+
 @Value
-@Builder
+@Builder(builderMethodName = "_builder")
 public class BusinessRuleWarningTarget
 {
-	@NonNull BusinessRuleWarningTargetId id;
-	@NonNull AdTableId adTableId;
-	@NonNull String lookupSQL;
+	public static final BusinessRuleWarningTarget ROOT_TARGET_RECORD = _builder().type(BusinessRuleWarningTargetType.ROOT_TARGET_RECORD).build();
+
+	@NonNull BusinessRuleWarningTargetType type;
+	@Nullable SqlLookup sqlLookup;
+
+	public static BusinessRuleWarningTarget sqlLookup(@NonNull AdTableId adTableId, @NonNull String lookupSQL)
+	{
+		return _builder()
+				.type(BusinessRuleWarningTargetType.SQL_LOOKUP)
+				.sqlLookup(SqlLookup.builder()
+						.adTableId(adTableId)
+						.sql(lookupSQL)
+						.build())
+				.build();
+	}
+
+	public SqlLookup getSqlLookupNotNull()
+	{
+		return Check.assumeNotNull(sqlLookup, "Target {} has sqlLookup set", this);
+	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	public static class SqlLookup
+	{
+		@NonNull AdTableId adTableId;
+		@NonNull String sql;
+	}
+
 }
 

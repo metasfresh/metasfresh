@@ -9,7 +9,6 @@ import de.metas.business_rule.descriptor.model.BusinessRulePreconditionId;
 import de.metas.business_rule.descriptor.model.BusinessRuleTrigger;
 import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
 import de.metas.business_rule.descriptor.model.BusinessRuleWarningTarget;
-import de.metas.business_rule.descriptor.model.BusinessRuleWarningTargetId;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
 import de.metas.business_rule.descriptor.model.Severity;
 import de.metas.business_rule.descriptor.model.TriggerTiming;
@@ -26,6 +25,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_BusinessRule;
 import org.compiere.model.I_AD_BusinessRule_Precondition;
@@ -134,6 +134,7 @@ class BusinessRuleLoader
 				.add(id);
 		triggersById.putIfAbsent(id, record);
 	}
+
 	private void addToCache(final I_AD_BusinessRule_WarningTarget record)
 	{
 		final int id = record.getAD_BusinessRule_WarningTarget_ID();
@@ -156,6 +157,16 @@ class BusinessRuleLoader
 	private BusinessRule fromRecord(@NonNull final I_AD_BusinessRule record)
 	{
 		final BusinessRuleId id = BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID());
+
+		final ImmutableSet.Builder<BusinessRuleWarningTarget> warningTargets = ImmutableSet.builder();
+		if (record.isCreateWarningOnTarget())
+		{
+			warningTargets.add(BusinessRuleWarningTarget.ROOT_TARGET_RECORD);
+		}
+		getWarningTargets(id).stream()
+				.map(BusinessRuleLoader::fromRecord)
+				.forEach(warningTargets::add);
+
 		return BusinessRule.builder()
 				.id(id)
 				.name(record.getName())
@@ -167,13 +178,10 @@ class BusinessRuleLoader
 				.triggers(getTriggers(id).stream()
 						.map(BusinessRuleLoader::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
-				.warningTargets(getWarningTargets(id).stream()
-						.map(BusinessRuleLoader::fromRecord)
-						.collect(ImmutableList.toImmutableList()))
+				.warningTargets(warningTargets.build())
 				.warningMessageId(AdMessageId.ofRepoId(record.getWarning_Message_ID()))
 				.severity(Severity.ofCode(record.getSeverity()))
 				.logLevel(record.isDebug() ? BusinessRuleLogLevel.DEBUG : null)
-				.isCreateWarningOnTarget(record.isCreateWarningOnTarget())
 				.build();
 	}
 
@@ -262,7 +270,7 @@ class BusinessRuleLoader
 		}
 	}
 
-	private static BusinessRuleTrigger fromRecord(@NonNull final  I_AD_BusinessRule_Trigger record)
+	private static BusinessRuleTrigger fromRecord(@NonNull final I_AD_BusinessRule_Trigger record)
 	{
 		return BusinessRuleTrigger.builder()
 				.id(BusinessRuleTriggerId.ofRepoId(record.getAD_BusinessRule_Trigger_ID()))
@@ -301,10 +309,15 @@ class BusinessRuleLoader
 
 	private static BusinessRuleWarningTarget fromRecord(@NonNull final I_AD_BusinessRule_WarningTarget record)
 	{
-		return BusinessRuleWarningTarget.builder()
-				.id(BusinessRuleWarningTargetId.ofRepoId(record.getAD_BusinessRule_WarningTarget_ID()))
-				.adTableId(AdTableId.ofRepoId(record.getAD_Table_ID()))
-				.lookupSQL(record.getLookupSQL())
-				.build();
+		final String lookupSQL = StringUtils.trimBlankToNull(record.getLookupSQL());
+		if (lookupSQL == null)
+		{
+			throw new FillMandatoryException(I_AD_BusinessRule_WarningTarget.COLUMNNAME_LookupSQL);
+		}
+
+		return BusinessRuleWarningTarget.sqlLookup(
+				AdTableId.ofRepoId(record.getAD_Table_ID()),
+				lookupSQL
+		);
 	}
 }
