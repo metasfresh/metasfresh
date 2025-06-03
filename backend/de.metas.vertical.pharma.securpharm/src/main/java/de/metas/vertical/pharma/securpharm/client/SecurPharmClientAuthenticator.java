@@ -1,17 +1,16 @@
 package de.metas.vertical.pharma.securpharm.client;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.security.KeyStore;
-
-import javax.net.ssl.SSLContext;
-
+import de.metas.vertical.pharma.securpharm.client.schema.JsonAuthResponse;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.TrustSelfSignedStrategy;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,9 +21,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import de.metas.vertical.pharma.securpharm.client.schema.JsonAuthResponse;
-import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
-import lombok.NonNull;
+import javax.net.ssl.SSLContext;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
 
 /*
  * #%L
@@ -36,12 +37,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -108,8 +109,13 @@ final class SecurPharmClientAuthenticator
 		{
 			final SSLContext sslContext = createSSLContext(config);
 
+			final PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder
+					.create()
+					.setTlsSocketStrategy(new DefaultClientTlsStrategy(sslContext))
+					.build();
+
 			final HttpClient client = HttpClients.custom()
-					.setSSLContext(sslContext)
+					.setConnectionManager(connectionManager)
 					.build();
 
 			final RestTemplate restTemplate = new RestTemplate();
