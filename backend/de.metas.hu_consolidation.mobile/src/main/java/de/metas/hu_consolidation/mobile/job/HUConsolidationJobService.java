@@ -133,6 +133,7 @@ public class HUConsolidationJobService
 	public HUConsolidationJob consolidate(@NonNull final ConsolidateRequest request)
 	{
 		return ConsolidateCommand.builder()
+				.jobRepository(jobRepository)
 				.huQRCodesService(huQRCodesService)
 				.pickingSlotService(pickingSlotService)
 				.request(request)

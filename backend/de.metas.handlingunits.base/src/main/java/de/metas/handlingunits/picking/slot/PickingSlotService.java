@@ -148,6 +148,11 @@ public class PickingSlotService
 		return pickingSlotQueueRepository.getPickingSlotQueue(pickingSlotId);
 	}
 
+	public void removeFromPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId, @NonNull final Set<HuId> huIdsToRemove)
+	{
+		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlotId, huIdsToRemove);
+	}
+
 	public List<PickingSlotReservation> getPickingSlotReservations(@NonNull Set<PickingSlotId> pickingSlotIds)
 	{
 		return pickingSlotRepository.getByIds(pickingSlotIds)

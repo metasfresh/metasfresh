@@ -250,6 +250,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean destroyIfEmptyStorage(@NonNull final HuId huIdToDestroy)
+	{
+		final I_M_HU huToDestroy = handlingUnitsRepo.getById(huIdToDestroy);
+		return destroyIfEmptyStorage(huToDestroy);
+	}
+
+	@Override
 	public boolean destroyIfEmptyStorage(@NonNull final I_M_HU huToDestroy)
 	{
 		//

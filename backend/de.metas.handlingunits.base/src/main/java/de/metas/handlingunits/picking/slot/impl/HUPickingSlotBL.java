@@ -12,7 +12,6 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.X_M_HU;
@@ -31,6 +30,7 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.impl.PickingSlotBL;
+import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
 import org.compiere.SpringContextHolder;
 import org.compiere.SpringContextHolder.Lazy;
 
@@ -135,25 +134,21 @@ public class HUPickingSlotBL
 	@Nullable
 	private HuId closeCurrentHU(final I_M_PickingSlot pickingSlot, final boolean addToQueue)
 	{
-		if (extractCurrentHuId(pickingSlot) == null)
+		final HuId currentHuId = extractCurrentHuId(pickingSlot);
+		if (currentHuId == null)
 		{
-			// no current/opened HU => nothing to do
 			return null;
 		}
-
-		final IMutable<I_M_HU> unassignedHURef = new Mutable<>();
 
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(pickingSlot);
 		// trxManager.assertTrxNull(context);
 		trxManager.run(context.getTrxName(), localTrxName -> {
 			final I_M_PickingSlot pickingSlotInTrx = InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class);
-			final I_M_HU currentHU = pickingSlot.getM_HU();
-			unassignedHURef.setValue(currentHU);
 
-			pickingSlotInTrx.setM_HU(null);
+			pickingSlotInTrx.setM_HU_ID(-1);
 			InterfaceWrapperHelper.save(pickingSlotInTrx);
 
-			final boolean destroyed = handlingUnitsBL.destroyIfEmptyStorage(currentHU);
+			final boolean destroyed = handlingUnitsBL.destroyIfEmptyStorage(currentHuId);
 
 			if (!destroyed)
 			{
@@ -161,7 +156,7 @@ public class HUPickingSlotBL
 				// Add current HU to picking slot queue
 				if (addToQueue)
 				{
-					addToPickingSlotQueue(pickingSlotInTrx, currentHU);
+					addToPickingSlotQueue(pickingSlotInTrx, currentHuId);
 				}
 			}
 			InterfaceWrapperHelper.save(pickingSlotInTrx);
@@ -172,14 +167,7 @@ public class HUPickingSlotBL
 
 		//
 		// Get the unassigned HU.
-		// Reset it's trxName.
-		final I_M_HU unassignedHU = unassignedHURef.getValue();
-		if (unassignedHU == null)
-		{
-			return null;
-		}
-		InterfaceWrapperHelper.setTrxName(unassignedHU, ITrx.TRXNAME_None);
-		return HuId.ofRepoId(unassignedHU.getM_HU_ID());
+		return currentHuId;
 	}
 
 	public boolean isCurrentHU(@NonNull final I_M_PickingSlot pickingSlot, @NonNull final HuId huId)
@@ -196,7 +184,12 @@ public class HUPickingSlotBL
 	@Override
 	public IQueueActionResult addToPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId, @NonNull final HuId huId)
 	{
-		final de.metas.picking.model.I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId);
+		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId);
+		return addToPickingSlotQueue(pickingSlot, huId);
+	}
+
+	private IQueueActionResult addToPickingSlotQueue(@NonNull final I_M_PickingSlot pickingSlot, @NonNull final HuId huId)
+	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 		return addToPickingSlotQueue(pickingSlot, hu);
 	}
@@ -209,13 +202,13 @@ public class HUPickingSlotBL
 			return;
 		}
 
-		final de.metas.picking.model.I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId);
+		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId);
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(huIds);
 		addToPickingSlotQueue(pickingSlot, hus);
 	}
 
 	@Override
-	public IQueueActionResult addToPickingSlotQueue(final de.metas.picking.model.I_M_PickingSlot pickingSlot, final I_M_HU hu)
+	public IQueueActionResult addToPickingSlotQueue(final I_M_PickingSlot pickingSlot, final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
 		final List<IQueueActionResult> results = addToPickingSlotQueue(pickingSlot, Collections.singletonList(hu));
@@ -225,7 +218,7 @@ public class HUPickingSlotBL
 	}
 
 	private List<IQueueActionResult> addToPickingSlotQueue(
-			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot,
+			@NonNull final I_M_PickingSlot pickingSlot,
 			@NonNull final List<I_M_HU> hus)
 	{
 		if (Check.isEmpty(hus))
@@ -257,7 +250,7 @@ public class HUPickingSlotBL
 
 	private IQueueActionResult addToPickingSlotQueue0(
 			@NonNull final IHUContext huContext,
-			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot,
+			@NonNull final I_M_PickingSlot pickingSlot,
 			@NonNull final I_M_HU hu)
 	{
 		//
@@ -317,22 +310,20 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public IQueueActionResult removeFromPickingSlotQueue(@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot, @NonNull final HuId huId)
+	public IQueueActionResult removeFromPickingSlotQueue(@NonNull final I_M_PickingSlot pickingSlot, @NonNull final HuId huId)
 	{
-		final I_M_PickingSlot pickingSlotExt = InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class);
-
 		//
 		// Check if HU is the current active from picking slot
-		if (isCurrentHU(pickingSlotExt, huId))
+		if (isCurrentHU(pickingSlot, huId))
 		{
 			// NOTE: don't add to picking slot queue because we would delete it from queue anyway (check below)
 			final boolean addToQueue = false;
-			closeCurrentHU(pickingSlotExt, addToQueue);
+			closeCurrentHU(pickingSlot, addToQueue);
 		}
 
 		//
 		// Check if our handling unit is in a picking slot queue
-		final I_M_PickingSlot_HU pickingSlotHU = huPickingSlotDAO.retrievePickingSlotHU(pickingSlotExt, huId);
+		final I_M_PickingSlot_HU pickingSlotHU = huPickingSlotDAO.retrievePickingSlotHU(pickingSlot, huId);
 		if (pickingSlotHU != null)
 		{
 			InterfaceWrapperHelper.delete(pickingSlotHU);
@@ -341,13 +332,54 @@ public class HUPickingSlotBL
 		//
 		// 06178 release picking slot when removing PickingSlot-HU association as long,
 		// BUT ONLY as long as the picking slot is not in use on the other end
-		if (pickingSlotExt.getM_HU() == null)
+		if (extractCurrentHuId(pickingSlot) == null)
 		{
-			releasePickingSlotIfPossible(pickingSlotExt);
+			releasePickingSlotIfPossible(pickingSlot);
 		}
 
 		final I_M_PickingSlot_Trx createPickingSlotTrx = createPickingSlotTrx(pickingSlot, huId, X_M_PickingSlot_Trx.ACTION_Remove_HU_From_Queue);
 		return new QueueActionResult(createPickingSlotTrx, pickingSlotHU);
+	}
+
+	@Override
+	public void removeFromPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId, @NonNull final Set<HuId> huIdsToRemove)
+	{
+		removeFromPickingSlotQueue(getById(pickingSlotId), huIdsToRemove);
+	}
+
+	private void removeFromPickingSlotQueue(@NonNull final I_M_PickingSlot pickingSlot, @NonNull final Set<HuId> huIdsToRemove)
+	{
+		if (huIdsToRemove.isEmpty())
+		{
+			return;
+		}
+
+		//
+		// Check if HU is the current active from picking slot
+		if (huIdsToRemove.contains(extractCurrentHuId(pickingSlot)))
+		{
+			// NOTE: don't add to picking slot queue because we would delete it from queue anyway (check below)
+			final boolean addToQueue = false;
+			closeCurrentHU(pickingSlot, addToQueue);
+		}
+
+		//
+		// Check if our handling unit is in a picking slot queue
+		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
+		final List<I_M_PickingSlot_HU> pickingSlotHUs = huPickingSlotDAO.retrievePickingSlotHUs(pickingSlotId, huIdsToRemove);
+		pickingSlotHUs.forEach(pickingSlotHU -> {
+			final HuId huId = HuId.ofRepoId(pickingSlotHU.getM_HU_ID());
+			createPickingSlotTrx(pickingSlot, huId, X_M_PickingSlot_Trx.ACTION_Remove_HU_From_Queue);
+		});
+		InterfaceWrapperHelper.deleteAll(pickingSlotHUs);
+
+		//
+		// 06178 release picking slot when removing PickingSlot-HU association as long,
+		// BUT ONLY as long as the picking slot is not in use on the other end
+		if (extractCurrentHuId(pickingSlot) == null)
+		{
+			releasePickingSlotIfPossible(pickingSlot);
+		}
 	}
 
 	@Override
@@ -403,7 +435,7 @@ public class HUPickingSlotBL
 	 * so that all sorts of actions shall be done by creating a picking slot transaction and then processing it
 	 */
 	private I_M_PickingSlot_Trx createPickingSlotTrx(
-			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot,
+			@NonNull final I_M_PickingSlot pickingSlot,
 			@NonNull final HuId huId,
 			@NonNull final String action)
 	{

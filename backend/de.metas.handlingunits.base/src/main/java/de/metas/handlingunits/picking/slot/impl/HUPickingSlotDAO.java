@@ -39,6 +39,21 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
+	public List<I_M_PickingSlot_HU> retrievePickingSlotHUs(@NonNull final PickingSlotId pickingSlotId, @NonNull final Set<HuId> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_PickingSlot_HU.class)
+				.addEqualsFilter(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID, pickingSlotId)
+				.addInArrayFilter(I_M_PickingSlot_HU.COLUMNNAME_M_HU_ID, huIds)
+				.create()
+				.list(I_M_PickingSlot_HU.class);
+	}
+
+	@Override
 	public List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs()
 	{
 		return queryBL.createQueryBuilder(I_M_PickingSlot_HU.class)

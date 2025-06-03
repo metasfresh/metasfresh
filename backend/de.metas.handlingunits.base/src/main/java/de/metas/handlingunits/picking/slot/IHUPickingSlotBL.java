@@ -3,7 +3,6 @@ package de.metas.handlingunits.picking.slot;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.I_M_Source_HU;
@@ -13,9 +12,13 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.ISingletonService;
+import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 import java.util.Collection;
 import java.util.List;
@@ -71,7 +74,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 *
 	 * @return the results with the created picking slot trx and the picking-slot-hu-assignment that was created or updated
 	 */
-	IQueueActionResult addToPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, I_M_HU hu);
+	IQueueActionResult addToPickingSlotQueue(I_M_PickingSlot pickingSlot, I_M_HU hu);
 
 	IQueueActionResult addToPickingSlotQueue(PickingSlotId pickingSlotId, HuId huId);
 
@@ -84,19 +87,21 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 *
 	 * @return the result with the created picking slot trx
 	 */
-	IQueueActionResult removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, HuId huId);
+	IQueueActionResult removeFromPickingSlotQueue(I_M_PickingSlot pickingSlot, HuId huId);
 
 	IQueueActionResult removeFromPickingSlotQueue(PickingSlotId pickingSlotId, HuId huId);
 
+	void removeFromPickingSlotQueue(@NonNull PickingSlotId pickingSlotId, @NonNull Set<HuId> huIdsToRemove);
+
 	/**
-	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, HuId).
+	 * @see #removeFromPickingSlotQueue(I_M_PickingSlot, HuId).
 	 */
 	void removeFromPickingSlotQueue(HuId huId);
 
 	/**
 	 * Removes the given <code>hu</code> all of it's children (recursively) from any picking slot (current picking slot HU or in picking slot queue).
 	 *
-	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, HuId)
+	 * @see #removeFromPickingSlotQueue(I_M_PickingSlot, HuId)
 	 */
 	void removeFromPickingSlotQueueRecursivelly(I_M_HU hu);
 
@@ -155,8 +160,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 */
 	boolean clearPickingSlotQueue(PickingSlotId pickingSlotId, boolean removeQueuedHUsFromSlot);
 
-	@lombok.Builder
-	@lombok.Value
+	@Builder
+	@Value
 	class PickingHUsQuery
 	{
 		/**
@@ -169,7 +174,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 * ShipmentSchedules for which the HUs shall be picked. Needed to filter by the HUs' product and location and may therefore not be {@code null}.
 		 */
 		@NonNull
-		@lombok.Singular
+		@Singular
 		ImmutableList<I_M_ShipmentSchedule> shipmentSchedules;
 
 		/**

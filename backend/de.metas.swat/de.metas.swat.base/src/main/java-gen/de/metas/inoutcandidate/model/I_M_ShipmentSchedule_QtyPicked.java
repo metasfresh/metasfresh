@@ -191,7 +191,30 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
-	 * Set Shipment Candidate.
+	 * Set LU.
+	 * Loading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_LU_HU_ID (int M_LU_HU_ID);
+
+	/**
+	 * Get LU.
+	 * Loading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_LU_HU_ID();
+
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_M_LU_HU_ID = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "M_LU_HU_ID", null);
+	String COLUMNNAME_M_LU_HU_ID = "M_LU_HU_ID";
+
+	/**
+	 * Set Shipment Schedule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -200,7 +223,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
-	 * Get Shipment Candidate.
+	 * Get Shipment Schedule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -216,7 +239,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set ShipmentSchedule QtyPicked.
+	 * Set Picked Qty.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -225,7 +248,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	void setM_ShipmentSchedule_QtyPicked_ID (int M_ShipmentSchedule_QtyPicked_ID);
 
 	/**
-	 * Get ShipmentSchedule QtyPicked.
+	 * Get Picked Qty.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -237,7 +260,31 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	String COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID = "M_ShipmentSchedule_QtyPicked_ID";
 
 	/**
-	 * Set Processed.
+	 * Set TU.
+	 * Trading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_TU_HU_ID (int M_TU_HU_ID);
+
+	/**
+	 * Get TU.
+	 * Trading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_TU_HU_ID();
+
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_M_TU_HU_ID = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "M_TU_HU_ID", null);
+	String COLUMNNAME_M_TU_HU_ID = "M_TU_HU_ID";
+
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -246,7 +293,8 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Processed.
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -281,6 +329,27 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	String COLUMNNAME_QtyDeliveredCatch = "QtyDeliveredCatch";
 
 	/**
+	 * Set Number of LUs.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyLU (@Nullable BigDecimal QtyLU);
+
+	/**
+	 * Get Number of LUs.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyLU();
+
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_QtyLU = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "QtyLU", null);
+	String COLUMNNAME_QtyLU = "QtyLU";
+
+	/**
 	 * Set Quantity (stock unit).
 	 *
 	 * <br>Type: Quantity
@@ -300,6 +369,27 @@ public interface I_M_ShipmentSchedule_QtyPicked
 
 	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_QtyPicked = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "QtyPicked", null);
 	String COLUMNNAME_QtyPicked = "QtyPicked";
+
+	/**
+	 * Set Number of TUs.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTU (@Nullable BigDecimal QtyTU);
+
+	/**
+	 * Get Number of TUs.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTU();
+
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_QtyTU = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "QtyTU", null);
+	String COLUMNNAME_QtyTU = "QtyTU";
 
 	/**
 	 * Get Updated.
@@ -325,4 +415,27 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set CU.
+	 * Customer Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVHU_ID (int VHU_ID);
+
+	/**
+	 * Get CU.
+	 * Customer Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getVHU_ID();
+
+	ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_VHU_ID = new ModelColumn<>(I_M_ShipmentSchedule_QtyPicked.class, "VHU_ID", null);
+	String COLUMNNAME_VHU_ID = "VHU_ID";
 }

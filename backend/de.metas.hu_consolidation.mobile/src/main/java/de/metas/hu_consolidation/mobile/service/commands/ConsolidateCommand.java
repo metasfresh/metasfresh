@@ -11,6 +11,7 @@ import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
+import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
@@ -21,28 +22,35 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ConsolidateCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
 	@NonNull private final PickingSlotId fromPickingSlotId;
 
 	private HUTransformService huTransformService; // lazy
 	private PickingSlotQueue _fromPickingSlotQueue; // lazy
+	private final HUConsolidationJob jobInitial;
 	private HUConsolidationJob job;
 
 	@Builder
 	public ConsolidateCommand(
+			@NonNull final HUConsolidationJobRepository jobRepository,
 			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final PickingSlotService pickingSlotService,
+			//
 			@NonNull final ConsolidateRequest request)
 	{
+		this.jobRepository = jobRepository;
 		this.huQRCodesService = huQRCodesService;
 		this.pickingSlotService = pickingSlotService;
-		this.job = request.getJob();
+
+		this.jobInitial = this.job = request.getJob();
 		this.fromPickingSlotId = request.getFromPickingSlotId();
 	}
 
@@ -76,13 +84,13 @@ public class ConsolidateCommand
 			}
 		}
 
-		if (!lus.isEmpty())
+		consolidateFromLUs(lus);
+		consolidateFromTUs(tus);
+		pickingSlotService.removeFromPickingSlotQueue(fromPickingSlotQueue.getPickingSlotId(), fromPickingSlotQueue.getHuIds());
+
+		if (!Objects.equals(jobInitial, job))
 		{
-			consolidateFromLUs(lus);
-		}
-		if (!tus.isEmpty())
-		{
-			consolidateFromTUs(tus);
+			jobRepository.save(job);
 		}
 
 		return job;
