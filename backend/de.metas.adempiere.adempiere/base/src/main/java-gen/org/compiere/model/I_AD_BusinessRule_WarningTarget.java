@@ -1,6 +1,5 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_BusinessRule_WarningTarget
@@ -20,7 +19,7 @@ public interface I_AD_BusinessRule_WarningTarget
 	 * Set Business Rule.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setAD_BusinessRule_ID (int AD_BusinessRule_ID);
@@ -29,14 +28,14 @@ public interface I_AD_BusinessRule_WarningTarget
 	 * Get Business Rule.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_BusinessRule_ID();
 
-	@Nullable org.compiere.model.I_AD_BusinessRule getAD_BusinessRule();
+	org.compiere.model.I_AD_BusinessRule getAD_BusinessRule();
 
-	void setAD_BusinessRule(@Nullable org.compiere.model.I_AD_BusinessRule AD_BusinessRule);
+	void setAD_BusinessRule(org.compiere.model.I_AD_BusinessRule AD_BusinessRule);
 
 	ModelColumn<I_AD_BusinessRule_WarningTarget, org.compiere.model.I_AD_BusinessRule> COLUMN_AD_BusinessRule_ID = new ModelColumn<>(I_AD_BusinessRule_WarningTarget.class, "AD_BusinessRule_ID", org.compiere.model.I_AD_BusinessRule.class);
 	String COLUMNNAME_AD_BusinessRule_ID = "AD_BusinessRule_ID";
@@ -101,7 +100,7 @@ public interface I_AD_BusinessRule_WarningTarget
 	 * Database Table information
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Table_ID (int AD_Table_ID);
@@ -111,7 +110,7 @@ public interface I_AD_BusinessRule_WarningTarget
 	 * Database Table information
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Table_ID();
@@ -170,19 +169,19 @@ public interface I_AD_BusinessRule_WarningTarget
 	 * Set Lookup SQL.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setLookupSQL (@Nullable java.lang.String LookupSQL);
+	void setLookupSQL (java.lang.String LookupSQL);
 
 	/**
 	 * Get Lookup SQL.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getLookupSQL();
+	java.lang.String getLookupSQL();
 
 	ModelColumn<I_AD_BusinessRule_WarningTarget, Object> COLUMN_LookupSQL = new ModelColumn<>(I_AD_BusinessRule_WarningTarget.class, "LookupSQL", null);
 	String COLUMNNAME_LookupSQL = "LookupSQL";

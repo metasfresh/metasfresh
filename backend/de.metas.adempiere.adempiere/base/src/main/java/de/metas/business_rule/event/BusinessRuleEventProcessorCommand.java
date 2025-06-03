@@ -176,71 +176,79 @@ public class BusinessRuleEventProcessorCommand
 		}
 		else
 		{
-			final Properties tempCtx = Env.newTemporaryCtx();
+			createWarningsAndSendNotifications(event, rootTargetRecordInfo, stopwatch);
+		}
+	}
 
-			Env.setContext(tempCtx, Env.CTXNAME_AD_Client_ID, event.getClientAndOrgId().getClientId().getRepoId());
-			Env.setContext(tempCtx, Env.CTXNAME_AD_Org_ID, event.getClientAndOrgId().getOrgId().getRepoId());
+	private void createWarningsAndSendNotifications(final BusinessRuleEvent event, final TargetRecordInfo rootTargetRecordInfo, final BusinessRuleStopwatch stopwatch)
+	{
+		final Properties tempCtx = Env.newTemporaryCtx();
 
-			try (final IAutoCloseable ignored = Env.switchContext(tempCtx))
+		Env.setContext(tempCtx, Env.CTXNAME_AD_Client_ID, event.getClientAndOrgId().getClientId().getRepoId());
+		Env.setContext(tempCtx, Env.CTXNAME_AD_Org_ID, event.getClientAndOrgId().getOrgId().getRepoId());
+
+		final TableRecordReference rootTargetRecordRef = rootTargetRecordInfo.getTargetRecordRef();
+		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
+
+		try (final IAutoCloseable ignored = Env.switchContext(tempCtx))
+		{
+			final AdMessageKey messageKey = getAdMessageKey(rule);
+
+			final String documentSummary = msgBL.translate(Env.getCtx(), rootTargetRecordRef.getTableName()) + " " + rootTargetRecordInfo.getDocumentSummary();
+
+			final RecordWarningNoticeRequest.RecordWarningNoticeRequestBuilder noticeRequestBuilder = RecordWarningNoticeRequest.builder()
+					.userId(event.getTriggeringUserId())
+					.notificationSeverity(rule.getSeverity().toNotificationSeverity())
+					.messageKey(messageKey)
+					.messageParams(Collections.singletonList(documentSummary));
+
+			final RecordWarningCreateRequest.RecordWarningCreateRequestBuilder warningRequestBuilder = RecordWarningCreateRequest.builder()
+					.rootRecordRef(rootTargetRecordRef)
+					.businessRuleId(rule.getId())
+					.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, Collections.singletonList(documentSummary)))
+					.userId(event.getTriggeringUserId())
+					.severity(rule.getSeverity());
+
+			if (rule.isCreateWarningOnTarget())
 			{
-				final AdMessageKey messageKey = getAdMessageKey(rule);
+				final RecordWarningId rootRecordWarningId = recordWarningRepository.createOrUpdate(
+						warningRequestBuilder
+						.recordRef(rootTargetRecordRef)
+						.build());
 
-				final String documentSummary = msgBL.translate(Env.getCtx(), rootTargetRecordRef.getTableName()) + " " + rootTargetRecordInfo.getDocumentSummary();
+				logger.debug(stopwatch, "=> Created/Updated warning for root target record");
 
-				if (rule.isCreateWarningOnTarget())
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(
+						noticeRequestBuilder
+						.recordWarningId(rootRecordWarningId)
+						.build());
+
+				logger.debug(stopwatch, "=> Created user notification for root target record");
+			}
+
+			for (final BusinessRuleWarningTarget warningTarget : rule.getWarningTargets())
+			{
+				final TableRecordReference warningTargetRef = retrieveWarningTargetRef(warningTarget, rootTargetRecordRef);
+				if (warningTargetRef == null)
 				{
-					final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
-							.rootRecordRef(rootTargetRecordRef)
-							.recordRef(rootTargetRecordRef)
-							.businessRuleId(rule.getId())
-							.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, Collections.singletonList(documentSummary)))
-							.userId(event.getTriggeringUserId())
-							.severity(rule.getSeverity())
-							.build());
-					logger.debug(stopwatch, "=> Created/Updated warning for root target record");
-
-					BusinessRuleEventNotificationProducer.newInstance().createNotice(RecordWarningNoticeRequest.builder()
-							.userId(event.getTriggeringUserId())
-							.recordWarningId(recordWarningId)
-							.notificationSeverity(rule.getSeverity().toNotificationSeverity())
-							.messageKey(messageKey)
-							.messageParams(Collections.singletonList(documentSummary))
-							.build());
-
-					logger.debug(stopwatch, "=> Created user notification for root target record");
+					logger.debug("Warning target record was not found. Skip warning target: {}", warningTarget);
+					continue;
 				}
 
-				rule.getWarningTargets().stream().forEach(warningTarget -> {
-					final TableRecordReference warningTargetRef = retrieveWarningTargetRef(warningTarget, rootTargetRecordRef);
-					if (warningTargetRef == null)
-					{
-						logger.debug("Warning target record was not found. Skip warning target: {}", warningTarget);
-						return;
-					}
+				logger.setTargetRecordRef(warningTargetRef);
 
-					logger.setTargetRecordRef(warningTargetRef);
+				final RecordWarningId warningTargetRecordId = recordWarningRepository.createOrUpdate(
+						warningRequestBuilder
+						.recordRef(warningTargetRef)
+						.build());
+				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
-					final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
-							.rootRecordRef(rootTargetRecordRef)
-							.recordRef(warningTargetRef)
-							.businessRuleId(rule.getId())
-							.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, Collections.singletonList(documentSummary)))
-							.userId(event.getTriggeringUserId())
-							.severity(rule.getSeverity())
-							.build());
-					logger.debug(stopwatch, "=> Created/Updated warning for target record");
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(
+						noticeRequestBuilder
+						.recordWarningId(warningTargetRecordId)
+						.build());
 
-					BusinessRuleEventNotificationProducer.newInstance().createNotice(RecordWarningNoticeRequest.builder()
-							.userId(event.getTriggeringUserId())
-							.recordWarningId(recordWarningId)
-							.notificationSeverity(rule.getSeverity().toNotificationSeverity())
-							.messageKey(messageKey)
-							.messageParams(Collections.singletonList(documentSummary))
-							.build());
-
-					logger.debug(stopwatch, "=> Created user notification for target record");
-
-				});
+				logger.debug(stopwatch, "=> Created user notification for target record");
 			}
 		}
 	}
@@ -338,16 +346,14 @@ public class BusinessRuleEventProcessorCommand
 		final String rootTableName = TableIdsCache.instance.getTableName(rootTableId);
 		final String rootKeyColumnName = InterfaceWrapperHelper.getKeyColumnName(rootTableName);
 
-		final StringBuilder sql = new StringBuilder();
+		final String sql = "SELECT target." + warningTargetKeyColumnName + " FROM "
+				+ rootTableName + " JOIN "
+				+ warningTargetTableName + " target "
+				+ " ON " + "target." + warningTargetKeyColumnName + " = "
+				+ warningTarget.getLookupSQL()
+				+ " WHERE " + rootTableName + "." + rootKeyColumnName + "=?";
 
-		sql.append("SELECT target.").append(warningTargetKeyColumnName).append(" FROM ")
-				.append(rootTableName).append(" JOIN ")
-				.append(warningTargetTableName).append(" target ")
-				.append(" ON ").append("target.").append(warningTargetKeyColumnName).append(" = ")
-				.append(warningTarget.getLookupSQL())
-				.append(" WHERE ").append(rootTableName).append(".").append(rootKeyColumnName).append("=?");
-
-		final Integer targetRecordId = DB.retrieveFirstRowOrNull(sql.toString(), Collections.singletonList(rootTargetRecordInfo.getRecord_ID()), rs -> {
+		final Integer targetRecordId = DB.retrieveFirstRowOrNull(sql, Collections.singletonList(rootTargetRecordInfo.getRecord_ID()), rs -> {
 			final int intValue = rs.getInt(1);
 			return rs.wasNull() ? null : intValue;
 		});

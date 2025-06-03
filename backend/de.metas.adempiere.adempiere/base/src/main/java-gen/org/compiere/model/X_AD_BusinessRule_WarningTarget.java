@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_BusinessRule_WarningTarget extends org.compiere.model.PO implements I_AD_BusinessRule_WarningTarget, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1860173392L;
+	private static final long serialVersionUID = 121098287L;
 
     /** Standard Constructor */
     public X_AD_BusinessRule_WarningTarget (final Properties ctx, final int AD_BusinessRule_WarningTarget_ID, @Nullable final String trxName)
@@ -92,7 +92,7 @@ public class X_AD_BusinessRule_WarningTarget extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setLookupSQL (final @Nullable java.lang.String LookupSQL)
+	public void setLookupSQL (final java.lang.String LookupSQL)
 	{
 		set_Value (COLUMNNAME_LookupSQL, LookupSQL);
 	}

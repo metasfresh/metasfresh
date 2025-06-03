@@ -532,3 +532,54 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP(
 
 
 
+
+
+-- Run mode: SWING_CLIENT
+
+-- Tab: Business Rule(541837,D) -> Business Rule Warning Target(548189,D)
+-- UI Section: main
+-- 2025-06-03T07:58:07.554Z
+UPDATE AD_UI_Section SET Value='main',Updated=TO_TIMESTAMP('2025-06-03 07:58:07.554000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Section_ID=546729
+;
+
+-- Column: AD_BusinessRule_WarningTarget.AD_BusinessRule_ID
+-- 2025-06-03T13:44:43.135Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-06-03 13:44:43.134000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590146
+;
+
+-- 2025-06-03T13:44:48.338Z
+INSERT INTO t_alter_column values('ad_businessrule_warningtarget','AD_BusinessRule_ID','NUMERIC(10)',null,null)
+;
+
+-- 2025-06-03T13:44:48.342Z
+INSERT INTO t_alter_column values('ad_businessrule_warningtarget','AD_BusinessRule_ID',null,'NOT NULL',null)
+;
+
+-- Column: AD_BusinessRule_WarningTarget.AD_Table_ID
+-- 2025-06-03T13:44:59.152Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-06-03 13:44:59.151000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590147
+;
+
+-- 2025-06-03T13:45:02.123Z
+INSERT INTO t_alter_column values('ad_businessrule_warningtarget','AD_Table_ID','NUMERIC(10)',null,null)
+;
+
+-- 2025-06-03T13:45:02.135Z
+INSERT INTO t_alter_column values('ad_businessrule_warningtarget','AD_Table_ID',null,'NOT NULL',null)
+;
+
+-- Column: AD_BusinessRule_WarningTarget.LookupSQL
+-- 2025-06-03T13:45:13.386Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-06-03 13:45:13.386000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590148
+;
+
+-- 2025-06-03T13:45:14.273Z
+INSERT INTO t_alter_column values('ad_businessrule_warningtarget','LookupSQL','VARCHAR(2000)',null,null)
+;
+
+-- 2025-06-03T13:45:14.274Z
+INSERT INTO t_alter_column values('ad_businessrule_warningtarget','LookupSQL',null,'NOT NULL',null)
+;
+
+
+
