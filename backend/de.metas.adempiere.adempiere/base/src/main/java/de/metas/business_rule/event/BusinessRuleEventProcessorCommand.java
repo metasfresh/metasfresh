@@ -138,7 +138,7 @@ public class BusinessRuleEventProcessorCommand
 
 		final BusinessRuleStopwatch stopwatch = logger.newStopwatch();
 
-		final TargetRecordInfo rootTargetRecordInfo = retrieveTargetRecordInfo(event);
+		final TargetRecordInfo rootTargetRecordInfo = retrieveRootTargetRecordInfo(event);
 
 		final TableRecordReference rootTargetRecordRef = rootTargetRecordInfo == null ? null : rootTargetRecordInfo.getTargetRecordRef();
 
@@ -208,12 +208,16 @@ public class BusinessRuleEventProcessorCommand
 
 					logger.debug(stopwatch, "=> Created user notification for target record");
 				}
+
+				rule.getWarningTargets().stream().forEach(warningTarget -> {
+					// TODO Create warning + notification
+				});
 			}
 		}
 	}
 
 	@Nullable
-	private TargetRecordInfo retrieveTargetRecordInfo(@NonNull final BusinessRuleEvent event)
+	private TargetRecordInfo retrieveRootTargetRecordInfo(@NonNull final BusinessRuleEvent event)
 	{
 		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
 		final BusinessRuleTrigger trigger = rule.getTriggerById(event.getTriggerId());

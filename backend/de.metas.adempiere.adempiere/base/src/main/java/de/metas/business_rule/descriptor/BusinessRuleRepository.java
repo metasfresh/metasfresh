@@ -1,6 +1,5 @@
 package de.metas.business_rule.descriptor;
 
-import de.metas.business_rule.descriptor.interceptor.AD_BusinessRule_Trigger;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
