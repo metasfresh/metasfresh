@@ -19,6 +19,7 @@ public class RecordWarningRepository
 	{
 		final I_AD_Record_Warning record = toSqlQuery(RecordWarningQuery.builder()
 				.rootRecordRef(request.getRootRecordRef())
+				.recordRef(request.getRecordRef())
 				.businessRuleId(request.getBusinessRuleId())
 				.build())
 				.create()
@@ -55,7 +56,7 @@ public class RecordWarningRepository
 				.build();
 	}
 
-	public void deleteByRootRecordRef(@NonNull final RecordWarningQuery query)
+	public void delete(@NonNull final RecordWarningQuery query)
 	{
 		toSqlQuery(query).create().delete();
 	}
@@ -67,6 +68,14 @@ public class RecordWarningRepository
 		final TableRecordReference rootRecordRef = query.getRootRecordRef();
 		queryBuilder.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Root_AD_Table_ID, rootRecordRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Root_Record_ID, rootRecordRef.getRecord_ID());
+
+
+		if(query.getRecordRef() != null)
+		{
+			final TableRecordReference recordRef = query.getRecordRef();
+			queryBuilder.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+					.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
+		}
 
 		if (query.getBusinessRuleId() != null)
 		{

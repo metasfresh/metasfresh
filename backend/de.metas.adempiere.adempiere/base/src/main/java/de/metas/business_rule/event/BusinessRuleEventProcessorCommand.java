@@ -168,7 +168,7 @@ public class BusinessRuleEventProcessorCommand
 		stopwatch.restart();
 		if (isValid)
 		{
-			recordWarningRepository.deleteByRootRecordRef(RecordWarningQuery.builder()
+			recordWarningRepository.delete(RecordWarningQuery.builder()
 					.rootRecordRef(rootTargetRecordRef)
 					.businessRuleId(rule.getId())
 					.build());
