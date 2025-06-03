@@ -18,15 +18,15 @@ public class RecordWarningRepository
 	public RecordWarningId createOrUpdate(@NonNull final RecordWarningCreateRequest request)
 	{
 		final I_AD_Record_Warning record = toSqlQuery(RecordWarningQuery.builder()
-				.recordRef(request.getRecordRef())
+				.rootRecordRef(request.getRootRecordRef())
 				.businessRuleId(request.getBusinessRuleId())
 				.build())
 				.create()
 				.firstOnlyOptional(I_AD_Record_Warning.class)
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_AD_Record_Warning.class));
 
-		record.setAD_Table_ID(request.getRecordRef().getAD_Table_ID());
-		record.setRecord_ID(request.getRecordRef().getRecord_ID());
+		record.setAD_Table_ID(request.getRootRecordRef().getAD_Table_ID());
+		record.setRecord_ID(request.getRootRecordRef().getRecord_ID());
 		record.setAD_BusinessRule_ID(request.getBusinessRuleId().getRepoId());
 		record.setMsgText(request.getMessage());
 		record.setAD_User_ID(request.getUserId().getRepoId());
@@ -60,7 +60,7 @@ public class RecordWarningRepository
 	{
 		final IQueryBuilder<I_AD_Record_Warning> queryBuilder = queryBL.createQueryBuilder(I_AD_Record_Warning.class);
 
-		final TableRecordReference recordRef = query.getRecordRef();
+		final TableRecordReference recordRef = query.getRootRecordRef();
 		queryBuilder.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
 
@@ -80,7 +80,7 @@ public class RecordWarningRepository
 	public boolean hasErrors(@NonNull final TableRecordReference recordRef)
 	{
 		final RecordWarningQuery query = RecordWarningQuery.builder()
-				.recordRef(recordRef)
+				.rootRecordRef(recordRef)
 				.severity(Severity.Error)
 				.build();
 

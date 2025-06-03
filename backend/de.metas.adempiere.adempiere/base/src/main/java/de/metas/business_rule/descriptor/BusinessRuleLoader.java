@@ -8,6 +8,8 @@ import de.metas.business_rule.descriptor.model.BusinessRulePrecondition;
 import de.metas.business_rule.descriptor.model.BusinessRulePreconditionId;
 import de.metas.business_rule.descriptor.model.BusinessRuleTrigger;
 import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
+import de.metas.business_rule.descriptor.model.BusinessRuleWarningTarget;
+import de.metas.business_rule.descriptor.model.BusinessRuleWarningTargetId;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
 import de.metas.business_rule.descriptor.model.Severity;
 import de.metas.business_rule.descriptor.model.TriggerTiming;
@@ -28,6 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_BusinessRule;
 import org.compiere.model.I_AD_BusinessRule_Precondition;
 import org.compiere.model.I_AD_BusinessRule_Trigger;
+import org.compiere.model.I_AD_BusinessRule_WarningTarget;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -41,9 +44,11 @@ class BusinessRuleLoader
 
 	private final HashMap<BusinessRuleId, LinkedHashSet<Integer>> preconditionIdsByRuleId = new HashMap<>();
 	private final HashMap<BusinessRuleId, LinkedHashSet<Integer>> triggerIdsByRuleId = new HashMap<>();
+	private final HashMap<BusinessRuleId, LinkedHashSet<Integer>> warningTargetIdsByRuleId = new HashMap<>();
 
 	private final HashMap<Integer, I_AD_BusinessRule_Precondition> preconditionsById = new HashMap<>();
 	private final HashMap<Integer, I_AD_BusinessRule_Trigger> triggersById = new HashMap<>();
+	private final HashMap<Integer, I_AD_BusinessRule_WarningTarget> warningTargetsById = new HashMap<>();
 
 	public void validate(final I_AD_BusinessRule record)
 	{
@@ -57,6 +62,12 @@ class BusinessRuleLoader
 	}
 
 	public void validate(final I_AD_BusinessRule_Trigger record)
+	{
+		addToCache(record);
+		fromId(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()));
+	}
+
+	public void validate(final I_AD_BusinessRule_WarningTarget record)
 	{
 		addToCache(record);
 		fromId(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()));
@@ -112,6 +123,13 @@ class BusinessRuleLoader
 				.add(id);
 		triggersById.putIfAbsent(id, record);
 	}
+	private void addToCache(final I_AD_BusinessRule_WarningTarget record)
+	{
+		final int id = record.getAD_BusinessRule_WarningTarget_ID();
+		warningTargetIdsByRuleId.computeIfAbsent(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()), ignored -> new LinkedHashSet<>())
+				.add(id);
+		warningTargetsById.putIfAbsent(id, record);
+	}
 
 	@SuppressWarnings("UnusedReturnValue")
 	private BusinessRule fromId(@NonNull final BusinessRuleId businessRuleId)
@@ -138,9 +156,13 @@ class BusinessRuleLoader
 				.triggers(getTriggers(id).stream()
 						.map(BusinessRuleLoader::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
+				.warningTargets(getWarningTargets(id).stream()
+						.map(BusinessRuleLoader::fromRecord)
+						.collect(ImmutableList.toImmutableList()))
 				.warningMessageId(AdMessageId.ofRepoId(record.getWarning_Message_ID()))
 				.severity(Severity.ofCode(record.getSeverity()))
 				.logLevel(record.isDebug() ? BusinessRuleLogLevel.DEBUG : null)
+				.isCreateWarningOnTarget(record.isCreateWarningOnTarget())
 				.build();
 	}
 
@@ -179,6 +201,25 @@ class BusinessRuleLoader
 		return triggerIdsByRuleId.get(businessRuleId)
 				.stream()
 				.map(triggersById::get)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private List<I_AD_BusinessRule_WarningTarget> getWarningTargets(final BusinessRuleId businessRuleId)
+	{
+		if (warningTargetIdsByRuleId.get(businessRuleId) == null)
+		{
+			// make sure we have warningTargetIdsByRuleId set even if there were no warning targets found
+			warningTargetIdsByRuleId.computeIfAbsent(businessRuleId, ignored -> new LinkedHashSet<>());
+
+			queryTriggers()
+					.addEqualsFilter(I_AD_BusinessRule_WarningTarget.COLUMNNAME_AD_BusinessRule_ID, businessRuleId)
+					.create()
+					.forEach(this::addToCache);
+		}
+
+		return warningTargetIdsByRuleId.get(businessRuleId)
+				.stream()
+				.map(warningTargetsById::get)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -245,5 +286,14 @@ class BusinessRuleLoader
 		return StringUtils.trimBlankToOptional(record.getConditionSQL())
 				.map(Validation::sql)
 				.orElse(null);
+	}
+
+	private static BusinessRuleWarningTarget fromRecord(@NonNull final  I_AD_BusinessRule_WarningTarget record)
+	{
+		return BusinessRuleWarningTarget.builder()
+				.id(BusinessRuleWarningTargetId.ofRepoId(record.getAD_BusinessRule_WarningTarget_ID()))
+				.adTableId(AdTableId.ofRepoId(record.getAD_Table_ID()))
+				.lookupSQL(record.getLookupSQL())
+				.build();
 	}
 }

@@ -138,13 +138,13 @@ public class BusinessRuleEventProcessorCommand
 
 		final BusinessRuleStopwatch stopwatch = logger.newStopwatch();
 
-		final TargetRecordInfo targetRecordInfo = retrieveTargetRecordInfo(event);
+		final TargetRecordInfo rootTargetRecordInfo = retrieveTargetRecordInfo(event);
 
-		final TableRecordReference targetRecordRef = targetRecordInfo == null ? null : targetRecordInfo.getTargetRecordRef();
+		final TableRecordReference rootTargetRecordRef = rootTargetRecordInfo == null ? null : rootTargetRecordInfo.getTargetRecordRef();
 
-		logger.setTargetRecordRef(targetRecordRef);
-		logger.debug(stopwatch, "Retrieved target record: {}", targetRecordRef);
-		if (targetRecordRef == null)
+		logger.setTargetRecordRef(rootTargetRecordRef);
+		logger.debug(stopwatch, "Retrieved target record: {}", rootTargetRecordRef);
+		if (rootTargetRecordRef == null)
 		{
 			logger.debug("Target record was not found. End processing event.");
 			return;
@@ -152,7 +152,7 @@ public class BusinessRuleEventProcessorCommand
 
 		stopwatch.restart();
 		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
-		final boolean isPreconditionMatching = isPreconditionsMet(targetRecordRef, rule);
+		final boolean isPreconditionMatching = isPreconditionsMet(rootTargetRecordRef, rule);
 		logger.debug(stopwatch, "Checked if target record preconditions are met: {}", isPreconditionMatching);
 		if (!isPreconditionMatching)
 		{
@@ -161,14 +161,14 @@ public class BusinessRuleEventProcessorCommand
 		}
 
 		stopwatch.restart();
-		final boolean isValid = isRecordValid(targetRecordRef, rule.getValidation());
+		final boolean isValid = isRecordValid(rootTargetRecordRef, rule.getValidation());
 		logger.debug(stopwatch, "Checked if target record valid: {}", isValid);
 
 		stopwatch.restart();
 		if (isValid)
 		{
 			recordWarningRepository.deleteByRecordRef(RecordWarningQuery.builder()
-					.recordRef(targetRecordRef)
+					.rootRecordRef(rootTargetRecordRef)
 					.businessRuleId(rule.getId())
 					.build());
 			logger.debug(stopwatch, "=> Removed all warnings for target record");
@@ -184,26 +184,30 @@ public class BusinessRuleEventProcessorCommand
 			{
 				final AdMessageKey messageKey = getAdMessageKey(rule);
 
-				final String documentSummary = msgBL.translate(Env.getCtx(), targetRecordRef.getTableName()) + " " + targetRecordInfo.getDocumentSummary();
+				final String documentSummary = msgBL.translate(Env.getCtx(), rootTargetRecordRef.getTableName()) + " " + rootTargetRecordInfo.getDocumentSummary();
 
-				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
-						.recordRef(targetRecordRef)
-						.businessRuleId(rule.getId())
-						.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, Collections.singletonList(documentSummary)))
-						.userId(event.getTriggeringUserId())
-						.severity(rule.getSeverity())
-						.build());
-				logger.debug(stopwatch, "=> Created/Updated warning for target record");
+				if(rule.isCreateWarningOnTarget())
+				{
+					final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
+							.rootRecordRef(rootTargetRecordRef)
+							.recordRef(rootTargetRecordRef)
+							.businessRuleId(rule.getId())
+							.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey, Collections.singletonList(documentSummary)))
+							.userId(event.getTriggeringUserId())
+							.severity(rule.getSeverity())
+							.build());
+					logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
-				BusinessRuleEventNotificationProducer.newInstance().createNotice(RecordWarningNoticeRequest.builder()
-						.userId(event.getTriggeringUserId())
-						.recordWarningId(recordWarningId)
-						.notificationSeverity(rule.getSeverity().toNotificationSeverity())
-						.messageKey(messageKey)
-						.messageParams(Collections.singletonList(documentSummary))
-						.build());
+					BusinessRuleEventNotificationProducer.newInstance().createNotice(RecordWarningNoticeRequest.builder()
+							.userId(event.getTriggeringUserId())
+							.recordWarningId(recordWarningId)
+							.notificationSeverity(rule.getSeverity().toNotificationSeverity())
+							.messageKey(messageKey)
+							.messageParams(Collections.singletonList(documentSummary))
+							.build());
 
-				logger.debug(stopwatch, "=> Created user notification for target record");
+					logger.debug(stopwatch, "=> Created user notification for target record");
+				}
 			}
 		}
 	}

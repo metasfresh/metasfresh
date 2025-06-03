@@ -12,6 +12,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 @Builder
 public class RecordWarningCreateRequest
 {
+	@NonNull TableRecordReference rootRecordRef;
 	@NonNull TableRecordReference recordRef;
 	@NonNull BusinessRuleId businessRuleId;
 	@NonNull String message;

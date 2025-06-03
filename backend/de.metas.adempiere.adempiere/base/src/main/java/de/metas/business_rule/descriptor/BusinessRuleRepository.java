@@ -11,6 +11,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_BusinessRule;
 import org.compiere.model.I_AD_BusinessRule_Precondition;
 import org.compiere.model.I_AD_BusinessRule_Trigger;
+import org.compiere.model.I_AD_BusinessRule_WarningTarget;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -22,6 +23,7 @@ public class BusinessRuleRepository
 			.tableName(I_AD_BusinessRule.Table_Name)
 			.additionalTableNameToResetFor(I_AD_BusinessRule_Precondition.Table_Name)
 			.additionalTableNameToResetFor(I_AD_BusinessRule_Trigger.Table_Name)
+			.additionalTableNameToResetFor(I_AD_BusinessRule_WarningTarget.Table_Name)
 			.build();
 
 	public void addCacheResetListener(@NonNull final BusinessRulesChangedListener listener)
@@ -35,6 +37,7 @@ public class BusinessRuleRepository
 		cacheMgt.addCacheResetListener(I_AD_BusinessRule.Table_Name, cacheResetListener);
 		cacheMgt.addCacheResetListener(I_AD_BusinessRule_Precondition.Table_Name, cacheResetListener);
 		cacheMgt.addCacheResetListener(I_AD_BusinessRule_Trigger.Table_Name, cacheResetListener);
+		cacheMgt.addCacheResetListener(I_AD_BusinessRule_WarningTarget.Table_Name, cacheResetListener);
 	}
 
 	public BusinessRulesCollection getAll()

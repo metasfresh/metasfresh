@@ -13,6 +13,7 @@ import lombok.ToString;
 import lombok.Value;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_BusinessRule_WarningTarget;
 
 import javax.annotation.Nullable;
 
@@ -36,6 +37,8 @@ public class BusinessRule
 
 	@Nullable BusinessRuleLogLevel logLevel;
 
+	boolean isCreateWarningOnTarget;
+
 	@Builder
 	private BusinessRule(
 			@NonNull final BusinessRuleId id,
@@ -44,9 +47,11 @@ public class BusinessRule
 			@NonNull final ImmutableList<BusinessRulePrecondition> preconditions,
 			@NonNull final Validation validation,
 			@NonNull final ImmutableList<BusinessRuleTrigger> triggers,
+			@NonNull final ImmutableList<BusinessRuleWarningTarget> warningTargets,
 			@NonNull final AdMessageId warningMessageId,
 			@NonNull final Severity severity,
-			@Nullable final BusinessRuleLogLevel logLevel)
+			@Nullable final BusinessRuleLogLevel logLevel,
+			final boolean isCreateWarningOnTarget)
 	{
 		this.id = id;
 		this.name = name;
@@ -58,6 +63,7 @@ public class BusinessRule
 		this.warningMessageId = warningMessageId;
 		this.severity = severity;
 		this.logLevel = logLevel;
+		this.isCreateWarningOnTarget = isCreateWarningOnTarget;
 	}
 
 	@NonNull
