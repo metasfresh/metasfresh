@@ -199,3 +199,32 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747488,0,547698,553089,633897,'F',TO_TIMESTAMP('2025-06-02 16:21:04.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N','Stammdatensatz',20,0,0,TO_TIMESTAMP('2025-06-02 16:21:04.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+
+
+-- Field: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> Suchschlüssel / Belegnummer
+-- Column: AD_Record_Warning.Value_DocumentNo
+-- 2025-06-03T16:57:52.132Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2025-06-03 16:57:52.131000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=746217
+;
+
+-- Field: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> Schweregrad
+-- Column: AD_Record_Warning.Severity
+-- 2025-06-03T16:57:54.260Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2025-06-03 16:57:54.260000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=747477
+;
+
+-- Field: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> Stammtabelle
+-- Column: AD_Record_Warning.Root_AD_Table_ID
+-- 2025-06-03T16:57:54.915Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2025-06-03 16:57:54.915000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=747487
+;
+
+-- Field: Warnhinweise(541836,D) -> Warnhinweise(547698,D) -> Stammdatensatz
+-- Column: AD_Record_Warning.Root_Record_ID
+-- 2025-06-03T16:57:56.260Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2025-06-03 16:57:56.259000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=747488
+;
+
+
+
+

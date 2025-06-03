@@ -583,3 +583,30 @@ INSERT INTO t_alter_column values('ad_businessrule_warningtarget','LookupSQL',nu
 
 
 
+-- UI Element: Business Rule(541837,D) -> Business Rule Warning Target(548189,D) -> main -> 10 -> Business Rule Warning Target.Reihenfolge
+-- Column: AD_BusinessRule_WarningTarget.SeqNo
+-- 2025-06-03T16:43:46.113Z
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-03 16:43:46.113000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633894
+;
+
+-- UI Element: Business Rule(541837,D) -> Business Rule Warning Target(548189,D) -> main -> 10 -> Business Rule Warning Target.DB-Tabelle
+-- Column: AD_BusinessRule_WarningTarget.AD_Table_ID
+-- 2025-06-03T16:43:48.653Z
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2025-06-03 16:43:48.653000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633892
+;
+
+-- UI Element: Business Rule(541837,D) -> Business Rule Warning Target(548189,D) -> main -> 10 -> Business Rule Warning Target.Lookup SQL
+-- Column: AD_BusinessRule_WarningTarget.LookupSQL
+-- 2025-06-03T16:43:52.510Z
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2025-06-03 16:43:52.510000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633893
+;
+
+-- UI Element: Business Rule(541837,D) -> Business Rule Warning Target(548189,D) -> main -> 10 -> Business Rule Warning Target.DB-Tabelle
+-- Column: AD_BusinessRule_WarningTarget.AD_Table_ID
+-- 2025-06-03T16:44:29.772Z
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-03 16:44:29.771000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633892
+;
+
+
+
+
