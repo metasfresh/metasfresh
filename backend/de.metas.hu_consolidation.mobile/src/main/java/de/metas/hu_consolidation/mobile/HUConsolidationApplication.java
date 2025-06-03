@@ -7,7 +7,12 @@ import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobReference;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobService;
+import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
 import de.metas.hu_consolidation.mobile.launchers.HUConsolidationWorkflowLaunchersProvider;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobAvailableTargets;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
+import de.metas.hu_consolidation.mobile.service.commands.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.CompleteWFActivityHandler;
 import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.HUConsolidateWFActivityHandler;
 import de.metas.i18n.TranslatableStrings;
@@ -24,9 +29,12 @@ import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 @Component
@@ -119,7 +127,7 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 		return wfProcess.getDocumentAs(HUConsolidationJob.class);
 	}
 
-	public static WFProcess mapDocument(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<HUConsolidationJob> mapper)
+	public static WFProcess mapJob(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<HUConsolidationJob> mapper)
 	{
 		final HUConsolidationJob job = getHUConsolidationJob(wfProcess);
 		final HUConsolidationJob jobChanged = mapper.apply(job);
@@ -128,4 +136,67 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 				: wfProcess;
 	}
 
+	private WFProcess changeWFProcessById(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final BiFunction<WFProcess, HUConsolidationJob, HUConsolidationJob> remappingFunction)
+	{
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		return mapJob(wfProcess, job -> remappingFunction.apply(wfProcess, job));
+	}
+
+	public JsonHUConsolidationJobAvailableTargets getAvailableTargets(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UserId callerId)
+	{
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		wfProcess.assertHasAccess(callerId);
+
+		final HUConsolidationJob job = getHUConsolidationJob(wfProcess);
+
+		return JsonHUConsolidationJobAvailableTargets.builder()
+				.targets(jobService.getAvailableTargets(job)
+						.stream()
+						.map(JsonHUConsolidationTarget::of)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	public WFProcess setTarget(
+			@NonNull final WFProcessId wfProcessId,
+			@Nullable final HUConsolidationTarget target,
+			@NonNull final UserId callerId)
+	{
+		return changeWFProcessById(
+				wfProcessId,
+				(wfProcess, job) -> {
+					wfProcess.assertHasAccess(callerId);
+					return jobService.setTarget(job, target);
+				});
+	}
+
+	public WFProcess closeTarget(
+			@NonNull final WFProcessId wfProcessId,
+			final @NotNull UserId callerId)
+	{
+		return changeWFProcessById(
+				wfProcessId,
+				(wfProcess, pickingJob) -> {
+					wfProcess.assertHasAccess(callerId);
+					return jobService.closeTarget(pickingJob);
+				});
+	}
+
+	public WFProcess consolidate(@NonNull final JsonConsolidateRequest request, @NonNull final UserId callerId)
+	{
+		return changeWFProcessById(
+				request.getWfProcessIdNotNull(),
+				(wfProcess, job) -> {
+					wfProcess.assertHasAccess(callerId);
+
+					return jobService.consolidate(ConsolidateRequest.builder()
+							.job(job)
+							.fromPickingSlotId(request.getFromPickingSlotId())
+							.build());
+				});
+	}
 }

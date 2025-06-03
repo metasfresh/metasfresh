@@ -1,6 +1,7 @@
 package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
@@ -16,8 +17,11 @@ import javax.annotation.Nullable;
 public class HUConsolidationJob
 {
 	@NonNull HUConsolidationJobId id;
-	@NonNull BPartnerLocationId bpartnerLocationId;
+	@NonNull BPartnerLocationId shipToAddress;
 	@NonNull ImmutableSet<PickingSlotId> pickingSlotIds;
 
 	@Nullable @With UserId responsibleId;
+	@Nullable @With HUConsolidationTarget currentTarget;
+
+	public BPartnerId getCustomerId() {return shipToAddress.getBpartnerId();}
 }

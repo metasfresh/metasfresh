@@ -25,12 +25,12 @@ package de.metas.document.location.impl;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
+import de.metas.document.location.RenderedAddressProvider;
 import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
@@ -43,6 +43,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -57,8 +58,18 @@ public class DocumentLocationBL implements IDocumentLocationBL
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-	public DocumentLocationBL(@NonNull final IBPartnerBL bpartnerBL)
+	public static DocumentLocationBL newInstanceForUnitTesting()
 	{
+		Adempiere.assertUnitTestMode();
+		return new DocumentLocationBL();
+	}
+
+	@Override
+	public RenderedAddressProvider newRenderedAddressProvider()
+	{
+		return RenderedAddressProvider.builder()
+				.documentLocationBL(this)
+				.build();
 	}
 
 	@Override

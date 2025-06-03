@@ -20,35 +20,26 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.job.model;
+package de.metas.document.location;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.location.AddressDisplaySequence;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.Map;
 
-@Value
 @Builder
+@EqualsAndHashCode
+@ToString
 public class RenderedAddressProvider
 {
-	@NonNull IDocumentLocationBL documentLocationBL;
-	@NonNull Map<AddressToRender, String> locationId2RenderedAddress;
-
-	@NonNull
-	public static RenderedAddressProvider newInstance(@NonNull final IDocumentLocationBL locationBL)
-	{
-		return RenderedAddressProvider.builder()
-				.documentLocationBL(locationBL)
-				.locationId2RenderedAddress(new HashMap<>())
-				.build();
-	}
+	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final HashMap<AddressToRender, String> locationId2RenderedAddress = new HashMap<>();
 
 	@NonNull
 	public String getAddress(@NonNull final BPartnerLocationId locationId)

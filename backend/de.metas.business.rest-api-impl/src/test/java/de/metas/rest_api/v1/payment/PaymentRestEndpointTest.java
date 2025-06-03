@@ -25,7 +25,6 @@ package de.metas.rest_api.v1.payment;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
@@ -129,13 +128,13 @@ class PaymentRestEndpointTest
 		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.SYSTEM, OrgId.ANY);
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
+		final DocumentLocationBL documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
 
 		// run the "before_complete" interceptor
-		new C_Order(bpartnerBL, 
-					new OrderLineDetailRepository(), 
-					documentLocationBL, 
-					new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()))
+		new C_Order(bpartnerBL,
+				new OrderLineDetailRepository(),
+				documentLocationBL,
+				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()))
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment

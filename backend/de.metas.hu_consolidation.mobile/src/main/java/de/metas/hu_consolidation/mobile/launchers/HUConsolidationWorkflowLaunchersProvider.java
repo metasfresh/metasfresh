@@ -2,8 +2,6 @@ package de.metas.hu_consolidation.mobile.launchers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.location.IDocumentLocationBL;
-import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.picking.slot.PickingSlotReservation;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
@@ -29,11 +27,11 @@ import java.util.stream.Stream;
 public class HUConsolidationWorkflowLaunchersProvider
 {
 	@NonNull private final PickingSlotService pickingSlotService;
-	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final HUConsolidationLauncherCaptionProviderFactory captionProviderFactory;
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
-		final HUConsolidationLauncherCaptionProvider captionProvider = newCaptionProvider();
+		final HUConsolidationLauncherCaptionProvider captionProvider = captionProviderFactory.newCaptionProvider();
 
 		final ImmutableList<WorkflowLauncher> launchers = streamNewLaunchers(query)
 				.map(reference -> toWorkflowLauncher(reference, captionProvider))
@@ -89,19 +87,10 @@ public class HUConsolidationWorkflowLaunchersProvider
 				.bpartnerLocationId(key.getBpartnerLocationId());
 	}
 
-	private HUConsolidationLauncherCaptionProvider newCaptionProvider()
-	{
-		return HUConsolidationLauncherCaptionProvider.builder()
-				.documentLocationBL(documentLocationBL)
-				.build();
-	}
-
 	private WorkflowLauncher toWorkflowLauncher(
 			@NonNull final HUConsolidationJobReference reference,
 			@NonNull final HUConsolidationLauncherCaptionProvider captionProvider)
 	{
-		RenderedAddressProvider.newInstance(documentLocationBL);
-
 		return WorkflowLauncher.builder()
 				.applicationId(HUConsolidationApplication.APPLICATION_ID)
 				.caption(captionProvider.computeCaption(reference))

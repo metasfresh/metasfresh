@@ -3,7 +3,6 @@ package de.metas.order.interceptor;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -59,7 +58,7 @@ public class OrderTest
 		AdempiereTestHelper.get().init();
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
+		final DocumentLocationBL documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService));

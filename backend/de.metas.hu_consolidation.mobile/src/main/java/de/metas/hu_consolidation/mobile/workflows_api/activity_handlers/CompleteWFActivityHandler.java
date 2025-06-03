@@ -66,6 +66,6 @@ public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirm
 	public WFProcess userConfirmed(final UserConfirmationRequest request)
 	{
 		request.assertActivityType(HANDLED_ACTIVITY_TYPE);
-		return HUConsolidationApplication.mapDocument(request.getWfProcess(), jobService::complete);
+		return HUConsolidationApplication.mapJob(request.getWfProcess(), jobService::complete);
 	}
 }

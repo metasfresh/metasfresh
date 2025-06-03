@@ -25,7 +25,7 @@ public class HUConsolidationJobRepository
 		final HUConsolidationJob job = HUConsolidationJob.builder()
 				.id(id)
 				.responsibleId(responsibleId)
-				.bpartnerLocationId(reference.getBpartnerLocationId())
+				.shipToAddress(reference.getBpartnerLocationId())
 				.pickingSlotIds(reference.getPickingSlotIds())
 				.build();
 
@@ -56,5 +56,10 @@ public class HUConsolidationJobRepository
 
 		jobs.put(jobChanged.getId(), jobChanged);
 		return jobChanged;
+	}
+
+	public void save(final HUConsolidationJob job)
+	{
+		jobs.put(job.getId(), job);
 	}
 }

@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.location.RenderedAddressProvider;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.Packageable;
 import lombok.EqualsAndHashCode;

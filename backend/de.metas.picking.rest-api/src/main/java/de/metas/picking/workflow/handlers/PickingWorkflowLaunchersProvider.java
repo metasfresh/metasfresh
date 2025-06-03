@@ -14,7 +14,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
-import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
 import de.metas.i18n.AdMessageKey;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
@@ -207,7 +206,7 @@ public class PickingWorkflowLaunchersProvider
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
 						.build(),
 				PickingJobFacets.CollectingParameters.builder()
-						.addressProvider(RenderedAddressProvider.newInstance(documentLocationBL))
+						.addressProvider(documentLocationBL.newRenderedAddressProvider())
 						.groupsInOrder(groups)
 						.activeFacets(activeFacets)
 						.build());

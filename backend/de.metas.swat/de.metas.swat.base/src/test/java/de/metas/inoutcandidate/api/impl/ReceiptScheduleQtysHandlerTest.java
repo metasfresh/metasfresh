@@ -23,7 +23,6 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.impl.DocumentLocationBL;
@@ -31,7 +30,6 @@ import de.metas.inoutcandidate.expectations.ReceiptScheduleExpectation;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -59,7 +57,7 @@ public class ReceiptScheduleQtysHandlerTest
 		AdempiereTestHelper.get().init();
 		context = PlainContextAware.newOutOfTrx();
 
-		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DocumentLocationBL(new BPartnerBL(new UserRepository())));
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, DocumentLocationBL.newInstanceForUnitTesting());
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(ReceiptScheduleValidator.instance);
 

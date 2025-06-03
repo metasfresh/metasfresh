@@ -461,12 +461,12 @@ public class HUTestHelper
 		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
 		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
 		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(),
-																   new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-																   qrCodeConfigurationService));
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+				qrCodeConfigurationService));
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
-		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DocumentLocationBL(bpartnerBL));
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, DocumentLocationBL.newInstanceForUnitTesting());
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
@@ -478,7 +478,7 @@ public class HUTestHelper
 
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
-		
+
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxName = createAndStartTransaction();
@@ -501,7 +501,7 @@ public class HUTestHelper
 		// Setup context: #Date
 		today = LocalDate.of(2013, Month.NOVEMBER, 1).atStartOfDay(SystemTime.zoneId());
 		Env.setContext(ctx, Env.CTXNAME_Date, TimeUtil.asDate(today));
-		
+
 		//
 		// Setup module interceptors
 		setupModuleInterceptors_HU();
@@ -584,18 +584,18 @@ public class HUTestHelper
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
 		final HUQRCodesService huqrCodesService = new HUQRCodesService(new HUQRCodesRepository(),
-																	   new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-																	   new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+				new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				ADReferenceService.newMocked(),
 				huReservationService,
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
-										   new PPOrderIssueScheduleService(
-												   new PPOrderIssueScheduleRepository(),
-												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
-				)), huqrCodesService);
+						new PPOrderIssueScheduleService(
+								new PPOrderIssueScheduleRepository(),
+								new HUQtyService(InventoryService.newInstanceForUnitTesting())
+						)), huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(
