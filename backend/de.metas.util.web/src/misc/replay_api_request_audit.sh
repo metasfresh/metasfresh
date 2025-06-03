@@ -10,6 +10,7 @@ SCRIPT_START_EPOCH=$(date +%s)
 LOG_FILE=""
 DEFAULT_THREADS=1
 
+
 # Function to display usage
 usage() {
     cat << EOF
@@ -95,18 +96,23 @@ process_api_call() {
     local curl_args=(
         -X "$method"
         -H "Authorization: $AUTH_TOKEN"
-        -H "Accept: application/json"
-        -H "Content-Type: application/json"
+        -H "Accept: application/json; charset=utf-8"
+        -H "Content-Type: application/json; charset=utf-8"
         -w "status_code:%{http_code};time_total:%{time_total};time_connect:%{time_connect}"
         -D "$temp_file"  # Dump headers to temporary file
         -o /dev/null
         -s
+        --compressed
     )
     
     # Add body if not null and not empty
     if [[ "$body" != "null" && -n "$body" && "$body" != '""' ]]; then
-        # Remove outer quotes if present and treat as raw JSON
-        local clean_body=$(echo "$body" | sed 's/^"//;s/"$//' | sed 's/\\"/"/g')
+       # Remove outer quotes if present and treat as raw JSON
+        local clean_body=$(printf '%s\n' "$body" | sed 's/^"//;s/"$//' | sed 's/\\"/"/g')
+        
+        # Convert problematic UTF-8 characters to Unicode escapes for Git Bash compatibility
+        clean_body=$(echo "$clean_body" | sed 's/ü/\\u00fc/g; s/ä/\\u00e4/g; s/ö/\\u00f6/g; s/Ü/\\u00dc/g; s/Ä/\\u00c4/g; s/Ö/\\u00d6/g; s/ß/\\u00df/g; s/é/\\u00e9/g; s/è/\\u00e8/g; s/ê/\\u00ea/g; s/à/\\u00e0/g; s/â/\\u00e2/g; s/ç/\\u00e7/g')
+    
         curl_args+=(-d "$clean_body")
     fi
     
