@@ -58,4 +58,6 @@ public class BusinessRuleRepository
 	public void validate(final I_AD_BusinessRule_Precondition record) {newLoader().validate(record);}
 
 	public void validate(final I_AD_BusinessRule_Trigger record) {newLoader().validate(record);}
+
+	public void validate(final I_AD_BusinessRule_WarningTarget record) {newLoader().validate(record);}
 }

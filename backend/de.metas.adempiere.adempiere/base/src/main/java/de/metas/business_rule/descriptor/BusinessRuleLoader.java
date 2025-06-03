@@ -50,24 +50,24 @@ class BusinessRuleLoader
 	private final HashMap<Integer, I_AD_BusinessRule_Trigger> triggersById = new HashMap<>();
 	private final HashMap<Integer, I_AD_BusinessRule_WarningTarget> warningTargetsById = new HashMap<>();
 
-	public void validate(final I_AD_BusinessRule record)
+	public void validate(@NonNull final I_AD_BusinessRule record)
 	{
 		fromRecord(record);
 	}
 
-	public void validate(final I_AD_BusinessRule_Precondition record)
+	public void validate(@NonNull final I_AD_BusinessRule_Precondition record)
 	{
 		addToCache(record);
 		fromId(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()));
 	}
 
-	public void validate(final I_AD_BusinessRule_Trigger record)
+	public void validate(@NonNull final I_AD_BusinessRule_Trigger record)
 	{
 		addToCache(record);
 		fromId(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()));
 	}
 
-	public void validate(final I_AD_BusinessRule_WarningTarget record)
+	public void validate(@NonNull final I_AD_BusinessRule_WarningTarget record)
 	{
 		addToCache(record);
 		fromId(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()));
@@ -299,7 +299,7 @@ class BusinessRuleLoader
 				.orElse(null);
 	}
 
-	private static BusinessRuleWarningTarget fromRecord(@NonNull final  I_AD_BusinessRule_WarningTarget record)
+	private static BusinessRuleWarningTarget fromRecord(@NonNull final I_AD_BusinessRule_WarningTarget record)
 	{
 		return BusinessRuleWarningTarget.builder()
 				.id(BusinessRuleWarningTargetId.ofRepoId(record.getAD_BusinessRule_WarningTarget_ID()))
