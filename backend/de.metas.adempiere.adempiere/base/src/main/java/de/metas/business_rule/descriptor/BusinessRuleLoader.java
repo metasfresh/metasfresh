@@ -83,6 +83,10 @@ class BusinessRuleLoader
 				.create()
 				.forEach(this::addToCache);
 
+		queryWarningTargets()
+				.create()
+				.forEach(this::addToCache);
+
 		return queryBL.createQueryBuilder(I_AD_BusinessRule.class)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_BusinessRule.COLUMNNAME_AD_BusinessRule_ID)
@@ -106,6 +110,13 @@ class BusinessRuleLoader
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_BusinessRule_Trigger.COLUMNNAME_AD_BusinessRule_ID)
 				.orderBy(I_AD_BusinessRule_Trigger.COLUMNNAME_AD_BusinessRule_Trigger_ID);
+	}
+
+	private IQueryBuilder<I_AD_BusinessRule_WarningTarget> queryWarningTargets()
+	{
+		return queryBL.createQueryBuilder(I_AD_BusinessRule_WarningTarget.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_BusinessRule_WarningTarget.COLUMNNAME_SeqNo);
 	}
 
 	private void addToCache(final I_AD_BusinessRule_Precondition record)
@@ -211,7 +222,7 @@ class BusinessRuleLoader
 			// make sure we have warningTargetIdsByRuleId set even if there were no warning targets found
 			warningTargetIdsByRuleId.computeIfAbsent(businessRuleId, ignored -> new LinkedHashSet<>());
 
-			queryTriggers()
+			queryWarningTargets()
 					.addEqualsFilter(I_AD_BusinessRule_WarningTarget.COLUMNNAME_AD_BusinessRule_ID, businessRuleId)
 					.create()
 					.forEach(this::addToCache);

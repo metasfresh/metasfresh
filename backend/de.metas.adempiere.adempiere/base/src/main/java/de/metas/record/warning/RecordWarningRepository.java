@@ -25,7 +25,7 @@ public class RecordWarningRepository
 				.firstOnlyOptional(I_AD_Record_Warning.class)
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_AD_Record_Warning.class));
 
-		record.setRoot_Record_ID(request.getRootRecordRef().getAD_Table_ID());
+		record.setRoot_AD_Table_ID(request.getRootRecordRef().getAdTableId().getRepoId());
 		record.setRoot_Record_ID(request.getRootRecordRef().getRecord_ID());
 
 		record.setAD_Table_ID(request.getRecordRef().getAdTableId().getRepoId());
@@ -55,7 +55,7 @@ public class RecordWarningRepository
 				.build();
 	}
 
-	public void deleteByRecordRef(@NonNull final RecordWarningQuery query)
+	public void deleteByRootRecordRef(@NonNull final RecordWarningQuery query)
 	{
 		toSqlQuery(query).create().delete();
 	}
@@ -64,9 +64,9 @@ public class RecordWarningRepository
 	{
 		final IQueryBuilder<I_AD_Record_Warning> queryBuilder = queryBL.createQueryBuilder(I_AD_Record_Warning.class);
 
-		final TableRecordReference recordRef = query.getRootRecordRef();
-		queryBuilder.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
-				.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
+		final TableRecordReference rootRecordRef = query.getRootRecordRef();
+		queryBuilder.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Root_AD_Table_ID, rootRecordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Root_Record_ID, rootRecordRef.getRecord_ID());
 
 		if (query.getBusinessRuleId() != null)
 		{
