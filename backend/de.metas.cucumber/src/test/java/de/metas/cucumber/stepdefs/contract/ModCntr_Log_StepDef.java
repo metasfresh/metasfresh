@@ -30,6 +30,8 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogsRecomputationService;
+import de.metas.contracts.modular.log.ModularContractLogEntryId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
@@ -55,6 +57,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
@@ -101,7 +104,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.cucumber.stepdefs.StepDefUtil.writeRowAsString;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class ModCntr_Log_StepDef
@@ -260,6 +263,9 @@ public class ModCntr_Log_StepDef
 		final String modCntrTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_ModCntr_Type modCntrTypeRecord = modCntrTypeTable.get(modCntrTypeIdentifier);
 
+		final String modCntrBaseModuleIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final ModularContractModuleId moduleId = ModularContractModuleId.ofRepoIdOrNull(modCntrBaseModuleIdentifier == null ? null : modCntrModuleTable.get(modCntrBaseModuleIdentifier).getModCntr_Module_ID());
+
 		final ItemProvider<I_ModCntr_Log> locateLog = () -> queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, tableId)
@@ -268,6 +274,7 @@ public class ModCntr_Log_StepDef
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Qty, quantity)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID, modCntrTypeRecord.getModCntr_Type_ID())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID, moduleId)
 				.create()
 				.firstOnlyOptional()
 				.map(ItemProvider.ProviderResult::resultWasFound)
@@ -430,6 +437,18 @@ public class ModCntr_Log_StepDef
 			softly.assertThat(modCntrLogRecord.isBillable()).as(I_ModCntr_Log.COLUMNNAME_IsBillable).isEqualTo(isBillable);
 		}
 
+		final Integer storageDays = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_StorageDays);
+		if (storageDays != null)
+		{
+			softly.assertThat(modCntrLogRecord.getStorageDays()).as(I_ModCntr_Log.COLUMNNAME_StorageDays).isEqualTo(storageDays);
+		}
+
+		final Integer interestDays = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_InterestDays);
+		if (interestDays != null)
+		{
+			softly.assertThat(modCntrLogRecord.getStorageDays()).as(I_ModCntr_Log.COLUMNNAME_InterestDays).isEqualTo(interestDays);
+		}
+
 		softly.assertAll();
 
 		modCntrLogTable.putOrReplace(modCntrLogIdentifier, modCntrLogRecord);
@@ -555,5 +574,36 @@ public class ModCntr_Log_StepDef
 					.setParameter("TableName", tableName);
 		}
 
+	}
+
+	@And("^after not more than (.*)s, ModCntr_Logs are marked as invoiced:$")
+	public void noModCntr_Logs_marked_as_invoiced(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		Thread.sleep(timeoutSec);
+
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			validateModCntr_Logs_marked_as_invoiced(row);
+		}
+	}
+
+	private void validateModCntr_Logs_marked_as_invoiced(@NonNull final Map<String, String> tableRow)
+	{
+		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidateTable.get(invoiceCandidateIdentifier).getC_Invoice_Candidate_ID());
+
+		final String logIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final ModularContractLogEntryId logId = ModularContractLogEntryId.ofRepoId(modCntrLogTable.get(logIdentifier).getModCntr_Log_ID());
+
+		final I_ModCntr_Log modCntrLogRecord = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, logId)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, true)
+				.create()
+				.firstOnly(I_ModCntr_Log.class);
+
+		assertThat(modCntrLogRecord).as("The log {} isn't marked as invoiced", logIdentifier).isNotNull();
 	}
 }

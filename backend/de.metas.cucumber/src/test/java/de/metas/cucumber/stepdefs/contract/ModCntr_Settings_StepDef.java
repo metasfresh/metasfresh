@@ -94,6 +94,9 @@ public class ModCntr_Settings_StepDef
 		final Integer freeStorageCostDays = CoalesceUtil.coalesceNotNull(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_FreeStorageCostDays),
 				0);
 
+		final Integer freeInterestDays = CoalesceUtil.coalesceNotNull(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_FreeInterestDays),
+				0);
+
 		final I_ModCntr_Settings modCntrSettingsRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, rawProduct.getM_Product_ID())
@@ -120,6 +123,7 @@ public class ModCntr_Settings_StepDef
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
 		modCntrSettingsRecord.setIsSOTrx(soTrx.toYesNoString());
 		modCntrSettingsRecord.setStorageCostStartDate(storageDate);
+		modCntrSettingsRecord.setFreeInterestDays(freeInterestDays);
 		modCntrSettingsRecord.setReceiptAVEndDate(receiptAVEndDate);
 		modCntrSettingsRecord.setFreeStorageCostDays(freeStorageCostDays);
 

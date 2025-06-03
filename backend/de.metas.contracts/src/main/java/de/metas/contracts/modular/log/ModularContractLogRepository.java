@@ -735,10 +735,10 @@ public class ModularContractLogRepository
 		record.setDateTrx(from.getTransactionDate().toTimestamp(getZoneIdByOrgId));
 		Optional.ofNullable(from.getStorageDays())
 				.ifPresentOrElse(record::setStorageDays, () -> record.setStorageDays(0));
-		// Optional.ofNullable(from.getInterestDays().)
-		// 		.ifPresentOrElse(record::setInterestDays, () -> record.setInterestDays(0));
-		// Optional.ofNullable(from.getInterestPercent().)
-		// 		.ifPresentOrElse(record::setInterestPercent, () -> record.setInterestPercent(null); TODO
+		Optional.ofNullable(from.getInterestDays())
+				.ifPresentOrElse(record::setInterestDays, () -> record.setInterestDays(0));
+		Optional.ofNullable(from.getInterestPercent())
+				.ifPresentOrElse(interestPercent -> record.setInterestRate(interestPercent.toBigDecimal()), () -> record.setInterestRate(null));
 		record.setHarvesting_Year_ID(from.getYear().getRepoId());
 		record.setIsBillable(from.isBillable());
 		Optional.ofNullable(from.getPriceActual())
