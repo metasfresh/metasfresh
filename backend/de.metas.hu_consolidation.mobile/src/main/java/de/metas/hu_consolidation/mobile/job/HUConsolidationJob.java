@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -24,4 +25,10 @@ public class HUConsolidationJob
 	@Nullable @With HUConsolidationTarget currentTarget;
 
 	public BPartnerId getCustomerId() {return shipToAddress.getBpartnerId();}
+
+	@NonNull
+	public HUConsolidationTarget getCurrentTargetNotNull()
+	{
+		return Check.assumeNotNull(currentTarget, "job has a current target");
+	}
 }

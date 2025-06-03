@@ -1,10 +1,14 @@
 package de.metas.handlingunits.picking.slot;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.picking.api.PickingSlotId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Set;
 
 @Value
 @Builder
@@ -12,4 +16,13 @@ public class PickingSlotQueue
 {
 	@NonNull PickingSlotId pickingSlotId;
 	@NonNull ImmutableList<PickingSlotQueueItem> items;
+
+	public boolean isEmpty() {return items.isEmpty();}
+
+	public Set<HuId> getHuIds()
+	{
+		return items.stream()
+				.map(PickingSlotQueueItem::getHuId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

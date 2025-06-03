@@ -4,6 +4,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -56,7 +57,7 @@ public class HUConsolidationTarget
 		}
 	}
 
-	public static HUConsolidationTarget ofPI(@NonNull final HuPackingInstructionsIdAndCaption luPIAndCaption)
+	public static HUConsolidationTarget ofNewLU(@NonNull final HuPackingInstructionsIdAndCaption luPIAndCaption)
 	{
 		return builder()
 				.caption(luPIAndCaption.getCaption())
@@ -64,4 +65,51 @@ public class HUConsolidationTarget
 				.build();
 	}
 
+	public static HUConsolidationTarget ofExistingLU(@NonNull final HuId luId, @NonNull final HUQRCode qrCode)
+	{
+		return builder().luId(luId).luQRCode(qrCode).caption(qrCode.toDisplayableQRCode()).build();
+	}
+
+	public boolean isExistingLU()
+	{
+		return luId != null;
+	}
+
+	public boolean isNewLU()
+	{
+		return luId == null && luPIId != null;
+	}
+
+	public HuPackingInstructionsId getLuPIIdNotNull()
+	{
+		return Check.assumeNotNull(luPIId, "LU PI shall be set for {}", this);
+	}
+
+	public HuId getLuIdNotNull()
+	{
+		return Check.assumeNotNull(luId, "LU shall be set for {}", this);
+	}
+
+	public interface CaseConsumer
+	{
+		void newLU(final HuPackingInstructionsId luPackingInstructionsId);
+
+		void existingLU(final HuId luId, final HUQRCode luQRCode);
+	}
+
+	public void apply(@NonNull final HUConsolidationTarget.CaseConsumer consumer)
+	{
+		if (isNewLU())
+		{
+			consumer.newLU(getLuPIIdNotNull());
+		}
+		else if (isExistingLU())
+		{
+			consumer.existingLU(getLuIdNotNull(), getLuQRCode());
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported target type: " + this);
+		}
+	}
 }

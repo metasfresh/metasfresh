@@ -8,6 +8,8 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.picking.slot.PickingSlotService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
@@ -33,7 +35,9 @@ public class HUConsolidationJobService
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
+	@NonNull private final PickingSlotService pickingSlotService;
 	@NonNull private final HULabelService huLabelService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final HUConsolidationShipmentService shipmentService;
 
 	public HUConsolidationJob getJobById(final HUConsolidationJobId id)
@@ -72,7 +76,7 @@ public class HUConsolidationJobService
 	{
 		return handlingUnitsBL.getLUPIs(getTUPIItems(job), job.getCustomerId())
 				.stream()
-				.map(HUConsolidationTarget::ofPI)
+				.map(HUConsolidationTarget::ofNewLU)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -129,6 +133,8 @@ public class HUConsolidationJobService
 	public HUConsolidationJob consolidate(@NonNull final ConsolidateRequest request)
 	{
 		return ConsolidateCommand.builder()
+				.huQRCodesService(huQRCodesService)
+				.pickingSlotService(pickingSlotService)
 				.request(request)
 				.build()
 				.execute();
