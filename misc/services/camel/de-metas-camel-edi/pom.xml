@@ -321,8 +321,8 @@
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>xjc-schema-metasfresh-inhouse-v2</id>
@@ -352,7 +352,7 @@
                         <id>xjc-stepcom-desadv</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>generate</goal>
                         </goals>
                         <configuration>
                             <schemaDirectory>src/main/xsd/stepcom/desadv</schemaDirectory>
@@ -403,8 +403,8 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
                         <version>2.3.1</version>
                     </dependency>
                     <dependency>
