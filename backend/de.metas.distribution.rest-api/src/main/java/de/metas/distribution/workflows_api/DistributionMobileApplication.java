@@ -136,7 +136,9 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	}
 
 	@Override
-	public WFProcess changeWFProcessById(final WFProcessId wfProcessId, final UnaryOperator<WFProcess> remappingFunction)
+	public WFProcess changeWFProcessById(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UnaryOperator<WFProcess> remappingFunction)
 	{
 		final WFProcess wfProcess = getWFProcessById(wfProcessId);
 		return remappingFunction.apply(wfProcess);

@@ -19,6 +19,7 @@ import lombok.NonNull;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -55,6 +56,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 */
 	IQueueActionResult closeCurrentHU(I_M_PickingSlot pickingSlot);
 
+	void addToPickingSlotQueue(@NonNull PickingSlotId pickingSlotId, @NonNull Set<HuId> huIds);
+
 	/**
 	 * Adds given Handling Units to picking slot queue.
 	 * <p>
@@ -81,14 +84,14 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 *
 	 * @return the result with the created picking slot trx
 	 */
-	IQueueActionResult removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, I_M_HU hu);
+	IQueueActionResult removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, HuId huId);
 
 	IQueueActionResult removeFromPickingSlotQueue(PickingSlotId pickingSlotId, HuId huId);
 
 	/**
 	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, I_M_HU).
 	 */
-	void removeFromPickingSlotQueue(I_M_HU hu);
+	void removeFromPickingSlotQueue(HuId huId);
 
 	/**
 	 * Removes the given <code>hu</code> all of it's children (recursively) from any picking slot (current picking slot HU or in picking slot queue).

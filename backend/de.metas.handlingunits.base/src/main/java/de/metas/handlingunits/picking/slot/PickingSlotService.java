@@ -22,51 +22,70 @@
 
 package de.metas.handlingunits.picking.slot;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_PickingSlot;
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.i18n.AdMessageKey;
-import de.metas.picking.api.IPickingSlotBL;
-import de.metas.picking.api.IPickingSlotDAO;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.SpringContextHolder.Lazy;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class PickingSlotService
 {
-	private final static AdMessageKey ONGOING_PICKING_JOBS_ERR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.ONGOING_PICKING_JOBS_ERR_MSG");
-	private final static AdMessageKey DRAFTED_PICKING_CANDIDATES_ERR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.DRAFTED_PICKING_CANDIDATES_ERR_MSG");
 	private final static AdMessageKey QUEUED_HUS_ON_SLOT_ERR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.QUEUED_HUS_ON_SLOT_ERR_MSG");
 	private final static AdMessageKey SLOT_CANNOT_BE_RELEASED = AdMessageKey.of("de.metas.handlingunits.picking.process.SLOT_CANNOT_BE_RELEASED");
 
-	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-	private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
-	private final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
-	private final PickingJobService pickingJobService;
-	private final PickingCandidateService pickingCandidateService;
+	@NonNull private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	@NonNull private final Lazy<PickingSlotListenersDispatcher> listenersHolder = SpringContextHolder.lazyBean(PickingSlotListenersDispatcher.class);
+	@NonNull private final PickingSlotRepository pickingSlotRepository;
+	@NonNull private final PickingSlotQueueRepository pickingSlotQueueRepository;
+
+	public static PickingSlotService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new PickingSlotService(
+				new PickingSlotRepository(),
+				new PickingSlotQueueRepository()
+		);
+	}
+
+	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return huPickingSlotBL.getPickingSlotIdAndCaption(pickingSlotId);
+	}
+
+	public BooleanWithReason allocatePickingSlotIfPossible(@NonNull final PickingSlotAllocateRequest request)
+	{
+		return huPickingSlotBL.allocatePickingSlotIfPossible(request);
+	}
+
+	public void releasePickingSlotIfPossible(final PickingSlotId pickingSlotId)
+	{
+		huPickingSlotBL.releasePickingSlotIfPossible(pickingSlotId);
+	}
 
 	/**
 	 * @return true, if the picking slot was released, false otherwise
 	 */
 	public boolean releasePickingSlot(@NonNull final ReleasePickingSlotRequest request)
 	{
-		final boolean clearedAllPickingJobs = pickingJobService.clearAssignmentsForSlot(request.getPickingSlotId(), request.isForceRemoveForOngoingJobs());
-		if (!clearedAllPickingJobs)
-		{
-			throw new AdempiereException(ONGOING_PICKING_JOBS_ERR_MSG).markAsUserValidationError();
-		}
-
-		final boolean clearedAllUnprocessedHUs = pickingCandidateService.clearPickingSlot(request.getPickingSlotId(), request.isRemoveUnprocessedHUsFromSlot());
-		if (!clearedAllUnprocessedHUs)
-		{
-			throw new AdempiereException(DRAFTED_PICKING_CANDIDATES_ERR_MSG).markAsUserValidationError();
-		}
+		listenersHolder.get().beforeReleasePickingSlot(request);
 
 		final boolean clearedAllQueuedHUs = huPickingSlotBL.clearPickingSlotQueue(request.getPickingSlotId(), request.isRemoveQueuedHUsFromSlot());
 		if (!clearedAllQueuedHUs)
@@ -76,12 +95,12 @@ public class PickingSlotService
 
 		huPickingSlotBL.releasePickingSlotIfPossible(request.getPickingSlotId());
 
-		return pickingSlotBL.isAvailableForAnyBPartner(request.getPickingSlotId());
+		return huPickingSlotBL.isAvailableForAnyBPartner(request.getPickingSlotId());
 	}
 
 	public void switchDynamicAllocation(final PickingSlotId pickingSlotId, final boolean isDynamic)
 	{
-		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
+		final I_M_PickingSlot pickingSlot = pickingSlotRepository.getById(pickingSlotId);
 		if (isDynamic == pickingSlot.isDynamic())
 		{
 			//nothing to do
@@ -101,7 +120,7 @@ public class PickingSlotService
 	private void turnOnDynamicAllocation(@NonNull final I_M_PickingSlot pickingSlot)
 	{
 		pickingSlot.setIsDynamic(true);
-		pickingSlotDAO.save(pickingSlot);
+		pickingSlotRepository.save(pickingSlot);
 	}
 
 	private void turnOffDynamicAllocation(@NonNull final I_M_PickingSlot pickingSlot)
@@ -116,6 +135,47 @@ public class PickingSlotService
 		}
 
 		pickingSlot.setIsDynamic(false);
-		pickingSlotDAO.save(pickingSlot);
+		pickingSlotRepository.save(pickingSlot);
 	}
+
+	public PickingSlotQueues getNotEmptyQueues()
+	{
+		return pickingSlotQueueRepository.getNotEmptyQueues();
+	}
+
+	public PickingSlotQueue getPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return pickingSlotQueueRepository.getPickingSlotQueue(pickingSlotId);
+	}
+
+	public List<PickingSlotReservation> getPickingSlotReservations(@NonNull Set<PickingSlotId> pickingSlotIds)
+	{
+		return pickingSlotRepository.getByIds(pickingSlotIds)
+				.stream()
+				.map(PickingSlotService::extractReservation)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static PickingSlotReservation extractReservation(final I_M_PickingSlot pickingSlot)
+	{
+		return PickingSlotReservation.builder()
+				.pickingSlotId(PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID()))
+				.reservationValue(extractReservationValue(pickingSlot))
+				.build();
+	}
+
+	private static PickingSlotReservationValue extractReservationValue(final I_M_PickingSlot pickingSlot)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID());
+		return PickingSlotReservationValue.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, pickingSlot.getC_BPartner_Location_ID()))
+				.build();
+	}
+
+	public void addToPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId, @NonNull final Set<HuId> huIds)
+	{
+		huPickingSlotBL.addToPickingSlotQueue(pickingSlotId, huIds);
+	}
+
 }

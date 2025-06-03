@@ -16,7 +16,6 @@ import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -24,7 +23,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -233,51 +231,26 @@ class AssertPickingExpectationsCommand
 
 			if (expectation.getVhu() != null)
 			{
-				assertId("VHU_ID", expectation.getVhu(), HuId.ofRepoIdOrNull(qtyPickedRecord.getVHU_ID()), HuId.class);
+				final HuId actualId = HuId.ofRepoIdOrNull(qtyPickedRecord.getVHU_ID());
+				context.putSameOrMissingId("VHU_ID", expectation.getVhu(), actualId, HuId.class);
 			}
 			if (expectation.getTu() != null)
 			{
-				assertId("M_TU_HU_ID", expectation.getTu(), HuId.ofRepoIdOrNull(qtyPickedRecord.getM_TU_HU_ID()), HuId.class);
+				final HuId actualId = HuId.ofRepoIdOrNull(qtyPickedRecord.getM_TU_HU_ID());
+				context.putSameOrMissingId("M_TU_HU_ID", expectation.getTu(), actualId, HuId.class);
 			}
 			if (expectation.getLu() != null)
 			{
-				assertId("M_LU_HU_ID", expectation.getLu(), HuId.ofRepoIdOrNull(qtyPickedRecord.getM_LU_HU_ID()), HuId.class);
+				final HuId actualId = HuId.ofRepoIdOrNull(qtyPickedRecord.getM_LU_HU_ID());
+				context.putSameOrMissingId("M_LU_HU_ID", expectation.getLu(), actualId, HuId.class);
 			}
 
 			if (expectation.getShipmentLineId() != null)
 			{
-				assertId("M_InOutLine_ID", expectation.getShipmentLineId(), InOutLineId.ofRepoIdOrNull(qtyPickedRecord.getM_InOutLine_ID()), InOutLineId.class);
+				final InOutLineId actualId = InOutLineId.ofRepoIdOrNull(qtyPickedRecord.getM_InOutLine_ID());
+				context.putSameOrMissingId("M_InOutLine_ID", expectation.getShipmentLineId(), actualId, InOutLineId.class);
 			}
 		});
-	}
-
-	private <T extends RepoIdAware> void assertId(
-			@NonNull String what,
-			@NonNull final Identifier identifier,
-			@Nullable final T actualId,
-			@NonNull final Class<T> idType
-	)
-	{
-		if (identifier.isNullPlaceholder())
-		{
-			assertThat(actualId).as(what).isNull();
-		}
-		else
-		{
-			final T expectedId = context.getOptionalId(identifier, idType).orElse(null);
-			if (expectedId == null)
-			{
-				assertThat(actualId).as(what).isNotNull();
-				if (actualId != null)
-				{
-					context.putIdentifier(identifier, actualId);
-				}
-			}
-			else
-			{
-				assertThat(actualId).as(what).isEqualTo(expectedId);
-			}
-		}
 	}
 
 }

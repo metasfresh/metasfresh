@@ -81,6 +81,12 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	}
 
 	@Override
+	public <T extends I_M_PickingSlot> List<T> getByIds(@NonNull Set<PickingSlotId> pickingSlotIds, @NonNull Class<T> modelType)
+	{
+		return InterfaceWrapperHelper.loadByRepoIdAwares(pickingSlotIds, modelType);
+	}
+
+	@Override
 	@Cached(cacheName = I_M_PickingSlot.Table_Name)
 	public List<I_M_PickingSlot> retrievePickingSlots(final @CacheCtx Properties ctx, final @CacheTrx @Nullable String trxName)
 	{

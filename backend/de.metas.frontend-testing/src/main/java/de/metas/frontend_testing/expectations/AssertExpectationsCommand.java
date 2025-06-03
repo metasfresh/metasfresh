@@ -55,6 +55,15 @@ public class AssertExpectationsCommand
 						.build()
 						.execute();
 			}
+			if (expectations.getPickingSlots() != null)
+			{
+				AssertPickingSlotExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getPickingSlots())
+						.build()
+						.execute();
+			}
 			if (expectations.getHus() != null)
 			{
 				AssertHUExpectationsCommand.builder()

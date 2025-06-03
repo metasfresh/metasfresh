@@ -35,12 +35,12 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 			@NonNull final ImmutableList<WorkflowLauncher> launchers,
 			@NonNull @Singular final ImmutableList<OrderBy> orderByFields,
 			@Nullable final PrintableScannedCode filterByQRCode,
-			@NonNull final Instant timestamp)
+			@Nullable final Instant timestamp)
 	{
 		this.launchers = launchers;
 		this.orderByFields = orderByFields;
 		this.filterByQRCode = filterByQRCode;
-		this.timestamp = timestamp;
+		this.timestamp = timestamp != null ? timestamp : SystemTime.asInstant();
 	}
 
 	public int size() {return launchers.size();}

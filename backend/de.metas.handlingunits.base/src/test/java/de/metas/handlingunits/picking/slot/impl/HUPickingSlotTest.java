@@ -22,11 +22,12 @@ package de.metas.handlingunits.picking.slot.impl;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.slot.PickingSlotConnectedComponent;
+import de.metas.handlingunits.picking.slot.PickingSlotListenersDispatcher;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -36,29 +37,31 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
 import java.util.Properties;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUPickingSlotTest
 {
-	/** Service under test */
+	/**
+	 * Service under test
+	 */
 	private HUPickingSlotBL huPickingSlotBL;
 
 	@BeforeEach
 	public final void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
-		SpringContextHolder.registerJUnitBean((PickingSlotConnectedComponent)slotId -> false);
+		SpringContextHolder.registerJUnitBean(new PickingSlotListenersDispatcher(Optional.empty()));
 
 		huPickingSlotBL = new HUPickingSlotBL();
 	}
 
 	/**
-	 * {@link HUPickingSlotBL#removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, de.metas.handlingunits.model.I_M_HU)}:<br>
+	 * {@link HUPickingSlotBL#removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, HuId)}:<br>
 	 * &bull; shall *not* release the BPartner from a picking slot if that slot's queue is not yet empty.
 	 */
 	@Test
@@ -101,12 +104,16 @@ public class HUPickingSlotTest
 
 		//
 		// Remove just the first HU hu1 (queue is not yet empty)
-		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlot, hu1);
-		assertThat("Queue is not yet empty, so partner shall not yet be released", pickingSlot.getC_BPartner_ID(), is(bpartner.getC_BPartner_ID()));
+		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlot, HuId.ofRepoId(hu1.getM_HU_ID()));
+		assertThat(pickingSlot.getC_BPartner_ID())
+				.as("Queue is not yet empty, so partner shall not yet be released")
+				.isEqualTo(bpartner.getC_BPartner_ID());
 
 		//
 		// Remove the second HU hu2 (queue shall now be empty)
-		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlot, hu2);
-		assertThat("Queue is empty, so partner shall be released", pickingSlot.getC_BPartner_ID(), is(-1));
+		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlot, HuId.ofRepoId(hu2.getM_HU_ID()));
+		assertThat(pickingSlot.getC_BPartner_ID())
+				.as("Queue is empty, so partner shall be released")
+				.isLessThanOrEqualTo(0);
 	}
 }

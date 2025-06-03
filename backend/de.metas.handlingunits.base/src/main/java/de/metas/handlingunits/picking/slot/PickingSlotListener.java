@@ -22,10 +22,13 @@
 
 package de.metas.handlingunits.picking.slot;
 
+import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.picking.api.PickingSlotId;
 import lombok.NonNull;
 
-public interface PickingSlotConnectedComponent
+public interface PickingSlotListener
 {
-	boolean hasAllocationsForSlot(@NonNull PickingSlotId slotId);
+	default boolean hasAllocationsForSlot(@NonNull PickingSlotId slotId) {return false;}
+
+	default void beforeReleasePickingSlot(@NonNull final ReleasePickingSlotRequest request) {}
 }

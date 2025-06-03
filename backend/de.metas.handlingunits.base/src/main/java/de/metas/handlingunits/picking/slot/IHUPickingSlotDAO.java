@@ -7,23 +7,28 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface IHUPickingSlotDAO extends ISingletonService
 {
-	I_M_PickingSlot_HU retrievePickingSlotHU(de.metas.picking.model.I_M_PickingSlot pickingSlot, I_M_HU hu);
+	I_M_PickingSlot_HU retrievePickingSlotHU(de.metas.picking.model.I_M_PickingSlot pickingSlot, HuId huId);
 
 	/**
 	 * Retrieve {@link I_M_PickingSlot} where given HU is in queue or is the current one.
 	 *
 	 * @return picking slot or null
 	 */
-	I_M_PickingSlot retrievePickingSlotForHU(I_M_HU hu);
+	@Nullable I_M_PickingSlot retrievePickingSlotForHU(HuId huId);
 
 	List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs();
+
+	List<I_M_PickingSlot_HU> retrievePickingSlotHUs(@NonNull Set<PickingSlotId> pickingSlotIds);
 
 	/**
 	 * Retrieves all HUs that are assigned to the given <code>pickingSlot</code> via {@link I_M_PickingSlot_HU} (i.e. which are in the queue),<br>

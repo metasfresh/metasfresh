@@ -46,6 +46,8 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
+import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
+import de.metas.handlingunits.picking.slot.PickingSlotListener;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
@@ -83,10 +85,11 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-public class PickingJobService
+public class PickingJobService implements PickingSlotListener
 {
 	public final static AdMessageKey PICKING_JOB_PROCESSED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.PICKING_JOB_PROCESSED_ERROR_MSG");
 	private final static AdMessageKey JOB_ALREADY_ASSIGNED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.JOB_ALREADY_ASSIGNED_ERROR_MSG");
+	private final static AdMessageKey ONGOING_PICKING_JOBS_ERR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.ONGOING_PICKING_JOBS_ERR_MSG");
 
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -293,6 +296,7 @@ public class PickingJobService
 						.huReservationService(huReservationService)
 						.pickingConfigRepo(pickingConfigRepo)
 						.mobileUIPickingUserProfileRepository(mobileUIPickingUserProfileRepository)
+						.pickingSlotService(pickingSlotService)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobLineId(event.getPickingLineId())
@@ -349,10 +353,20 @@ public class PickingJobService
 		});
 	}
 
+	@Override
+	public void beforeReleasePickingSlot(final @NonNull ReleasePickingSlotRequest request)
+	{
+		final boolean clearedAllPickingJobs = clearAssignmentsForSlot(request.getPickingSlotId(), request.isForceRemoveForOngoingJobs());
+		if (!clearedAllPickingJobs)
+		{
+			throw new AdempiereException(ONGOING_PICKING_JOBS_ERR_MSG).markAsUserValidationError();
+		}
+	}
+
 	/**
 	 * @return true, if all picking jobs have been removed from the slot, false otherwise
 	 */
-	public boolean clearAssignmentsForSlot(@NonNull final PickingSlotId slotId, final boolean forceRemoveForOngoingJobs)
+	private boolean clearAssignmentsForSlot(@NonNull final PickingSlotId slotId, final boolean forceRemoveForOngoingJobs)
 	{
 		final List<PickingJob> pickingJobs = pickingJobRepository.getDraftedByPickingSlotId(slotId, pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices());
 		if (pickingJobs.isEmpty())
@@ -594,10 +608,17 @@ public class PickingJobService
 			pickingJobRepository.save(pickingJobChanged);
 		}
 
-		printLULabels(closedLUIds);
-		if (isShipLUs && !closedLUIds.isEmpty())
+		if (!closedLUIds.isEmpty())
 		{
-			shipmentService.createShipmentForLUs(pickingJobChanged, closedLUIds);
+			pickingJobChanged.getPickingSlotIdEffective(onlyLineId)
+					.ifPresent(pickingSlotId -> pickingSlotService.addToPickingSlotQueue(pickingSlotId, closedLUIds));
+
+			printLULabels(closedLUIds);
+
+			if (isShipLUs)
+			{
+				shipmentService.createShipmentForLUs(pickingJobChanged, closedLUIds);
+			}
 		}
 
 		return pickingJobChanged;

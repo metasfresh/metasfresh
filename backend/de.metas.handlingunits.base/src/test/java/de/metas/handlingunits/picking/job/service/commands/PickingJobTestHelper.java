@@ -43,6 +43,7 @@ import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.TestRecorder;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
+import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
@@ -151,7 +152,6 @@ public class PickingJobTestHelper
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
-		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(
 				huQRCodesRepository,
 				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
@@ -160,18 +160,22 @@ public class PickingJobTestHelper
 		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		final MobileUIPickingUserProfileRepository profileRepository = new MobileUIPickingUserProfileRepository();
+		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
+				new PickingConfigRepository(),
+				pickingCandidateRepository,
+				new HuId2SourceHUsService(new HUTraceRepository()),
+				huReservationService,
+				bpartnerBL,
+				ADReferenceService.newMocked(),
+				inventoryService);
+		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(
+				PickingSlotService.newInstanceForUnitTesting(),
+				pickingJobRepository);
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
 				pickingJobSlotService,
-				new PickingCandidateService(
-						new PickingConfigRepository(),
-						pickingCandidateRepository,
-						new HuId2SourceHUsService(new HUTraceRepository()),
-						huReservationService,
-						bpartnerBL,
-						ADReferenceService.newMocked(),
-						inventoryService),
+				pickingCandidateService,
 				new PickingJobHUReservationService(huReservationService),
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
@@ -457,7 +461,7 @@ public class PickingJobTestHelper
 		return huQRCode;
 	}
 
-	public TestRecorder  newTestRecorder()
+	public TestRecorder newTestRecorder()
 	{
 		return new TestRecorder(huTracer, snapshotSerializer::toJson);
 	}

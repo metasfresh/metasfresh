@@ -20,6 +20,8 @@ public interface IPickingSlotDAO extends ISingletonService
 
 	<T extends I_M_PickingSlot> T getById(PickingSlotId pickingSlotId, Class<T> modelType);
 
+	<T extends I_M_PickingSlot> List<T> getByIds(Set<PickingSlotId> pickingSlotIds, Class<T> modelType);
+
 	/**
 	 * @return all picking slots for current tenant/client.
 	 */
