@@ -25,10 +25,10 @@ public class RecordWarningRepository
 				.firstOnlyOptional(I_AD_Record_Warning.class)
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_AD_Record_Warning.class));
 
-		record.setRoot_AD_Table_ID(request.getRootRecordRef().getAdTableId().getRepoId());
+		record.setRoot_AD_Table_ID(request.getRootRecordRef().getAD_Table_ID());
 		record.setRoot_Record_ID(request.getRootRecordRef().getRecord_ID());
 
-		record.setAD_Table_ID(request.getRecordRef().getAdTableId().getRepoId());
+		record.setAD_Table_ID(request.getRecordRef().getAD_Table_ID());
 		record.setRecord_ID(request.getRecordRef().getRecord_ID());
 
 		record.setAD_BusinessRule_ID(request.getBusinessRuleId().getRepoId());
