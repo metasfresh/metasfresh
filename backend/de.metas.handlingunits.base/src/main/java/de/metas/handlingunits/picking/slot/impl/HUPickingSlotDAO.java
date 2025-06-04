@@ -10,6 +10,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.slot.PickingSlotQuery;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -54,12 +55,23 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
-	public List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs()
+	public List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs(@NonNull final PickingSlotQuery query)
 	{
-		return queryBL.createQueryBuilder(I_M_PickingSlot_HU.class)
+		final IQueryBuilder<I_M_PickingSlot_HU> queryBuilder = queryBL.createQueryBuilder(I_M_PickingSlot_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID)
-				.orderBy(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_HU_ID)
+				.orderBy(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_HU_ID);
+
+		if (query.getOnlyPickingSlotIds() != null && !query.getOnlyPickingSlotIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID, query.getOnlyPickingSlotIds());
+		}
+		if (query.getExcludePickingSlotIds() != null && !query.getExcludePickingSlotIds().isEmpty())
+		{
+			queryBuilder.addNotInArrayFilter(I_M_PickingSlot_HU.COLUMNNAME_M_PickingSlot_ID, query.getExcludePickingSlotIds());
+		}
+
+		return queryBuilder
 				.create()
 				.list(I_M_PickingSlot_HU.class);
 	}

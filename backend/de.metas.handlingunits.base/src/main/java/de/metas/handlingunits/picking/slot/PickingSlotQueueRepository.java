@@ -15,9 +15,9 @@ public class PickingSlotQueueRepository
 {
 	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 
-	public PickingSlotQueues getNotEmptyQueues()
+	public PickingSlotQueues getNotEmptyQueues(@NonNull final PickingSlotQuery query)
 	{
-		final ImmutableListMultimap<PickingSlotId, PickingSlotQueueItem> items = huPickingSlotDAO.retrieveAllPickingSlotHUs()
+		final ImmutableListMultimap<PickingSlotId, PickingSlotQueueItem> items = huPickingSlotDAO.retrieveAllPickingSlotHUs(query)
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						PickingSlotQueueRepository::extractPickingSlotId,

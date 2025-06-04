@@ -20,14 +20,15 @@ public class HUConsolidationJobReference
 {
 	@NonNull BPartnerLocationId bpartnerLocationId;
 	@NonNull @Singular ImmutableSet<PickingSlotId> pickingSlotIds;
-	int countHUs;
+	@Nullable Integer countHUs;
+	@Nullable HUConsolidationJobId startedJobId;
 
 	public static class HUConsolidationJobReferenceBuilder
 	{
 		@SuppressWarnings("UnusedReturnValue")
 		public HUConsolidationJobReferenceBuilder addToCountHUs(final int countHUsToAdd)
 		{
-			this.countHUs += countHUsToAdd;
+			this.countHUs = this.countHUs == null ? countHUsToAdd : this.countHUs + countHUsToAdd;
 			return this;
 		}
 	}
@@ -39,6 +40,7 @@ public class HUConsolidationJobReference
 				.value("bpartnerLocationId", bpartnerLocationId.getRepoId())
 				.value("pickingSlotIds", RepoIdAwares.toCommaSeparatedString(pickingSlotIds))
 				.value("countHUs", countHUs)
+				.value("startedJobId", startedJobId != null ? startedJobId.getRepoId() : null)
 				.build();
 	}
 
@@ -54,17 +56,29 @@ public class HUConsolidationJobReference
 
 			@Nullable final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, params.getParameterAsInt("bpartnerLocationId", -1));
 			@Nullable final ImmutableSet<PickingSlotId> pickingSlotIds = RepoIdAwares.ofCommaSeparatedSet(params.getParameterAsString("pickingSlotIds"), PickingSlotId.class);
+			@Nullable final HUConsolidationJobId startedJobId = params.getParameterAsId("startedJobId", HUConsolidationJobId.class);
 
 			return builder()
 					.bpartnerLocationId(bpartnerLocationId)
 					.pickingSlotIds(pickingSlotIds != null ? pickingSlotIds : ImmutableSet.of())
 					.countHUs(params.getParameterAsInt("countHUs", 0))
+					.startedJobId(startedJobId)
 					.build();
 		}
 		catch (Exception ex)
 		{
 			throw new AdempiereException("Invalid params: " + params, ex);
 		}
+	}
+
+	public static HUConsolidationJobReference ofJob(@NonNull final HUConsolidationJob job)
+	{
+		return builder()
+				.bpartnerLocationId(job.getShipToBPLocationId())
+				.pickingSlotIds(job.getPickingSlotIds())
+				.countHUs(null)
+				.startedJobId(job.getId())
+				.build();
 	}
 
 }

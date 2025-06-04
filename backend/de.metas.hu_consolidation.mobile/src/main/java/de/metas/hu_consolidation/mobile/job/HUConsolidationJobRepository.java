@@ -1,5 +1,8 @@
 package de.metas.hu_consolidation.mobile.job;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -7,6 +10,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -69,5 +73,23 @@ public class HUConsolidationJobRepository
 	public void save(final HUConsolidationJob job)
 	{
 		jobs.put(job.getId(), job);
+	}
+
+	public List<HUConsolidationJob> getByNotProcessedAndResponsibleId(final @NonNull UserId userId)
+	{
+		return jobs.values()
+				.stream()
+				.filter(job -> UserId.equals(job.getResponsibleId(), userId)
+						&& !job.getDocStatus().isProcessed())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public ImmutableSet<PickingSlotId> getInUsePickingSlotIds()
+	{
+		return jobs.values()
+				.stream()
+				.filter(job -> !job.getDocStatus().isProcessed())
+				.flatMap(job -> job.getPickingSlotIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

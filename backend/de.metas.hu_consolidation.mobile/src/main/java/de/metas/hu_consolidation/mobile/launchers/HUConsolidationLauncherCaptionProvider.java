@@ -12,7 +12,8 @@ public class HUConsolidationLauncherCaptionProvider
 {
 	@NonNull private final RenderedAddressProvider renderedAddressProvider;
 
-	public @NonNull WorkflowLauncherCaption computeCaption(final @NonNull HUConsolidationJobReference reference)
+	@NonNull
+	public WorkflowLauncherCaption computeCaption(final @NonNull HUConsolidationJobReference reference)
 	{
 		final String address = renderedAddressProvider.getAddress(reference.getBpartnerLocationId());
 		return WorkflowLauncherCaption.of(TranslatableStrings.anyLanguage(address));

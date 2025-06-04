@@ -138,9 +138,9 @@ public class PickingSlotService
 		pickingSlotRepository.save(pickingSlot);
 	}
 
-	public PickingSlotQueues getNotEmptyQueues()
+	public PickingSlotQueues getNotEmptyQueues(@NonNull final PickingSlotQuery query)
 	{
-		return pickingSlotQueueRepository.getNotEmptyQueues();
+		return pickingSlotQueueRepository.getNotEmptyQueues(query);
 	}
 
 	public PickingSlotQueue getPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId)

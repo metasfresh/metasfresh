@@ -1,7 +1,9 @@
 package de.metas.hu_consolidation.mobile.launchers;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.picking.slot.PickingSlotQuery;
 import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.picking.slot.PickingSlotReservation;
@@ -9,6 +11,8 @@ import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobReference;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobReference.HUConsolidationJobReferenceBuilder;
+import de.metas.hu_consolidation.mobile.job.HUConsolidationJobService;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
@@ -19,6 +23,7 @@ import lombok.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
@@ -28,28 +33,39 @@ import java.util.stream.Stream;
 public class HUConsolidationWorkflowLaunchersProvider
 {
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final HUConsolidationJobService jobService;
 	@NonNull private final HUConsolidationLauncherCaptionProviderFactory captionProviderFactory;
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
-		final HUConsolidationLauncherCaptionProvider captionProvider = captionProviderFactory.newCaptionProvider();
-
-		final ImmutableList<WorkflowLauncher> launchers = streamNewLaunchers(query)
-				.map(reference -> toWorkflowLauncher(reference, captionProvider))
-				.collect(ImmutableList.toImmutableList());
-
-		return WorkflowLaunchersList.builder()
-				.launchers(launchers)
-				.build();
-	}
-
-	private Stream<HUConsolidationJobReference> streamNewLaunchers(@NonNull final WorkflowLaunchersQuery query)
-	{
 		query.assertNoFilterByDocumentNo();
 		query.assertNoFilterByQRCode();
 		query.assertNoFacetIds();
-		
-		final PickingSlotQueues pickingSlotQueues = pickingSlotService.getNotEmptyQueues();
+
+		final ArrayList<HUConsolidationJobReference> jobReferences = new ArrayList<>();
+
+		//
+		// Already started jobs
+		jobService.getByNotProcessedAndResponsibleId(query.getUserId())
+				.stream()
+				.map(HUConsolidationJobReference::ofJob)
+				.forEach(jobReferences::add);
+
+		final ImmutableSet<PickingSlotId> pickingSlotIdsAlreadyInUse = jobService.getInUsePickingSlotIds();
+
+		//
+		// New possible jobs
+		streamNewJobReferences(PickingSlotQuery.builder()
+				.excludePickingSlotIds(pickingSlotIdsAlreadyInUse)
+				.build())
+				.forEach(jobReferences::add);
+
+		return toWorkflowLaunchersList(jobReferences);
+	}
+
+	private Stream<HUConsolidationJobReference> streamNewJobReferences(@NonNull final PickingSlotQuery query)
+	{
+		final PickingSlotQueues pickingSlotQueues = pickingSlotService.getNotEmptyQueues(query);
 		final List<PickingSlotReservation> pickingSlots = pickingSlotService.getPickingSlotReservations(pickingSlotQueues.getPickingSlotIds());
 
 		final HashMap<HUConsolidationJobReferenceKey, HUConsolidationJobReferenceBuilder> builders = new HashMap<>();
@@ -91,14 +107,20 @@ public class HUConsolidationWorkflowLaunchersProvider
 				.bpartnerLocationId(key.getBpartnerLocationId());
 	}
 
-	private WorkflowLauncher toWorkflowLauncher(
-			@NonNull final HUConsolidationJobReference reference,
-			@NonNull final HUConsolidationLauncherCaptionProvider captionProvider)
+	private WorkflowLaunchersList toWorkflowLaunchersList(final List<HUConsolidationJobReference> jobReferences)
 	{
-		return WorkflowLauncher.builder()
-				.applicationId(HUConsolidationApplication.APPLICATION_ID)
-				.caption(captionProvider.computeCaption(reference))
-				.wfParameters(reference.toParams())
+		final HUConsolidationLauncherCaptionProvider captionProvider = captionProviderFactory.newCaptionProvider();
+		return WorkflowLaunchersList.builder()
+				.launchers(jobReferences.stream()
+						.map(jobReference -> WorkflowLauncher.builder()
+								.applicationId(HUConsolidationApplication.APPLICATION_ID)
+								.caption(captionProvider.computeCaption(jobReference))
+								.wfParameters(jobReference.toParams())
+								.startedWFProcessId(jobReference.getStartedJobId() != null
+										? jobReference.getStartedJobId().toWFProcessId()
+										: null)
+								.build())
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 

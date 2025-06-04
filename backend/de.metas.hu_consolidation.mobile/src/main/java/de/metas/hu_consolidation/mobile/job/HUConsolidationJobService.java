@@ -1,11 +1,13 @@
 package de.metas.hu_consolidation.mobile.job;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
 import de.metas.hu_consolidation.mobile.job.commands.complete.CompleteCommand;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateCommand;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,17 @@ public class HUConsolidationJobService
 	{
 		return jobRepository.getById(id);
 	}
+
+	public List<HUConsolidationJob> getByNotProcessedAndResponsibleId(@NonNull final UserId userId)
+	{
+		return jobRepository.getByNotProcessedAndResponsibleId(userId);
+	}
+	
+	public ImmutableSet<PickingSlotId> getInUsePickingSlotIds()
+	{
+		return jobRepository.getInUsePickingSlotIds();
+	}
+
 
 	public HUConsolidationJob startJob(
 			@NonNull final HUConsolidationJobReference reference,
