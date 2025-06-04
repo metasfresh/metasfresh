@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_BusinessRule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1027035219L;
+	private static final long serialVersionUID = -2101639503L;
 
     /** Standard Constructor */
     public X_AD_BusinessRule (final Properties ctx, final int AD_BusinessRule_ID, @Nullable final String trxName)
@@ -62,6 +62,18 @@ public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_Bus
 	public int getAD_Table_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
+	}
+
+	@Override
+	public void setIsCreateWarningOnTarget (final boolean IsCreateWarningOnTarget)
+	{
+		set_Value (COLUMNNAME_IsCreateWarningOnTarget, IsCreateWarningOnTarget);
+	}
+
+	@Override
+	public boolean isCreateWarningOnTarget() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateWarningOnTarget);
 	}
 
 	@Override

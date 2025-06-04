@@ -2,6 +2,7 @@ package de.metas.business_rule.descriptor.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.business_rule.log.BusinessRuleLogLevel;
 import de.metas.i18n.AdMessageId;
@@ -30,6 +31,8 @@ public class BusinessRule
 	@NonNull ImmutableList<BusinessRuleTrigger> triggers;
 	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<BusinessRuleTriggerId, BusinessRuleTrigger> triggersById;
 
+	@NonNull ImmutableSet<BusinessRuleWarningTarget> warningTargets;
+
 	@NonNull AdMessageId warningMessageId;
 
 	@NonNull Severity severity;
@@ -44,6 +47,7 @@ public class BusinessRule
 			@NonNull final ImmutableList<BusinessRulePrecondition> preconditions,
 			@NonNull final Validation validation,
 			@NonNull final ImmutableList<BusinessRuleTrigger> triggers,
+			@NonNull final ImmutableSet<BusinessRuleWarningTarget> warningTargets,
 			@NonNull final AdMessageId warningMessageId,
 			@NonNull final Severity severity,
 			@Nullable final BusinessRuleLogLevel logLevel)
@@ -55,6 +59,7 @@ public class BusinessRule
 		this.validation = validation;
 		this.triggers = triggers;
 		this.triggersById = Maps.uniqueIndex(triggers, BusinessRuleTrigger::getId);
+		this.warningTargets = warningTargets;
 		this.warningMessageId = warningMessageId;
 		this.severity = severity;
 		this.logLevel = logLevel;
