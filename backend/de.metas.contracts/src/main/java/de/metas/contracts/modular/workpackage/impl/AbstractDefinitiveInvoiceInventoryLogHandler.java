@@ -133,6 +133,7 @@ public abstract class AbstractDefinitiveInvoiceInventoryLogHandler  extends Abst
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
+											.initialProductId(ProductId.ofRepoId(inventoryLine.getM_Product_ID()))
 											.referencedRecord(createLogRequest.getRecordRef())
 											.collectionPointBPartnerId(collectionPointBPartnerId)
 											.producerBPartnerId(collectionPointBPartnerId)

@@ -118,6 +118,7 @@ public class CalibrationManufacturingRawIssuedLog extends AbstractModularContrac
 				.referencedRecord(manufacturingRawIssued.getManufacturingOrderId().toRecordRef())
 				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingRawIssued.getId()))
 				.productId(productId)
+				.initialProductId(manufacturingRawIssued.getRawProductId())
 				.productName(request.getProductName())
 				.invoicingBPartnerId(invoicingBPartnerId)
 				.warehouseId(manufacturingRawIssued.getWarehouseId())
