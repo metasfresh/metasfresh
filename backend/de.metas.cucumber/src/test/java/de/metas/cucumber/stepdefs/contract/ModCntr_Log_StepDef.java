@@ -446,7 +446,7 @@ public class ModCntr_Log_StepDef
 		final Integer interestDays = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_InterestDays);
 		if (interestDays != null)
 		{
-			softly.assertThat(modCntrLogRecord.getStorageDays()).as(I_ModCntr_Log.COLUMNNAME_InterestDays).isEqualTo(interestDays);
+			softly.assertThat(modCntrLogRecord.getInterestDays()).as(I_ModCntr_Log.COLUMNNAME_InterestDays).isEqualTo(interestDays);
 		}
 
 		softly.assertAll();
