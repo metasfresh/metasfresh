@@ -151,7 +151,7 @@ public class ModCntr_Specific_Price_StepDef
 					.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, moduleRecord.getModCntr_Module_ID())
 					.create()
 					.anyMatch();
-			assertThat(specificPriceFound).as("ProductPrice found for contract {} and module {}", contractIdentifier, moduleIdentifier).isFalse();
+			assertThat(specificPriceFound).as("ProductPrice found for contract %s and module %s", contractIdentifier, moduleIdentifier).isFalse();
 		}
 	}
 

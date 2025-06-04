@@ -604,6 +604,6 @@ public class ModCntr_Log_StepDef
 				.create()
 				.firstOnly(I_ModCntr_Log.class);
 
-		assertThat(modCntrLogRecord).as("The log {} isn't marked as invoiced", logIdentifier).isNotNull();
+		assertThat(modCntrLogRecord).as("The log %s isn't marked as invoiced", logIdentifier).isNotNull();
 	}
 }

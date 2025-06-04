@@ -513,19 +513,19 @@ Feature: Modular contract log from sales order for processed product
     And after not more than 30s, ModCntr_Logs are marked as invoiced:
       | ModCntr_Log_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | log_inout_1_3             | candidate_sales                   |
-      | log_inout_1_4             | candidate_HL                      |
-      | log_inout_1_5             | candidate_Protein                 |
-      | log_inout_1_6             | candidate_salesAV                 |
-      | log_inout_1_7             | candidate_storageCost             |
+      | log_inout_1_4             | candidate_storageCost             |
+      | log_inout_1_5             | candidate_HL                      |
+      | log_inout_1_6             | candidate_Protein                 |
+      | log_inout_1_7             | candidate_salesAV                 |
       | log_inout_1_8             | candidate_salesInterest           |
       | log_inout_1_9             | candidate_salesInterest           |
       | log_inout_1_10            | candidate_salesInterest           |
       | log_inout_1_11            | candidate_salesInterest           |
       | log_inout_2_3             | candidate_sales                   |
-      | log_inout_2_4             | candidate_HL                      |
-      | log_inout_2_5             | candidate_Protein                 |
-      | log_inout_2_6             | candidate_salesAV                 |
-      | log_inout_2_7             | candidate_storageCost             |
+      | log_inout_2_4             | candidate_storageCost             |
+      | log_inout_2_5             | candidate_HL                      |
+      | log_inout_2_6             | candidate_Protein                 |
+      | log_inout_2_7             | candidate_salesAV                 |
       | log_inout_2_8             | candidate_salesInterest           |
       | log_inout_2_9             | candidate_salesInterest           |
       | log_inout_2_10            | candidate_salesInterest           |
