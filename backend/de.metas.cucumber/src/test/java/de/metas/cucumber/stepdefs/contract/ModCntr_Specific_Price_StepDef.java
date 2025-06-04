@@ -25,6 +25,12 @@ package de.metas.cucumber.stepdefs.contract;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Specific_Price;
+import de.metas.contracts.modular.ModCntrSpecificPrice;
+import de.metas.contracts.modular.ModCntrSpecificPriceId;
+import de.metas.contracts.modular.ModularContractPriceService;
+import de.metas.contracts.modular.log.ModCntrLogPriceUpdateRequest;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -32,6 +38,8 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -40,6 +48,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -54,6 +63,7 @@ import java.util.Optional;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@RequiredArgsConstructor
 public class ModCntr_Specific_Price_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -61,22 +71,14 @@ public class ModCntr_Specific_Price_StepDef
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final static Logger logger = LogManager.getLogger(ModCntr_Specific_Price_StepDef.class);
 
-	private final C_Flatrate_Term_StepDefData contractTable;
-	private final M_Product_StepDefData productTable;
-	private final ModCntr_Module_StepDefData modCntrModuleTable;
-	private final ModCntr_Specific_Price_StepDefData specificPriceTable;
+	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull private final ModularContractPriceService modularContractPriceService;
+	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry;
 
-	public ModCntr_Specific_Price_StepDef(
-			@NonNull final C_Flatrate_Term_StepDefData contractTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final ModCntr_Module_StepDefData modCntrModuleTable,
-			@NonNull final ModCntr_Specific_Price_StepDefData specificPriceTable)
-	{
-		this.contractTable = contractTable;
-		this.productTable = productTable;
-		this.modCntrModuleTable = modCntrModuleTable;
-		this.specificPriceTable = specificPriceTable;
-	}
+	@NonNull private final C_Flatrate_Term_StepDefData contractTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final ModCntr_Module_StepDefData modCntrModuleTable;
+	@NonNull private final ModCntr_Specific_Price_StepDefData specificPriceTable;
 
 	@And("^after not more than (.*)s, ModCntr_Specific_Prices are found:$")
 	public void there_are_specificPrices(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
@@ -174,5 +176,99 @@ public class ModCntr_Specific_Price_StepDef
 		specificPriceTable.putOrReplace(specificPriceIdentifier, specificPrice.get());
 
 		return true;
+	}
+
+	@And("update ModCntr_Specific_Prices")
+	public void updateSpecificPrices(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final String specificPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Specific_Price_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final ModCntrSpecificPriceId contractPriceId = ModCntrSpecificPriceId.ofRepoId(specificPriceTable.get(specificPriceIdentifier).getModCntr_Specific_Price_ID());
+
+			final boolean p_asNewPrice = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT.isNewPrice", false);
+			final BigDecimal p_price = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_Price);
+
+			final String currencyIsoCode = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID + ".ISO_Code");
+			final CurrencyId p_C_Currency_ID = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyIsoCode)).getId();
+
+			final String uomCode = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+			final UomId p_C_UOM_ID = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomCode));
+
+			final BigDecimal p_minValue = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Specific_Price.COLUMNNAME_MinValue);
+
+			final ModCntrSpecificPrice newContractPrice;
+
+			if (p_asNewPrice)
+			{
+				newContractPrice = modularContractPriceService.cloneById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+						.amount(Money.of(p_price, p_C_Currency_ID))
+						.uomId(p_C_UOM_ID)
+						.minValue(p_minValue)
+						.build());
+			}
+			else
+			{
+				newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+						.amount(Money.of(p_price, p_C_Currency_ID))
+						.uomId(p_C_UOM_ID)
+						.minValue(p_minValue)
+						.build());
+			}
+
+			contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
+							.unitPrice(newContractPrice.getProductPrice())
+							.flatrateTermId(newContractPrice.flatrateTermId())
+							.modularContractModuleId(newContractPrice.modularContractModuleId())
+							.build(),
+					logHandlerRegistry);
+		}
+	}
+
+	@And("delete ModCntr_Specific_Prices")
+	public void deleteSpecificPrices(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final String specificPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Specific_Price_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final ModCntrSpecificPriceId contractPriceId = ModCntrSpecificPriceId.ofRepoId(specificPriceTable.get(specificPriceIdentifier).getModCntr_Specific_Price_ID());
+
+			final boolean p_asNewPrice = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT.isNewPrice", false);
+			final BigDecimal p_price = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_Price);
+
+			final String currencyIsoCode = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_C_Currency_ID + ".ISO_Code");
+			final CurrencyId p_C_Currency_ID = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyIsoCode)).getId();
+
+			final String uomCode = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+			final UomId p_C_UOM_ID = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomCode));
+
+			final BigDecimal p_minValue = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Specific_Price.COLUMNNAME_MinValue);
+
+			final ModCntrSpecificPrice newContractPrice;
+
+			if (p_asNewPrice)
+			{
+				newContractPrice = modularContractPriceService.cloneById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+						.amount(Money.of(p_price, p_C_Currency_ID))
+						.uomId(p_C_UOM_ID)
+						.minValue(p_minValue)
+						.build());
+			}
+			else
+			{
+				newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+						.amount(Money.of(p_price, p_C_Currency_ID))
+						.uomId(p_C_UOM_ID)
+						.minValue(p_minValue)
+						.build());
+			}
+
+			contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
+							.unitPrice(newContractPrice.getProductPrice())
+							.flatrateTermId(newContractPrice.flatrateTermId())
+							.modularContractModuleId(newContractPrice.modularContractModuleId())
+							.build(),
+					logHandlerRegistry);
+		}
 	}
 }
