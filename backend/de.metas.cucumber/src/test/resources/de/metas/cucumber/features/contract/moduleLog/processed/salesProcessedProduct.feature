@@ -222,7 +222,7 @@ Feature: Modular contract log from sales order for processed product
       | SO_interest_module                | 60    | salesInterest_03102024_1              | salesInterest                  | Service        | modcntr_settings_SO_1          | salesInterest_type         |
 
     And metasfresh contains ModCntr_BaseModuleConfigs:
-      | ModCntr_BaseModuleConfig_ID.identifier | Name                     | ModCntr_Module_ID.Identifier | ModCntr_BaseModule_ID.Identifier | ModCntr_Settings_ID.Identifier |
+      | ModCntr_BaseModuleConfig_ID.Identifier | Name                     | ModCntr_Module_ID.Identifier | ModCntr_BaseModule_ID.Identifier | ModCntr_Settings_ID.Identifier |
       | sales_baseModuleConfig                 | sales_baseModuleConfig   | SO_interest_module           | SO_sales_module                  | modcntr_settings_SO_1          |
       | HL_baseModuleConfig                    | HL_baseModuleConfig      | SO_interest_module           | SO_HL_module                     | modcntr_settings_SO_1          |
       | protein_baseModuleConfig               | protein_baseModuleConfig | SO_interest_module           | SO_protein_module                | modcntr_settings_SO_1          |
