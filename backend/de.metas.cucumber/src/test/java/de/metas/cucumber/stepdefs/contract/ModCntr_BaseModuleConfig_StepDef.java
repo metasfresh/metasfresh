@@ -85,7 +85,7 @@ public class ModCntr_BaseModuleConfig_StepDef
 
 		modCntrBaseModuleConfigRecord.setName(name);
 		modCntrBaseModuleConfigRecord.setModCntr_Settings_ID(modCntrSettingsRecord.getModCntr_Settings_ID());
-		modCntrBaseModuleConfigRecord.setModCntr_Module_ID(modCntrModuleRecord.getModCntr_Type_ID());
+		modCntrBaseModuleConfigRecord.setModCntr_Module_ID(modCntrModuleRecord.getModCntr_Module_ID());
 		modCntrBaseModuleConfigRecord.setModCntr_BaseModule_ID(modCntrBaseModuleRecord.getModCntr_Module_ID());
 
 		InterfaceWrapperHelper.saveRecord(modCntrBaseModuleConfigRecord);
