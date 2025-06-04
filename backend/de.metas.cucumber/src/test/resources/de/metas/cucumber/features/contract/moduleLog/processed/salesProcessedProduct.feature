@@ -219,7 +219,7 @@ Feature: Modular contract log from sales order for processed product
       | SO_salesAV_module                 | 30    | salesAV_03102024_1                    | salesAV                        | Service        | modcntr_settings_SO_1          | salesAV_type               |
       | SO_protein_module                 | 40    | protein_03102024_1                    | Protein                        | Service        | modcntr_settings_SO_1          | protein_type               |
       | SO_storageCost_module             | 50    | salesStorageCost_03102024_1           | storageCostForProcessedProduct | Service        | modcntr_settings_SO_1          | salesStorageCost_type      |
-      | SO_interest_module                | 60    | salesInterest_03102024_1              | salesInterest_03102024_1       | Service        | modcntr_settings_SO_1          | salesInterest_type         |
+      | SO_interest_module                | 60    | salesInterest_03102024_1              | salesInterest                  | Service        | modcntr_settings_SO_1          | salesInterest_type         |
 
     And metasfresh contains ModCntr_BaseModuleConfigs:
       | ModCntr_BaseModuleConfig_ID.identifier | Name                     | ModCntr_Module_ID.Identifier | ModCntr_BaseModule_ID.Identifier |
