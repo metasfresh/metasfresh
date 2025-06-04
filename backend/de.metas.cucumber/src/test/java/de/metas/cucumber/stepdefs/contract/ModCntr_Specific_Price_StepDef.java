@@ -53,6 +53,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
@@ -71,9 +72,9 @@ public class ModCntr_Specific_Price_StepDef
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final static Logger logger = LogManager.getLogger(ModCntr_Specific_Price_StepDef.class);
 
-	@NonNull private final ModularContractLogService contractLogService;
-	@NonNull private final ModularContractPriceService modularContractPriceService;
-	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry;
+	@NonNull private final ModularContractLogService contractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+	@NonNull private final ModularContractPriceService modularContractPriceService = SpringContextHolder.instance.getBean(ModularContractPriceService.class);
+	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry = SpringContextHolder.instance.getBean(ModularContractLogHandlerRegistry.class);
 
 	@NonNull private final C_Flatrate_Term_StepDefData contractTable;
 	@NonNull private final M_Product_StepDefData productTable;
