@@ -134,6 +134,11 @@ public class BusinessRuleLogger
 		changeContext(context -> context.withTargetRecordRef(recordRef));
 	}
 
+	public void setRootTargetRecordRef(@Nullable final TableRecordReference rootRecordRef)
+	{
+		changeContext(context -> context.withRootTargetRecordRef(rootRecordRef));
+	}
+
 	public BusinessRuleStopwatch newStopwatch()
 	{
 		return BusinessRuleStopwatch.createStarted();

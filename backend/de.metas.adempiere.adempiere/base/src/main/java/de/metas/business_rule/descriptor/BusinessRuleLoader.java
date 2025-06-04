@@ -8,6 +8,8 @@ import de.metas.business_rule.descriptor.model.BusinessRulePrecondition;
 import de.metas.business_rule.descriptor.model.BusinessRulePreconditionId;
 import de.metas.business_rule.descriptor.model.BusinessRuleTrigger;
 import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
+import de.metas.business_rule.descriptor.model.BusinessRuleWarningTarget;
+import de.metas.business_rule.descriptor.model.BusinessRuleWarningTargetId;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
 import de.metas.business_rule.descriptor.model.Severity;
 import de.metas.business_rule.descriptor.model.TriggerTiming;
@@ -24,10 +26,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_BusinessRule;
 import org.compiere.model.I_AD_BusinessRule_Precondition;
 import org.compiere.model.I_AD_BusinessRule_Trigger;
+import org.compiere.model.I_AD_BusinessRule_WarningTarget;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -39,24 +43,32 @@ class BusinessRuleLoader
 {
 	@NonNull private final IQueryBL queryBL;
 
-	private final HashMap<BusinessRuleId, LinkedHashSet<Integer>> preconditionIdsByRuleId = new HashMap<>();
-	private final HashMap<BusinessRuleId, LinkedHashSet<Integer>> triggerIdsByRuleId = new HashMap<>();
+	private final HashMap<BusinessRuleId, LinkedHashSet<BusinessRulePreconditionId>> preconditionIdsByRuleId = new HashMap<>();
+	private final HashMap<BusinessRuleId, LinkedHashSet<BusinessRuleTriggerId>> triggerIdsByRuleId = new HashMap<>();
+	private final HashMap<BusinessRuleId, LinkedHashSet<BusinessRuleWarningTargetId>> warningTargetIdsByRuleId = new HashMap<>();
 
-	private final HashMap<Integer, I_AD_BusinessRule_Precondition> preconditionsById = new HashMap<>();
-	private final HashMap<Integer, I_AD_BusinessRule_Trigger> triggersById = new HashMap<>();
+	private final HashMap<BusinessRulePreconditionId, I_AD_BusinessRule_Precondition> preconditionsById = new HashMap<>();
+	private final HashMap<BusinessRuleTriggerId, I_AD_BusinessRule_Trigger> triggersById = new HashMap<>();
+	private final HashMap<BusinessRuleWarningTargetId, I_AD_BusinessRule_WarningTarget> warningTargetsById = new HashMap<>();
 
-	public void validate(final I_AD_BusinessRule record)
+	public void validate(@NonNull final I_AD_BusinessRule record)
 	{
 		fromRecord(record);
 	}
 
-	public void validate(final I_AD_BusinessRule_Precondition record)
+	public void validate(@NonNull final I_AD_BusinessRule_Precondition record)
 	{
 		addToCache(record);
 		fromId(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()));
 	}
 
-	public void validate(final I_AD_BusinessRule_Trigger record)
+	public void validate(@NonNull final I_AD_BusinessRule_Trigger record)
+	{
+		addToCache(record);
+		fromId(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()));
+	}
+
+	public void validate(@NonNull final I_AD_BusinessRule_WarningTarget record)
 	{
 		addToCache(record);
 		fromId(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()));
@@ -69,6 +81,10 @@ class BusinessRuleLoader
 				.forEach(this::addToCache);
 
 		queryTriggers()
+				.create()
+				.forEach(this::addToCache);
+
+		queryWarningTargets()
 				.create()
 				.forEach(this::addToCache);
 
@@ -97,9 +113,16 @@ class BusinessRuleLoader
 				.orderBy(I_AD_BusinessRule_Trigger.COLUMNNAME_AD_BusinessRule_Trigger_ID);
 	}
 
+	private IQueryBuilder<I_AD_BusinessRule_WarningTarget> queryWarningTargets()
+	{
+		return queryBL.createQueryBuilder(I_AD_BusinessRule_WarningTarget.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_BusinessRule_WarningTarget.COLUMNNAME_SeqNo);
+	}
+
 	private void addToCache(final I_AD_BusinessRule_Precondition record)
 	{
-		final int id = record.getAD_BusinessRule_Precondition_ID();
+		final BusinessRulePreconditionId id = BusinessRulePreconditionId.ofRepoId(record.getAD_BusinessRule_Precondition_ID());
 		preconditionIdsByRuleId.computeIfAbsent(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()), ignored -> new LinkedHashSet<>())
 				.add(id);
 		preconditionsById.putIfAbsent(id, record);
@@ -107,10 +130,18 @@ class BusinessRuleLoader
 
 	private void addToCache(final I_AD_BusinessRule_Trigger record)
 	{
-		final int id = record.getAD_BusinessRule_Trigger_ID();
+		final BusinessRuleTriggerId id = BusinessRuleTriggerId.ofRepoId(record.getAD_BusinessRule_Trigger_ID());
 		triggerIdsByRuleId.computeIfAbsent(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()), ignored -> new LinkedHashSet<>())
 				.add(id);
 		triggersById.putIfAbsent(id, record);
+	}
+
+	private void addToCache(final I_AD_BusinessRule_WarningTarget record)
+	{
+		final BusinessRuleWarningTargetId id = BusinessRuleWarningTargetId.ofRepoId(record.getAD_BusinessRule_WarningTarget_ID());
+		warningTargetIdsByRuleId.computeIfAbsent(BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID()), ignored -> new LinkedHashSet<>())
+				.add(id);
+		warningTargetsById.putIfAbsent(id, record);
 	}
 
 	@SuppressWarnings("UnusedReturnValue")
@@ -127,6 +158,16 @@ class BusinessRuleLoader
 	private BusinessRule fromRecord(@NonNull final I_AD_BusinessRule record)
 	{
 		final BusinessRuleId id = BusinessRuleId.ofRepoId(record.getAD_BusinessRule_ID());
+
+		final ImmutableSet.Builder<BusinessRuleWarningTarget> warningTargets = ImmutableSet.builder();
+		if (record.isCreateWarningOnTarget())
+		{
+			warningTargets.add(BusinessRuleWarningTarget.ROOT_TARGET_RECORD);
+		}
+		getWarningTargets(id).stream()
+				.map(BusinessRuleLoader::fromRecord)
+				.forEach(warningTargets::add);
+
 		return BusinessRule.builder()
 				.id(id)
 				.name(record.getName())
@@ -138,6 +179,7 @@ class BusinessRuleLoader
 				.triggers(getTriggers(id).stream()
 						.map(BusinessRuleLoader::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
+				.warningTargets(warningTargets.build())
 				.warningMessageId(AdMessageId.ofRepoId(record.getWarning_Message_ID()))
 				.severity(Severity.ofCode(record.getSeverity()))
 				.logLevel(record.isDebug() ? BusinessRuleLogLevel.DEBUG : null)
@@ -182,6 +224,25 @@ class BusinessRuleLoader
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private List<I_AD_BusinessRule_WarningTarget> getWarningTargets(final BusinessRuleId businessRuleId)
+	{
+		if (warningTargetIdsByRuleId.get(businessRuleId) == null)
+		{
+			// make sure we have warningTargetIdsByRuleId set even if there were no warning targets found
+			warningTargetIdsByRuleId.computeIfAbsent(businessRuleId, ignored -> new LinkedHashSet<>());
+
+			queryWarningTargets()
+					.addEqualsFilter(I_AD_BusinessRule_WarningTarget.COLUMNNAME_AD_BusinessRule_ID, businessRuleId)
+					.create()
+					.forEach(this::addToCache);
+		}
+
+		return warningTargetIdsByRuleId.get(businessRuleId)
+				.stream()
+				.map(warningTargetsById::get)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private static Validation extractValidation(@NonNull final I_AD_BusinessRule record)
 	{
 		return Validation.adValRule(AdValRuleId.ofRepoId(record.getValidation_Rule_ID()));
@@ -210,7 +271,7 @@ class BusinessRuleLoader
 		}
 	}
 
-	private static BusinessRuleTrigger fromRecord(@NonNull final  I_AD_BusinessRule_Trigger record)
+	private static BusinessRuleTrigger fromRecord(@NonNull final I_AD_BusinessRule_Trigger record)
 	{
 		return BusinessRuleTrigger.builder()
 				.id(BusinessRuleTriggerId.ofRepoId(record.getAD_BusinessRule_Trigger_ID()))
@@ -245,5 +306,19 @@ class BusinessRuleLoader
 		return StringUtils.trimBlankToOptional(record.getConditionSQL())
 				.map(Validation::sql)
 				.orElse(null);
+	}
+
+	private static BusinessRuleWarningTarget fromRecord(@NonNull final I_AD_BusinessRule_WarningTarget record)
+	{
+		final String lookupSQL = StringUtils.trimBlankToNull(record.getLookupSQL());
+		if (lookupSQL == null)
+		{
+			throw new FillMandatoryException(I_AD_BusinessRule_WarningTarget.COLUMNNAME_LookupSQL);
+		}
+
+		return BusinessRuleWarningTarget.sqlLookup(
+				AdTableId.ofRepoId(record.getAD_Table_ID()),
+				lookupSQL
+		);
 	}
 }

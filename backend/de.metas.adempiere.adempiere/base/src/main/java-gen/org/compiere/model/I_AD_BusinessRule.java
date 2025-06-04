@@ -142,6 +142,27 @@ public interface I_AD_BusinessRule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Create Warning On Target.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCreateWarningOnTarget (boolean IsCreateWarningOnTarget);
+
+	/**
+	 * Get Create Warning On Target.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCreateWarningOnTarget();
+
+	ModelColumn<I_AD_BusinessRule, Object> COLUMN_IsCreateWarningOnTarget = new ModelColumn<>(I_AD_BusinessRule.class, "IsCreateWarningOnTarget", null);
+	String COLUMNNAME_IsCreateWarningOnTarget = "IsCreateWarningOnTarget";
+
+	/**
 	 * Set Debug.
 	 *
 	 * <br>Type: YesNo
