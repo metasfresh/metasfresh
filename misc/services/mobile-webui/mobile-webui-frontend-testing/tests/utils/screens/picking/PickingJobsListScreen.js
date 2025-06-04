@@ -1,9 +1,11 @@
-import { page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobsListFiltersScreen } from "./PickingJobsListFiltersScreen";
 import { PickingJobsListScanScreen } from './PickingJobsListScanScreen';
 import { expect } from '@playwright/test';
+import { DistributionLineScreen } from '../distribution/DistributionLineScreen';
+import { ApplicationsListScreen } from '../ApplicationsListScreen';
 
 const NAME = 'PickingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -13,6 +15,10 @@ export const PickingJobsListScreen = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout });
         await page.locator('.loading').waitFor({ state: 'detached', timeout });
+    }),
+
+    expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
+        await expect(containerElement()).toBeVisible();
     }),
 
     filterByDocumentNo: async (documentNo) => await test.step(`${NAME} - Filter by documentNo ${documentNo}`, async () => {
@@ -80,6 +86,13 @@ export const PickingJobsListScreen = {
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
     }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await PickingJobsListScreen.expectVisible();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await ApplicationsListScreen.waitForScreen();
+    }),
+
 };
 
 const locateJobButtons = ({ documentNo, index, qtyToDeliver, productId, customerLocationId } = {}) => {

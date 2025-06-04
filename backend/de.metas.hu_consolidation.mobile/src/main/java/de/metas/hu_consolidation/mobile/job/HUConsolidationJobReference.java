@@ -20,6 +20,17 @@ public class HUConsolidationJobReference
 {
 	@NonNull BPartnerLocationId bpartnerLocationId;
 	@NonNull @Singular ImmutableSet<PickingSlotId> pickingSlotIds;
+	int countHUs;
+
+	public static class HUConsolidationJobReferenceBuilder
+	{
+		@SuppressWarnings("UnusedReturnValue")
+		public HUConsolidationJobReferenceBuilder addToCountHUs(final int countHUsToAdd)
+		{
+			this.countHUs += countHUsToAdd;
+			return this;
+		}
+	}
 
 	public Params toParams()
 	{
@@ -27,6 +38,7 @@ public class HUConsolidationJobReference
 				.value("bpartnerId", bpartnerLocationId.getBpartnerId().getRepoId())
 				.value("bpartnerLocationId", bpartnerLocationId.getRepoId())
 				.value("pickingSlotIds", RepoIdAwares.toCommaSeparatedString(pickingSlotIds))
+				.value("countHUs", countHUs)
 				.build();
 	}
 
@@ -46,6 +58,7 @@ public class HUConsolidationJobReference
 			return builder()
 					.bpartnerLocationId(bpartnerLocationId)
 					.pickingSlotIds(pickingSlotIds != null ? pickingSlotIds : ImmutableSet.of())
+					.countHUs(params.getParameterAsInt("countHUs", 0))
 					.build();
 		}
 		catch (Exception ex)

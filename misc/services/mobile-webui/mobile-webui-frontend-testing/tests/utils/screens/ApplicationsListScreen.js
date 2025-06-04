@@ -14,7 +14,7 @@ export const ApplicationsListScreen = {
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect to be displayed`, async () => {
-        expect(containerElement()).toBeVisible();
+        await expect(containerElement()).toBeVisible();
     }),
 
     startApplication: async (applicationId) => await test.step(`${NAME} - Start application ${applicationId}`, async () => {

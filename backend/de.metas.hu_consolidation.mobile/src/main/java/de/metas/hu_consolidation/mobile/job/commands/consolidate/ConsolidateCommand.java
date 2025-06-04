@@ -1,4 +1,4 @@
-package de.metas.hu_consolidation.mobile.service.commands;
+package de.metas.hu_consolidation.mobile.job.commands.consolidate;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -11,32 +11,35 @@ import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
+import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class ConsolidateCommand
 {
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
+
+	// Params
+	@NonNull private final UserId callerId;
+	@NonNull private final HUConsolidationJobId jobId;
 	@NonNull private final PickingSlotId fromPickingSlotId;
 
+	// State
 	private HUTransformService huTransformService; // lazy
-	private PickingSlotQueue _fromPickingSlotQueue; // lazy
-	private final HUConsolidationJob jobInitial;
 	private HUConsolidationJob job;
+	private PickingSlotQueue _fromPickingSlotQueue; // lazy
 
 	@Builder
 	public ConsolidateCommand(
@@ -50,18 +53,22 @@ public class ConsolidateCommand
 		this.huQRCodesService = huQRCodesService;
 		this.pickingSlotService = pickingSlotService;
 
-		this.jobInitial = this.job = request.getJob();
+		this.callerId = request.getCallerId();
+		this.jobId = request.getJobId();
 		this.fromPickingSlotId = request.getFromPickingSlotId();
 	}
 
 	public HUConsolidationJob execute()
 	{
-		return trxManager.callInThreadInheritedTrx(this::execute0);
+		return jobRepository.updateById(jobId, this::execute0);
 	}
 
-	private HUConsolidationJob execute0()
+	private HUConsolidationJob execute0(@NonNull final HUConsolidationJob jobInitial)
 	{
-		huTransformService = HUTransformService.newInstance();
+		this.huTransformService = HUTransformService.newInstance();
+		this.job = jobInitial;
+		
+		job.assertUserCanEdit(callerId);
 
 		final PickingSlotQueue fromPickingSlotQueue = getFromPickingSlotQueue();
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(fromPickingSlotQueue.getHuIds());
@@ -87,11 +94,6 @@ public class ConsolidateCommand
 		consolidateFromLUs(lus);
 		consolidateFromTUs(tus);
 		pickingSlotService.removeFromPickingSlotQueue(fromPickingSlotQueue.getPickingSlotId(), fromPickingSlotQueue.getHuIds());
-
-		if (!Objects.equals(jobInitial, job))
-		{
-			jobRepository.save(job);
-		}
 
 		return job;
 	}

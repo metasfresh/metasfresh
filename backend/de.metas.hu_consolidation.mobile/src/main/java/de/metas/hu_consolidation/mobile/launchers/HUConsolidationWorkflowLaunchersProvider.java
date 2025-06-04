@@ -2,6 +2,7 @@ package de.metas.hu_consolidation.mobile.launchers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotQueues;
 import de.metas.handlingunits.picking.slot.PickingSlotReservation;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
@@ -47,7 +48,7 @@ public class HUConsolidationWorkflowLaunchersProvider
 		query.assertNoFilterByDocumentNo();
 		query.assertNoFilterByQRCode();
 		query.assertNoFacetIds();
-
+		
 		final PickingSlotQueues pickingSlotQueues = pickingSlotService.getNotEmptyQueues();
 		final List<PickingSlotReservation> pickingSlots = pickingSlotService.getPickingSlotReservations(pickingSlotQueues.getPickingSlotIds());
 
@@ -59,8 +60,11 @@ public class HUConsolidationWorkflowLaunchersProvider
 				return;
 			}
 
+			final PickingSlotQueue queue = pickingSlotQueues.getQueue(pickingSlot.getPickingSlotId());
+
 			builders.computeIfAbsent(key, HUConsolidationWorkflowLaunchersProvider::newReference)
-					.pickingSlotId(pickingSlot.getPickingSlotId());
+					.pickingSlotId(pickingSlot.getPickingSlotId())
+					.addToCountHUs(queue.getCountHUs());
 		});
 
 		return builders.values().stream()

@@ -2,6 +2,8 @@ import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
+import { HUConsolidationJobsListScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobsListScreen';
+import { HUConsolidationJobScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobScreen';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
@@ -69,6 +71,7 @@ test('Simple HU consolidation test', async ({ page }) => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.complete();
+        await PickingJobsListScreen.goBack();
         await Backend.expect({
             pickings: {
                 [pickingJobId]: {
@@ -93,5 +96,15 @@ test('Simple HU consolidation test', async ({ page }) => {
                 }
             },
         });
+    });
+
+    await test.step("HU Consolidate & Ship", async () => {
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huConsolidation');
+        await HUConsolidationJobsListScreen.waitForScreen();
+        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId })
+        await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await HUConsolidationJobScreen.consolidateAll({ pickingSlotId: masterdata.pickingSlots.slot1.id });
+        await HUConsolidationJobScreen.complete();
     });
 });

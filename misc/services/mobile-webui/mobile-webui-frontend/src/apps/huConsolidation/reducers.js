@@ -12,3 +12,8 @@ export const getCurrentTarget = ({ activity }) => {
 export const getPickingSlots = ({ activity }) => {
   return getHUConsolidationJob({ activity }).pickingSlots ?? [];
 };
+export const getPickingSlotById = ({ activity, pickingSlotId }) => {
+  return getPickingSlots({ activity }).find(
+    (pickingSlot) => String(pickingSlot.pickingSlotId) === String(pickingSlotId)
+  );
+};

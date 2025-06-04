@@ -2,17 +2,19 @@ package de.metas.hu_consolidation.mobile;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.IDocument;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobReference;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
+import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.launchers.HUConsolidationWorkflowLaunchersProvider;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobAvailableTargets;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
-import de.metas.hu_consolidation.mobile.service.commands.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.CompleteWFActivityHandler;
 import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.HUConsolidateWFActivityHandler;
 import de.metas.i18n.TranslatableStrings;
@@ -22,6 +24,7 @@ import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
+import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
@@ -34,7 +37,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 @Component
@@ -46,6 +48,7 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 
 	@NonNull private final HUConsolidationWorkflowLaunchersProvider launchersProvider;
 	@NonNull private final HUConsolidationJobService jobService;
+	@NonNull private final IDocumentLocationBL documentLocationBL;
 
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
@@ -74,8 +77,8 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 	@Override
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		final WFProcess wfProcess = getWFProcessById(wfProcessId);
-		jobService.abort(getHUConsolidationJob(wfProcess));
+		final HUConsolidationJobId jobId = HUConsolidationJobId.ofWFProcessId(wfProcessId);
+		jobService.abort(jobId, callerId);
 	}
 
 	@Override
@@ -95,7 +98,16 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 	@Override
 	public WFProcessHeaderProperties getHeaderProperties(final @NonNull WFProcess wfProcess)
 	{
-		return WFProcessHeaderProperties.EMPTY;
+		final HUConsolidationJob job = wfProcess.getDocumentAs(HUConsolidationJob.class);
+		final BPartnerLocationId shipToBPLocationId = job.getShipToBPLocationId();
+		@NonNull final String shipToAddress = documentLocationBL.newRenderedAddressProvider().getAddress(shipToBPLocationId);
+
+		return WFProcessHeaderProperties.builder()
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("BPartnerAddress"))
+						.value(shipToAddress)
+						.build())
+				.build();
 	}
 
 	private static WFProcess toWFProcess(final HUConsolidationJob job)
@@ -136,14 +148,6 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 				: wfProcess;
 	}
 
-	private WFProcess changeWFProcessById(
-			@NonNull final WFProcessId wfProcessId,
-			@NonNull final BiFunction<WFProcess, HUConsolidationJob, HUConsolidationJob> remappingFunction)
-	{
-		final WFProcess wfProcess = getWFProcessById(wfProcessId);
-		return mapJob(wfProcess, job -> remappingFunction.apply(wfProcess, job));
-	}
-
 	public JsonHUConsolidationJobAvailableTargets getAvailableTargets(
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UserId callerId)
@@ -166,37 +170,25 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 			@Nullable final HUConsolidationTarget target,
 			@NonNull final UserId callerId)
 	{
-		return changeWFProcessById(
-				wfProcessId,
-				(wfProcess, job) -> {
-					wfProcess.assertHasAccess(callerId);
-					return jobService.setTarget(job, target);
-				});
+		final HUConsolidationJob job = jobService.setTarget(HUConsolidationJobId.ofWFProcessId(wfProcessId), target, callerId);
+		return toWFProcess(job);
 	}
 
 	public WFProcess closeTarget(
 			@NonNull final WFProcessId wfProcessId,
 			final @NotNull UserId callerId)
 	{
-		return changeWFProcessById(
-				wfProcessId,
-				(wfProcess, pickingJob) -> {
-					wfProcess.assertHasAccess(callerId);
-					return jobService.closeTarget(pickingJob);
-				});
+		final HUConsolidationJob job = jobService.closeTarget(HUConsolidationJobId.ofWFProcessId(wfProcessId), callerId);
+		return toWFProcess(job);
 	}
 
 	public WFProcess consolidate(@NonNull final JsonConsolidateRequest request, @NonNull final UserId callerId)
 	{
-		return changeWFProcessById(
-				request.getWfProcessIdNotNull(),
-				(wfProcess, job) -> {
-					wfProcess.assertHasAccess(callerId);
-
-					return jobService.consolidate(ConsolidateRequest.builder()
-							.job(job)
-							.fromPickingSlotId(request.getFromPickingSlotId())
-							.build());
-				});
+		final HUConsolidationJob job = jobService.consolidate(ConsolidateRequest.builder()
+				.callerId(callerId)
+				.jobId(HUConsolidationJobId.ofWFProcessId(request.getWfProcessIdNotNull()))
+				.fromPickingSlotId(request.getFromPickingSlotId())
+				.build());
+		return toWFProcess(job);
 	}
 }

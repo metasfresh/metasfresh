@@ -1,7 +1,9 @@
 package de.metas.hu_consolidation.mobile.job;
 
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
@@ -13,6 +15,9 @@ import java.util.function.UnaryOperator;
 @Repository
 public class HUConsolidationJobRepository
 {
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	// FIXME prototyping
 	private final AtomicInteger nextJobId = new AtomicInteger(1000000);
 	private final ConcurrentHashMap<HUConsolidationJobId, HUConsolidationJob> jobs = new ConcurrentHashMap<>();
 
@@ -24,9 +29,10 @@ public class HUConsolidationJobRepository
 
 		final HUConsolidationJob job = HUConsolidationJob.builder()
 				.id(id)
-				.responsibleId(responsibleId)
-				.shipToAddress(reference.getBpartnerLocationId())
+				.shipToBPLocationId(reference.getBpartnerLocationId())
 				.pickingSlotIds(reference.getPickingSlotIds())
+				.docStatus(HUConsolidationJobStatus.Drafted)
+				.responsibleId(responsibleId)
 				.build();
 
 		jobs.put(job.getId(), job);
@@ -46,16 +52,18 @@ public class HUConsolidationJobRepository
 
 	public HUConsolidationJob updateById(@NonNull final HUConsolidationJobId id, @NonNull final UnaryOperator<HUConsolidationJob> mapper)
 	{
-		final HUConsolidationJob job = getById(id);
+		return trxManager.callInThreadInheritedTrx(() -> {
+			final HUConsolidationJob job = getById(id);
 
-		final HUConsolidationJob jobChanged = mapper.apply(job);
-		if (Objects.equals(job, jobChanged))
-		{
-			return job;
-		}
+			final HUConsolidationJob jobChanged = mapper.apply(job);
+			if (Objects.equals(job, jobChanged))
+			{
+				return job;
+			}
 
-		jobs.put(jobChanged.getId(), jobChanged);
-		return jobChanged;
+			save(jobChanged);
+			return jobChanged;
+		});
 	}
 
 	public void save(final HUConsolidationJob job)

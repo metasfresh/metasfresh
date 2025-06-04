@@ -1,4 +1,4 @@
-package de.metas.hu_consolidation.mobile.service;
+package de.metas.hu_consolidation.mobile.shipment;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;

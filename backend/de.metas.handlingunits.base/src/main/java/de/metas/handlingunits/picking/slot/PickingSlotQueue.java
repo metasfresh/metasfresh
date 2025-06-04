@@ -19,6 +19,8 @@ public class PickingSlotQueue
 
 	public boolean isEmpty() {return items.isEmpty();}
 
+	public int getCountHUs() {return items.size();}
+
 	public Set<HuId> getHuIds()
 	{
 		return items.stream()

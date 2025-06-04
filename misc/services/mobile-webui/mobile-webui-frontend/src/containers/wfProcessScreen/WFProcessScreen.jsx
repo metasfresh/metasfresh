@@ -22,7 +22,7 @@ import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { appLaunchersLocation } from '../../routes/launchers';
 import { useMobileLocation } from '../../hooks/useMobileLocation';
 import { COMPONENT_TYPE_huConsolidation_consolidate } from '../../apps/huConsolidation';
-import ConsolidateActivity from '../../apps/huConsolidation/activities/ConsolidateActivity';
+import HUConsolidationActivity from '../../apps/huConsolidation/activities/HUConsolidationActivity';
 
 const WFProcessScreen = () => {
   const { wfProcessId } = useMobileLocation();
@@ -167,7 +167,7 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
       );
     case COMPONENT_TYPE_huConsolidation_consolidate:
       return (
-        <ConsolidateActivity
+        <HUConsolidationActivity
           key={activityItem.activityId}
           applicationId={applicationId}
           wfProcessId={wfProcessId}

@@ -8,6 +8,7 @@ import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,4 +35,14 @@ public class PickingSlotQueues
 	public boolean isEmpty() {return queuesById.isEmpty();}
 
 	public Set<PickingSlotId> getPickingSlotIds() {return queuesById.keySet();}
+
+	public PickingSlotQueue getQueue(@NonNull final PickingSlotId pickingSlotId)
+	{
+		final PickingSlotQueue queue = queuesById.get(pickingSlotId);
+		if (queue == null)
+		{
+			throw new AdempiereException("No queue found for " + pickingSlotId);
+		}
+		return queue;
+	}
 }

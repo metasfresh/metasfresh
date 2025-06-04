@@ -70,7 +70,7 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 	private JsonHUConsolidationJob toJson(@NonNull final HUConsolidationJob job)
 	{
 		final RenderedAddressProvider renderedAddressProvider = documentLocationBL.newRenderedAddressProvider();
-		final String shipToAddress = renderedAddressProvider.getAddress(job.getShipToAddress());
+		final String shipToAddress = renderedAddressProvider.getAddress(job.getShipToBPLocationId());
 
 		return JsonHUConsolidationJob.builder()
 				.id(job.getId())
