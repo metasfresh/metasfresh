@@ -1,7 +1,6 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import lombok.Builder;
 import lombok.NonNull;

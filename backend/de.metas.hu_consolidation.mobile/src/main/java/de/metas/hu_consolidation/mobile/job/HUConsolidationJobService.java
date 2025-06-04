@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,12 +35,11 @@ public class HUConsolidationJobService
 	{
 		return jobRepository.getByNotProcessedAndResponsibleId(userId);
 	}
-	
+
 	public ImmutableSet<PickingSlotId> getInUsePickingSlotIds()
 	{
 		return jobRepository.getInUsePickingSlotIds();
 	}
-
 
 	public HUConsolidationJob startJob(
 			@NonNull final HUConsolidationJobReference reference,

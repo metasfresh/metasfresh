@@ -4,7 +4,6 @@ import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobsListFiltersScreen } from "./PickingJobsListFiltersScreen";
 import { PickingJobsListScanScreen } from './PickingJobsListScanScreen';
 import { expect } from '@playwright/test';
-import { DistributionLineScreen } from '../distribution/DistributionLineScreen';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 
 const NAME = 'PickingJobsListScreen';
