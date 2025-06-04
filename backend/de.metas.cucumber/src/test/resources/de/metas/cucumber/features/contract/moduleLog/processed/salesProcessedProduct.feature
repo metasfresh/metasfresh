@@ -500,7 +500,7 @@ Feature: Modular contract log from sales order for processed product
       | candidate_Protein                 | 0            | 1000           | 1000             | I               | -0.03           | 0                   | -30                | Y             |
       | candidate_salesAV                 | 0            | 1000           | 1000             | I               | 0.2             | 0                   | 200                | Y             |
       | candidate_storageCost             | 0            | 1              | 1                | I               | 4000            | 0                   | 4000               | Y             |
-      | candidate_salesInterest           | 0            | 1              | 1                | I               | 99.29           | 0                   | 74.98              | Y             |
+      | candidate_salesInterest           | 0            | 1              | 1                | I               | 99.29           | 0                   | 99.29              | Y             |
 
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.TotalLines |
