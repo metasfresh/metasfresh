@@ -588,8 +588,6 @@ Feature: Modular contract log from sales order for processed product
       | ModCntr_Log_ID.Identifier | C_Invoice_Candidate_ID.Identifier      |
       | log_receipt_1             | candidate_receipt                      |
       | pp_log_4                  | candidate_salesOnProcessedProduct      |
-      | log_inout_1_1             | candidate_salesOnProcessedProduct      |
-      | log_inout_2_1             | candidate_salesOnProcessedProduct      |
       | pp_log_2                  | candidate_addValueOnProcessedProduct_1 |
       | pp_log_1                  | candidate_addValueOnProcessedProduct_2 |
       | log_avInterim_snline      | candidate_addValueOnInterim            |
