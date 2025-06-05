@@ -15,6 +15,7 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
+        <migration-sql-basedir>70-de.metas.hu_consolidation</migration-sql-basedir>
     </properties>
 
     <dependencies>
