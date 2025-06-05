@@ -1,0 +1,14 @@
+{
+  "pickingSlot": "Picking Slot",
+  "currentTarget": {
+    "New": "New LU",
+    "Current": "Current"
+  },
+  "SelectHUConsolidationTargetScreen": {
+    "caption": "Select Target",
+    "closeTarget": "Close"
+  },
+  "PickingSlotScreen": {
+    "consolidateAll": "Consolidate All"
+  }
+}

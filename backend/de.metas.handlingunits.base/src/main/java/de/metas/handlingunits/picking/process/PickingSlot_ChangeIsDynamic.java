@@ -22,7 +22,7 @@
 
 package de.metas.handlingunits.picking.process;
 
-import de.metas.handlingunits.picking.PickingSlotService;
+import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;

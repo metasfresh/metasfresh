@@ -61,7 +61,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -71,6 +71,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllocQuery;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -609,7 +610,7 @@ public class ShipmentScheduleWithHUService
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = request.getShipmentSchedule();
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(ImmutableSet.of(shipmentScheduleId), request.getOnlyLUIds());
+		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveNotShippedRecords(ImmutableSet.of(shipmentScheduleId), request.getOnlyLUIds());
 		if (qtyPickedRecords.isEmpty())
 		{
 			return Collections.emptyList();
@@ -623,7 +624,7 @@ public class ShipmentScheduleWithHUService
 		createTUsLUsIfNeeded(shipmentSchedule, quantityType);
 
 		// do retrieve the qty picked entries again, some new ones might have been created on LU creation
-		qtyPickedRecords = retrieveQtyPickedRecords(ImmutableSet.of(shipmentScheduleId), request.getOnlyLUIds());
+		qtyPickedRecords = retrieveNotShippedRecords(ImmutableSet.of(shipmentScheduleId), request.getOnlyLUIds());
 
 		//
 		// Iterate all QtyPicked records and create candidates from them
@@ -658,32 +659,32 @@ public class ShipmentScheduleWithHUService
 	 * <p>
 	 * Hint: also take a look at {@link #isPickedOrShippedOrNoHU(I_M_ShipmentSchedule_QtyPicked)}.
 	 */
-	public List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(
-			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveNotShippedRecords(
+			@Nullable final Set<ShipmentScheduleId> shipmentScheduleIds,
 			@Nullable final Set<HuId> onlyLUIds)
 	{
-		if (shipmentScheduleIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-		
-		final ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> unshippedHUsByShipmentScheduleId = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(shipmentScheduleIds, I_M_ShipmentSchedule_QtyPicked.class)
-				.stream()
+		final ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> notShippedByShipmentScheduleId = shipmentScheduleAllocDAO.stream(
+						ShipmentScheduleAllocQuery.builder()
+								.shipmentScheduleIds(shipmentScheduleIds)
+								.alreadyShipped(false)
+								.onlyLUIds(onlyLUIds)
+								.build()
+				)
+				.map(record -> InterfaceWrapperHelper.create(record, I_M_ShipmentSchedule_QtyPicked.class))
 				.filter(this::isPickedOrShippedOrNoHU)
-				.filter(qtyPickedRecord -> isLUMatching(qtyPickedRecord, onlyLUIds))
 				.collect(GuavaCollectors.toImmutableListMultimap(record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID())));
 
 		final ArrayList<I_M_ShipmentSchedule_QtyPicked> result = new ArrayList<>();
-		unshippedHUsByShipmentScheduleId.asMap().forEach((shipmentScheduleId, unshippedHUs) -> {
+		notShippedByShipmentScheduleId.asMap().forEach((shipmentScheduleId, notShippedHUs) -> {
 			// if we have an "undone" picking, i.e. positive and negative values sum up to zero, then return an empty list
 			// this supports the case that something went wrong with picking, and the user needs to get out the shipment asap
-			final BigDecimal qtySumOfUnshippedHUs = sumQtyPicked(unshippedHUs);
+			final BigDecimal qtySumOfUnshippedHUs = sumQtyPicked(notShippedHUs);
 			if (qtySumOfUnshippedHUs.signum() <= 0)
 			{
 				return;
 			}
 
-			result.addAll(unshippedHUs);
+			result.addAll(notShippedHUs);
 		});
 
 		return result;
@@ -773,19 +774,6 @@ public class ShipmentScheduleWithHUService
 
 		final String huStatus = huToVerify.getHUStatus();
 		return X_M_HU.HUSTATUS_Picked.equals(huStatus) || X_M_HU.HUSTATUS_Shipped.equals(huStatus);
-	}
-
-	private static boolean isLUMatching(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked schedQtyPicked,
-			@Nullable final Set<HuId> onlyLUIds)
-	{
-		if (onlyLUIds == null || onlyLUIds.isEmpty())
-		{
-			return true;
-		}
-
-		final HuId luId = HuId.ofRepoIdOrNull(schedQtyPicked.getM_LU_HU_ID());
-		return onlyLUIds.contains(luId);
 	}
 
 	/**

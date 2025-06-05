@@ -118,7 +118,7 @@ import java.util.Set;
 	@Override
 	public void setOnlyProductIds(final Collection<ProductId> productIds)
 	{
-		this.onlyProductIds = ImmutableSet.copyOf(productIds);
+		this.onlyProductIds = productIds != null ? ImmutableSet.copyOf(productIds) : null;
 	}
 
 	@Override

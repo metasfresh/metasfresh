@@ -160,7 +160,6 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
 
-	private BPartnerBL bpartnerBL;
 	private TestMasterdata testMasterdata;
 
 	private static final X12DE355 UOM_CODE = X12DE355.ofCode("MJ");
@@ -286,7 +285,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				Optional.of(ImmutableList.of(defaultOLCandValidator)));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandSPIRegistry);
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
+		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(DocumentLocationBL.newInstanceForUnitTesting());
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
 		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(bpartnerBL, olCandValidatorService, olCandLocationsUpdaterService));

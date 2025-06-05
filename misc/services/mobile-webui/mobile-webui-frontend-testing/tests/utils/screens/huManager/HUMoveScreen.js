@@ -13,7 +13,7 @@ export const HUMoveScreen = {
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
-        expect(containerElement()).toBeVisible();
+        await expect(containerElement()).toBeVisible();
     }),
 
     move: async ({ qrCode }) => await test.step(`${NAME} - Move HU`, async () => {

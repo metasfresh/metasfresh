@@ -6,6 +6,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.slot.PickingSlotQueue;
+import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -14,6 +16,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
@@ -36,6 +39,7 @@ public class AssertExpectationsCommandServices
 	@NonNull final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
+	@NonNull private final PickingSlotService pickingSlotService;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -70,6 +74,11 @@ public class AssertExpectationsCommandServices
 	public ImmutableAttributeSet getAttributes(@NonNull final HuId huId)
 	{
 		return handlingUnitsBL.getImmutableAttributeSet(handlingUnitsBL.getById(huId));
+	}
+
+	public PickingSlotQueue getPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return pickingSlotService.getPickingSlotQueue(pickingSlotId);
 	}
 
 }

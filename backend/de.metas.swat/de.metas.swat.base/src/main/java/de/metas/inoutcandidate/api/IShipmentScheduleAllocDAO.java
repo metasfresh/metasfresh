@@ -37,6 +37,7 @@ import org.compiere.model.I_M_InOutLine;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IShipmentScheduleAllocDAO extends ISingletonService
 {
@@ -63,6 +64,8 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(
 			@NonNull Set<ShipmentScheduleId> shipmentScheduleIds,
 			@NonNull Class<T> clazz);
+
+	Stream<I_M_ShipmentSchedule_QtyPicked> stream(@NonNull ShipmentScheduleAllocQuery query);
 
 	/**
 	 * Retrieves Picked (but not delivered) Qty for a given shipment schedule.

@@ -28,8 +28,9 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class C_OLCandMVTest extends AbstractOLCandTestSupport
 {
 	private final Properties ctx;
@@ -44,9 +45,6 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 
 	private I_C_BPartner_Product bpp1;
 	private I_C_BPartner_Product bpp2;
-	private I_C_BPartner_Product bpp3;
-
-	private I_AD_Org org1;
 
 	public C_OLCandMVTest()
 	{
@@ -63,7 +61,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 				Optional.empty(),
 				Optional.empty());
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandSPIRegistry);
-		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
+		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(DocumentLocationBL.newInstanceForUnitTesting());
 
 		// Initialize C_OLCand MV Only!
 		final C_OLCand orderCandidateMV = new C_OLCand(bpartnerBL, olCandValidatorService, olCandLocationsUpdaterService);
@@ -74,6 +72,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	protected final void initDB()
 	{
 		// Org
+		final I_AD_Org org1;
 		{
 			org1 = org("Org1");
 		}
@@ -102,7 +101,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 			bpp2.setProductName("bpp1.Product1Name");
 			InterfaceWrapperHelper.save(bpp2);
 
-			bpp3 = bpartnerProduct(bpartner3, product3, org1); // duplicate, with nothing set
+			final I_C_BPartner_Product bpp3 = bpartnerProduct(bpartner3, product3, org1); // duplicate, with nothing set
 			InterfaceWrapperHelper.save(bpp3);
 		}
 	}
@@ -121,7 +120,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		InterfaceWrapperHelper.save(olCand);
 
 		// Assert same product description after saving (MV shall ignore)
-		Assertions.assertEquals(olCand.getProductDescription(), customProductDescription);
+		Assertions.assertEquals(customProductDescription, olCand.getProductDescription());
 	}
 
 	@Test

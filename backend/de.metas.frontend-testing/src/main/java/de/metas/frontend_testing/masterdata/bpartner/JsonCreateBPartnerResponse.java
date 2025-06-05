@@ -17,6 +17,8 @@ public class JsonCreateBPartnerResponse
 {
 	@NonNull BPartnerId id;
 	@NonNull String bpartnerCode;
+	
+	@Nullable Integer bpartnerLocationId;
 	@Nullable GLN gln;
 
 	@Nullable Map<String, Location> locations;

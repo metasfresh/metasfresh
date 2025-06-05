@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.GLCategoryRepository;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
@@ -17,7 +16,6 @@ import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.process.PInstanceId;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -47,7 +45,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
 				new C_Flatrate_Term(
 						new ContractOrderService(),
-						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
+						 DummyDocumentLocationBL.newInstanceForUnitTesting(),
 						new GLCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));

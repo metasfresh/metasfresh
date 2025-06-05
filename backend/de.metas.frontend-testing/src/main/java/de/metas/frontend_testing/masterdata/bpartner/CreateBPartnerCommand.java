@@ -93,7 +93,8 @@ public class CreateBPartnerCommand
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		context.putIdentifier(bpIdentifier, bpartnerId);
 
-		final GLN gln;
+		final BPartnerLocationId singleBPLocationId;
+		final GLN singleGLN;
 		final Map<String, JsonCreateBPartnerResponse.Location> responseLocations;
 		if (request.getLocations() == null || request.getLocations().isEmpty())
 		{
@@ -104,12 +105,14 @@ public class CreateBPartnerCommand
 					bpartnerId,
 					true
 			);
-			gln = GLN.ofNullableString(bpLocationRecord.getGLN());
+			singleBPLocationId = BPartnerLocationId.ofRepoId(bpLocationRecord.getC_BPartner_ID(), bpLocationRecord.getC_BPartner_Location_ID());
+			singleGLN = GLN.ofNullableString(bpLocationRecord.getGLN());
 			responseLocations = null;
 		}
 		else
 		{
-			gln = null;
+			singleBPLocationId = null;
+			singleGLN = null;
 			responseLocations = new HashMap<>();
 
 			boolean isFirstLocation = true;
@@ -134,9 +137,10 @@ public class CreateBPartnerCommand
 		}
 
 		return JsonCreateBPartnerResponse.builder()
-				.id(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
+				.id(bpartnerId)
 				.bpartnerCode(bpartner.getValue())
-				.gln(gln)
+				.bpartnerLocationId(singleBPLocationId != null ? singleBPLocationId.getRepoId() : null)
+				.gln(singleGLN)
 				.locations(responseLocations)
 				.build();
 	}

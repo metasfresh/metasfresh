@@ -36,6 +36,7 @@ import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdate
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
@@ -52,6 +53,7 @@ import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
@@ -71,6 +73,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -100,6 +103,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -138,6 +142,7 @@ public class PickingJobPickCommand
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final PickingJobSlotService pickingSlotService;
 	//
 	// Params
 	@NonNull private final PickingJobLineId _lineId;
@@ -174,6 +179,8 @@ public class PickingJobPickCommand
 			//
 			final @NonNull PickingJob pickingJob,
 			final @NonNull MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository,
+			final @NonNull PickingJobSlotService pickingSlotService,
+			//
 			final @NonNull PickingJobLineId pickingJobLineId,
 			final @Nullable PickingJobStepId pickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey pickFromKey,
@@ -199,6 +206,7 @@ public class PickingJobPickCommand
 		this.huReservationService = huReservationService;
 		this.pickingConfigRepo = pickingConfigRepo;
 		this.inventoryService = inventoryService;
+		this.pickingSlotService = pickingSlotService;
 		this.packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
@@ -722,7 +730,7 @@ public class PickingJobPickCommand
 		}
 
 		updatePickingTarget(packedHUs);
-		// TODO: add top level HUs from packedHUs (where isPreExistingLU=false) to picking slot queue?
+		addToPickingSlotQueue(packedHUs);
 
 		if (packedHUs.isEmpty())
 		{
@@ -1213,6 +1221,56 @@ public class PickingJobPickCommand
 	{
 		return huQRCodesService.getQRCodeByHuId(lu.getId());
 	}
+
+	private void addToPickingSlotQueue(final LUTUResult packedHUs)
+	{
+		final PickingSlotId pickingSlotId = getPickingSlotId().orElse(null);
+		if(pickingSlotId == null)
+		{
+			return;
+		}
+		
+		final CurrentPickingTarget currentPickingTarget = getPickingJob().getCurrentPickingTarget();
+		final LinkedHashSet<HuId> huIdsToAdd = new LinkedHashSet<>();
+
+		for (final LU lu : packedHUs.getLus())
+		{
+			if (lu.isPreExistingLU())
+			{
+				continue;
+			}
+
+			// do not add it if is current picking target, we will add it when closing the picking target. 
+			if (currentPickingTarget.matches(lu.getId()))
+			{
+				continue;
+			}
+
+			huIdsToAdd.add(lu.getId());
+		}
+
+		for (final TU tu : packedHUs.getTopLevelTUs())
+		{
+			// do not add it if is current picking target, we will add it when closing the picking target. 
+			if (currentPickingTarget.matches(tu.getId()))
+			{
+				continue;
+			}
+
+			huIdsToAdd.add(tu.getId());
+		}
+
+		if (!huIdsToAdd.isEmpty())
+		{
+			pickingSlotService.addToPickingSlotQueue(pickingSlotId, huIdsToAdd);
+		}
+	}
+	
+	private Optional<PickingSlotId> getPickingSlotId()
+	{
+		return getPickingJob().getPickingSlotIdEffective(getLineId());
+	}
+
 
 	//
 	//

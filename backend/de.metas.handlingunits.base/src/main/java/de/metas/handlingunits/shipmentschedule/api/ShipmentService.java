@@ -176,21 +176,18 @@ public class ShipmentService implements IShipmentService
 
 	private Set<ShipmentScheduleId> getEffectiveShipmentScheduleIdsToBeShipped(@NonNull final GenerateShipmentsForSchedulesRequest request)
 	{
-		Set<ShipmentScheduleId> scheduleIds = request.getScheduleIds();
-		if (scheduleIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
 		if (request.getQuantityTypeToUse().isOnlyUsePicked())
 		{
-			scheduleIds = shipmentScheduleWithHUService.retrieveQtyPickedRecords(scheduleIds, request.getOnlyLUIds())
+			return shipmentScheduleWithHUService.retrieveNotShippedRecords(request.getScheduleIds(), request.getOnlyLUIds())
 					.stream()
 					.map(record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 					.collect(ImmutableSet.toImmutableSet());
 		}
-
-		return scheduleIds;
+		else
+		{
+			final Set<ShipmentScheduleId> scheduleIds = request.getScheduleIds();
+			return scheduleIds != null ? scheduleIds : ImmutableSet.of();
+		}
 	}
 
 	/**
