@@ -30,12 +30,12 @@ If you run into problems with local paths, please explain the problem and ask me
 
 ### The git-plugin
 
-For some reason, the git plugin fails when building from within the windows-11 wsl ubuntu app - which is what claude-code does.
+For some reason, the git plugin fails when you run maven.
 Skip it by appending the parameter `-Dmaven.gitcommitid.skip=true` to the `mvn` command line 
 
 ### maven help goal
 
-Whenever you are tasked to fix a maven plugin config in a `pom.xml`, try to read the plugin's docu.
+Whenever you are asked to fix a maven plugin config in a `pom.xml`, try to read the plugin's docu.
 With most plugins, you can do so by invoking the plugin's `help` goal.
 For example:
 ```bash
@@ -44,7 +44,7 @@ mvn org.codehaus.mojo:jaxb2-maven-plugin:3.3.0:help -Ddetail=true
 
 ### Ask for help with missing modules
 
-Oftentimes you need to build a certain module and run into problems because other metasfresh-modules were not yet build.
+Oftentimes you need to build a certain module and run into problems because other metasfresh-modules were not yet built.
 In such cases ask me to provide them.
 
 ## Backend (Java/Maven)
@@ -94,16 +94,6 @@ yarn lintfix
 
 cypress testing is defunct and plays no role currently. please ignore it.
 
-```bash
-cd e2e/
-
-# Open Cypress UI
-yarn cypress:open
-
-# Run headless tests
-./run_cypress.sh
-```
-
 ## Docker Build & Deployment
 
 The project uses Docker extensively for builds and deployments:
@@ -136,7 +126,7 @@ There is commonly used java-code in `./misc/de-metas-common`
 
 Both paths are relative to the `metasfresh` folder.
 
-Important: both parent-pom and commonly used java-code need to be installed to the loal maven repo in order to build other maven artifacts.
+Important: both parent-pom and commonly used java-code need to be installed to the local maven repo in order to build any other maven artifacts.
 
 ### Frontend Structure
 - **React 16** with Redux for state management
@@ -145,7 +135,7 @@ Important: both parent-pom and commonly used java-code need to be installed to t
 - **Mobile-responsive** design
 
 ### Key Technologies
-- **Backend**: Java 21, Spring Boot 2.4, Maven, JUnit
+- **Backend**: Java 21, Spring Boot 3.5.0, Maven, JUnit
 - **Frontend**: React 16, Redux, Webpack, Jest
 - **Database**: PostgreSQL with migration scripts
 - **Message Queue**: RabbitMQ
@@ -161,12 +151,6 @@ Important: both parent-pom and commonly used java-code need to be installed to t
 ### Integration Tests  
 - **Cucumber tests** in `backend/de.metas.cucumber/`
 - **API tests** verify REST endpoints
-
-### E2E Tests
-
-- **Cypress tests** in `e2e/cypress/integration/`
-  - cypress testing is defunct and plays no role currently. please ignore it. 
-- Test complete user workflows across the application
 
 ## Development Workflow
 

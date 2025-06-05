@@ -174,7 +174,7 @@ class BpartnerRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("ext-" + C_BPARTNER_EXTERNAL_ID);
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -186,7 +186,7 @@ class BpartnerRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(Integer.toString(C_BPARTNER_ID));
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -198,7 +198,7 @@ class BpartnerRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("gln-" + C_BPARTNER_LOCATION_GLN);
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -212,7 +212,7 @@ class BpartnerRestControllerTest
 				"ext-" + C_BPARTNER_EXTERNAL_ID,
 				Integer.toString(AD_USER_ID));
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -226,7 +226,7 @@ class BpartnerRestControllerTest
 				"ext-" + C_BPARTNER_EXTERNAL_ID,
 				"gln-" + C_BPARTNER_LOCATION_GLN);
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseLocation resultBody = result.getBody();
 
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -427,7 +427,7 @@ class BpartnerRestControllerTest
 
 		// use the rest controller to get the json that we can then verify
 		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("val-12345");
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 
@@ -489,7 +489,7 @@ class BpartnerRestControllerTest
 			@NonNull final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result,
 			@NonNull final String bpartnerIdentifier)
 	{
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
 		final JsonResponseBPartnerCompositeUpsert resultBody = result.getBody();
 		assertThat(resultBody.getResponseItems()).hasSize(1);
@@ -593,7 +593,7 @@ class BpartnerRestControllerTest
 				"gln-" + C_BPARTNER_LOCATION_GLN,
 				JsonRequestContactUpsert.builder().requestItem(jsonContact).build());
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
 		final JsonResponseUpsert response = result.getBody();
 		assertThat(response.getResponseItems()).hasSize(1);
@@ -646,7 +646,7 @@ class BpartnerRestControllerTest
 						.contact(jsonContact)
 						.build()).build());
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
 		final JsonResponseUpsert response = result.getBody();
 		assertThat(response.getResponseItems()).hasSize(1);
@@ -680,7 +680,7 @@ class BpartnerRestControllerTest
 				"ext-" + C_BPARTNER_EXTERNAL_ID,
 				JsonRequestLocationUpsert.builder().requestItem(jsonLocation).build());
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
 		final JsonResponseUpsert response = result.getBody();
 		assertThat(response.getResponseItems()).hasSize(1);
@@ -716,7 +716,7 @@ class BpartnerRestControllerTest
 								.build())
 						.build());
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 		final JsonResponseUpsert response = result.getBody();
 		assertThat(response.getResponseItems()).hasSize(1);
 		final JsonResponseUpsertItem responseItem = response.getResponseItems().getFirst();
@@ -754,7 +754,7 @@ class BpartnerRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseCompositeList> page1 = bpartnerRestController.retrieveBPartnersSince(0L, null);
 
-		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(page1.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseCompositeList page1Body = page1.getBody();
 		assertThat(page1Body.getItems()).hasSize(2);
 
@@ -763,7 +763,7 @@ class BpartnerRestControllerTest
 
 		final ResponseEntity<JsonResponseCompositeList> page2 = bpartnerRestController.retrieveBPartnersSince(null, page2Id);
 
-		assertThat(page2.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(page2.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseCompositeList page2Body = page2.getBody();
 		assertThat(page2Body.getItems()).hasSize(2);
 
@@ -772,7 +772,7 @@ class BpartnerRestControllerTest
 
 		final ResponseEntity<JsonResponseCompositeList> page3 = bpartnerRestController.retrieveBPartnersSince(null, page3Id);
 
-		assertThat(page3.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(page3.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseCompositeList page3Body = page3.getBody();
 		assertThat(page3Body.getItems()).hasSize(1);
 

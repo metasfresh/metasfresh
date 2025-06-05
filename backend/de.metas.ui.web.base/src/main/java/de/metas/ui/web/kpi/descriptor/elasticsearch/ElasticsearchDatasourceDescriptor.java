@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.kpi.descriptor.elasticsearch;
 
+import co.elastic.clients.elasticsearch._types.SearchType;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.util.Check;
@@ -34,7 +35,6 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.CtxName;
-import org.elasticsearch.action.search.SearchType;
 
 import java.util.List;
 import java.util.Set;
