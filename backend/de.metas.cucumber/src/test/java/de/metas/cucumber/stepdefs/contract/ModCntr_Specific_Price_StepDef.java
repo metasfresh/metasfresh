@@ -133,6 +133,28 @@ public class ModCntr_Specific_Price_StepDef
 		}
 	}
 
+	@And("no ModCntr_Specific_Prices are found for:")
+	public void there_are_no_specificPrices( @NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final String contractIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Flatrate_Term contractRecord = contractTable.get(contractIdentifier);
+			assertThat(contractRecord).isNotNull();
+
+			final String moduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_ModCntr_Module moduleRecord = modCntrModuleTable.get(moduleIdentifier);
+			assertThat(moduleRecord).isNotNull();
+
+			final boolean specificPriceFound = queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
+					.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, contractRecord.getC_Flatrate_Term_ID())
+					.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, moduleRecord.getModCntr_Module_ID())
+					.create()
+					.anyMatch();
+			assertThat(specificPriceFound).as("ProductPrice found for contract %s and module %s", contractIdentifier, moduleIdentifier).isFalse();
+		}
+	}
+
 	@NonNull
 	private Boolean loadSpecificPrice(@NonNull final Map<String, String> tableRow)
 	{
@@ -146,7 +168,7 @@ public class ModCntr_Specific_Price_StepDef
 
 		final String moduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_ModCntr_Module moduleRecord = modCntrModuleTable.get(moduleIdentifier);
-		assertThat(productRecord).isNotNull();
+		assertThat(moduleRecord).isNotNull();
 
 		final IQueryBuilder<I_ModCntr_Specific_Price> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, contractRecord.getC_Flatrate_Term_ID())
