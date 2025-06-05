@@ -182,7 +182,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param ic  the candidate whose values shall be updated. It is assumed that the candidate has <code>IsManual='Y'</code>.
 	 */
-	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic);
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)

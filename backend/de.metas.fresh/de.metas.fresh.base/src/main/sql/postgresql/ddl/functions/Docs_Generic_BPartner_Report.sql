@@ -4,32 +4,35 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_generics_bpartne
                                                                                          p_record_id numeric)
 ;
 
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report
-;
-
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report
-(
-    org_name        text,
-    Org_AddressLine text,
-    address1        text,
-    postal          text,
-    city            text,
-    country         text,
-    gln             text,
-    AddressBlock    text
-)
-;
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id    numeric,
                                                                                             p_doctype   text,
                                                                                             p_bp_loc_id numeric,
                                                                                             p_record_id numeric)
-    RETURNS SETOF de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report
+    RETURNS table
+            (
+                org_name        text,
+                Org_AddressLine text,
+                address1        text,
+                address2        text,
+                address3        text,
+                address4        text,
+                pobox           text,
+                postal          text,
+                city            text,
+                country         text,
+                gln             text,
+                AddressBlock    text
+            )
 AS
 $BODY$
 SELECT x.org_name,
        x.org_addressline,
        x.address1,
+       x.address2,
+       x.address3,
+       x.address4,
+       x.pobox,
        x.postal,
        x.city,
        x.country,
@@ -76,6 +79,10 @@ FROM (
                                     COALESCE(loc.city, '')
                     )                      AS org_addressline,
                 COALESCE(loc.address1, '') AS address1,
+                COALESCE(loc.address2, '') AS address2,
+                COALESCE(loc.address3, '') AS address3,
+                COALESCE(loc.address4, '') AS address4,
+                COALESCE(loc.pobox, '')    AS pobox,
                 COALESCE(loc.postal, '')   AS postal,
                 COALESCE(loc.city, '')     AS city,
                 c.Name                     AS country

@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.record.warning.RecordWarningRepository;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -73,7 +74,8 @@ import de.metas.util.collections.IteratorUtils;
 @SpringBootTest(classes = {
 		StartupListener.class,
 		ShutdownListener.class,
-		DunningDocDocumentHandlerProvider.class
+		DunningDocDocumentHandlerProvider.class,
+		RecordWarningRepository.class
 })
 public class TestDunning extends DunningTestBase
 {

@@ -102,6 +102,8 @@ import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -458,6 +460,7 @@ public class HUTestHelper
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
 		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
 		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(),

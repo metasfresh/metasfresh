@@ -6,10 +6,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice_Candidate
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_Invoice_Candidate 
+public interface I_C_Invoice_Candidate
 {
 
 	String Table_Name = "C_Invoice_Candidate";
@@ -1873,7 +1873,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
-	 * Set Beleg soll per EDI übermittelt werden.
+	 * Set Document to be sent via EDI.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1882,7 +1882,7 @@ public interface I_C_Invoice_Candidate
 	void setIsEdiEnabled (boolean IsEdiEnabled);
 
 	/**
-	 * Get Beleg soll per EDI übermittelt werden.
+	 * Get Document to be sent via EDI.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2378,6 +2378,33 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_AttributeSetInstance_ID();
+
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
@@ -2403,6 +2430,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+
+	/**
+	 * Set Material Tracking ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Material_Tracking_ID (int M_Material_Tracking_ID);
+
+	/**
+	 * Get Material Tracking ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Material_Tracking_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_M_Material_Tracking_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_Material_Tracking_ID", null);
+	String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
 
 	/**
 	 * Set Price List Version.

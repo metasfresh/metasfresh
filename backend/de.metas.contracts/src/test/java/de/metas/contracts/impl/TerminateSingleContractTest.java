@@ -36,6 +36,8 @@ import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.process.PInstanceId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
@@ -100,6 +102,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		}
 
 		de.metas.common.util.time.SystemTime.setTimeSource(today);
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test

@@ -256,6 +256,68 @@ public interface I_AD_Record_Warning
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Root Table.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRoot_AD_Table_ID (int Root_AD_Table_ID);
+
+	/**
+	 * Get Root Table.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getRoot_AD_Table_ID();
+
+	String COLUMNNAME_Root_AD_Table_ID = "Root_AD_Table_ID";
+
+	/**
+	 * Set Root Record.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRoot_Record_ID (int Root_Record_ID);
+
+	/**
+	 * Get Root Record.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getRoot_Record_ID();
+
+	ModelColumn<I_AD_Record_Warning, Object> COLUMN_Root_Record_ID = new ModelColumn<>(I_AD_Record_Warning.class, "Root_Record_ID", null);
+	String COLUMNNAME_Root_Record_ID = "Root_Record_ID";
+
+	/**
+	 * Set Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeverity (java.lang.String Severity);
+
+	/**
+	 * Get Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getSeverity();
+
+	ModelColumn<I_AD_Record_Warning, Object> COLUMN_Severity = new ModelColumn<>(I_AD_Record_Warning.class, "Severity", null);
+	String COLUMNNAME_Severity = "Severity";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

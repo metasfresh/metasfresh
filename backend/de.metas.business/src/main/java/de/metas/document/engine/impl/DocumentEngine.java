@@ -46,8 +46,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.util.Set;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.record.warning.RecordWarningRepository;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
@@ -85,6 +90,9 @@ import lombok.NonNull;
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 	private final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+
+	private final RecordWarningRepository recordWarningRepository = SpringContextHolder.instance.getBean(RecordWarningRepository.class);
+	private final AdMessageKey ERR_CannotCompleteBecauseOfErrors = AdMessageKey.of("de.metas.document.engine.impl.DocumentEngine.CannotCompleteBecauseOfErrors");
 
 	private final IDocument _document;
 	private String _docStatus;
@@ -437,6 +445,13 @@ import lombok.NonNull;
 		}
 
 		final IDocument document = getDocument();
+
+		final TableRecordReference documentTableRecordReference = document.toTableRecordReference();
+		if (recordWarningRepository.hasErrors(documentTableRecordReference))
+		{
+			throw new AdempiereException(ERR_CannotCompleteBecauseOfErrors);
+		}
+
 		final String newDocStatus = document.completeIt();
 
 		setDocStatusIntern(newDocStatus);
