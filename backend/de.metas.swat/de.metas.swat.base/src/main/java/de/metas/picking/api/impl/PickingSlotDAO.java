@@ -49,6 +49,15 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	}
 
 	@Override
+	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final Set<PickingSlotId> pickingSlotIds)
+	{
+		return getByIds(pickingSlotIds, I_M_PickingSlot.class)
+				.stream()
+				.map(PickingSlotDAO::toPickingSlotIdAndCaption)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public Optional<PickingSlotIdAndCaption> getPickingSlotIdAndCaptionByCode(@NonNull final String pickingSlotCode)
 	{
 		return retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_None)

@@ -14,6 +14,8 @@ public interface IPickingSlotDAO extends ISingletonService
 {
 	PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull PickingSlotId pickingSlotId);
 
+	Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull Set<PickingSlotId> pickingSlotIds);
+
 	Optional<PickingSlotIdAndCaption> getPickingSlotIdAndCaptionByCode(@NonNull String pickingSlotCode);
 
 	I_M_PickingSlot getById(PickingSlotId pickingSlotId);

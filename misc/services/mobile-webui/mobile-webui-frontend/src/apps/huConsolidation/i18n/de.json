@@ -1,3 +1,14 @@
 {
-  "pickingSlot": "Kommissionier Fach"
+  "pickingSlot": "Kommissionier Fach",
+  "currentTarget": {
+    "New": "Neues Gebinde",
+    "Current": "Offenes Gebinde"
+  },
+  "SelectHUConsolidationTargetScreen": {
+    "caption": "Select Target",
+    "closeTarget": "Schließen"
+  },
+  "PickingSlotScreen": {
+    "consolidateAll": "Consolidate All"
+  }
 }

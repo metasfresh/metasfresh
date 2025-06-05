@@ -44,6 +44,11 @@ public class PickingJobSlotService implements PickingSlotListener
 		return pickingSlotService.getPickingSlotIdAndCaption(pickingSlotId);
 	}
 
+	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final Set<PickingSlotId> pickingSlotIds)
+	{
+		return pickingSlotService.getPickingSlotIdAndCaptions(pickingSlotIds);
+	}
+
 	@NonNull
 	public BooleanWithReason allocate(
 			@NonNull final PickingSlotIdAndCaption pickingSlot,

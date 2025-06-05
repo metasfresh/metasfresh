@@ -5,7 +5,6 @@ import { useWFActivity } from '../../../reducers/wfProcesses';
 import { getPickingSlotById } from '../reducers';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
-import { toastErrorFromObj } from '../../../utils/toast';
 
 export const usePickingSlot = ({ wfProcessId, activityId, pickingSlotId }) => {
   const dispatch = useDispatch();
@@ -18,8 +17,10 @@ export const usePickingSlot = ({ wfProcessId, activityId, pickingSlotId }) => {
     setProcessing(true);
     return api
       .consolidate({ wfProcessId, fromPickingSlotQRCode: toQRCodeString(pickingSlotQRCode) })
-      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .catch((error) => toastErrorFromObj(error))
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
+        return wfProcess;
+      })
       .finally(() => setProcessing(false));
   };
 

@@ -4,20 +4,39 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class PickingSlotQueueRepository
 {
-	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+	@NonNull private final IHUPickingSlotDAO dao = Services.get(IHUPickingSlotDAO.class);
+
+	private static final ModelDynAttributeAccessor<I_M_PickingSlot, Integer> DYNATTR_Count = new ModelDynAttributeAccessor<>("Count", Integer.class);
+
+	public PickingSlotQueuesSummary getNotEmptyQueuesSummary(@NonNull final PickingSlotQuery query)
+	{
+		// TODO: improve performance by really running the aggregates in database
+		// i.e. we need to implement something like org.adempiere.ad.dao.IQueryBuilder.aggregateOnColumn(java.lang.String, java.lang.Class<TargetModelType>)
+		// but which is more low level focuses, e.g. aggregate().groupBy(col1).groupBy(col2).countDistinct("colAlias", col3, col4).streamAsMaps()...
+		final PickingSlotQueues queues = getNotEmptyQueues(query);
+		return queues.getQueues()
+				.stream()
+				.map(queue -> PickingSlotQueueSummary.builder()
+						.pickingSlotId(queue.getPickingSlotId())
+						.countHUs(queue.getCountHUs())
+						.build())
+				.collect(PickingSlotQueuesSummary.collect());
+	}
 
 	public PickingSlotQueues getNotEmptyQueues(@NonNull final PickingSlotQuery query)
 	{
-		final ImmutableListMultimap<PickingSlotId, PickingSlotQueueItem> items = huPickingSlotDAO.retrieveAllPickingSlotHUs(query)
+		final ImmutableListMultimap<PickingSlotId, PickingSlotQueueItem> items = dao.retrieveAllPickingSlotHUs(query)
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						PickingSlotQueueRepository::extractPickingSlotId,
@@ -35,7 +54,7 @@ public class PickingSlotQueueRepository
 
 	public PickingSlotQueue getPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId)
 	{
-		final ImmutableList<PickingSlotQueueItem> items = huPickingSlotDAO.retrievePickingSlotHUs(ImmutableSet.of(pickingSlotId))
+		final ImmutableList<PickingSlotQueueItem> items = dao.retrievePickingSlotHUs(ImmutableSet.of(pickingSlotId))
 				.stream()
 				.map(PickingSlotQueueRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());

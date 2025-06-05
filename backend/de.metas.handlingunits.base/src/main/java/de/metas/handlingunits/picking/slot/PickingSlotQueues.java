@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.slot;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -35,6 +36,11 @@ public class PickingSlotQueues
 	public boolean isEmpty() {return queuesById.isEmpty();}
 
 	public Set<PickingSlotId> getPickingSlotIds() {return queuesById.keySet();}
+
+	public ImmutableCollection<PickingSlotQueue> getQueues()
+	{
+		return queuesById.values();
+	}
 
 	public PickingSlotQueue getQueue(@NonNull final PickingSlotId pickingSlotId)
 	{

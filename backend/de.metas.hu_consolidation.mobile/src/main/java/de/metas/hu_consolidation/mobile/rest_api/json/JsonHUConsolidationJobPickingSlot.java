@@ -14,4 +14,5 @@ public class JsonHUConsolidationJobPickingSlot
 {
 	@NonNull PickingSlotId pickingSlotId;
 	@NonNull JsonDisplayableQRCode pickingSlotQRCode;
+	int countHUs;
 }

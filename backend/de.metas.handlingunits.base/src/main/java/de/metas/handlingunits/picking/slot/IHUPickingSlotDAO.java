@@ -8,6 +8,7 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 
 import javax.annotation.Nullable;

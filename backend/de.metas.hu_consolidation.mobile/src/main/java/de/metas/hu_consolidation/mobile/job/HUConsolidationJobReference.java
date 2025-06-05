@@ -3,19 +3,25 @@ package de.metas.hu_consolidation.mobile.job;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.picking.slot.PickingSlotQueuesSummary;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
 
 import javax.annotation.Nullable;
+import java.util.OptionalInt;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
+@EqualsAndHashCode(doNotUseGetters = true)
+@ToString(doNotUseGetters = true)
 public class HUConsolidationJobReference
 {
 	@NonNull BPartnerLocationId bpartnerLocationId;
@@ -31,17 +37,6 @@ public class HUConsolidationJobReference
 			this.countHUs = this.countHUs == null ? countHUsToAdd : this.countHUs + countHUsToAdd;
 			return this;
 		}
-	}
-
-	public Params toParams()
-	{
-		return Params.builder()
-				.value("bpartnerId", bpartnerLocationId.getBpartnerId().getRepoId())
-				.value("bpartnerLocationId", bpartnerLocationId.getRepoId())
-				.value("pickingSlotIds", RepoIdAwares.toCommaSeparatedString(pickingSlotIds))
-				.value("countHUs", countHUs)
-				.value("startedJobId", startedJobId != null ? startedJobId.getRepoId() : null)
-				.build();
 	}
 
 	public static HUConsolidationJobReference ofParams(final Params params)
@@ -79,6 +74,48 @@ public class HUConsolidationJobReference
 				.countHUs(null)
 				.startedJobId(job.getId())
 				.build();
+	}
+
+	public Params toParams()
+	{
+		return Params.builder()
+				.value("bpartnerId", bpartnerLocationId.getBpartnerId().getRepoId())
+				.value("bpartnerLocationId", bpartnerLocationId.getRepoId())
+				.value("pickingSlotIds", RepoIdAwares.toCommaSeparatedString(pickingSlotIds))
+				.value("countHUs", countHUs)
+				.value("startedJobId", startedJobId != null ? startedJobId.getRepoId() : null)
+				.build();
+	}
+
+	public boolean isStatsMissing()
+	{
+		return countHUs == null;
+	}
+
+	public OptionalInt getCountHUs()
+	{
+		return countHUs != null ? OptionalInt.of(countHUs) : OptionalInt.empty();
+	}
+
+	public HUConsolidationJobReference withUpdatedStats(@NonNull final PickingSlotQueuesSummary summary)
+	{
+		final OptionalInt optionalCountHUs = summary.getCountHUs(pickingSlotIds);
+		if (optionalCountHUs.isPresent())
+		{
+			final int countHUsNew = optionalCountHUs.getAsInt();
+			if (this.countHUs == null || this.countHUs != countHUsNew)
+			{
+				return toBuilder().countHUs(countHUsNew).build();
+			}
+			else
+			{
+				return this;
+			}
+		}
+		else
+		{
+			return this;
+		}
 	}
 
 }

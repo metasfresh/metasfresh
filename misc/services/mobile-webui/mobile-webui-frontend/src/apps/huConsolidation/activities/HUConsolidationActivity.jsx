@@ -28,8 +28,8 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
         testId="targetLU-button"
         caption={
           isCurrentTargetSet
-            ? trl('activities.picking.pickingTarget.Current') + ': ' + currentTarget?.caption
-            : trl('activities.picking.pickingTarget.New')
+            ? trl('huConsolidation.currentTarget.Current') + ': ' + currentTarget?.caption
+            : trl('huConsolidation.currentTarget.New')
         }
         disabled={!isUserEditable}
         onClick={onSelectTargetClicked}
@@ -64,10 +64,10 @@ const PickingSlots = ({ applicationId, wfProcessId, activityId, disabled }) => {
 
   return (
     <div className="mt-5">
-      {pickingSlots.map(({ pickingSlotId, pickingSlotQRCode }) => (
+      {pickingSlots.map(({ pickingSlotId, pickingSlotQRCode, countHUs }) => (
         <ButtonWithIndicator
           key={pickingSlotId}
-          caption={toQRCodeDisplayableNoFail(pickingSlotQRCode)}
+          caption={computePickingSlotCaption({ pickingSlotQRCode, countHUs })}
           disabled={disabled}
           onClick={() =>
             history.push(pickingSlotScreenLocation({ applicationId, wfProcessId, activityId, pickingSlotId }))
@@ -83,4 +83,10 @@ PickingSlots.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   disabled: PropTypes.bool.isRequired,
+};
+
+const computePickingSlotCaption = ({ pickingSlotQRCode, countHUs }) => {
+  let caption = toQRCodeDisplayableNoFail(pickingSlotQRCode);
+  if (countHUs != null) caption += ' (' + countHUs + ' ' + (countHUs === 1 ? 'HU' : 'HUs') + ')';
+  return caption;
 };

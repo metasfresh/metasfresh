@@ -3,11 +3,13 @@ package de.metas.hu_consolidation.mobile.workflows_api.activity_handlers;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
+import de.metas.handlingunits.picking.slot.PickingSlotQuery;
+import de.metas.handlingunits.picking.slot.PickingSlotQueuesSummary;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
-import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJob;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlot;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
@@ -23,6 +25,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 import static de.metas.hu_consolidation.mobile.HUConsolidationApplication.getHUConsolidationJob;
 
@@ -75,23 +79,27 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 		return JsonHUConsolidationJob.builder()
 				.id(job.getId())
 				.shipToAddress(shipToAddress)
-				.pickingSlots(job.getPickingSlotIds()
-						.stream()
-						.map(this::toJsonHUConsolidationJobPickingSlot)
-						.collect(ImmutableList.toImmutableList())
-				)
+				.pickingSlots(toJsonHUConsolidationJobPickingSlots(job.getPickingSlotIds()))
 				.currentTarget(JsonHUConsolidationTarget.ofNullable(job.getCurrentTarget()))
 				.build();
 	}
 
-	private JsonHUConsolidationJobPickingSlot toJsonHUConsolidationJobPickingSlot(final PickingSlotId pickingSlotId)
+	private ImmutableList<JsonHUConsolidationJobPickingSlot> toJsonHUConsolidationJobPickingSlots(final Set<PickingSlotId> pickingSlotIds)
 	{
-		final PickingSlotIdAndCaption pickingSlotIdAndCaption = pickingSlotService.getPickingSlotIdAndCaption(pickingSlotId);
+		if (pickingSlotIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
-		return JsonHUConsolidationJobPickingSlot.builder()
-				.pickingSlotId(pickingSlotId)
-				.pickingSlotQRCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toPrintableQRCode().toJsonDisplayableQRCode())
-				.build();
+		final Set<PickingSlotIdAndCaption> pickingSlotIdAndCaptions = pickingSlotService.getPickingSlotIdAndCaptions(pickingSlotIds);
+		final PickingSlotQueuesSummary summary = pickingSlotService.getNotEmptyQueuesSummary(PickingSlotQuery.onlyPickingSlotIds(pickingSlotIds));
+
+		return pickingSlotIdAndCaptions.stream()
+				.map(pickingSlotIdAndCaption -> JsonHUConsolidationJobPickingSlot.builder()
+						.pickingSlotId(pickingSlotIdAndCaption.getPickingSlotId())
+						.pickingSlotQRCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toPrintableQRCode().toJsonDisplayableQRCode())
+						.countHUs(summary.getCountHUs(pickingSlotIdAndCaption.getPickingSlotId()).orElse(0))
+						.build())
+				.collect(ImmutableList.toImmutableList());
 	}
-
 }

@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.slot.PickingSlotQuery;
 import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotQueues;
+import de.metas.handlingunits.picking.slot.PickingSlotQueuesSummary;
 import de.metas.handlingunits.picking.slot.PickingSlotReservation;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
@@ -109,9 +110,12 @@ public class HUConsolidationWorkflowLaunchersProvider
 
 	private WorkflowLaunchersList toWorkflowLaunchersList(final List<HUConsolidationJobReference> jobReferences)
 	{
+		final PickingSlotQueuesSummary stats = getMissingStats(jobReferences);
 		final HUConsolidationLauncherCaptionProvider captionProvider = captionProviderFactory.newCaptionProvider();
+
 		return WorkflowLaunchersList.builder()
 				.launchers(jobReferences.stream()
+						.map(jobReference -> jobReference.withUpdatedStats(stats))
 						.map(jobReference -> WorkflowLauncher.builder()
 								.applicationId(HUConsolidationApplication.APPLICATION_ID)
 								.caption(captionProvider.computeCaption(jobReference))
@@ -122,6 +126,20 @@ public class HUConsolidationWorkflowLaunchersProvider
 								.build())
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	private PickingSlotQueuesSummary getMissingStats(final List<HUConsolidationJobReference> jobReferences)
+	{
+		final ImmutableSet<PickingSlotId> pickingSlotIdsWithoutStats = jobReferences.stream()
+				.filter(HUConsolidationJobReference::isStatsMissing)
+				.flatMap(jobReference -> jobReference.getPickingSlotIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+		if (pickingSlotIdsWithoutStats.isEmpty())
+		{
+			return PickingSlotQueuesSummary.EMPTY;
+		}
+
+		return pickingSlotService.getNotEmptyQueuesSummary(PickingSlotQuery.onlyPickingSlotIds(pickingSlotIdsWithoutStats));
 	}
 
 	//

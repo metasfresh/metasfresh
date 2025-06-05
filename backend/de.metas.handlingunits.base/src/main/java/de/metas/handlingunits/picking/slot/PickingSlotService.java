@@ -67,7 +67,12 @@ public class PickingSlotService
 
 	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)
 	{
-		return huPickingSlotBL.getPickingSlotIdAndCaption(pickingSlotId);
+		return pickingSlotRepository.getPickingSlotIdAndCaption(pickingSlotId);
+	}
+
+	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final Set<PickingSlotId> pickingSlotIds)
+	{
+		return pickingSlotRepository.getPickingSlotIdAndCaptions(pickingSlotIds);
 	}
 
 	public BooleanWithReason allocatePickingSlotIfPossible(@NonNull final PickingSlotAllocateRequest request)
@@ -181,6 +186,11 @@ public class PickingSlotService
 	public void addToPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId, @NonNull final Set<HuId> huIds)
 	{
 		huPickingSlotBL.addToPickingSlotQueue(pickingSlotId, huIds);
+	}
+
+	public PickingSlotQueuesSummary getNotEmptyQueuesSummary(@NonNull final PickingSlotQuery query)
+	{
+		return pickingSlotQueueRepository.getNotEmptyQueuesSummary(query);
 	}
 
 }

@@ -11,6 +11,7 @@ import { useCurrentTarget } from '../actions/useCurrentTarget';
 export const SelectHUConsolidationTargetScreen = () => {
   const { history, wfProcessId, activityId } = useScreenDefinition({
     screenId: 'SelectHUConsolidationTargetScreen',
+    captionKey: 'huConsolidation.SelectHUConsolidationTargetScreen.caption',
     back: huConsolidationJobLocation,
   });
 
@@ -23,7 +24,10 @@ export const SelectHUConsolidationTargetScreen = () => {
   return (
     <div className="section pt-2">
       {currentTarget && (
-        <ButtonWithIndicator captionKey="activities.picking.pickingTarget.CloseTarget" onClick={onCloseTargetClicked} />
+        <ButtonWithIndicator
+          captionKey="huConsolidation.SelectHUConsolidationTargetScreen.closeTarget"
+          onClick={onCloseTargetClicked}
+        />
       )}
       {!currentTarget && <NewTargets wfProcessId={wfProcessId} />}
     </div>

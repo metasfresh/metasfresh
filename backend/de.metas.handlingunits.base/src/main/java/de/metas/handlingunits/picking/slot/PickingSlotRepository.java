@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.slot;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Repository;
@@ -29,4 +30,15 @@ public class PickingSlotRepository
 	{
 		pickingSlotDAO.save(pickingSlot);
 	}
+
+	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return pickingSlotDAO.getPickingSlotIdAndCaption(pickingSlotId);
+	}
+
+	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final Set<PickingSlotId> pickingSlotIds)
+	{
+		return pickingSlotDAO.getPickingSlotIdAndCaptions(pickingSlotIds);
+	}
+
 }
