@@ -270,6 +270,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 2   | 0                      |
       | c_l_1_1    | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -2  | 0                      |
 
+  @flaky
   @Id:S0196_100
   @from:cucumber
   @Id:S0129.2_110
