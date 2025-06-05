@@ -146,6 +146,7 @@ public abstract class AbstractContractLog extends AbstractModularContractLogHand
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(request.getContractId())
 				.productId(productId)
+				.initialProductId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
 				.productName(request.getProductName())
 				.referencedRecord(TableRecordReference.of(getSupportedTableName(), request.getContractId()))
 				.producerBPartnerId(billBPartnerId)

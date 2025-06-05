@@ -111,6 +111,7 @@ public abstract class AbstractManufacturingProcessedReceiptLogHandler extends Ab
 				.referencedRecord(manufacturingProcessedReceipt.getManufacturingOrderId().toRecordRef())
 				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingProcessedReceipt.getId()))
 				.productId(productId)
+				.initialProductId(manufacturingProcessedReceipt.getProcessedProductId())
 				.productName(request.getProductName())
 				.invoicingBPartnerId(invoicingBPartnerId)
 				.warehouseId(manufacturingProcessedReceipt.getWarehouseId())

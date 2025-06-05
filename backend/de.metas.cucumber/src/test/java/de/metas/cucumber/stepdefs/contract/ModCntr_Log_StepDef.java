@@ -287,6 +287,9 @@ public class ModCntr_Log_StepDef
 		final String contractType = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ContractType);
 		softly.assertThat(modCntrLogRecord.getContractType()).as(I_ModCntr_Log.COLUMNNAME_ContractType).isEqualTo(contractType);
 
+		final String initialProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_Initial_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		softly.assertThat(modCntrLogRecord.getInitial_Product_ID()).as(I_ModCntr_Log.COLUMNNAME_Initial_Product_ID).isEqualTo(productTable.get(initialProductIdentifier).getM_Product_ID());
+
 		final String collectionPointBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_CollectionPoint_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(collectionPointBPartnerIdentifier))
 		{
