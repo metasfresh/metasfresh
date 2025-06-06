@@ -40,6 +40,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -477,7 +478,11 @@ public class OrderBL implements IOrderBL
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
-		if (!docType.isCopyDescriptionToDocument())
+
+		@Nullable
+		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+
+		if (copyDescriptionAndDocumentNote == null)
 		{
 			return;
 		}
@@ -1341,5 +1346,17 @@ public class OrderBL implements IOrderBL
 	public void deleteLineById(final OrderAndLineId orderAndLineId)
 	{
 		orderDAO.deleteByLineId(orderAndLineId);
+	}
+
+	@Override
+	public String getDescriptionBottomById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDescriptionBottom();
+	}
+
+	@Override
+	public String getDescriptionById(@NonNull final OrderId orderId)
+	{
+		return getById(orderId).getDescription();
 	}
 }

@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_DocType
  *  @author metasfresh (generated) 
@@ -236,6 +235,27 @@ public interface I_C_DocType
 	int getC_DocTypeShipment_ID();
 
 	String COLUMNNAME_C_DocTypeShipment_ID = "C_DocTypeShipment_ID";
+
+	/**
+	 * Set Copy Description And Document Note.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyDescriptionAndDocumentNote (@Nullable java.lang.String CopyDescriptionAndDocumentNote);
+
+	/**
+	 * Get Copy Description And Document Note.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyDescriptionAndDocumentNote();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_CopyDescriptionAndDocumentNote = new ModelColumn<>(I_C_DocType.class, "CopyDescriptionAndDocumentNote", null);
+	String COLUMNNAME_CopyDescriptionAndDocumentNote = "CopyDescriptionAndDocumentNote";
 
 	/**
 	 * Get Created.
@@ -543,27 +563,6 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_IsActive = new ModelColumn<>(I_C_DocType.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Copy description to document.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsCopyDescriptionToDocument (boolean IsCopyDescriptionToDocument);
-
-	/**
-	 * Get Copy description to document.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isCopyDescriptionToDocument();
-
-	ModelColumn<I_C_DocType, Object> COLUMN_IsCopyDescriptionToDocument = new ModelColumn<>(I_C_DocType.class, "IsCopyDescriptionToDocument", null);
-	String COLUMNNAME_IsCopyDescriptionToDocument = "IsCopyDescriptionToDocument";
 
 	/**
 	 * Set Create Counter Document.

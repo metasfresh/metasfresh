@@ -332,4 +332,8 @@ public interface IOrderBL extends ISingletonService
 	CurrencyConversionContext getCurrencyConversionContext(I_C_Order order);
 
 	void deleteLineById(final OrderAndLineId orderAndLineId);
+
+	String getDescriptionBottomById(@NonNull OrderId orderId);
+
+	String getDescriptionById(@NonNull OrderId orderId);
 }
