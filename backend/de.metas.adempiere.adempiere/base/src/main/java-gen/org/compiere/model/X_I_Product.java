@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 232226665L;
+	private static final long serialVersionUID = -1550418583L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -551,6 +551,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setIsUpdateName (final boolean IsUpdateName)
+	{
+		set_Value (COLUMNNAME_IsUpdateName, IsUpdateName);
+	}
+
+	@Override
+	public boolean isUpdateName() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateName);
+	}
+
+	@Override
 	public void setManufacturer_ID (final int Manufacturer_ID)
 	{
 		if (Manufacturer_ID < 1) 
@@ -983,6 +995,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCU);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyCU_UOM_Code (final @Nullable java.lang.String QtyCU_UOM_Code)
+	{
+		set_Value (COLUMNNAME_QtyCU_UOM_Code, QtyCU_UOM_Code);
+	}
+
+	@Override
+	public java.lang.String getQtyCU_UOM_Code() 
+	{
+		return get_ValueAsString(COLUMNNAME_QtyCU_UOM_Code);
 	}
 
 	@Override

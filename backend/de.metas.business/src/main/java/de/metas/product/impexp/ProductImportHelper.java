@@ -87,7 +87,10 @@ import java.math.BigDecimal;
 											  @NonNull final I_I_Product from)
 	{
 		product.setValue(from.getValue());
-		product.setName(CoalesceUtil.coalesce(from.getName(), from.getValue()));
+		if (from.isUpdateName())
+		{
+			product.setName(CoalesceUtil.coalesce(from.getName(), from.getValue()));
+		}
 
 		if (from.getDescription() != null)
 		{
