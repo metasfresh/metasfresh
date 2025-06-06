@@ -915,6 +915,27 @@ public interface I_I_Product
 	String COLUMNNAME_IsStocked = "IsStocked";
 
 	/**
+	 * Set Update Name.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateName (boolean IsUpdateName);
+
+	/**
+	 * Get Update Name.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateName();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsUpdateName = new ModelColumn<>(I_I_Product.class, "IsUpdateName", null);
+	String COLUMNNAME_IsUpdateName = "IsUpdateName";
+
+	/**
 	 * Set Manufacturer.
 	 * Manufacturer of the Product
 	 *
@@ -1571,6 +1592,27 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_QtyCU = new ModelColumn<>(I_I_Product.class, "QtyCU", null);
 	String COLUMNNAME_QtyCU = "QtyCU";
+
+	/**
+	 * Set QtyCU UOM Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyCU_UOM_Code (@Nullable java.lang.String QtyCU_UOM_Code);
+
+	/**
+	 * Get QtyCU UOM Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getQtyCU_UOM_Code();
+
+	ModelColumn<I_I_Product, Object> COLUMN_QtyCU_UOM_Code = new ModelColumn<>(I_I_Product.class, "QtyCU_UOM_Code", null);
+	String COLUMNNAME_QtyCU_UOM_Code = "QtyCU_UOM_Code";
 
 	/**
 	 * Set Maßeinheit CU.
