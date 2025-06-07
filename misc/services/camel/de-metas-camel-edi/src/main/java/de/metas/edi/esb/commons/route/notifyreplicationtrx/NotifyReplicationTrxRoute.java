@@ -29,13 +29,13 @@ import de.metas.edi.esb.jaxb.metasfreshinhousev2.ObjectFactory;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationTypeEnum;
+import jakarta.xml.bind.JAXBElement;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
 
-import jakarta.xml.bind.JAXBElement;
 import java.nio.charset.StandardCharsets;
 
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;

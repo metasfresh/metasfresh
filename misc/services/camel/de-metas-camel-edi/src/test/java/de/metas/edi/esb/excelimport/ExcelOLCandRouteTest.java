@@ -29,16 +29,18 @@ import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationTypeEnum;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.XLSImpCOLCandType;
+import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
+import org.apache.camel.test.junit5.TestExecutionConfiguration;
 import org.junit.jupiter.api.Test;
 
-import jakarta.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -63,24 +65,26 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 	}
 
 	@Override
-	public boolean isUseAdviceWith()
+	public void configureTest(@NonNull final TestExecutionConfiguration testExecutionConfiguration)
 	{
-		return true;
+		testExecutionConfiguration.withUseAdviceWith(true);
+
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
 		final Properties properties = new Properties();
 		try
 		{
 			properties.load(ExcelOLCandRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	private void prepareRouteForTesting(@NonNull final ExcelOLCandRouteTest.MockRabbitMQProcessor rabbitMQMockProcessor) throws Exception
@@ -115,7 +119,7 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 		template.sendBody(MOCK_FROM, olCandInputStream);
 
 		// then
-		assertMockEndpointsSatisfied();
+		mappedToOLCand.assertIsSatisfied(1000);
 		final List<JAXBElement<XLSImpCOLCandType>> result =
 				(List<JAXBElement<XLSImpCOLCandType>>)mappedToOLCand.getExchanges().get(0).getIn().getBody(List.class);
 
