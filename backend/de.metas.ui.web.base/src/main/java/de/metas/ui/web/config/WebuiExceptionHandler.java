@@ -87,7 +87,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	private static final ImmutableSet<Class<?>> EXCEPTIONS_ExcludeFromLogging = ImmutableSet.of(NotLoggedInException.class);
 
 	private static final ImmutableMap<Class<?>, HttpStatus> EXCEPTION_HTTPSTATUS = ImmutableMap.<Class<?>, HttpStatus>builder()
-			.put(org.elasticsearch.client.transport.NoNodeAvailableException.class, HttpStatus.SERVICE_UNAVAILABLE)
+			.put(co.elastic.clients.transport.TransportException.class, HttpStatus.SERVICE_UNAVAILABLE)
 			.build();
 
 	private JSONOptions newJSONOptions()

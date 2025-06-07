@@ -27,7 +27,6 @@ import co.elastic.clients.elasticsearch._types.aggregations.MultiBucketAggregate
 import co.elastic.clients.elasticsearch._types.aggregations.MultiBucketBase;
 import co.elastic.clients.elasticsearch._types.aggregations.SingleBucketAggregateBase;
 import co.elastic.clients.elasticsearch._types.aggregations.SingleMetricAggregateBase;
-import co.elastic.clients.json.JsonData;
 import com.google.common.base.Splitter;
 import de.metas.ui.web.kpi.data.KPIDataValue;
 import de.metas.ui.web.kpi.descriptor.KPIFieldValueType;
@@ -82,8 +81,10 @@ public class ElasticsearchDatasourceFieldDescriptor
 			else if ("key".equals(fieldName))
 			{
 				return (containingAggName, bucket) -> {
-					JsonData key = bucket.key();
-					String keyString = key.isString() ? key.to(String.class) : key.toString();
+					// TODO clarify with Teo if this is OK
+					// final JsonData key = bucket.key();
+					// final String keyString = key.isString() ? key.to(String.class) : key.toString();
+					final String keyString = bucket.toString();
 					return KPIDataValue.ofValueAndType(keyString, valueType);
 				};
 			}
@@ -112,7 +113,7 @@ public class ElasticsearchDatasourceFieldDescriptor
 		}
 
 		// Use _get() to extract the underlying aggregation object
-		Object aggregateValue = aggregate._get();
+		final Object aggregateValue = aggregate._get();
 
 		// Handle single metric aggregations
 		if (aggregateValue instanceof SingleMetricAggregateBase)
@@ -120,7 +121,7 @@ public class ElasticsearchDatasourceFieldDescriptor
 			final List<String> subPath = path.subList(1, path.size());
 			if (subPath.size() == 1 && "value".equals(subPath.getFirst()))
 			{
-				SingleMetricAggregateBase singleMetric = (SingleMetricAggregateBase) aggregateValue;
+				final SingleMetricAggregateBase singleMetric = (SingleMetricAggregateBase) aggregateValue;
 				return singleMetric.value();
 			}
 			else
@@ -138,8 +139,8 @@ public class ElasticsearchDatasourceFieldDescriptor
 		else if (aggregateValue instanceof SingleBucketAggregateBase)
 		{
 			// For single bucket aggregations, continue navigating through sub-aggregations
-			SingleBucketAggregateBase singleBucket = (SingleBucketAggregateBase) aggregateValue;
-			Map<String, Aggregate> subAggs = singleBucket.aggregations();
+			final SingleBucketAggregateBase singleBucket = (SingleBucketAggregateBase) aggregateValue;
+			final Map<String, Aggregate> subAggs = singleBucket.aggregations();
 			if (path.size() > 1)
 			{
 				return getPropertyFromAggregations(subAggs, path.subList(1, path.size()));
@@ -167,7 +168,7 @@ public class ElasticsearchDatasourceFieldDescriptor
 		}
 
 		// Use _get() to extract the underlying aggregation object
-		Object aggregateValue = aggregate._get();
+		final Object aggregateValue = aggregate._get();
 
 		if (path.size() == 1)
 		{
@@ -186,7 +187,7 @@ public class ElasticsearchDatasourceFieldDescriptor
 			// Navigate deeper
 			if (aggregateValue instanceof SingleBucketAggregateBase)
 			{
-				SingleBucketAggregateBase singleBucket = (SingleBucketAggregateBase) aggregateValue;
+				final SingleBucketAggregateBase singleBucket = (SingleBucketAggregateBase) aggregateValue;
 				return getPropertyFromAggregations(singleBucket.aggregations(), path.subList(1, path.size()));
 			}
 			else
