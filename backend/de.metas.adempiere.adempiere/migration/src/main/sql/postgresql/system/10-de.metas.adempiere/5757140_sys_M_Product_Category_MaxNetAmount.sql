@@ -775,6 +775,12 @@ UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-10 10:38:2
 
 
 
+CREATE UNIQUE INDEX IF NOT EXISTS m_product_category_maxnetamount_c_currency_id_m_product_categor
+    ON m_product_category_maxnetamount (c_currency_id, m_product_category_id)
+    WHERE (isactive = 'Y'::bpchar)
+;
+
+
 
 
 
