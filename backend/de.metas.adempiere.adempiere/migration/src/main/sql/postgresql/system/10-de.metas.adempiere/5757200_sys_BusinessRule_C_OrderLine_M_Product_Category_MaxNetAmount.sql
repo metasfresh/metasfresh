@@ -55,3 +55,45 @@ INSERT INTO AD_BusinessRule_WarningTarget (AD_BusinessRule_ID,AD_BusinessRule_Wa
 UPDATE AD_BusinessRule_WarningTarget SET LookupSQL='(SELECT C_Order_ID from C_Order o WHERE o.C_Order_ID = C_OrderLine.C_Order_ID)',Updated=TO_TIMESTAMP('2025-06-10 15:38:55.743000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_BusinessRule_WarningTarget_ID=540005
 ;
 
+
+
+-- Value: C_OrderLine_M_Product_Category_MaxNetAmount
+-- 2025-06-10T16:32:20.316Z
+UPDATE AD_Message SET MsgText='The maximum net amount for the product category of the product in the order line was exceeded. {}',Updated=TO_TIMESTAMP('2025-06-10 16:32:20.316000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Message_ID=545557
+;
+
+-- 2025-06-10T16:32:20.318Z
+UPDATE AD_Message_Trl trl SET MsgText='The maximum net amount for the product category of the product in the order line was exceeded. {}' WHERE AD_Message_ID=545557 AND AD_Language='de_DE'
+;
+
+-- Value: C_OrderLine_M_Product_Category_MaxNetAmount
+-- 2025-06-10T16:32:29.870Z
+UPDATE AD_Message_Trl SET MsgText='The maximum net amount for the product category of the product in the order line was exceeded. {}',Updated=TO_TIMESTAMP('2025-06-10 16:32:29.870000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545557
+;
+
+-- 2025-06-10T16:32:29.877Z
+UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Value: C_OrderLine_M_Product_Category_MaxNetAmount
+-- 2025-06-10T16:32:34.429Z
+UPDATE AD_Message_Trl SET MsgText='The maximum net amount for the product category of the product in the order line was exceeded. {}',Updated=TO_TIMESTAMP('2025-06-10 16:32:34.428000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545557
+;
+
+-- 2025-06-10T16:32:34.436Z
+UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Value: C_OrderLine_M_Product_Category_MaxNetAmount
+-- 2025-06-10T16:32:38.144Z
+UPDATE AD_Message_Trl SET MsgText='The maximum net amount for the product category of the product in the order line was exceeded. {}',Updated=TO_TIMESTAMP('2025-06-10 16:32:38.144000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Message_ID=545557
+;
+
+-- 2025-06-10T16:32:38.150Z
+UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+
+
+
+
