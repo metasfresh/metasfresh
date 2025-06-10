@@ -16,11 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
@@ -28,10 +27,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  *	Location (Address)
@@ -341,8 +340,6 @@ public class MLocation extends X_C_Location
 		}
 		//
 		String regionName = super.getRegionName();
-		if (regionName == null)
-			regionName = "";
 		return regionName;
 	}	//	getRegionName
 
