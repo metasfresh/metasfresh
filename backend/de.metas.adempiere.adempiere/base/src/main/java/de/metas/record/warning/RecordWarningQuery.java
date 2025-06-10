@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 @Builder
 public class RecordWarningQuery
 {
-	@NonNull TableRecordReference rootRecordRef;
+	@Nullable TableRecordReference rootRecordRef;
 	@Nullable TableRecordReference recordRef;
 	@Nullable BusinessRuleId businessRuleId;
 	@Nullable Severity severity;
