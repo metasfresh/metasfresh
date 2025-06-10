@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-leichundmehl
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
 import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.apache.camel.RuntimeCamelException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -87,28 +88,35 @@ public class XMLUtil
 		final StringWriter buffer = new StringWriter();
 
 		transformer.transform(new DOMSource(document.getDocumentElement()),
-							  new StreamResult(buffer));
+				new StreamResult(buffer));
 
 		return buffer.toString();
 	}
 
 	@NonNull
-	public static String convertToXML(@NonNull final Object object, @NonNull final Class<?> clazz) throws Exception
+	public static String convertToXML(@NonNull final Object object, @NonNull final Class<?> clazz)
 	{
-		final JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
+		try
+		{
+			final JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
 
-		final Marshaller marshaller = jaxbContext.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		marshaller.setProperty(Marshaller.JAXB_ENCODING, XML_PROPERTY_FILE_ENCODING_VALUE);
+			final Marshaller marshaller = jaxbContext.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			marshaller.setProperty(Marshaller.JAXB_ENCODING, XML_PROPERTY_FILE_ENCODING_VALUE);
 
-		final CharacterEscapeHandler escapeHandler = NoEscapeHandler.INSTANCE;
-		marshaller.setProperty("com.sun.xml.bind.characterEscapeHandler", escapeHandler);
+			final CharacterEscapeHandler escapeHandler = NoEscapeHandler.INSTANCE;
+			marshaller.setProperty("com.sun.xml.bind.characterEscapeHandler", escapeHandler);
 
-		final StringWriter sw = new StringWriter();
+			final StringWriter sw = new StringWriter();
 
-		marshaller.marshal(object, sw);
+			marshaller.marshal(object, sw);
 
-		return sw.toString();
+			return sw.toString();
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeCamelException(e);
+		}
 	}
 
 	public static boolean hasAttribute(

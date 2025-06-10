@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-leichundmehl
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,9 +29,13 @@ import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.RetrieveProductCamelRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.DestinationDetails;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.DispatchMessageRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluElement;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluRootElement;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.ReadPluFileProcessor;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.JSONUtil;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.XMLUtil;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;
@@ -119,6 +123,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 					.when(ExportPPOrderHelper.isStoreFileOnDisk())
 						.to(direct(SEND_TO_FILE_ROUTE_ID))
 					.otherwise()
+						.process(this::wrapForLeichAndMehlMachine)
 						.to(direct(SEND_TO_TCP_ROUTE_ID))
 					.endChoice()
 				.end()
@@ -135,6 +140,22 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 					.endChoice()
 				.end();
 		//@formatter:on
+	}
+
+	private void wrapForLeichAndMehlMachine(@NonNull final Exchange exchange) {
+
+		final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
+
+		final String updatedPluFileContent = request.getPayload();
+		
+		final XMLPluRootElement xmlPluRootElement = XMLPluRootElement.builder()
+				.xmlPluElement(XMLPluElement.of(updatedPluFileContent))
+				.build();
+		
+		final String xmlRootFile = XMLUtil.convertToXML(xmlPluRootElement, XMLPluRootElement.class);
+
+		final DispatchMessageRequest modifiedRequest = request.withPayload(xmlRootFile);
+		exchange.getIn().setBody(modifiedRequest);
 	}
 
 	private void buildAndAttachContext(@NonNull final Exchange exchange)
