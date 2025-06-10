@@ -112,3 +112,8 @@ AND pcm.C_Currency_ID = C_OrderLine.C_Currency_ID
 AND pcm.MaxNetAmount < C_OrderLine.LineNetAmt)',Updated=TO_TIMESTAMP('2025-06-10 16:49:51.867000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540732
 ;
 
+
+-- 2025-06-10T17:12:26.617Z
+UPDATE AD_BusinessRule SET IsCreateWarningOnTarget='N',Updated=TO_TIMESTAMP('2025-06-10 17:12:26.617000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_BusinessRule_ID=540032
+;
+
