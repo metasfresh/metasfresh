@@ -3,6 +3,14 @@ SET columnname = 'Price_UOM_back_up_ID', Updated=TO_TIMESTAMP('2025-06-10 15:39:
 WHERE ad_column_id = 582988
 ;
 
+DO
+$$
+BEGIN
+
+    IF not exists(select 1
+                  from ad_column
+                  where AD_Column_ID = 589574) THEN
+
 -- Column: C_PurchaseCandidate.Price_UOM_ID
 -- Column: C_PurchaseCandidate.Price_UOM_ID
 -- 2025-01-09T17:58:13.095Z
@@ -12,6 +20,10 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 -- 2025-01-09T17:58:13.100Z
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=589574 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
+
+    END IF;
+END
+$$;
 
 -- Column: C_PurchaseCandidate.Price_UOM_ID
 -- Column: C_PurchaseCandidate.Price_UOM_ID
