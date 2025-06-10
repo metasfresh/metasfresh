@@ -442,335 +442,13 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583713,'en_US')
 ;
 
--- Tab: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie
--- Table: M_Product_Category_MaxNetAmount
--- 2025-06-10T10:14:35.204Z
-INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Parent_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,590390,583713,0,548191,542501,541762,'Y',TO_TIMESTAMP('2025-06-10 10:14:34.933000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.endcustomer.gk196','N','N','A','M_Product_Category_MaxNetAmount','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Max. Nettobetrag pro Produktkategorie',2020,'N',50,1,TO_TIMESTAMP('2025-06-10 10:14:34.933000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
 
--- 2025-06-10T10:14:35.215Z
-INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name,NotFound_Message,NotFound_MessageDetail,QuickInput_CloseButton_Caption,QuickInput_OpenButton_Caption, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.NotFound_Message,t.NotFound_MessageDetail,t.QuickInput_CloseButton_Caption,t.QuickInput_OpenButton_Caption, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Tab_ID=548191 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
-;
 
--- 2025-06-10T10:14:35.226Z
-/* DDL */  select update_tab_translation_from_ad_element(583713)
-;
 
--- 2025-06-10T10:14:35.302Z
-/* DDL */ select AD_Element_Link_Create_Missing_Tab(548191)
-;
 
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Mandant
--- Column: M_Product_Category_MaxNetAmount.AD_Client_ID
--- 2025-06-10T10:14:43.262Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590382,747508,0,548191,TO_TIMESTAMP('2025-06-10 10:14:43.087000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.',10,'de.metas.endcustomer.gk196','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','Y','N','N','N','Y','N','Mandant',TO_TIMESTAMP('2025-06-10 10:14:43.087000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
 
--- 2025-06-10T10:14:43.265Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747508 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
--- 2025-06-10T10:14:43.267Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
-;
 
--- 2025-06-10T10:14:43.720Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747508
-;
-
--- 2025-06-10T10:14:43.722Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747508)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Organisation
--- Column: M_Product_Category_MaxNetAmount.AD_Org_ID
--- 2025-06-10T10:14:43.818Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590383,747509,0,548191,TO_TIMESTAMP('2025-06-10 10:14:43.726000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten',10,'de.metas.endcustomer.gk196','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','Y','N','N','N','N','N','Organisation',TO_TIMESTAMP('2025-06-10 10:14:43.726000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:43.819Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747509 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:43.820Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
-;
-
--- 2025-06-10T10:14:43.927Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747509
-;
-
--- 2025-06-10T10:14:43.928Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747509)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Erstellt
--- Column: M_Product_Category_MaxNetAmount.Created
--- 2025-06-10T10:14:44.021Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590384,747510,0,548191,TO_TIMESTAMP('2025-06-10 10:14:43.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Datum, an dem dieser Eintrag erstellt wurde',29,'de.metas.endcustomer.gk196','Das Feld Erstellt zeigt an, zu welchem Datum dieser Eintrag erstellt wurde.','Y','Y','N','N','N','N','N','Erstellt',TO_TIMESTAMP('2025-06-10 10:14:43.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:44.022Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747510 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:44.023Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(245)
-;
-
--- 2025-06-10T10:14:44.115Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747510
-;
-
--- 2025-06-10T10:14:44.116Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747510)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Erstellt durch
--- Column: M_Product_Category_MaxNetAmount.CreatedBy
--- 2025-06-10T10:14:44.209Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590385,747511,0,548191,TO_TIMESTAMP('2025-06-10 10:14:44.119000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Nutzer, der diesen Eintrag erstellt hat',10,'de.metas.endcustomer.gk196','Das Feld Erstellt durch zeigt an, welcher Nutzer diesen Eintrag erstellt hat.','Y','Y','N','N','N','N','N','Erstellt durch',TO_TIMESTAMP('2025-06-10 10:14:44.119000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:44.211Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747511 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:44.212Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(246)
-;
-
--- 2025-06-10T10:14:44.308Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747511
-;
-
--- 2025-06-10T10:14:44.309Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747511)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Aktiv
--- Column: M_Product_Category_MaxNetAmount.IsActive
--- 2025-06-10T10:14:44.399Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590386,747512,0,548191,TO_TIMESTAMP('2025-06-10 10:14:44.312000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv',1,'de.metas.endcustomer.gk196','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','Y','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2025-06-10 10:14:44.312000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:44.401Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747512 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:44.402Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
-;
-
--- 2025-06-10T10:14:44.524Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747512
-;
-
--- 2025-06-10T10:14:44.525Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747512)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Aktualisiert
--- Column: M_Product_Category_MaxNetAmount.Updated
--- 2025-06-10T10:14:44.621Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590387,747513,0,548191,TO_TIMESTAMP('2025-06-10 10:14:44.528000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Datum, an dem dieser Eintrag aktualisiert wurde',29,'de.metas.endcustomer.gk196','Aktualisiert zeigt an, wann dieser Eintrag aktualisiert wurde.','Y','Y','N','N','N','N','N','Aktualisiert',TO_TIMESTAMP('2025-06-10 10:14:44.528000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:44.622Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747513 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:44.624Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(607)
-;
-
--- 2025-06-10T10:14:44.683Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747513
-;
-
--- 2025-06-10T10:14:44.685Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747513)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Aktualisiert durch
--- Column: M_Product_Category_MaxNetAmount.UpdatedBy
--- 2025-06-10T10:14:44.792Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590388,747514,0,548191,TO_TIMESTAMP('2025-06-10 10:14:44.688000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Nutzer, der diesen Eintrag aktualisiert hat',10,'de.metas.endcustomer.gk196','Aktualisiert durch zeigt an, welcher Nutzer diesen Eintrag aktualisiert hat.','Y','Y','N','N','N','N','N','Aktualisiert durch',TO_TIMESTAMP('2025-06-10 10:14:44.688000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:44.793Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747514 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:44.795Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(608)
-;
-
--- 2025-06-10T10:14:44.846Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747514
-;
-
--- 2025-06-10T10:14:44.847Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747514)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie
--- Column: M_Product_Category_MaxNetAmount.M_Product_Category_MaxNetAmount_ID
--- 2025-06-10T10:14:44.942Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590389,747515,0,548191,TO_TIMESTAMP('2025-06-10 10:14:44.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'de.metas.endcustomer.gk196','Y','N','N','N','N','N','N','N','Max. Nettobetrag pro Produktkategorie',TO_TIMESTAMP('2025-06-10 10:14:44.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:44.944Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747515 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:44.945Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583713)
-;
-
--- 2025-06-10T10:14:44.947Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747515
-;
-
--- 2025-06-10T10:14:44.948Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747515)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Produkt Kategorie
--- Column: M_Product_Category_MaxNetAmount.M_Product_Category_ID
--- 2025-06-10T10:14:45.045Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590390,747516,0,548191,TO_TIMESTAMP('2025-06-10 10:14:44.950000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Kategorie eines Produktes',10,'de.metas.endcustomer.gk196','Identifiziert die Kategorie zu der ein Produkt gehört. Produktkategorien werden für Preisfindung und Auswahl verwendet.','Y','Y','N','N','N','N','N','Produkt Kategorie',TO_TIMESTAMP('2025-06-10 10:14:44.950000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:45.046Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747516 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:45.048Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(453)
-;
-
--- 2025-06-10T10:14:45.071Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747516
-;
-
--- 2025-06-10T10:14:45.072Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747516)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Max. Nettobetrag
--- Column: M_Product_Category_MaxNetAmount.MaxNetAmount
--- 2025-06-10T10:14:45.165Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590391,747517,0,548191,TO_TIMESTAMP('2025-06-10 10:14:45.074000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'de.metas.endcustomer.gk196','Y','Y','N','N','N','N','N','Max. Nettobetrag',TO_TIMESTAMP('2025-06-10 10:14:45.074000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:45.167Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747517 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:45.168Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583714)
-;
-
--- 2025-06-10T10:14:45.170Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747517
-;
-
--- 2025-06-10T10:14:45.171Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747517)
-;
-
--- Field: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> Währung
--- Column: M_Product_Category_MaxNetAmount.C_Currency_ID
--- 2025-06-10T10:14:45.262Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590392,747518,0,548191,TO_TIMESTAMP('2025-06-10 10:14:45.173000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Die Währung für diesen Eintrag',10,'de.metas.endcustomer.gk196','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','Y','N','N','N','N','N','Währung',TO_TIMESTAMP('2025-06-10 10:14:45.173000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- 2025-06-10T10:14:45.263Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747518 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2025-06-10T10:14:45.264Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(193)
-;
-
--- 2025-06-10T10:14:45.297Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=747518
-;
-
--- 2025-06-10T10:14:45.298Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(747518)
-;
-
--- Tab: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196)
--- UI Section: main
--- 2025-06-10T10:32:15.897Z
-INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,UIStyle,Updated,UpdatedBy,Value) VALUES (0,0,548191,546731,TO_TIMESTAMP('2025-06-10 10:32:15.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,'primary',TO_TIMESTAMP('2025-06-10 10:32:15.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'main')
-;
-
--- 2025-06-10T10:32:15.899Z
-INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_UI_Section_ID=546731 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
-;
-
--- UI Section: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> main
--- UI Column: 10
--- 2025-06-10T10:32:21.200Z
-INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,548198,546731,TO_TIMESTAMP('2025-06-10 10:32:21.029000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,TO_TIMESTAMP('2025-06-10 10:32:21.029000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- UI Column: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> main -> 10
--- UI Element Group: main
--- 2025-06-10T10:32:38.887Z
-INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,548198,553094,TO_TIMESTAMP('2025-06-10 10:32:38.595000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','main',10,'primary',TO_TIMESTAMP('2025-06-10 10:32:38.595000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- Tab: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196)
--- UI Section: main
--- 2025-06-10T10:33:12.555Z
-UPDATE AD_UI_Section SET UIStyle='',Updated=TO_TIMESTAMP('2025-06-10 10:33:12.555000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Section_ID=546731
-;
-
--- UI Column: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> main -> 10
--- UI Element Group: default
--- 2025-06-10T10:33:21.318Z
-UPDATE AD_UI_ElementGroup SET Name='default',Updated=TO_TIMESTAMP('2025-06-10 10:33:21.318000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=553094
-;
-
--- UI Element: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> main -> 10 -> default.Max. Nettobetrag
--- Column: M_Product_Category_MaxNetAmount.MaxNetAmount
--- 2025-06-10T10:34:05.130Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747517,0,548191,553094,633918,'F',TO_TIMESTAMP('2025-06-10 10:34:04.973000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N','Max. Nettobetrag',10,0,0,TO_TIMESTAMP('2025-06-10 10:34:04.973000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- UI Element: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> main -> 10 -> default.Währung
--- Column: M_Product_Category_MaxNetAmount.C_Currency_ID
--- 2025-06-10T10:34:16.029Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747518,0,548191,553094,633919,'F',TO_TIMESTAMP('2025-06-10 10:34:15.843000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Die Währung für diesen Eintrag','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','Y','N','N','Währung',20,0,0,TO_TIMESTAMP('2025-06-10 10:34:15.843000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- UI Element: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> main -> 10 -> default.Aktiv
--- Column: M_Product_Category_MaxNetAmount.IsActive
--- 2025-06-10T10:34:28.155Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747512,0,548191,553094,633920,'F',TO_TIMESTAMP('2025-06-10 10:34:28.029000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','Y','N','N','Aktiv',30,0,0,TO_TIMESTAMP('2025-06-10 10:34:28.029000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
--- UI Element: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> main -> 10 -> default.Aktiv
--- Column: M_Product_Category_MaxNetAmount.IsActive
--- 2025-06-10T10:34:48.283Z
-UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-10 10:34:48.283000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633920
-;
-
--- UI Element: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> main -> 10 -> default.Währung
--- Column: M_Product_Category_MaxNetAmount.C_Currency_ID
--- 2025-06-10T10:38:22.598Z
-UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-10 10:38:22.598000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633919
-;
-
--- UI Element: Produkt Kategorie(541762,de.metas.endcustomer.gk196) -> Max. Nettobetrag pro Produktkategorie(548191,de.metas.endcustomer.gk196) -> main -> 10 -> default.Max. Nettobetrag
--- Column: M_Product_Category_MaxNetAmount.MaxNetAmount
--- 2025-06-10T10:38:24.480Z
-UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-10 10:38:24.480000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633918
-;
 
 
 
@@ -788,4 +466,340 @@ CREATE UNIQUE INDEX IF NOT EXISTS m_product_category_maxnetamount_c_currency_id_
 
 
 
+
+-- Tab: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie
+-- Table: M_Product_Category_MaxNetAmount
+-- 2025-06-10T16:17:40.214Z
+INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Parent_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,590390,583713,0,548195,542501,144,'Y',TO_TIMESTAMP('2025-06-10 16:17:40.071000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','N','N','A','M_Product_Category_MaxNetAmount','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Max. Nettobetrag pro Produktkategorie',2020,'N',50,1,TO_TIMESTAMP('2025-06-10 16:17:40.071000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:40.221Z
+INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name,NotFound_Message,NotFound_MessageDetail,QuickInput_CloseButton_Caption,QuickInput_OpenButton_Caption, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.NotFound_Message,t.NotFound_MessageDetail,t.QuickInput_CloseButton_Caption,t.QuickInput_OpenButton_Caption, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Tab_ID=548195 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
+;
+
+-- 2025-06-10T16:17:40.223Z
+/* DDL */  select update_tab_translation_from_ad_element(583713)
+;
+
+-- 2025-06-10T16:17:40.228Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(548195)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Mandant
+-- Column: M_Product_Category_MaxNetAmount.AD_Client_ID
+-- 2025-06-10T16:17:48.517Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590382,747584,0,548195,TO_TIMESTAMP('2025-06-10 16:17:48.314000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.',10,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','Y','N','N','N','Y','N','Mandant',TO_TIMESTAMP('2025-06-10 16:17:48.314000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:48.526Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747584 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:48.539Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
+;
+
+-- 2025-06-10T16:17:48.965Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747584
+;
+
+-- 2025-06-10T16:17:48.971Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747584)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Organisation
+-- Column: M_Product_Category_MaxNetAmount.AD_Org_ID
+-- 2025-06-10T16:17:49.131Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590383,747585,0,548195,TO_TIMESTAMP('2025-06-10 16:17:48.985000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten',10,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','Y','N','N','N','N','N','Organisation',TO_TIMESTAMP('2025-06-10 16:17:48.985000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:49.138Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747585 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:49.145Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
+;
+
+-- 2025-06-10T16:17:49.522Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747585
+;
+
+-- 2025-06-10T16:17:49.527Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747585)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Erstellt
+-- Column: M_Product_Category_MaxNetAmount.Created
+-- 2025-06-10T16:17:49.687Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590384,747586,0,548195,TO_TIMESTAMP('2025-06-10 16:17:49.538000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Datum, an dem dieser Eintrag erstellt wurde',29,'D','Das Feld Erstellt zeigt an, zu welchem Datum dieser Eintrag erstellt wurde.','Y','Y','N','N','N','N','N','Erstellt',TO_TIMESTAMP('2025-06-10 16:17:49.538000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:49.694Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747586 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:49.702Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(245)
+;
+
+-- 2025-06-10T16:17:49.946Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747586
+;
+
+-- 2025-06-10T16:17:49.950Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747586)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Erstellt durch
+-- Column: M_Product_Category_MaxNetAmount.CreatedBy
+-- 2025-06-10T16:17:50.092Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590385,747587,0,548195,TO_TIMESTAMP('2025-06-10 16:17:49.962000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Nutzer, der diesen Eintrag erstellt hat',10,'D','Das Feld Erstellt durch zeigt an, welcher Nutzer diesen Eintrag erstellt hat.','Y','Y','N','N','N','N','N','Erstellt durch',TO_TIMESTAMP('2025-06-10 16:17:49.962000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:50.099Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747587 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:50.108Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(246)
+;
+
+-- 2025-06-10T16:17:50.390Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747587
+;
+
+-- 2025-06-10T16:17:50.395Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747587)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Aktiv
+-- Column: M_Product_Category_MaxNetAmount.IsActive
+-- 2025-06-10T16:17:50.561Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590386,747588,0,548195,TO_TIMESTAMP('2025-06-10 16:17:50.407000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','Y','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2025-06-10 16:17:50.407000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:50.568Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747588 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:50.575Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
+;
+
+-- 2025-06-10T16:17:51.035Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747588
+;
+
+-- 2025-06-10T16:17:51.040Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747588)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Aktualisiert
+-- Column: M_Product_Category_MaxNetAmount.Updated
+-- 2025-06-10T16:17:51.209Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590387,747589,0,548195,TO_TIMESTAMP('2025-06-10 16:17:51.053000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Datum, an dem dieser Eintrag aktualisiert wurde',29,'D','Aktualisiert zeigt an, wann dieser Eintrag aktualisiert wurde.','Y','Y','N','N','N','N','N','Aktualisiert',TO_TIMESTAMP('2025-06-10 16:17:51.053000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:51.215Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747589 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:51.222Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(607)
+;
+
+-- 2025-06-10T16:17:51.514Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747589
+;
+
+-- 2025-06-10T16:17:51.517Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747589)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Aktualisiert durch
+-- Column: M_Product_Category_MaxNetAmount.UpdatedBy
+-- 2025-06-10T16:17:51.654Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590388,747590,0,548195,TO_TIMESTAMP('2025-06-10 16:17:51.532000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Nutzer, der diesen Eintrag aktualisiert hat',10,'D','Aktualisiert durch zeigt an, welcher Nutzer diesen Eintrag aktualisiert hat.','Y','Y','N','N','N','N','N','Aktualisiert durch',TO_TIMESTAMP('2025-06-10 16:17:51.532000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:51.655Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747590 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:51.657Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(608)
+;
+
+-- 2025-06-10T16:17:51.699Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747590
+;
+
+-- 2025-06-10T16:17:51.700Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747590)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Max. Nettobetrag pro Produktkategorie
+-- Column: M_Product_Category_MaxNetAmount.M_Product_Category_MaxNetAmount_ID
+-- 2025-06-10T16:17:51.849Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590389,747591,0,548195,TO_TIMESTAMP('2025-06-10 16:17:51.702000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'D','Y','N','N','N','N','N','N','N','Max. Nettobetrag pro Produktkategorie',TO_TIMESTAMP('2025-06-10 16:17:51.702000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:51.851Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747591 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:51.852Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583713)
+;
+
+-- 2025-06-10T16:17:51.855Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747591
+;
+
+-- 2025-06-10T16:17:51.855Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747591)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Produkt Kategorie
+-- Column: M_Product_Category_MaxNetAmount.M_Product_Category_ID
+-- 2025-06-10T16:17:51.947Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590390,747592,0,548195,TO_TIMESTAMP('2025-06-10 16:17:51.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Kategorie eines Produktes',10,'D','Identifiziert die Kategorie zu der ein Produkt gehört. Produktkategorien werden für Preisfindung und Auswahl verwendet.','Y','Y','N','N','N','N','N','Produkt Kategorie',TO_TIMESTAMP('2025-06-10 16:17:51.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:51.948Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747592 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:51.949Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(453)
+;
+
+-- 2025-06-10T16:17:51.953Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747592
+;
+
+-- 2025-06-10T16:17:51.954Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747592)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Max. Nettobetrag
+-- Column: M_Product_Category_MaxNetAmount.MaxNetAmount
+-- 2025-06-10T16:17:52.041Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590391,747593,0,548195,TO_TIMESTAMP('2025-06-10 16:17:51.956000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'D','Y','Y','N','N','N','N','N','Max. Nettobetrag',TO_TIMESTAMP('2025-06-10 16:17:51.956000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:52.043Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747593 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:52.044Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583714)
+;
+
+-- 2025-06-10T16:17:52.046Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747593
+;
+
+-- 2025-06-10T16:17:52.047Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747593)
+;
+
+-- Field: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> Währung
+-- Column: M_Product_Category_MaxNetAmount.C_Currency_ID
+-- 2025-06-10T16:17:52.140Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,590392,747594,0,548195,TO_TIMESTAMP('2025-06-10 16:17:52.049000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Die Währung für diesen Eintrag',10,'D','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','Y','N','N','N','N','N','Währung',TO_TIMESTAMP('2025-06-10 16:17:52.049000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-06-10T16:17:52.142Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=747594 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-06-10T16:17:52.143Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(193)
+;
+
+-- 2025-06-10T16:17:52.150Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=747594
+;
+
+-- 2025-06-10T16:17:52.150Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(747594)
+;
+
+-- Tab: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D)
+-- UI Section: main
+-- 2025-06-10T16:18:02.222Z
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,548195,546736,TO_TIMESTAMP('2025-06-10 16:18:02.081000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,TO_TIMESTAMP('2025-06-10 16:18:02.081000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'main')
+;
+
+-- 2025-06-10T16:18:02.223Z
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_UI_Section_ID=546736 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- UI Section: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main
+-- UI Column: 10
+-- 2025-06-10T16:18:05.599Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,548205,546736,TO_TIMESTAMP('2025-06-10 16:18:05.490000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,TO_TIMESTAMP('2025-06-10 16:18:05.490000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10
+-- UI Element Group: default
+-- 2025-06-10T16:18:14.567Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,548205,553104,TO_TIMESTAMP('2025-06-10 16:18:14.416000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','default',10,'primary',TO_TIMESTAMP('2025-06-10 16:18:14.416000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10 -> default.Max. Nettobetrag
+-- Column: M_Product_Category_MaxNetAmount.MaxNetAmount
+-- 2025-06-10T16:18:33.283Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747593,0,548195,553104,633961,'F',TO_TIMESTAMP('2025-06-10 16:18:33.165000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N','Max. Nettobetrag',10,0,0,TO_TIMESTAMP('2025-06-10 16:18:33.165000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10 -> default.Währung
+-- Column: M_Product_Category_MaxNetAmount.C_Currency_ID
+-- 2025-06-10T16:18:40.526Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747594,0,548195,553104,633962,'F',TO_TIMESTAMP('2025-06-10 16:18:40.404000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Die Währung für diesen Eintrag','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','Y','N','N','Währung',20,0,0,TO_TIMESTAMP('2025-06-10 16:18:40.404000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10 -> default.Aktiv
+-- Column: M_Product_Category_MaxNetAmount.IsActive
+-- 2025-06-10T16:18:46.875Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747588,0,548195,553104,633963,'F',TO_TIMESTAMP('2025-06-10 16:18:46.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','Y','N','N','Aktiv',30,0,0,TO_TIMESTAMP('2025-06-10 16:18:46.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10 -> default.Max. Nettobetrag
+-- Column: M_Product_Category_MaxNetAmount.MaxNetAmount
+-- 2025-06-10T16:18:52.646Z
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-10 16:18:52.646000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633961
+;
+
+-- UI Element: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10 -> default.Währung
+-- Column: M_Product_Category_MaxNetAmount.C_Currency_ID
+-- 2025-06-10T16:18:55.059Z
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-10 16:18:55.059000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633962
+;
+
+-- UI Element: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10 -> default.Aktiv
+-- Column: M_Product_Category_MaxNetAmount.IsActive
+-- 2025-06-10T16:18:57.423Z
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-10 16:18:57.423000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633963
+;
+
+-- UI Element: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10 -> default.Max. Nettobetrag
+-- Column: M_Product_Category_MaxNetAmount.MaxNetAmount
+-- 2025-06-10T16:30:13.153Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2025-06-10 16:30:13.153000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633961
+;
+
+-- UI Element: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10 -> default.Währung
+-- Column: M_Product_Category_MaxNetAmount.C_Currency_ID
+-- 2025-06-10T16:30:13.161Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2025-06-10 16:30:13.161000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633962
+;
+
+-- UI Element: Produkt Kategorie_OLD(144,D) -> Max. Nettobetrag pro Produktkategorie(548195,D) -> main -> 10 -> default.Aktiv
+-- Column: M_Product_Category_MaxNetAmount.IsActive
+-- 2025-06-10T16:30:13.167Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2025-06-10 16:30:13.167000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=633963
+;
 
