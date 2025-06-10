@@ -121,6 +121,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 				.process(new ReadPluFileProcessor(processLogger))
 				.choice()
 					.when(ExportPPOrderHelper.isStoreFileOnDisk())
+						.process(this::addXMLDeclarationIfNeeded)
 						.to(direct(SEND_TO_FILE_ROUTE_ID))
 					.otherwise()
 						.process(this::wrapForLeichAndMehlMachine)
@@ -142,16 +143,17 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		//@formatter:on
 	}
 
-	private void wrapForLeichAndMehlMachine(@NonNull final Exchange exchange) {
+	private void wrapForLeichAndMehlMachine(@NonNull final Exchange exchange)
+	{
 
 		final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
 
 		final String updatedPluFileContent = request.getPayload();
-		
+
 		final XMLPluRootElement xmlPluRootElement = XMLPluRootElement.builder()
 				.xmlPluElement(XMLPluElement.of(updatedPluFileContent))
 				.build();
-		
+
 		final String xmlRootFile = XMLUtil.convertToXML(xmlPluRootElement, XMLPluRootElement.class);
 
 		final DispatchMessageRequest modifiedRequest = request.withPayload(xmlRootFile);
@@ -196,8 +198,8 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 	private void prepareGetManufacturingOrderRequest(@NonNull final Exchange exchange)
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
-																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
-																						  ExportPPOrderRouteContext.class);
+				ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
+				ExportPPOrderRouteContext.class);
 		exchange.getIn().setBody(context.getPpOrderMetasfreshId(), Integer.class);
 	}
 
@@ -206,16 +208,16 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		final JsonResponseManufacturingOrder jsonResponseManufacturingOrder = exchange.getIn().getBody(JsonResponseManufacturingOrder.class);
 
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
-																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
-																						  ExportPPOrderRouteContext.class);
+				ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
+				ExportPPOrderRouteContext.class);
 		context.setJsonResponseManufacturingOrder(jsonResponseManufacturingOrder);
 	}
 
 	private void prepareGetProductRequest(@NonNull final Exchange exchange)
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
-																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
-																						  ExportPPOrderRouteContext.class);
+				ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
+				ExportPPOrderRouteContext.class);
 
 		final JsonResponseManufacturingOrder ppOrder = context.getManufacturingOrderNonNull();
 
@@ -241,8 +243,8 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 	private void prepareCustomQueryProcessRequestIfAny(@NonNull final Exchange exchange)
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
-																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
-																						  ExportPPOrderRouteContext.class);
+				ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
+				ExportPPOrderRouteContext.class);
 
 		exchange.getIn().setHeader(ExternalSystemConstants.PARAM_CUSTOM_QUERY_AD_PROCESS_VALUE, context.getCustomQueryAdProcessValue());
 		if (context.getCustomQueryAdProcessValue() == null)
@@ -252,9 +254,9 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 
 		final JsonAdProcessRequest requestBody = JsonAdProcessRequest.builder()
 				.processParameter(JsonAdProcessRequestParam.builder()
-										  .name(PARAM_PP_ORDER_ID)
-										  .value(context.getPpOrderMetasfreshId().toString())
-										  .build())
+						.name(PARAM_PP_ORDER_ID)
+						.value(context.getPpOrderMetasfreshId().toString())
+						.build())
 				.build();
 		exchange.getIn().setBody(requestBody);
 	}
@@ -319,5 +321,12 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 				.build();
 
 		exchange.getIn().setBody(jsonAttachmentRequest);
+	}
+
+	private void addXMLDeclarationIfNeeded(@NonNull final Exchange exchange) {
+		final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
+
+		final DispatchMessageRequest modifiedRequest = request.withPayload(XMLUtil.addXMLDeclarationIfNeeded(request.getPayload()));
+		exchange.getIn().setBody(modifiedRequest);
 	}
 }

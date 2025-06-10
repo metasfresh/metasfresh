@@ -153,4 +153,21 @@ public class XMLUtil
 
 		return (Element)childNode;
 	}
+
+	@NonNull
+	public static String addXMLDeclarationIfNeeded(@NonNull final String payload)
+	{
+		if (payload.trim().startsWith("<?xml")) {
+			// Payload already contains XML declaration
+			return payload;
+		}
+
+		final String xmlDeclaration = String.format(
+				"<?xml version=\"1.0\" encoding=\"%s\" standalone=\"%s\"?>\n",
+				XML_PROPERTY_FILE_ENCODING_VALUE,
+				XML_PROPERTY_VALUE_YES
+		);
+
+		return xmlDeclaration + payload;
+	}
 }

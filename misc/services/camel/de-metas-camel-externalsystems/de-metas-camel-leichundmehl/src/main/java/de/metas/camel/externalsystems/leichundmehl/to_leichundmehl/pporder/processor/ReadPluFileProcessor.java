@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.XMLUtil.addXMLDeclarationIfNeeded;
 
 /**
  * Reads a "template" PLU into memory and updates it from context.
@@ -85,13 +86,13 @@ public class ReadPluFileProcessor implements Processor
 
 			final JsonPluFileAudit jsonPluFileAudit = updateDocument(pluDocument, filePath, context);
 
-			final String updatedPluFileContent = XMLUtil.toString(pluDocument);
+			final String fileContentWithoutXMLDeclaration = XMLUtil.toString(pluDocument);
 
 			context.setJsonPluFileAudit(jsonPluFileAudit);
-			context.setPluFileXmlContent(updatedPluFileContent);
+			context.setPluFileXmlContent(addXMLDeclarationIfNeeded(fileContentWithoutXMLDeclaration));
 			context.setPluTemplateFilename(filePath.getFileName().toString());
 
-			return updatedPluFileContent;
+			return fileContentWithoutXMLDeclaration;
 		}
 		catch (final Exception e)
 		{
