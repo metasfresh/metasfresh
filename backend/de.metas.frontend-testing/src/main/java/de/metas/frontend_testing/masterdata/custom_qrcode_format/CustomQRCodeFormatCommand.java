@@ -60,6 +60,8 @@ public class CustomQRCodeFormatCommand
 										.endPosition(part.getEndPosition())
 										.type(part.getType())
 										.dateFormat(PatternedDateTimeFormatter.ofNullablePattern(part.getDateFormat()))
+										.constantValue(part.getConstantValue())
+										.decimalPointPosition(part.getDecimalPointPosition())
 										.build())
 								.collect(ImmutableList.toImmutableList())
 						)

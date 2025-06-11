@@ -31,5 +31,7 @@ public class ScannableCodeFormatCreateRequest
 		@NonNull ScannableCodeFormatPartType type;
 		@Nullable PatternedDateTimeFormatter dateFormat;
 		@Nullable String description;
+		@Nullable String constantValue;
+		int decimalPointPosition;
 	}
 }

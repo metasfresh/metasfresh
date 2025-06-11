@@ -32,5 +32,7 @@ public class JsonCustomQRCodeFormatRequest
 		int endPosition;
 		@NonNull ScannableCodeFormatPartType type;
 		@Nullable String dateFormat;
+		@Nullable String constantValue;
+		int decimalPointPosition;
 	}
 }

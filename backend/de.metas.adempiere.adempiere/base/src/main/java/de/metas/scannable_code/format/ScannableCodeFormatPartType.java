@@ -15,6 +15,7 @@ import org.compiere.model.X_C_ScannableCode_Format_Part;
 public enum ScannableCodeFormatPartType implements ReferenceListAwareEnum
 {
 	Ignored(X_C_ScannableCode_Format_Part.DATATYPE_Ignored, ScannableCodeFormatPartDataType.String),
+	Constant(X_C_ScannableCode_Format_Part.DATATYPE_Constant, ScannableCodeFormatPartDataType.String),
 	ProductCode(X_C_ScannableCode_Format_Part.DATATYPE_ProductCode, ScannableCodeFormatPartDataType.String),
 	WeightInKg(X_C_ScannableCode_Format_Part.DATATYPE_WeightInKg, ScannableCodeFormatPartDataType.Number),
 	LotNo(X_C_ScannableCode_Format_Part.DATATYPE_LotNo, ScannableCodeFormatPartDataType.String),

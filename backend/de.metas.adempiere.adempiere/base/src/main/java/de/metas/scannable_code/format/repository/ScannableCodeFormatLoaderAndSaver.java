@@ -137,7 +137,11 @@ class ScannableCodeFormatLoaderAndSaver
 				.endPosition(record.getEndNo())
 				.type(type);
 
-		if (type == ScannableCodeFormatPartType.BestBeforeDate)
+		if (type == ScannableCodeFormatPartType.Constant)
+		{
+			builder.constantValue(record.getConstantValue());
+		}
+		else if (type == ScannableCodeFormatPartType.BestBeforeDate)
 		{
 			builder.dateFormat(PatternedDateTimeFormatter.ofNullablePattern((record.getDataFormat())));
 		}
@@ -167,6 +171,8 @@ class ScannableCodeFormatLoaderAndSaver
 		record.setEndNo(part.getEndPosition());
 		record.setDataType(part.getType().getCode());
 		record.setDataFormat(PatternedDateTimeFormatter.toPattern(part.getDateFormat()));
+		record.setConstantValue(part.getConstantValue());
+		record.setDecimalPointPosition(part.getDecimalPointPosition());
 		record.setDescription(part.getDescription());
 		InterfaceWrapperHelper.saveRecord(record);
 		addToCache(record);

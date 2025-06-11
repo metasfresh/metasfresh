@@ -71,6 +71,12 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
   switch (formatPart.type) {
     case 'IGNORE':
       break;
+    case 'CONSTANT':
+      if (valueStr !== formatPart.constantValue)
+        return {
+          error: `Expected constant '${formatPart.constant}' but got '${valueStr}'`,
+        };
+      break;
     case 'PRODUCT_CODE':
       return {
         [ATTR_productNo]: valueStr,
@@ -79,7 +85,7 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
       return {
         [ATTR_weightNet]: parseNumber({
           string: valueStr,
-          decimalPoint: formatPart.decimalPoint ?? DEFAULT_weightDecimalPoint,
+          decimalPointPosition: formatPart.decimalPointPosition ?? DEFAULT_weightDecimalPoint,
         }),
         [ATTR_weightNetUOM]: 'kg',
       };
@@ -118,23 +124,23 @@ const trimLeadingZeros = (string) => {
 };
 
 // visible for testing
-export const parseNumber = ({ string, decimalPoint = 0 }) => {
+export const parseNumber = ({ string, decimalPointPosition = 0 }) => {
   if (typeof string !== 'string' || isNaN(Number(string))) {
     throw new Error(`Invalid number format: "${string}"`);
   }
 
-  if (typeof decimalPoint !== 'number' || decimalPoint < 0 || !Number.isInteger(decimalPoint)) {
-    throw new Error(`Invalid decimalPoint: "${decimalPoint}"`);
+  if (typeof decimalPointPosition !== 'number' || decimalPointPosition < 0 || !Number.isInteger(decimalPointPosition)) {
+    throw new Error(`Invalid decimalPoint: "${decimalPointPosition}"`);
   }
 
   const number = Number(string); // Parse the string to a number (removing leading zeros)
 
-  if (decimalPoint === 0) {
+  if (decimalPointPosition === 0) {
     return number; // No decimal point adjustment needed
   }
 
   // Divide the number by 10^decimalPoint to apply the decimal point position
-  const factor = Math.pow(10, decimalPoint);
+  const factor = Math.pow(10, decimalPointPosition);
   return number / factor;
 };
 

@@ -13,6 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
@@ -28,6 +29,8 @@ public class ScannableCodeFormatPart
 	@Nullable PatternedDateTimeFormatter dateFormat;
 	@NonNull private static final PatternedDateTimeFormatter DEFAULT_DATE_FORMAT = PatternedDateTimeFormatter.ofPattern("yyMMdd");
 
+	@Nullable String constantValue;
+
 	@Nullable String description;
 
 	@Builder
@@ -35,7 +38,7 @@ public class ScannableCodeFormatPart
 			final int startPosition,
 			final int endPosition,
 			@NonNull final ScannableCodeFormatPartType type,
-			@Nullable final PatternedDateTimeFormatter dateFormat,
+			@Nullable final PatternedDateTimeFormatter dateFormat, @Nullable final String constantValue,
 			@Nullable final String description)
 	{
 		Check.assume(startPosition >= 1, "startPosition >= 1");
@@ -44,6 +47,7 @@ public class ScannableCodeFormatPart
 		this.startPosition = startPosition;
 		this.endPosition = endPosition;
 		this.type = type;
+		this.constantValue = constantValue;
 		this.description = description;
 
 		switch (type.getDataType())
@@ -81,6 +85,12 @@ public class ScannableCodeFormatPart
 			switch (type)
 			{
 				case Ignored:
+					break;
+				case Constant:
+					if (!Objects.equals(valueStr, constantValue))
+					{
+						return BooleanWithReason.falseBecause("Invalid constant marker, expected `" + constantValue + "` but was `" + valueStr + "`");
+					}
 					break;
 				case ProductCode:
 					result.productNo(valueStr);

@@ -20,6 +20,7 @@ public class JsonScannableCodeFormatPart
 
 	@NonNull ScannableCodeFormatPartType type;
 	@Nullable String dateFormat;
+	@Nullable String constantValue;
 
 	public static JsonScannableCodeFormatPart of(@NonNull final ScannableCodeFormatPart part)
 	{
@@ -28,6 +29,7 @@ public class JsonScannableCodeFormatPart
 				.endPosition(part.getEndPosition())
 				.type(part.getType())
 				.dateFormat(PatternedDateTimeFormatter.toPattern(part.getDateFormat()))
+				.constantValue(part.getConstantValue())
 				.build();
 	}
 }
