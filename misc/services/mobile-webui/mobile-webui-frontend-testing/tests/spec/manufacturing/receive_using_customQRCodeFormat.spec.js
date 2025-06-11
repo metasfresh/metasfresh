@@ -20,22 +20,18 @@ const createMasterdata = async () => {
             products: {
                 "COMP1": {},
                 "COMP2": {},
-                "BY_PRODUCT": {
-                    uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
-                },
                 "BOM": {
+                    uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
                     bom: {
                         lines: [
                             { product: 'COMP1', qty: 1 },
                             { product: 'COMP2', qty: 2 },
-                            { product: 'BY_PRODUCT', qty: -10, percentage: true, componentType: 'BY' },
                         ]
                     }
                 },
             },
             packingInstructions: {
                 "BOM_PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "BOM", qtyCUsPerTU: 4 },
-                "BY_PRODUCT_PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "BY_PRODUCT", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
                 "HU_COMP1": { product: 'COMP1', warehouse: 'wh', qty: 1000 },
@@ -51,7 +47,7 @@ const createMasterdata = async () => {
             },
             customQRCodeFormats: [
                 {
-                    name: 'my custom code',
+                    name: 'my custom code 1',
                     parts: [
                         { startPosition: 1, endPosition: 1, type: 'IGNORE' },
                         { startPosition: 2, endPosition: 7, type: 'PRODUCT_CODE' },
@@ -62,6 +58,16 @@ const createMasterdata = async () => {
                         { startPosition: 24, endPosition: 24, type: 'IGNORE' },
                         { startPosition: 25, endPosition: 30, type: 'IGNORE' },
                     ],
+                },
+                {
+                    name: 'my custom code 2',
+                    parts: [
+                        { startPosition: 1, endPosition: 4, type: 'PRODUCT_CODE' },
+                        { startPosition: 5, endPosition: 10, type: 'WEIGHT_KG' },
+                        { startPosition: 11, endPosition: 18, type: 'LOT' },
+                        { startPosition: 19, endPosition: 24, type: 'IGNORE' },
+                        { startPosition: 25, endPosition: 30, type: 'BEST_BEFORE_DATE', dateFormat: 'yyMMdd' },
+                    ],
                 }
             ]
         }
@@ -69,7 +75,7 @@ const createMasterdata = async () => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Receive By-Product using custom QR Code format', async ({ page }) => {
+test('Receive using custom QR Code format', async ({ page }) => {
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -79,16 +85,17 @@ test('Receive By-Product using custom QR Code format', async ({ page }) => {
 
     await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
-    const byProductsQRCode = await ManufacturingJobScreen.generateSingleHUQRCode({ piTestId: masterdata.packingInstructions.BY_PRODUCT_PI.tuPITestId, numberOfHUs: 1 });
+    const bomQRCode = await ManufacturingJobScreen.generateSingleHUQRCode({ piTestId: masterdata.packingInstructions.BOM_PI.tuPITestId, numberOfHUs: 1 });
 
-    await ManufacturingJobScreen.clickReceiveButton({ index: 2 }); // i.e. first by-product
-    await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: byProductsQRCode });
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: bomQRCode });
+    // NOTE: the product code in the QR code is not validated because, at the moment, product codes from any type of barcode are not being validated.
     await MaterialReceiptLineScreen.receiveQty({ catchWeightQRCode: 'A593707G000384C05321124E000001', expectGoBackToJob: false });
     await MaterialReceiptLineScreen.goBack();
     await Backend.expect({
         hus: {
-            [byProductsQRCode]: {
-                storages: { 'BY_PRODUCT': '1 PCE' },
+            [bomQRCode]: {
+                storages: { 'BOM': '1 PCE' },
                 attributes: { 'WeightNet': '0.384' }
             }
         }
