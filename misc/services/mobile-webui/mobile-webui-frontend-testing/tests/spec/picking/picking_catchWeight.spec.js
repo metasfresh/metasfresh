@@ -7,7 +7,12 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 
-const createMasterdata = async ({ showLastPickedBestBeforeDateForLines } = {}) => {
+const createMasterdata = async ({
+                                    showLastPickedBestBeforeDateForLines,
+                                    productValuePrefix,
+                                    productRandomValue,
+                                    customQRCodeFormats = []
+                                } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -35,7 +40,8 @@ const createMasterdata = async ({ showLastPickedBestBeforeDateForLines } = {}) =
             },
             products: {
                 "P1": {
-                    valuePrefix: '00027', // important for EAN13 barcodes
+                    valuePrefix: productValuePrefix,
+                    randomValue: productRandomValue,
                     gtin: '97311876341811',
                     ean13ProductCode: '4888',
                     uom: 'PCE',
@@ -57,6 +63,7 @@ const createMasterdata = async ({ showLastPickedBestBeforeDateForLines } = {}) =
                     lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }]
                 }
             },
+            customQRCodeFormats,
         }
     })
 }
@@ -136,7 +143,7 @@ test('GS1', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('EAN13 with prefix 28', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdata({ productValuePrefix: '00027' });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -232,6 +239,49 @@ test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
             ],
         });
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Custom QR code format', async ({ page }) => {
+    const masterdata = await createMasterdata({
+        productRandomValue: {
+            size: 4,
+            isIncludeDigits: true,
+        },
+        customQRCodeFormats: [
+            {
+                name: 'my custom code',
+                parts: [
+                    { startPosition: 1, endPosition: 4, type: 'PRODUCT_CODE' },
+                    { startPosition: 5, endPosition: 10, type: 'WEIGHT_KG' },
+                    { startPosition: 11, endPosition: 18, type: 'LOT' },
+                    { startPosition: 19, endPosition: 24, type: 'IGNORE' },
+                    { startPosition: 25, endPosition: 30, type: 'BEST_BEFORE_DATE', dateFormat: 'yyMMdd' },
+                ],
+            }
+        ]
+    });
+
+    const catchWeightQRCode = `${masterdata.products.P1.productCode}09999900000123250403260410`;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        catchWeightQRCode,
+    });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '99.999 kg' });
+
+    await PickingJobScreen.complete();
 });
 
 // noinspection JSUnusedLocalSymbols

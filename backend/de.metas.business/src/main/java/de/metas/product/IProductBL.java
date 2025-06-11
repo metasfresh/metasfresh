@@ -257,4 +257,6 @@ public interface IProductBL extends ISingletonService
 
 	@NonNull
 	List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
+
+	boolean isExistingValue(@NonNull String value, @NonNull ClientId clientId);
 }
