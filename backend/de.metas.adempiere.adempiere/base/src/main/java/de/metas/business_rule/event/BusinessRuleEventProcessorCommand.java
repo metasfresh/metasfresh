@@ -33,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -297,6 +298,11 @@ public class BusinessRuleEventProcessorCommand
 		if (targetPOInfo.hasColumnName(InterfaceWrapperHelper.COLUMNNAME_Name))
 		{
 			sql.append(" || ' ' || target.").append(InterfaceWrapperHelper.COLUMNNAME_Name);
+		}
+
+		if (targetPOInfo.hasColumnName(I_C_OrderLine.COLUMNNAME_Line))
+		{
+			sql.append(" || ' ' || target.").append(I_C_OrderLine.COLUMNNAME_Line);
 		}
 
 		sql.append(" FROM ").append(sourceTableName).append(" JOIN ")
