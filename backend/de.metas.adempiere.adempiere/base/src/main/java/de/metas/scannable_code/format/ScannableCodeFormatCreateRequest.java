@@ -1,12 +1,12 @@
 package de.metas.scannable_code.format;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.format.DateTimeFormatter;
 
 @Value
 @Builder
@@ -16,12 +16,11 @@ public class ScannableCodeFormatCreateRequest
 	@Nullable String description;
 	@NonNull ImmutableList<Part> parts;
 
-	
 	//
- 	//
- 	//
- 	//
- 	//
+	//
+	//
+	//
+	//
 
 	@Value
 	@Builder
@@ -30,7 +29,7 @@ public class ScannableCodeFormatCreateRequest
 		int startPosition;
 		int endPosition;
 		@NonNull ScannableCodeFormatPartType type;
-		@Nullable DateTimeFormatter dateFormat;
+		@Nullable PatternedDateTimeFormatter dateFormat;
 		@Nullable String description;
 	}
 }

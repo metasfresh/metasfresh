@@ -8,13 +8,12 @@ import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
+import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Builder
@@ -60,7 +59,7 @@ public class CustomQRCodeFormatCommand
 										.startPosition(part.getStartPosition())
 										.endPosition(part.getEndPosition())
 										.type(part.getType())
-										.dateFormat(StringUtils.trimBlankToOptional(part.getDateFormat()).map(DateTimeFormatter::ofPattern).orElse(null))
+										.dateFormat(PatternedDateTimeFormatter.ofNullablePattern(part.getDateFormat()))
 										.build())
 								.collect(ImmutableList.toImmutableList())
 						)

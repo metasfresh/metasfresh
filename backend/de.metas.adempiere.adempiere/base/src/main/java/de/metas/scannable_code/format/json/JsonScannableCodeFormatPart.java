@@ -2,6 +2,7 @@ package de.metas.scannable_code.format.json;
 
 import de.metas.scannable_code.format.ScannableCodeFormatPart;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
+import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -26,7 +27,7 @@ public class JsonScannableCodeFormatPart
 				.startPosition(part.getStartPosition())
 				.endPosition(part.getEndPosition())
 				.type(part.getType())
-				.dateFormat(part.getDateFormat() != null ? part.getDateFormat().toString() : null)
+				.dateFormat(PatternedDateTimeFormatter.toPattern(part.getDateFormat()))
 				.build();
 	}
 }

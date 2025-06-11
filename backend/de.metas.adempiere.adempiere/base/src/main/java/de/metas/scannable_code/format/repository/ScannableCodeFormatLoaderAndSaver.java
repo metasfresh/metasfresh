@@ -8,7 +8,7 @@ import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPart;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
-import de.metas.util.StringUtils;
+import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -17,7 +17,6 @@ import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -140,21 +139,10 @@ class ScannableCodeFormatLoaderAndSaver
 
 		if (type == ScannableCodeFormatPartType.BestBeforeDate)
 		{
-			builder.dateFormat(extractDateTimeFormat(record));
+			builder.dateFormat(PatternedDateTimeFormatter.ofNullablePattern((record.getDataFormat())));
 		}
 
 		return builder.build();
-	}
-
-	private static DateTimeFormatter extractDateTimeFormat(final @NotNull I_C_ScannableCode_Format_Part record)
-	{
-		final String pattern = StringUtils.trimBlankToNull(record.getDataFormat());
-		if (pattern == null)
-		{
-			return null;
-		}
-
-		return DateTimeFormatter.ofPattern(pattern);
 	}
 
 	public ScannableCodeFormat create(@NotNull final ScannableCodeFormatCreateRequest request)
@@ -167,7 +155,7 @@ class ScannableCodeFormatLoaderAndSaver
 		final ScannableCodeFormatId formatId = ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID());
 
 		request.getParts().forEach(part -> createPart(part, formatId));
-		
+
 		return getById(formatId);
 	}
 
@@ -178,7 +166,7 @@ class ScannableCodeFormatLoaderAndSaver
 		record.setStartNo(part.getStartPosition());
 		record.setEndNo(part.getEndPosition());
 		record.setDataType(part.getType().getCode());
-		record.setDataFormat(part.getDateFormat() != null ? part.getDateFormat().toString() : null);
+		record.setDataFormat(PatternedDateTimeFormatter.toPattern(part.getDateFormat()));
 		record.setDescription(part.getDescription());
 		InterfaceWrapperHelper.saveRecord(record);
 		addToCache(record);
