@@ -186,3 +186,17 @@ UPDATE AD_Column SET AD_Reference_ID=10,Updated=TO_TIMESTAMP('2025-06-11 11:24:4
 INSERT INTO t_alter_column values('c_scannablecode_format_part','ConstantValue','VARCHAR(100)',null,null)
 ;
 
+-- Run mode: SWING_CLIENT
+
+-- UI Element: Scannable Code Format(541880,D) -> Scannable Code Format Part(547958,D) -> main -> 10 -> default.Data Format
+-- Column: C_ScannableCode_Format_Part.DataFormat
+-- 2025-06-11T12:54:30.830Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2025-06-11 12:54:30.830000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=631429
+;
+
+-- UI Element: Scannable Code Format(541880,D) -> Scannable Code Format Part(547958,D) -> main -> 20 -> flags.Aktiv
+-- Column: C_ScannableCode_Format_Part.IsActive
+-- 2025-06-11T12:54:30.841Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2025-06-11 12:54:30.841000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=631431
+;
+
