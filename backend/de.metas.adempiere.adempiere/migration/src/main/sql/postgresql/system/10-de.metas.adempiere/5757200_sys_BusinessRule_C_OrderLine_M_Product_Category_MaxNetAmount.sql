@@ -102,15 +102,16 @@ UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=t
 
 
 -- Name: C_OrderLine_M_Product_Category_MaxNetAmount
--- 2025-06-10T16:49:51.867Z
+-- 2025-06-11T09:51:26.339Z
 UPDATE AD_Val_Rule SET Code='NOT EXISTS (SELECT 1 from
 M_Product_Category pc
 JOIN M_Product p ON pc.M_Product_Category_ID = p.M_Product_Category_ID
 JOIN M_Product_Category_MaxNetAmount pcm ON pc.M_Product_Category_ID = pcm.M_Product_Category_ID
 WHERE p.M_Product_ID = C_OrderLine.M_Product_ID
 AND pcm.C_Currency_ID = C_OrderLine.C_Currency_ID
-AND pcm.MaxNetAmount < C_OrderLine.LineNetAmt)',Updated=TO_TIMESTAMP('2025-06-10 16:49:51.867000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540732
+AND pcm.MaxNetAmount < ABS(C_OrderLine.LineNetAmt))',Updated=TO_TIMESTAMP('2025-06-11 09:51:26.339000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540732
 ;
+
 
 
 -- 2025-06-10T17:12:26.617Z
@@ -134,16 +135,5 @@ UPDATE AD_Message_Trl SET MsgText='Der maximale Nettobetrag für die Produktkate
 
 -- 2025-06-10T17:27:45.205Z
 UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
-;
-
--- Name: C_OrderLine_M_Product_Category_MaxNetAmount
--- 2025-06-11T09:51:26.339Z
-UPDATE AD_Val_Rule SET Code='NOT EXISTS (SELECT 1 from
-M_Product_Category pc
-JOIN M_Product p ON pc.M_Product_Category_ID = p.M_Product_Category_ID
-JOIN M_Product_Category_MaxNetAmount pcm ON pc.M_Product_Category_ID = pcm.M_Product_Category_ID
-WHERE p.M_Product_ID = C_OrderLine.M_Product_ID
-AND pcm.C_Currency_ID = C_OrderLine.C_Currency_ID
-AND pcm.MaxNetAmount < ABS(C_OrderLine.LineNetAmt))',Updated=TO_TIMESTAMP('2025-06-11 09:51:26.339000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540732
 ;
 
