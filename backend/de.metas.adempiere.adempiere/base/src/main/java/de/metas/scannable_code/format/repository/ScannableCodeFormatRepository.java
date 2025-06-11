@@ -78,4 +78,12 @@ public class ScannableCodeFormatRepository
 
 		return sqlQuery;
 	}
+
+	public void deleteParts(@NotNull final ScannableCodeFormatId formatId)
+	{
+		queryBL.createQueryBuilder(I_C_ScannableCode_Format_Part.class)
+				.addEqualsFilter(I_C_ScannableCode_Format_Part.COLUMNNAME_C_ScannableCode_Format_ID, formatId)
+				.create()
+				.delete();
+	}
 }
