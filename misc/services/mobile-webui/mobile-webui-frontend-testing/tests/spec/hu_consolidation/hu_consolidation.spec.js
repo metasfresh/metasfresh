@@ -7,6 +7,7 @@ import { HUConsolidationJobScreen } from '../../utils/screens/huConsolidation/HU
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
+import { PickingSlotScreen } from '../../utils/screens/huConsolidation/PickingSlotScreen';
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -54,49 +55,53 @@ const createMasterdata = async () => {
     })
 }
 
+const pickHUsToPickingSlot = async ({ masterdata }) => await test.step("Pick", async () => {
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectScanHUScreen: true });
+    await PickLineScanScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+    await PickingJobScreen.complete();
+    await PickingJobsListScreen.goBack();
+    const { context } = await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: '-', tu: 'tu2', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: '-', tu: 'tu3', lu: '-', processed: false, shipmentLineId: '-' },
+                        ]
+                    }
+                }
+            }
+        },
+        pickingSlots: {
+            [masterdata.pickingSlots.slot1.qrCode]: {
+                queue: [
+                    { hu: 'tu1' },
+                    { hu: 'tu2' },
+                    { hu: 'tu3' },
+                ]
+            }
+        },
+    });
+
+    return { context };
+});
+
 // noinspection JSUnusedLocalSymbols
-test('Simple HU consolidation test', async ({ page }) => {
+test('Simple HU consolidate all test', async ({ page }) => {
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
 
-    await test.step("Pick", async () => {
-        await ApplicationsListScreen.startApplication('picking');
-        await PickingJobsListScreen.waitForScreen();
-        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-        const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectScanHUScreen: true });
-        await PickLineScanScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
-
-        await PickingJobScreen.complete();
-        await PickingJobsListScreen.goBack();
-        await Backend.expect({
-            pickings: {
-                [pickingJobId]: {
-                    shipmentSchedules: {
-                        P1: {
-                            qtyPicked: [
-                                { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: '-', tu: 'tu2', lu: '-', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhuId: '-', tu: 'tu3', lu: '-', processed: false, shipmentLineId: '-' },
-                            ]
-                        }
-                    }
-                }
-            },
-            pickingSlots: {
-                [masterdata.pickingSlots.slot1.qrCode]: {
-                    queue: [
-                        { hu: 'tu1' },
-                        { hu: 'tu2' },
-                        { hu: 'tu3' },
-                    ]
-                }
-            },
-        });
-    });
+    await pickHUsToPickingSlot({ masterdata });
 
     await test.step("HU Consolidate & Ship", async () => {
         await ApplicationsListScreen.expectVisible();
@@ -105,6 +110,30 @@ test('Simple HU consolidation test', async ({ page }) => {
         await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId })
         await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
         await HUConsolidationJobScreen.consolidateAll({ pickingSlotId: masterdata.pickingSlots.slot1.id });
+        await HUConsolidationJobScreen.complete();
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Simple HU consolidate HUs one by one test', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const { context } = await pickHUsToPickingSlot({ masterdata });
+
+    await test.step("HU Consolidate & Ship", async () => {
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huConsolidation');
+        await HUConsolidationJobsListScreen.waitForScreen();
+        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId })
+        await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
+        await PickingSlotScreen.clickConsolidateHUButton({ huId: context.tu1 });
+        await PickingSlotScreen.clickConsolidateHUButton({ huId: context.tu2 });
+        await PickingSlotScreen.clickConsolidateHUButton({ huId: context.tu3 });
+        await PickingSlotScreen.goBack();
         await HUConsolidationJobScreen.complete();
     });
 });

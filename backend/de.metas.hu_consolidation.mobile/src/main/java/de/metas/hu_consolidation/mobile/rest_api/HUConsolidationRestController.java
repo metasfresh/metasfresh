@@ -2,11 +2,15 @@ package de.metas.hu_consolidation.mobile.rest_api;
 
 import de.metas.Profiles;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
+import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateResponse;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobAvailableTargets;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
@@ -77,14 +81,33 @@ public class HUConsolidationRestController
 	}
 
 	@PostMapping("/job/{wfProcessId}/consolidate")
-	public JsonWFProcess consolidate(
+	public JsonConsolidateResponse consolidate(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
 			@RequestBody @NonNull final JsonConsolidateRequest request)
 	{
 		assertApplicationAccess();
 
-		final WFProcess wfProcess = mobileApplication.consolidate(request.withWFProcessId(wfProcessIdStr), getLoggedUserId());
-		return workflowRestController.toJson(wfProcess);
+		final JsonConsolidateRequest requestEffective = request.withWFProcessId(wfProcessIdStr);
+		final WFProcess wfProcess = mobileApplication.consolidate(requestEffective, getLoggedUserId());
+
+		JsonHUConsolidationJobPickingSlotContent pickingSlotContent = mobileApplication.getPickingSlotContent(requestEffective.getJobId(), request.getFromPickingSlotId());
+
+		return JsonConsolidateResponse.builder()
+				.wfProcess(workflowRestController.toJson(wfProcess))
+				.pickingSlotContent(pickingSlotContent)
+				.build();
+	}
+
+	@GetMapping("/job/{wfProcessId}/pickingSlot/{pickingSlotId}")
+	public JsonHUConsolidationJobPickingSlotContent getPickingSlotContent(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@PathVariable("pickingSlotId") @NonNull final String pickingSlotIdStr)
+	{
+		assertApplicationAccess();
+
+		final HUConsolidationJobId jobId = HUConsolidationJobId.ofWFProcessId(WFProcessId.ofString(wfProcessIdStr));
+		final PickingSlotId pickingSlotId = PickingSlotId.ofObject(pickingSlotIdStr);
+		return mobileApplication.getPickingSlotContent(jobId, pickingSlotId);
 	}
 
 }

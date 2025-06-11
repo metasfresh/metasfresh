@@ -46,6 +46,7 @@ import org.compiere.model.I_M_Product;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -143,6 +144,8 @@ public interface IProductBL extends ISingletonService
 	{
 		return UomId.ofRepoId(getStockUOM(productId).getC_UOM_ID());
 	}
+
+	Map<ProductId, String> getProductNames(@NonNull Set<ProductId> productIds);
 
 	Optional<UomId> getCatchUOMId(ProductId productId);
 

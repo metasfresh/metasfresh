@@ -1,6 +1,7 @@
 package de.metas.picking.qrcode;
 
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
@@ -47,4 +48,8 @@ public class PickingSlotQRCode
 				.build();
 	}
 
+	public JsonDisplayableQRCode toJsonDisplayableQRCode()
+	{
+		return toPrintableQRCode().toJsonDisplayableQRCode();
+	}
 }

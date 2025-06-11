@@ -1,5 +1,6 @@
 package de.metas.hu_consolidation.mobile.job.commands.consolidate;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -21,8 +22,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ConsolidateCommand
 {
@@ -35,6 +38,7 @@ public class ConsolidateCommand
 	@NonNull private final UserId callerId;
 	@NonNull private final HUConsolidationJobId jobId;
 	@NonNull private final PickingSlotId fromPickingSlotId;
+	@Nullable private final HuId huId;
 
 	// State
 	private HUTransformService huTransformService; // lazy
@@ -56,6 +60,7 @@ public class ConsolidateCommand
 		this.callerId = request.getCallerId();
 		this.jobId = request.getJobId();
 		this.fromPickingSlotId = request.getFromPickingSlotId();
+		this.huId = request.getHuId();
 	}
 
 	public HUConsolidationJob execute()
@@ -67,11 +72,11 @@ public class ConsolidateCommand
 	{
 		this.huTransformService = HUTransformService.newInstance();
 		this.job = jobInitial;
-		
+
 		job.assertUserCanEdit(callerId);
 
-		final PickingSlotQueue fromPickingSlotQueue = getFromPickingSlotQueue();
-		final List<I_M_HU> hus = handlingUnitsBL.getByIds(fromPickingSlotQueue.getHuIds());
+		final Set<HuId> huIds = getHuIdsToConsolidate();
+		final List<I_M_HU> hus = handlingUnitsBL.getByIds(huIds);
 		if (hus.isEmpty())
 		{
 			throw new AdempiereException("No HUs were found in picking slot " + fromPickingSlotId);
@@ -93,9 +98,26 @@ public class ConsolidateCommand
 
 		consolidateFromLUs(lus);
 		consolidateFromTUs(tus);
-		pickingSlotService.removeFromPickingSlotQueue(fromPickingSlotQueue.getPickingSlotId(), fromPickingSlotQueue.getHuIds());
+		pickingSlotService.removeFromPickingSlotQueue(fromPickingSlotId, huIds);
 
 		return job;
+	}
+
+	private Set<HuId> getHuIdsToConsolidate()
+	{
+		final PickingSlotQueue fromPickingSlotQueue = getFromPickingSlotQueue();
+		if (huId != null)
+		{
+			if (!fromPickingSlotQueue.containsHuId(huId))
+			{
+				throw new AdempiereException("No HU with ID " + huId + " was found in picking slot " + fromPickingSlotQueue.getPickingSlotId() + "!");
+			}
+			return ImmutableSet.of(huId);
+		}
+		else
+		{
+			return fromPickingSlotQueue.getHuIds();
+		}
 	}
 
 	private PickingSlotQueue getFromPickingSlotQueue()
