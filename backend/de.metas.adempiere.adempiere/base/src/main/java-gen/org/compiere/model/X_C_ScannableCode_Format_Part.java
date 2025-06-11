@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO implements I_C_ScannableCode_Format_Part, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -668835490L;
+	private static final long serialVersionUID = -1186916345L;
 
     /** Standard Constructor */
     public X_C_ScannableCode_Format_Part (final Properties ctx, final int C_ScannableCode_Format_Part_ID, @Nullable final String trxName)
@@ -32,6 +32,18 @@ public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO impleme
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setConstantValue (final @Nullable java.lang.String ConstantValue)
+	{
+		set_Value (COLUMNNAME_ConstantValue, ConstantValue);
+	}
+
+	@Override
+	public java.lang.String getConstantValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_ConstantValue);
 	}
 
 	@Override
@@ -103,6 +115,8 @@ public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO impleme
 	public static final String DATATYPE_BestBeforeDate = "BEST_BEFORE_DATE";
 	/** Ignored = IGNORE */
 	public static final String DATATYPE_Ignored = "IGNORE";
+	/** Constant = CONSTANT */
+	public static final String DATATYPE_Constant = "CONSTANT";
 	@Override
 	public void setDataType (final java.lang.String DataType)
 	{
@@ -113,6 +127,18 @@ public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO impleme
 	public java.lang.String getDataType() 
 	{
 		return get_ValueAsString(COLUMNNAME_DataType);
+	}
+
+	@Override
+	public void setDecimalPointPosition (final int DecimalPointPosition)
+	{
+		set_Value (COLUMNNAME_DecimalPointPosition, DecimalPointPosition);
+	}
+
+	@Override
+	public int getDecimalPointPosition() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DecimalPointPosition);
 	}
 
 	@Override

@@ -28,6 +28,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.allergen.ProductAllergensService;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
+import de.metas.scannable_code.format.json.JsonScannableCodeFormat;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -39,6 +41,7 @@ import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.util.api.Params;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -50,31 +53,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class MaterialReceiptActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.materialReceipt");
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/materialReceipt");
 
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-	private final IBPartnerBL bpartnerBL;
-	private final HUQRCodesService huQRCodeService;
-	private final ProductHazardSymbolService productHazardSymbolService;
-	private final ProductAllergensService productAllergensService;
-
-	public MaterialReceiptActivityHandler(
-			final @NonNull IBPartnerBL bpartnerBL,
-			final @NonNull HUQRCodesService huQRCodeService,
-			final @NonNull ProductHazardSymbolService productHazardSymbolService,
-			final @NonNull ProductAllergensService productAllergensService)
-	{
-		this.bpartnerBL = bpartnerBL;
-		this.huQRCodeService = huQRCodeService;
-		this.productHazardSymbolService = productHazardSymbolService;
-		this.productAllergensService = productAllergensService;
-	}
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+	@NonNull private final IBPartnerBL bpartnerBL;
+	@NonNull private final HUQRCodesService huQRCodeService;
+	@NonNull private final ProductHazardSymbolService productHazardSymbolService;
+	@NonNull private final ProductAllergensService productAllergensService;
+	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -92,6 +85,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
+						.valueObj("customQRCodeFormats", JsonScannableCodeFormat.ofCollection(scannableCodeFormatService.getAll()))
 						.build())
 				.build();
 	}
@@ -124,9 +118,9 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.availableReceivingTargets(newLUTargets)
 				.availableReceivingTUTargets(tuTargetList)
 				.catchWeightUomSymbol(Optional.ofNullable(line.getCatchWeightUOMId())
-										.map(uomDao::getById)
-										.map(I_C_UOM::getUOMSymbol)
-										.orElse(null))
+						.map(uomDao::getById)
+						.map(I_C_UOM::getUOMSymbol)
+						.orElse(null))
 				.build();
 	}
 

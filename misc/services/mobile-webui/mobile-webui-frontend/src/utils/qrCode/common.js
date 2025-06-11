@@ -15,6 +15,7 @@ export const BARCODE_TYPE_GS1 = 'GS1';
 export const BARCODE_TYPE_EAN13 = 'EAN13';
 export const BARCODE_TYPE_HU = 'HU'; // global HU QR code
 export const BARCODE_TYPE_LMQ = 'LMQ'; // Leich+Mehl QR code
+export const BARCODE_TYPE_CUSTOM = 'CUSTOM';
 
 export const QRCODE_SEPARATOR = '#';
 

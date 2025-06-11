@@ -51,6 +51,29 @@ public interface I_C_ScannableCode_Format_Part
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Constant Value.
+	 * Constant value
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setConstantValue (@Nullable java.lang.String ConstantValue);
+
+	/**
+	 * Get Constant Value.
+	 * Constant value
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getConstantValue();
+
+	ModelColumn<I_C_ScannableCode_Format_Part, Object> COLUMN_ConstantValue = new ModelColumn<>(I_C_ScannableCode_Format_Part.class, "ConstantValue", null);
+	String COLUMNNAME_ConstantValue = "ConstantValue";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -166,6 +189,27 @@ public interface I_C_ScannableCode_Format_Part
 
 	ModelColumn<I_C_ScannableCode_Format_Part, Object> COLUMN_DataType = new ModelColumn<>(I_C_ScannableCode_Format_Part.class, "DataType", null);
 	String COLUMNNAME_DataType = "DataType";
+
+	/**
+	 * Set Decimal Point Position.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDecimalPointPosition (int DecimalPointPosition);
+
+	/**
+	 * Get Decimal Point Position.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDecimalPointPosition();
+
+	ModelColumn<I_C_ScannableCode_Format_Part, Object> COLUMN_DecimalPointPosition = new ModelColumn<>(I_C_ScannableCode_Format_Part.class, "DecimalPointPosition", null);
+	String COLUMNNAME_DecimalPointPosition = "DecimalPointPosition";
 
 	/**
 	 * Set Description.
