@@ -1,7 +1,7 @@
 -- Run mode: SWING_CLIENT
 
 -- 2025-06-10T15:46:10.493Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583719,0,TO_TIMESTAMP('2025-06-10 15:46:09.847000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.endcustomer.ic114','Y','Prognose Position','Prognose Position',TO_TIMESTAMP('2025-06-10 15:46:09.847000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583719,0,TO_TIMESTAMP('2025-06-10 15:46:09.847000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Prognose Position','Prognose Position',TO_TIMESTAMP('2025-06-10 15:46:09.847000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:46:10.847Z
@@ -23,7 +23,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 
 -- Window: Prognose Position, InternalName=null
 -- 2025-06-10T15:47:48.308Z
-INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority) VALUES (0,583719,0,541900,TO_TIMESTAMP('2025-06-10 15:47:47.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','Y','Prognose Position','N',TO_TIMESTAMP('2025-06-10 15:47:47.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M',0,0,100)
+INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority) VALUES (0,583719,0,541900,TO_TIMESTAMP('2025-06-10 15:47:47.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N','N','N','N','N','Y','Prognose Position','N',TO_TIMESTAMP('2025-06-10 15:47:47.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M',0,0,100)
 ;
 
 -- 2025-06-10T15:47:48.464Z
@@ -42,10 +42,10 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541900
 /* DDL */ select AD_Element_Link_Create_Missing_Window(541900)
 ;
 
--- Tab: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position
+-- Tab: Prognose Position(541900,D) -> Prognose-Position
 -- Table: M_ForecastLine
 -- 2025-06-10T15:48:44.938Z
-INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,Description,EntityType,HasTree,Help,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,2499,0,548194,722,541900,'Y',TO_TIMESTAMP('2025-06-10 15:48:44.013000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Prognose-Position','de.metas.endcustomer.ic114','N','Forecast of Product Qyantity by Period','N','A','M_ForecastLine','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Prognose-Position','N',10,0,TO_TIMESTAMP('2025-06-10 15:48:44.013000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,Description,EntityType,HasTree,Help,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,2499,0,548194,722,541900,'Y',TO_TIMESTAMP('2025-06-10 15:48:44.013000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Prognose-Position','D','N','Forecast of Product Qyantity by Period','N','A','M_ForecastLine','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Prognose-Position','N',10,0,TO_TIMESTAMP('2025-06-10 15:48:44.013000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:48:45.097Z
@@ -60,10 +60,10 @@ INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Na
 /* DDL */ select AD_Element_Link_Create_Missing_Tab(548194)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Periode
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Periode
 -- Column: M_ForecastLine.C_Period_ID
 -- 2025-06-10T15:48:57.311Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11934,747556,0,548194,TO_TIMESTAMP('2025-06-10 15:48:56.524000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Periode des Kalenders',22,'de.metas.endcustomer.ic114','"Periode" bezeichnet einen eklusiven Datumsbereich eines Kalenders.','Y','N','N','N','N','N','N','N','Periode',TO_TIMESTAMP('2025-06-10 15:48:56.524000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11934,747556,0,548194,TO_TIMESTAMP('2025-06-10 15:48:56.524000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Periode des Kalenders',22,'D','"Periode" bezeichnet einen eklusiven Datumsbereich eines Kalenders.','Y','N','N','N','N','N','N','N','Periode',TO_TIMESTAMP('2025-06-10 15:48:56.524000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:48:57.418Z
@@ -82,10 +82,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747556
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747556)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Mandant
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Mandant
 -- Column: M_ForecastLine.AD_Client_ID
 -- 2025-06-10T15:48:58.400Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11935,747557,0,548194,TO_TIMESTAMP('2025-06-10 15:48:57.686000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.',22,'de.metas.endcustomer.ic114','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','N','N','N','Y','N','Mandant',TO_TIMESTAMP('2025-06-10 15:48:57.686000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11935,747557,0,548194,TO_TIMESTAMP('2025-06-10 15:48:57.686000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.',22,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','N','N','N','Y','N','Mandant',TO_TIMESTAMP('2025-06-10 15:48:57.686000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:48:58.553Z
@@ -104,10 +104,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747557
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747557)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Sektion
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Sektion
 -- Column: M_ForecastLine.AD_Org_ID
 -- 2025-06-10T15:48:59.597Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11937,747558,0,548194,TO_TIMESTAMP('2025-06-10 15:48:58.863000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten',22,'de.metas.endcustomer.ic114','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','N','N','N','Sektion',TO_TIMESTAMP('2025-06-10 15:48:58.863000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11937,747558,0,548194,TO_TIMESTAMP('2025-06-10 15:48:58.863000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten',22,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','N','N','N','Sektion',TO_TIMESTAMP('2025-06-10 15:48:58.863000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:48:59.699Z
@@ -126,10 +126,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747558
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747558)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Menge
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Menge
 -- Column: M_ForecastLine.Qty
 -- 2025-06-10T15:49:00.759Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11938,747559,0,548194,TO_TIMESTAMP('2025-06-10 15:49:00.025000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Menge',22,'de.metas.endcustomer.ic114','Menge bezeichnet die Anzahl eines bestimmten Produktes oder Artikels für dieses Dokument.','Y','N','N','N','N','N','N','N','Menge',TO_TIMESTAMP('2025-06-10 15:49:00.025000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11938,747559,0,548194,TO_TIMESTAMP('2025-06-10 15:49:00.025000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Menge',22,'D','Menge bezeichnet die Anzahl eines bestimmten Produktes oder Artikels für dieses Dokument.','Y','N','N','N','N','N','N','N','Menge',TO_TIMESTAMP('2025-06-10 15:49:00.025000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:00.865Z
@@ -148,10 +148,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747559
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747559)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Prognose
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Prognose
 -- Column: M_ForecastLine.M_Forecast_ID
 -- 2025-06-10T15:49:01.864Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11939,747560,0,548194,TO_TIMESTAMP('2025-06-10 15:49:01.128000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Vorhersagen zu Material-/Produkt-/Artikelentwicklung',22,'de.metas.endcustomer.ic114','Vorhersagen zu Material-/Produkt-/Artikelentwicklung','Y','N','N','N','N','N','N','N','Prognose',TO_TIMESTAMP('2025-06-10 15:49:01.128000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11939,747560,0,548194,TO_TIMESTAMP('2025-06-10 15:49:01.128000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Vorhersagen zu Material-/Produkt-/Artikelentwicklung',22,'D','Vorhersagen zu Material-/Produkt-/Artikelentwicklung','Y','N','N','N','N','N','N','N','Prognose',TO_TIMESTAMP('2025-06-10 15:49:01.128000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:01.972Z
@@ -170,10 +170,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747560
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747560)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Aktiv
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Aktiv
 -- Column: M_ForecastLine.IsActive
 -- 2025-06-10T15:49:02.945Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11940,747561,0,548194,TO_TIMESTAMP('2025-06-10 15:49:02.230000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv',1,'de.metas.endcustomer.ic114','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2025-06-10 15:49:02.230000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11940,747561,0,548194,TO_TIMESTAMP('2025-06-10 15:49:02.230000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2025-06-10 15:49:02.230000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:03.058Z
@@ -192,10 +192,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747561
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747561)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Produkt
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Produkt
 -- Column: M_ForecastLine.M_Product_ID
 -- 2025-06-10T15:49:04.103Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11941,747562,0,548194,TO_TIMESTAMP('2025-06-10 15:49:03.385000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt, Leistung, Artikel',22,'de.metas.endcustomer.ic114','Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','N','N','N','N','N','N','N','Produkt',TO_TIMESTAMP('2025-06-10 15:49:03.385000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11941,747562,0,548194,TO_TIMESTAMP('2025-06-10 15:49:03.385000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt, Leistung, Artikel',22,'D','Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','N','N','N','N','N','N','N','Produkt',TO_TIMESTAMP('2025-06-10 15:49:03.385000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:04.209Z
@@ -214,10 +214,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747562
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747562)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Prognose-Position
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Prognose-Position
 -- Column: M_ForecastLine.M_ForecastLine_ID
 -- 2025-06-10T15:49:05.196Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11942,747563,0,548194,TO_TIMESTAMP('2025-06-10 15:49:04.483000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Prognose-Position',22,'de.metas.endcustomer.ic114','Forecast of Product Qyantity by Period','Y','N','N','N','N','N','N','N','Prognose-Position',TO_TIMESTAMP('2025-06-10 15:49:04.483000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11942,747563,0,548194,TO_TIMESTAMP('2025-06-10 15:49:04.483000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Prognose-Position',22,'D','Forecast of Product Qyantity by Period','Y','N','N','N','N','N','N','N','Prognose-Position',TO_TIMESTAMP('2025-06-10 15:49:04.483000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:05.302Z
@@ -236,10 +236,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747563
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747563)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Calculated Quantity
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Calculated Quantity
 -- Column: M_ForecastLine.QtyCalculated
 -- 2025-06-10T15:49:06.307Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11959,747564,0,548194,TO_TIMESTAMP('2025-06-10 15:49:05.563000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Calculated Quantity',22,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','Calculated Quantity',TO_TIMESTAMP('2025-06-10 15:49:05.563000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11959,747564,0,548194,TO_TIMESTAMP('2025-06-10 15:49:05.563000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Calculated Quantity',22,'D','Y','N','N','N','N','N','N','N','Calculated Quantity',TO_TIMESTAMP('2025-06-10 15:49:05.563000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:06.411Z
@@ -258,10 +258,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747564
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747564)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Lager
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Lager
 -- Column: M_ForecastLine.M_Warehouse_ID
 -- 2025-06-10T15:49:07.405Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,53411,747565,0,548194,TO_TIMESTAMP('2025-06-10 15:49:06.670000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Lager oder Ort für Dienstleistung',22,'de.metas.endcustomer.ic114','Das Lager identifiziert ein einzelnes Lager für Artikel oder einen Standort an dem Dienstleistungen geboten werden.','Y','N','N','N','N','N','N','N','Lager',TO_TIMESTAMP('2025-06-10 15:49:06.670000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,53411,747565,0,548194,TO_TIMESTAMP('2025-06-10 15:49:06.670000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Lager oder Ort für Dienstleistung',22,'D','Das Lager identifiziert ein einzelnes Lager für Artikel oder einen Standort an dem Dienstleistungen geboten werden.','Y','N','N','N','N','N','N','N','Lager',TO_TIMESTAMP('2025-06-10 15:49:06.670000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:07.511Z
@@ -280,10 +280,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747565
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747565)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Zugesagter Termin
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Zugesagter Termin
 -- Column: M_ForecastLine.DatePromised
 -- 2025-06-10T15:49:08.493Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,53412,747566,0,548194,TO_TIMESTAMP('2025-06-10 15:49:07.772000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Zugesagter Termin für diesen Auftrag',7,'de.metas.endcustomer.ic114','Der "Zugesagte Termin" gibt das Datum an, für den (wenn zutreffend) dieser Auftrag zugesagt wurde.','Y','N','N','N','N','N','N','N','Zugesagter Termin',TO_TIMESTAMP('2025-06-10 15:49:07.772000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,53412,747566,0,548194,TO_TIMESTAMP('2025-06-10 15:49:07.772000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Zugesagter Termin für diesen Auftrag',7,'D','Der "Zugesagte Termin" gibt das Datum an, für den (wenn zutreffend) dieser Auftrag zugesagt wurde.','Y','N','N','N','N','N','N','N','Zugesagter Termin',TO_TIMESTAMP('2025-06-10 15:49:07.772000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:08.596Z
@@ -302,10 +302,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747566
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747566)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Kundenbetreuer
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Kundenbetreuer
 -- Column: M_ForecastLine.SalesRep_ID
 -- 2025-06-10T15:49:09.590Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,56113,747567,0,548194,TO_TIMESTAMP('2025-06-10 15:49:08.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'',22,'de.metas.endcustomer.ic114','','Y','N','N','N','N','N','N','N','Kundenbetreuer',TO_TIMESTAMP('2025-06-10 15:49:08.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,56113,747567,0,548194,TO_TIMESTAMP('2025-06-10 15:49:08.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'',22,'D','','Y','N','N','N','N','N','N','N','Kundenbetreuer',TO_TIMESTAMP('2025-06-10 15:49:08.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:09.701Z
@@ -324,10 +324,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747567
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747567)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Geschäftspartner
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Geschäftspartner
 -- Column: M_ForecastLine.C_BPartner_ID
 -- 2025-06-10T15:49:10.710Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,550452,747568,0,548194,TO_TIMESTAMP('2025-06-10 15:49:09.964000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Bezeichnet einen Geschäftspartner',22,'de.metas.endcustomer.ic114','Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','N','N','N','N','N','N','N','Geschäftspartner',TO_TIMESTAMP('2025-06-10 15:49:09.964000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,550452,747568,0,548194,TO_TIMESTAMP('2025-06-10 15:49:09.964000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Bezeichnet einen Geschäftspartner',22,'D','Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','N','N','N','N','N','N','N','Geschäftspartner',TO_TIMESTAMP('2025-06-10 15:49:09.964000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:10.815Z
@@ -346,10 +346,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747568
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747568)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Standort
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Standort
 -- Column: M_ForecastLine.C_BPartner_Location_ID
 -- 2025-06-10T15:49:11.817Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,550454,747569,0,548194,TO_TIMESTAMP('2025-06-10 15:49:11.084000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Identifiziert die (Liefer-) Adresse des Geschäftspartners',22,'de.metas.endcustomer.ic114','Identifiziert die Adresse des Geschäftspartners','Y','N','N','N','N','N','N','N','Standort',TO_TIMESTAMP('2025-06-10 15:49:11.084000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,550454,747569,0,548194,TO_TIMESTAMP('2025-06-10 15:49:11.084000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Identifiziert die (Liefer-) Adresse des Geschäftspartners',22,'D','Identifiziert die Adresse des Geschäftspartners','Y','N','N','N','N','N','N','N','Standort',TO_TIMESTAMP('2025-06-10 15:49:11.084000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:11.921Z
@@ -368,10 +368,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747569
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747569)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Merkmale
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Merkmale
 -- Column: M_ForecastLine.M_AttributeSetInstance_ID
 -- 2025-06-10T15:49:12.917Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,551910,747570,0,548194,TO_TIMESTAMP('2025-06-10 15:49:12.181000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Merkmals Ausprägungen zum Produkt',10,'de.metas.endcustomer.ic114','The values of the actual Product Attribute Instances.  The product level attributes are defined on Product level.','Y','N','N','N','N','N','N','N','Merkmale',TO_TIMESTAMP('2025-06-10 15:49:12.181000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,551910,747570,0,548194,TO_TIMESTAMP('2025-06-10 15:49:12.181000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Merkmals Ausprägungen zum Produkt',10,'D','The values of the actual Product Attribute Instances.  The product level attributes are defined on Product level.','Y','N','N','N','N','N','N','N','Merkmale',TO_TIMESTAMP('2025-06-10 15:49:12.181000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:13.020Z
@@ -390,10 +390,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747570
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747570)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Packvorschrift
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Packvorschrift
 -- Column: M_ForecastLine.M_HU_PI_Item_Product_ID
 -- 2025-06-10T15:49:14.270Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557889,747571,0,548194,TO_TIMESTAMP('2025-06-10 15:49:13.287000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','Packvorschrift',TO_TIMESTAMP('2025-06-10 15:49:13.287000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557889,747571,0,548194,TO_TIMESTAMP('2025-06-10 15:49:13.287000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'D','Y','N','N','N','N','N','N','N','Packvorschrift',TO_TIMESTAMP('2025-06-10 15:49:13.287000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:14.826Z
@@ -412,10 +412,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747571
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747571)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Menge TU
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Menge TU
 -- Column: M_ForecastLine.QtyEnteredTU
 -- 2025-06-10T15:49:15.971Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557890,747572,0,548194,TO_TIMESTAMP('2025-06-10 15:49:15.256000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,22,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','Menge TU',TO_TIMESTAMP('2025-06-10 15:49:15.256000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557890,747572,0,548194,TO_TIMESTAMP('2025-06-10 15:49:15.256000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,22,'D','Y','N','N','N','N','N','N','N','Menge TU',TO_TIMESTAMP('2025-06-10 15:49:15.256000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:16.080Z
@@ -434,10 +434,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747572
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747572)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Maßeinheit
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Maßeinheit
 -- Column: M_ForecastLine.C_UOM_ID
 -- 2025-06-10T15:49:17.080Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557891,747573,0,548194,TO_TIMESTAMP('2025-06-10 15:49:16.349000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Maßeinheit',22,'de.metas.endcustomer.ic114','Eine eindeutige (nicht monetäre) Maßeinheit','Y','N','N','N','N','N','N','N','Maßeinheit',TO_TIMESTAMP('2025-06-10 15:49:16.349000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,557891,747573,0,548194,TO_TIMESTAMP('2025-06-10 15:49:16.349000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Maßeinheit',22,'D','Eine eindeutige (nicht monetäre) Maßeinheit','Y','N','N','N','N','N','N','N','Maßeinheit',TO_TIMESTAMP('2025-06-10 15:49:16.349000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:17.182Z
@@ -456,10 +456,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747573
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747573)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> UserElementString1
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> UserElementString1
 -- Column: M_ForecastLine.UserElementString1
 -- 2025-06-10T15:49:18.166Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572451,747574,0,548194,TO_TIMESTAMP('2025-06-10 15:49:17.456000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','UserElementString1',TO_TIMESTAMP('2025-06-10 15:49:17.456000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572451,747574,0,548194,TO_TIMESTAMP('2025-06-10 15:49:17.456000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'D','Y','N','N','N','N','N','N','N','UserElementString1',TO_TIMESTAMP('2025-06-10 15:49:17.456000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:18.268Z
@@ -478,10 +478,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747574
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747574)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> UserElementString2
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> UserElementString2
 -- Column: M_ForecastLine.UserElementString2
 -- 2025-06-10T15:49:19.267Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572452,747575,0,548194,TO_TIMESTAMP('2025-06-10 15:49:18.544000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','UserElementString2',TO_TIMESTAMP('2025-06-10 15:49:18.544000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572452,747575,0,548194,TO_TIMESTAMP('2025-06-10 15:49:18.544000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'D','Y','N','N','N','N','N','N','N','UserElementString2',TO_TIMESTAMP('2025-06-10 15:49:18.544000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:19.372Z
@@ -500,10 +500,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747575
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747575)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> UserElementString3
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> UserElementString3
 -- Column: M_ForecastLine.UserElementString3
 -- 2025-06-10T15:49:20.387Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572453,747576,0,548194,TO_TIMESTAMP('2025-06-10 15:49:19.642000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','UserElementString3',TO_TIMESTAMP('2025-06-10 15:49:19.642000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572453,747576,0,548194,TO_TIMESTAMP('2025-06-10 15:49:19.642000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'D','Y','N','N','N','N','N','N','N','UserElementString3',TO_TIMESTAMP('2025-06-10 15:49:19.642000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:20.489Z
@@ -522,10 +522,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747576
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747576)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> UserElementString4
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> UserElementString4
 -- Column: M_ForecastLine.UserElementString4
 -- 2025-06-10T15:49:21.480Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572454,747577,0,548194,TO_TIMESTAMP('2025-06-10 15:49:20.751000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','UserElementString4',TO_TIMESTAMP('2025-06-10 15:49:20.751000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572454,747577,0,548194,TO_TIMESTAMP('2025-06-10 15:49:20.751000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'D','Y','N','N','N','N','N','N','N','UserElementString4',TO_TIMESTAMP('2025-06-10 15:49:20.751000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:21.591Z
@@ -544,10 +544,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747577
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747577)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> UserElementString5
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> UserElementString5
 -- Column: M_ForecastLine.UserElementString5
 -- 2025-06-10T15:49:22.605Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572455,747578,0,548194,TO_TIMESTAMP('2025-06-10 15:49:21.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','UserElementString5',TO_TIMESTAMP('2025-06-10 15:49:21.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572455,747578,0,548194,TO_TIMESTAMP('2025-06-10 15:49:21.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'D','Y','N','N','N','N','N','N','N','UserElementString5',TO_TIMESTAMP('2025-06-10 15:49:21.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:22.725Z
@@ -566,10 +566,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747578
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747578)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> UserElementString6
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> UserElementString6
 -- Column: M_ForecastLine.UserElementString6
 -- 2025-06-10T15:49:23.736Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572456,747579,0,548194,TO_TIMESTAMP('2025-06-10 15:49:23.009000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','UserElementString6',TO_TIMESTAMP('2025-06-10 15:49:23.009000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572456,747579,0,548194,TO_TIMESTAMP('2025-06-10 15:49:23.009000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'D','Y','N','N','N','N','N','N','N','UserElementString6',TO_TIMESTAMP('2025-06-10 15:49:23.009000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:23.841Z
@@ -588,10 +588,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747579
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747579)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> UserElementString7
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> UserElementString7
 -- Column: M_ForecastLine.UserElementString7
 -- 2025-06-10T15:49:24.887Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572457,747580,0,548194,TO_TIMESTAMP('2025-06-10 15:49:24.098000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'de.metas.endcustomer.ic114','Y','N','N','N','N','N','N','N','UserElementString7',TO_TIMESTAMP('2025-06-10 15:49:24.098000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572457,747580,0,548194,TO_TIMESTAMP('2025-06-10 15:49:24.098000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000,'D','Y','N','N','N','N','N','N','N','UserElementString7',TO_TIMESTAMP('2025-06-10 15:49:24.098000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:25.021Z
@@ -610,10 +610,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747580
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747580)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Kostenstelle
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Kostenstelle
 -- Column: M_ForecastLine.C_Activity_ID
 -- 2025-06-10T15:49:26.271Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572514,747581,0,548194,TO_TIMESTAMP('2025-06-10 15:49:25.333000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Kostenstelle',10,'de.metas.endcustomer.ic114','Erfassung der zugehörigen Kostenstelle','Y','N','N','N','N','N','N','N','Kostenstelle',TO_TIMESTAMP('2025-06-10 15:49:25.333000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572514,747581,0,548194,TO_TIMESTAMP('2025-06-10 15:49:25.333000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Kostenstelle',10,'D','Erfassung der zugehörigen Kostenstelle','Y','N','N','N','N','N','N','N','Kostenstelle',TO_TIMESTAMP('2025-06-10 15:49:25.333000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:26.392Z
@@ -632,10 +632,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747581
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747581)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Projekt
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Projekt
 -- Column: M_ForecastLine.C_Project_ID
 -- 2025-06-10T15:49:27.471Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572528,747582,0,548194,TO_TIMESTAMP('2025-06-10 15:49:26.707000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Financial Project',10,'de.metas.endcustomer.ic114','A Project allows you to track and control internal or external activities.','Y','N','N','N','N','N','N','N','Projekt',TO_TIMESTAMP('2025-06-10 15:49:26.707000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572528,747582,0,548194,TO_TIMESTAMP('2025-06-10 15:49:26.707000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Financial Project',10,'D','A Project allows you to track and control internal or external activities.','Y','N','N','N','N','N','N','N','Projekt',TO_TIMESTAMP('2025-06-10 15:49:26.707000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:27.575Z
@@ -654,10 +654,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747582
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747582)
 ;
 
--- Field: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> Werbemassnahme
+-- Field: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> Werbemassnahme
 -- Column: M_ForecastLine.C_Campaign_ID
 -- 2025-06-10T15:49:28.633Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572529,747583,0,548194,TO_TIMESTAMP('2025-06-10 15:49:27.862000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Marketing Campaign',10,'de.metas.endcustomer.ic114','The Campaign defines a unique marketing program.  Projects can be associated with a pre defined Marketing Campaign.  You can then report based on a specific Campaign.','Y','N','N','N','N','N','N','N','Werbemassnahme',TO_TIMESTAMP('2025-06-10 15:49:27.862000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,572529,747583,0,548194,TO_TIMESTAMP('2025-06-10 15:49:27.862000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Marketing Campaign',10,'D','The Campaign defines a unique marketing program.  Projects can be associated with a pre defined Marketing Campaign.  You can then report based on a specific Campaign.','Y','N','N','N','N','N','N','N','Werbemassnahme',TO_TIMESTAMP('2025-06-10 15:49:27.862000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T15:49:28.735Z
@@ -676,7 +676,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=747583
 /* DDL */ select AD_Element_Link_Create_Missing_Field(747583)
 ;
 
--- Tab: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114)
+-- Tab: Prognose Position(541900,D) -> Prognose-Position(548194,D)
 -- UI Section: main
 -- 2025-06-10T15:57:51.277Z
 INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,548194,546735,TO_TIMESTAMP('2025-06-10 15:57:50.516000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,TO_TIMESTAMP('2025-06-10 15:57:50.516000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'main')
@@ -686,19 +686,19 @@ INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Cre
 INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_UI_Section_ID=546735 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
 ;
 
--- UI Section: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main
+-- UI Section: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main
 -- UI Column: 10
 -- 2025-06-10T15:58:01.121Z
 INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,548203,546735,TO_TIMESTAMP('2025-06-10 15:58:00.498000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,TO_TIMESTAMP('2025-06-10 15:58:00.498000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Section: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main
+-- UI Section: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main
 -- UI Column: 20
 -- 2025-06-10T15:58:09.235Z
 INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,548204,546735,TO_TIMESTAMP('2025-06-10 15:58:08.611000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',20,TO_TIMESTAMP('2025-06-10 15:58:08.611000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Column: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10
+-- UI Column: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10
 -- UI Element Group: default
 -- 2025-06-10T15:58:48.204Z
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,548203,553100,TO_TIMESTAMP('2025-06-10 15:58:47.575000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','default',10,'default',TO_TIMESTAMP('2025-06-10 15:58:47.575000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
@@ -706,7 +706,7 @@ INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Ele
 
 -- Name: M_Forecast
 -- 2025-06-10T16:00:25.501Z
-INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541953,TO_TIMESTAMP('2025-06-10 16:00:24.929000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.endcustomer.ic114','Y','N','M_Forecast',TO_TIMESTAMP('2025-06-10 16:00:24.929000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'T')
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541953,TO_TIMESTAMP('2025-06-10 16:00:24.929000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','M_Forecast',TO_TIMESTAMP('2025-06-10 16:00:24.929000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'T')
 ;
 
 -- 2025-06-10T16:00:25.608Z
@@ -717,7 +717,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: M_Forecast
 -- Key: M_Forecast.M_Forecast_ID
 -- 2025-06-10T16:01:11.478Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,11918,0,541953,720,TO_TIMESTAMP('2025-06-10 16:01:11.106000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.endcustomer.ic114','Y','Y','N',TO_TIMESTAMP('2025-06-10 16:01:11.106000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,11918,0,541953,720,TO_TIMESTAMP('2025-06-10 16:01:11.106000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Y','N',TO_TIMESTAMP('2025-06-10 16:01:11.106000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Column: M_ForecastLine.M_Forecast_ID
@@ -725,49 +725,49 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=541953, IsExcludeFromZoomTargets='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2025-06-10 16:01:24.461000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=11939
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> default.Prognose
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> default.Prognose
 -- Column: M_ForecastLine.M_Forecast_ID
 -- 2025-06-10T16:02:00.557Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747560,0,548194,553100,633946,'F',TO_TIMESTAMP('2025-06-10 16:01:59.871000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Vorhersagen zu Material-/Produkt-/Artikelentwicklung','Vorhersagen zu Material-/Produkt-/Artikelentwicklung','Y','N','N','Y','N','N','N',0,'Prognose',10,0,0,TO_TIMESTAMP('2025-06-10 16:01:59.871000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> default.Produkt
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> default.Produkt
 -- Column: M_ForecastLine.M_Product_ID
 -- 2025-06-10T16:03:37.451Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747562,0,548194,553100,633947,'F',TO_TIMESTAMP('2025-06-10 16:03:36.689000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt, Leistung, Artikel','Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','N','N','Y','N','N','N',0,'Produkt',20,0,0,TO_TIMESTAMP('2025-06-10 16:03:36.689000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> default.Merkmale
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> default.Merkmale
 -- Column: M_ForecastLine.M_AttributeSetInstance_ID
 -- 2025-06-10T16:03:57.210Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747570,0,548194,553100,633948,'F',TO_TIMESTAMP('2025-06-10 16:03:56.522000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Merkmals Ausprägungen zum Produkt','The values of the actual Product Attribute Instances.  The product level attributes are defined on Product level.','Y','N','N','Y','N','N','N',0,'Merkmale',30,0,0,TO_TIMESTAMP('2025-06-10 16:03:56.522000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> default.Menge TU
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> default.Menge TU
 -- Column: M_ForecastLine.QtyEnteredTU
 -- 2025-06-10T16:04:08.717Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747572,0,548194,553100,633949,'F',TO_TIMESTAMP('2025-06-10 16:04:08.019000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Menge TU',40,0,0,TO_TIMESTAMP('2025-06-10 16:04:08.019000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> default.Packvorschrift
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> default.Packvorschrift
 -- Column: M_ForecastLine.M_HU_PI_Item_Product_ID
 -- 2025-06-10T16:04:29.174Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747571,0,548194,553100,633950,'F',TO_TIMESTAMP('2025-06-10 16:04:28.495000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Packvorschrift',50,0,0,TO_TIMESTAMP('2025-06-10 16:04:28.495000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> default.Menge
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> default.Menge
 -- Column: M_ForecastLine.Qty
 -- 2025-06-10T16:04:48.763Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747559,0,548194,553100,633951,'F',TO_TIMESTAMP('2025-06-10 16:04:48.066000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Menge','Menge bezeichnet die Anzahl eines bestimmten Produktes oder Artikels für dieses Dokument.','Y','N','N','Y','N','N','N',0,'Menge',60,0,0,TO_TIMESTAMP('2025-06-10 16:04:48.066000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> default.Maßeinheit
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> default.Maßeinheit
 -- Column: M_ForecastLine.C_UOM_ID
 -- 2025-06-10T16:05:03.198Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747573,0,548194,553100,633952,'F',TO_TIMESTAMP('2025-06-10 16:05:02.514000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Maßeinheit','Eine eindeutige (nicht monetäre) Maßeinheit','Y','N','N','Y','N','N','N',0,'Maßeinheit',70,0,0,TO_TIMESTAMP('2025-06-10 16:05:02.514000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> default.Calculated Quantity
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> default.Calculated Quantity
 -- Column: M_ForecastLine.QtyCalculated
 -- 2025-06-10T16:05:25.212Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747564,0,548194,553100,633953,'F',TO_TIMESTAMP('2025-06-10 16:05:24.537000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Calculated Quantity','Y','N','N','Y','N','N','N',0,'Calculated Quantity',80,0,0,TO_TIMESTAMP('2025-06-10 16:05:24.537000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
@@ -790,73 +790,73 @@ UPDATE AD_Element base SET Description=trl.Description, Name=trl.Name, PrintName
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2500,'de_DE')
 ;
 
--- UI Column: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10
+-- UI Column: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10
 -- UI Element Group: default
 -- 2025-06-10T16:07:34.855Z
 UPDATE AD_UI_ElementGroup SET UIStyle='primary',Updated=TO_TIMESTAMP('2025-06-10 16:07:34.855000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=553100
 ;
 
--- UI Column: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10
+-- UI Column: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10
 -- UI Element Group: forecast
 -- 2025-06-10T16:07:55.125Z
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,548203,553101,TO_TIMESTAMP('2025-06-10 16:07:54.506000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','forecast',20,TO_TIMESTAMP('2025-06-10 16:07:54.506000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> forecast.Lager
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> forecast.Lager
 -- Column: M_ForecastLine.M_Warehouse_ID
 -- 2025-06-10T16:08:15.122Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747565,0,548194,553101,633954,'F',TO_TIMESTAMP('2025-06-10 16:08:14.441000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Lager oder Ort für Dienstleistung','Das Lager identifiziert ein einzelnes Lager für Artikel oder einen Standort an dem Dienstleistungen geboten werden.','Y','N','N','Y','N','N','N',0,'Lager',10,0,0,TO_TIMESTAMP('2025-06-10 16:08:14.441000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> forecast.Geschäftspartner
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> forecast.Geschäftspartner
 -- Column: M_ForecastLine.C_BPartner_ID
 -- 2025-06-10T16:08:28.866Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747568,0,548194,553101,633955,'F',TO_TIMESTAMP('2025-06-10 16:08:28.186000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Bezeichnet einen Geschäftspartner','Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','N','N','Y','N','N','N',0,'Geschäftspartner',20,0,0,TO_TIMESTAMP('2025-06-10 16:08:28.186000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> forecast.Zugesagter Termin
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> forecast.Zugesagter Termin
 -- Column: M_ForecastLine.DatePromised
 -- 2025-06-10T16:08:42.602Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747566,0,548194,553101,633956,'F',TO_TIMESTAMP('2025-06-10 16:08:41.920000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Zugesagter Termin für diesen Auftrag','Der "Zugesagte Termin" gibt das Datum an, für den (wenn zutreffend) dieser Auftrag zugesagt wurde.','Y','N','N','Y','N','N','N',0,'Zugesagter Termin',30,0,0,TO_TIMESTAMP('2025-06-10 16:08:41.920000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 10 -> forecast.Kundenbetreuer
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 10 -> forecast.Kundenbetreuer
 -- Column: M_ForecastLine.SalesRep_ID
 -- 2025-06-10T16:08:56.233Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747567,0,548194,553101,633957,'F',TO_TIMESTAMP('2025-06-10 16:08:55.565000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Kundenbetreuer',40,0,0,TO_TIMESTAMP('2025-06-10 16:08:55.565000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Column: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 20
+-- UI Column: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 20
 -- UI Element Group: flags
 -- 2025-06-10T16:09:12.366Z
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,548204,553102,TO_TIMESTAMP('2025-06-10 16:09:11.752000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','flags',10,TO_TIMESTAMP('2025-06-10 16:09:11.752000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 20 -> flags.Aktiv
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 20 -> flags.Aktiv
 -- Column: M_ForecastLine.IsActive
 -- 2025-06-10T16:09:29.623Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747561,0,548194,553102,633958,'F',TO_TIMESTAMP('2025-06-10 16:09:28.926000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','Y','N','N','N',0,'Aktiv',10,0,0,TO_TIMESTAMP('2025-06-10 16:09:28.926000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Column: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 20
+-- UI Column: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 20
 -- UI Element Group: org
 -- 2025-06-10T16:09:41.175Z
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,548204,553103,TO_TIMESTAMP('2025-06-10 16:09:40.545000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','org',20,TO_TIMESTAMP('2025-06-10 16:09:40.545000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 20 -> org.Sektion
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 20 -> org.Sektion
 -- Column: M_ForecastLine.AD_Org_ID
 -- 2025-06-10T16:09:58.092Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747558,0,548194,553103,633959,'F',TO_TIMESTAMP('2025-06-10 16:09:57.432000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','Y','N','N','N',0,'Sektion',10,0,0,TO_TIMESTAMP('2025-06-10 16:09:57.432000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- UI Element: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position(548194,de.metas.endcustomer.ic114) -> main -> 20 -> org.Mandant
+-- UI Element: Prognose Position(541900,D) -> Prognose-Position(548194,D) -> main -> 20 -> org.Mandant
 -- Column: M_ForecastLine.AD_Client_ID
 -- 2025-06-10T16:10:13.784Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,747557,0,548194,553103,633960,'F',TO_TIMESTAMP('2025-06-10 16:10:12.798000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','Y','N','N','N',0,'Mandant',20,0,0,TO_TIMESTAMP('2025-06-10 16:10:12.798000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- Tab: Prognose Position(541900,de.metas.endcustomer.ic114) -> Prognose-Position
+-- Tab: Prognose Position(541900,D) -> Prognose-Position
 -- Table: M_ForecastLine
 -- 2025-06-10T16:11:21.726Z
 UPDATE AD_Tab SET IsInsertRecord='N', IsReadOnly='Y',Updated=TO_TIMESTAMP('2025-06-10 16:11:21.726000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=548194
@@ -864,9 +864,9 @@ UPDATE AD_Tab SET IsInsertRecord='N', IsReadOnly='Y',Updated=TO_TIMESTAMP('2025-
 
 -- Name: Prognose Position
 -- Action Type: W
--- Window: Prognose Position(541900,de.metas.endcustomer.ic114)
+-- Window: Prognose Position(541900,D)
 -- 2025-06-10T16:12:02.102Z
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,583719,542225,0,541900,TO_TIMESTAMP('2025-06-10 16:12:01.300000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.endcustomer.ic114','Prognose Position','Y','N','N','N','N','Prognose Position',TO_TIMESTAMP('2025-06-10 16:12:01.300000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,583719,542225,0,541900,TO_TIMESTAMP('2025-06-10 16:12:01.300000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Prognose Position','Y','N','N','N','N','Prognose Position',TO_TIMESTAMP('2025-06-10 16:12:01.300000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-06-10T16:12:02.365Z
