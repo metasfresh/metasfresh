@@ -13,7 +13,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: M_Forecast
 -- Key: M_Forecast.M_Forecast_ID
 -- 2025-06-11T09:56:03.681Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,11918,0,541957,720,328,TO_TIMESTAMP('2025-06-11 09:56:03.642000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.material.dispo','Y','N','N',TO_TIMESTAMP('2025-06-11 09:56:03.642000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'EXISTS(SELECT 1 from m_forecast forecast where forecast.m_forecast_id = @M_Forecast_ID/-1@ AND forecast.m_forecast_id = m_forecast.m_forecast_id)')
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,11918,0,541957,720,328,TO_TIMESTAMP('2025-06-11 09:56:03.642000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.material.dispo','Y','N','N',TO_TIMESTAMP('2025-06-11 09:56:03.642000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'(m_forecast.m_forecast_id = @M_Forecast_ID/-1@)')
 ;
 
 -- Name: MD_Candidate -> M_Forecast
@@ -38,7 +38,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: PP_Order_Candidate
 -- Key: PP_Order_Candidate.PP_Order_Candidate_ID
 -- 2025-06-11T10:24:14.002Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,577875,0,541958,541913,TO_TIMESTAMP('2025-06-11 10:24:13.999000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N',TO_TIMESTAMP('2025-06-11 10:24:13.999000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'EXISTS(SELECT 1               from pp_order_candidate prod_candidate                        INNER JOIN md_candidate_prod_detail prod_detail on prod_candidate.pp_order_candidate_id = prod_detail.pp_order_candidate_id                        INNER JOIN md_candidate candidate on prod_detail.md_candidate_id = candidate.md_candidate_id               where candidate.md_candidate_id = @MD_Candidate_ID / -1@                 AND prod_candidate.pp_order_candidate_id = pp_order_candidate.pp_order_candidate_id)')
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,577875,0,541958,541913,TO_TIMESTAMP('2025-06-11 10:24:13.999000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N',TO_TIMESTAMP('2025-06-11 10:24:13.999000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'EXISTS(SELECT 1               from pp_order_candidate prod_candidate                        INNER JOIN md_candidate_prod_detail prod_detail on prod_candidate.pp_order_candidate_id = prod_detail.pp_order_candidate_id               where prod_detail.md_candidate_id = @MD_Candidate_ID / -1@                 AND prod_candidate.pp_order_candidate_id = pp_order_candidate.pp_order_candidate_id)')
 ;
 
 -- Name: MD_Candidate -> PP_Order_Candidate
@@ -61,7 +61,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: MD_Candidate
 -- Key: MD_Candidate.MD_Candidate_ID
 -- 2025-06-11T10:26:30.443Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,556473,0,541959,540808,TO_TIMESTAMP('2025-06-11 10:26:30.440000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N',TO_TIMESTAMP('2025-06-11 10:26:30.440000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'EXISTS(SELECT 1               from md_candidate candidate                        INNER JOIN md_candidate_prod_detail prod_detail on candidate.md_candidate_id = prod_detail.md_candidate_id                        INNER JOIN pp_order_candidate prod_candidate on prod_candidate.pp_order_candidate_id = prod_detail.pp_order_candidate_id               where prod_candidate.pp_order_candidate_id = @PP_Order_Candidate_ID / -1@                 AND candidate.md_candidate_id = md_candidate.md_candidate_id)')
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,556473,0,541959,540808,TO_TIMESTAMP('2025-06-11 10:26:30.440000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N',TO_TIMESTAMP('2025-06-11 10:26:30.440000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'EXISTS(SELECT 1               from md_candidate candidate                        INNER JOIN md_candidate_prod_detail prod_detail on candidate.md_candidate_id = prod_detail.md_candidate_id               where prod_detail.pp_order_candidate_id = @PP_Order_Candidate_ID / -1@                 AND candidate.md_candidate_id = md_candidate.md_candidate_id)')
 ;
 
 -- Name: PP_Order_Candidate -> MD_Candidate
@@ -171,4 +171,8 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP
 -- Column: MD_Candidate_Prod_Detail.AD_Org_ID
 -- 2025-06-11T10:46:45.379Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2025-06-11 10:46:45.379000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=548831
+;
+
+CREATE INDEX IF NOT EXISTS md_candidate_prod_detail_pp_order_candidate_id
+    ON md_candidate_prod_detail (pp_order_candidate_id)
 ;
