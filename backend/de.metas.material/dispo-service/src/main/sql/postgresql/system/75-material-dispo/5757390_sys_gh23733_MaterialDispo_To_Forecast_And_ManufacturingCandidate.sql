@@ -20,7 +20,7 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 -- Source Reference: MD_Candidate Source
 -- Target Reference: M_Forecast target for MD_Candidate
 -- 2025-06-11T09:56:50.792Z
-INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540894,541957,540456,TO_TIMESTAMP('2025-06-11 09:56:50.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.material.dispo','Y','N','MD_Candidate -> M_Forecast',TO_TIMESTAMP('2025-06-11 09:56:50.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsDirected,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540894,541957,540456,TO_TIMESTAMP('2025-06-11 09:56:50.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.material.dispo','Y','Y','N','MD_Candidate -> M_Forecast',TO_TIMESTAMP('2025-06-11 09:56:50.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Run mode: SWING_CLIENT
@@ -45,7 +45,7 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 -- Source Reference: MD_Candidate Source
 -- Target Reference: PP_Order_Candidate_Target_For_MD_Candidate
 -- 2025-06-11T10:25:34.422Z
-INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540894,541958,540457,TO_TIMESTAMP('2025-06-11 10:25:34.293000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','MD_Candidate -> PP_Order_Candidate',TO_TIMESTAMP('2025-06-11 10:25:34.293000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsDirected,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,540894,541958,540457,TO_TIMESTAMP('2025-06-11 10:25:34.293000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Y','N','MD_Candidate -> PP_Order_Candidate',TO_TIMESTAMP('2025-06-11 10:25:34.293000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Name: MD_Candidate_Target_For_PP_Order_Candidate
@@ -68,7 +68,7 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 -- Source Reference: PP_Order_Candidate
 -- Target Reference: MD_Candidate_Target_For_PP_Order_Candidate
 -- 2025-06-11T10:27:26.905Z
-INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,541494,541959,540458,TO_TIMESTAMP('2025-06-11 10:27:26.774000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','PP_Order_Candidate -> MD_Candidate',TO_TIMESTAMP('2025-06-11 10:27:26.774000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsDirected,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,541494,541959,540458,TO_TIMESTAMP('2025-06-11 10:27:26.774000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Y','N','PP_Order_Candidate -> MD_Candidate',TO_TIMESTAMP('2025-06-11 10:27:26.774000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Run mode: SWING_CLIENT
