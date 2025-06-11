@@ -1,6 +1,5 @@
 package de.metas.frontend_testing.masterdata.custom_qrcode_format;
 
-import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import lombok.Builder;
 import lombok.NonNull;
