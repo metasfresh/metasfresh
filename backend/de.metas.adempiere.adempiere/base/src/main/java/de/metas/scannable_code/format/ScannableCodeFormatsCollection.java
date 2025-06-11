@@ -65,4 +65,7 @@ public class ScannableCodeFormatsCollection
 		return ExplainedOptional.emptyBecause(notMatchingExplanation.build());
 	}
 
+	public boolean isEmpty() {return formats.isEmpty();}
+
+	public ImmutableList<ScannableCodeFormat> toList() {return formats;}
 }

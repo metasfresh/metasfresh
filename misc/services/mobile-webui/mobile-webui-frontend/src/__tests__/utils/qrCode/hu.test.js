@@ -159,5 +159,65 @@ describe('huQRCodes tests', () => {
         });
       });
     });
+    describe('Custom QR Code format', () => {
+      it('custom format with productNo, weight and lot', () => {
+        const format = {
+          name: 'my custom code',
+          parts: [
+            { startPosition: 1, endPosition: 1, type: 'IGNORE' },
+            { startPosition: 2, endPosition: 7, type: 'PRODUCT_CODE' },
+            { startPosition: 8, endPosition: 8, type: 'IGNORE' },
+            { startPosition: 9, endPosition: 14, type: 'WEIGHT_KG' },
+            { startPosition: 15, endPosition: 15, type: 'IGNORE' },
+            { startPosition: 16, endPosition: 23, type: 'LOT' },
+            { startPosition: 24, endPosition: 24, type: 'IGNORE' },
+            { startPosition: 25, endPosition: 30, type: 'IGNORE' },
+          ],
+        };
+        expect(
+          parseQRCodeString({
+            string: 'A593707G000384C05321124E000001',
+            customQRCodeFormats: [format],
+            returnFalseOnError: false,
+          })
+        ).toEqual({
+          code: 'A593707G000384C05321124E000001',
+          barcodeType: 'CUSTOM',
+          displayable: '0.384 kg',
+          productNo: '593707',
+          weightNet: 0.384,
+          weightNetUOM: 'kg',
+          lotNo: '5321124',
+        });
+      });
+      it('custom format with productNo, weight, lot and best before date', () => {
+        const format = {
+          name: 'my custom code',
+          parts: [
+            { startPosition: 1, endPosition: 4, type: 'PRODUCT_CODE' },
+            { startPosition: 5, endPosition: 10, type: 'WEIGHT_KG' },
+            { startPosition: 11, endPosition: 18, type: 'LOT' },
+            { startPosition: 19, endPosition: 24, type: 'IGNORE' },
+            { startPosition: 25, endPosition: 30, type: 'BEST_BEFORE_DATE', dateFormat: 'yyMMdd' },
+          ],
+        };
+        let result = parseQRCodeString({
+          string: '100009999900000123250403260410',
+          customQRCodeFormats: [format],
+          returnFalseOnError: false,
+        });
+        console.log('result: ', result);
+        expect(result).toEqual({
+          code: '100009999900000123250403260410',
+          barcodeType: 'CUSTOM',
+          displayable: '99.999 kg',
+          productNo: '1000',
+          weightNet: 99.999,
+          weightNetUOM: 'kg',
+          lotNo: '123',
+          bestBeforeDate: '2026-04-10',
+        });
+      });
+    });
   });
 });

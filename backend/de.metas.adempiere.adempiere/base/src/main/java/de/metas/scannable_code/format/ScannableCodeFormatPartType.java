@@ -1,5 +1,7 @@
 package de.metas.scannable_code.format;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
@@ -25,4 +27,10 @@ public enum ScannableCodeFormatPartType implements ReferenceListAwareEnum
 	@NonNull private final ScannableCodeFormatPartDataType dataType;
 
 	public static ScannableCodeFormatPartType ofCode(@NonNull final String code) {return index.ofCode(code);}
+
+	@JsonCreator
+	public static ScannableCodeFormatPartType ofJson(@NonNull final String json) {return ofCode(json);}
+
+	@JsonValue
+	public String toJson() {return getCode();}
 }
