@@ -65,10 +65,12 @@ public class RecordWarningRepository
 	{
 		final IQueryBuilder<I_AD_Record_Warning> queryBuilder = queryBL.createQueryBuilder(I_AD_Record_Warning.class);
 
-		final TableRecordReference rootRecordRef = query.getRootRecordRef();
-		queryBuilder.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Root_AD_Table_ID, rootRecordRef.getAD_Table_ID())
-				.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Root_Record_ID, rootRecordRef.getRecord_ID());
-
+		if(query.getRootRecordRef() != null)
+		{
+			final TableRecordReference rootRecordRef = query.getRootRecordRef();
+			queryBuilder.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Root_AD_Table_ID, rootRecordRef.getAD_Table_ID())
+					.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Root_Record_ID, rootRecordRef.getRecord_ID());
+		}
 
 		if(query.getRecordRef() != null)
 		{
@@ -93,7 +95,7 @@ public class RecordWarningRepository
 	public boolean hasErrors(@NonNull final TableRecordReference recordRef)
 	{
 		final RecordWarningQuery query = RecordWarningQuery.builder()
-				.rootRecordRef(recordRef)
+				.recordRef(recordRef)
 				.severity(Severity.Error)
 				.build();
 
