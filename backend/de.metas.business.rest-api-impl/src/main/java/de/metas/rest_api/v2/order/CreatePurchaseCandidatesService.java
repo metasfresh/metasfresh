@@ -38,8 +38,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.externalreference.product.ProductExternalReferenceType;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -55,7 +53,7 @@ import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import de.metas.rest_api.v2.warehouse.WarehouseService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -65,10 +63,10 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -83,6 +81,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class CreatePurchaseCandidatesService
 {
@@ -94,25 +93,11 @@ public class CreatePurchaseCandidatesService
 	private final IPurchaseCandidateBL purchaseCandidateBL = Services.get(IPurchaseCandidateBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final PurchaseCandidateRepository purchaseCandidateRepo;
-	private final JsonRetrieverService jsonRetrieverService;
-	private final CurrencyRepository currencyRepository;
-	private final ExternalReferenceRestControllerService externalReferenceService;
-	private final WarehouseService warehouseService;
-
-	public CreatePurchaseCandidatesService(
-			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
-			@NonNull final JsonServiceFactory jsonServiceFactory,
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
-			@NonNull final WarehouseService warehouseService)
-	{
-		this.purchaseCandidateRepo = purchaseCandidateRepo;
-		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
-		this.currencyRepository = currencyRepository;
-		this.externalReferenceService = externalReferenceService;
-		this.warehouseService = warehouseService;
-	}
+	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepo;
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final WarehouseService warehouseService;
+	@NonNull private final ExternalIdentifierProductLookupService productLookupService;
 
 	public Optional<JsonPurchaseCandidate> createCandidate(@NonNull final JsonPurchaseCandidateCreateItem request)
 	{
@@ -120,7 +105,7 @@ public class CreatePurchaseCandidatesService
 		if (alreadyCreatedCandId.isPresent())
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("C_PurchaseCandidate_ID={} with ExternalHeaderId={} and ExternalLineId={} already exists; -> ignore request",
-															alreadyCreatedCandId.get().getRepoId(), request.getExternalHeaderId(), request.getExternalLineId());
+					alreadyCreatedCandId.get().getRepoId(), request.getExternalHeaderId(), request.getExternalLineId());
 			return Optional.empty();
 		}
 
@@ -128,18 +113,28 @@ public class CreatePurchaseCandidatesService
 
 		final PurchaseCandidateId save = purchaseCandidateRepo.save(purchaseCandidate);
 		return Optional.of(JsonPurchaseCandidate.builder()
-								   .metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
-								   .externalHeaderId(JsonExternalId.of(purchaseCandidate.getExternalHeaderId().getValue()))
-								   .externalLineId(JsonExternalId.of(purchaseCandidate.getExternalLineId().getValue()))
-								   .externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
-								   .processed(false)
-								   .build());
+				.metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
+				.externalHeaderId(JsonExternalId.of(purchaseCandidate.getExternalHeaderId().getValue()))
+				.externalLineId(JsonExternalId.of(purchaseCandidate.getExternalLineId().getValue()))
+				.externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
+				.processed(false)
+				.build());
 	}
 
 	public PurchaseCandidate toPurchaseCandidate(@NonNull final JsonPurchaseCandidateCreateItem request)
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(request.getOrgCode());
-		final ProductId productId = getProductByIdentifier(orgId, request.getProductIdentifier());
+
+		final String productIdentifier = request.getProductIdentifier();
+
+		final ProductId productId = productLookupService
+				.resolveProductExternalIdentifier(ExternalIdentifier.of(productIdentifier), orgId)
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("productIdentifier")
+						.resourceIdentifier(productIdentifier)
+						.parentResource(request).build())
+				.getProductId();
+
 		final Quantity quantity = RestApiUtilsV2.getQuantity(request);
 		final BPartnerId vendorId = getBPartnerId(orgId, request.getVendor());
 		final ZonedDateTime datePromised = getOrDefaultDatePromised(request.getPurchaseDatePromised(), orgId);
@@ -204,7 +199,7 @@ public class CreatePurchaseCandidatesService
 		}
 
 		return purchaseCandidateRepo.getByExternalHeaderAndLineId(purchaseCandRequest.getExternalHeaderId(),
-																  purchaseCandRequest.getExternalLineId());
+				purchaseCandRequest.getExternalLineId());
 
 	}
 
@@ -233,7 +228,7 @@ public class CreatePurchaseCandidatesService
 
 	@NonNull
 	private BPartnerId getBPartnerId(@NonNull final OrgId orgId,
-			@NonNull final JsonVendor vendor)
+									 @NonNull final JsonVendor vendor)
 	{
 		final String bpartnerIdentifierStr = vendor.getBpartnerIdentifier();
 		if (Check.isBlank(bpartnerIdentifierStr))
@@ -262,41 +257,6 @@ public class CreatePurchaseCandidatesService
 		}
 
 		return bPartnerId;
-	}
-
-	@NonNull
-	private ProductId getProductByIdentifier(final OrgId orgId,
-			@NonNull final String productIdentifier)
-	{
-		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(productIdentifier);
-
-		switch (productExternalIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return ProductId.ofRepoId(productExternalIdentifier.asMetasfreshId().getValue());
-			case EXTERNAL_REFERENCE:
-				return externalReferenceService.resolveExternalReference(orgId, productExternalIdentifier, ProductExternalReferenceType.PRODUCT)
-						.map(metasfreshId -> ProductId.ofRepoId(metasfreshId.getValue()))
-						.orElseThrow(() -> MissingResourceException.builder()
-								.resourceName("productIdentifier")
-								.resourceIdentifier(productExternalIdentifier.getRawValue())
-								.build());
-			case VALUE:
-				final IProductDAO.ProductQuery query = IProductDAO.ProductQuery.builder()
-						.orgId(orgId)
-						.value(productExternalIdentifier.asValue()).build();
-				final ProductId productId = productDAO.retrieveProductIdBy(query);
-				if (productId == null)
-				{
-					throw MissingResourceException.builder()
-							.resourceName("productIdentifier")
-							.resourceIdentifier(productExternalIdentifier.getRawValue())
-							.build();
-				}
-				return productId;
-			default:
-				throw new InvalidIdentifierException(productExternalIdentifier.getRawValue());
-		}
 	}
 
 	@NonNull

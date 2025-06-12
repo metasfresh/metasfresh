@@ -41,7 +41,8 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -94,7 +95,7 @@ public class M_Product_StepDef
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final ProductRestService productRestService = SpringContextHolder.instance.getBean(ProductRestService.class);
+	private final ExternalIdentifierProductLookupService productLookupService = SpringContextHolder.instance.getBean(ExternalIdentifierProductLookupService.class);
 
 	public M_Product_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -344,7 +345,9 @@ public class M_Product_StepDef
 	{
 		final String externalIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "externalIdentifier");
 
-		final Optional<ProductId> productIdOptional = productRestService.resolveProductExternalIdentifier(ExternalIdentifier.of(externalIdentifier), ORG_ID);
+		final Optional<ProductId> productIdOptional = productLookupService
+				.resolveProductExternalIdentifier(ExternalIdentifier.of(externalIdentifier), ORG_ID)
+				.map(ProductAndHUPIItemProductId::getProductId);
 
 		assertThat(productIdOptional).isPresent();
 

@@ -189,6 +189,11 @@ public class JsonConverters
 
 		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
 
+		final int huPIItemProductId = CoalesceUtil.firstGreaterThanZero(
+				JsonMetasfreshId.toValueInt(request.getPackingMaterialId()),
+				productInfo.getHupiItemProductId().getRepoId());
+				
+		
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -218,10 +223,11 @@ public class JsonConverters
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
 				.productId(productInfo.getProductId())
+				.huPIItemProductId(huPIItemProductId)
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
 				.uomId(uomId)
-				.huPIItemProductId(JsonMetasfreshId.toValueInt(request.getPackingMaterialId()))
+				
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
