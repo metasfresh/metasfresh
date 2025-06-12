@@ -22,6 +22,8 @@
 
 package de.metas.externalreference;
 
+import de.metas.bpartner.GLN;
+import de.metas.rest_api.utils.MetasfreshId;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
@@ -75,6 +77,7 @@ class ExternalIdentifierTest
 		assertThat(result.getType()).isEqualTo(ExternalIdentifier.Type.METASFRESH_ID);
 		assertThat(result.getRawValue()).isEqualTo(rawId);
 		assertThat(result.getExternalReferenceValueAndSystem()).isNull();
+		assertThat(result.asMetasfreshId()).isEqualTo(MetasfreshId.of(12345));
 	}
 
 	@Test
@@ -109,6 +112,7 @@ class ExternalIdentifierTest
 		assertThat(result.getType()).isEqualTo(ExternalIdentifier.Type.GLN);
 		assertThat(result.getRawValue()).isEqualTo(rawId);
 		assertThat(result.getExternalReferenceValueAndSystem()).isNull();
+		assertThat(result.asGLN()).isEqualTo(GLN.ofString("1234567890123"));
 	}
 
 	@Test
@@ -125,6 +129,7 @@ class ExternalIdentifierTest
 		assertThat(result.getType()).isEqualTo(ExternalIdentifier.Type.GTIN);
 		assertThat(result.getRawValue()).isEqualTo(rawId);
 		assertThat(result.getExternalReferenceValueAndSystem()).isNull();
+		assertThat(result.asGTIN()).isEqualTo("1234567890123");
 	}
 
 	@Test
@@ -141,6 +146,7 @@ class ExternalIdentifierTest
 		assertThat(result.getType()).isEqualTo(ExternalIdentifier.Type.VALUE);
 		assertThat(result.getRawValue()).isEqualTo(rawId);
 		assertThat(result.getExternalReferenceValueAndSystem()).isNull();
+		assertThat(result.asValue()).isEqualTo("ABC123");
 	}
 
 	@Test

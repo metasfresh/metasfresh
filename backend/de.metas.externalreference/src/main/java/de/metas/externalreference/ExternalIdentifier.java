@@ -181,6 +181,22 @@ public class ExternalIdentifier
 		return valueMatcher.group(1);
 	}
 
+	@NonNull
+	public String asGTIN()
+	{
+		Check.assume(Type.GTIN.equals(type),
+				"The type of this instance needs to be {}; this={}", Type.GTIN, this);
+
+		final Matcher gtinMatcher = Type.GTIN.pattern.matcher(rawValue);
+
+		if (!gtinMatcher.matches())
+		{
+			throw new AdempiereException("External identifier of Value parsing failed. External Identifier:" + rawValue);
+		}
+
+		return gtinMatcher.group(1);
+	}
+	
 	@AllArgsConstructor
 	@Getter
 	public enum Type

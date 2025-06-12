@@ -38,6 +38,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -53,6 +54,7 @@ import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import de.metas.rest_api.v2.warehouse.WarehouseService;
 import de.metas.uom.IUOMDAO;
@@ -66,7 +68,6 @@ import de.metas.util.lang.Percent;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -81,7 +82,6 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 @Service
 public class CreatePurchaseCandidatesService
 {
@@ -99,6 +99,21 @@ public class CreatePurchaseCandidatesService
 	@NonNull private final WarehouseService warehouseService;
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService;
 
+	public CreatePurchaseCandidatesService(
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final WarehouseService warehouseService, 
+			@NonNull final ExternalIdentifierProductLookupService productLookupService)
+	{
+		this.purchaseCandidateRepo = purchaseCandidateRepo;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.currencyRepository = currencyRepository;
+		this.warehouseService = warehouseService;
+		this.productLookupService = productLookupService;
+	}
+	
 	public Optional<JsonPurchaseCandidate> createCandidate(@NonNull final JsonPurchaseCandidateCreateItem request)
 	{
 		final Optional<PurchaseCandidateId> alreadyCreatedCandId = retrieveAlreadyCreatedCandId(request);

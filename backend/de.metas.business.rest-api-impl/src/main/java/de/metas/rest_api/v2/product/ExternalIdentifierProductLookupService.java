@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.product;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
@@ -48,6 +49,7 @@ import java.util.Optional;
 public class ExternalIdentifierProductLookupService
 {
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
@@ -84,16 +86,17 @@ public class ExternalIdentifierProductLookupService
 		}
 	}
 
-	
-	private static @NonNull Optional<ProductAndHUPIItemProductId> lookupProductByGTIN(
+	@VisibleForTesting
+	@NonNull
+	Optional<ProductAndHUPIItemProductId> lookupProductByGTIN(
 			@NonNull final ExternalIdentifier productIdentifier)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final String gtin = productIdentifier.asGTIN();
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 				.setJoinOr()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, productIdentifier.asValue())
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, productIdentifier.asValue())
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, productIdentifier.asValue());
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtin)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
 
 		final I_M_HU_PI_Item_Product hupi = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addOnlyActiveRecordsFilter()
@@ -110,9 +113,9 @@ public class ExternalIdentifierProductLookupService
 
 		final ICompositeQueryFilter<I_C_BPartner_Product> bppFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
 				.setJoinOr()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, productIdentifier.asValue())
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, productIdentifier.asValue())
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, productIdentifier.asValue());
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, gtin)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtin)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, gtin);
 
 		final I_C_BPartner_Product bpp = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addOnlyActiveRecordsFilter()
@@ -127,9 +130,9 @@ public class ExternalIdentifierProductLookupService
 
 		final ICompositeQueryFilter<I_M_Product> pFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
 				.setJoinOr()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, productIdentifier.asValue())
-				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, productIdentifier.asValue())
-				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, productIdentifier.asValue());
+				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, gtin)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, gtin);
 		final I_M_Product p = queryBL.createQueryBuilder(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(pFilter)
