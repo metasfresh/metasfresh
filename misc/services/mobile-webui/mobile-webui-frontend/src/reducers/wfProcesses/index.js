@@ -108,6 +108,10 @@ export const getStepByIdFromLine = (line, stepId) => {
   return line?.steps?.[stepId];
 };
 
+export const getCustomQRCodeFormats = ({ activity }) => {
+  return activity?.dataStored?.customQRCodeFormats ?? [];
+};
+
 export const getQtyRejectedReasonsFromActivity = (activity) => {
   let reasons = activity?.dataStored?.qtyRejectedReasons?.reasons ?? [];
 

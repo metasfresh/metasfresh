@@ -39,6 +39,7 @@ const GetQuantityDialog = ({
   //
   catchWeight: catchWeightParam,
   catchWeightUom,
+  customQRCodeFormats,
   //
   isShowBestBeforeDate = false,
   bestBeforeDate: bestBeforeDateParam = '',
@@ -162,7 +163,7 @@ const GetQuantityDialog = ({
 
   const readQtyFromQrCode = useCallback(
     async (result) => {
-      const qrCode = parseQRCodeString(result.scannedBarcode);
+      const qrCode = parseQRCodeString({ string: result.scannedBarcode, customQRCodeFormats });
       if (!qrCode.weightNet || !qrCode.weightNetUOM) {
         throw { messageKey: 'activities.picking.qrcode.missingQty' };
       }
@@ -271,7 +272,11 @@ const GetQuantityDialog = ({
               ))}
             <tr>
               <td colSpan="2">
-                <BarcodeScannerComponent continuousRunning={true} onResolvedResult={readQtyFromQrCode} />
+                <BarcodeScannerComponent
+                  continuousRunning={true}
+                  customQRCodeFormats={customQRCodeFormats}
+                  onResolvedResult={readQtyFromQrCode}
+                />
               </td>
             </tr>
           </tbody>
@@ -529,6 +534,7 @@ GetQuantityDialog.propTypes = {
   isShowLotNo: PropTypes.bool,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
+  customQRCodeFormats: PropTypes.array,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,

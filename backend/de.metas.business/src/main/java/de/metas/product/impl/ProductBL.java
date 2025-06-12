@@ -787,4 +787,11 @@ public final class ProductBL implements IProductBL
 	{
 		return productsRepo.getByIds(productIds);
 	}
+
+	@Override
+	public boolean isExistingValue(@NonNull final String value, @NonNull final ClientId clientId)
+	{
+		return productsRepo.isExistingValue(value, clientId);
+	}
+
 }

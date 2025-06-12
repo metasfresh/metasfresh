@@ -1,26 +1,20 @@
 package de.metas.scannable_code.format.repository;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.scannable_code.format.ScannableCodeFormat;
+import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
-import de.metas.scannable_code.format.ScannableCodeFormatPart;
-import de.metas.scannable_code.format.ScannableCodeFormatPartType;
+import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
-
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Repository
 public class ScannableCodeFormatRepository
@@ -38,105 +32,58 @@ public class ScannableCodeFormatRepository
 
 	private ScannableCodeFormatsCollection retrieveAll()
 	{
-		final ImmutableMap<ScannableCodeFormatId, I_C_ScannableCode_Format> formatRecords = queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID)
-				.create()
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						ScannableCodeFormatRepository::extactScannableCodeFormatId,
-						record -> record)
-				);
+		return newLoaderAndSaver().loadAll();
+	}
 
-		if (formatRecords.isEmpty())
+	private ScannableCodeFormatLoaderAndSaver newLoaderAndSaver()
+	{
+		return ScannableCodeFormatLoaderAndSaver.builder().queryBL(queryBL).build();
+	}
+
+	public ScannableCodeFormat create(@NotNull final ScannableCodeFormatCreateRequest request)
+	{
+		return newLoaderAndSaver().create(request);
+	}
+
+	public int delete(@NotNull final ScannableCodeFormatQuery query)
+	{
+		final ImmutableSet<ScannableCodeFormatId> formatIds = toSqlQuery(query).create().listIds(ScannableCodeFormatId::ofRepoId);
+		if (formatIds.isEmpty())
 		{
-			return ScannableCodeFormatsCollection.EMPTY;
+			return 0;
 		}
 
-		final ImmutableSet<ScannableCodeFormatId> formatIds = formatRecords.keySet();
-		final ImmutableListMultimap<ScannableCodeFormatId, I_C_ScannableCode_Format_Part> partRecords = queryBL.createQueryBuilder(I_C_ScannableCode_Format_Part.class)
-				.addOnlyActiveRecordsFilter()
+		queryBL.createQueryBuilder(I_C_ScannableCode_Format_Part.class)
 				.addInArrayFilter(I_C_ScannableCode_Format_Part.COLUMNNAME_C_ScannableCode_Format_ID, formatIds)
-				.orderBy(I_C_ScannableCode_Format_Part.COLUMNNAME_C_ScannableCode_Format_ID)
-				.orderBy(I_C_ScannableCode_Format_Part.COLUMNNAME_StartNo)
-				.orderBy(I_C_ScannableCode_Format_Part.COLUMNNAME_C_ScannableCode_Format_Part_ID)
 				.create()
-				.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						ScannableCodeFormatRepository::extactScannableCodeFormatId,
-						record -> record
-				));
+				.delete();
 
-		return formatRecords.values()
-				.stream()
-				.map(formatRecord -> fromRecord(formatRecord, partRecords.get(extactScannableCodeFormatId(formatRecord))))
-				.collect(ScannableCodeFormatsCollection.collect());
+		return queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+				.addInArrayFilter(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID, formatIds)
+				.create()
+				.delete();
 	}
 
-	@NotNull
-	private static ScannableCodeFormatId extactScannableCodeFormatId(final I_C_ScannableCode_Format record)
+	private IQueryBuilder<I_C_ScannableCode_Format> toSqlQuery(final ScannableCodeFormatQuery query)
 	{
-		return ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID());
-	}
+		final IQueryBuilder<I_C_ScannableCode_Format> sqlQuery = queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+				.orderBy(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH);
 
-	@NotNull
-	private static ScannableCodeFormatId extactScannableCodeFormatId(final I_C_ScannableCode_Format_Part record)
-	{
-		return ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID());
-	}
-
-	private static ScannableCodeFormat fromRecord(
-			@NotNull final I_C_ScannableCode_Format formatRecord,
-			@NotNull final List<I_C_ScannableCode_Format_Part> partRecords)
-	{
-		try
+		if (query.getDescription() != null)
 		{
-			return ScannableCodeFormat.builder()
-					.id(extactScannableCodeFormatId(formatRecord))
-					.name(formatRecord.getName())
-					.description(formatRecord.getDescription())
-					.parts(partRecords.stream()
-							.map(ScannableCodeFormatRepository::fromRecord)
-							.collect(ImmutableList.toImmutableList()))
-					.build();
-		}
-		catch (Exception ex)
-		{
-			if (ex instanceof AdempiereException && AdempiereException.isUserValidationError(ex))
-			{
-				throw ex;
-			}
-			else
-			{
-				throw new AdempiereException("Invalid format: " + formatRecord.getName() + " (ID=" + formatRecord.getC_ScannableCode_Format_ID() + ")", ex);
-			}
-		}
-	}
-
-	private static ScannableCodeFormatPart fromRecord(@NotNull final I_C_ScannableCode_Format_Part record)
-	{
-		final ScannableCodeFormatPartType type = ScannableCodeFormatPartType.ofCode(record.getDataType());
-		final ScannableCodeFormatPart.ScannableCodeFormatPartBuilder builder = ScannableCodeFormatPart.builder()
-				.startPosition(record.getStartNo())
-				.endPosition(record.getEndNo())
-				.type(type);
-
-		if (type == ScannableCodeFormatPartType.BestBeforeDate)
-		{
-			builder.dateFormat(extractDateTimeFormat(record));
+			sqlQuery.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, query.getDescription());
 		}
 
-		return builder.build();
+		return sqlQuery;
 	}
 
-	private static DateTimeFormatter extractDateTimeFormat(final @NotNull I_C_ScannableCode_Format_Part record)
+	public void deleteParts(@NotNull final ScannableCodeFormatId formatId)
 	{
-		final String pattern = StringUtils.trimBlankToNull(record.getDataFormat());
-		if (pattern == null)
-		{
-			return null;
-		}
-
-		return DateTimeFormatter.ofPattern(pattern);
+		queryBL.createQueryBuilder(I_C_ScannableCode_Format_Part.class)
+				.addEqualsFilter(I_C_ScannableCode_Format_Part.COLUMNNAME_C_ScannableCode_Format_ID, formatId)
+				.create()
+				.delete();
 	}
 }

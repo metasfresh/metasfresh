@@ -4,6 +4,7 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode.ParsedScannedCodeBuilder;
 import de.metas.util.Check;
+import de.metas.util.time.PatternedDateTimeFormatter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -12,7 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
@@ -25,8 +26,10 @@ public class ScannableCodeFormatPart
 
 	@NonNull ScannableCodeFormatPartType type;
 
-	@Nullable DateTimeFormatter dateFormat;
-	@NonNull private static final DateTimeFormatter DEFAULT_DATE_FORMAT = DateTimeFormatter.ofPattern("yyMMdd");
+	@Nullable PatternedDateTimeFormatter dateFormat;
+	@NonNull private static final PatternedDateTimeFormatter DEFAULT_DATE_FORMAT = PatternedDateTimeFormatter.ofPattern("yyMMdd");
+
+	@Nullable String constantValue;
 
 	@Nullable String description;
 
@@ -35,7 +38,7 @@ public class ScannableCodeFormatPart
 			final int startPosition,
 			final int endPosition,
 			@NonNull final ScannableCodeFormatPartType type,
-			@Nullable final DateTimeFormatter dateFormat,
+			@Nullable final PatternedDateTimeFormatter dateFormat, @Nullable final String constantValue,
 			@Nullable final String description)
 	{
 		Check.assume(startPosition >= 1, "startPosition >= 1");
@@ -44,6 +47,7 @@ public class ScannableCodeFormatPart
 		this.startPosition = startPosition;
 		this.endPosition = endPosition;
 		this.type = type;
+		this.constantValue = constantValue;
 		this.description = description;
 
 		switch (type.getDataType())
@@ -81,6 +85,12 @@ public class ScannableCodeFormatPart
 			switch (type)
 			{
 				case Ignored:
+					break;
+				case Constant:
+					if (!Objects.equals(valueStr, constantValue))
+					{
+						return BooleanWithReason.falseBecause("Invalid constant marker, expected `" + constantValue + "` but was `" + valueStr + "`");
+					}
 					break;
 				case ProductCode:
 					result.productNo(valueStr);
@@ -124,8 +134,7 @@ public class ScannableCodeFormatPart
 
 	private LocalDate toLocalDate(final String valueStr)
 	{
-		final DateTimeFormatter dateFormat = coalesceNotNull(this.dateFormat, DEFAULT_DATE_FORMAT);
-		return LocalDate.parse(valueStr, dateFormat);
+		final PatternedDateTimeFormatter dateFormat = coalesceNotNull(this.dateFormat, DEFAULT_DATE_FORMAT);
+		return dateFormat.parseLocalDate(valueStr);
 	}
-
 }
