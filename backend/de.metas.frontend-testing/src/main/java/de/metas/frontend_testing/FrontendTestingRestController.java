@@ -3,30 +3,22 @@ package de.metas.frontend_testing;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.CurrencyRepository;
-import de.metas.distribution.config.MobileUIDistributionConfigRepository;
-import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommand;
-import de.metas.frontend_testing.expectations.AssertExpectationsCommandServices;
 import de.metas.frontend_testing.expectations.request.JsonExpectations;
 import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
+import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonGetFreePickingSlotRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonGetFreePickingSlotResponse;
-import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.mobile.MobileConfigService;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.qrcode.PickingSlotQRCode;
-import de.metas.product.ProductRepository;
 import de.metas.security.permissions2.PermissionNotGrantedException;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -67,15 +59,7 @@ public class FrontendTestingRestController
 	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
 	@NonNull private final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration;
-	@NonNull private final ProductRepository productRepository;
-	@NonNull private final MobileConfigService mobileConfigService;
-	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
-	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
-	@NonNull private final InventoryService inventoryService;
-	@NonNull private final HUQRCodesService huQRCodesService;
-	@NonNull private final CurrencyRepository currencyRepository;
-	@NonNull private final DDOrderService ddOrderService;
-	@NonNull private final AssertExpectationsCommandServices assertExpectationsCommandServices;
+	@NonNull private final CreateMasterdataCommandSupportingServices services;
 
 	private boolean isEnabled()
 	{
@@ -125,17 +109,8 @@ public class FrontendTestingRestController
 	{
 		return callInContext(
 				() -> CreateMasterdataCommand.builder()
-						.productRepository(productRepository)
-						.mobileConfigService(mobileConfigService)
-						.mobilePickingConfigRepository(mobilePickingConfigRepository)
-						.mobileDistributionConfigRepository(mobileDistributionConfigRepository)
-						.inventoryService(inventoryService)
-						.huQRCodesService(huQRCodesService)
-						.currencyRepository(currencyRepository)
-						.ddOrderService(ddOrderService)
-						//
+						.services(services)
 						.request(request)
-						//
 						.build().execute()
 		);
 	}
@@ -171,7 +146,7 @@ public class FrontendTestingRestController
 		assertEnabled();
 
 		return AssertExpectationsCommand.builder()
-				.services(assertExpectationsCommandServices)
+				.services(services.assertExpectationsCommandServices)
 				.expectations(jsonExpectations)
 				.build()
 				.execute();

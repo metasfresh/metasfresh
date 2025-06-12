@@ -32,6 +32,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +74,12 @@ public class PickingSlotService
 	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final Set<PickingSlotId> pickingSlotIds)
 	{
 		return pickingSlotRepository.getPickingSlotIdAndCaptions(pickingSlotIds);
+	}
+
+	public PickingSlotQRCode getPickingSlotQRCode(@NonNull final PickingSlotId pickingSlotId)
+	{
+		final PickingSlotIdAndCaption pickingSlotIdAndCaption = pickingSlotRepository.getPickingSlotIdAndCaption(pickingSlotId);
+		return PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption);
 	}
 
 	public BooleanWithReason allocatePickingSlotIfPossible(@NonNull final PickingSlotAllocateRequest request)

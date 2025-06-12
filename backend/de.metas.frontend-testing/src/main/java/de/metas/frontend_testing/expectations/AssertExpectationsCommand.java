@@ -1,7 +1,9 @@
 package de.metas.frontend_testing.expectations;
 
+import de.metas.frontend_testing.expectations.assertions.JsonFailure;
 import de.metas.frontend_testing.expectations.request.JsonExpectations;
 import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
+import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse.JsonExpectationsResponseBuilder;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -74,12 +76,17 @@ public class AssertExpectationsCommand
 						.execute();
 			}
 
-			return ResponseEntity.ok().body(JsonExpectationsResponse.OK);
+			return newJsonExpectationsResponse().build().toResponseEntity();
 		}
 		catch (final Exception ex)
 		{
-			return ResponseEntity.badRequest().body(JsonExpectationsResponse.failure(ex));
+			return newJsonExpectationsResponse().failure(JsonFailure.ofException(ex)).build().toResponseEntity();
 		}
 	}
 
+	private JsonExpectationsResponseBuilder newJsonExpectationsResponse()
+	{
+		return JsonExpectationsResponse.builder()
+				.context(context.toJson());
+	}
 }

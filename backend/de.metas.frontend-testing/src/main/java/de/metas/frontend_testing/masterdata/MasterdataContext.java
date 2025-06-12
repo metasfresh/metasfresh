@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -175,6 +176,15 @@ public class MasterdataContext
 				assertThat(actualId).as(what).isEqualTo(expectedId);
 			}
 		}
+	}
+
+	public Map<String, Object> toJson()
+	{
+		final HashMap<String, Object> result = new HashMap<>();
+
+		identifiers.forEach((typeAndIdentifier, id) -> result.put(typeAndIdentifier.getIdentifier().getAsString(), id.getRepoId()));
+
+		return result;
 	}
 
 	//

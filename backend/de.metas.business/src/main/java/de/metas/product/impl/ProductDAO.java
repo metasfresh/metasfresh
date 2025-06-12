@@ -645,9 +645,9 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-								.setJoinOr()
-								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+						.setJoinOr()
+						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
@@ -831,6 +831,16 @@ public class ProductDAO implements IProductDAO
 	public void save(I_M_Product record)
 	{
 		InterfaceWrapperHelper.save(record);
+	}
+
+	@Override
+	public boolean isExistingValue(@NonNull final String value, @NonNull final ClientId clientId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				//.addOnlyActiveRecordsFilter() // check inactive records too
+				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.anyMatch();
 	}
 
 }

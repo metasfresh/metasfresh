@@ -46,6 +46,11 @@ export const HUConsolidationJobScreen = {
         await PickingSlotScreen.clickConsolidateAllButton();
     }),
 
+    consolidate: async ({ pickingSlotId, huId }) => await step(`${NAME} - Consolidate ${huId}`, async () => {
+        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId });
+        await PickingSlotScreen.clickConsolidateHUButton({ huId });
+    }),
+
     abort: async () => await step(`${NAME} - Abort`, async () => {
         await page.locator('#abort-button').tap();
         await YesNoDialog.waitForDialog();
