@@ -7,6 +7,8 @@ import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
 import de.metas.hu_consolidation.mobile.job.commands.complete.CompleteCommand;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateCommand;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
+import de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content.GetPickingSlotContentCommand;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import lombok.NonNull;
@@ -113,4 +115,15 @@ public class HUConsolidationJobService
 				.execute();
 	}
 
+	public JsonHUConsolidationJobPickingSlotContent getPickingSlotContent(final HUConsolidationJobId jobId, final PickingSlotId pickingSlotId)
+	{
+		return GetPickingSlotContentCommand.builder()
+				.jobRepository(jobRepository)
+				.huQRCodesService(huQRCodesService)
+				.pickingSlotService(pickingSlotService)
+				.jobId(jobId)
+				.pickingSlotId(pickingSlotId)
+				.build()
+				.execute();
+	}
 }

@@ -47,4 +47,8 @@ public class HUConsolidationJob
 
 	public boolean isProcessed() {return docStatus.isProcessed();}
 
+	public boolean containsPickingSlotId(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return pickingSlotIds.contains(pickingSlotId);
+	}
 }

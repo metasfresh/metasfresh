@@ -6,21 +6,25 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.http.ResponseEntity;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 @Value
 @Builder
 @Jacksonized
 public class JsonExpectationsResponse
 {
-	public static final JsonExpectationsResponse OK = builder().build();
-
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Nullable JsonFailure failure;
 
-	public static JsonExpectationsResponse failure(@NonNull Exception exception)
+	@NonNull Map<String, Object> context;
+
+	public ResponseEntity<JsonExpectationsResponse> toResponseEntity()
 	{
-		return builder().failure(JsonFailure.ofException(exception)).build();
+		return failure == null
+				? ResponseEntity.ok().body(this)
+				: ResponseEntity.badRequest().body(this);
 	}
 }

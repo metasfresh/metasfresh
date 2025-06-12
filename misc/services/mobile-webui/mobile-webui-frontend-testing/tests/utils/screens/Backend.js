@@ -44,6 +44,8 @@ export const Backend = {
         });
         const responseBody = await response.json();
         assertNoErrors({ responseBody });
+        
+        return responseBody;
     }),
 }
 

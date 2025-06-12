@@ -14,11 +14,13 @@ import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequ
 import de.metas.hu_consolidation.mobile.launchers.HUConsolidationWorkflowLaunchersProvider;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobAvailableTargets;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
 import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.CompleteWFActivityHandler;
 import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.HUConsolidateWFActivityHandler;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -188,7 +190,13 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 				.callerId(callerId)
 				.jobId(HUConsolidationJobId.ofWFProcessId(request.getWfProcessIdNotNull()))
 				.fromPickingSlotId(request.getFromPickingSlotId())
+				.huId(request.getHuId())
 				.build());
 		return toWFProcess(job);
+	}
+
+	public JsonHUConsolidationJobPickingSlotContent getPickingSlotContent(final HUConsolidationJobId jobId, final PickingSlotId pickingSlotId)
+	{
+		return jobService.getPickingSlotContent(jobId, pickingSlotId);
 	}
 }
