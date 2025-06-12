@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.error.AdIssueId;
 import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -42,7 +41,6 @@ import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
 	 * Wraps given <code>throwable</code> as {@link AdempiereException}, if it's not already an {@link AdempiereException}.<br>
@@ -275,7 +273,7 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = msgBL.getTranslatableMsgText(messageKey);
+		this.messageTrl = de.metas.i18n.TranslatableStrings.adMessage(messageKey);
 		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 
@@ -284,7 +282,7 @@ public class AdempiereException extends RuntimeException
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
 	{
-		this.messageTrl = msgBL.getTranslatableMsgText(adMessage, params);
+		this.messageTrl = de.metas.i18n.TranslatableStrings.adMessage(adMessage, params);
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
 		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();

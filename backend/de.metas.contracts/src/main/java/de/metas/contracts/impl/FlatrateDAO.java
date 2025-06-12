@@ -1380,7 +1380,7 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		final ICompositeQueryFilter<I_C_Flatrate_Term> salesFilter = queryBL
 				.createCompositeQueryFilter(I_C_Flatrate_Term.class)
-				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice);
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsSOTrx, true);
 
 		final ICompositeQueryFilter<I_C_Flatrate_Term> invoiceableFilter = queryBL
 				.createCompositeQueryFilter(I_C_Flatrate_Term.class)
@@ -1390,8 +1390,7 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		return createModularContractQuery(getFlatrateTermQueryBuilder(filter)
 				.filter(invoiceableFilter)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsFinalInvoiced, false))
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false))
 				.anyMatch();
 	}
 

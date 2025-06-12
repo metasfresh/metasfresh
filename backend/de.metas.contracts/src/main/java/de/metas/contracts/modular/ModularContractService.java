@@ -471,7 +471,7 @@ public class ModularContractService
 
 	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
 	{
-		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))
+		return ConditionsId.optionalOfRepoId(orderLine.getC_Flatrate_Conditions_ID())
 				.map(flatrateBL::isModularContract)
 				.orElse(false);
 	}

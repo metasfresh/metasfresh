@@ -47,6 +47,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
@@ -134,10 +135,10 @@ public class C_Order
 			return;
 		}
 
-		final boolean hasAnyModularLogs = orderBL.retrieveOrderLines(orderRecord)
+		final boolean hasAnyModularLogs = contractLogService.hasAnyModularLogs(orderBL.retrieveOrderLines(orderRecord)
 				.stream()
 				.map(record -> TableRecordReference.of(I_C_OrderLine.Table_Name, record.getC_OrderLine_ID()))
-				.anyMatch(contractLogService::hasAnyModularLogs);
+				.collect(TableRecordReferenceSet.collect()));
 
 		if (!hasAnyModularLogs)
 		{

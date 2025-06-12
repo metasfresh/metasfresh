@@ -552,4 +552,9 @@
 	 {
 		 return modularContractLogRepository.anyMatch(ModularContractLogQuery.builder().referenceSet(TableRecordReferenceSet.of(recordRef)).build());
 	 }
+
+	 public boolean hasAnyModularLogs(@NonNull final TableRecordReferenceSet recordRefSet)
+	 {
+		 return modularContractLogRepository.anyMatch(ModularContractLogQuery.builder().referenceSet(recordRefSet).build());
+	 }
  }
