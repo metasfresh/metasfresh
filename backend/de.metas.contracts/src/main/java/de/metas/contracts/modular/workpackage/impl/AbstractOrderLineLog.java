@@ -118,6 +118,7 @@ public abstract class AbstractOrderLineLog extends AbstractModularContractLogHan
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(createLogRequest.getContractId())
 				.productId(productId)
+				.initialProductId(productId)
 				.productName(createLogRequest.getProductName())
 				.referencedRecord(recordRef)
 				.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
