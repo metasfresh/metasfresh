@@ -34,6 +34,7 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.model.event.PPOrderUserNotificationsProducer;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
@@ -52,6 +53,8 @@ public class PPOrderProducerFromCandidate
 	private final IPPOrderBL ppOrderService;
 	private final ITrxManager trxManager;
 	private final IProductPlanningDAO productPlanningsRepo;
+	private final PPOrderUserNotificationsProducer ppOrderUserNotificationsProducer;
+
 	private final Map<ProductPlanningId, ProductPlanning> productPlanningCache;
 	private final boolean createEachPPOrderInOwnTrx;
 
@@ -69,6 +72,7 @@ public class PPOrderProducerFromCandidate
 		this.trxManager = trxManager;
 		this.ppOrderCandidatesDAO = ppOrderCandidatesDAO;
 		this.productPlanningsRepo = productPlanningsRepo;
+		this.ppOrderUserNotificationsProducer = PPOrderUserNotificationsProducer.newInstance();
 		this.createEachPPOrderInOwnTrx = createEachPPOrderInOwnTrx;
 
 		this.result = new OrderGenerateResult();
@@ -157,6 +161,9 @@ public class PPOrderProducerFromCandidate
 							}
 
 							result.addOrder(ppOrder);
+
+							ppOrderUserNotificationsProducer.notifyProcessed(ppOrder);
+
 						});
 	}
 
