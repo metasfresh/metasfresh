@@ -17,7 +17,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.manufacturing.event.PPOrderUserNotificationsProducer;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
@@ -146,7 +145,7 @@ class DDOrderCandidateProcessCommand
 		aggregates.values().forEach(this::createDDOrder);
 	}
 
-	private void addToAggregates(DDOrderCandidate ddOrderCandidate)
+	private void addToAggregates(final DDOrderCandidate ddOrderCandidate)
 	{
 		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate);
 
