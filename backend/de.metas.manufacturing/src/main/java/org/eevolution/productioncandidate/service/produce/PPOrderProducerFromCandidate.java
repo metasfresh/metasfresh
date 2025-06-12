@@ -34,7 +34,7 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.model.event.PPOrderUserNotificationsProducer;
+import de.metas.manufacturing.event.PPOrderUserNotificationsProducer;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;

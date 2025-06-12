@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.eevolution.model.event;
+package de.metas.manufacturing.event;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
