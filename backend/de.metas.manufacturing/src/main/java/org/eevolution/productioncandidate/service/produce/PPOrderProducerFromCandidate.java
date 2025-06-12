@@ -162,7 +162,7 @@ public class PPOrderProducerFromCandidate
 
 							result.addOrder(ppOrder);
 
-							ppOrderUserNotificationsProducer.notifyProcessed(ppOrder);
+							ppOrderUserNotificationsProducer.notifyGenerated(ppOrder);
 
 						});
 	}

@@ -47,12 +47,12 @@ public class PPOrderUserNotificationsProducer
 		return new PPOrderUserNotificationsProducer();
 	}
 
+	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
+
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.manufacturing.UserNotifications")
 			.type(Type.DISTRIBUTED)
 			.build();
-
-	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private static final AdMessageKey MSG_Event_PPOrderGenerated = AdMessageKey.of("EVENT_PP_Order_Generated");
 
@@ -60,7 +60,7 @@ public class PPOrderUserNotificationsProducer
 	{
 	}
 
-	public PPOrderUserNotificationsProducer notifyProcessed(final Collection<? extends I_PP_Order> ppOrders)
+	public PPOrderUserNotificationsProducer notifyGenerated(final Collection<? extends I_PP_Order> ppOrders)
 	{
 		if (ppOrders == null || ppOrders.isEmpty())
 		{
@@ -74,9 +74,9 @@ public class PPOrderUserNotificationsProducer
 		return this;
 	}
 
-	public final PPOrderUserNotificationsProducer notifyProcessed(@NonNull final I_PP_Order ppOrder)
+	public final PPOrderUserNotificationsProducer notifyGenerated(@NonNull final I_PP_Order ppOrder)
 	{
-		notifyProcessed(ImmutableList.of(ppOrder));
+		notifyGenerated(ImmutableList.of(ppOrder));
 		return this;
 	}
 
