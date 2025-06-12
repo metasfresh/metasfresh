@@ -349,6 +349,8 @@ public interface IOrderBL extends ISingletonService
 
 	void deleteLineById(final OrderAndLineId orderAndLineId);
 
+	boolean isClosed(@NonNull OrderId orderId);
+
 	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);

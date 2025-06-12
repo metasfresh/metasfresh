@@ -100,6 +100,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
 import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
@@ -1372,7 +1373,23 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public boolean isInvoiceableModularContractExists(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
+		final ICompositeQueryFilter<I_C_Flatrate_Term> purchaseFilter = queryBL
+				.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsSOTrx, false)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsFinalInvoiced, false);
+
+		final ICompositeQueryFilter<I_C_Flatrate_Term> salesFilter = queryBL
+				.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice);
+
+		final ICompositeQueryFilter<I_C_Flatrate_Term> invoiceableFilter = queryBL
+				.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.setJoinOr()
+				.addFilter(purchaseFilter)
+				.addFilter(salesFilter);
+
 		return createModularContractQuery(getFlatrateTermQueryBuilder(filter)
+				.filter(invoiceableFilter)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsFinalInvoiced, false))
 				.anyMatch();
@@ -1422,7 +1439,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		return queryBuilder
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, CONTRACTSTATUS_Voided)
+				.addNotInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, ImmutableList.of(CONTRACTSTATUS_Voided, CONTRACTSTATUS_EndingContract))
 				.create();
 	}
 }

@@ -25,14 +25,12 @@ package de.metas.contracts.modular.interceptor;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
@@ -55,11 +53,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 import static de.metas.contracts.modular.ModelAction.REACTIVATED;
@@ -248,43 +242,6 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_CLOSE)
 	public void beforeClose(@NonNull final I_C_Order orderRecord)
 	{
-		final List<de.metas.interfaces.I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(orderRecord);
-		final Set<FlatrateTermId> modularContractIds = orderLines.stream()
-				.filter(this::isModularContractLine)
-				.map(I_C_OrderLine::getC_Order_ID)
-				.map(OrderId::ofRepoId)
-				.map(flatrateBL::getByOrderId)
-				.flatMap(List::stream)
-				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoId)
-				.collect(Collectors.toSet());
-		final boolean isModularOrder = !modularContractIds.isEmpty();
-
-		final Set<FlatrateTermId> linkedPurchaseModularContractIds = orderLines.stream()
-				.map(I_C_OrderLine::getPurchase_Modular_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoIdOrNull)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toSet());
-		final boolean isLinkedToPurchaseModularContract = !linkedPurchaseModularContractIds.isEmpty();
-
-		if (!isModularOrder && !isLinkedToPurchaseModularContract)
-		{
-			return;
-		}
-
-		final boolean hasBillableUnprocessedLogs = contractLogService.anyMatch(
-				ModularContractLogQuery.builder()
-						.flatrateTermIds(modularContractIds)
-						.billable(true)
-						.processed(false)
-						.build()
-		);
-
-		if(hasBillableUnprocessedLogs)
-		{
-			throw new AdempiereException("Not all billable logs are processed"); // TODO
-		}
-
-		// TODO for purchase
+		contractService.closeContractsOnOrderCloseIfNeededAndAllowed(orderRecord);
 	}
 }

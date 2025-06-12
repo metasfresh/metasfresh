@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
@@ -51,6 +52,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.pricing.PricingSystemId;
@@ -62,6 +64,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -76,8 +79,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.metas.contracts.modular.ComputingMethodType.AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS;
+import static java.util.function.Predicate.not;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +92,8 @@ public class ModularContractService
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractHandlers;
 	@NonNull private final ProcessModularLogsEnqueuer processLogsEnqueuer;
@@ -398,5 +405,74 @@ public class ModularContractService
 													.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 													.build());
 		}
+	}
+
+	public void closeContractsOnOrderCloseIfNeededAndAllowed(@NonNull final I_C_Order orderRecord)
+	{
+		final List<de.metas.interfaces.I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(orderRecord);
+		final Set<FlatrateTermId> modularContractIds = orderLines.stream()
+				.filter(this::isModularContractLine)
+				.map(I_C_OrderLine::getC_Order_ID)
+				.map(OrderId::ofRepoId)
+				.map(flatrateBL::getByOrderId)
+				.flatMap(List::stream)
+				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+				.map(FlatrateTermId::ofRepoId)
+				.collect(Collectors.toSet());
+		final boolean isModularOrder = !modularContractIds.isEmpty();
+
+		if (!isModularOrder)
+		{
+			return;
+		}
+
+		final boolean hasBillableUnprocessedLogs = modularContractLogService.anyMatch(
+				ModularContractLogQuery.builder()
+						.flatrateTermIds(modularContractIds)
+						.billable(true)
+						.processed(false)
+						.build()
+		);
+
+		if(hasBillableUnprocessedLogs)
+		{
+			throw new AdempiereException("Not all billable logs are processed"); // TODO
+		}
+
+		if(!orderRecord.isSOTrx())
+		{
+			final Set<OrderId> relatedSalesOrdersIds = queryBL.createQueryBuilder(I_C_OrderLine.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, modularContractIds)
+					.create()
+					.stream()
+					.map(I_C_OrderLine::getC_Order_ID)
+					.map(OrderId::ofRepoId)
+					.collect(Collectors.toSet());
+
+			final boolean notClosedSalesOrderExists = relatedSalesOrdersIds.stream().anyMatch(not(orderBL::isClosed));
+			if(notClosedSalesOrderExists)
+			{
+				throw new AdempiereException("All Sales Orders linked to this Orders Modular Contract should be closed first"); //TODO
+			}
+		}
+
+		modularContractIds.forEach(flatrateTermId -> contractChangeBL.endContract(flatrateBL.getById(flatrateTermId)));
+
+		if(orderRecord.isSOTrx())
+		{
+			queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID, modularContractIds)
+					.create()
+					.forEach(contractChangeBL::endContract);
+		}
+	}
+
+	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
+	{
+		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))
+				.map(flatrateBL::isModularContract)
+				.orElse(false);
 	}
 }

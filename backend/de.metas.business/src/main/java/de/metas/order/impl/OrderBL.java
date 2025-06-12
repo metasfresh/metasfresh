@@ -1396,6 +1396,18 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isClosed(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isClosed(order);
+	}
+
+	private boolean isClosed(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isClosed();
+	}
+
+	@Override
 	public void setPhysicalClearanceDate(@NonNull final OrderId orderId, @Nullable final Instant physicalClearanceDate)
 	{
 		final I_C_Order salesOrderRecord = orderDAO.getById(orderId);
