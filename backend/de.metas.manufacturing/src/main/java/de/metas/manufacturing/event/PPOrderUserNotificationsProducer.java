@@ -23,7 +23,6 @@
 package de.metas.manufacturing.event;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.engine.DocStatus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
@@ -35,29 +34,26 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
-import org.compiere.util.Env;
 
 import java.util.Collection;
 import java.util.List;
 
 public class PPOrderUserNotificationsProducer
 {
-	public static PPOrderUserNotificationsProducer newInstance()
-	{
-		return new PPOrderUserNotificationsProducer();
-	}
-
-	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
-
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.manufacturing.UserNotifications")
 			.type(Type.DISTRIBUTED)
 			.build();
-
 	private static final AdMessageKey MSG_Event_PPOrderGenerated = AdMessageKey.of("EVENT_PP_Order_Generated");
+	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private PPOrderUserNotificationsProducer()
 	{
+	}
+
+	public static PPOrderUserNotificationsProducer newInstance()
+	{
+		return new PPOrderUserNotificationsProducer();
 	}
 
 	public PPOrderUserNotificationsProducer notifyGenerated(final Collection<? extends I_PP_Order> ppOrders)
@@ -100,21 +96,7 @@ public class PPOrderUserNotificationsProducer
 
 	private UserId getNotificationRecipientUserId(final I_PP_Order ppOrder)
 	{
-		final DocStatus docStatus = DocStatus.ofCode(ppOrder.getDocStatus());
-		if (docStatus.isReversedOrVoided())
-		{
-			final int currentUserId = Env.getAD_User_ID(Env.getCtx());
-			if (currentUserId > 0)
-			{
-				return UserId.ofRepoId(currentUserId);
-			}
-
-			return UserId.ofRepoId(ppOrder.getUpdatedBy());
-		}
-		else
-		{
-			return UserId.ofRepoId(ppOrder.getCreatedBy());
-		}
+		return UserId.ofRepoId(ppOrder.getCreatedBy());
 	}
 
 	private void postNotifications(final List<UserNotificationRequest> notifications)
