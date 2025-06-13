@@ -101,6 +101,8 @@ public class ModularContractService
 
 	private static final AdMessageKey MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.MoreThanOneModularPurchaseContractCandidateFound");
 	private static final AdMessageKey MSG_CONTRACT_HAS_BILLABLE_LOGS = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.ContractHasBillableLogs");
+	private static final AdMessageKey MSG_CONTRACT_HAS_BILLABLE_UNPROCESSED_LOGS = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.ContractHasBillableUnprocessedLogs");
+	private static final AdMessageKey MSG_CONTRACT_HAS_NOT_CLOSED_SALES_ORDERS = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.ContractHasNotClosedSalesOrders");
 	private static final AdMessageKey MSG_NOT_ELIGIBLE_PURCHASE_MODULAR_CONTRACT_CANDIDATE_SET = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.NotEligibleModularContractSet");
 	private final AdTableId CONTRACT_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_Flatrate_Term.Table_Name));
 
@@ -437,7 +439,7 @@ public class ModularContractService
 
 		if(hasBillableUnprocessedLogs)
 		{
-			throw new AdempiereException("Not all billable logs are processed"); // TODO
+			throw new AdempiereException(MSG_CONTRACT_HAS_BILLABLE_UNPROCESSED_LOGS);
 		}
 
 		final Set<FlatrateTermId> modularContractIds = modularAndInterimContracts.stream()
@@ -456,7 +458,7 @@ public class ModularContractService
 			final boolean notClosedSalesOrderExists = relatedSalesOrdersIds.stream().anyMatch(not(orderBL::isClosed));
 			if(notClosedSalesOrderExists)
 			{
-				throw new AdempiereException("All Sales Orders linked to this Orders Modular Contract should be closed first"); //TODO
+				throw new AdempiereException(MSG_CONTRACT_HAS_NOT_CLOSED_SALES_ORDERS);
 			}
 		}
 
