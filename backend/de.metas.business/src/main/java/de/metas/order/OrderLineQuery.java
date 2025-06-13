@@ -24,13 +24,15 @@ package de.metas.order;
 
 import de.metas.contracts.FlatrateTermId;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.util.Set;
 
 @Builder
 @Value
 public class OrderLineQuery
 {
-    @Nullable FlatrateTermId modularPurchaseContractId;
+    @NonNull @Singular Set<FlatrateTermId> modularPurchaseContractIds;
 }

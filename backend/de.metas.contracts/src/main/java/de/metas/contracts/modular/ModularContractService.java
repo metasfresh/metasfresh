@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
@@ -53,8 +52,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineQuery;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -64,7 +63,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -90,10 +88,8 @@ public class ModularContractService
 {
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractHandlers;
 	@NonNull private final ProcessModularLogsEnqueuer processLogsEnqueuer;
@@ -198,6 +194,12 @@ public class ModularContractService
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
 		return typeConditions.isModularOrInterim();
+	}
+
+	private boolean isModularContract(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
+		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
+		return typeConditions.isModularContractType();
 	}
 
 	public PricingSystemId getPricingSystemId(@NonNull final FlatrateTermId flatrateTermId)
@@ -328,10 +330,10 @@ public class ModularContractService
 		{
 			return;
 		}
-		for (final I_C_OrderLine orderLineRecord : orderDAO.retrieveOrderLines(orderRecord))
+		for (final I_C_OrderLine orderLineRecord : orderBL.retrieveOrderLines(orderRecord))
 		{
 			updatePurchaseModularContractId(orderLineRecord, isErrorIfMoreThanOneFound);
-			orderDAO.save(orderLineRecord);
+			orderBL.save(orderLineRecord);
 		}
 	}
 
@@ -409,26 +411,25 @@ public class ModularContractService
 
 	public void closeContractsOnOrderCloseIfNeededAndAllowed(@NonNull final I_C_Order orderRecord)
 	{
-		final List<de.metas.interfaces.I_C_OrderLine> orderLines = orderBL.retrieveOrderLines(orderRecord);
-		final Set<FlatrateTermId> modularContractIds = orderLines.stream()
-				.filter(this::isModularContractLine)
-				.map(I_C_OrderLine::getC_Order_ID)
-				.map(OrderId::ofRepoId)
-				.map(flatrateBL::getByOrderId)
-				.flatMap(List::stream)
-				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoId)
+		final Set<I_C_Flatrate_Term> modularAndInterimContracts = flatrateBL.getByOrderId(OrderId.ofRepoId(orderRecord.getC_Order_ID())).stream()
+				.filter(this::isModularOrInterimContract)
 				.collect(Collectors.toSet());
-		final boolean isModularOrder = !modularContractIds.isEmpty();
+		final boolean isModularOrder = !modularAndInterimContracts.isEmpty();
 
 		if (!isModularOrder)
 		{
 			return;
 		}
 
+		final Set<FlatrateTermId> modularAndInterimContractIds = modularAndInterimContracts.stream()
+				.filter(this::isModularOrInterimContract)
+				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+				.map(FlatrateTermId::ofRepoId)
+				.collect(Collectors.toSet());
+
 		final boolean hasBillableUnprocessedLogs = modularContractLogService.anyMatch(
 				ModularContractLogQuery.builder()
-						.flatrateTermIds(modularContractIds)
+						.flatrateTermIds(modularAndInterimContractIds)
 						.billable(true)
 						.processed(false)
 						.build()
@@ -439,13 +440,15 @@ public class ModularContractService
 			throw new AdempiereException("Not all billable logs are processed"); // TODO
 		}
 
+		final Set<FlatrateTermId> modularContractIds = modularAndInterimContracts.stream()
+				.filter(this::isModularContract)
+				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+				.map(FlatrateTermId::ofRepoId)
+				.collect(Collectors.toSet());
+
 		if(!orderRecord.isSOTrx())
 		{
-			final Set<OrderId> relatedSalesOrdersIds = queryBL.createQueryBuilder(I_C_OrderLine.class)
-					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, modularContractIds)
-					.create()
-					.stream()
+			final Set<OrderId> relatedSalesOrdersIds = orderBL.streamOrderLines(OrderLineQuery.builder().modularPurchaseContractIds(modularContractIds).build())
 					.map(I_C_OrderLine::getC_Order_ID)
 					.map(OrderId::ofRepoId)
 					.collect(Collectors.toSet());
@@ -457,22 +460,6 @@ public class ModularContractService
 			}
 		}
 
-		modularContractIds.forEach(flatrateTermId -> contractChangeBL.endContract(flatrateBL.getById(flatrateTermId)));
-
-		if(orderRecord.isSOTrx())
-		{
-			queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID, modularContractIds)
-					.create()
-					.forEach(contractChangeBL::endContract);
-		}
-	}
-
-	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
-	{
-		return ConditionsId.optionalOfRepoId(orderLine.getC_Flatrate_Conditions_ID())
-				.map(flatrateBL::isModularContract)
-				.orElse(false);
+		modularAndInterimContracts.forEach(contractChangeBL::endContract);
 	}
 }

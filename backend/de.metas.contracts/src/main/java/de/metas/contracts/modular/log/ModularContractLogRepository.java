@@ -357,7 +357,7 @@ public class ModularContractLogRepository
 				.addOnlyActiveRecordsFilter();
 
 		final TableRecordReferenceSet referenceSet = query.getReferenceSet();
-		if (referenceSet != null)
+		if (referenceSet != null && !referenceSet.isEmpty())
 		{
 			sqlQueryBuilder
 					.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, referenceSet.getSingleTableId())
