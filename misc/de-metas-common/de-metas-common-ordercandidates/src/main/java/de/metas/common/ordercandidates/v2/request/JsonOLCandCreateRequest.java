@@ -265,7 +265,7 @@ public class JsonOLCandCreateRequest
 	BigDecimal qtyShipped;
 
 	@ApiModelProperty(position = 420, //
-			value = "Translates to C_OLCand.qtyItemCapacity")
+			value = "Translates to C_OLCand.QtyItemCapacity. If given, it overrides the capcity set in the M_HU_PI_Item_Product that might be given via packingMaterialId or \"GTIN-..\" productIdentifier.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
 

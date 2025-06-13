@@ -299,7 +299,7 @@ public class ExternalIdentifierProductLookupServiceTest
 	}
 
 	@Test
-	void lookupProductByGTIN_prioritizes_HU_PI_Item_Product_over_other_sources()
+	void lookupProductByGTIN_prioritizes_HU_PI_Item_Product_over_M_Product()
 	{
 		// given
 		final I_M_Product product1 = InterfaceWrapperHelper.newInstance(I_M_Product.class);
