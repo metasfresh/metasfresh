@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -349,6 +350,8 @@ public interface IOrderBL extends ISingletonService
 
 	void deleteLineById(final OrderAndLineId orderAndLineId);
 
+	boolean isClosed(@NonNull OrderId orderId);
+
 	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
@@ -360,4 +363,6 @@ public interface IOrderBL extends ISingletonService
 	YearId getSuitableHarvestingYearId(@NonNull I_C_Order orderRecord);
 
 	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(@NonNull I_C_Order order);
+
+	Stream<de.metas.interfaces.I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
 }

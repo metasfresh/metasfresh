@@ -41,8 +41,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 import static de.metas.contracts.modular.ModelAction.REVERSED;
 
@@ -70,15 +68,15 @@ public class C_Invoice
 		contractService.afterInvoiceReverse(invoiceRecord, logHandlerRegistry);
 		invokeHandlerForEachLine(invoiceRecord, REVERSED);
 
-		if (invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceRecord))
+		if (invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord))
 		{
-			final Optional<FlatrateTermId> flatrateTermIdOptional = contractService.getFlatrateTermIdByInvoiceId(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
-			if (flatrateTermIdOptional.isEmpty()) // invoice might have been imported from a csv-file and have no flatrate term 
+			final FlatrateTermId flatrateTermId = contractService.getFlatrateTermIdByInvoiceId(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID())).orElse(null);
+			if (flatrateTermId == null) // invoice might have been imported from a csv-file and have no flatrate term
 			{
 				return;
 			}
 
-			logsRecomputationService.recomputeAllFinalInvoiceRelatedLogsLinkedTo(flatrateTermIdOptional.get());
+			logsRecomputationService.recomputeAllFinalInvoiceRelatedLogsLinkedTo(flatrateTermId);
 		}
 	}
 

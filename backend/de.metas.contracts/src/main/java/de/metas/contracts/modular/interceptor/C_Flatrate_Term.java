@@ -168,7 +168,7 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void createModularContractSpecificPrices(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	public void modularContractBeforeComplete(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
 		if (!typeConditions.isModularContractType())
@@ -177,6 +177,7 @@ public class C_Flatrate_Term
 		}
 
 		modularContractPriceService.createModularContractSpecificPricesFor(flatrateTermRecord, computingMethodHandlerRegistry);
+		flatrateTermRecord.setContractStatus(FlatrateTermStatus.Running.getCode());
 	}
 
 	@ModelChange(

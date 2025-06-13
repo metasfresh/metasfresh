@@ -73,6 +73,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderLineQuery;
 import de.metas.order.inout.InOutFromOrderProducer;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -140,6 +141,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -1396,6 +1398,18 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isClosed(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isClosed(order);
+	}
+
+	private boolean isClosed(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isClosed();
+	}
+
+	@Override
 	public void setPhysicalClearanceDate(@NonNull final OrderId orderId, @Nullable final Instant physicalClearanceDate)
 	{
 		final I_C_Order salesOrderRecord = orderDAO.getById(orderId);
@@ -1468,4 +1482,7 @@ public class OrderBL implements IOrderBL
 	{
 		return orderDAO.retrieveOrderLines(order);
 	}
+
+	@Override
+	public Stream<I_C_OrderLine> streamOrderLines(@NonNull final OrderLineQuery query) {return orderDAO.streamOrderLines(query);}
 }

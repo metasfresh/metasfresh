@@ -51,8 +51,9 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineQuery;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -76,8 +77,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.metas.contracts.modular.ComputingMethodType.AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS;
+import static java.util.function.Predicate.not;
 
 @Service
 @RequiredArgsConstructor
@@ -85,8 +88,8 @@ public class ModularContractService
 {
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractHandlers;
 	@NonNull private final ProcessModularLogsEnqueuer processLogsEnqueuer;
@@ -98,6 +101,8 @@ public class ModularContractService
 
 	private static final AdMessageKey MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.MoreThanOneModularPurchaseContractCandidateFound");
 	private static final AdMessageKey MSG_CONTRACT_HAS_BILLABLE_LOGS = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.ContractHasBillableLogs");
+	private static final AdMessageKey MSG_CONTRACT_HAS_BILLABLE_UNPROCESSED_LOGS = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.ContractHasBillableUnprocessedLogs");
+	private static final AdMessageKey MSG_CONTRACT_HAS_NOT_CLOSED_SALES_ORDERS = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.ContractHasNotClosedSalesOrders");
 	private static final AdMessageKey MSG_NOT_ELIGIBLE_PURCHASE_MODULAR_CONTRACT_CANDIDATE_SET = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.NotEligibleModularContractSet");
 	private final AdTableId CONTRACT_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_Flatrate_Term.Table_Name));
 
@@ -173,7 +178,7 @@ public class ModularContractService
 		}
 
 		// Stop log creation after final invoice
-		if (flatrateBL.getById(contractId).isFinalInvoiced() && computingMethodType.isFinalInvoiceSpecificMethod())
+		if (flatrateBL.getById(contractId).isFinalInvoiced() && computingMethodType.isPurchaseFinalInvoiceSpecificMethod())
 		{
 			return false;
 		}
@@ -191,6 +196,12 @@ public class ModularContractService
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
 		return typeConditions.isModularOrInterim();
+	}
+
+	private boolean isModularContract(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
+		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
+		return typeConditions.isModularContractType();
 	}
 
 	public PricingSystemId getPricingSystemId(@NonNull final FlatrateTermId flatrateTermId)
@@ -268,24 +279,24 @@ public class ModularContractService
 			return;
 		}
 
-		final Optional<FlatrateTermId> flatrateTermIdOptional = getFlatrateTermIdByInvoiceId(invoiceId);
-		if (flatrateTermIdOptional.isEmpty()) // invoice might have been imported from a csv-file and have no flatrate term 
+		final FlatrateTermId flatrateTermId = getFlatrateTermIdByInvoiceId(invoiceId).orElse(null);
+		if (flatrateTermId == null) // invoice might have been imported from a csv-file and have no flatrate term
 		{
 			return;
 		}
 
-		if (!flatrateBL.isModularContract(flatrateTermIdOptional.get())) // could be interim
+		if (!flatrateBL.isModularContract(flatrateTermId)) // could be interim
 		{
 			return;
 		}
 
 		modularContractSettingsService.getById(modularContractSettingsId).getModuleConfigs().stream()
 				.filter(config -> config.isMatchingAnyOf(AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS))
-				.forEach(config -> modularContractLogService.updateAverageContractSpecificPrice(config, flatrateTermIdOptional.get(), logHandlerRegistry));
+				.forEach(config -> modularContractLogService.updateAverageContractSpecificPrice(config, flatrateTermId, logHandlerRegistry));
 
 		if (invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceRecord))
 		{
-			updateIsFinalInvoiced(flatrateTermIdOptional.get(), false);
+			updateIsFinalInvoiced(flatrateTermId, false);
 		}
 	}
 
@@ -296,15 +307,15 @@ public class ModularContractService
 
 	public void updateIsFinalInvoiced(@NonNull final InvoiceId invoiceId, final boolean isFinalInvoiced)
 	{
-		final Optional<FlatrateTermId> flatrateTermIdOptional = getFlatrateTermIdByInvoiceId(invoiceId);
-		if (flatrateTermIdOptional.isEmpty()) // invoice might have been imported from a csv-file and have no flatrate term 
+		final FlatrateTermId flatrateTermId = getFlatrateTermIdByInvoiceId(invoiceId).orElse(null);
+		if (flatrateTermId == null) // invoice might have been imported from a csv-file and have no flatrate term
 		{
 			return;
 		}
 
 		if (invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceId) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceId))
 		{
-			updateIsFinalInvoiced(flatrateTermIdOptional.get(), isFinalInvoiced);
+			updateIsFinalInvoiced(flatrateTermId, isFinalInvoiced);
 		}
 	}
 
@@ -321,10 +332,10 @@ public class ModularContractService
 		{
 			return;
 		}
-		for (final I_C_OrderLine orderLineRecord : orderDAO.retrieveOrderLines(orderRecord))
+		for (final I_C_OrderLine orderLineRecord : orderBL.retrieveOrderLines(orderRecord))
 		{
 			updatePurchaseModularContractId(orderLineRecord, isErrorIfMoreThanOneFound);
-			orderDAO.save(orderLineRecord);
+			orderBL.save(orderLineRecord);
 		}
 	}
 
@@ -398,5 +409,59 @@ public class ModularContractService
 													.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 													.build());
 		}
+	}
+
+	public void closeContractsOnOrderCloseIfNeededAndAllowed(@NonNull final I_C_Order orderRecord)
+	{
+		final Set<I_C_Flatrate_Term> modularAndInterimContracts = flatrateBL.getByOrderId(OrderId.ofRepoId(orderRecord.getC_Order_ID())).stream()
+				.filter(this::isModularOrInterimContract)
+				.collect(Collectors.toSet());
+		final boolean isModularOrder = !modularAndInterimContracts.isEmpty();
+
+		if (!isModularOrder)
+		{
+			return;
+		}
+
+		final Set<FlatrateTermId> modularAndInterimContractIds = modularAndInterimContracts.stream()
+				.filter(this::isModularOrInterimContract)
+				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+				.map(FlatrateTermId::ofRepoId)
+				.collect(Collectors.toSet());
+
+		final boolean hasBillableUnprocessedLogs = modularContractLogService.anyMatch(
+				ModularContractLogQuery.builder()
+						.flatrateTermIds(modularAndInterimContractIds)
+						.billable(true)
+						.processed(false)
+						.build()
+		);
+
+		if(hasBillableUnprocessedLogs)
+		{
+			throw new AdempiereException(MSG_CONTRACT_HAS_BILLABLE_UNPROCESSED_LOGS);
+		}
+
+		final Set<FlatrateTermId> modularContractIds = modularAndInterimContracts.stream()
+				.filter(this::isModularContract)
+				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+				.map(FlatrateTermId::ofRepoId)
+				.collect(Collectors.toSet());
+
+		if(!orderRecord.isSOTrx())
+		{
+			final Set<OrderId> relatedSalesOrdersIds = orderBL.streamOrderLines(OrderLineQuery.builder().modularPurchaseContractIds(modularContractIds).build())
+					.map(I_C_OrderLine::getC_Order_ID)
+					.map(OrderId::ofRepoId)
+					.collect(Collectors.toSet());
+
+			final boolean notClosedSalesOrderExists = relatedSalesOrdersIds.stream().anyMatch(not(orderBL::isClosed));
+			if(notClosedSalesOrderExists)
+			{
+				throw new AdempiereException(MSG_CONTRACT_HAS_NOT_CLOSED_SALES_ORDERS);
+			}
+		}
+
+		modularAndInterimContracts.forEach(contractChangeBL::endContract);
 	}
 }

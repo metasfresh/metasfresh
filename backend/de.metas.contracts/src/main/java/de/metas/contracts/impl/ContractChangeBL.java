@@ -510,6 +510,7 @@ public class ContractChangeBL implements IContractChangeBL
 	{
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract);
+		currentTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Closed);
 		save(currentTerm);
 	}
 }

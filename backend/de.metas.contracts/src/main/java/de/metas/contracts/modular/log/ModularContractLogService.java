@@ -138,7 +138,7 @@
 
 	 public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	 {
-		 if (modularContractLogRepository.hasAnyModularLogs(tableRecordReference))
+		 if (hasAnyModularLogs(tableRecordReference))
 		 {
 			 throw new AdempiereException(MSG_ERROR_DOCUMENT_LINE_DELETION);
 		 }
@@ -547,4 +547,15 @@
 			 throw new AdempiereException("Couldn't find average price, this shouldn't happen");
 		 }
      }
+
+	 public boolean hasAnyModularLogs(@NonNull final TableRecordReference recordRef)
+	 {
+		 return modularContractLogRepository.anyMatch(ModularContractLogQuery.builder().referenceSet(TableRecordReferenceSet.of(recordRef)).build());
+	 }
+
+	 public boolean hasAnyModularLogs(@NonNull final TableRecordReferenceSet recordRefSet)
+	 {
+		 if(recordRefSet.isEmpty()) { return false; }
+		 return modularContractLogRepository.anyMatch(ModularContractLogQuery.builder().referenceSet(recordRefSet).build());
+	 }
  }

@@ -305,13 +305,6 @@ public class ModularContractLogRepository
 		return reversedLog;
 	}
 
-	public boolean hasAnyModularLogs(@NonNull final TableRecordReference recordRef)
-	{
-		return toSqlQuery(ModularContractLogQuery.builder().referenceSet(TableRecordReferenceSet.of(recordRef)).build())
-				.create()
-				.anyMatch();
-	}
-
 	public void changeBillableStatus(
 			@NonNull final ModularContractLogQuery query,
 			final boolean isBillable)
@@ -364,7 +357,7 @@ public class ModularContractLogRepository
 				.addOnlyActiveRecordsFilter();
 
 		final TableRecordReferenceSet referenceSet = query.getReferenceSet();
-		if (referenceSet != null)
+		if (referenceSet != null && !referenceSet.isEmpty())
 		{
 			sqlQueryBuilder
 					.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, referenceSet.getSingleTableId())

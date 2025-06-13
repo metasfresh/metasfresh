@@ -31,7 +31,7 @@ import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogRepository;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.i18n.AdMessageKey;
@@ -47,6 +47,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
@@ -78,7 +79,7 @@ public class C_Order
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull private final ModularContractService contractService;
-	@NonNull private final ModularContractLogRepository contractLogRepo;
+	@NonNull private final ModularContractLogService contractLogService;
 	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
@@ -134,10 +135,10 @@ public class C_Order
 			return;
 		}
 
-		final boolean hasAnyModularLogs = orderBL.retrieveOrderLines(orderRecord)
+		final boolean hasAnyModularLogs = contractLogService.hasAnyModularLogs(orderBL.retrieveOrderLines(orderRecord)
 				.stream()
 				.map(record -> TableRecordReference.of(I_C_OrderLine.Table_Name, record.getC_OrderLine_ID()))
-				.anyMatch(contractLogRepo::hasAnyModularLogs);
+				.collect(TableRecordReferenceSet.collect()));
 
 		if (!hasAnyModularLogs)
 		{
@@ -237,5 +238,11 @@ public class C_Order
 		{
 			orderRecord.setHarvesting_Year_ID(YearId.toRepoId(harvestingYearId));
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_CLOSE)
+	public void beforeClose(@NonNull final I_C_Order orderRecord)
+	{
+		contractService.closeContractsOnOrderCloseIfNeededAndAllowed(orderRecord);
 	}
 }
