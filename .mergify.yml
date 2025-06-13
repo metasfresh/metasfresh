@@ -53,6 +53,7 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=temporary_test20250613_hotfix
               - base=gray_knight_hotfix
               - base=hard_encoded_hotfix
               - base=inner_silence_hotfix
