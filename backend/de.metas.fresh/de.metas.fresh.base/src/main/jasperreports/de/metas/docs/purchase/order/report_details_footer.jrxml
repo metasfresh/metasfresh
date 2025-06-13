@@ -204,7 +204,7 @@
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean($F{descriptionbottom} != null && !$F{descriptionbottom}.isEmpty())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="38" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="c731b46e-b9d5-4958-a9e0-331dc7a09642"/>
+				<reportElement key="textField-82" style="Test" x="37" y="0" width="481" height="12" isPrintWhenDetailOverflows="true" uuid="c731b46e-b9d5-4958-a9e0-331dc7a09642"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -229,7 +229,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" markup="none">
-					<font fontName="Arial" size="9"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{additionaltext}]]></textFieldExpression>
 			</textField>

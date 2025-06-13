@@ -312,7 +312,9 @@
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="38" y="109" width="116" height="13" uuid="fd169616-7d9c-4dff-a4ee-8bf42f92ec98"/>
+				<reportElement key="textField-5" x="38" y="109" width="116" height="13" uuid="fd169616-7d9c-4dff-a4ee-8bf42f92ec98">
+					<printWhenExpression><![CDATA[new Boolean($F{customernoatvendor}!=null)]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
