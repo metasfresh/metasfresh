@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.service.produce;
 
+import de.metas.manufacturing.event.PPOrderUserNotificationsProducer;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -55,7 +56,10 @@ public class PPOrderProducerFromCandidate
 	@NonNull private final IPPOrderBL ppOrderService;
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final IProductPlanningDAO productPlanningsRepo;
+	@NonNull private final PPOrderUserNotificationsProducer ppOrderUserNotificationsProducer;
 	private final boolean createEachPPOrderInOwnTrx;
+
+
 
 	// State
 	private final OrderGenerateResult result = new OrderGenerateResult();
@@ -143,6 +147,9 @@ public class PPOrderProducerFromCandidate
 			}
 
 			result.addOrder(ppOrder);
+
+			ppOrderUserNotificationsProducer.notifyGenerated(ppOrder);
+
 		});
 	}
 
