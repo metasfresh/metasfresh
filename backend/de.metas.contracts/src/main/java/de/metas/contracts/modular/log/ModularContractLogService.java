@@ -555,6 +555,7 @@
 
 	 public boolean hasAnyModularLogs(@NonNull final TableRecordReferenceSet recordRefSet)
 	 {
+		 if(recordRefSet.isEmpty()) { return false; }
 		 return modularContractLogRepository.anyMatch(ModularContractLogQuery.builder().referenceSet(recordRefSet).build());
 	 }
  }
