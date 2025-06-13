@@ -1213,7 +1213,6 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, modularFlatrateTermQuery.getTypeConditions())
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, CONTRACTSTATUS_Voided)
 				.addInSubQueryFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID,
 						buildModularContractSettingsQueryFilter(modularFlatrateTermQuery))
 				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
