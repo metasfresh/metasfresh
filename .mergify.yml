@@ -16,8 +16,7 @@ pull_request_rules:
       - or: &ALL_BASE_BRANCHES # this rule should apply to both the project-branches from above, and master
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
-              # UAT BRANCH. COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
-              - base=gray_knight_hotfix
+              # UAT BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=keen_hawk_uat
               - base=task_force_uat
               - base=electric_light_uat
@@ -53,6 +52,8 @@ pull_request_rules:
               - base=vampire_textbook_uat
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
+              # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=gray_knight_hotfix
               - base=hard_encoded_hotfix
               - base=inner_silence_hotfix
               - base=intensive_care_hotfix
@@ -66,6 +67,7 @@ pull_request_rules:
               - base=vampire_textbook_hotfix
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
+              # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=intensive_care_release
               - base=soft_panda_release
               - base=vampire_textbook_release
