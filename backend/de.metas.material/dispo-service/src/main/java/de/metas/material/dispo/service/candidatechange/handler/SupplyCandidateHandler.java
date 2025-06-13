@@ -110,6 +110,8 @@ public class SupplyCandidateHandler implements CandidateHandler
 				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate())
 				.getCandidate();
 
+		candidateRepositoryWriteService.updateQtyDetails(savedCandidate, savedStockCandidate, null);
+
 		final CandidateSaveResult deltaToApplyToLaterStockCandidates = CandidateSaveResult.builder()
 				.candidate(savedCandidate)
 				.previousQty(candidateSaveResult.getPreviousQty())
@@ -142,9 +144,9 @@ public class SupplyCandidateHandler implements CandidateHandler
 
 		final CandidateSaveResult applyDeltaRequest = CandidateSaveResult.builder()
 				.candidate(candidate
-								   .withQuantity(ZERO)
-								   .withDate(timeOfDeletedStock.getDate())
-								   .withSeqNo(timeOfDeletedStock.getSeqNo()))
+						.withQuantity(ZERO)
+						.withDate(timeOfDeletedStock.getDate())
+						.withSeqNo(timeOfDeletedStock.getSeqNo()))
 				.previousQty(previousQty)
 				.build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(applyDeltaRequest);

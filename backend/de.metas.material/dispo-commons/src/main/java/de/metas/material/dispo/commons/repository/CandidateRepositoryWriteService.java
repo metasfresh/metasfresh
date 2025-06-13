@@ -24,15 +24,19 @@ package de.metas.material.dispo.commons.repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.IdConstants;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateQtyDetailsPersistMultiRequest;
+import de.metas.material.dispo.commons.candidate.CandidateQtyDetailsPersistRequest;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -42,6 +46,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
@@ -109,6 +114,7 @@ public class CandidateRepositoryWriteService
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	@NonNull private final CandidateQtyDetailsRepository candidateQtyDetailsRepository;
 
 	/**
 	 * Stores the given {@code candidate}.
@@ -128,14 +134,6 @@ public class CandidateRepositoryWriteService
 	public CandidateSaveResult addOrUpdateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
 	{
 		return addOrUpdate(candidate, false/* preserveExistingSeqNoAndParentId */);
-	}
-
-	/**
-	 * Similar to {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)}, but the given {@code candidate}'s {@code seqNo} (if specified at all!) will only be persisted if none is stored yet.
-	 */
-	public CandidateSaveResult addOrUpdatePreserveExistingSeqNo(@NonNull final Candidate candidate)
-	{
-		return addOrUpdate(candidate, true);
 	}
 
 	/**
@@ -628,8 +626,6 @@ public class CandidateRepositoryWriteService
 				.build();
 	}
 
-
-
 	/**
 	 * @return DeleteResult for STOCK candidate
 	 */
@@ -701,14 +697,14 @@ public class CandidateRepositoryWriteService
 		if (candidateRecord.getMD_Candidate_Parent_ID() <= 0)
 		{
 			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
-													  .candidateId(candidateId)
-													  .build());
+					.candidateId(candidateId)
+					.build());
 		}
 		else
 		{
 			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
-													  .candidateId(stockCandidateId)
-													  .build());
+					.candidateId(stockCandidateId)
+					.build());
 		}
 
 		return deleteResult;
@@ -742,8 +738,8 @@ public class CandidateRepositoryWriteService
 		final DeleteResult deleteResult = buildDeleteResultForCandidate(candidateRecord);
 
 		deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
-												  .candidateId(candidateId)
-												  .build());
+				.candidateId(candidateId)
+				.build());
 
 		return deleteResult;
 	}
@@ -795,7 +791,7 @@ public class CandidateRepositoryWriteService
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 
 		final DeleteResult deleteResult = new DeleteResult(candidateId,
-														   DateAndSeqNo
+				DateAndSeqNo
 						.builder()
 						.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
 						.seqNo(candidateRecord.getSeqNo())
@@ -933,12 +929,12 @@ public class CandidateRepositoryWriteService
 	private DeleteResult buildDeleteResultForCandidate(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		return new DeleteResult(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()),
-																 DateAndSeqNo
-																		 .builder()
+				DateAndSeqNo
+						.builder()
 						.date(candidateRecord.getDateProjected().toInstant())
-																		 .seqNo(candidateRecord.getSeqNo())
-																		 .build(),
-																 candidateRecord.getQty());
+						.seqNo(candidateRecord.getSeqNo())
+						.build(),
+				candidateRecord.getQty());
 	}
 
 	public List<Candidate> getSupplyCandidatesForDemand(@NonNull final Candidate demandCandidate, @NonNull final CandidateBusinessCase businessCase)
@@ -976,5 +972,65 @@ public class CandidateRepositoryWriteService
 
 		@NonNull
 		BigDecimal previousQty;
+	}
+
+	public void updateQtyDetails(@NonNull final Candidate candidate, @NonNull final Candidate stockCandidate, @Nullable final Candidate previousStockCandidate)
+	{
+		final Candidate actualPreviousStockCandidate = CoalesceUtil.coalesceSuppliers(() -> previousStockCandidate,
+				() -> getPreviousStockCandidateOrNull(stockCandidate));
+		final BigDecimal previousQty = actualPreviousStockCandidate == null ? BigDecimal.ZERO : actualPreviousStockCandidate.getQuantity();
+		final CandidateId actualPreviousStockCandidateId = actualPreviousStockCandidate == null ? null : actualPreviousStockCandidate.getId();
+		final CandidateId currentCandidateId = candidate.getId();
+
+		final CandidateQtyDetailsPersistMultiRequest.CandidateQtyDetailsPersistMultiRequestBuilder builder = CandidateQtyDetailsPersistMultiRequest.builder()
+				.candidateId(currentCandidateId)
+				.stockCandidateId(stockCandidate.getId());
+		builder.details(ImmutableList.of(CandidateQtyDetailsPersistRequest.builder()
+						.detailCandidateId(actualPreviousStockCandidateId)
+						.qtyInStockUom(previousQty)
+						.build(),
+				CandidateQtyDetailsPersistRequest.builder()
+						.detailCandidateId(currentCandidateId)
+						.qtyInStockUom(getQuantityForCandidate(candidate))
+						.build()
+		));
+		candidateQtyDetailsRepository.save(builder.build());
+	}
+
+	private static BigDecimal getQuantityForCandidate(final @NonNull Candidate candidate)
+	{
+		switch (candidate.getType())
+		{
+			case DEMAND:
+			case UNEXPECTED_DECREASE:
+			case INVENTORY_DOWN:
+				return candidate.getQuantity().negate();
+			default:
+				return candidate.getQuantity();
+		}
+	}
+
+	@Nullable
+	private Candidate getPreviousStockCandidateOrNull(final @NonNull Candidate stockCandidate)
+	{
+		final MaterialDescriptor materialDescriptor = stockCandidate.getMaterialDescriptor();
+
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.customer(BPartnerClassifier.specificOrAny(materialDescriptor.getCustomerId()))
+				.customerIdOperator(MaterialDescriptorQuery.CustomerIdOperator.GIVEN_ID_ONLY)
+				.timeRangeEnd(DateAndSeqNo.atTimeNoSeqNo(stockCandidate.getMaterialDescriptor().getDate())
+						.withOperator(DateAndSeqNo.Operator.EXCLUSIVE))
+				.build();
+
+		final CandidatesQuery findPreviousStockQuery = CandidatesQuery.builder()
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.type(CandidateType.STOCK)
+				.matchExactStorageAttributesKey(true)
+				.build();
+
+		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(findPreviousStockQuery);
 	}
 }
