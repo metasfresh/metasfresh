@@ -138,6 +138,8 @@ public class DemandCandiateHandler implements CandidateHandler
 					.getCandidate();
 		}
 
+		candidateRepositoryWriteService.updateQtyDetails(savedCandidate, savedStockCandidate, null);
+
 		final CandidateSaveResult deltaToApplyToLaterStockCandidates = candidateSaveResult.withNegatedQuantity();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandidates);
 

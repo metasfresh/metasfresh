@@ -393,4 +393,20 @@ public class Candidate
 				return false;
 		}
 	}
+
+	/**
+	 * The qty is always stored as an absolute value on the candidate, but we're interested if the candidate is adding or subtracting qty to the stock.
+	 */
+	public BigDecimal getStockImpactPlannedQuantity()
+	{
+		switch (getType())
+		{
+			case DEMAND:
+			case UNEXPECTED_DECREASE:
+			case INVENTORY_DOWN:
+				return getQuantity().negate();
+			default:
+				return getQuantity();
+		}
+	}
 }
