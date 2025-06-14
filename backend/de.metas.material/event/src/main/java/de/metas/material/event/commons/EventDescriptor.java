@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,6 +44,7 @@ public class EventDescriptor
 	@NonNull String eventId;
 	@NonNull ClientAndOrgId clientAndOrgId;
 	@Nullable String traceId;
+	@Nullable UserId createdByUserId;
 
 	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
 	{
@@ -68,6 +70,15 @@ public class EventDescriptor
 				.eventId(newEventId())
 				.clientAndOrgId(clientAndOrgId)
 				.traceId(traceId)
+				.build();
+	}
+
+	public static EventDescriptor ofClientOrgAndUserId(@NonNull final ClientAndOrgId clientAndOrgId, @Nullable final UserId createdByUserId)
+	{
+		return builder()
+				.eventId(newEventId())
+				.clientAndOrgId(clientAndOrgId)
+				.createdByUserId(createdByUserId)
 				.build();
 	}
 
