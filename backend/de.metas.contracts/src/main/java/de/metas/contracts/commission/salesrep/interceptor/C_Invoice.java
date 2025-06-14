@@ -86,7 +86,10 @@ public class C_Invoice
 	{
 		final DocumentSalesRepDescriptor documentSalesRepDescriptor = documentSalesRepDescriptorFactory.forDocumentRecord(invoiceRecord);
 
-		documentSalesRepDescriptorService.updateFromCustomer(documentSalesRepDescriptor);
+		if (invoiceRecord.getC_Order_ID() != 0)
+		{
+			documentSalesRepDescriptorService.updateFromCustomer(documentSalesRepDescriptor);
+		}
 
 		documentSalesRepDescriptor.syncToRecord();
 	}
