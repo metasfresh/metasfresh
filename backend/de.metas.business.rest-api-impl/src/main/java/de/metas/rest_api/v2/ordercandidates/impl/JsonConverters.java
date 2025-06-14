@@ -120,7 +120,7 @@ public class JsonConverters
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(request.getCurrencyCode());
 
-		final WarehouseId warehouseDestId = !Check.isEmpty(request.getWarehouseDestCode())
+		final WarehouseId warehouseDestId = Check.isNotBlank(request.getWarehouseDestCode())
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
@@ -218,10 +218,12 @@ public class JsonConverters
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
 				.productId(productInfo.getProductId())
+				.huPIItemProductId(JsonMetasfreshId.toValueInt(request.getPackingMaterialId()))
+				.qtyItemCapacity(request.getQtyItemCapacity()) // if none is given, we will use the huPIItemProductId's capacity down the road
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
 				.uomId(uomId)
-				.huPIItemProductId(JsonMetasfreshId.toValueInt(request.getPackingMaterialId()))
+				
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
@@ -248,7 +250,7 @@ public class JsonConverters
 				.deliveryRule(request.getDeliveryRule())
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
-				.qtyItemCapacity(request.getQtyItemCapacity())
+
 				//
 				.assignSalesRepRule(assignSalesRepRule)
 				.salesRepInternalId(salesRepInternalId)

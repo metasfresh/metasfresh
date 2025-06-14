@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor1
+@ghActions:run_on_executor4
 Feature: Test sending an outbound mail
 
   Background: Initial Data

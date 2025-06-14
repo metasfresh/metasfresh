@@ -101,6 +101,7 @@ public class M_Product_TaxCategory_StepDef
 				.createQueryBuilder(I_M_Product_TaxCategory.class)
 				.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(COLUMNNAME_C_Country_ID, countryId)
+				.orderByDescending(COLUMNNAME_C_TaxCategory_ID)
 				.firstOptional()
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_M_Product_TaxCategory.class));
 

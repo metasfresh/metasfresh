@@ -145,17 +145,19 @@ public class JsonOLCandCreateRequest
 	String uomCode;
 
 	@ApiModelProperty(position = 180, //
-			value = "This translates to `C_OLCand.M_HU_PI_Item_Product_ID`.")
+			value = "This translates to `C_OLCand.M_HU_PI_Item_Product_ID`\n."
+					+ "If set, then it overrides a possible `M_HU_PI_Item_Product_ID` that might have been looked up together with the product."
+	)
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId packingMaterialId;
 
 	@ApiModelProperty(position = 190, //
 			value = "If a new product price needs to be created on the fly and the system can't deduce the respective pricing system from given business partner,\n"
-			+ "then we need this property to specify the `M_PricingSystem.Value` of the pricing system to work with.\n\n"
-			+ "Also note that:\n"
-			+ "- you should avoid white-spaces in the value string"
-			+ "- the pricing system needs to have a price list that matches the BPartner's country and that has a default tax category to be used the creating the new price."
-			+ "- if a new business partner is created on the fly, the default business partner group (to which the new BPartner is added) needs to have this pricing system set; otherwise the order line candidate will be created, but can't be processed.")
+					+ "then we need this property to specify the `M_PricingSystem.Value` of the pricing system to work with.\n\n"
+					+ "Also note that:\n"
+					+ "- you should avoid white-spaces in the value string"
+					+ "- the pricing system needs to have a price list that matches the BPartner's country and that has a default tax category to be used the creating the new price."
+					+ "- if a new business partner is created on the fly, the default business partner group (to which the new BPartner is added) needs to have this pricing system set; otherwise the order line candidate will be created, but can't be processed.")
 	@JsonInclude(Include.NON_NULL)
 	String pricingSystemCode;
 
@@ -263,7 +265,7 @@ public class JsonOLCandCreateRequest
 	BigDecimal qtyShipped;
 
 	@ApiModelProperty(position = 420, //
-			value = "Translates to C_OLCand.qtyItemCapacity")
+			value = "Translates to C_OLCand.QtyItemCapacity. If given, it overrides the capcity set in the M_HU_PI_Item_Product that might be given via packingMaterialId or \"GTIN-..\" productIdentifier.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
 
@@ -408,8 +410,8 @@ public class JsonOLCandCreateRequest
 		if (price != null)
 		{
 			Check.assumeNotNull(currencyCode,
-								"currencyCode may not be null, if price is set; this={}",
-								this);
+					"currencyCode may not be null, if price is set; this={}",
+					this);
 		}
 		return this;
 	}

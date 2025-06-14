@@ -23,6 +23,7 @@
 package de.metas.handlingunits.ordercandidate.spi.impl;
 
 import ch.qos.logback.classic.Level;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -55,20 +56,28 @@ public class OLCandProductFromPIIPvalidator implements IOLCandValidator
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
 
 		final I_M_HU_PI_Item_Product huPIItemProduct = OLCandPIIPUtil.extractHUPIItemProductOrNull(olCand);
-		if (huPIItemProduct != null)
+		if (huPIItemProduct == null)
 		{
-			if (productId == null)
-			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("Supplement missing C_OLCand.M_Product_ID = {} from M_HU_PI_Item_Product_ID={}", huPIItemProduct.getM_Product_ID(), huPIItemProduct.getM_HU_PI_Item_Product_ID());
-				olCand.setM_Product_ID(huPIItemProduct.getM_Product_ID());
-			}
-			else if (productId.getRepoId() != huPIItemProduct.getM_Product_ID())
-			{
-				throw new AdempiereException("Effective C_OLCand.M_Product_ID is inconsistent with effective C_OLCand.M_HU_PI_Item_Product.M_Product_ID")
-						.appendParametersToMessage()
-						.setParameter("C_OLCand.M_Product_ID (eff)", productId.getRepoId())
-						.setParameter("C_OLCand.M_HU_PI_Item_Product.M_Product_ID (eff)", huPIItemProduct.getM_Product_ID());
-			}
+			return;
 		}
+		final boolean virtualHU = HUPIItemProductId.ofRepoId(huPIItemProduct.getM_HU_PI_Item_Product_ID()).isVirtualHU();
+		if (virtualHU)
+		{
+			return;
+		}
+
+		if (productId == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Supplement missing C_OLCand.M_Product_ID = {} from M_HU_PI_Item_Product_ID={}", huPIItemProduct.getM_Product_ID(), huPIItemProduct.getM_HU_PI_Item_Product_ID());
+			olCand.setM_Product_ID(huPIItemProduct.getM_Product_ID());
+		}
+		else if (productId.getRepoId() != huPIItemProduct.getM_Product_ID())
+		{
+			throw new AdempiereException("Effective C_OLCand.M_Product_ID is inconsistent with effective C_OLCand.M_HU_PI_Item_Product.M_Product_ID")
+					.appendParametersToMessage()
+					.setParameter("C_OLCand.M_Product_ID (eff)", productId.getRepoId())
+					.setParameter("C_OLCand.M_HU_PI_Item_Product.M_Product_ID (eff)", huPIItemProduct.getM_Product_ID());
+		}
+		
 	}
 }

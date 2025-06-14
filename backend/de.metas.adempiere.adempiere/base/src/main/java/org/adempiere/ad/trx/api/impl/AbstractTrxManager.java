@@ -489,7 +489,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public <T> T call(final String trxName, @NonNull final TrxCallable<T> callable)
+	public <T> T call(@Nullable final String trxName, @NonNull final TrxCallable<T> callable)
 	{
 		final boolean manageTrx = false;
 		return call(trxName, manageTrx, callable);

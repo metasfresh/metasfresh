@@ -71,7 +71,7 @@ public class AttributeSetInstanceId implements RepoIdAware
 		}
 	}
 
-	public static int toRepoId(final AttributeSetInstanceId attributeSetInstanceId)
+	public static int toRepoId(@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		return attributeSetInstanceId != null ? attributeSetInstanceId.getRepoId() : -1;
 	}

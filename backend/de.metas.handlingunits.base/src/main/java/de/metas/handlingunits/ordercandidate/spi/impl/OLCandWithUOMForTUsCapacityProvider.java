@@ -3,7 +3,6 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
@@ -67,10 +66,5 @@ public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUs
 			return Optional.of(Quantity.infinite(capacity.getC_UOM()));
 		}
 		return Optional.of(uomConversionBL.convertToProductUOM(capacity.toQuantity(), productId));
-	}
-
-	private UomId extractUomId(@NonNull final I_C_OLCand olCand)
-	{
-		return UomId.ofRepoIdOrNull(olCand.getC_UOM_ID());
 	}
 }

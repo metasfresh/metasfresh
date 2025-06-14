@@ -1,8 +1,9 @@
 package de.metas.ordercandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
@@ -1835,7 +1836,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Set Manual packaging capacity.
-	 * If "no", then the internal packaging capactity is applied
+	 * If "no", then the internal packaging capacity is applied
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false

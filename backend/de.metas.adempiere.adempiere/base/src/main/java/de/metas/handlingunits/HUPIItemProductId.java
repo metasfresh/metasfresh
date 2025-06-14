@@ -55,6 +55,7 @@ public class HUPIItemProductId implements RepoIdAware
 		}
 	}
 
+	@Nullable
 	public static HUPIItemProductId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
