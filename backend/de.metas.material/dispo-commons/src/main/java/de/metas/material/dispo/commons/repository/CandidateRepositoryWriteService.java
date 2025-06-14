@@ -982,32 +982,20 @@ public class CandidateRepositoryWriteService
 		final CandidateId actualPreviousStockCandidateId = actualPreviousStockCandidate == null ? null : actualPreviousStockCandidate.getId();
 		final CandidateId currentCandidateId = candidate.getId();
 
-		final CandidateQtyDetailsPersistMultiRequest.CandidateQtyDetailsPersistMultiRequestBuilder builder = CandidateQtyDetailsPersistMultiRequest.builder()
+		final CandidateQtyDetailsPersistMultiRequest request = CandidateQtyDetailsPersistMultiRequest.builder()
 				.candidateId(currentCandidateId)
-				.stockCandidateId(stockCandidate.getId());
-		builder.details(ImmutableList.of(CandidateQtyDetailsPersistRequest.builder()
-						.detailCandidateId(actualPreviousStockCandidateId)
-						.qtyInStockUom(previousQty)
-						.build(),
-				CandidateQtyDetailsPersistRequest.builder()
-						.detailCandidateId(currentCandidateId)
-						.qtyInStockUom(getQuantityForCandidate(candidate))
-						.build()
-		));
-		candidateQtyDetailsRepository.save(builder.build());
-	}
-
-	private static BigDecimal getQuantityForCandidate(final @NonNull Candidate candidate)
-	{
-		switch (candidate.getType())
-		{
-			case DEMAND:
-			case UNEXPECTED_DECREASE:
-			case INVENTORY_DOWN:
-				return candidate.getQuantity().negate();
-			default:
-				return candidate.getQuantity();
-		}
+				.stockCandidateId(stockCandidate.getId())
+				.details(ImmutableList.of(CandidateQtyDetailsPersistRequest.builder()
+								.detailCandidateId(actualPreviousStockCandidateId)
+								.qtyInStockUom(previousQty)
+								.build(),
+						CandidateQtyDetailsPersistRequest.builder()
+								.detailCandidateId(currentCandidateId)
+								.qtyInStockUom(candidate.getPlannedStockImpact())
+								.build()
+				))
+				.build();
+		candidateQtyDetailsRepository.save(request);
 	}
 
 	@Nullable
