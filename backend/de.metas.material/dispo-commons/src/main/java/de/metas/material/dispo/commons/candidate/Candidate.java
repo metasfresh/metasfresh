@@ -397,7 +397,7 @@ public class Candidate
 	/**
 	 * The qty is always stored as an absolute value on the candidate, but we're interested if the candidate is adding or subtracting qty to the stock.
 	 */
-	public BigDecimal getPlannedStockImpact()
+	public BigDecimal getStockImpactPlannedQuantity()
 	{
 		switch (getType())
 		{

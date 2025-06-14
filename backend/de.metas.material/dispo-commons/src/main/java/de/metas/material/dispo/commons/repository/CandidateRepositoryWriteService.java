@@ -991,7 +991,7 @@ public class CandidateRepositoryWriteService
 								.build(),
 						CandidateQtyDetailsPersistRequest.builder()
 								.detailCandidateId(currentCandidateId)
-								.qtyInStockUom(candidate.getPlannedStockImpact())
+								.qtyInStockUom(candidate.getStockImpactPlannedQuantity())
 								.build()
 				))
 				.build();
