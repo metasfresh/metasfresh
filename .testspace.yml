@@ -3,8 +3,6 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
-  - temporary_test20250613_hotfix
-  - temporary_test20250613_release
   - gray_knight_hotfix
   - keen_hawk_uat
   - task_force_uat
