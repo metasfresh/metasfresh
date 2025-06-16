@@ -1,5 +1,8 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import com.google.common.base.Functions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.Profiles;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -28,6 +31,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -168,69 +174,63 @@ public class StockCandidateService
 	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code materialDescriptor}.
 	 * Iterate them and add the given {@code delta} to their quantity.
 	 */
-	public void applyDeltaToMatchingLaterStockCandidates(@NonNull final CandidateSaveResult stockWithDelta)
+	public void applyDeltaToMatchingLaterStockCandidates(@NonNull final CandidateSaveResult saveResult)
 	{
-		final Candidate deltaCandidate = stockWithDelta.getCandidate();
-		if (deltaCandidate.isSimulated())
+		final Candidate initialStockCandidate = saveResult.getCandidate();
+		if (initialStockCandidate.isSimulated())
 		{
 			return;
 		}
 
-		final CandidatesQuery query = createStockQueryBetweenDates(stockWithDelta);
-
-		final BigDecimal deltaUntilRangeEnd;
-		final BigDecimal deltaAfterRangeEnd;
-		if (stockWithDelta.isDateMoved())
+		final CandidatesQuery query = createStockQueryAfterDate(saveResult);
+		final List<Candidate> stockCandidatesToUpdate = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+		if (stockCandidatesToUpdate.isEmpty())
 		{
-			if (stockWithDelta.isDateMovedForwards())
-			{
-				Check.assumeNotNull(stockWithDelta.getPreviousQty(), "PreviousQty cannot be null on update case!");
-
-				deltaUntilRangeEnd = stockWithDelta.getPreviousQty().negate();
-				deltaAfterRangeEnd = stockWithDelta.getQtyDelta();
-			}
-			else
-			{
-				deltaUntilRangeEnd = deltaCandidate.getQuantity();
-				deltaAfterRangeEnd = stockWithDelta.getQtyDelta();
-			}
-		}
-		else
-		{
-			deltaUntilRangeEnd = stockWithDelta.getQtyDelta();
-			deltaAfterRangeEnd = null;
+			return;
 		}
 
-		final List<Candidate> candidatesToUpdateWithinRange = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
-		for (final Candidate candidate : candidatesToUpdateWithinRange)
+		final ImmutableMap<CandidateId, Candidate> stockIdToMainCandidateMap = computeStockIdToMainCandidateMap(stockCandidatesToUpdate);
+
+		Candidate previousStockCandidate = getPreviousStockOrNullForCandidate(stockCandidatesToUpdate.get(0));
+		final MaterialDispoGroupId groupId = initialStockCandidate.getGroupId();
+		for (final Candidate stockCandidate : stockCandidatesToUpdate)
 		{
-			//TODO refactor in next iteration to use MD_Candidate_QtyDetails
-			final BigDecimal newQty = candidate.getQuantity().add(deltaUntilRangeEnd);
-			candidateRepositoryWriteService.updateCandidateById(candidate
+			final Candidate mainCandidate = stockIdToMainCandidateMap.get(stockCandidate.getId());
+			final BigDecimal previousStockQty = previousStockCandidate == null ? BigDecimal.ZERO : previousStockCandidate.getQuantity();
+			final BigDecimal newQty = previousStockQty.add(mainCandidate.getStockImpactPlannedQuantity());
+			candidateRepositoryWriteService.updateCandidateById(stockCandidate
 					.withQuantity(newQty)
-					.withGroupId(deltaCandidate.getGroupId()));
-		}
-		if (deltaAfterRangeEnd == null || deltaAfterRangeEnd.signum() == 0)
-		{
-			return; // we are done
-		}
+					.withGroupId(groupId));
+			candidateRepositoryWriteService.updateQtyDetails(mainCandidate, stockCandidate, previousStockCandidate);
 
-		final MaterialDescriptorQuery materialDescriptorQuery = query.getMaterialDescriptorQuery();
-		final MaterialDescriptorQuery materialDescriptToQueryAfterRange = materialDescriptorQuery.toBuilder()
-				.timeRangeStart(materialDescriptorQuery.getTimeRangeEnd())
-				.timeRangeEnd(null)
+			previousStockCandidate = stockCandidate;
+		}
+	}
+
+	private ImmutableMap<CandidateId, Candidate> computeStockIdToMainCandidateMap(final List<Candidate> stockCandidatesToUpdate)
+	{
+		final Set<CandidateId> parentIdSet = stockCandidatesToUpdate.stream()
+				.map(Candidate::getParentId)
+				.filter(candidateId -> !candidateId.isNull())
+				.collect(Collectors.toSet());
+		final Set<CandidateId> idSet = stockCandidatesToUpdate.stream()
+				.map(Candidate::getId)
+				.collect(Collectors.toSet());
+
+		final ImmutableList<Candidate> mainCandidates = candidateRepositoryRetrieval.retrieveMainCandidatesForStockCandidates(idSet, parentIdSet);
+		final Map<CandidateId, Candidate> stockCandidateIdToCandidateMap = stockCandidatesToUpdate.stream()
+				.collect(Collectors.toMap(Candidate::getId, Functions.identity()));
+		final Map<CandidateId, Candidate> suppplyStockToMainCandidateMap = mainCandidates.stream()
+				.filter(mainCandidate -> !mainCandidate.getParentId().isNull() && !mainCandidate.getId().equals(mainCandidate.getParentId()))
+				.collect(Collectors.toMap(Candidate::getParentId, Functions.identity()));
+
+		final Map<CandidateId, Candidate> demandStockToMainCandidateMap = stockCandidatesToUpdate.stream()
+				.filter(stockCandidate -> stockCandidate.getParentId().isNull() && stockCandidateIdToCandidateMap.containsKey(stockCandidate.getParentId()))
+				.collect(Collectors.toMap(Candidate::getId, stockCandidate -> stockCandidateIdToCandidateMap.get(stockCandidate.getParentId())));
+		return ImmutableMap.<CandidateId, Candidate>builder()
+				.putAll(suppplyStockToMainCandidateMap)
+				.putAll(demandStockToMainCandidateMap)
 				.build();
-		final CandidatesQuery queryAfterRange = query.withMaterialDescriptorQuery(materialDescriptToQueryAfterRange);
-		final List<Candidate> candidatesToUpdateAfterRange = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(queryAfterRange);
-		candidatesToUpdateAfterRange.removeIf(deltaCandidate::isStockCandidateOfThisCandidate);
-		for (final Candidate candidate : candidatesToUpdateAfterRange)
-		{
-			final BigDecimal newQty = candidate.getQuantity().add(deltaAfterRangeEnd);
-
-			candidateRepositoryWriteService.updateCandidateById(candidate
-					.withQuantity(newQty)
-					.withGroupId(deltaCandidate.getGroupId()));
-		}
 	}
 
 	@NonNull
@@ -262,18 +262,16 @@ public class StockCandidateService
 		return candidatesQueryBuilder.build();
 	}
 
-	private CandidatesQuery createStockQueryBetweenDates(
+	private CandidatesQuery createStockQueryAfterDate(
 			@NonNull final CandidateSaveResult saveResult)
 	{
 		final DateAndSeqNo rangeStart;
-		final DateAndSeqNo rangeEnd;
 		if (!saveResult.isDateMoved())
 		{
 			rangeStart = DateAndSeqNo
 					.ofCandidate(saveResult.getCandidate())
 					.min(saveResult.getPreviousTime())
 					.withOperator(Operator.EXCLUSIVE);
-			rangeEnd = null; // if the stock is not moving on the time axis, we look at all records, from rangeStart onwards
 		}
 		else
 		{
@@ -284,15 +282,6 @@ public class StockCandidateService
 						.min(saveResult.getPreviousTime())
 						.withOperator(Operator.EXCLUSIVE);
 
-				rangeEnd = DateAndSeqNo
-						.ofCandidate(saveResult.getCandidate())
-						.max(DateAndSeqNo
-								.builder()
-								.date(saveResult.getCandidate().getDate())
-								.seqNo(saveResult.getCandidate().getSeqNo())
-								.build())
-
-						.withOperator(Operator.INCLUSIVE);
 			}
 			else
 			{
@@ -304,19 +293,11 @@ public class StockCandidateService
 								.seqNo(saveResult.getCandidate().getSeqNo())
 								.build())
 						.withOperator(Operator.EXCLUSIVE);
-
-				rangeEnd = DateAndSeqNo
-						.ofCandidate(saveResult.getCandidate())
-						.max(saveResult.getPreviousTime())
-
-						.withOperator(Operator.EXCLUSIVE);
 			}
 		}
-
 		final MaterialDescriptorQuery //
 				materialDescriptorQuery = createMaterialDescriptorQueryBuilder(saveResult.getCandidate().getMaterialDescriptor())
 				.timeRangeStart(rangeStart)
-				.timeRangeEnd(rangeEnd)
 				.build();
 
 		return CandidatesQuery.builder()
