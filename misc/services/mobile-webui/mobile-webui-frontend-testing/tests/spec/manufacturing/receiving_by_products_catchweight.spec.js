@@ -60,6 +60,31 @@ const createMasterdata = async () => {
 }
 
 // noinspection JSUnusedLocalSymbols
+test('Receive several by-products using L+M codes to a new TU (Catch Weight)', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('mfg');
+    await ManufacturingJobsListScreen.waitForScreen();
+    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+    await ManufacturingJobScreen.clickReceiveButton({ index: 2 }); // i.e., first by-product
+    await MaterialReceiptLineScreen.selectNewTUTarget({ tuPIItemProductTestId: masterdata.packingInstructions.BY_PRODUCT_PI.tuPIItemProductTestId });
+    await MaterialReceiptLineScreen.receiveQty({
+        catchWeightQRCode: [
+            'LMQ#1#0.101#08.11.2025#500',
+            'LMQ#1#0.101#08.11.2025#500',
+            'LMQ#1#0.101#08.11.2025#500'
+        ],
+        expectGoBackToJob: false
+    });
+    await MaterialReceiptLineScreen.goBack();
+    
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
 test('Receive By-Products from 2 manufacturing orders into same HU (Catch Weight)', async ({ page }) => {
     const masterdata = await createMasterdata();
 
@@ -87,7 +112,8 @@ test('Receive By-Products from 2 manufacturing orders into same HU (Catch Weight
             }
         });
 
-        await ManufacturingJobScreen.goBack();
+        await ManufacturingJobScreen.complete();
+        // await ManufacturingJobScreen.goBack();
     });
 
     await test.step("Receive on second manufacturing order in the same HU", async () => {
@@ -106,6 +132,7 @@ test('Receive By-Products from 2 manufacturing orders into same HU (Catch Weight
             }
         });
 
-        await ManufacturingJobScreen.goBack();
+        await ManufacturingJobScreen.complete();
+        // await ManufacturingJobScreen.goBack();
     });
 });
