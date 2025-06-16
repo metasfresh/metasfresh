@@ -40,7 +40,8 @@ const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, line
 
   if (luTarget) {
     const aggregateToLU = getAggregateToLU({ draftActivityLine, luTarget });
-    const aggregateToLU_prev = original(draftActivityLine.aggregateToLU);
+    const aggregateToLU_prev =
+      draftActivityLine.aggregateToLU != null ? original(draftActivityLine.aggregateToLU) : null;
     let isLUChanging = !deepEqual(aggregateToLU_prev, aggregateToLU);
     if (!isLUChanging) {
       draftActivityLine.aggregateToTU = null;
