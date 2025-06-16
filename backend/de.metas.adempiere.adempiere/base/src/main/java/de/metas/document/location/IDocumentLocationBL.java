@@ -38,6 +38,8 @@ import java.util.Optional;
  */
 public interface IDocumentLocationBL
 {
+	RenderedAddressProvider newRenderedAddressProvider();
+	
 	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location);
 
 	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location, @Nullable AddressDisplaySequence displaySequence);

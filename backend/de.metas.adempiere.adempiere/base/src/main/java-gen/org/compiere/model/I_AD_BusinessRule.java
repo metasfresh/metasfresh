@@ -142,6 +142,27 @@ public interface I_AD_BusinessRule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Create Warning On Target.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCreateWarningOnTarget (boolean IsCreateWarningOnTarget);
+
+	/**
+	 * Get Create Warning On Target.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCreateWarningOnTarget();
+
+	ModelColumn<I_AD_BusinessRule, Object> COLUMN_IsCreateWarningOnTarget = new ModelColumn<>(I_AD_BusinessRule.class, "IsCreateWarningOnTarget", null);
+	String COLUMNNAME_IsCreateWarningOnTarget = "IsCreateWarningOnTarget";
+
+	/**
 	 * Set Debug.
 	 *
 	 * <br>Type: YesNo
@@ -182,6 +203,27 @@ public interface I_AD_BusinessRule
 
 	ModelColumn<I_AD_BusinessRule, Object> COLUMN_Name = new ModelColumn<>(I_AD_BusinessRule.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeverity (java.lang.String Severity);
+
+	/**
+	 * Get Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getSeverity();
+
+	ModelColumn<I_AD_BusinessRule, Object> COLUMN_Severity = new ModelColumn<>(I_AD_BusinessRule.class, "Severity", null);
+	String COLUMNNAME_Severity = "Severity";
 
 	/**
 	 * Get Updated.

@@ -4,8 +4,7 @@ import * as CompleteStatus from '../../constants/CompleteStatus';
 import { updateUserEditable } from './utils';
 import { registerHandler } from './activityStateHandlers';
 import { COMPONENTTYPE_ScanAndValidateBarcode } from '../../containers/activities/scan/ScanAndValidateActivity';
-
-const COMPONENT_TYPE = 'common/scanBarcode';
+import { COMPONENTTYPE_ScanBarcode } from '../../containers/activities/scan/ScanActivity';
 
 export const scanReducer = ({ draftState, action }) => {
   switch (action.type) {
@@ -40,7 +39,7 @@ const computeActivityStatus = ({ draftActivityDataStored }) => {
 };
 
 registerHandler({
-  componentType: COMPONENT_TYPE,
+  componentType: COMPONENTTYPE_ScanBarcode,
   normalizeComponentProps: () => {}, // don't add componentProps to state
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.currentValue = fromActivity.componentProps.currentValue;

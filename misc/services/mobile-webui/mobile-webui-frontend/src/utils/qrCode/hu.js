@@ -39,6 +39,7 @@ import { trl } from '../translations';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_WeightNet } from '../../constants/HUAttributes';
 import { parseGS1CodeString } from './gs1';
 import { parseEAN13CodeString } from './ean13';
+import { parseCustomQRCode } from './parseCustomQRCode';
 
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
@@ -143,12 +144,38 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.global_qrcodes.GlobalQRCode.ofString
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
-export const parseQRCodeString = (string, returnFalseOnError) => {
-  //console.trace('parseQRCodeString', { string, returnFalseOnError });
-  const allResults = {};
+export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
+  let string;
+  let returnFalseOnError;
+  let customQRCodeFormats = [];
+  if (typeof param1_string === 'object' && param1_string !== null) {
+    const obj = param1_string;
+    string = obj.string;
+    returnFalseOnError = obj.returnFalseOnError ?? false;
+    customQRCodeFormats = obj.customQRCodeFormats ?? [];
+  } else {
+    string = param1_string;
+    returnFalseOnError = param2_returnFalseOnError;
+  }
+  // console.trace('parseQRCodeString', { string, returnFalseOnError, customQRCodeFormats });
 
-  let result = parseGS1CodeString(string);
-  allResults['gs1'] = result;
+  const allResults = {};
+  let result = { error: 'initial' };
+
+  if (customQRCodeFormats?.length > 0) {
+    for (const format of customQRCodeFormats) {
+      result = parseCustomQRCode({ string, format });
+      allResults['custom - ' + format.name] = result;
+      if (!result?.error) {
+        break;
+      }
+    }
+  }
+
+  if (result?.error) {
+    result = parseGS1CodeString(string);
+    allResults['gs1'] = result;
+  }
 
   if (result?.error) {
     result = parseEAN13CodeString(string);
@@ -159,6 +186,8 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
     result = parseQRCodeString_GlobalQRCode(string);
     allResults['globalQRCode'] = result;
   }
+
+  // console.log('allResults: ' + JSON.stringify(allResults, null, 2));
 
   //
   if (result && !result.error) {

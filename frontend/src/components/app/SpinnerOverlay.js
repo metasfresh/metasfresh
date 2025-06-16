@@ -15,7 +15,6 @@ const SpinnerOverlay = ({ iconSize, spinnerType = 'overlay' } = {}) => {
     iconStyle.height = `${iconSize}px`;
   }
 
-  console.log('SpinnerOverlay', { spinnerType, iconSize, style, iconStyle });
   return (
     <div
       style={style}

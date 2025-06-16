@@ -96,7 +96,8 @@ test('Simple picking test', async ({ page }) => {
                     }
                 }
             }
-        }
+        },
+        pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU is not yet closed
     });
 
     await PickingJobScreen.complete();
@@ -109,7 +110,8 @@ test('Simple picking test', async ({ page }) => {
                     }
                 }
             }
-        }
+        },
+        pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU everything is shipped now
     });
 
 });
@@ -172,7 +174,8 @@ test('Pick - unpick', async ({ page }) => {
                     }
                 }
             }
-        }
+        },
+        pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because nothing was actually picked
     });
 });
 
@@ -287,7 +290,7 @@ test('Ship on close LU', async ({ page }) => {
     const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
 
-    await test.step("Pick and close to first LU", async () => {
+    await test.step("Pick and close the LU", async () => {
         await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
         await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
@@ -302,8 +305,9 @@ test('Ship on close LU', async ({ page }) => {
                         qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
                     }
                 }
-            }
-        }
+            },
+        },
+        pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU was shipped
     });
 
     await PickingJobScreen.complete();

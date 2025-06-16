@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Record_Warning extends org.compiere.model.PO implements I_AD_Record_Warning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 203439282L;
+	private static final long serialVersionUID = -1552896598L;
 
     /** Standard Constructor */
     public X_AD_Record_Warning (final Properties ctx, final int AD_Record_Warning_ID, @Nullable final String trxName)
@@ -143,5 +143,56 @@ public class X_AD_Record_Warning extends org.compiere.model.PO implements I_AD_R
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setRoot_AD_Table_ID (final int Root_AD_Table_ID)
+	{
+		if (Root_AD_Table_ID < 1) 
+			set_Value (COLUMNNAME_Root_AD_Table_ID, null);
+		else 
+			set_Value (COLUMNNAME_Root_AD_Table_ID, Root_AD_Table_ID);
+	}
+
+	@Override
+	public int getRoot_AD_Table_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Root_AD_Table_ID);
+	}
+
+	@Override
+	public void setRoot_Record_ID (final int Root_Record_ID)
+	{
+		if (Root_Record_ID < 1) 
+			set_Value (COLUMNNAME_Root_Record_ID, null);
+		else 
+			set_Value (COLUMNNAME_Root_Record_ID, Root_Record_ID);
+	}
+
+	@Override
+	public int getRoot_Record_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Root_Record_ID);
+	}
+
+	/** 
+	 * Severity AD_Reference_ID=541949
+	 * Reference name: Severity
+	 */
+	public static final int SEVERITY_AD_Reference_ID=541949;
+	/** Notice = N */
+	public static final String SEVERITY_Notice = "N";
+	/** Error = E */
+	public static final String SEVERITY_Error = "E";
+	@Override
+	public void setSeverity (final java.lang.String Severity)
+	{
+		set_Value (COLUMNNAME_Severity, Severity);
+	}
+
+	@Override
+	public java.lang.String getSeverity() 
+	{
+		return get_ValueAsString(COLUMNNAME_Severity);
 	}
 }

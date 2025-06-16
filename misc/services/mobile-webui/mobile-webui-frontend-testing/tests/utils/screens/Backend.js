@@ -31,25 +31,6 @@ export const Backend = {
         return responseBody;
     }),
 
-    getFreePickingSlot: async ({ bpartnerCode } = {}) => await test.step(`Backend: get free picking slot`, async () => {
-        const backendBaseUrl = await getBackendBaseUrl();
-        const request = { bpartnerCode };
-        console.log(`Sending request":\n` + JSON.stringify(request, null, 2));
-        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/getFreePickingSlot`, {
-            data: request,
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        const responseBody = await response.json();
-        assertNoErrors({ responseBody });
-
-        console.log(`Got response:\n` + JSON.stringify(responseBody, null, 2));
-        const { qrCode: pickingSlotQRCode } = responseBody;
-        console.log(`Found free picking slot: ${pickingSlotQRCode}`);
-        return { pickingSlotQRCode };
-    }),
-
     expect: async (expectations) => await test.step(`Backend: expect`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting/expect`, {
@@ -63,6 +44,8 @@ export const Backend = {
         });
         const responseBody = await response.json();
         assertNoErrors({ responseBody });
+        
+        return responseBody;
     }),
 }
 

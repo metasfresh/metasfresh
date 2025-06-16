@@ -54,7 +54,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
@@ -62,6 +63,7 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -78,6 +80,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+@RequiredArgsConstructor
 @Service
 public class WarehouseService
 {
@@ -89,7 +92,7 @@ public class WarehouseService
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@NonNull
-	private final ProductRestService productRestService;
+	private final ExternalIdentifierProductLookupService productLookupService;
 	@NonNull
 	private final HuForInventoryLineFactory huForInventoryLineFactory;
 	@NonNull
@@ -98,21 +101,17 @@ public class WarehouseService
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull
 	private final JsonAttributeService jsonAttributeService;
+	@NonNull
+	private final WarehouseRestService warehouseRestService;
 
-	public WarehouseService(
-			@NonNull final ProductRestService productRestService,
-			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory,
-			@NonNull final InventoryService inventoryService,
-			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
-			@NonNull final JsonAttributeService jsonAttributeService)
+	@NonNull
+	public WarehouseId resolveWarehouseByIdentifier(@NonNull final OrgId orgId, @NonNull final String warehouseIdentifier)
 	{
-		this.productRestService = productRestService;
-		this.huForInventoryLineFactory = huForInventoryLineFactory;
-		this.inventoryService = inventoryService;
-		this.shipmentScheduleRepository = shipmentScheduleRepository;
-		this.jsonAttributeService = jsonAttributeService;
+		return ExternalIdentifier.ofIdentifierCandidate(warehouseIdentifier)
+				.flatMap(identifier -> warehouseRestService.resolveWarehouseExternalIdentifier(identifier, orgId))
+				.orElseGet(() -> getWarehouseByIdentifier(orgId, warehouseIdentifier));
 	}
-
+	
 	@NonNull
 	public WarehouseId getWarehouseByIdentifier(@NonNull final OrgId orgId, @NonNull final String warehouseIdentifier)
 	{
@@ -161,8 +160,8 @@ public class WarehouseService
 			@NonNull final String warehouseIdentifier,
 			@NonNull final JsonOutOfStockNoticeRequest outOfStockInfoRequest)
 	{
-		if (!Boolean.TRUE.equals(outOfStockInfoRequest.getClosePendingShipmentSchedules())
-				&& !Boolean.TRUE.equals(outOfStockInfoRequest.getCreateInventory()))
+		if (!outOfStockInfoRequest.getClosePendingShipmentSchedules()
+				&& !outOfStockInfoRequest.getCreateInventory())
 		{
 			Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: closePendingShipmentSchedules and createInventory are both false! No action is performed!");
 
@@ -176,7 +175,8 @@ public class WarehouseService
 
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(outOfStockInfoRequest.getProductIdentifier());
 
-		final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, orgId)
+		final ProductId productId = productLookupService.resolveProductExternalIdentifier(productIdentifier, orgId)
+				.map(ProductAndHUPIItemProductId::getProductId)
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceIdentifier(productIdentifier.getRawValue())
 						.resourceName("M_Product")

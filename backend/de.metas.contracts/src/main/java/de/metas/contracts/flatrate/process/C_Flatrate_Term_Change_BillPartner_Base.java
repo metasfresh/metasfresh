@@ -60,10 +60,13 @@ public abstract class C_Flatrate_Term_Change_BillPartner_Base extends JavaProces
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-
 		if (context.isMoreThanOneSelected())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		if(ProcessUtil.isFlatFeeContract(context))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not supported for FlatFee contracts");
 		}
 
 		return ProcessPreconditionsResolution.accept();

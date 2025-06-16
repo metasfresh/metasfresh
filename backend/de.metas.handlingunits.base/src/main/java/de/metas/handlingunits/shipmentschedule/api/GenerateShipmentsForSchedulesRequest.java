@@ -34,8 +34,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 @Builder
 public class GenerateShipmentsForSchedulesRequest
 {
-	@NonNull ImmutableSet<ShipmentScheduleId> scheduleIds;
 	@NonNull M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
+	@Nullable ImmutableSet<ShipmentScheduleId> scheduleIds;
 	@Nullable ImmutableSet<HuId> onlyLUIds;
 
 	/**

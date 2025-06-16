@@ -171,6 +171,11 @@ public final class PickingJob
 	@NonNull
 	public PickingSlotIdAndCaption getPickingSlotNotNull() {return currentPickingTarget.getPickingSlotNotNull();}
 
+	public Optional<PickingSlotId> getPickingSlotIdEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getPickingSlotId);
+	}
+
 	public boolean isProcessed()
 	{
 		return docStatus.isProcessed();

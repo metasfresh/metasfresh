@@ -180,6 +180,7 @@ registerHandler({
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
     draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
+    draftActivityDataStored.customQRCodeFormats = fromActivity.componentProps.customQRCodeFormats;
     return draftActivityDataStored;
   },
 });

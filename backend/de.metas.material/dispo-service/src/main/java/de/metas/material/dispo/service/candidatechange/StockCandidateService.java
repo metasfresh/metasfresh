@@ -204,8 +204,8 @@ public class StockCandidateService
 		final List<Candidate> candidatesToUpdateWithinRange = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		for (final Candidate candidate : candidatesToUpdateWithinRange)
 		{
+			//TODO refactor in next iteration to use MD_Candidate_QtyDetails
 			final BigDecimal newQty = candidate.getQuantity().add(deltaUntilRangeEnd);
-
 			candidateRepositoryWriteService.updateCandidateById(candidate
 					.withQuantity(newQty)
 					.withGroupId(deltaCandidate.getGroupId()));
