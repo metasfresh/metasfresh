@@ -101,7 +101,7 @@ public class M_HU_PI_Item_Product_StepDef
 		final Integer huPiItemId = huPiItemTable.getOptional(huPiItemIdentifier)
 				.map(I_M_HU_PI_Item::getM_HU_PI_Item_ID)
 				.orElseGet(() -> Integer.parseInt(huPiItemIdentifier.getAsString()));
-
+				
 		final String x12de355Code = tableRow.getAsOptionalString(I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName()).orElse(null);
 
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID);
@@ -120,6 +120,8 @@ public class M_HU_PI_Item_Product_StepDef
 						}
 				);
 
+		tableRow.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(huPiItemProductRecord::setGTIN);
+		
 		huPiItemProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		huPiItemProductRecord.setM_HU_PI_Item_ID(huPiItemId);
 		huPiItemProductRecord.setQty(qty);
