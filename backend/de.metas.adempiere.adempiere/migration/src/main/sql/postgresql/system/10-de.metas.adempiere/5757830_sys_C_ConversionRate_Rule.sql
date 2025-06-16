@@ -788,3 +788,9 @@ UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-16 16:11:1
 UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-06-16 16:11:13.172000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=634174
 ;
 
+CREATE UNIQUE INDEX c_conversionrate_rule_currency_pairs_uq
+    ON c_conversionrate_rule (
+                              LEAST(c_currency_id, c_currency_to_id),
+                              GREATEST(c_currency_id, c_currency_to_id)
+        )
+    WHERE (isactive = 'Y'::bpchar);

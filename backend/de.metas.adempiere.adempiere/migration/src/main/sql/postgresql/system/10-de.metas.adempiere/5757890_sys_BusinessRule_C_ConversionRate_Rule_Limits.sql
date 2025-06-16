@@ -10,20 +10,20 @@ INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Created,CreatedBy
 UPDATE AD_Val_Rule SET EntityType='D',Updated=TO_TIMESTAMP('2025-06-16 16:31:59.943000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540734
 ;
 
--- Name: C_Conversion_Rate_Rule_Limits
--- 2025-06-16T16:37:36.207Z
-UPDATE AD_Val_Rule SET Code='NOT EXISTS
-          (SELECT 1
-           FROM C_ConversionRate_Rule crr
-           WHERE crr.c_currency_id = C_Conversion_Rate.c_currency_id
-             AND crr.c_currency_to_id = C_Conversion_Rate.c_currency_id_to
-             AND crr.isActive = ''Y''
-             AND ((crr.multiplyrate_min IS NOT NULL
-             AND crr.multiplyrate_min > C_Conversion_Rate.MultiplyRate)
-OR
-             (crr.multiplyrate_max IS NOT NULL
-             AND crr.multiplyrate_max < C_Conversion_Rate.MultiplyRate))',Updated=TO_TIMESTAMP('2025-06-16 16:37:36.207000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540734
-;
+-- -- Name: C_Conversion_Rate_Rule_Limits
+-- -- 2025-06-16T16:37:36.207Z
+-- UPDATE AD_Val_Rule SET Code='NOT EXISTS
+          -- (SELECT 1
+           -- FROM C_ConversionRate_Rule crr
+           -- WHERE crr.c_currency_id = C_Conversion_Rate.c_currency_id
+             -- AND crr.c_currency_to_id = C_Conversion_Rate.c_currency_id_to
+             -- AND crr.isActive = ''Y''
+             -- AND ((crr.multiplyrate_min IS NOT NULL
+             -- AND crr.multiplyrate_min > C_Conversion_Rate.MultiplyRate)
+-- OR
+             -- (crr.multiplyrate_max IS NOT NULL
+             -- AND crr.multiplyrate_max < C_Conversion_Rate.MultiplyRate)))',Updated=TO_TIMESTAMP('2025-06-16 16:37:36.207000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540734
+-- ;
 
 -- Value: C
 -- 2025-06-16T16:38:37.574Z
@@ -82,5 +82,27 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-06-16 16:4
 
 -- 2025-06-16T16:44:10.610Z
 UPDATE AD_BusinessRule SET Name='C_ConversionRate_Rule_Limits',Updated=TO_TIMESTAMP('2025-06-16 16:44:10.610000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_BusinessRule_ID=540033
+;
+
+
+
+
+-- Name: C_Conversion_Rate_Rule_Limits
+-- 2025-06-16T17:43:14.981Z
+UPDATE AD_Val_Rule SET Code='NOT EXISTS(SELECT 1
+                 FROM C_ConversionRate_Rule crr
+                 WHERE LEAST(crr.c_currency_id, crr.c_currency_to_id) = LEAST(C_Conversion_Rate.c_currency_id, C_Conversion_Rate.c_currency_id_to)
+                   AND GREATEST(crr.c_currency_id, crr.c_currency_to_id) = GREATEST(C_Conversion_Rate.c_currency_id, C_Conversion_Rate.c_currency_id_to)
+                   AND crr.isActive = ''Y''
+                   AND ((crr.multiplyrate_min IS NOT NULL AND crr.multiplyrate_min >
+                                                              CASE
+                                                                  WHEN crr.c_currency_id = C_Conversion_Rate.c_currency_id THEN C_Conversion_Rate.MultiplyRate
+                                                                                                                           ELSE 1 / C_Conversion_Rate.MultiplyRate
+                                                              END)
+                     OR (crr.multiplyrate_max IS NOT NULL AND crr.multiplyrate_max <
+                                                              CASE
+                                                                  WHEN crr.c_currency_id = C_Conversion_Rate.c_currency_id THEN C_Conversion_Rate.MultiplyRate
+                                                                                                                           ELSE 1 / C_Conversion_Rate.MultiplyRate
+                                                              END)))',Updated=TO_TIMESTAMP('2025-06-16 17:43:14.978000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540734
 ;
 
