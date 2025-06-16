@@ -73,6 +73,11 @@ public class HUPIItemProductId implements RepoIdAware
 		return id != null ? id.getRepoId() : -1;
 	}
 
+	public static int toRepoIdVirtualToZero(@Nullable final HUPIItemProductId id)
+	{
+		return id != null && !id.isVirtualHU() ? id.getRepoId() : -1;
+	}
+
 	public static boolean isRegular(@Nullable final HUPIItemProductId id)
 	{
 		return id != null && id.isRegular();
@@ -87,6 +92,7 @@ public class HUPIItemProductId implements RepoIdAware
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_PI_Item_Product_ID");
 	}
+	
 
 	@JsonValue
 	@Override
