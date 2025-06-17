@@ -1,7 +1,7 @@
-DROP VIEW "de.metas.edi".c_remittanceadvice_diag_problems_v;
-DROP VIEW "de.metas.edi".c_remittanceadvice_diag_v;
+DROP VIEW IF EXISTS "de.metas.edi".c_remittanceadvice_diag_problems_v;
+DROP VIEW IF EXISTS "de.metas.edi".c_remittanceadvice_diag_v;
 
-DROP VIEW "de.metas.edi".c_remittanceadvice_diag_I_to_P_allocs_v;
+DROP VIEW IF EXISTS "de.metas.edi".c_remittanceadvice_diag_I_to_P_allocs_v;
 CREATE OR REPLACE VIEW "de.metas.edi".c_remittanceadvice_diag_I_to_P_allocs_v AS
 SELECT 'invoice-to-payment'::text                                                                                          AS allocation_type,
        ral.created                                                                                                         AS ral_created,
