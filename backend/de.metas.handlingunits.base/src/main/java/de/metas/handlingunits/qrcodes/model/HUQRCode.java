@@ -11,9 +11,11 @@ import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.product.ProductId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 
@@ -27,14 +29,15 @@ import java.util.Optional;
  * @implNote See {@link HUQRCodeJsonConverter} for tools to convert from/to JSON, {@link de.metas.global_qrcodes.GlobalQRCode} etc.
  */
 @Value
+@EqualsAndHashCode(doNotUseGetters = true)
 @Builder
-@Jacksonized // NOTE: we are making it json friendly mainly for snapshot testing
+@Jacksonized // NOTE: we are making it JSON-friendly mainly for snapshot testing
 public class HUQRCode implements IHUQRCode
 {
 	@NonNull HUQRCodeUniqueId id;
 
 	@NonNull HUQRCodePackingInfo packingInfo;
-	@NonNull HUQRCodeProductInfo product;
+	@Nullable HUQRCodeProductInfo product;
 	@NonNull ImmutableList<HUQRCodeAttribute> attributes;
 
 	public static boolean equals(@Nullable final HUQRCode o1, @Nullable final HUQRCode o2)
@@ -104,16 +107,25 @@ public class HUQRCode implements IHUQRCode
 	private static String extractPrintableTopText(final HUQRCode qrCode)
 	{
 		final StringBuilder result = new StringBuilder();
-		result.append(qrCode.getProduct().getCode());
-		result.append(" - ");
-		result.append(qrCode.getProduct().getName());
+
+		final HUQRCodeProductInfo product = qrCode.getProduct().orElse(null);
+		if (product != null)
+		{
+			result.append(product.getCode());
+			result.append(" - ");
+			result.append(product.getName());
+		}
 
 		for (final HUQRCodeAttribute attribute : qrCode.getAttributes())
 		{
 			final String displayValue = StringUtils.trimBlankToNull(attribute.getValueRendered());
 			if (displayValue != null)
 			{
-				result.append(", ").append(displayValue);
+				if (result.length() > 0)
+				{
+					result.append(", ");
+				}
+				result.append(displayValue);
 			}
 		}
 
@@ -148,7 +160,14 @@ public class HUQRCode implements IHUQRCode
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
 	}
 
-	public ProductId getProductId() {return getProduct().getId();}
+	@JsonIgnore
+	public Optional<HUQRCodeProductInfo> getProduct() {return Optional.ofNullable(product);}
+
+	@JsonIgnore
+	public Optional<ProductId> getProductId() {return getProduct().map(HUQRCodeProductInfo::getId);}
+
+	@JsonIgnore
+	public ProductId getProductIdNotNull() {return getProductId().orElseThrow(() -> new AdempiereException("QR Code does not contain product information: " + this));}
 
 	public HuPackingInstructionsId getPackingInstructionsId() {return getPackingInfo().getPackingInstructionsId();}
 }
