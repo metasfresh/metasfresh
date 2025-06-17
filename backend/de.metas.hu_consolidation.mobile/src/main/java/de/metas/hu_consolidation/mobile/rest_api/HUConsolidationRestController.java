@@ -70,6 +70,16 @@ public class HUConsolidationRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
+	@PostMapping("/job/{wfProcessId}/target/printLabel")
+	public void printTargetLabel(@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+		
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		mobileApplication.printTargetLabel(wfProcessId, getLoggedUserId());
+	}
+
+
 	@PostMapping("/job/{wfProcessId}/target/close")
 	public JsonWFProcess closeTarget(@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr)
 	{

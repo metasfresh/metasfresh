@@ -33,7 +33,7 @@ export const PickingSlotScreen = () => {
   const isWorking = isLoading || isProcessing;
 
   const onConsolidateHUClicked = ({ huId }) => {
-    return consolidate({ huId });
+    return consolidate({ huId }).catch((error) => toastErrorFromObj(error));
   };
   const onConsolidateAllClicked = () => {
     return consolidate()
