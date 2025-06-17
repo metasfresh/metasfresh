@@ -3,6 +3,8 @@ import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { HUConsolidationJobsListScreen } from './HUConsolidationJobsListScreen';
 import { SelectHUConsolidationTargetScreen } from './SelectHUConsolidationTargetScreen';
 import { PickingSlotScreen } from './PickingSlotScreen';
+import { test } from '../../../../playwright.config';
+import { expect } from '@playwright/test';
 
 const NAME = 'HUConsolidationJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -11,6 +13,10 @@ const containerElement = () => page.locator('#WFProcessScreen');
 export const HUConsolidationJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
+        await expect(containerElement()).toBeVisible();
     }),
 
     getJobId: async () => {
@@ -34,6 +40,11 @@ export const HUConsolidationJobScreen = {
         await HUConsolidationJobScreen.clickLUTargetButton();
         await SelectHUConsolidationTargetScreen.clickCloseTargetButton();
         await HUConsolidationJobScreen.waitForScreen();
+    }),
+    printTargetLabel: async () => await step(`${NAME} - Print target label`, async () => {
+        await HUConsolidationJobScreen.clickLUTargetButton();
+        await SelectHUConsolidationTargetScreen.clickPrintLabelButton();
+        await SelectHUConsolidationTargetScreen.goBack();
     }),
 
     clickPickingSlot: async ({ pickingSlotId }) => await step(`${NAME} - Click picking slot`, async () => {

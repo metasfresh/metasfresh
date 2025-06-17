@@ -137,3 +137,26 @@ test('Simple HU consolidate HUs one by one test', async ({ page }) => {
         await HUConsolidationJobScreen.complete();
     });
 });
+
+// noinspection JSUnusedLocalSymbols
+test('Manual print current target label', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const { context } = await pickHUsToPickingSlot({ masterdata });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huConsolidation');
+    await HUConsolidationJobsListScreen.waitForScreen();
+    await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId })
+    await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
+    await PickingSlotScreen.clickConsolidateHUButton({ huId: context.tu1 });
+    await PickingSlotScreen.goBack();
+
+    await HUConsolidationJobScreen.printTargetLabel();
+
+    // await HUConsolidationJobScreen.complete();
+});
