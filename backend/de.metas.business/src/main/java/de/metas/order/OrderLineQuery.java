@@ -24,6 +24,7 @@ package de.metas.order;
 
 import de.metas.contracts.FlatrateTermId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -35,6 +36,6 @@ import java.util.Set;
 public class OrderLineQuery
 {
     @Nullable OrderId orderId;
-    @Nullable @Singular Set<FlatrateTermId> modularPurchaseContractIds;
+    @NonNull @Singular Set<FlatrateTermId> modularPurchaseContractIds;
     @Nullable Boolean isModularPurchaseContractIdSet;
 }

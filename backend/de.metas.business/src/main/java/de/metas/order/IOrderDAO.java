@@ -153,5 +153,5 @@ public interface IOrderDAO extends ISingletonService
 
 	Stream<I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
 
-	void open(@NonNull OrderId orderId);
+	boolean anyMatch(@NonNull OrderLineQuery query);
 }

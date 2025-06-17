@@ -1416,7 +1416,11 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void open(@NonNull final OrderId orderId)
 	{
-		orderDAO.open(orderId);
+		final I_C_Order orderRecord = getById(orderId);
+		Check.assume(isClosed(orderRecord), "Only closed orders can be opened");
+		orderRecord.setDocStatus(X_C_Order.DOCSTATUS_Completed);
+		orderRecord.setDocAction(X_C_Order.DOCACTION_Re_Activate);
+		save(orderRecord);
 	}
 
 	@Override
@@ -1504,6 +1508,9 @@ public class OrderBL implements IOrderBL
 
 	@Override
 	public Stream<I_C_OrderLine> streamOrderLines(@NonNull final OrderLineQuery query) {return orderDAO.streamOrderLines(query);}
+
+	@Override
+	public boolean anyMatch(@NonNull final OrderLineQuery query) {return orderDAO.anyMatch(query);}
 
 	@Override
 	public List<I_M_InOut> retrieveInOutsForMatchingOrderLines(@NonNull final I_C_Order order)

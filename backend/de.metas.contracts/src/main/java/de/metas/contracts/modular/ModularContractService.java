@@ -469,6 +469,7 @@ public class ModularContractService
 
 	private Set<OrderId> getSalesOrderIdsLinkedToPurchaseModularContract(@NonNull final Set<FlatrateTermId> modularContractIds)
 	{
+		if(modularContractIds.isEmpty()) { return ImmutableSet.of(); }
 		return orderBL.streamOrderLines(OrderLineQuery.builder().modularPurchaseContractIds(modularContractIds).build())
 				.map(I_C_OrderLine::getC_Order_ID)
 				.map(OrderId::ofRepoId)
@@ -482,16 +483,21 @@ public class ModularContractService
 
 	public boolean hasLinkedPurchaseModularContracts(@NonNull final OrderId salesOrderId)
 	{
-		return !getOrderLinesWithLinkedPurchaseModularContracts(salesOrderId).isEmpty();
+		return orderBL.anyMatch(getOrderLinesWithLinkedPurchaseModularContractQuery(salesOrderId));
 	}
 
-	private Set<I_C_OrderLine> getOrderLinesWithLinkedPurchaseModularContracts(@NonNull final OrderId salesOrderId)
+	private Set<I_C_OrderLine> getOrderLinesWithLinkedPurchaseModularContract(@NonNull final OrderId salesOrderId)
 	{
-		return orderBL.streamOrderLines(OrderLineQuery.builder()
+		return orderBL.streamOrderLines(getOrderLinesWithLinkedPurchaseModularContractQuery(salesOrderId))
+				.collect(Collectors.toSet());
+	}
+
+	private OrderLineQuery getOrderLinesWithLinkedPurchaseModularContractQuery(@NonNull final OrderId salesOrderId)
+	{
+		return OrderLineQuery.builder()
 				.orderId(salesOrderId)
 				.isModularPurchaseContractIdSet(true)
-				.build()
-		).collect(Collectors.toSet());
+				.build();
 	}
 
 	public boolean hasLinkedClosedPurchaseModularContracts(@NonNull final OrderId salesOrderId)
@@ -507,7 +513,7 @@ public class ModularContractService
 
 	private Set<FlatrateTermId> getPurchaseModularContractIdsForSalesOrder(@NonNull final OrderId salesOrderId)
 	{
-		return getOrderLinesWithLinkedPurchaseModularContracts(salesOrderId).stream()
+		return getOrderLinesWithLinkedPurchaseModularContract(salesOrderId).stream()
 						.map(I_C_OrderLine::getPurchase_Modular_Flatrate_Term_ID)
 						.map(FlatrateTermId::ofRepoId)
 						.collect(Collectors.toSet());
@@ -515,7 +521,10 @@ public class ModularContractService
 
 	public void openOrder (@NonNull final OrderId orderId)
 	{
+		Check.assume(isModularOrder(orderId)  || hasLinkedPurchaseModularContracts(orderId), "Order isn't in modular contract context");
+		Check.assume(!hasLinkedClosedPurchaseModularContracts(orderId), "Linked modular purchase order should be open");
+
 		orderBL.open(orderId);
-		getModularAndInterimContracts(orderId).forEach(contractChangeBL::endContract);
+		getModularAndInterimContracts(orderId).forEach(contractChangeBL::openContract);
 	}
 }

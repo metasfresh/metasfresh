@@ -7,7 +7,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.GetOrdersQuery;
 import de.metas.order.IOrderDAO;
@@ -33,7 +32,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -532,32 +530,34 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public Stream<I_C_OrderLine> streamOrderLines(@NonNull final OrderLineQuery query)
 	{
+		return toSqlQuery(query).create().stream();
+	}
+
+	private IQueryBuilder<I_C_OrderLine> toSqlQuery(@NonNull final OrderLineQuery query)
+	{
+		Check.assume(!OrderLineQuery.builder().build().equals(query), "OrderLineQuery shouldn't be empty");
 		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class);
 
-		if(query.getModularPurchaseContractIds() != null && !query.getModularPurchaseContractIds().isEmpty())
+		if(!query.getModularPurchaseContractIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, query.getModularPurchaseContractIds());
 		}
 
 		if (query.getOrderId() != null)
-    	{
-    		queryBuilder.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, query.getOrderId());
-    	}
+		{
+			queryBuilder.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, query.getOrderId());
+		}
 
 		final Boolean isModularPurchaseContractIdSet = query.getIsModularPurchaseContractIdSet();
 		if (Boolean.TRUE.equals(isModularPurchaseContractIdSet)) { queryBuilder.addNotNull(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID); }
 		else if (Boolean.FALSE.equals(isModularPurchaseContractIdSet)) { queryBuilder.addIsNull(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID); }
 
-		return queryBuilder.create().stream();
+		return queryBuilder;
 	}
 
 	@Override
-	public void open(@NonNull final OrderId orderId)
+	public boolean anyMatch(@NonNull final OrderLineQuery query)
 	{
-		final I_C_Order orderRecord = getById(orderId);
-		Check.assume(DocStatus.ofCode(orderRecord.getDocStatus()).isClosed(), "Only closed orders can be opened");
-		orderRecord.setDocStatus(X_C_Order.DOCSTATUS_Completed);
-		orderRecord.setDocAction(X_C_Order.DOCACTION_Re_Activate);
-		save(orderRecord);
+		return toSqlQuery(query).create().anyMatch();
 	}
 }

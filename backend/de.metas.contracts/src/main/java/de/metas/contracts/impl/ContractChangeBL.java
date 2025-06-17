@@ -521,10 +521,10 @@ public class ContractChangeBL implements IContractChangeBL
 	public void openContract(@NonNull final I_C_Flatrate_Term currentTerm)
 	{
 		Check.assume(DocStatus.ofCode(currentTerm.getDocStatus()).isClosed(), "Contract should be closed when opening");
+		flatrateBL.updateNoticeDateAndEndDate(currentTerm);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Running);
 		currentTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		currentTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Re_Activate);
-		flatrateBL.updateNoticeDateAndEndDate(currentTerm);
 		save(currentTerm);
 	}
 }

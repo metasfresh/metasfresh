@@ -36,7 +36,7 @@ import org.compiere.SpringContextHolder;
 
 public class C_Order_OpenModularOrder extends JavaProcess implements IProcessPrecondition
 {
-	private static final AdMessageKey MSG_LINKED_PURCHASE_ORDER_NOT_OPEN = AdMessageKey.of("C_Order_OpenModularOrder_LinkedModularPurchaseOrderNotOpen");
+	public static final AdMessageKey MSG_LINKED_PURCHASE_ORDER_NOT_OPEN = AdMessageKey.of("C_Order_OpenModularOrder_LinkedModularPurchaseOrderNotOpen");
 	@NonNull final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 	@NonNull final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -49,7 +49,7 @@ public class C_Order_OpenModularOrder extends JavaProcess implements IProcessPre
 		}
 
 		final OrderId orderId = context.getSingleSelectedRecordId(OrderId.class);
-		if(orderBL.isClosed(orderId))
+		if(!orderBL.isClosed(orderId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Order isn't closed");
 		}
@@ -59,7 +59,7 @@ public class C_Order_OpenModularOrder extends JavaProcess implements IProcessPre
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Order isn't in modular contract context");
 		}
 
-		if(!modularContractService.hasLinkedClosedPurchaseModularContracts(orderId))
+		if(modularContractService.hasLinkedClosedPurchaseModularContracts(orderId))
 		{
 			return ProcessPreconditionsResolution.reject(MSG_LINKED_PURCHASE_ORDER_NOT_OPEN);
 		}

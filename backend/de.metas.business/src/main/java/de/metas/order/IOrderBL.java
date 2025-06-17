@@ -374,6 +374,8 @@ public interface IOrderBL extends ISingletonService
 
 	Stream<de.metas.interfaces.I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
 
+	boolean anyMatch(@NonNull OrderLineQuery query);
+
 	List<I_M_InOut> retrieveInOutsForMatchingOrderLines(@NonNull I_C_Order order);
 
 	ImmutableList<OrderAndLineId> retrieveAllOrderLineIds(@NonNull OrderId orderId);
