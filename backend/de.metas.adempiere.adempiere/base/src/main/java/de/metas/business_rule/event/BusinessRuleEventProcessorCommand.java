@@ -21,6 +21,7 @@ import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
 import de.metas.user.api.IUserBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -198,7 +199,9 @@ public class BusinessRuleEventProcessorCommand
 			final AdMessageKey messageKey = getAdMessageKey(rule);
 
 			final TableRecordReference rootTargetRecordRef = rootTargetRecordInfo.getTargetRecordRef();
-			final String documentSummary = msgBL.translate(Env.getCtx(), rootTargetRecordRef.getTableName()) + " " + rootTargetRecordInfo.getDocumentSummary();
+			final String documentSummary = Check.isBlank(rootTargetRecordInfo.getDocumentSummary())
+					? ""
+					: msgBL.translate(Env.getCtx(), rootTargetRecordRef.getTableName()) + " " + rootTargetRecordInfo.getDocumentSummary();
 
 			final RecordWarningNoticeRequest.RecordWarningNoticeRequestBuilder noticeRequestBuilder = RecordWarningNoticeRequest.builder()
 					.userId(event.getTriggeringUserId())
@@ -334,7 +337,7 @@ public class BusinessRuleEventProcessorCommand
 			}
 			return TargetRecordInfo.builder()
 					.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId))
-					.documentSummary(documentSummary != null ? documentSummary : "" + targetRecordId)
+					.documentSummary(documentSummary != null ? documentSummary : "")
 					.build();
 		});
 	}
