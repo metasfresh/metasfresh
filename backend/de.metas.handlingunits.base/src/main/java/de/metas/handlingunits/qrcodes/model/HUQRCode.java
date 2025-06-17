@@ -160,7 +160,6 @@ public class HUQRCode implements IHUQRCode
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
 	}
 
-	@JsonIgnore
 	public Optional<HUQRCodeProductInfo> getProduct() {return Optional.ofNullable(product);}
 
 	@JsonIgnore
