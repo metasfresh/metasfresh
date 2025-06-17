@@ -9,6 +9,7 @@ ENV TZ=Europe/Berlin
 WORKDIR /app 
 
 COPY misc/services/mobile-webui/mobile-webui-frontend/package.json .
+COPY misc/services/mobile-webui/mobile-webui-frontend/yarn.lock* .
 RUN yarn install
 
 COPY misc/services/mobile-webui/mobile-webui-frontend/ .
