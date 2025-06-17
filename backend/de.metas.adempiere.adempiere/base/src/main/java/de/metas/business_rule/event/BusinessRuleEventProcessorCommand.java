@@ -306,10 +306,11 @@ public class BusinessRuleEventProcessorCommand
 			sql.append(" || ' ' || target.").append(I_C_OrderLine.COLUMNNAME_Line);
 		}
 
-		if (targetPOInfo.hasColumnName(I_C_Conversion_Rate.COLUMNNAME_ValidFrom))
-		{
-			sql.append(" || ' ' || target.").append(I_C_Conversion_Rate.COLUMNNAME_ValidFrom).append("::date");
-		}
+		// TODO cleanup
+		// if (targetPOInfo.hasColumnName(I_C_Conversion_Rate.COLUMNNAME_ValidFrom))
+		// {
+		// 	sql.append(" || ' ' || target.").append(I_C_Conversion_Rate.COLUMNNAME_ValidFrom).append("::date");
+		// }
 
 		sql.append(" FROM ").append(sourceTableName).append(" JOIN ")
 				.append(targetTableName).append(" target ")
@@ -340,7 +341,7 @@ public class BusinessRuleEventProcessorCommand
 			}
 			return TargetRecordInfo.builder()
 					.targetRecordRef(TableRecordReference.of(targetTableId, targetRecordId))
-					.documentSummary(documentSummary != null ? documentSummary : "" + targetRecordId)
+					.documentSummary(documentSummary != null ? documentSummary : "")
 					.build();
 		});
 	}
