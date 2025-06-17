@@ -21,6 +21,7 @@ import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
 import de.metas.user.api.IUserBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -33,7 +34,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
@@ -199,7 +199,9 @@ public class BusinessRuleEventProcessorCommand
 			final AdMessageKey messageKey = getAdMessageKey(rule);
 
 			final TableRecordReference rootTargetRecordRef = rootTargetRecordInfo.getTargetRecordRef();
-			final String documentSummary = msgBL.translate(Env.getCtx(), rootTargetRecordRef.getTableName()) + " " + rootTargetRecordInfo.getDocumentSummary();
+			final String documentSummary = Check.isBlank(rootTargetRecordInfo.getDocumentSummary())
+					? ""
+					: msgBL.translate(Env.getCtx(), rootTargetRecordRef.getTableName()) + " " + rootTargetRecordInfo.getDocumentSummary();
 
 			final RecordWarningNoticeRequest.RecordWarningNoticeRequestBuilder noticeRequestBuilder = RecordWarningNoticeRequest.builder()
 					.userId(event.getTriggeringUserId())
@@ -305,12 +307,6 @@ public class BusinessRuleEventProcessorCommand
 		{
 			sql.append(" || ' ' || target.").append(I_C_OrderLine.COLUMNNAME_Line);
 		}
-
-		// TODO cleanup
-		// if (targetPOInfo.hasColumnName(I_C_Conversion_Rate.COLUMNNAME_ValidFrom))
-		// {
-		// 	sql.append(" || ' ' || target.").append(I_C_Conversion_Rate.COLUMNNAME_ValidFrom).append("::date");
-		// }
 
 		sql.append(" FROM ").append(sourceTableName).append(" JOIN ")
 				.append(targetTableName).append(" target ")
