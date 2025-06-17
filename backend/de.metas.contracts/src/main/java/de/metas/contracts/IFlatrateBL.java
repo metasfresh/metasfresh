@@ -52,6 +52,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
@@ -131,6 +132,13 @@ public interface IFlatrateBL extends ISingletonService
 	Optional<FlatrateTermId> getIdByInvoiceId(@NonNull InvoiceId invoiceId);
 
 	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+
+	@NonNull Set<OrderId> getOrderIds(@NonNull Set<FlatrateTermId> flatrateTermIds);
+
+	List<I_C_Invoice> retrieveInvoicesForFlatrateTerm(@NonNull I_C_Flatrate_Term contract);
+
+	@Nullable
+	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(@NonNull I_C_Flatrate_Term contract);
 
 	/**
 	 * term to extend

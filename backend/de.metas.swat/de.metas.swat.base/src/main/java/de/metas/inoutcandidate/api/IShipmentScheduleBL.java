@@ -128,7 +128,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 */
 	void openShipmentSchedule(I_M_ShipmentSchedule shipmentScheduleRecord);
 
-	void closeShipmentSchedulesFor(ImmutableList<TableRecordReference> orderLineRecordRefs);
+	void closeShipmentSchedulesFor(ImmutableList<TableRecordReference> orderLineRecordRefs, final boolean isErrorIfProcessed);
 
 	void openShipmentSchedulesFor(ImmutableList<TableRecordReference> recordRefs);
 

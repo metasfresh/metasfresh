@@ -156,6 +156,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Period;
@@ -186,6 +187,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
@@ -1468,13 +1470,13 @@ public class FlatrateBL implements IFlatrateBL
 
 		final I_C_Flatrate_Transition transition = getTransitionForTerm(term);
 
-		final boolean isAutorenew = X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne.equals(transition.getExtensionType())
-				|| X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(transition.getExtensionType());
-		term.setIsAutoRenew(isAutorenew);
+		final boolean isAutoRenew =isTransitionAutoRenew(transition);
+		term.setIsAutoRenew(isAutoRenew);
 		updateEndDate(transition, term);
 		updateNoticeDate(transition, term);
 	}
 
+	@NonNull
 	private I_C_Flatrate_Transition getTransitionForTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		final I_C_Flatrate_Transition transition;
@@ -1492,8 +1494,14 @@ public class FlatrateBL implements IFlatrateBL
 
 		Check.errorUnless(transition != null, "{} shall have transition set", term);
 
+		//noinspection ConstantConditions
 		return transition;
+	}
 
+	private boolean isTransitionAutoRenew(@NonNull final I_C_Flatrate_Transition transition)
+	{
+		return X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne.equals(transition.getExtensionType())
+				|| X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(transition.getExtensionType());
 	}
 
 	private void updateEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
@@ -2735,5 +2743,28 @@ public class FlatrateBL implements IFlatrateBL
 	public Stream<I_C_Flatrate_Term> stream(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
 		return flatrateDAO.stream(filter);
+	}
+
+	@Override
+	@NonNull
+	public Set<OrderId> getOrderIds(@NonNull final Set<FlatrateTermId> flatrateTermIds)
+	{
+		return flatrateDAO.getByIds(flatrateTermIds).values().stream()
+				.map(I_C_Flatrate_Term::getC_Order_Term_ID)
+				.map(OrderId::ofRepoId)
+				.collect(Collectors.toSet());
+	}
+
+	@Override
+	public List<I_C_Invoice> retrieveInvoicesForFlatrateTerm(@NonNull final I_C_Flatrate_Term contract)
+	{
+		return flatrateDAO.retrieveInvoicesForFlatrateTerm(contract);
+	}
+
+	@Override
+	@Nullable
+	public I_C_Flatrate_Term retrieveAncestorFlatrateTerm(@NonNull final I_C_Flatrate_Term contract)
+	{
+		return flatrateDAO.retrieveAncestorFlatrateTerm(contract);
 	}
 }

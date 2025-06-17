@@ -413,9 +413,7 @@ public class ModularContractService
 
 	public void closeContractsOnOrderCloseIfNeededAndAllowed(@NonNull final I_C_Order orderRecord)
 	{
-		final Set<I_C_Flatrate_Term> modularAndInterimContracts = flatrateBL.getByOrderId(OrderId.ofRepoId(orderRecord.getC_Order_ID())).stream()
-				.filter(this::isModularOrInterimContract)
-				.collect(Collectors.toSet());
+		final Set<I_C_Flatrate_Term> modularAndInterimContracts = getModularAndInterimContracts(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
 		final boolean isModularOrder = !modularAndInterimContracts.isEmpty();
 
 		if (!isModularOrder)
@@ -450,10 +448,7 @@ public class ModularContractService
 
 		if(!orderRecord.isSOTrx())
 		{
-			final Set<OrderId> relatedSalesOrdersIds = orderBL.streamOrderLines(OrderLineQuery.builder().modularPurchaseContractIds(modularContractIds).build())
-					.map(I_C_OrderLine::getC_Order_ID)
-					.map(OrderId::ofRepoId)
-					.collect(Collectors.toSet());
+			final Set<OrderId> relatedSalesOrdersIds = getSalesOrderIdsLinkedToPurchaseModularContract(modularContractIds);
 
 			final boolean notClosedSalesOrderExists = relatedSalesOrdersIds.stream().anyMatch(not(orderBL::isClosed));
 			if(notClosedSalesOrderExists)
@@ -463,5 +458,64 @@ public class ModularContractService
 		}
 
 		modularAndInterimContracts.forEach(contractChangeBL::endContract);
+	}
+
+	private Set<I_C_Flatrate_Term> getModularAndInterimContracts(@NonNull final OrderId orderId)
+	{
+		return flatrateBL.getByOrderId(orderId).stream()
+				.filter(this::isModularOrInterimContract)
+				.collect(Collectors.toSet());
+	}
+
+	private Set<OrderId> getSalesOrderIdsLinkedToPurchaseModularContract(@NonNull final Set<FlatrateTermId> modularContractIds)
+	{
+		return orderBL.streamOrderLines(OrderLineQuery.builder().modularPurchaseContractIds(modularContractIds).build())
+				.map(I_C_OrderLine::getC_Order_ID)
+				.map(OrderId::ofRepoId)
+				.collect(Collectors.toSet());
+	}
+
+	public boolean isModularOrder(@NonNull final OrderId orderId)
+	{
+		return !getModularAndInterimContracts(orderId).isEmpty();
+	}
+
+	public boolean hasLinkedPurchaseModularContracts(@NonNull final OrderId salesOrderId)
+	{
+		return !getOrderLinesWithLinkedPurchaseModularContracts(salesOrderId).isEmpty();
+	}
+
+	private Set<I_C_OrderLine> getOrderLinesWithLinkedPurchaseModularContracts(@NonNull final OrderId salesOrderId)
+	{
+		return orderBL.streamOrderLines(OrderLineQuery.builder()
+				.orderId(salesOrderId)
+				.isModularPurchaseContractIdSet(true)
+				.build()
+		).collect(Collectors.toSet());
+	}
+
+	public boolean hasLinkedClosedPurchaseModularContracts(@NonNull final OrderId salesOrderId)
+	{
+		return orderBL.getByIds(getPurchaseModularOrderIdsForSalesOrder(salesOrderId)).stream()
+				.anyMatch(orderBL::isClosed);
+	}
+
+	private Set<OrderId> getPurchaseModularOrderIdsForSalesOrder(@NonNull final OrderId salesOrderId)
+	{
+		return flatrateBL.getOrderIds(getPurchaseModularContractIdsForSalesOrder(salesOrderId));
+	}
+
+	private Set<FlatrateTermId> getPurchaseModularContractIdsForSalesOrder(@NonNull final OrderId salesOrderId)
+	{
+		return getOrderLinesWithLinkedPurchaseModularContracts(salesOrderId).stream()
+						.map(I_C_OrderLine::getPurchase_Modular_Flatrate_Term_ID)
+						.map(FlatrateTermId::ofRepoId)
+						.collect(Collectors.toSet());
+	}
+
+	public void openOrder (@NonNull final OrderId orderId)
+	{
+		orderBL.open(orderId);
+		getModularAndInterimContracts(orderId).forEach(contractChangeBL::endContract);
 	}
 }
