@@ -114,4 +114,12 @@ public class HUConsolidationTarget
 	}
 
 	public boolean isPrintable() {return isExistingLU();}
+
+	public void assertPrintable()
+	{
+		if (!isPrintable())
+		{
+			throw new AdempiereException("Target is not printable: " + this);
+		}
+	}
 }

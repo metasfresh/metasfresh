@@ -1,12 +1,8 @@
 package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.report.labels.HULabelPrintRequest;
-import de.metas.handlingunits.report.labels.HULabelService;
-import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
 import de.metas.hu_consolidation.mobile.job.commands.complete.CompleteCommand;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateCommand;
@@ -32,7 +28,7 @@ public class HUConsolidationJobService
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final HUConsolidationAvailableTargetsFinder availableTargetsFinder;
 	@NonNull private final HUConsolidationTargetCloser targetCloser;
-	@NonNull private final HULabelService huLabelService;
+	@NonNull private final HUConsolidationLabelPrinter labelPrinter;
 
 	public HUConsolidationJob getJobById(final HUConsolidationJobId id)
 	{
@@ -113,15 +109,8 @@ public class HUConsolidationJobService
 	public void printTargetLabel(@NonNull final HUConsolidationJobId jobId, @NotNull final UserId callerId)
 	{
 		final HUConsolidationJob job = jobRepository.getById(jobId);
-		final HuId luId = job.getCurrentTargetNotNull().getLuIdNotNull();
-
-		huLabelService.print(HULabelPrintRequest.builder()
-				.sourceDocType(HULabelSourceDocType.Picking)
-				.huId(luId)
-				.onlyIfAutoPrint(false)
-				.failOnMissingLabelConfig(true)
-				.build());
-
+		final HUConsolidationTarget currentTarget = job.getCurrentTargetNotNull();
+		labelPrinter.printLabel(currentTarget);
 	}
 
 	public HUConsolidationJob consolidate(@NonNull final ConsolidateRequest request)
