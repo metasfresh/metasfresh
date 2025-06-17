@@ -6,7 +6,8 @@
   },
   "SelectHUConsolidationTargetScreen": {
     "caption": "Select Target",
-    "closeTarget": "Schließen"
+    "closeTarget": "Schließen",
+    "printLabel": "Drucken"
   },
   "PickingSlotScreen": {
     "consolidateAll": "Consolidate All"

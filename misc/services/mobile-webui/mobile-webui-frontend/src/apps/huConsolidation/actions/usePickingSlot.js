@@ -31,6 +31,7 @@ export const usePickingSlot = ({ wfProcessId, activityId, pickingSlotId }) => {
       .then(({ wfProcess, pickingSlotContent }) => {
         dispatch(updateWFProcess({ wfProcess }));
         setPickingSlotContent(pickingSlotContent);
+        return wfProcess;
       })
       .finally(() => setProcessing(false));
   };

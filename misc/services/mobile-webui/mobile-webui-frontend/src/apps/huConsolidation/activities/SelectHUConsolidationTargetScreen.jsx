@@ -15,7 +15,7 @@ export const SelectHUConsolidationTargetScreen = () => {
     back: huConsolidationJobLocation,
   });
 
-  const { currentTarget, closeTarget } = useCurrentTarget({ wfProcessId, activityId });
+  const { currentTarget, isProcessing, closeTarget, printLabel } = useCurrentTarget({ wfProcessId, activityId });
 
   const onCloseTargetClicked = () => {
     closeTarget({ wfProcessId }).then(() => history.goBack());
@@ -24,12 +24,9 @@ export const SelectHUConsolidationTargetScreen = () => {
   return (
     <div className="section pt-2">
       {currentTarget && (
-        <ButtonWithIndicator
-          captionKey="huConsolidation.SelectHUConsolidationTargetScreen.closeTarget"
-          onClick={onCloseTargetClicked}
-        />
+        <CurrentTarget disabled={isProcessing} onPrintLabel={printLabel} onCloseTarget={onCloseTargetClicked} />
       )}
-      {!currentTarget && <NewTargets wfProcessId={wfProcessId} />}
+      {!currentTarget && <NewTargets disabled={isProcessing} wfProcessId={wfProcessId} />}
     </div>
   );
 };
@@ -40,7 +37,7 @@ export const SelectHUConsolidationTargetScreen = () => {
 //
 //
 
-const NewTargets = ({ wfProcessId }) => {
+const NewTargets = ({ disabled, wfProcessId }) => {
   const history = useMobileNavigation();
 
   const { isTargetsLoading, targets, setTarget } = useAvailableTargets({ wfProcessId });
@@ -57,6 +54,7 @@ const NewTargets = ({ wfProcessId }) => {
           <ButtonWithIndicator
             key={index}
             caption={target.caption}
+            disabled={disabled}
             onClick={() => onSelectTargetClicked(target)}
             additionalCssClass={target.default ? 'green-border-button' : undefined}
           />
@@ -67,4 +65,35 @@ const NewTargets = ({ wfProcessId }) => {
 };
 NewTargets.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
+  disabled: PropTypes.bool,
+};
+
+//
+//
+//--------------------------------------------------------------------------
+//
+//
+
+const CurrentTarget = ({ disabled, onPrintLabel, onCloseTarget }) => {
+  return (
+    <>
+      {onPrintLabel && (
+        <ButtonWithIndicator
+          captionKey="huConsolidation.SelectHUConsolidationTargetScreen.printLabel"
+          disabled={disabled}
+          onClick={onPrintLabel}
+        />
+      )}
+      <ButtonWithIndicator
+        captionKey="huConsolidation.SelectHUConsolidationTargetScreen.closeTarget"
+        disabled={disabled}
+        onClick={onCloseTarget}
+      />
+    </>
+  );
+};
+CurrentTarget.propTypes = {
+  disabled: PropTypes.bool,
+  onPrintLabel: PropTypes.func,
+  onCloseTarget: PropTypes.func.isRequired,
 };

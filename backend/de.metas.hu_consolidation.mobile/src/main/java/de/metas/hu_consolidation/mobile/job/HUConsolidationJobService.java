@@ -13,6 +13,7 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -27,6 +28,7 @@ public class HUConsolidationJobService
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final HUConsolidationAvailableTargetsFinder availableTargetsFinder;
 	@NonNull private final HUConsolidationTargetCloser targetCloser;
+	@NonNull private final HUConsolidationLabelPrinter labelPrinter;
 
 	public HUConsolidationJob getJobById(final HUConsolidationJobId id)
 	{
@@ -102,6 +104,13 @@ public class HUConsolidationJobService
 			job.assertUserCanEdit(callerId);
 			return targetCloser.closeTarget(job);
 		});
+	}
+
+	public void printTargetLabel(@NonNull final HUConsolidationJobId jobId, @NotNull final UserId callerId)
+	{
+		final HUConsolidationJob job = jobRepository.getById(jobId);
+		final HUConsolidationTarget currentTarget = job.getCurrentTargetNotNull();
+		labelPrinter.printLabel(currentTarget);
 	}
 
 	public HUConsolidationJob consolidate(@NonNull final ConsolidateRequest request)
