@@ -126,8 +126,7 @@ public class ReceiveGoodsCommand
 		}
 		else if (this.receivingTarget.getReceiveToNewTU() != null)
 		{
-			receiveToNewTU(this.receivingTarget.getReceiveToNewTU());
-			receivingTarget = null;
+			receivingTarget = receiveToNewTU(this.receivingTarget.getReceiveToNewTU());
 		}
 		else
 		{
@@ -235,7 +234,7 @@ public class ReceiveGoodsCommand
 		final I_M_HU vhu = createHUProducer().receiveVHU(getQtyToReceive(null));
 		collectReceivedHU(vhu);
 		HUTransformService.newInstance().cusToExistingTU(ImmutableList.of(vhu), existingTU);
-		return ReceivingTarget.builder().tuId(HuId.ofRepoId(existingTU.getM_HU_ID())).build();
+		return ReceivingTarget.ofExistingTU(existingTU);
 	}
 
 	private void assertMixingDifferentProductsAllowed(@NotNull final I_M_HU targetHU)
@@ -399,9 +398,19 @@ public class ReceiveGoodsCommand
 		return HuId.ofRepoId(lu.getM_HU_ID());
 	}
 
-	private void receiveToNewTU(@NonNull final JsonNewTUTarget newTUTarget)
+	private ReceivingTarget receiveToNewTU(@NonNull final JsonNewTUTarget newTUTarget)
 	{
-		receiveTUs(newTUTarget.getTuPIItemProductId());
+		final HUPIItemProductId tuPIItemProductId = newTUTarget.getTuPIItemProductId();
+		final List<I_M_HU> hus = receiveTUs(tuPIItemProductId);
+
+		if (isBarcodeScan && hus.size() == 1)
+		{
+			return ReceivingTarget.ofExistingTU(hus.get(0));
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	@NonNull
