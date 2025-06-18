@@ -2,9 +2,10 @@ import * as types from '../../constants/ManufacturingActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 import { updateUserEditable } from './utils';
-import { current, isDraft } from 'immer';
+import { current, isDraft, original } from 'immer';
 import { getLineByIdFromWFProcess } from './index';
 import { toQRCodeObject } from '../../utils/qrCode/hu';
+import { deepEqual } from '../../utils/deepEqual';
 
 const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
@@ -38,14 +39,26 @@ const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, line
   const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
 
   if (luTarget) {
-    draftActivityLine.aggregateToLU = getAggregateToLU({ draftActivityLine, luTarget });
-    draftActivityLine.aggregateToTU = null;
+    const aggregateToLU = getAggregateToLU({ draftActivityLine, luTarget });
+    const aggregateToLU_prev =
+      draftActivityLine.aggregateToLU != null ? original(draftActivityLine.aggregateToLU) : null;
+    let isLUChanging = !deepEqual(aggregateToLU_prev, aggregateToLU);
+    if (!isLUChanging) {
+      draftActivityLine.aggregateToTU = null;
+    }
+
+    draftActivityLine.aggregateToLU = aggregateToLU;
   } else if (tuTarget) {
     draftActivityLine.aggregateToLU = null;
     draftActivityLine.aggregateToTU = getAggregateToTU({ tuTarget });
   } else {
+    const aggregateToLU_prev = draftActivityLine.aggregateToLU;
+    const isLUChanging = aggregateToLU_prev != null;
+    if (isLUChanging) {
+      draftActivityLine.aggregateToTU = null;
+    }
+
     draftActivityLine.aggregateToLU = null;
-    draftActivityLine.aggregateToTU = null;
   }
 
   updateLineStatusAndRollup({

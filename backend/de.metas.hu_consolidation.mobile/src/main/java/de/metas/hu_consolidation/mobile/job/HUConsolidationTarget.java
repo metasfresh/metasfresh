@@ -112,4 +112,14 @@ public class HUConsolidationTarget
 			throw new AdempiereException("Unsupported target type: " + this);
 		}
 	}
+
+	public boolean isPrintable() {return isExistingLU();}
+
+	public void assertPrintable()
+	{
+		if (!isPrintable())
+		{
+			throw new AdempiereException("Target is not printable: " + this);
+		}
+	}
 }

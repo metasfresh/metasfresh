@@ -184,6 +184,13 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 		return toWFProcess(job);
 	}
 
+	public void printTargetLabel(
+			@NonNull final WFProcessId wfProcessId,
+			@NotNull final UserId callerId)
+	{
+		jobService.printTargetLabel(HUConsolidationJobId.ofWFProcessId(wfProcessId), callerId);
+	}
+
 	public WFProcess consolidate(@NonNull final JsonConsolidateRequest request, @NonNull final UserId callerId)
 	{
 		final HUConsolidationJob job = jobService.consolidate(ConsolidateRequest.builder()

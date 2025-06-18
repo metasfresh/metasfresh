@@ -23,6 +23,7 @@ public class JsonHUConsolidationTarget
 	@Nullable HuPackingInstructionsId luPIId;
 	@Nullable HuId luId;
 	@Nullable String luQRCode;
+	boolean printable;
 
 	@Nullable
 	@Contract("!null -> !null")
@@ -40,6 +41,7 @@ public class JsonHUConsolidationTarget
 				.luPIId(target.getLuPIId())
 				.luId(target.getLuId())
 				.luQRCode(target.getLuQRCode() != null ? target.getLuQRCode().toGlobalQRCodeString() : null)
+				.printable(target.isPrintable())
 				.build();
 	}
 

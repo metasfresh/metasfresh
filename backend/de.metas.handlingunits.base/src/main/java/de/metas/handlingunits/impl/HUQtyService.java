@@ -100,7 +100,7 @@ public class HUQtyService
 				throw new AdempiereException("huId or huQRCode must be set: " + request);
 			}
 
-			productId = huQRCode.getProductId();
+			productId = huQRCode.getProductIdNotNull();
 			final ImmutableAttributeSet attributes = extractAttributeSet(huQRCode);
 			attributesKey = handlingUnitsBL.getAttributesKeyForInventory(attributes);
 

@@ -146,7 +146,6 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
   const customQRCodeFormats = getCustomQRCodeFormats({ activity });
-  console.log('getPropsFromState', { activity, customQRCodeFormats });
 
   const line = getLineById(state, wfProcessId, activityId, lineId);
 

@@ -1,7 +1,8 @@
-import { page, step } from '../../common';
+import { ID_BACK_BUTTON, page, step } from '../../common';
 import { test } from '../../../../playwright.config';
 import { GetQuantityDialog } from './GetQuantityDialog';
 import { PickingJobScreen } from './PickingJobScreen';
+import { PickingJobLineScreen } from './PickingJobLineScreen';
 
 const NAME = 'PickLineScanScreen';
 
@@ -17,11 +18,21 @@ export const PickLineScanScreen = {
         await page.type('#input-text', qrCode);
     }),
 
-    pickHU: async ({ qrCode, qtyEntered, expectQtyEntered, catchWeightQRCode, qtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
+    pickHU: async ({ qrCode, qtyEntered, expectQtyEntered, catchWeightQRCode, qtyNotFoundReason, expectGoBackToPickingJob = true } = {}) => await step(`${NAME} - Scan HU and Pick`, async () => {
         await PickLineScanScreen.waitForScreen();
         await PickLineScanScreen.typeQRCode(qrCode);
         await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered, catchWeightQRCode, qtyNotFoundReason });
-        await PickingJobScreen.waitForScreen();
+        if (expectGoBackToPickingJob) {
+            await PickingJobScreen.waitForScreen();
+        } else {
+            await PickLineScanScreen.waitForScreen();
+        }
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await PickingJobLineScreen.waitForScreen();
     }),
 
 };
