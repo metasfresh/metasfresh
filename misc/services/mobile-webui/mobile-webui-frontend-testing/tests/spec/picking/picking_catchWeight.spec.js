@@ -6,6 +6,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
+import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 
 const createMasterdata = async ({
                                     showLastPickedBestBeforeDateForLines,
@@ -67,6 +68,50 @@ const createMasterdata = async ({
         }
     })
 }
+
+// noinspection JSUnusedLocalSymbols
+test('Manual', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        switchToManualInput: true,
+        qtyEntered: '7',
+        catchWeight: '0.789',
+        qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
+    });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '7 Stk', qtyPickedCatchWeight: '789 g' });
+
+    // await PickingJobScreen.complete();
+    // await Backend.expect({
+    //     pickings: {
+    //         [pickingJobId]: {
+    //             shipmentSchedules: {
+    //                 P1: {
+    //                     qtyPicked: [
+    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu2', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu3', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu4', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu5', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+    //                     ]
+    //                 }
+    //             }
+    //         }
+    //     }
+    // });
+});
 
 // noinspection JSUnusedLocalSymbols
 test('Leich+Mehl', async ({ page }) => {
