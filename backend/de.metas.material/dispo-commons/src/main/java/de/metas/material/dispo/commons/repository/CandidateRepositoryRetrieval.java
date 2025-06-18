@@ -309,8 +309,8 @@ public class CandidateRepositoryRetrieval
 		return queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
 				.filter(queryBL.createCompositeQueryFilter(I_MD_Candidate.class).setJoinOr()
-						.addInArrayFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, stockParentIds) // for DEMAND main types
-						.addInArrayFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, stockCandidateIds))
+						.addInArrayFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, stockParentIds) // for DEMAND main types
+						.addInArrayFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, stockCandidateIds))
 				.create()
 				.stream()
 				.map(this::fromCandidateRecordOrNull)
