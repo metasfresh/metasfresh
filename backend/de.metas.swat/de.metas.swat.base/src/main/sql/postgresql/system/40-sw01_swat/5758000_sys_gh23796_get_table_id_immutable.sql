@@ -1,4 +1,4 @@
-
+﻿
 -- Function: get_table_id(character varying)
 
 -- DROP FUNCTION get_table_id(character varying);
