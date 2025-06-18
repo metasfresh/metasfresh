@@ -157,8 +157,8 @@ Feature: EDI DESADV export via postgREST
                 },
                 "OrderLine": 10,
                 "DesadvLine": 10,
-                "QtyEntered": 100,
-                "MovementQty": 100,
+                "QtyOrderedInDesadvLineUOM": 100,
+                "QtyDeliveredInDesadvLineUOM": 100,
                 "ShipmentLine": 10,
                 "DesadvLineUOM": {
                   "Name": "Stück",
