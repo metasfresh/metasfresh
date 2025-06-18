@@ -179,8 +179,10 @@ const GetQuantityDialog = ({
         lotNo: qrCode.lotNo,
         productNo: qrCode.productNo,
         barcodeType: qrCode.barcodeType,
+        barcode: result.scannedBarcode,
         isDone: false,
       };
+      uiTrace.putContext(onQtyChangePayload);
 
       const confirmationPrompt = await getConfirmationPrompt(1);
 
