@@ -11,6 +11,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
@@ -98,8 +99,10 @@ public class CandidateServiceTests
 	@Test
 	public void testcreatePPOrderRequestEvent()
 	{
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(20, 30);
+		
 		final Candidate candidate = Candidate.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(20, 30))
+				.clientAndOrgId(clientAndOrgId)
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(newMaterialDescriptor())
@@ -148,7 +151,9 @@ public class CandidateServiceTests
 				.build();
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService
-				.createPPOrderRequestedEvent(CandidatesGroup.of(candidate, candidate2, candidate3));
+				.createPPOrderRequestedEvent(
+						CandidatesGroup.of(candidate, candidate2, candidate3), 
+						EventDescriptor.ofClientAndOrg(clientAndOrgId));
 
 		assertThat(ppOrderRequestedEvent).isNotNull();
 		assertThat(ppOrderRequestedEvent.getClientId().getRepoId()).isEqualTo(20);
@@ -165,8 +170,10 @@ public class CandidateServiceTests
 	@Test
 	public void testcreateDDOrderRequestEvent()
 	{
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(20, 30);
+		
 		final Candidate supplyCandidate = Candidate.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(20, 30))
+				.clientAndOrgId(clientAndOrgId)
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.materialDescriptor(createMaterialDescriptorWithProductId(productId.getRepoId()))
@@ -195,7 +202,9 @@ public class CandidateServiceTests
 				.groupId(supplyCandidate.getGroupId())
 				.build();
 
-		final DDOrderCandidateRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderCandidateRequestedEvent(CandidatesGroup.of(supplyCandidate, demandCandidate), null);
+		final DDOrderCandidateRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderCandidateRequestedEvent(
+				CandidatesGroup.of(supplyCandidate, demandCandidate), 
+				EventDescriptor.ofClientAndOrg(clientAndOrgId));
 		assertThat(distributionOrderEvent).isNotNull();
 
 		assertThat(distributionOrderEvent.getClientId().getRepoId()).isEqualTo(20);
@@ -203,7 +212,7 @@ public class CandidateServiceTests
 
 		final DDOrderCandidateData ddOrderCandidateData = distributionOrderEvent.getDdOrderCandidateData();
 		assertThat(ddOrderCandidateData).isNotNull();
-		assertThat(ddOrderCandidateData.getClientAndOrgId()).isEqualTo(ClientAndOrgId.ofClientAndOrg(20, 30));
+		assertThat(ddOrderCandidateData.getClientAndOrgId()).isEqualTo(clientAndOrgId);
 		assertThat(ddOrderCandidateData.getProductPlanningId().getRepoId()).isEqualTo(220);
 		assertThat(ddOrderCandidateData.getTargetPlantId().getRepoId()).isEqualTo(230);
 		assertThat(ddOrderCandidateData.getShipperId().getRepoId()).isEqualTo(240);

@@ -8,6 +8,8 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -74,9 +76,12 @@ public class PP_Order_PostMaterialEvent
 	private void createAndEnqueuePPOrderDeletedEvent(final @NonNull I_PP_Order ppOrderRecord)
 	{
 		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrderRecord);
-
+		
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID());
+		final UserId userId = UserId.ofRepoId(ppOrderRecord.getUpdatedBy());
+		
 		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
+				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, userId))
 				.ppOrder(ppOrderPojo)
 				.build();
 

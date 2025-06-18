@@ -69,10 +69,9 @@ public class MetasfreshEventListener
 
 				Env.setClientId(temporaryCtx, lightWeightEvent.getClientId());
 				Env.setOrgId(temporaryCtx, lightWeightEvent.getOrgId());
-
-				if(lightWeightEvent.getEventDescriptor().getCreatedByUserId()!=null)
+				if (lightWeightEvent.getUserId().isRegularUser())
 				{
-					Env.setLoggedUserId(temporaryCtx, lightWeightEvent.getCreatedByUserId());
+					Env.setLoggedUserId(temporaryCtx, lightWeightEvent.getUserId());
 				}
 
 				try (final IAutoCloseable ignored1 = Env.switchContext(temporaryCtx))

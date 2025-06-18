@@ -166,9 +166,8 @@ public interface MaterialEvent
 	@JsonIgnore
 	default ClientAndOrgId getClientAndOrgId() {return getEventDescriptor().getClientAndOrgId();}
 
-	@Nullable
 	@JsonIgnore
-	default UserId getCreatedByUserId() {return getEventDescriptor().getCreatedByUserId(); }
+	default UserId getUserId() {return getEventDescriptor().getUserId(); }
 
 	@Nullable
 	@JsonIgnore
