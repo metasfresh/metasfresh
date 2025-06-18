@@ -75,6 +75,7 @@ public class ReceiveGoodsCommand
 	final @Nullable LocalDate bestBeforeDate;
 	final @Nullable String lotNo;
 	final @Nullable Quantity catchWeight;
+	final boolean isBarcodeScan;
 
 	//
 	// State
@@ -108,6 +109,7 @@ public class ReceiveGoodsCommand
 		this.bestBeforeDate = request.getBestBeforeDate();
 		this.lotNo = request.getLotNo();
 		this.catchWeight = request.getCatchWeight();
+		this.isBarcodeScan = request.isBarcodeScan();
 	}
 
 	@Nullable
@@ -320,7 +322,7 @@ public class ReceiveGoodsCommand
 
 	private Quantity getQtyToReceive(@Nullable final HUPIItemProductId tuPIItemProductId)
 	{
-		if (catchWeight != null && tuPIItemProductId != null)
+		if (catchWeight != null && tuPIItemProductId != null && isBarcodeScan)
 		{
 			return huPIItemProductBL.getById(tuPIItemProductId).getQtyCUsPerTU();
 		}

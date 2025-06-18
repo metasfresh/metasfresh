@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { RawMaterialIssueLineScreen } from './issue/RawMaterialIssueLineScreen';
@@ -58,8 +58,22 @@ export const ManufacturingJobScreen = {
 
     clickReceiveButton: async ({ index }) => await test.step(`${NAME} - Click receive button ${index}`, async () => {
         await ManufacturingJobScreen.expectVisible();
-        await page.getByTestId(`receipt-${index}-button`).tap();
+        await locateReceiveButton({ index }).tap();
         await MaterialReceiptLineScreen.waitForScreen();
+    }),
+
+    expectReceiveButton: async ({ index, qtyToReceive, qtyReceived, catchWeight }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
+        const lineButton = locateReceiveButton({ index });
+
+        if (qtyReceived !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtycurrent', value: qtyReceived });
+        }
+        if (catchWeight !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtycurrentcatchweight', value: catchWeight });
+        }
+        if (qtyToReceive !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtytarget', value: qtyToReceive });
+        }
     }),
 
     complete: async () => await test.step(`${NAME} - Complete`, async () => {
@@ -71,3 +85,11 @@ export const ManufacturingJobScreen = {
     }),
 };
 
+const locateReceiveButton = ({ index }) => {
+    return page.getByTestId(`receipt-${index}-button`);
+};
+
+const expectButtonAttribute = async ({ lineButton, attribute, value }) => await step(`${NAME} - Expect button attribute ${attribute}='${value}'`, async () => {
+    const lineButtonInfo = lineButton.locator('.picking-row-info');
+    await expect(lineButtonInfo).toHaveAttribute(attribute, value);
+});

@@ -8,7 +8,6 @@ import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsLi
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 import { PickingSlotScreen } from '../../utils/screens/huConsolidation/PickingSlotScreen';
-import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
