@@ -97,8 +97,8 @@ class HUQRCodesServiceTest
 	{
 		this.helper = HUTestHelper.newInstanceOutOfTrx();
 		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(),
-													 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-													 new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+				new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 
 		this.productId = BusinessTestHelper.createProductId("MyProduct", helper.uomEach);
 
@@ -169,6 +169,7 @@ class HUQRCodesServiceTest
 	}
 
 	@Nested
+	@SuppressWarnings("OptionalGetWithoutIsPresent")
 	class generateForExistingHU
 	{
 		@Test
@@ -185,8 +186,8 @@ class HUQRCodesServiceTest
 
 			assertThat(qrCode.getPackingInfo().getHuUnitType()).isEqualTo(HUQRCodeUnitType.LU);
 			assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("LU");
-			assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
-			assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getCode()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getName()).isEqualTo("MyProduct");
 			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
 			assertThat(qrCode.getLotNumber()).contains("123");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
@@ -215,8 +216,8 @@ class HUQRCodesServiceTest
 			{
 				assertThat(qrCode.getPackingInfo().getHuUnitType()).isEqualTo(HUQRCodeUnitType.TU);
 				assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("TU");
-				assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
-				assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
+				assertThat(qrCode.getProduct().get().getCode()).isEqualTo("MyProduct");
+				assertThat(qrCode.getProduct().get().getName()).isEqualTo("MyProduct");
 				assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
 				assertThat(qrCode.getLotNumber()).contains("123");
 				assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
@@ -237,8 +238,8 @@ class HUQRCodesServiceTest
 
 			assertThat(qrCode.getPackingInfo().getHuUnitType()).isEqualTo(HUQRCodeUnitType.TU);
 			assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("TU");
-			assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
-			assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getCode()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getName()).isEqualTo("MyProduct");
 			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
 			assertThat(qrCode.getLotNumber()).contains("123");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
@@ -258,8 +259,8 @@ class HUQRCodesServiceTest
 
 			assertThat(qrCode.getPackingInfo().getHuUnitType()).isEqualTo(HUQRCodeUnitType.VHU);
 			assertThat(qrCode.getPackingInfo().getCaption()).isEqualTo("VirtualPI");
-			assertThat(qrCode.getProduct().getCode()).isEqualTo("MyProduct");
-			assertThat(qrCode.getProduct().getName()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getCode()).isEqualTo("MyProduct");
+			assertThat(qrCode.getProduct().get().getName()).isEqualTo("MyProduct");
 			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2023-01-01"));
 			assertThat(qrCode.getLotNumber()).contains("123");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("45.678"));
