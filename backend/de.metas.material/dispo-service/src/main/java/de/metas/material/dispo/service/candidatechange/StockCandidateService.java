@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -148,7 +149,8 @@ public class StockCandidateService
 	 *
 	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId()} > 0.
 	 */
-	public CandidateSaveResult updateQtyAndDate(@NonNull final Candidate candidateToUpdate)
+	@VisibleForTesting
+	CandidateSaveResult updateQtyAndDate(@NonNull final Candidate candidateToUpdate)
 	{
 		Check.errorIf(candidateToUpdate.getId().isNull(),
 				"Parameter 'candidateToUpdate' needs to have a not-null Id; candidateToUpdate=%s",
@@ -196,12 +198,9 @@ public class StockCandidateService
 		for (final Candidate stockCandidate : stockCandidatesToUpdate)
 		{
 			final Candidate mainCandidate = stockIdToMainCandidateMap.get(stockCandidate.getId());
-			final BigDecimal previousStockQty = previousStockCandidate == null ? BigDecimal.ZERO : previousStockCandidate.getQuantity();
-			final BigDecimal newQty = previousStockQty.add(mainCandidate.getStockImpactPlannedQuantity());
 			candidateRepositoryWriteService.updateCandidateById(stockCandidate
-					.withQuantity(newQty)
+					.withQuantity(candidateRepositoryWriteService.getCurrentAtpAndUpdateQtyDetails(mainCandidate, stockCandidate, previousStockCandidate))
 					.withGroupId(groupId));
-			candidateRepositoryWriteService.updateQtyDetails(mainCandidate, stockCandidate, previousStockCandidate);
 
 			previousStockCandidate = stockCandidate;
 		}
@@ -271,7 +270,7 @@ public class StockCandidateService
 			rangeStart = DateAndSeqNo
 					.ofCandidate(saveResult.getCandidate())
 					.min(saveResult.getPreviousTime())
-					.withOperator(Operator.EXCLUSIVE);
+					.withOperator(Operator.INCLUSIVE);
 		}
 		else
 		{
@@ -280,7 +279,7 @@ public class StockCandidateService
 				rangeStart = DateAndSeqNo
 						.ofCandidate(saveResult.getCandidate())
 						.min(saveResult.getPreviousTime())
-						.withOperator(Operator.EXCLUSIVE);
+						.withOperator(Operator.INCLUSIVE);
 
 			}
 			else
@@ -292,7 +291,7 @@ public class StockCandidateService
 								.date(saveResult.getCandidate().getDate())
 								.seqNo(saveResult.getCandidate().getSeqNo())
 								.build())
-						.withOperator(Operator.EXCLUSIVE);
+						.withOperator(Operator.INCLUSIVE);
 			}
 		}
 		final MaterialDescriptorQuery //

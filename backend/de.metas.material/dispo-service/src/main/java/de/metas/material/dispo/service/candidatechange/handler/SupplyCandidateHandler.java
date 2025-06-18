@@ -110,7 +110,7 @@ public class SupplyCandidateHandler implements CandidateHandler
 				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate())
 				.getCandidate();
 
-		candidateRepositoryWriteService.updateQtyDetails(savedCandidate, savedStockCandidate, null);
+		candidateRepositoryWriteService.getCurrentAtpAndUpdateQtyDetails(savedCandidate, savedStockCandidate, null);
 
 		final CandidateSaveResult deltaToApplyToLaterStockCandidates = CandidateSaveResult.builder()
 				.candidate(savedCandidate)

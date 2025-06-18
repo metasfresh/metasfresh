@@ -178,7 +178,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			final Candidate parentOfSupplyCandidate = candidateRepositoryRetrieval
 					.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithId.getParentId()));
 			candidateRepositoryWrite.updateCandidateById(parentOfSupplyCandidate.withSeqNo(seqNoOfDemand - 2));
-			candidateRepositoryWrite.updateQtyDetails(supplyCandidateWithId, parentOfSupplyCandidate, null);
+			candidateRepositoryWrite.getCurrentAtpAndUpdateQtyDetails(supplyCandidateWithId, parentOfSupplyCandidate, null);
 		}
 
 		if (ddOrderEvent instanceof DDOrderCreatedEvent)

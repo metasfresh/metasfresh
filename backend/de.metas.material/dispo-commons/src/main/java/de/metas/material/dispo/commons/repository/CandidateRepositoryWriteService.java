@@ -974,7 +974,7 @@ public class CandidateRepositoryWriteService
 		BigDecimal previousQty;
 	}
 
-	public void updateQtyDetails(@NonNull final Candidate candidate, @NonNull final Candidate stockCandidate, @Nullable final Candidate previousStockCandidate)
+	public BigDecimal getCurrentAtpAndUpdateQtyDetails(@NonNull final Candidate candidate, @NonNull final Candidate stockCandidate, @Nullable final Candidate previousStockCandidate)
 	{
 		final Candidate actualPreviousStockCandidate = CoalesceUtil.coalesceSuppliers(() -> previousStockCandidate,
 				() -> getPreviousStockCandidateOrNull(stockCandidate));
@@ -996,6 +996,7 @@ public class CandidateRepositoryWriteService
 				))
 				.build();
 		candidateQtyDetailsRepository.save(request);
+		return candidate.getStockImpactPlannedQuantity().add(previousQty);
 	}
 
 	@Nullable
