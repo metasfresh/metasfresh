@@ -13,7 +13,6 @@ import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateSaveResult;
-import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -411,13 +410,13 @@ public class StockCandidateServiceTests
 	@Test
 	void addOrUpdateStock_move_backwards()
 	{
-		invokeStockCandidateService(t00, "10"); // (t1 => 10)
-		invokeStockCandidateService(t20, "-3"); // (t1 => 10), (t2 => 7)
+		invokeStockCandidateService(t00, "10"); // (t00 => 10)
+		invokeStockCandidateService(t20, "-3"); // (t20 => 10), (t2 => 7)
 
-		invokeStockCandidateService(t30, "2");  // (t1 => 10), (t2 => 7), (t3 => 8)
+		invokeStockCandidateService(t30, "2");  // (t20 => 10), (t2 => 7), (t3 => 9)
 		final MainAndStockCandidateSaveResult t4SaveResult = //
-				invokeStockCandidateService(t40, "-3"); // (t1 => 10), (t2 => 7), (t3 => 8), (t4 => 5)
-		invokeStockCandidateService(t50, "5");  // (t1 => 10), (t2 => 7), (t3 => 9), (t4 => 6), (t5 => 11)
+				invokeStockCandidateService(t40, "-3"); // (t20 => 10), (t2 => 7), (t3 => 9), (t4 => 6)
+		invokeStockCandidateService(t50, "5");  // (t20 => 10), (t2 => 7), (t3 => 9), (t4 => 6), (t5 => 11)
 
 		{ // guard
 			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
@@ -429,40 +428,43 @@ public class StockCandidateServiceTests
 			assertDateAndQty(records.get(4), t50, "11");
 		}
 
-		// now "move" t5 => t2
-		final Candidate t4ToT1MainCandidate = t4SaveResult.getMainSaveResult().getCandidate().withDate(t10).withQuantity(new BigDecimal("7"));
-		final Candidate t4ToT1StockCandidate = t4SaveResult.getStockSaveResult().getCandidate().withDate(t10).withQuantity(new BigDecimal("7"));
-		candidateRepositoryWriteService.updateCandidateById(t4ToT1MainCandidate);
-
-		stockCandidateService.updateQtyAndDate(t4ToT1StockCandidate);
-
-		final CandidateSaveResult t4ToT1SaveResult = stockCandidateService.updateQtyAndDate(t4ToT1MainCandidate);
+		// now "move" t40 => t10 and increase the qty from -3 to 7
+		final Candidate t40ToT10MainCandidate = t4SaveResult.getMainSaveResult().getCandidate().withDate(t10).withQuantity(new BigDecimal("7"));
+		candidateRepositoryWriteService.updateCandidateById(t40ToT10MainCandidate);
+		// this would be propagated by SupplyCandidateHandler#onCandidateNewOrChange
+		final Candidate t40ToT10StockCandidate = t4SaveResult.getStockSaveResult().getCandidate().withDate(t10).withQuantity(new BigDecimal("7"));
+		final CandidateSaveResult t4ToT1SaveResult = stockCandidateService.updateQtyAndDate(t40ToT10StockCandidate);
 
 		stockCandidateService
 				.applyDeltaToMatchingLaterStockCandidates(t4ToT1SaveResult);
 
-		final Candidate persistentStockCandidateWithDelta = t4ToT1SaveResult.getCandidate().withQuantity(new BigDecimal("-3"));
+		{ // check intermediate result
+			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
+			assertThat(records).hasSize(5);
+			assertDateAndQty(records.get(0), t00, "10");
+			assertDateAndQty(records.get(1), t10, "17");
+			assertDateAndQty(records.get(2), t20, "14");
+			assertDateAndQty(records.get(3), t30, "16");
+			assertDateAndQty(records.get(4), t50, "21");
+		}
 
-		stockCandidateService.updateQtyAndDate(persistentStockCandidateWithDelta);
+		// now "move" t10 => t40 and decrease the qty from 7 to -3
 
-		final CandidateSaveResult appliedSaveResult = CandidateSaveResult
-				.builder()
-				.previousTime(DateAndSeqNo.atTimeNoSeqNo(t40))
-				.previousQty(new BigDecimal("-3"))
-				.candidate(persistentStockCandidateWithDelta)
-				.build();
+		final CandidateSaveResult backToNegativeMainCandidateSaveResult = candidateRepositoryWriteService.updateCandidateById(t40ToT10MainCandidate.withDate(t40).withQuantity(new BigDecimal("-3")));
+		// this would be propagated by SupplyCandidateHandler#onCandidateNewOrChange
+		stockCandidateService.updateQtyAndDate(t40ToT10StockCandidate.withDate(t40).withQuantity(new BigDecimal("-3")));
 
 		// invoke the method under test
 		stockCandidateService
-				.applyDeltaToMatchingLaterStockCandidates(appliedSaveResult);
+				.applyDeltaToMatchingLaterStockCandidates(backToNegativeMainCandidateSaveResult);
 
-		// expecting (t1 => 10), (t2 => 7), (t3 => 4), (t4 => 6), (t6 => 11)
+		// expecting (t20=> 10), (t2 => 7), (t3 => 4), (t4 => 6), (t6 => 11)
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 		assertThat(records).hasSize(5);
 		assertDateAndQty(records.get(0), t00, "10");
-		assertDateAndQty(records.get(1), t10, "7");
-		assertDateAndQty(records.get(2), t20, "4");
-		assertDateAndQty(records.get(3), t30, "6");
+		assertDateAndQty(records.get(1), t20, "7");
+		assertDateAndQty(records.get(2), t30, "9");
+		assertDateAndQty(records.get(3), t40, "6");
 		assertDateAndQty(records.get(4), t50, "11");
 	}
 
@@ -470,14 +472,14 @@ public class StockCandidateServiceTests
 	void addOrUpdateStock_move_forwards()
 	{
 		invokeStockCandidateService(t00, "10"); // (t1 => 10)
-		final MainAndStockCandidateSaveResult t2SaveResult = //
+		final MainAndStockCandidateSaveResult t10SaveResult = //
 				invokeStockCandidateService(t10, "-3"); // (t1 => 10), (t2 => 7)
 		invokeStockCandidateService(t20, "-3"); // (t1 => 10), (t2 => 7), (t3 => 4)
 		invokeStockCandidateService(t30, "2");  // (t1 => 10), (t2 => 7), (t3 => 4), (t4 => 6)
 		invokeStockCandidateService(t50, "5");  // (t1 => 10), (t2 => 7), (t3 => 4), (t4 => 6), (t6 => 11)
 
 		{ // guard
-			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
+			final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllStockRecords());
 			assertThat(records).hasSize(5);
 			assertDateAndQty(records.get(0), t00, "10");
 			assertDateAndQty(records.get(1), t10, "7"); // 10 - 3
@@ -486,24 +488,16 @@ public class StockCandidateServiceTests
 			assertDateAndQty(records.get(4), t50, "11");//  6 + 5
 		}
 
-		// now "move" t2 => t5
-		final Candidate t2ToT5Candidate = t2SaveResult.getMainSaveResult().getCandidate()
-				.withQuantity(new BigDecimal("3"))
-				.withDate(t40);
-		final CandidateSaveResult t2ToT5SaveResult = stockCandidateService.updateQtyAndDate(t2ToT5Candidate);
-
-		final Candidate persistentStockCandidateWithDelta = t2ToT5SaveResult.getCandidate().withQuantity(new BigDecimal("-3"));
-
-		final CandidateSaveResult appliedSaveResult = CandidateSaveResult
-				.builder()
-				.previousTime(DateAndSeqNo.atTimeNoSeqNo(t10))
-				.previousQty(new BigDecimal("-3"))
-				.candidate(persistentStockCandidateWithDelta)
-				.build();
+		// now "move" t10 => t40
+		final Candidate t10ToT40Candidate = t10SaveResult.getMainSaveResult().getCandidate().withDate(t40).withQuantity(new BigDecimal("3"));
+		candidateRepositoryWriteService.updateCandidateById(t10ToT40Candidate);
+		// this would be propagated by SupplyCandidateHandler#onCandidateNewOrChange
+		final Candidate t40ToT10StockCandidate = t10SaveResult.getStockSaveResult().getCandidate().withDate(t40).withQuantity(new BigDecimal("3"));
+		final CandidateSaveResult t10ToT40SaveResult = stockCandidateService.updateQtyAndDate(t40ToT10StockCandidate);
 
 		// invoke the method under test
 		stockCandidateService
-				.applyDeltaToMatchingLaterStockCandidates(appliedSaveResult);
+				.applyDeltaToMatchingLaterStockCandidates(t10ToT40SaveResult);
 
 		// expecting (t1 => 10), (t3 => 7), (t4 => 9), (t5 => 6), (t6 => 11)
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));

@@ -198,11 +198,12 @@ public class StockCandidateService
 		for (final Candidate stockCandidate : stockCandidatesToUpdate)
 		{
 			final Candidate mainCandidate = stockIdToMainCandidateMap.get(stockCandidate.getId());
-			candidateRepositoryWriteService.updateCandidateById(stockCandidate
+			final Candidate updatedStockCandidate = stockCandidate
 					.withQuantity(candidateRepositoryWriteService.getCurrentAtpAndUpdateQtyDetails(mainCandidate, stockCandidate, previousStockCandidate))
-					.withGroupId(groupId));
+					.withGroupId(groupId);
+			candidateRepositoryWriteService.updateCandidateById(updatedStockCandidate);
 
-			previousStockCandidate = stockCandidate;
+			previousStockCandidate = updatedStockCandidate;
 		}
 	}
 
