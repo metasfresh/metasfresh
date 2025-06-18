@@ -535,7 +535,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 
 	private IQueryBuilder<I_C_OrderLine> toSqlQuery(@NonNull final OrderLineQuery query)
 	{
-		Check.assume(!OrderLineQuery.builder().build().equals(query), "OrderLineQuery shouldn't be empty");
+		Check.assume(!query.isEmpty(), "OrderLineQuery shouldn't be empty");
 		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class);
 
 		if(!query.getModularPurchaseContractIds().isEmpty())

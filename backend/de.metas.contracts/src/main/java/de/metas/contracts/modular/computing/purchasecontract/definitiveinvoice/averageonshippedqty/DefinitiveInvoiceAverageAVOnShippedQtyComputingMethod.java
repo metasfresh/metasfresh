@@ -142,7 +142,7 @@ public class DefinitiveInvoiceAverageAVOnShippedQtyComputingMethod extends Abstr
 		final Money diffAmount = definitiveTotalAmount.subtract(finalTotalAmount);
 		if(diffAmount.isZero())
 		{
-			return computingMethodService.toZeroResponse(request);
+			return computingMethodService.toZeroResponseWithLogs(request, logs);
 		}
 
 		final Quantity definitiveTotalQty = computingMethodService.getQtySum(shipmentLogs, stockUOMId);

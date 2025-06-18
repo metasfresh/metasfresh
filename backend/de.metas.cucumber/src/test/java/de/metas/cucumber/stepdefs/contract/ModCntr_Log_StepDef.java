@@ -506,9 +506,12 @@ public class ModCntr_Log_StepDef
 						.append(I_ModCntr_Log.COLUMNNAME_Record_ID).append("=").append(logRecord.getRecord_ID()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_AD_Table_ID).append("=").append(logRecord.getAD_Table_ID()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID).append("=").append(logRecord.getC_Flatrate_Term_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID).append("=").append(logRecord.getModCntr_Type_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_ModCntr_BaseModule_ID).append("=").append(logRecord.getModCntr_BaseModule_ID()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_Qty).append("=").append(logRecord.getQty()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_C_UOM_ID).append("=").append(logRecord.getC_UOM_ID()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_M_Product_ID).append("=").append(logRecord.getM_Product_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_IsBillable).append("=").append(logRecord.isBillable()).append(", ")
 						.append(I_ModCntr_Log.COLUMNNAME_Processed).append("=").append(logRecord.isProcessed()).append(";")
 				);
 

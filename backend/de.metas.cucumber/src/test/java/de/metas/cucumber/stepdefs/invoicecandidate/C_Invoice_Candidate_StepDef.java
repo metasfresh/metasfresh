@@ -1286,16 +1286,23 @@ public class C_Invoice_Candidate_StepDef
 
 		final String productName = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_ProductName);
 
-		final BigDecimal orderedQty = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered);
-
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Flatrate_Term_ID, modularContractId)
 				.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(COLUMNNAME_ProductName, productName);
+
+		final BigDecimal orderedQty = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered);
 		if (orderedQty != null)
 		{
 			queryBuilder.addEqualsFilter(COLUMNNAME_QtyOrdered, orderedQty);
 		}
+
+		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyToInvoice);
+		if (qtyToInvoice != null)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_QtyToInvoice, qtyToInvoice);
+		}
+
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder
 				.orderByDescending(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
