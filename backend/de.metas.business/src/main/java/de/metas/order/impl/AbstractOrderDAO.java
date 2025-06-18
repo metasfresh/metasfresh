@@ -530,6 +530,12 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public Stream<I_C_OrderLine> streamOrderLines(@NonNull final OrderLineQuery query)
 	{
+		return toSqlQuery(query).create().stream();
+	}
+
+	private IQueryBuilder<I_C_OrderLine> toSqlQuery(@NonNull final OrderLineQuery query)
+	{
+		Check.assume(!OrderLineQuery.builder().build().equals(query), "OrderLineQuery shouldn't be empty");
 		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class);
 
 		if(!query.getModularPurchaseContractIds().isEmpty())
@@ -537,6 +543,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			queryBuilder.addInArrayFilter(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, query.getModularPurchaseContractIds());
 		}
 
-		return queryBuilder.create().stream();
+		if (query.getOrderId() != null)
+		{
+			queryBuilder.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, query.getOrderId());
+		}
+
+		final Boolean isModularPurchaseContractIdSet = query.getIsModularPurchaseContractIdSet();
+		if (Boolean.TRUE.equals(isModularPurchaseContractIdSet)) { queryBuilder.addNotNull(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID); }
+		else if (Boolean.FALSE.equals(isModularPurchaseContractIdSet)) { queryBuilder.addIsNull(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID); }
+
+		return queryBuilder;
+	}
+
+	@Override
+	public boolean anyMatch(@NonNull final OrderLineQuery query)
+	{
+		return toSqlQuery(query).create().anyMatch();
 	}
 }

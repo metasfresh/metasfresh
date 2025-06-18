@@ -6,7 +6,6 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -19,6 +18,7 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
@@ -60,7 +60,7 @@ public class ContractChangeBL implements IContractChangeBL
 {
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
 
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	@VisibleForTesting
 	static final AdMessageKey MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT = AdMessageKey.of("de.metas.contracts.isNotAllowedToTerminateCurrentContract");
@@ -70,7 +70,7 @@ public class ContractChangeBL implements IContractChangeBL
 			@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
-		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
+		final I_C_Flatrate_Term initialContract = flatrateBL.getInitialFlatrateTerm(currentTerm);
 		if (initialContract == null || contractChangeParameters.isVoidSingleContract())
 		{
 			cancelContractIfNotCanceledAlready(currentTerm, contractChangeParameters);
@@ -88,7 +88,7 @@ public class ContractChangeBL implements IContractChangeBL
 	{
 		if (contractChangeParameters.isVoidSingleContract())
 		{
-			final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(currentTerm);
+			final I_C_Flatrate_Term ancestor = flatrateBL.retrieveAncestorFlatrateTerm(currentTerm);
 			if (ancestor != null)
 			{
 				ancestor.setC_FlatrateTerm_Next(null);
@@ -259,7 +259,7 @@ public class ContractChangeBL implements IContractChangeBL
 		final boolean isCreditOpenInvoices = contractChangeParameters.isCreditOpenInvoices();
 		if (isCreditOpenInvoices)
 		{
-			final List<I_C_Invoice> invoices = Services.get(IFlatrateDAO.class).retrieveInvoicesForFlatrateTerm(currentTerm);
+			final List<I_C_Invoice> invoices = flatrateBL.retrieveInvoicesForFlatrateTerm(currentTerm);
 			invoices.stream()
 					.filter(invoice -> !invoice.isPaid())
 					.forEach(openInvoice -> creditInvoice(InterfaceWrapperHelper.create(openInvoice, de.metas.adempiere.model.I_C_Invoice.class),
@@ -508,9 +508,23 @@ public class ContractChangeBL implements IContractChangeBL
 	@Override
 	public void endContract(@NonNull final I_C_Flatrate_Term currentTerm)
 	{
+		Check.assume(DocStatus.ofCode(currentTerm.getDocStatus()).isCompleted(), "Contract should be completed when closing");
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract);
 		currentTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Closed);
+		currentTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_None);
+		currentTerm.setEndDate(SystemTime.asDayTimestamp());
+		save(currentTerm);
+	}
+
+	@Override
+	public void openContract(@NonNull final I_C_Flatrate_Term currentTerm)
+	{
+		Check.assume(DocStatus.ofCode(currentTerm.getDocStatus()).isClosed(), "Contract should be closed when opening");
+		flatrateBL.updateNoticeDateAndEndDate(currentTerm);
+		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Running);
+		currentTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		currentTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Re_Activate);
 		save(currentTerm);
 	}
 }

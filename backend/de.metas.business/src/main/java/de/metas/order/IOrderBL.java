@@ -22,6 +22,7 @@
 
 package de.metas.order;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -53,6 +54,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
@@ -352,6 +354,12 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isClosed(@NonNull OrderId orderId);
 
+	boolean isClosed(@NonNull I_C_Order order);
+
+	void open(@NonNull OrderId orderId);
+
+	boolean isNotJustOpened(@NonNull I_C_Order orderRecord);
+
 	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
@@ -365,4 +373,10 @@ public interface IOrderBL extends ISingletonService
 	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(@NonNull I_C_Order order);
 
 	Stream<de.metas.interfaces.I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
+
+	boolean anyMatch(@NonNull OrderLineQuery query);
+
+	List<I_M_InOut> retrieveInOutsForMatchingOrderLines(@NonNull I_C_Order order);
+
+	ImmutableList<OrderAndLineId> retrieveAllOrderLineIds(@NonNull OrderId orderId);
 }

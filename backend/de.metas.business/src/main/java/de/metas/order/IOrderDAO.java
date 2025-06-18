@@ -1,5 +1,6 @@
 package de.metas.order;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -77,7 +78,7 @@ public interface IOrderDAO extends ISingletonService
 	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(OrderId orderId, Class<T> modelClass);
 
 	/** @return all C_OrderLine_IDs for given order, including the inactive ones */
-	List<OrderAndLineId> retrieveAllOrderLineIds(OrderId orderId);
+	ImmutableList<OrderAndLineId> retrieveAllOrderLineIds(OrderId orderId);
 
 	<T extends org.compiere.model.I_C_OrderLine> T retrieveOrderLine(I_C_Order order, int lineNo, Class<T> clazz);
 
@@ -151,4 +152,6 @@ public interface IOrderDAO extends ISingletonService
 	Optional<PPCostCollectorId> getPPCostCollectorId(OrderLineId orderLineId);
 
 	Stream<I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
+
+	boolean anyMatch(@NonNull OrderLineQuery query);
 }

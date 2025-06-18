@@ -28,11 +28,14 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
 @Builder
 @Value
 public class OrderLineQuery
 {
+    @Nullable OrderId orderId;
     @NonNull @Singular Set<FlatrateTermId> modularPurchaseContractIds;
+    @Nullable Boolean isModularPurchaseContractIdSet;
 }
