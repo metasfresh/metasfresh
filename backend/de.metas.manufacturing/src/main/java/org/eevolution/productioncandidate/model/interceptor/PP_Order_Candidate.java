@@ -202,7 +202,7 @@ public class PP_Order_Candidate
 	private void fireMaterialCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
-		final UserId userId = UserId.ofRepoIdOrNull(ppOrderCandidateRecord.getUpdatedBy());
+		final UserId userId = UserId.ofRepoId(ppOrderCandidateRecord.getUpdatedBy());
 		
 		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgUserIdAndTraceId(
 				ppOrderCandidatePojo.getPpOrderData().getClientAndOrgId(),

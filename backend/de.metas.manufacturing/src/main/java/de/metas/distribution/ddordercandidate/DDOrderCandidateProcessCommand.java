@@ -486,6 +486,7 @@ class DDOrderCandidateProcessCommand
 					.build();
 		}
 
+		@Nullable
 		public OrderId getSalesOrderId() {return salesOrderLineId != null ? salesOrderLineId.getOrderId() : null;}
 	}
 

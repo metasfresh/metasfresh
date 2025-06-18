@@ -105,7 +105,7 @@ public final class PurchaseCandidateAdvisedHandler
 			final CandidatesQuery supplyCandidateQuery = CandidatesQuery.fromId(
 					CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
 			final Candidate existingCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(supplyCandidateQuery);
-			if (existingCandidate == null)
+			if (existingCandidate != null)
 			{
 				candidateBuilder = existingCandidate.toBuilder();
 			}

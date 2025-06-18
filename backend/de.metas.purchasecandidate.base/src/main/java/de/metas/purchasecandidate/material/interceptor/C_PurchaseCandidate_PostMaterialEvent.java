@@ -141,14 +141,13 @@ public class C_PurchaseCandidate_PostMaterialEvent
 
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor).toMinMaxDescriptor();
 
-		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = PurchaseCandidateUpdatedEvent.builder()
+		return PurchaseCandidateUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.vendorId(purchaseCandidateRecord.getVendor_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
 				.build();
-		return purchaseCandidateUpdatedEvent;
 	}
 
 	private MaterialDescriptor createMaterialDescriptor(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
@@ -163,13 +162,13 @@ public class C_PurchaseCandidate_PostMaterialEvent
 						Quantity.of(purchaseCandidateRecord.getQtyToPurchase(), uom),
 						productId);
 
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+		// .customerId() we don't have a customer
+		return MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(purchaseCandidateRecord.getPurchaseDatePromised()))
 				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
 				.productDescriptor(productDescriptor)
 				// .customerId() we don't have a customer
 				.quantity(purchaseQty.toBigDecimal())
 				.build();
-		return materialDescriptor;
 	}
 }

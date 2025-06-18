@@ -34,7 +34,8 @@ public class DD_Order_Candidate
 	public void afterNew(final I_DD_Order_Candidate record)
 	{
 		final DDOrderCandidateData data = toDDOrderCandidateData(record);
-		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateCreatedEvent.of(data));
+		final UserId userId = UserId.ofRepoId(record.getUpdatedBy());
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateCreatedEvent.of(data, userId));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })

@@ -365,6 +365,7 @@ public class RequestMaterialOrderService
 				.orElse(null);
 	}
 
+	@Nullable
 	private static PPOrderRef getPpOrderRef(final Candidate candidate)
 	{
 		final ProductionDetail productionDetail = candidate.getBusinessCaseDetail(ProductionDetail.class).orElse(null);

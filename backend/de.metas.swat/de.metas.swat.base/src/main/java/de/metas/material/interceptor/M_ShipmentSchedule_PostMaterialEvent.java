@@ -149,7 +149,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.toMinMaxDescriptor();
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID());
-		final UserId updatedBy = UserId.ofRepoIdOrNull(shipmentSchedule.getUpdatedBy());
+		final UserId updatedBy = UserId.ofRepoId(shipmentSchedule.getUpdatedBy());
 
 		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, updatedBy))

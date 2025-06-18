@@ -83,9 +83,7 @@ public class MetasfreshEventListener
 
 		private void invokeListenerInTrx(@NonNull final MaterialEvent materialEvent)
 		{
-			Services.get(ITrxManager.class).runInNewTrx(() -> {
-				materialEventHandlerRegistry.onEvent(materialEvent);
-			});
+			Services.get(ITrxManager.class).runInNewTrx(() -> materialEventHandlerRegistry.onEvent(materialEvent));
 		}
 
 		@Override

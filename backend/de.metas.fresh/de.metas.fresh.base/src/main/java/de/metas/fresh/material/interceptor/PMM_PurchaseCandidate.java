@@ -12,30 +12,29 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
-/**
- * @task https://metasfresh.atlassian.net/browse/FRESH-86
- *
- */
+@Component
+@RequiredArgsConstructor
 @Interceptor(I_PMM_PurchaseCandidate.class)
 public class PMM_PurchaseCandidate
 {
-	public static final PMM_PurchaseCandidate INSTANCE = new PMM_PurchaseCandidate();
+	@NonNull
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
-	private PMM_PurchaseCandidate()
-	{
-	}
-
+	@NonNull
+	private final PostMaterialEventService materialEventService;
+	
 	/**
 	 * Note: it's important to do this after tje purchaseCandidate was saved,
 	 * but before it was deleted, because we need its <code>PMM_PurchaseCandidate_ID</code>.
@@ -52,7 +51,6 @@ public class PMM_PurchaseCandidate
 			@NonNull final I_PMM_PurchaseCandidate purchaseCandidateRecord,
 			@NonNull final ModelChangeType type)
 	{
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(purchaseCandidateRecord);
 
 		final AbstractPurchaseOfferEvent event;
@@ -99,7 +97,6 @@ public class PMM_PurchaseCandidate
 					.build();
 		}
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
 		materialEventService.enqueueEventAfterNextCommit(event);
 	}
 }

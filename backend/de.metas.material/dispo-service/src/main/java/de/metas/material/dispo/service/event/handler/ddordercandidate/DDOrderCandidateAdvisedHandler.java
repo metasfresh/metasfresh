@@ -42,6 +42,7 @@ import org.eevolution.api.PPOrderId;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -225,8 +226,6 @@ public class DDOrderCandidateAdvisedHandler
 			@NonNull final CandidatesGroup group,
 			@NonNull final DDOrderCandidateAdvisedEvent event)
 	{
-		final String traceId = event.getTraceId();
-
 		return DDOrderCandidateRequestedEvent.builder()
 				.eventDescriptor(event.getEventDescriptor().withClientAndOrg(group.getClientAndOrgId()))
 				.dateOrdered(SystemTime.asInstant())
@@ -271,6 +270,7 @@ public class DDOrderCandidateAdvisedHandler
 				.build();
 	}
 
+	@Nullable
 	private static PPOrderRef getPpOrderRef(final Candidate candidate)
 	{
 		final ProductionDetail productionDetail = candidate.getBusinessCaseDetail(ProductionDetail.class).orElse(null);

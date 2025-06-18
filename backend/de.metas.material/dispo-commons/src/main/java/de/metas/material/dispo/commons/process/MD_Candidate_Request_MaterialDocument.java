@@ -4,6 +4,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidatesGroup;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.EventDescriptor;
@@ -43,7 +44,7 @@ import java.util.function.Predicate;
  */
 
 /**
- * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(MaterialDispoGroupId, String)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
+ * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(CandidatesGroup, EventDescriptor)}  so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
  *
  * @author metas-dev <dev@metasfresh.com>
  */
