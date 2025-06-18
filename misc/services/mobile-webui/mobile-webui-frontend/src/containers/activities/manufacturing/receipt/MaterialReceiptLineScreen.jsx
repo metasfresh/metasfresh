@@ -84,6 +84,7 @@ const MaterialReceiptLineScreen = () => {
     catchWeightUom,
     bestBeforeDate,
     lotNo,
+    isBarcodeScan = false,
     isDone = true,
   }) => {
     // shall not happen
@@ -104,6 +105,7 @@ const MaterialReceiptLineScreen = () => {
         catchWeightUom,
         bestBeforeDate,
         lotNo,
+        isBarcodeScan,
       })
     )
       .then(() => {
