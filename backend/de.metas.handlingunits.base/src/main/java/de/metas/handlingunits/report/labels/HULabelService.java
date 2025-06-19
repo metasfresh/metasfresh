@@ -3,6 +3,7 @@ package de.metas.handlingunits.report.labels;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUReportExecutor;
@@ -14,34 +15,29 @@ import de.metas.process.IADProcessDAO;
 import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class HULabelService
 {
 	private final static AdValRuleId HU_LABEL_PRINTING_OPTIONS_VAL_RULE_ID = AdValRuleId.ofRepoId(540604);
 
-	private final IMHUProcessDAO huProcessDAO = Services.get(IMHUProcessDAO.class);
-	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
-	private final HULabelConfigService huLabelConfigService;
-	private final HUQRCodesService huQRCodesService;
+	@NonNull private final IMHUProcessDAO huProcessDAO = Services.get(IMHUProcessDAO.class);
+	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final HULabelConfigService huLabelConfigService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	private final CCache<Integer, HULabelPrintProcessesList> printProcessesCache = CCache.<Integer, HULabelPrintProcessesList>builder()
 			.cacheName("HULabelPrintProcess")
 			.tableName(I_AD_Process.Table_Name)
 			.initialCapacity(1)
 			.build();
-
-	public HULabelService(
-			@NonNull final HULabelConfigService huLabelConfigService,
-			@NonNull final HUQRCodesService huQRCodesService)
-	{
-		this.huLabelConfigService = huLabelConfigService;
-		this.huQRCodesService = huQRCodesService;
-	}
 
 	public ExplainedOptional<HULabelConfig> getFirstMatching(final HULabelConfigQuery query)
 	{
@@ -51,6 +47,7 @@ public class HULabelService
 	public void print(@NonNull final HULabelPrintRequest request)
 	{
 		HULabelPrintCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
 				.huLabelConfigService(huLabelConfigService)
 				.huProcessDAO(huProcessDAO)
 				.huQRCodesService(huQRCodesService)

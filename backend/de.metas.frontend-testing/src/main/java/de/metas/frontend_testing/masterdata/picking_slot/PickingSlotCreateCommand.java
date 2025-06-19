@@ -34,6 +34,7 @@ public class PickingSlotCreateCommand
 				.build());
 
 		return JsonPickingSlotCreateResponse.builder()
+				.id(pickingSlot.getPickingSlotId())
 				.code(code)
 				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlot).toGlobalQRCodeJsonString())
 				.build();

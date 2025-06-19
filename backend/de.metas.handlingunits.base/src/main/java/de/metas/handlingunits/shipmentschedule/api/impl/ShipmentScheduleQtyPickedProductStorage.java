@@ -24,6 +24,7 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import java.math.BigDecimal;
 
+import de.metas.inout.ShipmentScheduleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 
@@ -85,7 +86,8 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		{
 			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
-			final BigDecimal qtyPickedNotDelivered = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule);
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+			final BigDecimal qtyPickedNotDelivered = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentScheduleId);
 			final BigDecimal qtyDelivered = shipmentSchedule.getQtyDelivered();
 
 			qtyToPick = qtyToPick.subtract(qtyPickedNotDelivered).subtract(qtyDelivered);

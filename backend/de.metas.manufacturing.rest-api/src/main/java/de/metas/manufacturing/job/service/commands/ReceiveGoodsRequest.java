@@ -45,5 +45,6 @@ public class ReceiveGoodsRequest
 	@Nullable LocalDate bestBeforeDate;
 	@Nullable String lotNo;
 	@Nullable Quantity catchWeight;
+	boolean isBarcodeScan;
 	@Nullable PPOrderBOMLineId coProductBOMLineId;
 }

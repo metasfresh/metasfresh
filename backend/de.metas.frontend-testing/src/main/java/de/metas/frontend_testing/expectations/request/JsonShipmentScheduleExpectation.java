@@ -1,6 +1,5 @@
 package de.metas.frontend_testing.expectations.request;
 
-import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -13,12 +12,5 @@ import java.util.List;
 @Jacksonized
 public class JsonShipmentScheduleExpectation
 {
-	//
-	// Match
-	@Nullable Identifier product;
-	@Nullable Identifier salesOrder;
-
-	//
-	// Expect
 	@Nullable List<JsonShipmentScheduleQtyPickedExpectation> qtyPicked;
 }

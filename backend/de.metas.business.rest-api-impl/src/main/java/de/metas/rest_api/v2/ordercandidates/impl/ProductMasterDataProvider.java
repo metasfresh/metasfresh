@@ -2,20 +2,21 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import de.metas.cache.CCache;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.externalreference.product.ProductExternalReferenceType;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.With;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product;
 
 /*
@@ -40,17 +41,13 @@ import org.compiere.model.I_M_Product;
  * #L%
  */
 
+@RequiredArgsConstructor
 final class ProductMasterDataProvider
 {
 	private final IProductBL productsBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
-	public ProductMasterDataProvider(@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
-	{
-		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
-	}
+	@NonNull private final ExternalIdentifierProductLookupService productLookupService;
 
 	@Value
 	private static class ProductCacheKey
@@ -68,6 +65,9 @@ final class ProductMasterDataProvider
 	{
 		@NonNull
 		ProductId productId;
+
+		@NonNull
+		HUPIItemProductId hupiItemProductId;
 
 		@NonNull
 		UomId uomId;
@@ -95,44 +95,19 @@ final class ProductMasterDataProvider
 	private ProductInfo getProductInfo0(@NonNull final ProductCacheKey key)
 	{
 		final ExternalIdentifier productIdentifier = key.getProductExternalIdentifier();
+		
+		final ProductAndHUPIItemProductId productAndHUPIItemProductId = productLookupService
+				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId())
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("productIdentifier")
+						.resourceIdentifier(productIdentifier.getRawValue())
+						.build());
 
-		final ProductId productId;
-		switch (productIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				productId = ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue());
-				break;
-			case EXTERNAL_REFERENCE:
-				productId = externalReferenceRestControllerService
-						.getJsonMetasfreshIdFromExternalReference(key.getOrgId(), productIdentifier, ProductExternalReferenceType.PRODUCT)
-						.map(jsonProductId -> ProductId.ofRepoId(jsonProductId.getValue()))
-						.orElseThrow(() -> new AdempiereException("Missing product for the given product external reference!")
-								.appendParametersToMessage()
-								.setParameter("external reference", key.getProductExternalIdentifier()));
-				break;
-			case VALUE:
-				final IProductDAO.ProductQuery query = IProductDAO.ProductQuery.builder()
-						.orgId(key.getOrgId())
-						.value(productIdentifier.asValue()).build();
-				productId = productDAO.retrieveProductIdBy(query);
-				if (productId == null)
-				{
-					throw MissingResourceException.builder()
-							.resourceName("productIdentifier")
-							.resourceIdentifier(productIdentifier.getRawValue())
-							.build();
-				}
-				break;
-			default:
-				throw new AdempiereException("Unsupported external reference type!")
-						.appendParametersToMessage()
-						.setParameter("productIdentifier", productIdentifier);
-		}
-
-		final UomId uomId = productsBL.getStockUOMId(productId);
+		final UomId uomId = productsBL.getStockUOMId(productAndHUPIItemProductId.getProductId());
 
 		return ProductInfo.builder()
-				.productId(productId)
+				.productId(productAndHUPIItemProductId.getProductId())
+				.hupiItemProductId(productAndHUPIItemProductId.getHupiItemProductId())
 				.uomId(uomId)
 				.build();
 	}

@@ -1,7 +1,7 @@
 ARG REFNAME=local
 FROM metasfresh/metas-mvn-camel:$REFNAME as camel
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jdk
 
 RUN apt-get -y update && apt-get -y install curl
 

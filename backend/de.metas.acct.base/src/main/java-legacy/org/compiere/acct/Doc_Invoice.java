@@ -844,7 +844,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
 						.setAmtSource((Money)null, amtReceived)
-						.setQty(line.getQtyReceivedAbs())
+						.setQty(line.getQtyReceivedAbs().negate())
 						.buildAndAdd();
 
 				final Money amtNotReceived = amt.subtract(amtReceived);
@@ -852,7 +852,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
 						.setAmtSource((Money)null, amtNotReceived)
-						.setQty(line.getQtyNotReceivedAbs())
+						.setQty(line.getQtyNotReceivedAbs().negate())
 						.buildAndAdd();
 			}
 			else // service

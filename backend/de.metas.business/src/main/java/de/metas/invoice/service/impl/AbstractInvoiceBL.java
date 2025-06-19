@@ -58,7 +58,6 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
-import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -138,7 +137,6 @@ import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
@@ -234,9 +232,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			if (invoice.isPaid())
 			{
-				throw new AdempiereException(
-						MSG_InvoiceMayNotBePaid,
-						invoice.getDocumentNo());
+				throw new AdempiereException(MSG_InvoiceMayNotBePaid, invoice.getDocumentNo());
 			}
 
 			//
@@ -247,9 +243,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)
 			{
-				throw new AdempiereException(
-						MSG_InvoiceMayNotHaveOpenAmtZero,
-						invoice.getDocumentNo());
+				throw new AdempiereException(MSG_InvoiceMayNotHaveOpenAmtZero, invoice.getDocumentNo());
 			}
 
 		}
@@ -854,7 +848,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final boolean setDocTypeTargetId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final InvoiceDocBaseType docBaseType)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(docBaseType.getDocBaseType())
@@ -1109,7 +1102,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 * every block, which are supposed to increase the clear arrangement in the Invoice window. None of these lines are attached to a M_InOutLine which means that the Virtual Column M_InOut_ID is
 	 * NULL. This causes Problems when trying to order the lines, so first we need to allocate an InOut_ID to each InvoiceLine. To do this a hash map is used.
 	 */
-	private final Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
 		final HashMap<Integer, Integer> invoiceLineId2inOutId = new HashMap<>();
 
@@ -1307,7 +1300,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// services
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
-		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
 
 		// // Make sure QtyInvoicedInPriceUOM is up2date
@@ -1316,15 +1308,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// Calculations & Rounding
 		BigDecimal lineNetAmt = invoiceLine.getPriceActual().multiply(invoiceLine.getQtyInvoicedInPriceUOM());
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceLine);
-		final I_C_Tax invoiceTax = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Tax_ID(), I_C_Tax.class, trxName);
+		final TaxId taxId = TaxId.ofRepoIdOrNull(invoiceLine.getC_Tax_ID());
+		final Tax invoiceTax = taxId != null ? taxBL.getTaxById(taxId) : null;
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final CurrencyPrecision taxPrecision = getAmountPrecision(invoiceLine);
 
-		// ts: note: our taxes are always on document, so currently the following if-block doesn't apply to us
-		final boolean documentLevel = invoiceTax != null // guard against NPE
-				&& invoiceTax.isDocumentLevel();
+		final boolean documentLevel = invoiceTax != null && invoiceTax.isDocumentLevel();
 
 		// juddm: Tax Exempt & Tax Included in Price List & not Document Level - Adjust Line Amount
 		// http://sourceforge.net/tracker/index.php?func=detail&aid=1733602&group_id=176962&atid=879332
@@ -1332,18 +1321,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			BigDecimal taxStdAmt = BigDecimal.ZERO, taxThisAmt = BigDecimal.ZERO;
 
-			I_C_Tax stdTax = null;
-
+			Tax stdTax = null;
 			if (invoiceLine.getM_Product_ID() > 0)
 			{
 				final ChargeId chargeId = ChargeId.ofRepoIdOrNull(invoiceLine.getC_Charge_ID());
 				if (chargeId != null)    // Charge
 				{
 					final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
-					final I_C_TaxCategory taxCategoryRecord = taxDAO.getTaxCategoryById(TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID()));
-					stdTax = createTax(ctx, taxDAO.getDefaultTaxId(taxCategoryRecord), trxName);
+					final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
+					stdTax = taxBL.getDefaultTax(taxCategoryId);
 				}
-
 			}
 			else
 			// Product
@@ -1352,13 +1339,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				throw new AdempiereException("Unsupported tax calculation when tax is included, but it's not on document level");
 				// stdTax = createTax(ctx, taxDAO.getDefaultTax(invoiceLine.getM_Product().getC_TaxCategory()).getC_Tax_ID(), trxName);
 			}
+
 			if (stdTax != null)
 			{
-				log.debug("stdTax rate is " + stdTax.getRate());
-				log.debug("invoiceTax rate is " + invoiceTax.getRate());
-
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTaxAmt(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
-				taxStdAmt = taxThisAmt.add(taxBL.calculateTaxAmt(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+				if (invoiceTax != null)
+				{
+					taxThisAmt = taxThisAmt.add(invoiceTax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt()).getTaxAmount());
+				}
+				taxStdAmt = taxThisAmt.add(stdTax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt()).getTaxAmount());
 
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
@@ -1861,7 +1849,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
 		{
 			// task 08627: unlink possible inOutLines because the inOut might now be reactivated and they might be deleted.
-			// Unlinking them now is more performant than selecting an unlinking them when the inOutLine is actually deleted.
+			// Unlinking them now is more performant than selecting and unlinking them when the inOutLine is actually deleted.
 			il.setM_InOutLine(null);
 			InterfaceWrapperHelper.save(il);
 

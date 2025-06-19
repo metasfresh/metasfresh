@@ -68,6 +68,7 @@ public class ExternalIdentifier
 		this.externalReferenceValueAndSystem = externalReferenceValueAndSystem;
 	}
 
+	@Nullable
 	public static ExternalIdentifier ofOrNull(@Nullable final String rawIdentifierString)
 	{
 		if (isEmpty(rawIdentifierString, true))
@@ -78,59 +79,53 @@ public class ExternalIdentifier
 	}
 
 	@NonNull
-	public static Optional<ExternalIdentifier> ofOptional(@Nullable final String identifier)
-	{
-		if (Check.isBlank(identifier))
-		{
-			return Optional.empty();
-		}
-
-		try
-		{
-			return Optional.of(of(identifier));
-		}
-		catch (final Exception exception)
-		{
-			return Optional.empty();
-		}
-	}
-
-	@NonNull
-	public static ExternalIdentifier of(@NonNull final String identifier)
+	public static Optional<ExternalIdentifier> ofIdentifierCandidate(@NonNull final String identifier)
 	{
 		if (Type.METASFRESH_ID.pattern.matcher(identifier).matches())
 		{
-			return new ExternalIdentifier(Type.METASFRESH_ID, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.METASFRESH_ID, identifier, null));
 		}
 
 		final Matcher externalReferenceMatcher = Type.EXTERNAL_REFERENCE.pattern.matcher(identifier);
 
 		if (externalReferenceMatcher.matches())
 		{
-
 			final ExternalReferenceValueAndSystem valueAndSystem = ExternalReferenceValueAndSystem.builder()
 					.externalSystem(externalReferenceMatcher.group(1))
 					.value(externalReferenceMatcher.group(2))
 					.build();
 
-			return new ExternalIdentifier(Type.EXTERNAL_REFERENCE, identifier, valueAndSystem);
+			return Optional.of(new ExternalIdentifier(Type.EXTERNAL_REFERENCE, identifier, valueAndSystem));
 		}
 
 		final Matcher glnMatcher = Type.GLN.pattern.matcher(identifier);
 		if (glnMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.GLN, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.GLN, identifier, null));
 		}
 
 		final Matcher valMatcher = Type.VALUE.pattern.matcher(identifier);
 		if (valMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.VALUE, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.VALUE, identifier, null));
 		}
 
-		throw new AdempiereException("Unknown externalId type!")
-				.appendParametersToMessage()
-				.setParameter("externalId", identifier);
+		final Matcher gtinMatcher = Type.GTIN.pattern.matcher(identifier);
+		if (gtinMatcher.matches())
+		{
+			return Optional.of(new ExternalIdentifier(Type.GTIN, identifier, null));
+		}
+		
+		return Optional.empty();
+	}
+	
+	@NonNull
+	public static ExternalIdentifier of(@NonNull final String identifier)
+	{
+		return ofIdentifierCandidate(identifier)
+				.orElseThrow(() -> new AdempiereException("Unknown externalId type!")
+						.appendParametersToMessage()
+						.setParameter("externalId", identifier));
 	}
 
 	@NonNull
@@ -186,14 +181,31 @@ public class ExternalIdentifier
 		return valueMatcher.group(1);
 	}
 
+	@NonNull
+	public String asGTIN()
+	{
+		Check.assume(Type.GTIN.equals(type),
+				"The type of this instance needs to be {}; this={}", Type.GTIN, this);
+
+		final Matcher gtinMatcher = Type.GTIN.pattern.matcher(rawValue);
+
+		if (!gtinMatcher.matches())
+		{
+			throw new AdempiereException("External identifier of Value parsing failed. External Identifier:" + rawValue);
+		}
+
+		return gtinMatcher.group(1);
+	}
+	
 	@AllArgsConstructor
 	@Getter
 	public enum Type
 	{
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
-		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)")),
-		GLN(Pattern.compile("(?:^gln)-(.+)")),
-		VALUE(Pattern.compile("(?:^val)-(.+)"));
+		EXTERNAL_REFERENCE(Pattern.compile("^ext-([a-zA-Z0-9]+)-(.+)")),
+		GLN(Pattern.compile("^gln-(.+)")),
+		GTIN(Pattern.compile("^gtin-(.+)")),
+		VALUE(Pattern.compile("^val-(.+)"));
 
 		private final Pattern pattern;
 	}

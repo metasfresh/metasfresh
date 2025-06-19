@@ -174,7 +174,6 @@ public class OrderCandidateRestControllerService
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-
 		assertCanCreate(request, masterdataProvider);
 
 		final OLCandCreateRequest candCreateRequest = fromJson(request, masterdataProvider);

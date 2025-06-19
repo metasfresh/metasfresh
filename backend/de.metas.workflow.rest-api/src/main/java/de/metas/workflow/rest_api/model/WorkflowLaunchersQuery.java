@@ -33,6 +33,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -57,5 +58,29 @@ public class WorkflowLaunchersQuery
 	public WorkflowLaunchersQuery withLimitIfNotSet(@NonNull final Supplier<QueryLimit> supplier)
 	{
 		return limit != null ? this : withLimit(supplier.get());
+	}
+
+	public void assertNoFilterByDocumentNo()
+	{
+		if (filterByDocumentNo != null)
+		{
+			throw new AdempiereException("Filtering by DocumentNo is not supported");
+		}
+	}
+
+	public void assertNoFilterByQRCode()
+	{
+		if (filterByQRCode != null)
+		{
+			throw new AdempiereException("Filtering by QR Code is not supported");
+		}
+	}
+
+	public void assertNoFacetIds()
+	{
+		if (facetIds != null && !facetIds.isEmpty())
+		{
+			throw new AdempiereException("Filtering by facets is not supported");
+		}
 	}
 }

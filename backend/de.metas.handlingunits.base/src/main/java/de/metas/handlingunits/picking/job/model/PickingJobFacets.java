@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.location.RenderedAddressProvider;
 import de.metas.picking.api.Packageable;
 import lombok.Builder;
 import lombok.NonNull;

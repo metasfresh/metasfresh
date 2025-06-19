@@ -138,11 +138,13 @@ public class DemandCandiateHandler implements CandidateHandler
 					.getCandidate();
 		}
 
+		candidateRepositoryWriteService.updateQtyDetails(savedCandidate, savedStockCandidate, null);
+
 		final CandidateSaveResult deltaToApplyToLaterStockCandidates = candidateSaveResult.withNegatedQuantity();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandidates);
 
 		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
-		if (savedCandidate.getType() == CandidateType.DEMAND)
+		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
 		{
 			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
 		}

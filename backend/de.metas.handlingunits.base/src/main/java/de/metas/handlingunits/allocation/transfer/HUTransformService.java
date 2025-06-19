@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.ClearanceStatusInfo;
@@ -158,6 +159,7 @@ public class HUTransformService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final SpringContextHolder.Lazy<HUQRCodesService> huQRCodesService;
 	private final SpringContextHolder.Lazy<QRCodeConfigurationService> qrCodeConfigurationService;
 
@@ -1017,16 +1019,38 @@ public class HUTransformService
 			@NonNull final QtyTU qtyTU,
 			@NonNull final HuPackingInstructionsId luPIId)
 	{
-		final HuPackingInstructionsId tuPackingInstruction = handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU);
+		final HuPackingInstructionsId tuPIId = handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU);
 		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(sourceTuHU);
 
-		final I_M_HU_PI_Item luPIItem = tuPackingInstruction.isRealPackingInstructions()
-				? handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPackingInstruction, bpartnerId)
-				.orElseThrow(() -> new AdempiereException("No LU PI Item found for " + luPIId + ", " + bpartnerId + ", " + tuPackingInstruction))
-				: handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
-				.orElseThrow(() -> new AdempiereException("No LU PI Item found for " + luPIId + ", " + bpartnerId));
+		final I_M_HU_PI_Item luPIItem = getLuPIItem(luPIId, tuPIId, bpartnerId);
 
 		return tuToNewLUs(sourceTuHU, qtyTU, luPIItem, true);
+	}
+
+	private I_M_HU_PI_Item getLuPIItem(
+			@NonNull final HuPackingInstructionsId luPIId,
+			@NonNull final HuPackingInstructionsId tuPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		if (tuPIId.isRealPackingInstructions())
+		{
+			return handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
+					.orElseThrow(() -> {
+						final String luPIName = handlingUnitsBL.getPIName(luPIId);
+						final String tuPIName = handlingUnitsBL.getPIName(tuPIId);
+						final String bpartnerName = bpartnerId != null ? bpartnerDAO.getBPartnerNameById(bpartnerId) : "*";
+						return new AdempiereException("TU " + tuPIName + " is not configured to be stored into LU " + luPIName + ", at least for partner " + bpartnerName);
+					});
+		}
+		else
+		{
+			return handlingUnitsDAO.retrieveFirstPIItem(luPIId, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, bpartnerId)
+					.orElseThrow(() -> {
+						final String luPIName = handlingUnitsBL.getPIName(luPIId);
+						final String bpartnerName = bpartnerId != null ? bpartnerDAO.getBPartnerNameById(bpartnerId) : "*";
+						return new AdempiereException("CU is not configured to be stored directly into LU " + luPIName + ", at least for partner " + bpartnerName);
+					});
+		}
 	}
 
 	/**
@@ -1718,6 +1742,14 @@ public class HUTransformService
 			@NonNull final List<I_M_HU> tusOrVhus,
 			@Nullable final I_M_HU existingLU)
 	{
+		return trxManager.callInThreadInheritedTrx(() -> tusToLU(tusOrVhus, existingLU, null));
+	}
+
+	public HuId tusToExistingLUId(
+			@NonNull final List<I_M_HU> tusOrVhus,
+			@NonNull final HuId existingLUId)
+	{
+		final I_M_HU existingLU = handlingUnitsBL.getById(existingLUId);
 		return trxManager.callInThreadInheritedTrx(() -> tusToLU(tusOrVhus, existingLU, null));
 	}
 

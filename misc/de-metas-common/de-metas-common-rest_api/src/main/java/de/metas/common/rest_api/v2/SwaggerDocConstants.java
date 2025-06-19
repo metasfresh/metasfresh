@@ -73,7 +73,8 @@ public class SwaggerDocConstants
 	public static final String PRODUCT_IDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
 			+ "* a plain `<M_Product_ID>`\n"
 			+ "* or something like `val-<M_Product.Value>`\n"
-			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the product within the given `<ExternalSystem>`";
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the product within the given `<ExternalSystem>`"
+			+ "* or something like `gtin-<GTIN> where `<GTIN>` is the GTIN of the `M_Product` or the M_HU_PI_Item_Product` or the `C_BPartner_Product`";
 
 	public static final String SHIPPER_IDENTIFIER_DOC = "Identifier of the M_Shipper in question. Can be\n"
 			+ "* a plain `<M_Shipper_ID>`\n"
@@ -84,4 +85,9 @@ public class SwaggerDocConstants
 
 	public static final String HU_IDENTIFIER_DOC = "Identifier of the handling unit in question. Can be\n"
 			+ "* a plain `<M_HU_ID>`";
+
+	public static final String WAREHOUSE_IDENTIFIER_DOC = "Identifier of the warehouse in question. Can be\n"
+			+ "* a plain `<M_Warehouse_ID>`\n"
+			+ "* or something like `val-<M_Warehouse.Value>`\n"
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the warehouse within the given `<ExternalSystem>`";
 }

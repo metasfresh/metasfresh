@@ -43,7 +43,7 @@ public class JsonRequestLocationUpsertItem
 			description = LOCATION_IDENTIFIER_DOC
 					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created lcoation.") //
 	@NonNull
-	final String locationIdentifier;
+	String locationIdentifier;
 
 	@Schema(description = "The location to upsert")
 	@NonNull

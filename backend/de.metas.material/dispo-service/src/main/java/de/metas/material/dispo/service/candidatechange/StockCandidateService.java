@@ -170,7 +170,8 @@ public class StockCandidateService
 	 */
 	public void applyDeltaToMatchingLaterStockCandidates(@NonNull final CandidateSaveResult stockWithDelta)
 	{
-		if (stockWithDelta.getCandidate().isSimulated())
+		final Candidate deltaCandidate = stockWithDelta.getCandidate();
+		if (deltaCandidate.isSimulated())
 		{
 			return;
 		}
@@ -190,7 +191,7 @@ public class StockCandidateService
 			}
 			else
 			{
-				deltaUntilRangeEnd = stockWithDelta.getCandidate().getQuantity();
+				deltaUntilRangeEnd = deltaCandidate.getQuantity();
 				deltaAfterRangeEnd = stockWithDelta.getQtyDelta();
 			}
 		}
@@ -203,11 +204,11 @@ public class StockCandidateService
 		final List<Candidate> candidatesToUpdateWithinRange = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		for (final Candidate candidate : candidatesToUpdateWithinRange)
 		{
+			//TODO refactor in next iteration to use MD_Candidate_QtyDetails
 			final BigDecimal newQty = candidate.getQuantity().add(deltaUntilRangeEnd);
-
 			candidateRepositoryWriteService.updateCandidateById(candidate
 					.withQuantity(newQty)
-					.withGroupId(stockWithDelta.getCandidate().getGroupId()));
+					.withGroupId(deltaCandidate.getGroupId()));
 		}
 		if (deltaAfterRangeEnd == null || deltaAfterRangeEnd.signum() == 0)
 		{
@@ -221,13 +222,14 @@ public class StockCandidateService
 				.build();
 		final CandidatesQuery queryAfterRange = query.withMaterialDescriptorQuery(materialDescriptToQueryAfterRange);
 		final List<Candidate> candidatesToUpdateAfterRange = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(queryAfterRange);
+		candidatesToUpdateAfterRange.removeIf(deltaCandidate::isStockCandidateOfThisCandidate);
 		for (final Candidate candidate : candidatesToUpdateAfterRange)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(deltaAfterRangeEnd);
 
 			candidateRepositoryWriteService.updateCandidateById(candidate
 					.withQuantity(newQty)
-					.withGroupId(stockWithDelta.getCandidate().getGroupId()));
+					.withGroupId(deltaCandidate.getGroupId()));
 		}
 	}
 

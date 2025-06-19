@@ -7,7 +7,7 @@ import de.metas.util.Loggables;
 import org.springframework.stereotype.Service;
 
 @Service
-class DDOrderCandidateDemandMatcher implements IMaterialDemandMatcher
+public class DDOrderCandidateDemandMatcher implements IMaterialDemandMatcher
 {
 	@Override
 	public boolean matches(final MaterialPlanningContext context)

@@ -23,6 +23,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class M_InOut
 {
+	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)
 	public void updateEdiStatus(final I_M_InOut document)
 	{
@@ -72,12 +74,11 @@ public class M_InOut
 		final I_C_BPartner handOverRecipient = InterfaceWrapperHelper.load(handOverRecipientId, I_C_BPartner.class);
 		if (!finalRecipient.isEdiDesadvRecipient() && !handOverRecipient.isEdiDesadvRecipient())
 		{
-			inout.setIsEdiEnabled(false);
+			ediDocumentBL.setEdiEnabled(inout, false);
 			return;
 		}
 
-		final boolean isEdiEnabled = order.isEdiEnabled();
-		inout.setIsEdiEnabled(isEdiEnabled);
+		ediDocumentBL.setEdiEnabled(inout, order.isEdiEnabled());
 	}
 
 	/**

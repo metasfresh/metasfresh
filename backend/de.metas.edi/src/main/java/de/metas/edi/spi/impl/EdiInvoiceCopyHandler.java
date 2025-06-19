@@ -25,6 +25,7 @@ package de.metas.edi.spi.impl;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -34,6 +35,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 public class EdiInvoiceCopyHandler implements IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine>
 {
+	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
 	@Override
 	public void copyPreliminaryValues (final org.compiere.model.I_C_Invoice from, final org.compiere.model.I_C_Invoice to)
@@ -50,7 +52,7 @@ public class EdiInvoiceCopyHandler implements IDocCopyHandler<org.compiere.model
 		
 		// task 08926
 		// Make sure the EdiEnabled flag is inherited if the invoice is created form another invoice
-		toToUse.setIsEdiEnabled(fromToUse.isEdiEnabled());
+		ediDocumentBL.setEdiEnabled(toToUse, fromToUse.isEdiEnabled());
 		
 	}
 

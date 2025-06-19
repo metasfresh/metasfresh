@@ -28,6 +28,7 @@ import java.time.Month;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.record.warning.RecordWarningRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
@@ -53,7 +54,8 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 @SpringBootTest(classes = {
 		StartupListener.class,
 		ShutdownListener.class,
-		DunningDocDocumentHandlerProvider.class
+		DunningDocDocumentHandlerProvider.class,
+		RecordWarningRepository.class
 })
 public class DefaultDunningProducerTest extends DunningTestBase
 {

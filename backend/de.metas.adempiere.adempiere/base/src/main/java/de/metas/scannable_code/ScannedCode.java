@@ -56,4 +56,8 @@ public class ScannedCode
 	public GlobalQRCodeParseResult toGlobalQRCodeIfMatching() {return GlobalQRCode.parse(code);}
 
 	public PrintableScannedCode toPrintableScannedCode() {return PrintableScannedCode.of(this);}
+
+	public String substring(final int beginIndex, final int endIndex) {return code.substring(beginIndex, endIndex);}
+
+	public int length() {return code.length();}
 }

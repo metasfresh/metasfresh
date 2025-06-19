@@ -8,6 +8,7 @@ import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
 import { trl } from '../../utils/translations';
+import { shallowEqual, useSelector } from 'react-redux';
 
 export const QTY_REJECTED_REASON_TO_IGNORE_KEY = 'IgnoreReason';
 
@@ -46,6 +47,10 @@ export const getFirstActivityByComponentType = ({ state, wfProcessId, componentT
   }
 
   return null;
+};
+
+export const useWFActivity = ({ wfProcessId, activityId }) => {
+  return useSelector((state) => getActivityById(state, wfProcessId, activityId), shallowEqual);
 };
 
 export const getActivityById = (state, wfProcessId, activityId) => {
@@ -101,6 +106,10 @@ export const getStepByIdFromActivity = (activity, lineId, stepId) => {
 
 export const getStepByIdFromLine = (line, stepId) => {
   return line?.steps?.[stepId];
+};
+
+export const getCustomQRCodeFormats = ({ activity }) => {
+  return activity?.dataStored?.customQRCodeFormats ?? [];
 };
 
 export const getQtyRejectedReasonsFromActivity = (activity) => {

@@ -57,7 +57,7 @@ class DDOrderCandidateRepositoryTest
 				//
 				.productId(ProductId.ofRepoId(20))
 				.hupiItemProductId(HUPIItemProductId.ofRepoId(30))
-				.qty(Quantity.of("123.45", uom))
+				.qtyEntered(Quantity.of("123.45", uom))
 				.qtyTUs(3)
 				//
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(50)) // TODO

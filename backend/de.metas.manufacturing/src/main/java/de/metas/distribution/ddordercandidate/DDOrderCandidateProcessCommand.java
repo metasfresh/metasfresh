@@ -10,6 +10,7 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.lowlevel.interceptor.DDOrderLoader;
+import de.metas.distribution.event.DDOrderUserNotificationProducer;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -85,6 +86,8 @@ class DDOrderCandidateProcessCommand
 	@NonNull private final IWarehouseBL warehouseBL;
 	@NonNull final IUOMConversionBL uomConversionBL;
 	@NonNull final IOrderLineBL orderLineBL;
+	@NonNull final DDOrderUserNotificationProducer ddOrderUserNotificationProducer;
+
 
 	//
 	// Params
@@ -130,6 +133,8 @@ class DDOrderCandidateProcessCommand
 				.ddOrderLowLevelService(ddOrderLowLevelService)
 				.replenishInfoRepository(replenishInfoRepository)
 				.build();
+
+		this.ddOrderUserNotificationProducer = DDOrderUserNotificationProducer.newInstance();
 
 		this.request = request;
 	}
@@ -181,6 +186,8 @@ class DDOrderCandidateProcessCommand
 		fireDDOrderCreatedEvent(ddOrderId, headerAggregate.getKey().getTraceId());
 
 		documentBL.processEx(headerRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		ddOrderUserNotificationProducer.notifyGenerated(headerRecord);
 	}
 
 	private I_DD_Order createHeaderRecord(
@@ -454,7 +461,7 @@ class DDOrderCandidateProcessCommand
 					.productId(candidate.getProductId())
 					.hupiItemProductId(candidate.getHupiItemProductId())
 					.attributeSetInstanceId(candidate.getAttributeSetInstanceId())
-					.uomId(candidate.getQty().getUomId())
+					.uomId(candidate.getQtyEntered().getUomId())
 					.distributionNetworkAndLineId(candidate.getDistributionNetworkAndLineId())
 					.salesOrderLineId(candidate.getSalesOrderLineId())
 					.isAllowPush(candidate.isAllowPush())

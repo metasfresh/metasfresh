@@ -22,19 +22,19 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.impl.aggregationEngine.AbstractTwoInOutsOneInvoicePurchaseTests;
 import de.metas.invoicecandidate.api.impl.aggregationEngine.AbstractTwoInOutsOneInvoiceSalesTests;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import lombok.NonNull;
+
+import java.util.List;
+import java.util.Properties;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * Similar to its super class {@link AbstractTwoInOutsOneInvoiceSalesTests}, but uses the {@link FreshQuantityDiscountAggregator} instead of the default aggregator.<br>
@@ -54,7 +54,7 @@ public abstract class AbstractFreshTwoInOutsOneInvoice_NoQualityDiscountTests ex
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> ignored)
+	protected void step_validate_before_aggregation(@NonNull List<I_C_Invoice_Candidate> invoiceCandidates, @NonNull List<I_M_InOutLine> ignored)
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, ignored);
 

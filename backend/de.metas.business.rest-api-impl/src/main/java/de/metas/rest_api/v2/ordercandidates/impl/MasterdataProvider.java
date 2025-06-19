@@ -38,6 +38,7 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -108,7 +109,9 @@ public final class MasterdataProvider
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.externalReferenceService = externalReferenceRestControllerService;
-		this.productMasterDataProvider = new ProductMasterDataProvider(externalReferenceRestControllerService);
+		
+		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
+		this.productMasterDataProvider = new ProductMasterDataProvider(productLookupService);
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
@@ -332,9 +335,9 @@ public final class MasterdataProvider
 		if (ExternalBusinessKey.Type.VALUE.equals(externalBusinessKey.getType()))
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-													 .bpartnerValue(externalBusinessKey.asValue())
-													 .onlyOrgId(orgId)
-													 .build());
+					.bpartnerValue(externalBusinessKey.asValue())
+					.onlyOrgId(orgId)
+					.build());
 		}
 		else if (ExternalBusinessKey.Type.EXTERNAL_REFERENCE.equals(externalBusinessKey.getType()))
 		{

@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -32,15 +33,15 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 
 	@Builder
 	private WorkflowLaunchersList(
-			@NonNull final ImmutableList<WorkflowLauncher> launchers,
+			@NonNull final List<WorkflowLauncher> launchers,
 			@NonNull @Singular final ImmutableList<OrderBy> orderByFields,
 			@Nullable final PrintableScannedCode filterByQRCode,
-			@NonNull final Instant timestamp)
+			@Nullable final Instant timestamp)
 	{
-		this.launchers = launchers;
+		this.launchers = ImmutableList.copyOf(launchers);
 		this.orderByFields = orderByFields;
 		this.filterByQRCode = filterByQRCode;
-		this.timestamp = timestamp;
+		this.timestamp = timestamp != null ? timestamp : SystemTime.asInstant();
 	}
 
 	public int size() {return launchers.size();}

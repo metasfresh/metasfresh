@@ -35,7 +35,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -206,7 +206,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			documents.put(documentId, document);
 		}
 
-		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
+		trxManager.runInNewTrx(localTrxName -> {
 			for (final T document : documents.values())
 			{
 				final String trxNameOld = InterfaceWrapperHelper.getTrxName(document);
@@ -230,6 +230,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return getDocument(document, throwEx);
 	}
 
+	@Nullable
 	@Override
 	public IDocument getDocumentOrNull(final Object document)
 	{
@@ -237,6 +238,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return getDocument(document, throwEx);
 	}
 
+	@Contract("null, true -> fail; null, false -> null")
+	@Nullable
 	private IDocument getDocument(
 			@Nullable final Object documentObj,
 			final boolean throwEx)
@@ -324,6 +327,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return DocStatus.ofCode(docStatus).isReversedOrVoided();
 	}
 
+	@Nullable
 	@Override
 	public DocStatus getDocStatusOrNull(final Object documentObj)
 	{
@@ -336,6 +340,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return docStatus;
 	}
 
+	@Nullable
 	@Override
 	public String getDocumentNo(final Properties ctx, final int adTableId, final int recordId)
 	{
@@ -419,8 +424,9 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return DocTypeId.optionalOfRepoId(docTypeId);
 	}
 
-
-	protected final LocalDate getDocumentDate(final Object model)
+	@Contract("null -> null")
+	@Nullable
+	protected final LocalDate getDocumentDate(@Nullable final Object model)
 	{
 		if (model == null)
 		{
@@ -463,10 +469,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		if (original_ID != null && original_ID > 0)
 		{
 			final int reversal_id = InterfaceWrapperHelper.getId(model);
-			if (reversal_id > original_ID)
-			{
-				return true;
-			}
+			return reversal_id > original_ID;
 		}
 
 		return false;

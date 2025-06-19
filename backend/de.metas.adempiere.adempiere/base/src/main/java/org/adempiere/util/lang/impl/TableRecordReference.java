@@ -413,11 +413,13 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Override
+	@NonNull
 	public String getTableName()
 	{
 		return tableName;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean tableNameEqualsTo(@NonNull final String expectedTableName)
 	{
 		return Objects.equals(getTableName(), expectedTableName);

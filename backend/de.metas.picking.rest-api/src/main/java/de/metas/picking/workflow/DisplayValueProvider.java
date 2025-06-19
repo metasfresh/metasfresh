@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobField;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
@@ -36,7 +35,7 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
-import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
+import de.metas.document.location.RenderedAddressProvider;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
@@ -71,14 +70,13 @@ public class DisplayValueProvider
 	private DisplayValueProvider(
 			@NonNull final IBPartnerDAO partnerDAO,
 			@NonNull final IOrgDAO orgDAO,
-			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final RenderedAddressProvider renderedAddressProvider,
 			//
 			@NonNull final MobileUIPickingUserProfile profile)
 	{
 		this.partnerDAO = partnerDAO;
 		this.orgDAO = orgDAO;
-		this.renderedAddressProvider = RenderedAddressProvider.newInstance(documentLocationBL);
-
+		this.renderedAddressProvider = renderedAddressProvider;
 		this.profile = profile;
 	}
 

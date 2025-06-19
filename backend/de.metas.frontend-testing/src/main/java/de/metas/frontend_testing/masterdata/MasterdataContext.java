@@ -16,11 +16,15 @@ import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 
 public class MasterdataContext
 {
@@ -66,6 +70,11 @@ public class MasterdataContext
 
 	public <T extends RepoIdAware> Optional<T> getOptionalId(@NonNull final Identifier identifier, final Class<T> idClass)
 	{
+		if (identifier.isNullPlaceholder())
+		{
+			return Optional.empty();
+		}
+
 		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(idClass, identifier);
 		//noinspection unchecked
 		final T id = (T)identifiers.get(typeAndIdentifier);
@@ -138,6 +147,44 @@ public class MasterdataContext
 		//noinspection unchecked
 		final T object = (T)objects.get(identifier);
 		return Optional.ofNullable(object);
+	}
+
+	public <T extends RepoIdAware> void putSameOrMissingId(
+			@NonNull String what,
+			@NonNull final Identifier identifier,
+			@Nullable final T actualId,
+			@NonNull final Class<T> idType
+	)
+	{
+		if (identifier.isNullPlaceholder())
+		{
+			assertThat(actualId).as(what).isNull();
+		}
+		else
+		{
+			final T expectedId = getOptionalId(identifier, idType).orElse(null);
+			if (expectedId == null)
+			{
+				assertThat(actualId).as(what).isNotNull();
+				if (actualId != null)
+				{
+					putIdentifier(identifier, actualId);
+				}
+			}
+			else
+			{
+				assertThat(actualId).as(what).isEqualTo(expectedId);
+			}
+		}
+	}
+
+	public Map<String, Object> toJson()
+	{
+		final HashMap<String, Object> result = new HashMap<>();
+
+		identifiers.forEach((typeAndIdentifier, id) -> result.put(typeAndIdentifier.getIdentifier().getAsString(), id.getRepoId()));
+
+		return result;
 	}
 
 	//

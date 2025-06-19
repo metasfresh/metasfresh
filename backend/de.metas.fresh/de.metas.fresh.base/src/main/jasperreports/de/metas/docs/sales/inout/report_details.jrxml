@@ -56,6 +56,9 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	<field name="isdiscountprinted" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="isdiscountprinted"/>
 	</field>
+	<field name="isshipmentpriceprinted" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isshipmentpriceprinted"/>
+	</field>
 	<field name="qtypattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
@@ -129,7 +132,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="441" y="6" width="33" height="12" forecolor="#000000" uuid="13f10026-f4a5-4106-b562-2972eb43d034">
-					<printWhenExpression><![CDATA[new Boolean($R{show_price}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -138,7 +141,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="510" y="6" width="43" height="12" forecolor="#000000" uuid="b45ffa6b-7b14-4fcb-9324-11acf5dd951b">
-					<printWhenExpression><![CDATA[new Boolean($R{show_price}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -176,7 +179,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-50" mode="Transparent" x="478" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="23063069-0aae-45ed-93fe-4444f6d4f434">
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $R{show_price}.equals( "Y" )? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $F{isshipmentpriceprinted}.equals( "Y" )? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -191,7 +194,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-49" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" uuid="5532d787-c1b7-4b0e-b779-d47279aa279f">
-					<printWhenExpression><![CDATA[new Boolean($R{show_price}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isItalic="true"/>
@@ -205,7 +208,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-34" mode="Transparent" x="510" y="0" width="43" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
-					<printWhenExpression><![CDATA[new Boolean($R{show_price}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -246,7 +249,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0.00" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="441" y="0" width="33" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
-					<printWhenExpression><![CDATA[new Boolean($R{show_price}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -346,7 +349,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-53" mode="Transparent" x="478" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $R{show_price}.equals( "Y" ) ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $F{isshipmentpriceprinted}.equals( "Y" ) ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -361,7 +364,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" uuid="1fd614c1-1b2a-4b96-b705-cd7d8e0753b1">
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $R{show_price}.equals( "Y" )? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 && $F{isshipmentpriceprinted}.equals( "Y" )? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isItalic="true"/>
@@ -374,7 +377,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<band height="12">
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-53" mode="Transparent" x="478" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
-					<printWhenExpression><![CDATA[new Boolean($V{LINESUM_SUM}.intValue() > 0 && $R{show_price}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($V{LINESUM_SUM}.intValue() > 0 && $F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -389,7 +392,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" uuid="8b95b9d9-672c-46cd-81f7-1236db33b252">
-					<printWhenExpression><![CDATA[new Boolean($V{LINESUM_SUM}.intValue() > 0 && $R{show_price}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($V{LINESUM_SUM}.intValue() > 0 && $F{isshipmentpriceprinted}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>

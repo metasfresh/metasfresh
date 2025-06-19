@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.logging.LogManager;
+import de.metas.manufacturing.event.PPOrderUserNotificationsProducer;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -377,6 +378,7 @@ public class PPOrderCandidateService
 				.trxManager(trxManager)
 				.ppOrderCandidatesDAO(ppOrderCandidateDAO)
 				.productPlanningsRepo(productPlanningDAO)
+				.ppOrderUserNotificationsProducer(PPOrderUserNotificationsProducer.newInstance())
 				.createEachPPOrderInOwnTrx(true)
 				.build();
 	}

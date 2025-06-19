@@ -29,15 +29,10 @@
 
 package org.adempiere.process;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import de.metas.i18n.Msg;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
 import org.compiere.model.I_EXP_FormatLine;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
@@ -51,9 +46,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
-import de.metas.process.ProcessInfoParameter;
-import de.metas.i18n.Msg;
-import de.metas.process.JavaProcess;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashMap;
 
 
 /**
@@ -159,7 +159,7 @@ public class Export extends JavaProcess
 		;
 		
 		if (exportFormat.getWhereClause() != null & !"".equals(exportFormat.getWhereClause())) {
-			sql.append(" AND ").append(exportFormat.getWhereClause());
+			sql.append(" AND /*EXP_Format.WhereClause=*/( ").append(exportFormat.getWhereClause()).append(" )");
 		}
 		
 		ResultSet rs = null;
@@ -352,8 +352,9 @@ public class Export extends JavaProcess
 					   .append("WHERE ").append(masterPO.get_KeyColumns()[0]).append("=?")
 					   //+ "WHERE " + po.get_WhereClause(false)
 				;
-				if (embeddedFormat.getWhereClause() != null & !"".equals(embeddedFormat.getWhereClause())) {
-					sql.append(" AND ").append(embeddedFormat.getWhereClause());
+				if (Check.isNotBlank(embeddedFormat.getWhereClause())) 
+				{
+					sql.append(" AND /*EXP_Format.WhereClause=*/( ").append(embeddedFormat.getWhereClause()).append(" )");
 				}
 				ResultSet rsEmbedded = null;
 				PreparedStatement pstmt = null;

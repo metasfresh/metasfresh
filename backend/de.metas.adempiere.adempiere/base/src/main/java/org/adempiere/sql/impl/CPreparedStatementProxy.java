@@ -24,6 +24,7 @@ package org.adempiere.sql.impl;
 
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.migration.logger.Sql;
 import org.adempiere.ad.migration.logger.SqlBatch;
@@ -148,12 +149,14 @@ import java.util.Calendar;
 		}
 	}
 
+	@NonNull
 	@Override
-	protected PreparedStatement createStatement(final Connection conn, final CStatementVO vo) throws SQLException
+	protected PreparedStatement createStatement(@NonNull final Connection conn, @NonNull final CStatementVO vo) throws SQLException
 	{
-		return conn.prepareStatement(vo.getSql(),
+		final PreparedStatement preparedStatement = conn.prepareStatement(vo.getSql(),
 				vo.getResultSetType(),
 				vo.getResultSetConcurrency());
+		return Check.assumeNotNull(preparedStatement, "preparedStatement not null for {}", vo);
 	}
 
 	@Override

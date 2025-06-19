@@ -28,7 +28,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -180,24 +179,19 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				.attributeDAO(attributeDAO)
 				.sharedCache(cache)
 				.request(HUQRCodeGenerateRequest.builder()
-								 .productId(getProductId(hu))
-								 .huPackingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
-								 .attributes(getHUQRCodeAttributes(hu))
-								 .count(requiredQRCodesCount)
-								 .build())
+						.productId(getSingleProductIdOrNull(hu))
+						.huPackingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
+						.attributes(getHUQRCodeAttributes(hu))
+						.count(requiredQRCodesCount)
+						.build())
 				.build()
 				.execute();
 	}
 
-	@NonNull
-	private ProductId getProductId(final I_M_HU hu)
+	@Nullable
+	private ProductId getSingleProductIdOrNull(final I_M_HU hu)
 	{
-		final ProductId productId = handlingUnitsBL.getStorageFactory().getStorage(hu).getSingleProductIdOrNull();
-		if (productId == null)
-		{
-			throw new AdempiereException("Only single product storages are supported");
-		}
-		return productId;
+		return handlingUnitsBL.getStorageFactory().getStorage(hu).getSingleProductIdOrNull();
 	}
 
 	private ImmutableList<HUQRCodeGenerateRequest.Attribute> getHUQRCodeAttributes(final I_M_HU hu)
@@ -322,7 +316,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 		final Map<HuId, ProductId> huId2Product = handlingUnitsBL.getStorageFactory()
 				.streamHUProductStorages(ImmutableList.copyOf(huId2Hu.values()))
 				.collect(Collectors.groupingBy(IHUProductStorage::getHuId,
-											   Collectors.mapping(IHUProductStorage::getProductId, Collectors.toSet())))
+						Collectors.mapping(IHUProductStorage::getProductId, Collectors.toSet())))
 				.entrySet()
 				.stream()
 				.filter(huId2Products -> huId2Products.getValue().size() == 1)
@@ -335,7 +329,7 @@ public class HUQRCodeGenerateForExistingHUsCommand
 				.stream()
 				.filter(product -> product.getQRCode_Configuration_ID() > 0)
 				.collect(ImmutableMap.toImmutableMap(product -> ProductId.ofRepoId(product.getM_Product_ID()),
-													 product -> QRCodeConfigurationId.ofRepoId(product.getQRCode_Configuration_ID())));
+						product -> QRCodeConfigurationId.ofRepoId(product.getQRCode_Configuration_ID())));
 
 		final Map<QRCodeConfigurationId, QRCodeConfiguration> id2Configuration = qrCodeConfigurationService
 				.getByIds(ImmutableSet.copyOf(productId2QRCodeConfig.values()));
