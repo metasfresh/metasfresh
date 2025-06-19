@@ -251,7 +251,7 @@ Feature: Modular contract log from sales order for processed product
       | po_order   | false   | bp_moduleLogPO           | 2022-02-01  | POO             | poModuleLogContract_ref_06292023_2 | warehouse_03102024_1          | y2022                             | 2022-02-02T00:00:00.00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
-      | po_orderLine | po_order              | rawProduct              | 1000       | moduleLogConditions_03102024_1          |
+      | po_orderLine | po_order              | rawProduct              | 1250       | moduleLogConditions_03102024_1          |
 
     When the order identified by po_order is completed
 
@@ -262,8 +262,8 @@ Feature: Modular contract log from sales order for processed product
 
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus | OPT.IsSOTrx |
-      | moduleLogContract_1           | moduleLogConditions_03102024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1000                  | 10.00           | moduleLogPricingSystem            | ModularContract     | Ru                 | CO            | N           |
-      | interimContract_1             | moduleLogConditions_03102024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1000                  | 7.50            | moduleLogPricingSystem            | InterimInvoice      | Ru                 | CO            | N           |
+      | moduleLogContract_1           | moduleLogConditions_03102024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1250                  | 10.00           | moduleLogPricingSystem            | ModularContract     | Ru                 | CO            | N           |
+      | interimContract_1             | moduleLogConditions_03102024_1      | bp_moduleLogPO              | rawProduct              | po_orderLine                       | po_order                       | PCE                   | 1250                  | 7.50            | moduleLogPricingSystem            | InterimInvoice      | Ru                 | CO            | N           |
 
     And after not more than 30s, ModCntr_Specific_Prices are found:
       | ModCntr_Specific_Price_ID.Identifier | C_Flatrate_Term_ID.Identifier | ModCntr_Module_ID.Identifier      | M_Product_ID.Identifier        | OPT.SeqNo | OPT.Price | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.IsScalePrice | OPT.MinValue |
@@ -282,52 +282,81 @@ Feature: Modular contract log from sales order for processed product
 
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | Initial_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName              | OPT.IsBillable | OPT.IsSOTrx |
-      | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine     | moduleLogContract_1           | info_logs_type             | false         | PurchaseOrder                | EUR                        | PCE                   | 10000      | y2022                             | PO_informative_module            | 10.00           | PCE                       | informative_03102024_1       | N              | N           |
-      | log_2                     | moduleLogContract_1  | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | info_logs_type             | false         | PurchaseModularContract      | EUR                        | PCE                   | 10000      | y2022                             | PO_informative_module            | 10.00           | PCE                       | informative_03102024_1       | N              | N           |
-      | log_av                    | moduleLogContract_1  | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | avInterim_type             | false         | PurchaseModularContract      | EUR                        | PCE                   | 7500       | y2022                             | PO_avOnInterim_module            | 7.5             | PCE                       | addValueOnInterim_03102024_1 | Y              | N           |
-      | log_ic                    | interimContract_1    | Interim         | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | interimContract_1             | interim_type               | false         | ContractPrefinancing         | EUR                        | PCE                   | 7500       | y2022                             | PO_interimContract_module        | 7.5             | PCE                       | interimProduct_03102024      | N              | N           |
+      | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1250 | C_OrderLine     | moduleLogContract_1           | info_logs_type             | false         | PurchaseOrder                | EUR                        | PCE                   | 12500      | y2022                             | PO_informative_module            | 10.00           | PCE                       | informative_03102024_1       | N              | N           |
+      | log_2                     | moduleLogContract_1  | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1250 | C_Flatrate_Term | moduleLogContract_1           | info_logs_type             | false         | PurchaseModularContract      | EUR                        | PCE                   | 12500      | y2022                             | PO_informative_module            | 10.00           | PCE                       | informative_03102024_1       | N              | N           |
+      | log_av                    | moduleLogContract_1  | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1250 | C_Flatrate_Term | moduleLogContract_1           | avInterim_type             | false         | PurchaseModularContract      | EUR                        | PCE                   | 9375       | y2022                             | PO_avOnInterim_module            | 7.5             | PCE                       | addValueOnInterim_03102024_1 | Y              | N           |
+      | log_ic                    | interimContract_1    | Interim         | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1250 | C_Flatrate_Term | interimContract_1             | interim_type               | false         | ContractPrefinancing         | EUR                        | PCE                   | 9375       | y2022                             | PO_interimContract_module        | 7.5             | PCE                       | interimProduct_03102024      | N              | N           |
 
     And there is no C_Invoice_Candidate for C_Order po_order
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
-      | receiptSchedule_PO              | po_order              | po_orderLine              | bp_moduleLogPO           | bp_moduleLogPO_Location           | rawProduct              | 1000       | warehouse_03102024_1      | moduleLogContract_1               |
+      | receiptSchedule_PO              | po_order              | po_orderLine              | bp_moduleLogPO           | bp_moduleLogPO_Location           | rawProduct              | 1250       | warehouse_03102024_1      | moduleLogContract_1               |
 
     #Material Receipts
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | rawTopHU_1         | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 1000  | 101                                | 1000006                      |
+      | huLuTuConfig_1                        | rawTopHU_1         | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 1000  | 101                                | 1000006                      |
 
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.MovementDate |
       | rawTopHU_1         | receiptSchedule_PO              | inOut_03102024_1      | 2022-02-15       |
 
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_2                        | rawTopHU_2         | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 250   | 101                                | 1000006                      |
+
+    And create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.MovementDate |
+      | rawTopHU_2         | receiptSchedule_PO              | inOut_03102024_2      | 2022-02-28       |
+
+
     And validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | receiptLine_1             | inOut_03102024_1      | rawProduct              | 1000        | true      | 1000           |
+      | receiptLine_2             | inOut_03102024_2      | rawProduct              | 250         | true      | 250            |
 
     And after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | Initial_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName    | OPT.IsBillable | OPT.IsSOTrx |
-      | log_receipt_1             | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_InOutLine | moduleLogContract_1           | receipt_type               | false         | MaterialReceipt              | EUR                        | PCE                   | 0          | y2022                             | PO_receipt_module                | 0.00            | PCE                       | receipt_03102024_1 | Y              | N           |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | Initial_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName         | OPT.IsBillable | OPT.IsSOTrx |
+      | log_receipt_1_1           | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_InOutLine | moduleLogContract_1           | receipt_type               | false         | MaterialReceipt              | EUR                        | PCE                   | 0          | y2022                             | PO_receipt_module                | 0.00            | PCE                       | receipt_03102024_1      | Y              | N           |
+      | log_receipt_1_2           | receiptLine_1        | Interim         | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_InOutLine | interimContract_1             | interim_type               | false         | MaterialReceipt              | EUR                        | PCE                   | 7500       | y2022                             | PO_interimContract_module        | 7.50            | PCE                       | interimProduct_03102024 | Y              | N           |
+      | log_receipt_2_1           | receiptLine_2        | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 250  | M_InOutLine | moduleLogContract_1           | receipt_type               | false         | MaterialReceipt              | EUR                        | PCE                   | 0          | y2022                             | PO_receipt_module                | 0.00            | PCE                       | receipt_03102024_1      | Y              | N           |
+      | log_receipt_2_2           | receiptLine_2        | Interim         | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 250  | M_InOutLine | interimContract_1             | interim_type               | false         | MaterialReceipt              | EUR                        | PCE                   | 1875       | y2022                             | PO_interimContract_module        | 7.50            | PCE                       | interimProduct_03102024 | Y              | N           |
+
+    # Instead of creating Interim Invoice mark receipts as not invoiceable
+    And update M_InOut:
+      | M_InOut_ID.Identifier | IsInterimInvoiceable |
+      | inOut_03102024_1      | false                |
+      | inOut_03102024_2      | false                |
+
+    And after not more than 30s, ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | Initial_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName         | OPT.IsBillable | OPT.IsSOTrx |
+      | log_receipt_1_1           | receiptLine_1        | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_InOutLine | moduleLogContract_1           | receipt_type               | false         | MaterialReceipt              | EUR                        | PCE                   | 0          | y2022                             | PO_receipt_module                | 0.00            | PCE                       | receipt_03102024_1      | Y              | N           |
+      | log_receipt_1_2           | receiptLine_1        | Interim         | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_InOutLine | interimContract_1             | interim_type               | false         | MaterialReceipt              | EUR                        | PCE                   | 7500       | y2022                             | PO_interimContract_module        | 7.50            | PCE                       | interimProduct_03102024 | N              | N           |
+      | log_receipt_2_1           | receiptLine_2        | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 250  | M_InOutLine | moduleLogContract_1           | receipt_type               | false         | MaterialReceipt              | EUR                        | PCE                   | 0          | y2022                             | PO_receipt_module                | 0.00            | PCE                       | receipt_03102024_1      | Y              | N           |
+      | log_receipt_2_2           | receiptLine_2        | Interim         | bp_moduleLogPO                             | warehouse_03102024_1          | rawProduct              | rawProduct                    | bp_moduleLogPO                      | bp_moduleLogPO                  | 250  | M_InOutLine | interimContract_1             | interim_type               | false         | MaterialReceipt              | EUR                        | PCE                   | 1875       | y2022                             | PO_interimContract_module        | 7.50            | PCE                       | interimProduct_03102024 | N              | N           |
+
 
     #Manufacturing order
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.Modular_Flatrate_Term_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | ppo_1                  | MMO         | processedProduct        | 1000       | testResource             | 2022-02-28T23:59:00.00Z | 2022-02-28T23:59:00.00Z | 2022-02-28T23:59:00.00Z | N                | moduleLogContract_1                     | warehouse_03102024_1          |
+      | ppo_1                  | MMO         | processedProduct        | 1250       | testResource             | 2022-02-28T23:59:00.00Z | 2022-02-28T23:59:00.00Z | 2022-02-28T23:59:00.00Z | N                | moduleLogContract_1                     | warehouse_03102024_1          |
 
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppOrderBOMLine_1               | ppo_1                  | rawProduct              | 1000         | true            | PCE               | CO            |
+      | ppOrderBOMLine_1               | ppo_1                  | rawProduct              | 1250         | true            | PCE               | CO            |
 
     And the manufacturing order identified by ppo_1 is completed
 
     And select M_HU to be issued for productionOrder
       | M_HU_ID.Identifier | PP_Order_Qty_ID.Identifier | PP_Order_BOMLine_ID.Identifier | OPT.MovementDate        |
       | rawTopHU_1         | pp_order_qty_1             | ppOrderBOMLine_1               | 2022-02-28T23:59:00.00Z |
+      | rawTopHU_2         | pp_order_qty_1             | ppOrderBOMLine_1               | 2022-03-01T23:59:00.00Z |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppo_1                  | processedProductTU | N               | 0     | N               | 1     | N               | 1000  | huItemManufacturingProduct         |
+      | huLuTuConfig_1                        | ppo_1                  | processedProductTU | N               | 0     | N               | 1     | N               | 1000  | huItemManufacturingProduct         |
+      | huLuTuConfig_2                        | ppo_1                  | processedProductTU | N               | 0     | N               | 1     | N               | 250   | huItemManufacturingProduct         |
 
     And complete planning for PP_Order:
       | PP_Order_ID.Identifier |
@@ -343,11 +372,17 @@ Feature: Modular contract log from sales order for processed product
       | pp_log_2                  | ppo_1                | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | addValueOnProcessed_PO   | processedProduct              | bp_moduleLogPO                  | 1000 | PP_Order  | moduleLogContract_1           | avOnPP_type                | false         | Production                   | EUR                        | PCE                   | 8000       | y2022                             | PO_avOnProcessedProduct_module_1  | 8.00            | PCE                       | addValueOnProcessedProduct_03102024_1 | Y              | N           |
       | pp_log_3                  | ppo_1                | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | processedProduct         | processedProduct              | bp_moduleLogPO                  | 1000 | PP_Order  | moduleLogContract_1           | def_inv_type               | false         | Production                   | EUR                        | PCE                   | 20000      | y2022                             | PO_definitive_module              | 20.00           | PCE                       | salesOnProcessedProduct_03102024_1    | Y              | N           |
       | pp_log_4                  | ppo_1                | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | processedProduct         | processedProduct              | bp_moduleLogPO                  | 1000 | PP_Order  | moduleLogContract_1           | PO_sales_type              | false         | Production                   | EUR                        | PCE                   | 20000      | y2022                             | PO_salesOnProcessedProduct_module | 20.00           | PCE                       | salesOnProcessedProduct_03102024_1    | Y              | N           |
+      | pp_log_5                  | ppo_1                | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | addValueOnProcessed_PO_2 | processedProduct              | bp_moduleLogPO                  | 250  | PP_Order  | moduleLogContract_1           | avOnPP_type                | false         | Production                   | EUR                        | PCE                   | -1500      | y2022                             | PO_avOnProcessedProduct_module_2  | -6.00           | PCE                       | addValueOnProcessedProduct_03102024_2 | Y              | N           |
+      | pp_log_6                  | ppo_1                | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | addValueOnProcessed_PO   | processedProduct              | bp_moduleLogPO                  | 250  | PP_Order  | moduleLogContract_1           | avOnPP_type                | false         | Production                   | EUR                        | PCE                   | 2000       | y2022                             | PO_avOnProcessedProduct_module_1  | 8.00            | PCE                       | addValueOnProcessedProduct_03102024_1 | Y              | N           |
+      | pp_log_7                  | ppo_1                | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | processedProduct         | processedProduct              | bp_moduleLogPO                  | 250  | PP_Order  | moduleLogContract_1           | def_inv_type               | false         | Production                   | EUR                        | PCE                   | 5000       | y2022                             | PO_definitive_module              | 20.00           | PCE                       | salesOnProcessedProduct_03102024_1    | Y              | N           |
+      | pp_log_8                  | ppo_1                | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | processedProduct         | processedProduct              | bp_moduleLogPO                  | 250  | PP_Order  | moduleLogContract_1           | PO_sales_type              | false         | Production                   | EUR                        | PCE                   | 5000       | y2022                             | PO_salesOnProcessedProduct_module | 20.00           | PCE                       | salesOnProcessedProduct_03102024_1    | Y              | N           |
 
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
       | ppOrder_CostCollector_1         | ppo_1                  | processedProduct        | 1000        | CO        |
       | ppOrder_CostCollector_2         | ppo_1                  | rawProduct              | 1000        | CO        |
+      | ppOrder_CostCollector_3         | ppo_1                  | processedProduct        | 250         | CO        |
+      | ppOrder_CostCollector_4         | ppo_1                  | rawProduct              | 250         | CO        |
 
     #SO & contract
     And metasfresh contains C_Orders:
@@ -356,7 +391,7 @@ Feature: Modular contract log from sales order for processed product
 
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
-      | soLine_1   | so_1                  | processedProduct        | 1000       | moduleLogConditions_SO_03102024_1       |
+      | soLine_1   | so_1                  | processedProduct        | 1250       | moduleLogConditions_SO_03102024_1       |
 
     And the order identified by so_1 is completed
 
@@ -365,8 +400,8 @@ Feature: Modular contract log from sales order for processed product
       | moduleLogContract_SO_1        | moduleLogConditions_SO_03102024_1   | processedProduct        | so_1                           | soLine_1                           |
 
     And validate created C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus | OPT.IsSOTrx |
-      | moduleLogContract_SO_1        | moduleLogConditions_SO_03102024_1   | bp_moduleLogSO              | processedProduct        | soLine_1                           | so_1                           | PCE                   | 1000                  | 20.00           | moduleLogPricingSystem            | ModularContract     | Ru                 | CO            | Y           |
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus | OPT.IsSOTrx | OPT.EndDate  |
+      | moduleLogContract_SO_1        | moduleLogConditions_SO_03102024_1   | bp_moduleLogSO              | processedProduct        | soLine_1                           | so_1                           | PCE                   | 1250                  | 20.00           | moduleLogPricingSystem            | ModularContract     | Ru                 | CO            | Y           | 2022-12-31   |
     And after not more than 30s, ModCntr_Specific_Prices are found:
       | ModCntr_Specific_Price_ID.Identifier | C_Flatrate_Term_ID.Identifier | ModCntr_Module_ID.Identifier | M_Product_ID.Identifier        | OPT.SeqNo | OPT.Price | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.IsScalePrice | OPT.MinValue |
       | price_SO_0                           | moduleLogContract_SO_1        | SO_sales_module              | processedProduct               | 10        | 20.00     | EUR                        | PCE                   | N                | 0            |
@@ -385,10 +420,10 @@ Feature: Modular contract log from sales order for processed product
 
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier   | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | Initial_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName        | OPT.IsBillable | OPT.IsSOTrx |
-      | log_soLine_1              | soLine_1               | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | processedProduct        | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 1000 | C_OrderLine     | moduleLogContract_SO_1        | sales_info_logs_type       | false         | SalesOrder                   | EUR                        | PCE                   | 20000      | y2022                             | SO_informative_module            | 20.00           | PCE                       | informative_03102024_1 | N              | Y           |
-      | log_salesModContract_1    | moduleLogContract_SO_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | processedProduct        | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 1000 | C_Flatrate_Term | moduleLogContract_SO_1        | sales_info_logs_type       | false         | SalesModularContract         | EUR                        | PCE                   | 20000      | y2022                             | SO_informative_module            | 20.00           | PCE                       | informative_03102024_1 | N              | Y           |
+      | log_soLine_1              | soLine_1               | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | processedProduct        | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 1250 | C_OrderLine     | moduleLogContract_SO_1        | sales_info_logs_type       | false         | SalesOrder                   | EUR                        | PCE                   | 25000      | y2022                             | SO_informative_module            | 20.00           | PCE                       | informative_03102024_1 | N              | Y           |
+      | log_salesModContract_1    | moduleLogContract_SO_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | processedProduct        | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 1250 | C_Flatrate_Term | moduleLogContract_SO_1        | sales_info_logs_type       | false         | SalesModularContract         | EUR                        | PCE                   | 25000      | y2022                             | SO_informative_module            | 20.00           | PCE                       | informative_03102024_1 | N              | Y           |
 
-    #Shipment
+    # 1. Shipments
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | sch_1      | soLine_1                  | N             |
@@ -403,13 +438,13 @@ Feature: Modular contract log from sales order for processed product
 
     And validate M_Shipping_NotificationLines:
       | M_Shipping_NotificationLine_ID.Identifier | M_Shipping_Notification_ID.Identifier | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | MovementQty |
-      | shippingNotificationLine_03102024_1       | shippingNotification_03102024_1       | sch_1                            | processedProduct        | 1000        |
+      | shippingNotificationLine_03102024_1       | shippingNotification_03102024_1       | sch_1                            | processedProduct        | 1250        |
 
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier                | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | Initial_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName                   | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName              | OPT.IsBillable | OPT.IsSOTrx |
-      | log_avInterim_snline      | shippingNotificationLine_03102024_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | addValueOnInterim       | processedProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_Shipping_NotificationLine | moduleLogContract_1           | avInterim_type             | false         | ShippingNotification         | EUR                        | PCE                   | -20000     | y2022                             | PO_avOnInterim_module            | -20.00          | PCE                       | addValueOnInterim_03102024_1 | Y              | N           |
-      | log_svInterim_snline      | shippingNotificationLine_03102024_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | subValueOnInterim       | processedProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_Shipping_NotificationLine | moduleLogContract_1           | svInterim_type             | false         | ShippingNotification         | EUR                        | PCE                   | 20000      | y2022                             | PO_svOnInterim_module            | 20.00           | PCE                       | subValueOnInterim_03102024_1 | Y              | N           |
-      | log_SO_snline             | shippingNotificationLine_03102024_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | processedProduct        | processedProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | M_Shipping_NotificationLine | moduleLogContract_SO_1        | sales_info_logs_type       | false         | ShippingNotification         | EUR                        | PCE                   | 20000      | y2022                             | SO_informative_module            | 20.00           | PCE                       | informative_03102024_1       | N              | Y           |
+      | log_avInterim_snline      | shippingNotificationLine_03102024_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | addValueOnInterim       | processedProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1250 | M_Shipping_NotificationLine | moduleLogContract_1           | avInterim_type             | false         | ShippingNotification         | EUR                        | PCE                   | -25000     | y2022                             | PO_avOnInterim_module            | -20.00          | PCE                       | addValueOnInterim_03102024_1 | Y              | N           |
+      | log_svInterim_snline      | shippingNotificationLine_03102024_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | subValueOnInterim       | processedProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1250 | M_Shipping_NotificationLine | moduleLogContract_1           | svInterim_type             | false         | ShippingNotification         | EUR                        | PCE                   | 25000      | y2022                             | PO_svOnInterim_module            | 20.00           | PCE                       | subValueOnInterim_03102024_1 | Y              | N           |
+      | log_SO_snline             | shippingNotificationLine_03102024_1 | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | processedProduct        | processedProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 1250 | M_Shipping_NotificationLine | moduleLogContract_SO_1        | sales_info_logs_type       | false         | ShippingNotification         | EUR                        | PCE                   | 25000      | y2022                             | SO_informative_module            | 20.00           | PCE                       | informative_03102024_1       | N              | Y           |
 
     And the shipment schedule is split
       | Identifier | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | C_UOM_ID.X12DE355 | DeliveryDate | OPT.UserElementNumber1 | OPT.UserElementNumber2 |
@@ -455,6 +490,7 @@ Feature: Modular contract log from sales order for processed product
       | log_inout_2_10            | so_ioline_2          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | salesInterest                  | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | salesInterest_type         | SO_protein_module                | false         | Shipment                     | EUR                        | PCE                   | 0.243055555556  | y2022                             | SO_interest_module               | 50              | PCE                       |                 | 35               | salesInterest_03102024_1           | Y              | Y           |
       | log_inout_2_11            | so_ioline_2          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | salesInterest                  | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | salesInterest_type         | SO_salesAV_module                | false         | Shipment                     | EUR                        | PCE                   | 0.243055555556  | y2022                             | SO_interest_module               | 50              | PCE                       |                 | 35               | salesInterest_03102024_1           | Y              | Y           |
 
+    # update contract prices
     And update ModCntr_Specific_Prices:
       | ModCntr_Specific_Price_ID.Identifier | Price | C_Currency_ID.ISO_Code | C_UOM_ID.X12DE355 | OPT.isNewPrice | OPT.MinValue |
       | price_SO_0                           | 40.00 | EUR                    | PCE               | N              | 0            |
@@ -536,6 +572,167 @@ Feature: Modular contract log from sales order for processed product
       | AD_User_ID.Identifier | Login      |
       | metasfresh_user       | metasfresh |
 
+    # 1. Sales final invoice
+    And create final invoice
+      | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
+      | moduleLogContract_SO_1        | metasfresh_user       | 2022-05-30       | 2022-05-30   |
+
+    And after not more than 60s, modular C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier        | ProductName                 |
+      | candidate_sales_1                 | moduleLogContract_SO_1        | processedProduct               | sales_03102024_1            |
+      | candidate_HL_1                    | moduleLogContract_SO_1        | HL                             | HL_03102024_1               |
+      | candidate_Protein_1               | moduleLogContract_SO_1        | Protein                        | protein_03102024_1          |
+      | candidate_salesAV_1               | moduleLogContract_SO_1        | salesAV                        | salesAV_03102024_1          |
+      | candidate_storageCost_1           | moduleLogContract_SO_1        | storageCostForProcessedProduct | salesStorageCost_03102024_1 |
+      | candidate_salesInterest_1         | moduleLogContract_SO_1        | salesInterest                  | salesInterest_03102024_1    |
+
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
+      | candidate_sales_1                 | 0                |
+      | candidate_HL_1                    | 0                |
+      | candidate_Protein_1               | 0                |
+      | candidate_salesAV_1               | 0                |
+      | candidate_storageCost_1           | 0                |
+      | candidate_salesInterest_1         | 0                |
+
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
+      | candidate_sales_1                 | 0            | 1000           | 1000             | I               | 20.00           | 0                   | 20000              | Y             |
+      | candidate_HL_1                    | 0            | 1000           | 1000             | I               | 0.25            | 0                   | 250                | Y             |
+      | candidate_Protein_1               | 0            | 1000           | 1000             | I               | -0.03           | 0                   | -30                | Y             |
+      | candidate_salesAV_1               | 0            | 1000           | 1000             | I               | 0.2             | 0                   | 200                | Y             |
+      | candidate_storageCost_1           | 0            | 1              | 1                | I               | 4000            | 0                   | 4000               | Y             |
+      | candidate_salesInterest_1         | 0            | 1              | 1                | I               | 99.29           | 0                   | 99.29              | Y             |
+
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.TotalLines |
+      | candidate_sales_1                 | final_SO_Inv_1          | 24519.29       |
+
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | final_SO_Inv_1          | bp_moduleLogSO           | bp_moduleLogSO_Location           | 1000002     | true      | CO        | 29177.96       | finalSO                     |
+
+    And after not more than 30s, ModCntr_Logs are marked as invoiced:
+      | ModCntr_Log_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | log_inout_1_3             | candidate_sales_1                 |
+      | log_inout_1_4             | candidate_storageCost_1           |
+      | log_inout_1_5             | candidate_HL_1                    |
+      | log_inout_1_6             | candidate_Protein_1               |
+      | log_inout_1_7             | candidate_salesAV_1               |
+      | log_inout_1_8             | candidate_salesInterest_1         |
+      | log_inout_1_9             | candidate_salesInterest_1         |
+      | log_inout_1_10            | candidate_salesInterest_1         |
+      | log_inout_1_11            | candidate_salesInterest_1         |
+      | log_inout_2_3             | candidate_sales_1                 |
+      | log_inout_2_4             | candidate_storageCost_1           |
+      | log_inout_2_5             | candidate_HL_1                    |
+      | log_inout_2_6             | candidate_Protein_1               |
+      | log_inout_2_7             | candidate_salesAV_1               |
+      | log_inout_2_8             | candidate_salesInterest_1         |
+      | log_inout_2_9             | candidate_salesInterest_1         |
+      | log_inout_2_10            | candidate_salesInterest_1         |
+      | log_inout_2_11            | candidate_salesInterest_1         |
+
+    # 2. Shipments
+    And the shipment schedule is split
+      | Identifier | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | C_UOM_ID.X12DE355 | DeliveryDate | OPT.UserElementNumber1 | OPT.UserElementNumber2 |
+      | spl_3      | sch_1                            | 250          | PCE               | 2022-05-04   | 1200                   | 5                      |
+
+    And 'generate shipments' process is invoked
+      | M_ShipmentSchedule_ID.Identifier | QuantityType   | IsCompleteShipments | IsShipToday |
+      | sch_1                            | SPLIT_SHIPMENT | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.M_ShipmentSchedule_Split_ID.Identifier | OPT.IgnoreCreated.M_InOut_ID.Identifier |
+      | sch_1                            | inout_3               | spl_3                                      | inout_1 , inout_2                       |
+
+    And validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered | OPT.Harvesting_Year_ID.Identifier |
+      | so_ioline_3               | inout_3               | processedProduct        | 250         | true      | 250            | y2022                             |
+
+    And after not more than 30s, ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | Initial_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | ModCntr_BaseModule_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount      | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.StorageDays | OPT.InterestDays | OPT.ProductName                    | OPT.IsBillable | OPT.IsSOTrx |
+      | log_inout_3_1             | so_ioline_3          | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | processedProduct               | processedProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 250 | M_InOutLine | moduleLogContract_1           | def_inv_type               |                                  | false         | Shipment                     | EUR                        | PCE                   | 5000            | y2022                             | PO_definitive_module             | 20.00           | PCE                       |                 |                  | salesOnProcessedProduct_03102024_1 | Y              | N           |
+      | log_inout_3_2             | so_ioline_3          | ModularContract | bp_moduleLogPO                             | warehouse_03102024_1          | storageCostForProcessedProduct | processedProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | 250 | M_InOutLine | moduleLogContract_1           | storageCost_type           |                                  | false         | Shipment                     | EUR                        | PCE                   | -1395           | y2022                             | PO_storageCost_module            | -0.06           | PCE                       | 93              |                  | storageCost_03102024_1             | Y              | N           |
+      | log_inout_3_3             | so_ioline_3          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | processedProduct               | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | SO_sales_type              |                                  | false         | Shipment                     | EUR                        | PCE                   | 5000            | y2022                             | SO_sales_module                  | 20.00           | PCE                       |                 |                  | sales_03102024_1                   | Y              | Y           |
+      | log_inout_3_4             | so_ioline_3          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | storageCostForProcessedProduct | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | salesStorageCost_type      |                                  | false         | Shipment                     | EUR                        | PCE                   | 1000            | y2022                             | SO_storageCost_module            | 0.1             | PCE                       | 40              |                  | salesStorageCost_03102024_1        | Y              | Y           |
+      | log_inout_3_5             | so_ioline_3          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | HL                             | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | HL_type                    |                                  | false         | Shipment                     | EUR                        | PCE                   | 62.5            | y2022                             | SO_HL_module                     | 0.25            | PCE                       |                 |                  | HL_03102024_1                      | Y              | Y           |
+      | log_inout_3_6             | so_ioline_3          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | Protein                        | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | protein_type               |                                  | false         | Shipment                     | EUR                        | PCE                   | 50              | y2022                             | SO_protein_module                | 0.2             | PCE                       |                 |                  | protein_03102024_1                 | Y              | Y           |
+      | log_inout_3_7             | so_ioline_3          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | salesAV                        | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | salesAV_type               |                                  | false         | Shipment                     | EUR                        | PCE                   | 50              | y2022                             | SO_salesAV_module                | 0.2             | PCE                       |                 |                  | salesAV_03102024_1                 | Y              | Y           |
+      | log_inout_3_8             | so_ioline_3          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | salesInterest                  | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | salesInterest_type         | SO_sales_module                  | false         | Shipment                     | EUR                        | PCE                   | 24.305555555556 | y2022                             | SO_interest_module               | 5000            | PCE                       |                 | 35               | salesInterest_03102024_1           | Y              | Y           |
+      | log_inout_3_9             | so_ioline_3          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | salesInterest                  | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | salesInterest_type         | SO_HL_module                     | false         | Shipment                     | EUR                        | PCE                   | 0.303819444444  | y2022                             | SO_interest_module               | 62.5            | PCE                       |                 | 35               | salesInterest_03102024_1           | Y              | Y           |
+      | log_inout_3_10            | so_ioline_3          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | salesInterest                  | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | salesInterest_type         | SO_protein_module                | false         | Shipment                     | EUR                        | PCE                   | 0.243055555556  | y2022                             | SO_interest_module               | 50              | PCE                       |                 | 35               | salesInterest_03102024_1           | Y              | Y           |
+      | log_inout_3_11            | so_ioline_3          | ModularContract | bp_moduleLogSO                             | warehouse_03102024_1          | salesInterest                  | processedProduct              | bp_moduleLogSO                      | bp_moduleLogSO                  | 250 | M_InOutLine | moduleLogContract_SO_1        | salesInterest_type         | SO_salesAV_module                | false         | Shipment                     | EUR                        | PCE                   | 0.243055555556  | y2022                             | SO_interest_module               | 50              | PCE                       |                 | 35               | salesInterest_03102024_1           | Y              | Y           |
+
+    And load AD_Message:
+      | Identifier                         | Value                                                                                |
+      | ContractHasBillableUnprocessedLogs | de.metas.contracts.modular.ModularContractService.ContractHasBillableUnprocessedLogs |
+
+    Then the order identified by so_1 is closed expecting error
+      | OPT.AD_Message_ID.Identifier       |
+      | ContractHasBillableUnprocessedLogs |
+
+    # 2. Sales final invoice
+    And create final invoice
+      | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
+      | moduleLogContract_SO_1        | metasfresh_user       | 2022-05-30       | 2022-05-30   |
+
+    And after not more than 60s, modular C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier        | ProductName                 | OPT.QtyToInvoice |
+      | candidate_sales_2                 | moduleLogContract_SO_1        | processedProduct               | sales_03102024_1            | 250              |
+      | candidate_HL_2                    | moduleLogContract_SO_1        | HL                             | HL_03102024_1               | 250              |
+      | candidate_Protein_2               | moduleLogContract_SO_1        | Protein                        | protein_03102024_1          | 250              |
+      | candidate_salesAV_2               | moduleLogContract_SO_1        | salesAV                        | salesAV_03102024_1          | 250              |
+      | candidate_storageCost_2           | moduleLogContract_SO_1        | storageCostForProcessedProduct | salesStorageCost_03102024_1 | 1                |
+      | candidate_salesInterest_2         | moduleLogContract_SO_1        | salesInterest                  | salesInterest_03102024_1    | 1                |
+
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
+      | candidate_sales_2                 | 0                |
+      | candidate_HL_2                    | 0                |
+      | candidate_Protein_2               | 0                |
+      | candidate_salesAV_2               | 0                |
+      | candidate_storageCost_2           | 0                |
+      | candidate_salesInterest_2         | 0                |
+
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
+      | candidate_sales_2                 | 0            | 250            | 250              | I               | 20.00           | 0                   | 5000               | Y             |
+      | candidate_HL_2                    | 0            | 250            | 250              | I               | 0.25            | 0                   | 62.5               | Y             |
+      | candidate_Protein_2               | 0            | 250            | 250              | I               | 0.2             | 0                   | 50                 | Y             |
+      | candidate_salesAV_2               | 0            | 250            | 250              | I               | 0.2             | 0                   | 50                 | Y             |
+      | candidate_storageCost_2           | 0            | 1              | 1                | I               | 1000            | 0                   | 1000               | Y             |
+      | candidate_salesInterest_2         | 0            | 1              | 1                | I               | 25.1            | 0                   | 25.1               | Y             |
+
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.TotalLines |
+      | candidate_sales_2                 | final_SO_Inv_2          | 6187.6         |
+
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | final_SO_Inv_2          | bp_moduleLogSO           | bp_moduleLogSO_Location           | 1000002     | true      | CO        | 7363.24        | finalSO                     |
+
+    And after not more than 30s, ModCntr_Logs are marked as invoiced:
+      | ModCntr_Log_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | log_inout_3_3             | candidate_sales_2                 |
+      | log_inout_3_4             | candidate_storageCost_2           |
+      | log_inout_3_5             | candidate_HL_2                    |
+      | log_inout_3_6             | candidate_Protein_2               |
+      | log_inout_3_7             | candidate_salesAV_2               |
+      | log_inout_3_8             | candidate_salesInterest_2         |
+      | log_inout_3_9             | candidate_salesInterest_2         |
+      | log_inout_3_10            | candidate_salesInterest_2         |
+      | log_inout_3_11            | candidate_salesInterest_2         |
+
+
+    And the order identified by so_1 is closed
+
+    And validate created C_Flatrate_Term:
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus | OPT.IsSOTrx | OPT.EndDate |
+      | moduleLogContract_SO_1        | moduleLogConditions_SO_03102024_1   | bp_moduleLogSO              | processedProduct        | soLine_1                           | so_1                           | PCE                   | 1250                  | 20.00           | moduleLogPricingSystem            | ModularContract     | Ec                 | CL            | Y           | 2022-03-01  |
+
+    #Interest Run
+
     And distribute interest
       | AD_User_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | InterimDate | BillingDate |
       | metasfresh_user       | invGroup                             | 2022-02-15  | 2022-05-20  |
@@ -545,68 +742,8 @@ Feature: Modular contract log from sales order for processed product
     And validate created interestRun records for lastInterestRun
       | ModCntr_Interest_ID.Identifier | FinalInterest | C_Currency.ISO_Code | InterestDays | ShippingNotification_ModCntr_Log_ID.Identifier | OPT.InterimContract_ModCntr_Log_ID.Identifier |
       | interest_1                     | 40            | EUR                 | 19           | log_avInterim_snline                           | log_av                                        |
-      | interest_2                     | -26.39        | EUR                 | 95           | log_svInterim_snline                           |                                               |
+      | interest_2                     | -32.99        | EUR                 | 95           | log_svInterim_snline                           |                                               |
 
-    #Sales final invoice
-    And create final invoice
-      | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
-      | moduleLogContract_SO_1        | metasfresh_user       | 2022-05-30       | 2022-05-30   |
-
-    And after not more than 60s, modular C_Invoice_Candidates are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier        | ProductName                 |
-      | candidate_sales                   | moduleLogContract_SO_1        | processedProduct               | sales_03102024_1            |
-      | candidate_HL                      | moduleLogContract_SO_1        | HL                             | HL_03102024_1               |
-      | candidate_Protein                 | moduleLogContract_SO_1        | Protein                        | protein_03102024_1          |
-      | candidate_salesAV                 | moduleLogContract_SO_1        | salesAV                        | salesAV_03102024_1          |
-      | candidate_storageCost             | moduleLogContract_SO_1        | storageCostForProcessedProduct | salesStorageCost_03102024_1 |
-      | candidate_salesInterest           | moduleLogContract_SO_1        | salesInterest                  | salesInterest_03102024_1    |
-
-    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
-      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
-      | candidate_sales                   | 0                |
-      | candidate_HL                      | 0                |
-      | candidate_Protein                 | 0                |
-      | candidate_salesAV                 | 0                |
-      | candidate_storageCost             | 0                |
-      | candidate_salesInterest           | 0                |
-
-    And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_sales                   | 0            | 1000           | 1000             | I               | 20.00           | 0                   | 20000              | Y             |
-      | candidate_HL                      | 0            | 1000           | 1000             | I               | 0.25            | 0                   | 250                | Y             |
-      | candidate_Protein                 | 0            | 1000           | 1000             | I               | -0.03           | 0                   | -30                | Y             |
-      | candidate_salesAV                 | 0            | 1000           | 1000             | I               | 0.2             | 0                   | 200                | Y             |
-      | candidate_storageCost             | 0            | 1              | 1                | I               | 4000            | 0                   | 4000               | Y             |
-      | candidate_salesInterest           | 0            | 1              | 1                | I               | 99.29           | 0                   | 99.29              | Y             |
-
-    And after not more than 60s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.TotalLines |
-      | candidate_sales                   | final_SO_Inv            | 24519.29       |
-
-    And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | final_SO_Inv            | bp_moduleLogSO           | bp_moduleLogSO_Location           | 1000002     | true      | CO        | 29177.96       | finalSO                     |
-
-    And after not more than 30s, ModCntr_Logs are marked as invoiced:
-      | ModCntr_Log_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
-      | log_inout_1_3             | candidate_sales                   |
-      | log_inout_1_4             | candidate_storageCost             |
-      | log_inout_1_5             | candidate_HL                      |
-      | log_inout_1_6             | candidate_Protein                 |
-      | log_inout_1_7             | candidate_salesAV                 |
-      | log_inout_1_8             | candidate_salesInterest           |
-      | log_inout_1_9             | candidate_salesInterest           |
-      | log_inout_1_10            | candidate_salesInterest           |
-      | log_inout_1_11            | candidate_salesInterest           |
-      | log_inout_2_3             | candidate_sales                   |
-      | log_inout_2_4             | candidate_storageCost             |
-      | log_inout_2_5             | candidate_HL                      |
-      | log_inout_2_6             | candidate_Protein                 |
-      | log_inout_2_7             | candidate_salesAV                 |
-      | log_inout_2_8             | candidate_salesInterest           |
-      | log_inout_2_9             | candidate_salesInterest           |
-      | log_inout_2_10            | candidate_salesInterest           |
-      | log_inout_2_11            | candidate_salesInterest           |
 
     #Purchase final invoice
     And create final invoice
@@ -635,40 +772,88 @@ Feature: Modular contract log from sales order for processed product
 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier      | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_receipt                      | 0            | 1000           | 1000             | I               | 0               | 0                   | 0                  | Y             |
-      | candidate_salesOnProcessedProduct      | 0            | 1000           | 1000             | I               | 20              | 0                   | 20000              | Y             |
-      | candidate_addValueOnProcessedProduct_1 | 0            | 1000           | 1000             | I               | 8               | 0                   | 8000               | Y             |
-      | candidate_addValueOnProcessedProduct_2 | 0            | 1000           | 1000             | I               | -6              | 0                   | -6000              | Y             |
+      | candidate_receipt                      | 0            | 1250           | 1250             | I               | 0               | 0                   | 0                  | Y             |
+      | candidate_salesOnProcessedProduct      | 0            | 1250           | 1250             | I               | 20              | 0                   | 25000              | Y             |
+      | candidate_addValueOnProcessedProduct_1 | 0            | 1250           | 1250             | I               | 8               | 0                   | 10000              | Y             |
+      | candidate_addValueOnProcessedProduct_2 | 0            | 1250           | 1250             | I               | -6              | 0                   | -7500              | Y             |
       | candidate_addValueOnInterim            | 0            | 1              | 1                | I               | -40             | 0                   | -40                | Y             |
-      | candidate_subValueOnInterim            | 0            | 1              | 1                | I               | 26.39           | 0                   | 26.39              | Y             |
-      | candidate_storageCost                  | 0            | 1              | 1                | I               | -5580           | 0                   | -5580              | Y             |
+      | candidate_subValueOnInterim            | 0            | 1              | 1                | I               | 32.99           | 0                   | 32.99              | Y             |
+      | candidate_storageCost                  | 0            | 1              | 1                | I               | -6975           | 0                   | -6975              | Y             |
 
     And after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_receipt                 | final_PO_Inv            | CO            | 16406.39       |
+      | candidate_receipt                 | final_PO_Inv            | CO            | 20517.99       |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | final_PO_Inv            | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 19523.6        | final                       |
+      | final_PO_Inv            | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 24416.41       | final                       |
 
     And validate created modular invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier        | ProductName                           | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
-      | invoiceLine_1_1             | final_PO_Inv            | rawProduct                     | receipt_03102024_1                    | 1000        | true      | 0                | 0               | 0              | PCE                   | PCE                       |
-      | invoiceLine_1_2             | final_PO_Inv            | processedProduct               | salesOnProcessedProduct_03102024_1    | 1000        | true      | 20               | 20              | 20000          | PCE                   | PCE                       |
-      | invoiceLine_1_3             | final_PO_Inv            | addValueOnProcessed_PO         | addValueOnProcessedProduct_03102024_1 | 1000        | true      | 8                | 8               | 8000           | PCE                   | PCE                       |
-      | invoiceLine_1_4             | final_PO_Inv            | addValueOnProcessed_PO_2       | addValueOnProcessedProduct_03102024_2 | 1000        | true      | -6               | -6              | -6000          | PCE                   | PCE                       |
+      | invoiceLine_1_1             | final_PO_Inv            | rawProduct                     | receipt_03102024_1                    | 1250        | true      | 0                | 0               | 0              | PCE                   | PCE                       |
+      | invoiceLine_1_2             | final_PO_Inv            | processedProduct               | salesOnProcessedProduct_03102024_1    | 1250        | true      | 20               | 20              | 25000          | PCE                   | PCE                       |
+      | invoiceLine_1_3             | final_PO_Inv            | addValueOnProcessed_PO         | addValueOnProcessedProduct_03102024_1 | 1250        | true      | 8                | 8               | 10000          | PCE                   | PCE                       |
+      | invoiceLine_1_4             | final_PO_Inv            | addValueOnProcessed_PO_2       | addValueOnProcessedProduct_03102024_2 | 1250        | true      | -6               | -6              | -7500          | PCE                   | PCE                       |
       | invoiceLine_1_5             | final_PO_Inv            | addValueOnInterim              | addValueOnInterim_03102024_1          | 1           | true      | -40              | -40             | -40            | PCE                   | PCE                       |
-      | invoiceLine_1_6             | final_PO_Inv            | subValueOnInterim              | subValueOnInterim_03102024_1          | 1           | true      | 26.39            | 26.39           | 26.39          | PCE                   | PCE                       |
-      | invoiceLine_1_7             | final_PO_Inv            | storageCostForProcessedProduct | storageCost_03102024_1                | 1           | true      | -5580            | -5580           | -5580          | PCE                   | PCE                       |
+      | invoiceLine_1_6             | final_PO_Inv            | subValueOnInterim              | subValueOnInterim_03102024_1          | 1           | true      | 32.99            | 32.99           | 32.99          | PCE                   | PCE                       |
+      | invoiceLine_1_7             | final_PO_Inv            | storageCostForProcessedProduct | storageCost_03102024_1                | 1           | true      | -6975            | -6975           | -6975          | PCE                   | PCE                       |
 
     And after not more than 30s, ModCntr_Logs are marked as invoiced:
       | ModCntr_Log_ID.Identifier | C_Invoice_Candidate_ID.Identifier      |
-      | log_receipt_1             | candidate_receipt                      |
+      | log_receipt_1_1           | candidate_receipt                      |
+      | log_receipt_2_1           | candidate_receipt                      |
       | pp_log_4                  | candidate_salesOnProcessedProduct      |
       | pp_log_2                  | candidate_addValueOnProcessedProduct_1 |
       | pp_log_1                  | candidate_addValueOnProcessedProduct_2 |
+      | pp_log_8                  | candidate_salesOnProcessedProduct      |
+      | pp_log_6                  | candidate_addValueOnProcessedProduct_1 |
+      | pp_log_5                  | candidate_addValueOnProcessedProduct_2 |
       | log_avInterim_snline      | candidate_addValueOnInterim            |
       | log_av                    | candidate_addValueOnInterim            |
       | log_svInterim_snline      | candidate_subValueOnInterim            |
       | log_inout_1_2             | candidate_storageCost                  |
       | log_inout_2_2             | candidate_storageCost                  |
+      | log_inout_3_2             | candidate_storageCost                  |
+
+
+    Then the order identified by po_order is closed expecting error
+      | OPT.AD_Message_ID.Identifier       |
+      | ContractHasBillableUnprocessedLogs |
+
+    # Definitive Invoice
+    And create definitive invoice
+      | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
+      | moduleLogContract_1           | metasfresh_user       | 2022-06-01       | 2022-03-01   |
+
+    And after not more than 60s, modular C_Invoice_Candidates are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Flatrate_Term_ID.Identifier | M_Product_ID.Identifier | ProductName                        | OPT.QtyOrdered |
+      | candidate_definitive              | moduleLogContract_1           | processedProduct        | salesOnProcessedProduct_03102024_1 | 0              |
+
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
+      | candidate_definitive              | 0                |
+
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
+      | candidate_definitive              | 0            | 0              | 0                | I               | -20             | 0                   | 0                  | N             |
+
+
+    # After definitive invoicing closing/opening
+    And load AD_Message:
+      | Identifier                         | Value                                                                                |
+      | ContractHasNotClosedSalesOrders    | de.metas.contracts.modular.ModularContractService.ContractHasNotClosedSalesOrders    |
+
+    And the modular order identified by so_1 is opened
+    And validate created C_Flatrate_Term:
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus | OPT.IsSOTrx | OPT.EndDate |
+      | moduleLogContract_SO_1        | moduleLogConditions_SO_03102024_1   | bp_moduleLogSO              | processedProduct        | soLine_1                           | so_1                           | PCE                   | 1250                  | 20.00           | moduleLogPricingSystem            | ModularContract     | Ru                 | CO            | Y           | 2022-12-31  |
+
+    Then the order identified by po_order is closed expecting error
+      | OPT.AD_Message_ID.Identifier       |
+      | ContractHasNotClosedSalesOrders    |
+
+    And the order identified by so_1 is closed
+    And the order identified by po_order is closed
+
+    # make sure there is an error on so_1 open if po_order is closed, even with in webui it is not reachable because of precondition
+    And the modular order identified by so_1 is opened expecting error

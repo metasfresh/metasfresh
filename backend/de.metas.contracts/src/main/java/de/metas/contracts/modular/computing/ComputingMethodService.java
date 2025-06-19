@@ -230,6 +230,21 @@ public class ComputingMethodService
 	}
 
 	@NonNull
+	public ComputingResponse toZeroResponseWithLogs(final @NotNull ComputingRequest request, final @NonNull ModularContractLogEntriesList logs)
+	{
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+		return ComputingResponse.builder()
+				.ids(logs.getIds())
+				.price(ProductPrice.builder()
+						.productId(request.getProductId())
+						.money(Money.zero(request.getCurrencyId()))
+						.uomId(stockUOMId)
+						.build())
+				.qty(Quantitys.zero(stockUOMId))
+				.build();
+	}
+
+	@NonNull
 	public ProductPrice productPriceToUOM(@NonNull final ProductPrice priceWithPriceUOM, @NonNull final UomId stockUOMId)
 	{
 		// use 12 digit precision, because it will be rounded on IC creation according to priceList precision

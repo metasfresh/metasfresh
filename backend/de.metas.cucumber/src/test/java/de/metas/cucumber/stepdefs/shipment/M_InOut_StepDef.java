@@ -71,6 +71,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_BPartner;
@@ -201,6 +202,25 @@ public class M_InOut_StepDef
 			{
 				assertThat(shipment.isInterimInvoiceable()).isEqualTo(isInterimInvoiceable);
 			}
+		}
+	}
+
+	@And("update M_InOut:")
+	public void update_M_InOut(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_InOut inOut = shipmentTable.get(shipmentIdentifier);
+			AssertionsForClassTypes.assertThat(inOut).isNotNull();
+
+			final boolean isInterimInvoiceable = DataTableUtil.extractBooleanForColumnName(row, I_M_InOut.COLUMNNAME_IsInterimInvoiceable);
+			inOut.setIsInterimInvoiceable(isInterimInvoiceable);
+
+			InterfaceWrapperHelper.saveRecord(inOut);
+
+			shipmentTable.putOrReplace(shipmentIdentifier, inOut);
 		}
 	}
 
