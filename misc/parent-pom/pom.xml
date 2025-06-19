@@ -36,7 +36,7 @@
         <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
         <jackson.version>2.17.1</jackson.version>
         <amqp-client.version>5.20.0</amqp-client.version>
-        
+
         <jasperreports.version>6.21.2</jasperreports.version>
 
         <itextpdf.version>5.5.13.3</itextpdf.version>
@@ -47,7 +47,7 @@
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
         <springdoc-swagger.version>1.8.0</springdoc-swagger.version>
-        
+
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
         <slf4j-api.version>2.0.9</slf4j-api.version>
 
@@ -92,7 +92,7 @@
             <version>4.0.2</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- 
         dependency of org.skyscreamer:jsonassert which is a dependency of json-snapshot
         I get a ClassNotFoundException JSONException, despite ofc it *should* be there transitively 
@@ -109,7 +109,7 @@
             <version>0.0.20131108.vaadin1</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -128,7 +128,7 @@
             <version>${junit-platform.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
     </dependencies>
 
     <dependencyManagement>
@@ -184,7 +184,7 @@
                 <artifactId>jsr305</artifactId>
                 <version>3.0.2</version>
             </dependency>
-            
+
             <!-- JAXB dependencies for Jakarta EE 9+ -->
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
@@ -206,7 +206,7 @@
                 <artifactId>jakarta.activation-api</artifactId>
                 <version>2.1.3</version>
             </dependency>
-            
+
             <!-- JAX-WS dependencies for SOAP client generation -->
             <dependency>
                 <groupId>jakarta.xml.ws</groupId>
@@ -218,7 +218,7 @@
                 <artifactId>jaxws-rt</artifactId>
                 <version>4.0.2</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
@@ -236,19 +236,19 @@
                 <artifactId>jp.osdn.ocrb</artifactId>
                 <version>0.2.1</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
                 <version>${logstash-logback-encoder.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>17.0.0</version>
             </dependency>
-            
+
         </dependencies>
 
     </dependencyManagement>
@@ -270,7 +270,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    
+
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
                     <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
                     <!--includeOnlyProperties>
@@ -606,14 +606,19 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
-				<!-- https://github.com/qaware/go-offline-maven-plugin
-					enables our docker builds to resolve dependencies in a separate layer
-					and therefore cache it. -->
-				<plugin>
-					<groupId>de.qaware.maven</groupId>
-					<artifactId>go-offline-maven-plugin</artifactId>
-					<version>1.2.8</version>
-				</plugin>
+                <!-- https://github.com/qaware/go-offline-maven-plugin
+                    enables our docker builds to resolve dependencies in a separate layer
+                    and therefore cache it. -->
+                <plugin>
+                    <groupId>de.qaware.maven</groupId>
+                    <artifactId>go-offline-maven-plugin</artifactId>
+                    <version>1.2.8</version>
+                    <configuration>
+                        <!-- not sure - the sources might be needed to be put inside the final artifact -->
+                        <!--<downloadSources>false</downloadSources>-->
+                        <downloadJavadoc>false</downloadJavadoc>
+                    </configuration>
+                </plugin>
 
             </plugins>
         </pluginManagement>

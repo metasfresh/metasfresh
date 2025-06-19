@@ -47,9 +47,9 @@
     <build>
         <plugins>
             <plugin>
+                <!-- Note that the dependencies and some overridable parameters are specified in the parent-pom's pluginManagement section -->
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-maven-plugin</artifactId>
-                <version>4.0.2</version>
                 <executions>
                     <execution>
                         <id>msv3.schema.v1</id>
@@ -70,31 +70,9 @@
                             <wsdlDirectory>${project.basedir}/src/main/resources/de/metas/vertical/pharma/vendor/gateway/msv3/schema/v1</wsdlDirectory>
                             <sourceDestDir>${project.basedir}/src/main/java-xjc</sourceDestDir>
                             <packageName>de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1</packageName>
-                            <keep>true</keep>
-                            <verbose>true</verbose>
-                            <extension>true</extension>
-                            <target>3.0</target>
-                            <args>
-                                <arg>-B-XautoNameResolution</arg>
-                            </args>
-                            <vmArgs>
-                                <vmArg>-Djakarta.xml.bind.verbose=true</vmArg>
-                            </vmArgs>
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                        <version>4.0.2</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                        <version>4.0.2</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>

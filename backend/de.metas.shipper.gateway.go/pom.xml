@@ -98,9 +98,9 @@
 	<build>
 		<plugins>
 			<plugin>
+				<!-- Note that the dependencies and some overridable parameters are specified in the parent-pom's pluginManagement section -->
 				<groupId>com.sun.xml.ws</groupId>
 				<artifactId>jaxws-maven-plugin</artifactId>
-				<version>4.0.2</version>
 				<executions>
 					<execution>
 						<goals>
@@ -113,27 +113,9 @@
 							<wsdlDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/go/schema</wsdlDirectory>
 							<sourceDestDir>${project.basedir}/src/main/java-xjc</sourceDestDir>
 							<packageName>de.metas.shipper.gateway.go.schema</packageName>
-							<keep>true</keep>
-							<extension>true</extension>
-							<target>3.0</target>
-							<vmArgs>
-								<vmArg>-Djakarta.xml.bind.verbose=true</vmArg>
-							</vmArgs>
 						</configuration>
 					</execution>
 				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>jakarta.xml.ws</groupId>
-						<artifactId>jakarta.xml.ws-api</artifactId>
-						<version>4.0.2</version>
-					</dependency>
-					<dependency>
-						<groupId>jakarta.xml.bind</groupId>
-						<artifactId>jakarta.xml.bind-api</artifactId>
-						<version>4.0.2</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 		</plugins>
 	</build>
