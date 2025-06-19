@@ -148,6 +148,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 				.createQueryBuilder(I_PP_Order_Qty.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Qty.COLUMN_PP_Order_ID, ppOrderId)
+				.orderBy(I_PP_Order_Qty.COLUMNNAME_PP_Order_Qty_ID)
 				.create()
 				.listImmutable(I_PP_Order_Qty.class);
 	}

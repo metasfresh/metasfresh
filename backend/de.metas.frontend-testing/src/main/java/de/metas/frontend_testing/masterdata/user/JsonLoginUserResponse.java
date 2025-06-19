@@ -12,4 +12,5 @@ public class JsonLoginUserResponse
 {
 	@NonNull String username;
 	@NonNull String password;
+	@NonNull String token;
 }

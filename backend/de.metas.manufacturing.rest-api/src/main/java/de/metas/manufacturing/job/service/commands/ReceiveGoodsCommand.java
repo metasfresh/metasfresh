@@ -163,6 +163,7 @@ public class ReceiveGoodsCommand
 				// NOTE: returning null because this receiving target is not re-usable
 				// i.e. receiving again to this HU is not supported
 				//return ReceivingTarget.builder().tuId(tuId).build();
+				//TODO: why do we have to clear the target?!
 				return null;
 			}
 			else

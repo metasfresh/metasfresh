@@ -63,7 +63,7 @@ test('To a new TU, manual input', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('mfg');
     await ManufacturingJobsListScreen.waitForScreen();
-    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+    const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
     await MaterialReceiptLineScreen.selectNewTUTarget({ tuPIItemProductTestId: masterdata.packingInstructions.BOM_PI.tuPIItemProductTestId });
@@ -79,6 +79,21 @@ test('To a new TU, manual input', async ({ page }) => {
         qtyReceived: '9 Stk',
         //catchWeight: '987 g', // not displayed, missing feature
     })
+    await Backend.expect({
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [
+                    { tu: 'tu1', qty: '9 PCE' },
+                ]
+            }
+        },
+        hus: {
+            'tu1': {
+                storages: { 'BOM': '9 PCE' },
+                attributes: { 'WeightNet': '0.987' }
+            }
+        }
+    })
 
     await ManufacturingJobScreen.complete();
 });
@@ -91,7 +106,7 @@ test('To a new TU, scanning L+M QR codes', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('mfg');
     await ManufacturingJobsListScreen.waitForScreen();
-    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+    const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
     await MaterialReceiptLineScreen.selectNewTUTarget({ tuPIItemProductTestId: masterdata.packingInstructions.BOM_PI.tuPIItemProductTestId });
@@ -104,10 +119,27 @@ test('To a new TU, scanning L+M QR codes', async ({ page }) => {
         expectGoBackToJob: false
     });
     await MaterialReceiptLineScreen.goBack();
+    await Backend.expect({
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [
+                    { tu: 'tu1', qty: '4 PCE' },
+                    { tu: 'tu1', qty: '1 PCE' },
+                    { tu: 'tu1', qty: '1 PCE' },
+                ]
+            }
+        },
+        hus: {
+            'tu1': {
+                storages: { 'BOM': '6 PCE' },
+                attributes: { 'WeightNet': '0.303' }
+            }
+        }
+    })
     await ManufacturingJobScreen.expectReceiveButton({
         index: 1,
         qtyToReceive: '100 Stk',
-        qtyReceived: '12 Stk', // 3 x 4 (4 is the standard qtyCUsPerTU of the TU)
+        qtyReceived: '6 Stk', // 3 x 4 (4 is the standard qtyCUsPerTU of the TU)
         //catchWeight: '303 g', // not displayed, missing feature
     })
 
@@ -131,18 +163,21 @@ test('To a new TU, scanning L+M QR codes from 2 manufacturing orders', async ({ 
 
         await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
         await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: mainProductsQRCode });
-        await MaterialReceiptLineScreen.receiveQty({ catchWeightQRCode: 'LMQ#1#0.101#08.11.2025#500', expectGoBackToJob: false });
+        await MaterialReceiptLineScreen.receiveQty({
+            catchWeightQRCode: ['LMQ#1#0.60#08.11.2025#500', 'LMQ#1#0.041#08.11.2025#500'],
+            expectGoBackToJob: false
+        });
         await MaterialReceiptLineScreen.goBack();
         await ManufacturingJobScreen.expectReceiveButton({
             index: 1,
             qtyToReceive: '100 Stk',
-            qtyReceived: '1 Stk',
+            qtyReceived: '2 Stk',
             //catchWeight: '101 g', // not displayed, missing feature
         })
         await Backend.expect({
             hus: {
                 [mainProductsQRCode]: {
-                    storages: { 'BOM': '1 PCE' },
+                    storages: { 'BOM': '2 PCE' },
                     attributes: { 'WeightNet': '0.101' }
                 }
             }
@@ -157,18 +192,21 @@ test('To a new TU, scanning L+M QR codes from 2 manufacturing orders', async ({ 
 
         await ManufacturingJobScreen.clickReceiveButton({ index: 1 }); // i.e., main product
         await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: mainProductsQRCode });
-        await MaterialReceiptLineScreen.receiveQty({ catchWeightQRCode: 'LMQ#1#0.030#09.11.2025#501', expectGoBackToJob: false });
+        await MaterialReceiptLineScreen.receiveQty({
+            catchWeightQRCode: ['LMQ#1#0.010#09.11.2025#501', 'LMQ#1#0.020#09.11.2025#501'],
+            expectGoBackToJob: false
+        });
         await MaterialReceiptLineScreen.goBack();
         await ManufacturingJobScreen.expectReceiveButton({
             index: 1,
             qtyToReceive: '100 Stk',
-            qtyReceived: '1 Stk',
+            qtyReceived: '2 Stk',
             //catchWeight: '30 g', // not displayed, missing feature
         })
         await Backend.expect({
             hus: {
                 [mainProductsQRCode]: {
-                    storages: { 'BOM': '2 PCE' },
+                    storages: { 'BOM': '4 PCE' },
                     attributes: { 'WeightNet': '0.131' }
                 }
             }
