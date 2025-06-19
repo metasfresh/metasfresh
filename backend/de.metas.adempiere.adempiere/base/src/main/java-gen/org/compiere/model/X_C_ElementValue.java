@@ -34,7 +34,19 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
-	/** 
+	@Override
+	public void setAccountConceptualName (final @Nullable java.lang.String AccountConceptualName)
+	{
+		set_Value (COLUMNNAME_AccountConceptualName, AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getAccountConceptualName()
+	{
+		return get_ValueAsString(COLUMNNAME_AccountConceptualName);
+	}
+
+	/**
 	 * AccountSign AD_Reference_ID=118
 	 * Reference name: C_ElementValue Account Sign
 	 */

@@ -31,10 +31,10 @@ WITH tax_accounts AS (SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
                                           ON vc.C_ValidCombination_ID IN (ta.T_Due_Acct, ta.T_Credit_Acct)
                       UNION
 
-                        SELECT C_ElementValue_ID from C_ElementValue
-                        WHERE AccountConceptualName IN ('T_Due_Acct', 'T_Credit_Acct')
+                      SELECT C_ElementValue_ID from C_ElementValue
+                      WHERE AccountConceptualName IN ('T_Due_Acct', 'T_Credit_Acct')
 
-                      )
+)
 SELECT fa.vatcode,
        fa.accountno,
        fa.accountname,
@@ -120,6 +120,6 @@ FROM (SELECT fa.vatcode                    AS vatcode,
                INNER JOIN AD_ClientInfo ci ON ci.AD_Client_ID = fa.ad_client_id
                INNER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
                INNER JOIN C_Currency cr ON acs.C_Currency_ID = cr.C_Currency_ID) AS fa
-    WHERE (fa.ad_table_id IN (get_Table_Id('SAP_GLJournal'), get_Table_Id('GL_Journal')) AND exists (select 1 from tax_accounts where tax_accounts.C_ElementValue_ID = fa.account_id) )
+WHERE (fa.ad_table_id IN (get_Table_Id('SAP_GLJournal'), get_Table_Id('GL_Journal')) AND exists (select 1 from tax_accounts where tax_accounts.C_ElementValue_ID = fa.account_id) )
    OR (fa.ad_table_id IN (get_Table_Id('C_Invoice'), get_Table_Id('C_AllocationHdr')) AND fa.accountconceptualname IN ('T_Due_Acct', 'T_Credit_Acct'))
 ;
