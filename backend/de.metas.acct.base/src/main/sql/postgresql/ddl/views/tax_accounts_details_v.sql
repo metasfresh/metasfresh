@@ -29,7 +29,7 @@ WITH tax_accounts AS (SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
                       FROM C_Tax_Acct ta
                                INNER JOIN C_ValidCombination vc
                                           ON vc.C_ValidCombination_ID IN (ta.T_Due_Acct, ta.T_Credit_Acct)
-                      UNION ALL
+                      UNION
 
                         SELECT C_ElementValue_ID from C_ElementValue
                         WHERE AccountConceptualName IN ('T_Due_Acct', 'T_Credit_Acct')
