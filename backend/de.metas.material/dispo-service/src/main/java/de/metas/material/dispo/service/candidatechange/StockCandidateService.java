@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -198,7 +199,7 @@ public class StockCandidateService
 		final MaterialDispoGroupId groupId = initialStockCandidate.getGroupId();
 		for (final Candidate stockCandidate : stockCandidatesToUpdate)
 		{
-			final Candidate mainCandidate = stockIdToMainCandidateMap.get(stockCandidate.getId());
+			@NonNull final Candidate mainCandidate = Objects.requireNonNull(stockIdToMainCandidateMap.get(stockCandidate.getId()));
 			final Candidate updatedStockCandidate = stockCandidate
 					.withQuantity(candidateRepositoryWriteService.getCurrentAtpAndUpdateQtyDetails(mainCandidate, stockCandidate, previousStockCandidate))
 					.withGroupId(groupId);
@@ -219,15 +220,15 @@ public class StockCandidateService
 				.collect(Collectors.toSet());
 
 		final ImmutableList<Candidate> mainCandidates = candidateRepositoryRetrieval.retrieveMainCandidatesForStockCandidates(idSet, parentIdSet);
-		final Map<CandidateId, Candidate> stockCandidateIdToCandidateMap = stockCandidatesToUpdate.stream()
+		final Map<CandidateId, Candidate> mainCandidateIdToCandidateMap = mainCandidates.stream()
 				.collect(Collectors.toMap(Candidate::getId, Functions.identity()));
 		final Map<CandidateId, Candidate> suppplyStockToMainCandidateMap = mainCandidates.stream()
 				.filter(mainCandidate -> !mainCandidate.getParentId().isNull() && !mainCandidate.getId().equals(mainCandidate.getParentId()))
 				.collect(Collectors.toMap(Candidate::getParentId, Functions.identity()));
 
 		final Map<CandidateId, Candidate> demandStockToMainCandidateMap = stockCandidatesToUpdate.stream()
-				.filter(stockCandidate -> stockCandidate.getParentId().isNull() && stockCandidateIdToCandidateMap.containsKey(stockCandidate.getParentId()))
-				.collect(Collectors.toMap(Candidate::getId, stockCandidate -> stockCandidateIdToCandidateMap.get(stockCandidate.getParentId())));
+				.filter(stockCandidate -> !stockCandidate.getParentId().isNull() && mainCandidateIdToCandidateMap.containsKey(stockCandidate.getParentId()))
+				.collect(Collectors.toMap(Candidate::getId, stockCandidate -> mainCandidateIdToCandidateMap.get(stockCandidate.getParentId())));
 		return ImmutableMap.<CandidateId, Candidate>builder()
 				.putAll(suppplyStockToMainCandidateMap)
 				.putAll(demandStockToMainCandidateMap)
