@@ -1020,6 +1020,6 @@ public class CandidateRepositoryWriteService
 				.matchExactStorageAttributesKey(true)
 				.build();
 
-		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(findPreviousStockQuery);
+		return candidateRepositoryRetrieval.retrievePreviousMatchForCandidateIdOrNull(findPreviousStockQuery, stockCandidate.getId());
 	}
 }
