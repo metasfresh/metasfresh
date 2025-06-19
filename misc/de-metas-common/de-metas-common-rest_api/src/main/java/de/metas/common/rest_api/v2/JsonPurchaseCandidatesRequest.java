@@ -33,11 +33,13 @@ import lombok.Value;
 
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Value
 @JsonDeserialize(builder = JsonPurchaseCandidatesRequest.JsonPurchaseCandidatesRequestBuilder.class)
 public class JsonPurchaseCandidatesRequest
 {
-	@Schema(required = true, //
+	@Schema(requiredMode = REQUIRED, //
 			description = "Specifies the purchase candidates to return the ordering status of.")
 	@JsonProperty("purchaseCandidates")
 	List<JsonPurchaseCandidateReference> purchaseCandidates;

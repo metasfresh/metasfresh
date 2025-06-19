@@ -34,11 +34,13 @@ import lombok.Value;
 
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class JsonPurchaseCandidateResponse
 {
-	@Schema(required = true)
+	@Schema(requiredMode = REQUIRED)
 	@JsonProperty("purchaseCandidates")
 	@Singular
 	List<JsonPurchaseCandidate> purchaseCandidates;
