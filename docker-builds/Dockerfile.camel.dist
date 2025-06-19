@@ -1,5 +1,6 @@
 ARG REFNAME=local
-FROM metasfresh/metas-mvn-camel:$REFNAME as camel
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
 COPY docker-builds/mvn/settings.xml /root/.m2/
 

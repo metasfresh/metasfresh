@@ -1,5 +1,6 @@
 ARG REFNAME=local
-FROM metasfresh/metas-mvn-camel:$REFNAME as camel
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
 FROM eclipse-temurin:21-jdk
 

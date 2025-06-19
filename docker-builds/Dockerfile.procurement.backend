@@ -1,7 +1,8 @@
 ARG REFNAME=local
-FROM metasfresh/metas-mvn-common:$REFNAME as common
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-mvn-common:$REFNAME AS common
 
-FROM maven:3.9.9-eclipse-temurin-21 as build
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 COPY --from=common /root/.m2 /root/.m2/
 
