@@ -18,6 +18,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +53,7 @@ public class AssertManufacturingExpectationsCommand
 
 		if (expectation.getReceivedHUs() != null)
 		{
-			final List<I_PP_Order_Qty> actuals = services.getPPOrderQtyForFinishedGoodsReceive(ppOrderId);
+			final ArrayList<I_PP_Order_Qty> actuals = new ArrayList<>(services.getPPOrderQtyForFinishedGoodsReceive(ppOrderId));
 			assertReceivedHUs(expectation.getReceivedHUs(), actuals);
 		}
 	}
@@ -63,9 +65,14 @@ public class AssertManufacturingExpectationsCommand
 				.orElseGet(() -> ppOrderIdentifier.toId(PPOrderId.class));
 	}
 
-	public void assertReceivedHUs(final List<JsonManufacturingExpectation.ReceivedHU> expectations, final List<I_PP_Order_Qty> actuals)
+	public void assertReceivedHUs(final List<JsonManufacturingExpectation.ReceivedHU> expectations, final ArrayList<I_PP_Order_Qty> actuals)
 	{
 		assertThat(actuals).hasSameSize(expectations);
+
+		// To have a predictable order
+		// NOTE: in some cases (don't know why) the PP_Order_Qty_ID is not respecting the order they were actually received ?!
+		// so, as a workaround we are ordering them in order the HUs were created.
+		actuals.sort(Comparator.comparing(I_PP_Order_Qty::getM_HU_ID));
 
 		softly(() -> {
 			softlyPutContext("expectations", expectations);
