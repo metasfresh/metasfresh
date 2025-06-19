@@ -171,6 +171,7 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 				.toBuilder()
 				.amount(interimLogAmount.subtract(reconciledAmountInInterimContractCurrencyWithSignApplied))
 				.quantity(Optional.ofNullable(interimContractEntry.getQuantity()).map(qty -> qty.subtract(reconciledAmountQty)).orElse(null))
+				.isBillable(false)
 				.build();
 		modularContractLogService.create(createInterimLogForOpenAmt);
 

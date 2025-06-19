@@ -162,7 +162,8 @@ public class PurchaseModularContractLog extends AbstractContractLog
 				.money(interimPriceActual.toMoney())
 				.uomId(interimPriceActual.getUomId())
 				.build();
-
+        //TODO check this one (Interim is created after modular so this would always be false, but the query looks wrong too)
+		//we could either update after interim log creation or check if interim will be created
 		final boolean interimContractLogExists = modularContractLogService.anyMatch(ModularContractLogQuery.builder()
 																							.flatrateTermId(modularContractId)
 																							.billable(true)
