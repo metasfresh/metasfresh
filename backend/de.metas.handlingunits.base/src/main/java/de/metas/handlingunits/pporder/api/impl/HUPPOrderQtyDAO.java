@@ -141,6 +141,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		return retrieveOrderQtys(Env.getCtx(), ppOrderId, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	@Cached(cacheName = I_PP_Order_Qty.Table_Name + "#by#PP_Order_ID", expireMinutes = 10)
 	ImmutableList<I_PP_Order_Qty> retrieveOrderQtys(@CacheCtx final Properties ctx, @NonNull final PPOrderId ppOrderId, @CacheTrx final String trxName)
 	{
