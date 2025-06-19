@@ -25,6 +25,7 @@ package de.metas.material.event.ddorder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -48,10 +49,11 @@ public class DDOrderDeletedEvent extends AbstractDDOrderEvent
 				null);
 	}
 
-	public static DDOrderDeletedEvent of(@NonNull final DDOrder ddOrder)
+	public static DDOrderDeletedEvent of(@NonNull final DDOrder ddOrder,
+										 @NonNull final UserId userId)
 	{
 		return builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getClientAndOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(ddOrder.getClientAndOrgId(), userId))
 				.ddOrder(ddOrder)
 				.build();
 	}
