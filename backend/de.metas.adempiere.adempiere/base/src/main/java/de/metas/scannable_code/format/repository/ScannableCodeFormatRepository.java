@@ -47,7 +47,7 @@ public class ScannableCodeFormatRepository
 
 	public int delete(@NotNull final ScannableCodeFormatQuery query)
 	{
-		final ImmutableSet<ScannableCodeFormatId> formatIds = toSqlQuery(query).create().listIds(ScannableCodeFormatId::ofRepoId);
+		final ImmutableSet<ScannableCodeFormatId> formatIds = toSqlQuery(query).create().idsAsSet(ScannableCodeFormatId::ofRepoId);
 		if (formatIds.isEmpty())
 		{
 			return 0;

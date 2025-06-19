@@ -221,6 +221,6 @@ public class PickingSlotDAO implements IPickingSlotDAO
 				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(PickingSlotId::ofRepoId);
+				.idsAsSet(PickingSlotId::ofRepoId);
 	}
 }

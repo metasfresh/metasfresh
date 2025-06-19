@@ -1028,7 +1028,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	{
 		return existingSubscriptionsQueryBuilder(orgId, bPartnerId, date)
 				.create()
-				.listIds(FlatrateTermId::ofRepoId);
+				.idsAsSet(FlatrateTermId::ofRepoId);
 	}
 
 	private IQueryBuilder<I_C_Flatrate_Term> existingSubscriptionsQueryBuilder(@NonNull final OrgId orgId, @NonNull final BPartnerId bPartnerId, @NonNull final Instant date)

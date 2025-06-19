@@ -361,6 +361,6 @@ public class StockCandidateService
 	{
 		final CandidatesQuery previousStockQuery = createStockQueryUntilDate(candidate);
 
-		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(previousStockQuery);
+		return candidateRepositoryRetrieval.retrievePreviousMatchForCandidateIdOrNull(previousStockQuery, candidate.getId());
 	}
 }

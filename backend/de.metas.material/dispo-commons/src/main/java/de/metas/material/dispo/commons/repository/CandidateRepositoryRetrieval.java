@@ -372,6 +372,30 @@ public class CandidateRepositoryRetrieval
 		return fromCandidateRecordOrNull(candidateRecordOrNull);
 	}
 
+	@Nullable
+	public Candidate retrievePreviousMatchForCandidateIdOrNull(@NonNull final CandidatesQuery query, @NonNull final CandidateId candidateId)
+	{
+		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
+
+		final ImmutableList<CandidateId> orderedCandidateIds = addOrderingLatestFirst(queryBuilderWithoutOrdering)
+				.create()
+				.listIds(CandidateId::ofRepoId);
+		if (orderedCandidateIds.isEmpty())
+		{
+			return null;
+		}
+		final CandidateId previousCandidateId;
+		if (!orderedCandidateIds.contains(candidateId))
+		{
+			previousCandidateId = orderedCandidateIds.get(orderedCandidateIds.size() - 1);
+		}
+		else
+		{
+			previousCandidateId = orderedCandidateIds.get(orderedCandidateIds.indexOf(candidateId) - 1);
+		}
+		return retrieveLatestMatchOrNull(CandidatesQuery.fromId(previousCandidateId));
+	}
+
 	@NonNull
 	public Optional<Candidate> retrieveLatestMatch(@NonNull final CandidatesQuery query)
 	{

@@ -608,7 +608,7 @@ import java.util.Set;
 	public ImmutableSet<HuId> listIds()
 	{
 		final IQuery<I_M_HU> query = createQuery();
-		return query.listIds(HuId::ofRepoId);
+		return query.idsAsSet(HuId::ofRepoId);
 	}
 
 	@Override

@@ -199,7 +199,7 @@ public class UserDAO implements IUserDAO
 				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_EMail, emailNorm)
 				.addInArrayFilter(org.compiere.model.I_AD_User.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM, adClientId)
 				.create()
-				.listIds(UserId::ofRepoId);
+				.idsAsSet(UserId::ofRepoId);
 
 		if (userIds.isEmpty())
 		{
@@ -241,7 +241,7 @@ public class UserDAO implements IUserDAO
 				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsSystemUser, true)
 				.orderByDescending(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
-				.listIds(UserId::ofRepoId);
+				.idsAsSet(UserId::ofRepoId);
 	}
 
 	@Override
@@ -319,7 +319,7 @@ public class UserDAO implements IUserDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_C_Job_ID, jobId)
 				.create()
-				.listIds(UserId::ofRepoId);
+				.idsAsSet(UserId::ofRepoId);
 	}
 
 	private Optional<OrgMappingId> getOrgMappingId(@NonNull final UserId sourceUserId)
