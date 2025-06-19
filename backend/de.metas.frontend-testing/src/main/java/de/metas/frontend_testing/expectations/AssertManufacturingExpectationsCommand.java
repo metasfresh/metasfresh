@@ -67,12 +67,18 @@ public class AssertManufacturingExpectationsCommand
 	{
 		assertThat(actuals).hasSameSize(expectations);
 
-		for (int i = 0; i < expectations.size(); i++)
-		{
-			final JsonManufacturingExpectation.ReceivedHU expectation = expectations.get(i);
-			final I_PP_Order_Qty actual = actuals.get(i);
-			assertReceivedHU(expectation, actual);
-		}
+		softly(() -> {
+			softlyPutContext("expectations", expectations);
+			softlyPutContext("actuals", actuals);
+			for (int i = 0; i < expectations.size(); i++)
+			{
+				softlyPutContext("index", i);
+
+				final JsonManufacturingExpectation.ReceivedHU expectation = expectations.get(i);
+				final I_PP_Order_Qty actual = actuals.get(i);
+				assertReceivedHU(expectation, actual);
+			}
+		});
 	}
 
 	private void assertReceivedHU(final JsonManufacturingExpectation.ReceivedHU expectation, final I_PP_Order_Qty actual)
