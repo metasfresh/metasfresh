@@ -183,6 +183,7 @@ public class StockCandidateService
 		{
 			return;
 		}
+		Check.assume(initialStockCandidate.getType().isStock(), "Initial candidate's type shall be stock; initialCandidate={}", initialStockCandidate);
 
 		final CandidatesQuery query = createStockQueryAfterDate(saveResult);
 		final List<Candidate> stockCandidatesToUpdate = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
