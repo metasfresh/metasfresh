@@ -30,11 +30,18 @@ export const HUConsolidationJobScreen = {
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {
         await page.getByTestId('targetLU-button').tap();
     }),
-    setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
+    setTargetLU: async ({ lu, qrCode }) => await step(`${NAME} - Set target LU to ${lu ?? qrCode}`, async () => {
         await HUConsolidationJobScreen.clickLUTargetButton();
         await SelectHUConsolidationTargetScreen.waitForScreen();
-        await SelectHUConsolidationTargetScreen.clickLUButton({ lu });
-        await HUConsolidationJobScreen.waitForScreen();
+
+        if (lu != null) {
+            await SelectHUConsolidationTargetScreen.clickLUButton({ lu });
+            await HUConsolidationJobScreen.waitForScreen();
+        } else if (qrCode != null) {
+            await SelectHUConsolidationTargetScreen.scanQRCode({ qrCode });
+        } else {
+            throw new Error("No LU or QR code specified.")
+        }
     }),
     closeTargetLU: async () => await step(`${NAME} - Close target LU`, async () => {
         await HUConsolidationJobScreen.clickLUTargetButton();

@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("UnusedReturnValue")
 public class SoftAssertions
@@ -28,6 +29,7 @@ public class SoftAssertions
 
 	private void collectFailure(@NonNull final Failure failure)
 	{
+		failure.putContext(context);
 		failures.add(failure);
 	}
 
@@ -55,7 +57,8 @@ public class SoftAssertions
 		}
 		else if (failures.size() == 1)
 		{
-			return Optional.of(failures.get(0));
+			final Failure failure = failures.get(0).removeContext(context);
+			return Optional.of(failure);
 		}
 		else
 		{
@@ -63,10 +66,21 @@ public class SoftAssertions
 					Failure.builder()
 							.message("Multiple errors occurred")
 							.context(context)
-							.causes(failures)
+							.causes(failures.stream()
+									.map(failure -> failure.removeContext(context))
+									.collect(Collectors.toList()))
 							.build()
 			);
 		}
 	}
 
+	public void fail(@NonNull final String message)
+	{
+		collectFailure(
+				Failure.builder()
+						.message(message)
+						.context(context)
+						.build()
+		);
+	}
 }

@@ -2,6 +2,7 @@ import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEO
 import { expect } from '@playwright/test';
 import { test } from '../../../../playwright.config';
 import { HUConsolidationJobScreen } from './HUConsolidationJobScreen';
+import { ScanHUConsolidationTargetScreen } from './ScanHUConsolidationTargetScreen';
 
 const NAME = 'SelectHUConsolidationTargetScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -15,6 +16,17 @@ export const SelectHUConsolidationTargetScreen = {
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
+    }),
+
+    scanQRCode: async ({ qrCode }) => await step(`${NAME} - Scan QR code`, async () => {
+        await SelectHUConsolidationTargetScreen.clickScanQRCodeButton();
+        await ScanHUConsolidationTargetScreen.waitForScreen();
+        await ScanHUConsolidationTargetScreen.typeQRCode({ qrCode });
+        await HUConsolidationJobScreen.waitForScreen();
+    }),
+
+    clickScanQRCodeButton: async () => await step(`${NAME} - Click Scan QR code button`, async () => {
+        await page.getByTestId('existing-hu-button').tap();
     }),
 
     clickLUButton: async ({ lu }) => await step(`${NAME} - Click LU button`, async () => {
