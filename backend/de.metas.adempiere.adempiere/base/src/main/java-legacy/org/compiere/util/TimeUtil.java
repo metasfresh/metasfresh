@@ -1922,6 +1922,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null -> !null")
 	public static Instant asInstant(@Nullable final Object obj)
 	{
 		return asInstant(obj, SystemTime.zoneId());
@@ -1996,6 +1997,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static Instant asInstant(
 			@Nullable final Object obj,
 			@NonNull final ZoneId zoneId)

@@ -14,6 +14,14 @@ public class SoftAssertions
 	private final LinkedHashMap<String, Object> context = new LinkedHashMap<>();
 	private final ArrayList<Failure> failures = new ArrayList<>();
 
+	public SoftAssertions(@Nullable final SoftAssertions parent)
+	{
+		if (parent != null)
+		{
+			this.context.putAll(parent.context);
+		}
+	}
+
 	public SoftAssertions putContext(@NonNull final String key, @NonNull final Object value)
 	{
 		context.put(key, value);
@@ -57,7 +65,7 @@ public class SoftAssertions
 		}
 		else if (failures.size() == 1)
 		{
-			final Failure failure = failures.get(0).removeContext(context);
+			final Failure failure = failures.get(0);
 			return Optional.of(failure);
 		}
 		else

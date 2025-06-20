@@ -75,6 +75,7 @@ public class ReceiveGoodsCommand
 	final @NonNull BigDecimal qtyToReceiveBD;
 	final @NonNull ZonedDateTime date;
 	final @Nullable LocalDate bestBeforeDate;
+	final @Nullable LocalDate productionDate;
 	final @Nullable String lotNo;
 	final @Nullable Quantity catchWeight;
 	final boolean isBarcodeScan;
@@ -107,6 +108,7 @@ public class ReceiveGoodsCommand
 		this.qtyToReceiveBD = request.getQtyToReceiveBD();
 		this.date = request.getDate();
 		this.bestBeforeDate = request.getBestBeforeDate();
+		this.productionDate = request.getProductionDate();
 		this.lotNo = request.getLotNo();
 		this.catchWeight = request.getCatchWeight();
 		this.isBarcodeScan = request.isBarcodeScan();
@@ -321,6 +323,7 @@ public class ReceiveGoodsCommand
 
 		StringUtils.trimBlankToOptional(lotNo).ifPresent(huProducer::lotNumber);
 		Optional.ofNullable(bestBeforeDate).ifPresent(huProducer::bestBeforeDate);
+		Optional.ofNullable(productionDate).ifPresent(huProducer::productionDate);
 
 		if (Check.isNotBlank(lotNo))
 		{

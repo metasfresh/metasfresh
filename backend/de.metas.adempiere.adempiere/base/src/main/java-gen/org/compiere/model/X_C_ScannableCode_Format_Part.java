@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO implements I_C_ScannableCode_Format_Part, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1186916345L;
+	private static final long serialVersionUID = -1991241075L;
 
     /** Standard Constructor */
     public X_C_ScannableCode_Format_Part (final Properties ctx, final int C_ScannableCode_Format_Part_ID, @Nullable final String trxName)
@@ -117,6 +117,8 @@ public class X_C_ScannableCode_Format_Part extends org.compiere.model.PO impleme
 	public static final String DATATYPE_Ignored = "IGNORE";
 	/** Constant = CONSTANT */
 	public static final String DATATYPE_Constant = "CONSTANT";
+	/** ProductionDate = PRODUCTION_DATE */
+	public static final String DATATYPE_ProductionDate = "PRODUCTION_DATE";
 	@Override
 	public void setDataType (final java.lang.String DataType)
 	{

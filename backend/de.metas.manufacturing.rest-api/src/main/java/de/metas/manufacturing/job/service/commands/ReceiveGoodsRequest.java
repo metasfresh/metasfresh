@@ -43,6 +43,7 @@ public class ReceiveGoodsRequest
 	@NonNull BigDecimal qtyToReceiveBD;
 	@NonNull ZonedDateTime date;
 	@Nullable LocalDate bestBeforeDate;
+	@Nullable LocalDate productionDate;
 	@Nullable String lotNo;
 	@Nullable Quantity catchWeight;
 	boolean isBarcodeScan;

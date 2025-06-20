@@ -58,5 +58,7 @@ public interface IPPOrderReceiptHUProducer
 
 	IPPOrderReceiptHUProducer bestBeforeDate(@Nullable LocalDate bestBeforeDate);
 
+	IPPOrderReceiptHUProducer productionDate(@Nullable LocalDate productionDate);
+
 	Set<PPCostCollectorId> getCreatedCostCollectorIds();
 }

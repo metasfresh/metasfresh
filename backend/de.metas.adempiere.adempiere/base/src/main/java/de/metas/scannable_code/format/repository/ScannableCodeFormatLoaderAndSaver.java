@@ -141,7 +141,7 @@ class ScannableCodeFormatLoaderAndSaver
 		{
 			builder.constantValue(record.getConstantValue());
 		}
-		else if (type == ScannableCodeFormatPartType.BestBeforeDate)
+		else if (type.isDate())
 		{
 			builder.dateFormat(PatternedDateTimeFormatter.ofNullablePattern((record.getDataFormat())));
 		}

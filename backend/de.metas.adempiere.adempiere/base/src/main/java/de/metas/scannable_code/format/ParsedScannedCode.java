@@ -19,4 +19,5 @@ public class ParsedScannedCode
 	@Nullable BigDecimal weightKg;
 	@Nullable String lotNo;
 	@Nullable LocalDate bestBeforeDate;
+	@Nullable LocalDate productionDate;
 }

@@ -96,6 +96,7 @@ export const updateManufacturingReceiptQty = ({
   catchWeight,
   catchWeightUom,
   bestBeforeDate,
+  productionDate,
   lotNo,
   isBarcodeScan,
 }) => {
@@ -108,6 +109,7 @@ export const updateManufacturingReceiptQty = ({
     catchWeight,
     catchWeightUom,
     bestBeforeDate,
+    productionDate,
     lotNo,
     isBarcodeScan,
   });
@@ -129,6 +131,7 @@ export const updateManufacturingReceiptQty = ({
         catchWeight,
         catchWeightUomSymbol: catchWeightUom,
         bestBeforeDate,
+        productionDate,
         lotNo,
         isBarcodeScan,
       },

@@ -1,6 +1,5 @@
 package de.metas.frontend_testing.expectations;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.frontend_testing.expectations.request.JsonPickingSlotExpectation;
 import de.metas.frontend_testing.expectations.request.JsonPickingSlotQueueItemExpectation;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -10,15 +9,18 @@ import de.metas.handlingunits.picking.slot.PickingSlotQueueItem;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
+import static de.metas.frontend_testing.expectations.assertions.Assertions.fail;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softly;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softlyPutContext;
 
@@ -71,7 +73,7 @@ public class AssertPickingSlotExpectationsCommand
 			@NonNull final List<JsonPickingSlotQueueItemExpectation> expectations,
 			@NonNull final PickingSlotQueue actual)
 	{
-		final ImmutableList<PickingSlotQueueItem> actualItems = actual.getItems();
+		final LinkedHashMap<HuId, PickingSlotQueueItem> actualItems = CollectionUtils.uniqueLinkedHashMap(actual.getItems().stream(), PickingSlotQueueItem::getHuId);
 
 		assertThat(actualItems).as("picking slot queue").hasSameSize(expectations);
 		if (actualItems.size() != expectations.size())
@@ -81,13 +83,27 @@ public class AssertPickingSlotExpectationsCommand
 
 		for (int i = 0; i < expectations.size(); i++)
 		{
-			final JsonPickingSlotQueueItemExpectation expectation = expectations.get(i);
-			final PickingSlotQueueItem actualItem = actualItems.get(i);
+			softlyPutContext("index", i);
 
-			if (expectation.getHu() != null)
+			final JsonPickingSlotQueueItemExpectation expectation = expectations.get(i);
+			softlyPutContext("expectation", expectation);
+
+			final HuId expectedHuId = context.getOptionalId(expectation.getHu(), HuId.class).orElse(null);
+			if (expectedHuId != null)
 			{
-				@NonNull final HuId huIdActual = actualItem.getHuId();
-				context.putSameOrMissingId("M_HU_ID", expectation.getHu(), huIdActual, HuId.class);
+				softlyPutContext("expectedHuId", expectedHuId);
+				final PickingSlotQueueItem actualItem = actualItems.remove(expectedHuId);
+				if (actualItem == null)
+				{
+					fail("HU " + expectation.getHu() + "/" + expectedHuId + " not found in picking slot queue");
+				}
+			}
+			else
+			{
+				final HuId actualHuId = actualItems.keySet().iterator().next();
+				final PickingSlotQueueItem actualItem = actualItems.remove(actualHuId);
+				softlyPutContext("actualItem", actualItem);
+				context.putSameOrMissingId("M_HU_ID", expectation.getHu(), actualHuId, HuId.class);
 			}
 		}
 
