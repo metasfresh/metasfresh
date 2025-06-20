@@ -28,6 +28,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 
@@ -66,6 +67,8 @@ public interface IHUStatusBL extends ISingletonService
 	void assertLocatorChangeIsAllowed(I_M_HU huRecord, String huStatus);
 
 	boolean isStatusPlanned(I_M_HU huRecord);
+
+	boolean isStatusActiveOrPicked(@Nullable I_M_HU huRecord);
 
 	boolean isStatusActive(I_M_HU huRecord);
 

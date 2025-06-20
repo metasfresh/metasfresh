@@ -1,15 +1,16 @@
 import React from 'react';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { huConsolidationJobLocation } from '../routes';
+import { huConsolidationJobLocation, scanTargetScreenLocation } from '../routes';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import Spinner from '../../../components/Spinner';
 import PropTypes from 'prop-types';
 import { useAvailableTargets } from '../actions/useAvailableTargets';
 import { useCurrentTarget } from '../actions/useCurrentTarget';
+import { trl } from '../../../utils/translations';
 
 export const SelectHUConsolidationTargetScreen = () => {
-  const { history, wfProcessId, activityId } = useScreenDefinition({
+  const { history, applicationId, wfProcessId, activityId } = useScreenDefinition({
     screenId: 'SelectHUConsolidationTargetScreen',
     captionKey: 'huConsolidation.SelectHUConsolidationTargetScreen.caption',
     back: huConsolidationJobLocation,
@@ -20,12 +21,22 @@ export const SelectHUConsolidationTargetScreen = () => {
   const onCloseTargetClicked = () => {
     closeTarget({ wfProcessId }).then(() => history.goBack());
   };
+  const onScanTargetClicked = () => {
+    history.goTo(scanTargetScreenLocation({ applicationId, wfProcessId, activityId }));
+    console.log('onScanTargetClicked');
+  };
 
   return (
     <div className="section pt-2">
       {currentTarget && (
         <CurrentTarget disabled={isProcessing} onPrintLabel={printLabel} onCloseTarget={onCloseTargetClicked} />
       )}
+      <ButtonWithIndicator
+        caption={trl('huConsolidation.SelectHUConsolidationTargetScreen.scanQRCode')}
+        onClick={onScanTargetClicked}
+        testId="existing-hu-button"
+      />
+
       {!currentTarget && <NewTargets disabled={isProcessing} wfProcessId={wfProcessId} />}
     </div>
   );

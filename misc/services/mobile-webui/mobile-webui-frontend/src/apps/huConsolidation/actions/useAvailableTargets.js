@@ -1,11 +1,8 @@
 import { useQuery } from '../../../hooks/useQuery';
 import * as api from '../api';
-import { useDispatch } from 'react-redux';
-import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { useSetCurrentTarget } from './useSetCurrentTarget';
 
 export const useAvailableTargets = ({ wfProcessId }) => {
-  const dispatch = useDispatch();
-
   const { isPending: isTargetsLoading, data: targets } = useQuery({
     queryKey: [wfProcessId],
     queryFn: () => {
@@ -13,11 +10,11 @@ export const useAvailableTargets = ({ wfProcessId }) => {
     },
   });
 
+  const setTarget = useSetCurrentTarget({ wfProcessId });
+
   return {
     isTargetsLoading,
     targets,
-    setTarget: ({ target }) => {
-      return api.setTarget({ wfProcessId, target }).then((wfProcess) => dispatch(updateWFProcess({ wfProcess })));
-    },
+    setTarget,
   };
 };
