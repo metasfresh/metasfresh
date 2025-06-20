@@ -3,6 +3,7 @@ import {
   ATTR_bestBeforeDate,
   ATTR_displayable,
   ATTR_lotNo,
+  ATTR_productionDate,
   ATTR_productNo,
   ATTR_weightNet,
   ATTR_weightNetUOM,
@@ -96,6 +97,13 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     case 'BEST_BEFORE_DATE':
       return {
         [ATTR_bestBeforeDate]: parseLocalDate({
+          string: valueStr,
+          dateFormat: formatPart.dateFormat ?? DEFAULT_dateFormat,
+        }),
+      };
+    case 'PRODUCTION_DATE':
+      return {
+        [ATTR_productionDate]: parseLocalDate({
           string: valueStr,
           dateFormat: formatPart.dateFormat ?? DEFAULT_dateFormat,
         }),

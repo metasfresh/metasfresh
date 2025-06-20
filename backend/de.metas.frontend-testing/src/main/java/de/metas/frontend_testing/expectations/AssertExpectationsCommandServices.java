@@ -2,6 +2,7 @@ package de.metas.frontend_testing.expectations;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -12,6 +13,7 @@ import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
@@ -65,6 +67,11 @@ public class AssertExpectationsCommandServices
 		return shipmentScheduleAllocBL.extractQtyPicked(alloc, productId);
 	}
 
+	public I_M_HU getHUById(@NonNull final HuId huId)
+	{
+		return handlingUnitsBL.getById(huId);
+	}
+
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
 		return huQRCodeService.getHuIdByQRCode(qrCode);
@@ -75,9 +82,14 @@ public class AssertExpectationsCommandServices
 		return handlingUnitsBL.getStorageFactory().getStorage(handlingUnitsBL.getById(huId));
 	}
 
-	public ImmutableAttributeSet getAttributes(@NonNull final HuId huId)
+	public IHUProductStorage getSingleProductStorage(@NonNull final I_M_HU hu)
 	{
-		return handlingUnitsBL.getImmutableAttributeSet(handlingUnitsBL.getById(huId));
+		return handlingUnitsBL.getSingleHUProductStorage(hu);
+	}
+
+	public ImmutableAttributeSet getAttributes(@NonNull final I_M_HU hu)
+	{
+		return handlingUnitsBL.getImmutableAttributeSet(hu);
 	}
 
 	public PickingSlotQueue getPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId)
@@ -89,4 +101,6 @@ public class AssertExpectationsCommandServices
 	{
 		return huPPOrderQtyDAO.retrieveOrderQtyForFinishedGoodsReceive(ppOrderId);
 	}
+
+	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
 }
