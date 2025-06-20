@@ -225,7 +225,9 @@ public class StockCandidateService
 				.collect(Collectors.toMap(Candidate::getParentId, Functions.identity()));
 
 		final Map<CandidateId, Candidate> demandStockToMainCandidateMap = stockCandidatesToUpdate.stream()
-				.filter(stockCandidate -> !stockCandidate.getParentId().isNull() && mainCandidateIdToCandidateMap.containsKey(stockCandidate.getParentId()))
+				.filter(stockCandidate -> !stockCandidate.getParentId().isNull()
+						&& mainCandidateIdToCandidateMap.containsKey(stockCandidate.getParentId())
+						&& !suppplyStockToMainCandidateMap.containsKey(stockCandidate.getId()))
 				.collect(Collectors.toMap(Candidate::getId, stockCandidate -> mainCandidateIdToCandidateMap.get(stockCandidate.getParentId())));
 		return ImmutableMap.<CandidateId, Candidate>builder()
 				.putAll(suppplyStockToMainCandidateMap)

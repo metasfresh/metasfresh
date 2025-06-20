@@ -489,10 +489,10 @@ public class StockCandidateServiceTests
 		}
 
 		// now "move" t10 => t40
-		final Candidate t10ToT40Candidate = t10SaveResult.getMainSaveResult().getCandidate().withDate(t40).withQuantity(new BigDecimal("3"));
+		final Candidate t10ToT40Candidate = t10SaveResult.getMainSaveResult().getCandidate().withDate(t40);
 		candidateRepositoryWriteService.updateCandidateById(t10ToT40Candidate);
 		// this would be propagated by SupplyCandidateHandler#onCandidateNewOrChange
-		final Candidate t40ToT10StockCandidate = t10SaveResult.getStockSaveResult().getCandidate().withDate(t40).withQuantity(new BigDecimal("3"));
+		final Candidate t40ToT10StockCandidate = t10SaveResult.getStockSaveResult().getCandidate().withDate(t40);
 		final CandidateSaveResult t10ToT40SaveResult = stockCandidateService.updateQtyAndDate(t40ToT10StockCandidate);
 
 		// invoke the method under test
