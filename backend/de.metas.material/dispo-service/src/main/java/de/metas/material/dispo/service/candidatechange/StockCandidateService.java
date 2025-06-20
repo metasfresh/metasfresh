@@ -175,17 +175,15 @@ public class StockCandidateService
 
 	/**
 	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code materialDescriptor}.
-	 * Iterate them and add the given {@code delta} to their quantity.
+	 * Iterate them and apply the previous stock qty + current document qty.
 	 */
 	public void applyDeltaToMatchingLaterStockCandidates(@NonNull final CandidateSaveResult saveResult)
 	{
-		final Candidate initialStockCandidate = saveResult.getCandidate();
-		if (initialStockCandidate.isSimulated())
+		final Candidate initialCandidate = saveResult.getCandidate();
+		if (initialCandidate.isSimulated())
 		{
 			return;
 		}
-		Check.assume(initialStockCandidate.getType().isStock(), "Initial candidate's type shall be stock; initialCandidate={}", initialStockCandidate);
-
 		final CandidatesQuery query = createStockQueryAfterDate(saveResult);
 		final List<Candidate> stockCandidatesToUpdate = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		if (stockCandidatesToUpdate.isEmpty())
@@ -196,7 +194,7 @@ public class StockCandidateService
 		final ImmutableMap<CandidateId, Candidate> stockIdToMainCandidateMap = computeStockIdToMainCandidateMap(stockCandidatesToUpdate);
 
 		Candidate previousStockCandidate = getPreviousStockOrNullForCandidate(stockCandidatesToUpdate.get(0));
-		final MaterialDispoGroupId groupId = initialStockCandidate.getGroupId();
+		final MaterialDispoGroupId groupId = initialCandidate.getGroupId();
 		for (final Candidate stockCandidate : stockCandidatesToUpdate)
 		{
 			@NonNull final Candidate mainCandidate = Objects.requireNonNull(stockIdToMainCandidateMap.get(stockCandidate.getId()));
