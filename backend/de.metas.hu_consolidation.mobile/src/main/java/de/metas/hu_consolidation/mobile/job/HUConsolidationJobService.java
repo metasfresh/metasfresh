@@ -8,6 +8,7 @@ import de.metas.hu_consolidation.mobile.job.commands.complete.CompleteCommand;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateCommand;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content.GetPickingSlotContentCommand;
+import de.metas.hu_consolidation.mobile.job.commands.set_target.SetTargetCommand;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
@@ -92,10 +93,14 @@ public class HUConsolidationJobService
 
 	public HUConsolidationJob setTarget(@NonNull final HUConsolidationJobId jobId, @Nullable final HUConsolidationTarget target, @NonNull UserId callerId)
 	{
-		return jobRepository.updateById(jobId, job -> {
-			job.assertUserCanEdit(callerId);
-			return job.withCurrentTarget(target);
-		});
+		return SetTargetCommand.builder()
+				.jobRepository(jobRepository)
+				//
+				.callerId(callerId)
+				.jobId(jobId)
+				.target(target)
+				//
+				.build().execute();
 	}
 
 	public HUConsolidationJob closeTarget(@NonNull final HUConsolidationJobId jobId, @NonNull final UserId callerId)

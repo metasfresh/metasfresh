@@ -7,7 +7,11 @@
   "SelectHUConsolidationTargetScreen": {
     "caption": "Select Target",
     "closeTarget": "Schließen",
-    "printLabel": "Drucken"
+    "printLabel": "Drucken",
+    "scanQRCode": "QR scannen"
+  },
+  "ScanHUConsolidationTargetScreen": {
+    "caption": "QR scannen"
   },
   "PickingSlotScreen": {
     "consolidateAll": "Consolidate All"

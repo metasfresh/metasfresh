@@ -63,6 +63,24 @@ public class Failure
 		return this;
 	}
 
+	public Failure putContext(@NonNull final Map<String, Object> context)
+	{
+		this.context.putAll(context);
+		return this;
+	}
+
+	public Failure removeContext(@NonNull final Map<String, Object> contextToRemove)
+	{
+		if (contextToRemove.isEmpty())
+		{
+			return this;
+		}
+
+		contextToRemove.forEach(this.context::remove);
+
+		return this;
+	}
+
 	public AdempiereException toException()
 	{
 		return new AdempiereException(message)
