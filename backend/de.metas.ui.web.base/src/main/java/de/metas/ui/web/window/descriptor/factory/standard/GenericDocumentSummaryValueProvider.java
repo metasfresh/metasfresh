@@ -221,9 +221,9 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 			{
 				return null;
 			}
-			else if (fieldValue instanceof LookupValue)
+			else if (fieldValue instanceof LookupValue value)
 			{
-				return ((LookupValue)fieldValue).getDisplayName();
+				return value.getDisplayName();
 			}
 			else
 			{

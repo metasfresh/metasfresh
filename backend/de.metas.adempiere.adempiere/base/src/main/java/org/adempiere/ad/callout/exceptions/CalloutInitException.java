@@ -2,6 +2,8 @@ package org.adempiere.ad.callout.exceptions;
 
 import de.metas.util.Check;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -36,9 +38,9 @@ public class CalloutInitException extends CalloutException
 	{
 		Check.assumeNotNull(throwable, "throwable not null");
 
-		if (throwable instanceof CalloutInitException)
+		if (throwable instanceof CalloutInitException exception)
 		{
-			return (CalloutInitException)throwable;
+			return exception;
 		}
 		
 		final Throwable cause = extractCause(throwable);
@@ -49,10 +51,11 @@ public class CalloutInitException extends CalloutException
 		
 		return new CalloutInitException(extractMessage(throwable), cause);
 	}
-	
+
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -5929639632737615796L;
 
 	public CalloutInitException(final String message)

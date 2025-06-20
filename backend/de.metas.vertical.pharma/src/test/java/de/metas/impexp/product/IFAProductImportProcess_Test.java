@@ -148,7 +148,7 @@ public class IFAProductImportProcess_Test
 				.isNarcotic(true)
 				.isTFG(true)
 				.build();
-		IFAProductImportTestHelper.assertIFAProductFlags(importRecords.get(0), flags);
+		IFAProductImportTestHelper.assertIFAProductFlags(importRecords.getFirst(), flags);
 
 		flags = IFAFlags.builder()
 				.isColdChain(false)

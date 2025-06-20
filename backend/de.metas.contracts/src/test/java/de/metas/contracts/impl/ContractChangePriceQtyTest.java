@@ -106,7 +106,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	private void deliverFirstSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		final List<I_C_SubscriptionProgress> subscriptionProgress = contractsDAO.getSubscriptionProgress(flatrateTerm);
-		final I_C_SubscriptionProgress firstSubscription = subscriptionProgress.get(0);
+		final I_C_SubscriptionProgress firstSubscription = subscriptionProgress.getFirst();
 		firstSubscription.setStatus(X_C_SubscriptionProgress.STATUS_Open);
 		save(firstSubscription);
 

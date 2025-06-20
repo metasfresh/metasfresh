@@ -48,7 +48,7 @@ public class PlainAggregationDAO extends AggregationDAO
 		{
 			return null;
 		}
-		return list.get(0);
+		return list.getFirst();
 	}
 
 	public I_C_Invoice_Candidate_Agg getDefaultAgg()

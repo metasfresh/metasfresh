@@ -83,7 +83,7 @@ public class DocLineSortProductIdsComparatorTest extends AbstractDocLineSortItem
 				.findProductIdsComparator();
 		Collections.sort(orderedProductLines, productIdsComparator);
 
-		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(0).intValue());
+		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.getFirst().intValue());
 		Assert.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(1).intValue());
 		Assert.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(2).intValue());
 		Assert.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(3).intValue());
@@ -100,7 +100,7 @@ public class DocLineSortProductIdsComparatorTest extends AbstractDocLineSortItem
 				.findProductIdsComparator();
 		Collections.sort(orderedProductLines, productIdsComparator);
 
-		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(0).intValue());
+		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.getFirst().intValue());
 		Assert.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(1).intValue());
 		Assert.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(2).intValue());
 		Assert.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(3).intValue());
@@ -117,7 +117,7 @@ public class DocLineSortProductIdsComparatorTest extends AbstractDocLineSortItem
 				.findProductIdsComparator();
 		Collections.sort(orderedProductLines, productIdsComparator);
 
-		Assert.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(0).intValue());
+		Assert.assertEquals(product1.getM_Product_ID(), orderedProductLines.getFirst().intValue());
 		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(1).intValue());
 		Assert.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(2).intValue());
 		Assert.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(3).intValue());
@@ -134,7 +134,7 @@ public class DocLineSortProductIdsComparatorTest extends AbstractDocLineSortItem
 				.findProductIdsComparator();
 		Collections.sort(orderedProductLines, productIdsComparator);
 
-		Assert.assertEquals(product3.getM_Product_ID(), orderedProductLines.get(0).intValue());
+		Assert.assertEquals(product3.getM_Product_ID(), orderedProductLines.getFirst().intValue());
 		Assert.assertEquals(product1.getM_Product_ID(), orderedProductLines.get(1).intValue());
 		Assert.assertEquals(product2.getM_Product_ID(), orderedProductLines.get(2).intValue());
 		Assert.assertEquals(product4.getM_Product_ID(), orderedProductLines.get(3).intValue());

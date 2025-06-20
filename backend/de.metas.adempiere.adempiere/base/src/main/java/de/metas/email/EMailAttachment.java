@@ -6,14 +6,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import jakarta.activation.DataSource;
+import jakarta.activation.URLDataSource;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
-import javax.activation.DataSource;
-import javax.activation.URLDataSource;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;

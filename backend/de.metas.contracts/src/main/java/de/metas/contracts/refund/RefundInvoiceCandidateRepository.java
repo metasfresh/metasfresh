@@ -148,8 +148,7 @@ public class RefundInvoiceCandidateRepository
 				.get(minDateToInvoice)
 				.stream()
 				.map(this::ofNullableRefundRecord)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.sorted(Comparator.comparing(RefundInvoiceCandidate::getAssignedQuantity))
 				.collect(ImmutableList.toImmutableList());
 	}

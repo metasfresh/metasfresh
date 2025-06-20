@@ -31,12 +31,15 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
+import java.io.Serial;
+
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isEmpty;
 
 /** Thrown if a request could not be processed, because one of the required resources (e.g. product, or business partner) does not exist in metasfresh. */
 public class MissingResourceException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -3485523266695546853L;
 
 	/**

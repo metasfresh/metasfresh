@@ -22,7 +22,21 @@ package org.adempiere.server.rpl.api.impl;
  * #L%
  */
 
+import de.metas.util.collections.Converter;
+import de.metas.util.xml.DynamicObjectFactory;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.process.rpl.XMLHelper;
+import org.adempiere.server.rpl.api.IImportHelper;
+import org.compiere.util.Ini;
+import org.w3c.dom.Document;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -30,23 +44,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.process.rpl.XMLHelper;
-import org.adempiere.server.rpl.api.IImportHelper;
-import org.compiere.util.Ini;
-import org.w3c.dom.Document;
-
-import de.metas.util.collections.Converter;
-import de.metas.util.xml.DynamicObjectFactory;
 
 /**
  * Mocked implementation of {@link IImportHelper} which delegates the work to registered converters.

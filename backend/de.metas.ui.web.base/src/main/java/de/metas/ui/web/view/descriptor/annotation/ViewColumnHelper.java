@@ -486,9 +486,8 @@ public final class ViewColumnHelper
 			}
 
 			final Object value = field.get(row);
-			if (value instanceof Supplier<?>)
+			if (value instanceof Supplier<?> supplier)
 			{
-				final Supplier<?> supplier = (Supplier<?>)value;
 				return normalizeAndResolveValue(supplier.get(), column);
 			}
 			else
@@ -536,9 +535,9 @@ public final class ViewColumnHelper
 
 		if (Adempiere.isUnitTestMode())
 		{
-			if (code instanceof ReferenceListAwareEnum)
+			if (code instanceof ReferenceListAwareEnum enum1)
 			{
-				return StringLookupValue.of(((ReferenceListAwareEnum)code).getCode(), code.toString());
+				return StringLookupValue.of(enum1.getCode(), code.toString());
 			}
 			else
 			{

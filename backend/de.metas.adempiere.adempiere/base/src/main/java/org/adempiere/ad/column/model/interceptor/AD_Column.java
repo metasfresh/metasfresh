@@ -100,10 +100,11 @@ public class AD_Column
 		}
 		catch (final SQLException ex)
 		{
-			throw new AdempiereException("Invalid Column SQL. Hints:"
-					+ "\n 1. To reference context table name, always use the right case, e.g. C_Invoice instead of c_invoice"
-					+ "\n 2. If in your sub-query you need to join again the context table name, consider using @JoinTableNameOrAliasIncludingDot@ to reference the context table name. Pls search for examples."
-					+ "\n 3. If you think this validation is not correct, feel free to temporary deactivate this check.", ex)
+			throw new AdempiereException("""
+					Invalid Column SQL. Hints:
+					 1. To reference context table name, always use the right case, e.g. C_Invoice instead of c_invoice
+					 2. If in your sub-query you need to join again the context table name, consider using @JoinTableNameOrAliasIncludingDot@ to reference the context table name. Pls search for examples.
+					 3. If you think this validation is not correct, feel free to temporary deactivate this check.""", ex)
 					.setParameter("Test SQL", sql)
 					.appendParametersToMessage();
 		}
@@ -169,10 +170,11 @@ public class AD_Column
 
 	public static void fireExceptionInvalidLookup(@NonNull final Logger logger, @Nullable final Exception cause)
 	{
-		final String message = "Invalid AD_Reference_ID/AD_Reference_Value_ID values."
-				+ "\n To avoid this issue you could:"
-				+ "\n 1. Fix the underlying error. Check the console for more info."
-				+ "\n 2. If you consider this is not an error then report the issue and comment this method to continue your work";
+		final String message = """
+				Invalid AD_Reference_ID/AD_Reference_Value_ID values.
+				 To avoid this issue you could:
+				 1. Fix the underlying error. Check the console for more info.
+				 2. If you consider this is not an error then report the issue and comment this method to continue your work""";
 
 		//noinspection ThrowableNotThrown
 		new AdempiereException(message, cause)

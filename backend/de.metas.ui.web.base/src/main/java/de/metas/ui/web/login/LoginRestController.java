@@ -39,6 +39,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import de.metas.util.web.security.UserAuthTokenService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.session.ISessionBL;
@@ -65,8 +67,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -229,7 +229,7 @@ public class LoginRestController
 		else
 		{
 			jsonAvailableRoles = createJSONLoginRoles(loginService, availableRoles);
-			roleToLoginEffective = jsonAvailableRoles.size() == 1 ? jsonAvailableRoles.get(0) : null;
+			roleToLoginEffective = jsonAvailableRoles.size() == 1 ? jsonAvailableRoles.getFirst() : null;
 		}
 
 		if (roleToLoginEffective != null)

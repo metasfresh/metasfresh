@@ -243,7 +243,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 		//
 		int key = loc.getM_Locator_ID();
 		if (saveInCache)
-			m_lookup.put(new Integer(key), loc);
+			m_lookup.put(Integer.valueOf(key), loc);
 		NamePair retValue = new KeyNamePair(key, loc.toString());
 		return retValue;
 	}	// getDirect
@@ -381,7 +381,7 @@ public final class MLocatorLookup extends Lookup implements Serializable
 				{
 					MLocator loc = new MLocator(m_ctx, rs, ITrx.TRXNAME_None);
 					int M_Locator_ID = loc.getM_Locator_ID();
-					m_lookup.put(new Integer(M_Locator_ID), loc);
+					m_lookup.put(Integer.valueOf(M_Locator_ID), loc);
 				}
 			}
 			catch (SQLException e)

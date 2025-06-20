@@ -16,6 +16,7 @@ import org.compiere.model.MOrderLine;
 import org.compiere.util.Env;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /*
  * #%L
@@ -120,7 +121,7 @@ public class C_RfQ_CreateSO extends JavaProcess
 							{
 								margin = margin.add(Env.ONEHUNDRED);
 								price = price.multiply(margin)
-										.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
+										.divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
 							}
 						}
 					}     	// price

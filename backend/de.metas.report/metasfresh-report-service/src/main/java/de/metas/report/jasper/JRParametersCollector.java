@@ -129,9 +129,9 @@ class JRParametersCollector
 	public OutputType getOutputTypeEffective()
 	{
 		final Object outputTypeObj = get(PARAM_OUTPUTTYPE);
-		if (outputTypeObj instanceof OutputType)
+		if (outputTypeObj instanceof OutputType type)
 		{
-			return (OutputType)outputTypeObj;
+			return type;
 		}
 		else if (outputTypeObj instanceof String)
 		{
@@ -157,13 +157,13 @@ class JRParametersCollector
 	{
 		final Object languageObj = get(PARAM_REPORT_LANGUAGE);
 		Language currLang = null;
-		if (languageObj instanceof String)
+		if (languageObj instanceof String string)
 		{
-			currLang = Language.getLanguage((String)languageObj);
+			currLang = Language.getLanguage(string);
 		}
-		else if (languageObj instanceof Language)
+		else if (languageObj instanceof Language language)
 		{
-			currLang = (Language)languageObj;
+			currLang = language;
 		}
 
 		if (currLang == null)

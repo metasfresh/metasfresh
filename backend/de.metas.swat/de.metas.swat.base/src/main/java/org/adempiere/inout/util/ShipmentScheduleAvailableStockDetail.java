@@ -219,7 +219,7 @@ public class ShipmentScheduleAvailableStockDetail
 
 		if (qtyToRemoveRemaining.signum() != 0)
 		{
-			final ShipmentScheduleAvailableStockDetail lastStockDetail = stockDetails.get(stockDetails.size() - 1);
+			final ShipmentScheduleAvailableStockDetail lastStockDetail = stockDetails.getLast();
 			lastStockDetail.subtractQtyOnHand(qtyToRemoveRemaining);
 
 			qtyToRemoveRemaining = BigDecimal.ZERO;

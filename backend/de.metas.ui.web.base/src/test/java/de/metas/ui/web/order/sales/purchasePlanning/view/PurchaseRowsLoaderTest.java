@@ -239,7 +239,7 @@ public class PurchaseRowsLoaderTest
 		final List<PurchaseRow> topLevelRows = rowsList.getTopLevelRows();
 		assertThat(topLevelRows).hasSize(1);
 
-		final PurchaseRow groupRow = topLevelRows.get(0);
+		final PurchaseRow groupRow = topLevelRows.getFirst();
 		assertThat(groupRow.getType()).isEqualTo(PurchaseRowType.GROUP);
 		assertThat(groupRow.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(TEN.toBigDecimal());
 		assertThat(groupRow.getIncludedRows()).hasSize(1);

@@ -97,8 +97,7 @@ public class JSONDocumentFilter
 				.stream()
 				.filter(filterParam -> !filter.isInternalParameter(filterParam.getFieldName()))
 				.map(filterParam -> JSONDocumentFilterParam.of(filterParam, jsonOpts))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.collect(GuavaCollectors.toImmutableList());
 
 		return new JSONDocumentFilter(filterId, filter.getCaption(jsonOpts.getAdLanguage()), jsonParameters);

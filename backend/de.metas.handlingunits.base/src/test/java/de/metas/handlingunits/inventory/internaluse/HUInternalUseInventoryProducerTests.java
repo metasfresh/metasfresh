@@ -150,7 +150,7 @@ public class HUInternalUseInventoryProducerTests
 				.getInventories();
 		assertThat(inventories).hasSize(1);
 
-		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.getFirst().getM_Inventory_ID());
 		final Inventory inventory = inventoryService.getById(inventoryId);
 		assertThat(inventory.getLines()).hasSize(1);
 	}
@@ -188,7 +188,7 @@ public class HUInternalUseInventoryProducerTests
 				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
-		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.getFirst().getM_Inventory_ID());
 		final Inventory inventory = inventoryService.getById(inventoryId);
 		assertThat(inventory.getActivityId()).isEqualTo(activityId);
 		assertThat(inventory.getDescription()).isEqualTo(description);
@@ -267,7 +267,7 @@ public class HUInternalUseInventoryProducerTests
 				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
-		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.getFirst().getM_Inventory_ID());
 		final Inventory inventory = inventoryService.getById(inventoryId);
 		assertThat(inventory.getActivityId()).isEqualTo(activityId);
 		assertThat(inventory.getDescription()).isEqualTo(description);
@@ -275,7 +275,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(inventory.getDocStatus()).isEqualTo(DocStatus.Completed);
 		assertThat(inventory.getLines()).hasSize(1);
 
-		final InventoryLine inventoryLine = inventory.getLines().get(0);
+		final InventoryLine inventoryLine = inventory.getLines().getFirst();
 		assertThat(inventoryLine.getProductId().getRepoId()).isEqualTo(data.helper.pTomato.getM_Product_ID());
 		assertThat(inventoryLine.getQtyInternalUse().getUomId().getRepoId()).isEqualTo(data.helper.uomKg.getC_UOM_ID());
 		assertThat(inventoryLine.getQtyInternalUse().toBigDecimal()).isEqualByComparingTo("50");
@@ -319,7 +319,7 @@ public class HUInternalUseInventoryProducerTests
 				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
-		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.getFirst().getM_Inventory_ID());
 		final Inventory inventory = inventoryService.getById(inventoryId);
 		assertThat(inventory.getActivityId()).isEqualTo(activityId);
 		assertThat(inventory.getDescription()).isEqualTo(description);
@@ -453,7 +453,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(createdLUs).hasSize(1);
 		// data.helper.commitAndDumpHU(createdLUs.get(0));
 
-		final I_M_HU createdLU = createdLUs.get(0);
+		final I_M_HU createdLU = createdLUs.getFirst();
 		final IMutableHUContext huContext = data.helper.createMutableHUContextOutOfTransaction();
 		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
 		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
@@ -462,15 +462,15 @@ public class HUInternalUseInventoryProducerTests
 		M_HU.INSTANCE.updateChildren(createdLU);
 		handlingUnitsDAO.saveHU(createdLU);
 
-		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
+		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.getFirst());
 		assertThat(createdAggregateHUs).hasSize(1);
 
-		final I_M_HU cuToSplit = createdAggregateHUs.get(0);
+		final I_M_HU cuToSplit = createdAggregateHUs.getFirst();
 		assertThat(handlingUnitsBL.isAggregateHU(cuToSplit)).isTrue();
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID()).isEqualTo(data.piLU_Item_IFCO.getM_HU_PI_Item_ID());
 		assertThat(cuToSplit.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 
-		return createdLUs.get(0);
+		return createdLUs.getFirst();
 	}
 
 	/**
@@ -493,7 +493,7 @@ public class HUInternalUseInventoryProducerTests
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
 		assertThat(createdCUs).hasSize(1);
 
-		final I_M_HU cuToSplit = createdCUs.get(0);
+		final I_M_HU cuToSplit = createdCUs.getFirst();
 
 		cuToSplit.setM_Locator_ID(locator.getM_Locator_ID());
 		huStatusBL.setHUStatus(data.helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
@@ -513,7 +513,7 @@ public class HUInternalUseInventoryProducerTests
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 		assertThat(createdTUs).hasSize(1);
 
-		final I_M_HU createdTU = createdTUs.get(0);
+		final I_M_HU createdTU = createdTUs.getFirst();
 		huStatusBL.setHUStatus(data.helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
 		createdTU.setM_Locator_ID(locator.getM_Locator_ID());
 
@@ -523,7 +523,7 @@ public class HUInternalUseInventoryProducerTests
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
 		assertThat(createdCUs).hasSize(1);
 
-		final I_M_HU cuToSplit = createdCUs.get(0);
+		final I_M_HU cuToSplit = createdCUs.getFirst();
 		cuToSplit.setM_Locator_ID(locator.getM_Locator_ID());
 
 		return cuToSplit;

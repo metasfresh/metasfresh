@@ -90,9 +90,8 @@ public final class TypedSqlQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 			return true;
 		}
 
-		if (obj instanceof TypedSqlQueryFilter)
+		if (obj instanceof TypedSqlQueryFilter<?> other)
 		{
-			final TypedSqlQueryFilter<?> other = (TypedSqlQueryFilter<?>)obj;
 			return Objects.equals(sql, other.sql)
 					&& Objects.equals(sqlParams, other.sqlParams);
 		}

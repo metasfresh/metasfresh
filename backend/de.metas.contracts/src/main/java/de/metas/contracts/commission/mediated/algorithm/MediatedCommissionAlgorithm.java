@@ -67,7 +67,7 @@ public class MediatedCommissionAlgorithm implements CommissionAlgorithm
 		Check.assume(mediatedCommissionConfigs.size() == 1, "There is always only one MediatedCommissionConfig involved!");
 		Check.assume(CommissionTriggerType.MediatedOrder.equals(request.getTrigger().getCommissionTriggerData().getTriggerType()), "Trigger document is a mediated order!");
 
-		final MediatedCommissionConfig mediatedCommissionConfig = mediatedCommissionConfigs.get(0);
+		final MediatedCommissionConfig mediatedCommissionConfig = mediatedCommissionConfigs.getFirst();
 		final CommissionTrigger commissionTrigger = request.getTrigger();
 
 		if (mediatedCommissionConfig.getContractFor(commissionTrigger.getCustomer().getBPartnerId()) == null)
@@ -111,7 +111,7 @@ public class MediatedCommissionAlgorithm implements CommissionAlgorithm
 		Check.assume(mediatedCommissionShares.size() == 1, "There is always only one mediated CommissionShare involved!");
 		Check.assume(CommissionTriggerType.MediatedOrder.equals(newTriggerData.getTriggerType()), "Trigger document is a mediated order!");
 
-		createAndAddFacts(mediatedCommissionShares.get(0),
+		createAndAddFacts(mediatedCommissionShares.getFirst(),
 						  newTriggerData.getTimestamp(),
 						  newTriggerData.getForecastedBasePoints(),
 						  newTriggerData.getInvoiceableBasePoints(),

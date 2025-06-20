@@ -1,10 +1,11 @@
 package org.adempiere.ad.table.exception;
 
+import de.metas.util.StringUtils;
 import org.adempiere.ad.table.process.AD_Table_CreatePK;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.POInfo;
 
-import de.metas.util.StringUtils;
+import java.io.Serial;
 
 /*
  * #%L
@@ -38,6 +39,7 @@ import de.metas.util.StringUtils;
  */
 public class NoSingleKeyColumnException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = 2334933752321535129L;
 
 	/**

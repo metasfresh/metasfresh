@@ -142,7 +142,7 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 		final ImmutableList<ServiceRepairProjectCostCollector> result = removeCostCollectorsOfType(type);
 		if (result.size() == 1)
 		{
-			return result.get(0);
+			return result.getFirst();
 		}
 		else
 		{

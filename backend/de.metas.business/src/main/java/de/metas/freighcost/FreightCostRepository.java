@@ -248,12 +248,12 @@ public class FreightCostRepository
 			}
 			else if (defaults.size() == 1)
 			{
-				return Optional.of(defaults.get(0).getId());
+				return Optional.of(defaults.getFirst().getId());
 			}
 			else
 			{
 				logger.warn("More than one default freight costs found. Considering the first one: {}", defaults);
-				return Optional.of(defaults.get(0).getId());
+				return Optional.of(defaults.getFirst().getId());
 			}
 		}
 

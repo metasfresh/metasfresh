@@ -153,7 +153,7 @@ public class PayPalCheckoutManualTest
 			if (orderResponse.statusCode() == 201)
 			{
 				System.out.println("Authorized Successfully\n");
-				authId = orderResponse.result().purchaseUnits().get(0).payments().authorizations().get(0).id();
+				authId = orderResponse.result().purchaseUnits().getFirst().payments().authorizations().getFirst().id();
 			}
 		}
 
@@ -389,8 +389,8 @@ public class PayPalCheckoutManualTest
 				System.out.println("\t" + link.rel() + ": " + link.href() + "\tCall Type: " + link.method());
 			}
 			System.out.println("Total Amount:"
-					+ " " + responseOrder.purchaseUnits().get(0).amount().currencyCode()
-					+ " " + responseOrder.purchaseUnits().get(0).amount().value());
+					+ " " + responseOrder.purchaseUnits().getFirst().amount().currencyCode()
+					+ " " + responseOrder.purchaseUnits().getFirst().amount().value());
 		}
 
 		return response;

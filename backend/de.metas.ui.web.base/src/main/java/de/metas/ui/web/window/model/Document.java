@@ -734,9 +734,11 @@ public final class Document
 						&& Check.isEmpty(value.toString(), false))
 				{
 					// FIXME: figure out how we can get rid of this hardcoded corner case! ... not sure if is needed
-					logger.warn("Development hint: Converting default value empty string to null. Please check how can we avoid this case"
-									+ "\n FieldDescriptor: {}" //
-									+ "\n Document: {}" //
+					logger.warn("""
+									Development hint: Converting default value empty string to null. Please check how can we avoid this case
+									 FieldDescriptor: {}
+									 Document: {}\
+									""" //
 							, fieldDescriptor, this);
 					return null;
 				}
@@ -1055,7 +1057,7 @@ public final class Document
 				return getDocumentPath().getSingleRowId();
 			}
 		}
-		final Object idObj = idFields.get(0).getValue();
+		final Object idObj = idFields.getFirst().getValue();
 		return DocumentId.ofObjectOrNull(idObj);
 	}
 

@@ -136,9 +136,9 @@ public abstract class ReportStarter extends JavaProcess
 					continue;
 				}
 
-				if (objParam instanceof ArchiveInfo)
+				if (objParam instanceof ArchiveInfo info)
 				{
-					archiveInfo = (ArchiveInfo)objParam;
+					archiveInfo = info;
 					numberOfPrintouts = archiveInfo.getCopies();
 
 					if (numberOfPrintouts.isZero())

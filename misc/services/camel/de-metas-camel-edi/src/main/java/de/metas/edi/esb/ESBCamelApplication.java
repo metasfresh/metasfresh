@@ -36,7 +36,7 @@ public class ESBCamelApplication
 	public static void main(final String[] args)
 	{
 		// get http://camel.465427.n5.nabble.com/Seeing-Info-message-all-over-log-file-related-to-Woodstox-td5749044.html
-		System.setProperty("javax.xml.stream.XMLInputFactory", WstxInputFactory.class.getName());
+		System.setProperty("jakarta.xml.stream.XMLInputFactory", WstxInputFactory.class.getName());
 
 		SpringApplication.run(ESBCamelApplication.class, args);
 	}

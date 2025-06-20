@@ -57,15 +57,16 @@ public class TypedSqlQueryTests
 		// the first select shall have "our" customFromClause, but the other two shall bring their own (in this case default) from clause
 		// however, for the time being, all 3 selects shall have our customSelectClause
 		assertThat(result).isEqualToIgnoringWhitespace(
-				"customSelectClause customFromClause WHERE (whereClause_0)\n" +
-						"UNION DISTINCT\n" +
-						"(\n" +
-						"   customSelectClause FROM AD_Table WHERE (whereClause_1)\n" +
-						")\n" +
-						"UNION DISTINCT\n" +
-						"(\n" +
-						"   customSelectClause FROM AD_Table WHERE (whereClause_2)\n" +
-						")");
+				"""
+				customSelectClause customFromClause WHERE (whereClause_0)
+				UNION DISTINCT
+				(
+				   customSelectClause FROM AD_Table WHERE (whereClause_1)
+				)
+				UNION DISTINCT
+				(
+				   customSelectClause FROM AD_Table WHERE (whereClause_2)
+				)""");
 	}
 
 	@Nested
@@ -121,21 +122,22 @@ public class TypedSqlQueryTests
 					true);
 
 			//then
-			assertThat(sql).isEqualTo("avoidDBConnection  FROM C_OrderLine\n"
-											  + " WHERE (M_Product_ID=1000002)\n"
-											  + "UNION DISTINCT\n"
-											  + "(\n"
-											  + "avoidDBConnection  FROM C_OrderLine\n"
-											  + " WHERE (M_Product_ID=1000002)\n"
-											  + ")\n"
-											  + "\n"
-											  + "UNION DISTINCT\n"
-											  + "(\n"
-											  + "avoidDBConnection  FROM C_OrderLine\n"
-											  + " WHERE (M_Product_ID=1000002)\n"
-											  + ")\n"
-											  + "\n"
-											  + " ORDER BY C_OrderLine_ID");
+			assertThat(sql).isEqualTo("""
+											  avoidDBConnection  FROM C_OrderLine
+											   WHERE (M_Product_ID=1000002)
+											  UNION DISTINCT
+											  (
+											  avoidDBConnection  FROM C_OrderLine
+											   WHERE (M_Product_ID=1000002)
+											  )
+											  
+											  UNION DISTINCT
+											  (
+											  avoidDBConnection  FROM C_OrderLine
+											   WHERE (M_Product_ID=1000002)
+											  )
+											  
+											   ORDER BY C_OrderLine_ID""");
 		}
 
 		@Test
@@ -157,21 +159,23 @@ public class TypedSqlQueryTests
 					true);
 
 			//then
-			assertThat(sql).isEqualTo("avoidDBConnection  FROM C_OrderLine\n"
-											  + " WHERE (M_Product_ID=1000002)\n"
-											  + "UNION DISTINCT\n"
-											  + "(\n"
-											  + "avoidDBConnection  FROM C_OrderLine\n"
-											  + " WHERE (M_Product_ID=1000002)\n"
-											  + " ORDER BY M_Product_ID\n"
-											  + ")\n"
-											  + "\n"
-											  + "UNION DISTINCT\n"
-											  + "(\n"
-											  + "avoidDBConnection  FROM C_OrderLine\n"
-											  + " WHERE (M_Product_ID=1000002)\n"
-											  + " ORDER BY C_OrderLine_ID\n"
-											  + ")\n");
+			assertThat(sql).isEqualTo("""
+											  avoidDBConnection  FROM C_OrderLine
+											   WHERE (M_Product_ID=1000002)
+											  UNION DISTINCT
+											  (
+											  avoidDBConnection  FROM C_OrderLine
+											   WHERE (M_Product_ID=1000002)
+											   ORDER BY M_Product_ID
+											  )
+											  
+											  UNION DISTINCT
+											  (
+											  avoidDBConnection  FROM C_OrderLine
+											   WHERE (M_Product_ID=1000002)
+											   ORDER BY C_OrderLine_ID
+											  )
+											  """);
 		}
 	}
 }

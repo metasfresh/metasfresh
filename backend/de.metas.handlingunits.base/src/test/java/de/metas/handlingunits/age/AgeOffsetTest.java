@@ -130,7 +130,7 @@ public class AgeOffsetTest extends AbstractHUTest
 	{
 		final List<I_M_HU> huPalets = createIncomingPalets();
 
-		final I_M_HU palet1 = huPalets.get(0);
+		final I_M_HU palet1 = huPalets.getFirst();
 
 		final IAttributeStorageFactory storageFactory = helper.getHUContext().getHUAttributeStorageFactory();
 		final IAttributeStorage attributesStorage = storageFactory.getAttributeStorage(palet1);

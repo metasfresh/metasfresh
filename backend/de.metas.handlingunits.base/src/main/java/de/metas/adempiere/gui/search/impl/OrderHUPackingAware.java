@@ -143,8 +143,8 @@ public class OrderHUPackingAware implements IHUPackingAware
 	@Override
 	public String toString()
 	{
-		return String
-				.format("OrderHUPackingAware [order=%s, getM_Product_ID()=%s, getM_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getM_HU_PI_Item_Product_ID()=%s, isInDispute()=%s]",
+		return "OrderHUPackingAware [order=%s, getM_Product_ID()=%s, getM_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getM_HU_PI_Item_Product_ID()=%s, isInDispute()=%s]"
+				.formatted(
 						order, getM_Product_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(), getC_UOM_ID(), getQty(), getM_HU_PI_Item_Product_ID(), getQtyTU(), getC_BPartner_ID(),
 						getM_HU_PI_Item_Product_ID(), isInDispute());
 	}

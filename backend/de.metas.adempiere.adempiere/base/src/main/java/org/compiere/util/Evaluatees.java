@@ -5,8 +5,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
-import groovy.transform.ToString;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -389,10 +389,10 @@ public final class Evaluatees
 		{
 			//
 			// This logic applies only to first Evaluatee source
-			final Evaluatee source = sources.get(0);
-			if (source instanceof Evaluatee2)
+			final Evaluatee source = sources.getFirst();
+			if (source instanceof Evaluatee2 evaluatee2)
 			{
-				return ((Evaluatee2)source).get_ValueOldAsString(variableName);
+				return evaluatee2.get_ValueOldAsString(variableName);
 			}
 
 			return null;

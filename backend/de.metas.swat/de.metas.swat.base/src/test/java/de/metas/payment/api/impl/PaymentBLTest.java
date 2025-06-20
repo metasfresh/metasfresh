@@ -197,7 +197,7 @@ public class PaymentBLTest
 			Assertions.assertEquals(BigDecimal.ZERO, payment.getDiscountAmt(), "Incorrect discount amount");
 			Assertions.assertEquals(BigDecimal.ZERO, payment.getWriteOffAmt(), "Incorrect writteoff amount");
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
-			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
+			payment.setC_Invoice_ID(getAllInvoices().getFirst().getC_Invoice_ID());
 			invoice.setC_Currency_ID(currencyCHF.getRepoId());
 
 			saveRecord(invoice);
@@ -213,7 +213,7 @@ public class PaymentBLTest
 			// NOTE: Trick to reset the cached invoice, else payment.getC_Invoice() will return the cached invoice
 			// and not "invoice" which we will modify below
 			payment.setC_Invoice_ID(-1);
-			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
+			payment.setC_Invoice_ID(getAllInvoices().getFirst().getC_Invoice_ID());
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
 			payment.setDiscountAmt(BigDecimal.ZERO);
 			payment.setWriteOffAmt(BigDecimal.ZERO);
@@ -285,7 +285,7 @@ public class PaymentBLTest
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
 			payment.setDateTrx(SystemTime.asDayTimestamp());
 			payment.setAD_Org_ID(1);
-			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
+			payment.setC_Invoice_ID(getAllInvoices().getFirst().getC_Invoice_ID());
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
 			payment.setDiscountAmt(BigDecimal.ZERO);
 			payment.setWriteOffAmt(BigDecimal.ZERO);

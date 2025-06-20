@@ -1,4 +1,4 @@
-FROM maven:3.8.4-jdk-8
+FROM maven:3.9.9-eclipse-temurin-21
 
 WORKDIR /parent
 COPY misc/parent-pom .

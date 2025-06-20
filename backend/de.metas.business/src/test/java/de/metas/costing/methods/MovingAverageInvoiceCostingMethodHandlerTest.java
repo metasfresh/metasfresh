@@ -171,7 +171,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		try
 		{
 			final List<String> parts = splitter.splitToList(str);
-			return CostAmount.of(parts.get(0), currencyId(parts.get(1)));
+			return CostAmount.of(parts.getFirst(), currencyId(parts.get(1)));
 		}
 		catch (Exception ex)
 		{
@@ -191,7 +191,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		try
 		{
 			final List<String> parts = splitter.splitToList(str);
-			return Quantity.of(parts.get(0), uom(parts.get(1)));
+			return Quantity.of(parts.getFirst(), uom(parts.get(1)));
 		}
 		catch (Exception ex)
 		{
@@ -318,7 +318,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 		}
 		else if (currentCosts.size() == 1)
 		{
-			return currentCosts.get(0);
+			return currentCosts.getFirst();
 		}
 		else
 		{

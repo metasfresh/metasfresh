@@ -122,7 +122,7 @@ public class GenericPO extends PO
 		if (AD_OrgTrx_ID == 0)
 			set_Value(COLUMNNAME_AD_OrgTrx_ID, null);
 		else
-			set_Value(COLUMNNAME_AD_OrgTrx_ID, new Integer(AD_OrgTrx_ID));
+			set_Value(COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
 	}
 
 	/**

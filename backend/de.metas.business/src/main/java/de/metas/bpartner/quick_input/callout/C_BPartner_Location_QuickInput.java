@@ -27,6 +27,7 @@ import de.metas.bpartner.quick_input.service.BPartnerQuickInputRepository;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -37,8 +38,6 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.MakeUniqueLocationNameCommand;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 @Component
 @Callout(I_C_BPartner_Location_QuickInput.class)

@@ -26,26 +26,25 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
-@ApiModel
+@Schema(description = "Request for warehouse upsert operation")
 public class JsonRequestWarehouseUpsert
 {
-	@ApiModelProperty(position = 10, required = true)
+	@Schema(description = "List of warehouse items to upsert", requiredMode = Schema.RequiredMode.REQUIRED)
 	List<JsonRequestWarehouseUpsertItem> requestItems;
 
-	@ApiModelProperty(position = 20, value = "Default sync-advise that can be overridden by individual items\n" + READ_ONLY_SYNC_ADVISE_DOC)
+	@Schema(description = "Default sync-advise that can be overridden by individual items\n" + READ_ONLY_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@JsonCreator

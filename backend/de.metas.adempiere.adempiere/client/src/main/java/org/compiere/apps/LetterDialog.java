@@ -43,6 +43,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.Serial;
 import java.util.Properties;
 
 public class LetterDialog
@@ -52,6 +53,7 @@ public class LetterDialog
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 5185869427506396349L;
 
 	// private static final transient Logger log = CLogMgt.getLogger(LetterDialog.class);

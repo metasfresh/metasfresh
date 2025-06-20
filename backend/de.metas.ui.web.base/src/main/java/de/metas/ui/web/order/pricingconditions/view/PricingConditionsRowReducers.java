@@ -162,14 +162,12 @@ class PricingConditionsRowReducers
 			// no change
 			return price;
 		}
-		else if (priceChange instanceof CompletePriceChange)
+		else if (priceChange instanceof CompletePriceChange completePriceChange)
 		{
-			final CompletePriceChange completePriceChange = (CompletePriceChange)priceChange;
 			return completePriceChange.getPrice();
 		}
-		else if (priceChange instanceof PartialPriceChange)
+		else if (priceChange instanceof PartialPriceChange partialPriceChange)
 		{
-			final PartialPriceChange partialPriceChange = (PartialPriceChange)priceChange;
 			return applyPartialPriceChangeTo(partialPriceChange, price);
 		}
 		else

@@ -116,9 +116,8 @@ public class ValRuleAutoApplier
 				.setRequiredAccess(Access.READ);
 
 		final String orderByClause = tableRefInfo.getOrderByClause();
-		if (query instanceof TypedSqlQuery && !Check.isEmpty(orderByClause, true))
+		if (query instanceof TypedSqlQuery sqlQuery && !Check.isEmpty(orderByClause, true))
 		{
-			@SuppressWarnings("rawtypes") final TypedSqlQuery sqlQuery = (TypedSqlQuery)query;
 			sqlQuery.setOrderBy(orderByClause);
 		}
 

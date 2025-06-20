@@ -4,11 +4,11 @@ import com.google.common.base.MoreObjects;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.MapKey;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.MapKey;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;

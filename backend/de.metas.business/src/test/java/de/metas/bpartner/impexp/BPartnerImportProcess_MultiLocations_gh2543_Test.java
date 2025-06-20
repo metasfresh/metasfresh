@@ -109,12 +109,12 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 			assertSecondImportedBpartner(ibpartners);
 
 			// check location - is similar with the one from first partner, but should have different id
-			final I_C_BPartner firstBpartner = partnerDAO.getById(BPartnerId.ofRepoId(ibpartners.get(0).getC_BPartner_ID()));
+			final I_C_BPartner firstBpartner = partnerDAO.getById(BPartnerId.ofRepoId(ibpartners.getFirst().getC_BPartner_ID()));
 			final I_C_BPartner secondBPartner = partnerDAO.getById(BPartnerId.ofRepoId(ibpartners.get(2).getC_BPartner_ID()));
 
 			final List<org.compiere.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBpartner);
 			final List<org.compiere.model.I_C_BPartner_Location> sbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
-			assertThat(fbplocations.get(0).getC_Location_ID()).isNotEqualTo(sbplocations.get(0).getC_Location_ID());
+			assertThat(fbplocations.getFirst().getC_Location_ID()).isNotEqualTo(sbplocations.getFirst().getC_Location_ID());
 		}
 
 		// check third partner imported
@@ -128,8 +128,8 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 	{
 		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
-		Assert.assertTrue(ibpartners.get(0).getC_BPartner_ID() == ibpartners.get(1).getC_BPartner_ID());
-		final I_C_BPartner firstBPartner = partnerDAO.getById(BPartnerId.ofRepoIdOrNull(ibpartners.get(0).getC_BPartner_ID()));
+		Assert.assertTrue(ibpartners.getFirst().getC_BPartner_ID() == ibpartners.get(1).getC_BPartner_ID());
+		final I_C_BPartner firstBPartner = partnerDAO.getById(BPartnerId.ofRepoIdOrNull(ibpartners.getFirst().getC_BPartner_ID()));
 		//
 		// check user
 		final List<I_AD_User> fusers = Services.get(IBPartnerDAO.class).retrieveContacts(firstBPartner);

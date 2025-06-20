@@ -24,8 +24,11 @@ package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands
 
 import lombok.NonNull;
 
+import java.io.Serial;
+
 public class XmlInvoiceInputStreamException extends RuntimeException
 {
+	@Serial
 	private static final long serialVersionUID = 8216181888558013882L;
 
 	public XmlInvoiceInputStreamException(@NonNull final Throwable cause)

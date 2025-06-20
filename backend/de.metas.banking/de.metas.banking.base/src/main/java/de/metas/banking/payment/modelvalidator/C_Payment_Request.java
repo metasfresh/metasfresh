@@ -69,7 +69,7 @@ public class C_Payment_Request
 			return; // nothing to do
 		}
 
-		final I_C_PaySelectionLine paySelectionLine = paySelectionLines.get(0); // only showing the first, there shouldn't be >1 anyways
+		final I_C_PaySelectionLine paySelectionLine = paySelectionLines.getFirst(); // only showing the first, there shouldn't be >1 anyways
 		throw new AdempiereException(MSG_C_PAYMENT_REQUEST_C_INVOICE_STILL_REFERENCED_FROM_C_PAY_SELECTION_LINE, paySelectionLine.getC_PaySelection().getName(), paySelectionLine.getLine());
 	}
 }

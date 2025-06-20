@@ -59,9 +59,9 @@ public class ConfigureDeviceHandler implements IDeviceRequestHandler<DeviceReque
 
 		ep.setHost(epHost.getValue());
 		ep.setPort(Integer.parseInt(epPort.getValue()));
-		if (ep instanceof TcpConnectionReadLineEndPoint)
+		if (ep instanceof TcpConnectionReadLineEndPoint point)
 		{
-			((TcpConnectionReadLineEndPoint)ep).setReturnLastLine(BooleanUtils.toBoolean(epReturnLastLine.getValue()));
+			point.setReturnLastLine(BooleanUtils.toBoolean(epReturnLastLine.getValue()));
 		}
 		ep.setReadTimeoutMillis(Integer.parseInt(epReadTimeoutMillis.getValue()));
 

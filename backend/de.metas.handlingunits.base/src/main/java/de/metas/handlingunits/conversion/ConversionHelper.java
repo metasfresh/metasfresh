@@ -48,22 +48,20 @@ public final class ConversionHelper
 		{
 			return BigDecimal.ZERO;
 		}
-		else if (valueObj instanceof BigDecimal)
+		else if (valueObj instanceof BigDecimal decimal)
 		{
-			return (BigDecimal)valueObj;
+			return decimal;
 		}
-		else if (valueObj instanceof String)
+		else if (valueObj instanceof String string)
 		{
-			return new BigDecimal((String)valueObj);
+			return new BigDecimal(string);
 		}
-		else if (valueObj instanceof Integer)
+		else if (valueObj instanceof Integer valueInt)
 		{
-			final int valueInt = (Integer)valueObj;
 			return BigDecimal.valueOf(valueInt);
 		}
-		else if (valueObj instanceof Number)
+		else if (valueObj instanceof Number valueNum)
 		{
-			final Number valueNum = (Number)valueObj;
 			return new BigDecimal(valueNum.toString());
 		}
 		else

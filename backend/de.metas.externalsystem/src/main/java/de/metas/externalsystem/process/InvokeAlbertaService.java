@@ -101,8 +101,7 @@ public class InvokeAlbertaService
 				.map(this::getAlbertaRoleForBPartner)
 				.flatMap(Collection::stream)
 				.map(this::toOptionalAlbertaBPartnerReference)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.map(albertaReference -> this.toSyncBPartnerExternalSystemRequest(orgId, configId, pInstanceId, albertaReference));
 	}
 

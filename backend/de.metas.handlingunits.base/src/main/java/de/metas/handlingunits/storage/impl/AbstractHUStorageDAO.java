@@ -40,7 +40,7 @@ import de.metas.util.Check;
 
 		if (storages.size() == 1)
 		{
-			return IHUStorageBL.extractUOM(storages.get(0));
+			return IHUStorageBL.extractUOM(storages.getFirst());
 		}
 
 		I_C_UOM foundUOM = null;

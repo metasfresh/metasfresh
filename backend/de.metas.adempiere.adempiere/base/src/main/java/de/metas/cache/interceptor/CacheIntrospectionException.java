@@ -1,40 +1,17 @@
 package de.metas.cache.interceptor;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.util.concurrent.UncheckedExecutionException;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.io.Serial;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Exception thrown when an annotated cached method could not be introspected or it's not valid.
@@ -47,6 +24,7 @@ public class CacheIntrospectionException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -6014120086160495511L;
 
 	public static final CacheIntrospectionException wrapIfNeeded(final Throwable e)
@@ -55,9 +33,9 @@ public class CacheIntrospectionException extends AdempiereException
 		{
 			return new CacheIntrospectionException("Unknown cache exception");
 		}
-		else if (e instanceof CacheIntrospectionException)
+		else if (e instanceof CacheIntrospectionException exception)
 		{
-			return (CacheIntrospectionException)e;
+			return exception;
 		}
 		else if ((e instanceof InvocationTargetException) && (e.getCause() != null))
 		{

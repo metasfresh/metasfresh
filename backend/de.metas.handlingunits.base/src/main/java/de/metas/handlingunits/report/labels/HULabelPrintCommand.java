@@ -258,7 +258,7 @@ class HULabelPrintCommand
 				return;
 			}
 
-			final BatchToPrint lastBatch = !batches.isEmpty() ? batches.get(batches.size() - 1) : null;
+			final BatchToPrint lastBatch = !batches.isEmpty() ? batches.getLast() : null;
 
 			final BatchToPrint batch;
 			if (lastBatch == null || !lastBatch.isMatching(printInstructions))

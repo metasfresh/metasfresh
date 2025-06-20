@@ -51,7 +51,7 @@ public class WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion ex
 		}
 
 		final ProductsProposalView view = getView();
-		if (!view.getSinglePriceListVersionId().isPresent())
+		if (view.getSinglePriceListVersionId().isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no base price list version");
 		}

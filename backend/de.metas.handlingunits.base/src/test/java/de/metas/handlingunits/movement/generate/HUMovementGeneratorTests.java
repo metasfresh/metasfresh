@@ -136,7 +136,7 @@ public class HUMovementGeneratorTests
 
 		assertThat(hus).hasSize(1);
 
-		final I_M_HU hu = hus.get(0);
+		final I_M_HU hu = hus.getFirst();
 		assertThat(hu.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
 
 		huGuard.accept(hu);

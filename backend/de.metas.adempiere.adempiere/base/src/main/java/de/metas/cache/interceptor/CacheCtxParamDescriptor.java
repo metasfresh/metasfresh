@@ -22,16 +22,15 @@ package de.metas.cache.interceptor;
  * #L%
  */
 
-import java.lang.annotation.Annotation;
-import java.util.Properties;
-
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.logging.LogManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.logging.LogManager;
+import java.lang.annotation.Annotation;
+import java.util.Properties;
 
 /**
  * Handles {@link CacheCtx} annotation.
@@ -98,9 +97,9 @@ public class CacheCtxParamDescriptor implements ICachedMethodPartDescriptor
 				errorException = ex;
 			}
 		}
-		else if (ctxObj instanceof Properties)
+		else if (ctxObj instanceof Properties properties)
 		{
-			ctx = (Properties)ctxObj;
+			ctx = properties;
 		}
 		else
 		{

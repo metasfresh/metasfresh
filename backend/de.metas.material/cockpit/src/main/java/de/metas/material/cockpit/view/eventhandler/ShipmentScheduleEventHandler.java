@@ -148,7 +148,7 @@ public class ShipmentScheduleEventHandler
 					.date(identifier.getDate())
 					.build();
 			final Optional<ProductBOM> productBOMOptional = productBOMBL.retrieveValidProductBOM(bomRequest);
-			if (!productBOMOptional.isPresent())
+			if (productBOMOptional.isEmpty())
 			{
 				return;
 			}
@@ -252,20 +252,16 @@ public class ShipmentScheduleEventHandler
 				.qtyOrdered(shipmentScheduleEvent.getOrderedQuantity())
 				.qtyReserved(shipmentScheduleEvent.getReservedQuantity());
 
-		if (documentLineDescriptor instanceof OrderLineDescriptor)
+		if (documentLineDescriptor instanceof OrderLineDescriptor orderLineDescriptor)
 		{
-			final OrderLineDescriptor orderLineDescriptor = //
-					(OrderLineDescriptor)documentLineDescriptor;
 			addDetailsRequest
 					.orderId(orderLineDescriptor.getOrderId())
 					.orderLineId(orderLineDescriptor.getOrderLineId())
 					.bPartnerId(orderLineDescriptor.getOrderBPartnerId())
 					.docTypeId(orderLineDescriptor.getDocTypeId());
 		}
-		else if (documentLineDescriptor instanceof SubscriptionLineDescriptor)
+		else if (documentLineDescriptor instanceof SubscriptionLineDescriptor subscriptionLineDescriptor)
 		{
-			final SubscriptionLineDescriptor subscriptionLineDescriptor = //
-					(SubscriptionLineDescriptor)documentLineDescriptor;
 			addDetailsRequest
 					.subscriptionId(subscriptionLineDescriptor.getFlatrateTermId())
 					.subscriptionLineId(subscriptionLineDescriptor.getSubscriptionProgressId())
@@ -308,7 +304,7 @@ public class ShipmentScheduleEventHandler
 					.date(identifier.getDate())
 					.build();
 			final Optional<ProductBOM> productBOMOptional = productBOMBL.retrieveValidProductBOM(bomRequest);
-			if (!productBOMOptional.isPresent())
+			if (productBOMOptional.isEmpty())
 			{
 				return;
 			}

@@ -72,7 +72,7 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 		super.step_validate_before_aggregation(invoiceCandidates, ignored);
 
 		// Make sure it's using our aggregator
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 		assertThat(ic.getC_Invoice_Candidate_Agg(), is(freshAgg));
 	}
 
@@ -81,7 +81,7 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 	{
 		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
 
-		final IInvoiceHeader invoice = invoices.remove(0);
+		final IInvoiceHeader invoice = invoices.removeFirst();
 
 		assertThat(invoice.getPOReference(), is(IC_PO_REFERENCE));
 		assertThat(invoice.getDateAcct(), is(IC_DATE_ACCT));
@@ -91,7 +91,7 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 		assertEquals("We are expecting two invoice lines: " + invoiceLines, 2, invoiceLines.size());
 
-		final IInvoiceLineRW invoiceLine1 = invoiceLines.get(0);
+		final IInvoiceLineRW invoiceLine1 = invoiceLines.getFirst();
 		assertThat("Invalid invoice line 1 - QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("100")));
 
 		final InvoiceCandidateInOutLineToUpdate icIolToUpdate11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);

@@ -66,7 +66,7 @@ public class ComputeNameAndGreetingRequest
 	{
 		final List<Contact> contactsOrderedPrimaryFirst = getContactsOrderedPrimaryFirst();
 		return !contactsOrderedPrimaryFirst.isEmpty()
-				? Optional.of(contactsOrderedPrimaryFirst.get(0))
+				? Optional.of(contactsOrderedPrimaryFirst.getFirst())
 				: Optional.empty();
 	}
 

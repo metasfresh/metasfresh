@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.ws.client.core.WebServiceTemplate;

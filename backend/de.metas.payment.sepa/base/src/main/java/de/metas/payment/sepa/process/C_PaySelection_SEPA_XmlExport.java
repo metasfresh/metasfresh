@@ -57,7 +57,7 @@ public class C_PaySelection_SEPA_XmlExport
 
 		final PaySelectionId paySelectionId = PaySelectionId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
 		final Optional<org.compiere.model.I_C_PaySelection> paySelectionHeader = paySelectionDAO.getById(paySelectionId);
-		if (!paySelectionHeader.isPresent())
+		if (paySelectionHeader.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}

@@ -1,14 +1,17 @@
 package de.metas.inbound.mail;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.util.List;
-import java.util.Map;
-
-import javax.activation.DataSource;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.request.RequestId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
+import jakarta.activation.DataSource;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -17,18 +20,12 @@ import org.compiere.model.I_C_Mail;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.request.RequestId;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -145,7 +142,7 @@ public class InboundEMailRepository
 		{
 			return null;
 		}
-		return RequestId.ofRepoId(requestIds.get(0));
+		return RequestId.ofRepoId(requestIds.getFirst());
 	}
 
 	private static final class InboundEMailAttachmentDataSource implements DataSource

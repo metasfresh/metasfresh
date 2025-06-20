@@ -26,10 +26,13 @@ import javax.swing.JComponent;
 
 import org.jdesktop.swingx.JXTable;
 
+import java.io.Serial;
+
 import com.google.common.base.Function;
 
 public class AnnotatedJXTable extends JXTable
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private Function<Integer, Integer> convertRowIndexToModelFunction;
 

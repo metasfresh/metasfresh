@@ -9,6 +9,7 @@ import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.money.Money;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -17,8 +18,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.TabCallout;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 @Callout(value = I_SAP_GLJournalLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 @TabCallout(I_SAP_GLJournalLine.class)

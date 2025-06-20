@@ -6,12 +6,12 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.logging.LogManager;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.concurrent.locks.ReentrantLock;
 
 /*

@@ -78,9 +78,9 @@ public final class NullLookupDataSource implements LookupDataSource
 			return null;
 		}
 
-		if (id instanceof Integer)
+		if (id instanceof Integer integer)
 		{
-			return IntegerLookupValue.unknown((int)id);
+			return IntegerLookupValue.unknown(integer);
 		}
 		else
 		{

@@ -27,6 +27,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
+
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
@@ -55,6 +57,7 @@ public class SideActionsGroupsListPanel extends CPanel
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -1208213387721766864L;
 
 	// services

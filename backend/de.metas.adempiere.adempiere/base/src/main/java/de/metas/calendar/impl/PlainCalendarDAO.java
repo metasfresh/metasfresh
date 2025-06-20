@@ -209,7 +209,7 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 	public I_C_Period retrieveFirstPeriodOfTheYear(I_C_Year year)
 	{
 		final List<I_C_Period> periods = getPeriodsOfYear(year);
-		return periods.get(0);
+		return periods.getFirst();
 
 	}
 
@@ -217,7 +217,7 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 	public I_C_Period retrieveLastPeriodOfTheYear(I_C_Year year)
 	{
 		final List<I_C_Period> periods = getPeriodsOfYear(year);
-		return periods.get(periods.size() - 1);
+		return periods.getLast();
 	}
 
 	private List<I_C_Period> getPeriodsOfYear(final I_C_Year year)

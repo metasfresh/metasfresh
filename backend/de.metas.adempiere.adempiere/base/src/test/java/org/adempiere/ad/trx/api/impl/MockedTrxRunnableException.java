@@ -25,6 +25,8 @@ package org.adempiere.ad.trx.api.impl;
 
 import org.junit.Ignore;
 
+import java.io.Serial;
+
 @Ignore
 public class MockedTrxRunnableException extends RuntimeException
 {
@@ -32,6 +34,7 @@ public class MockedTrxRunnableException extends RuntimeException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -7591933540037624603L;
 
 	public MockedTrxRunnableException(final String msg)

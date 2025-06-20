@@ -22,16 +22,13 @@ package de.metas.cache.interceptor;
  * #L%
  */
 
-
-import java.lang.reflect.Method;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.Check;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.PO;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.Check;
+import java.lang.reflect.Method;
+import java.util.Set;
 
 /**
  * Extracts some properties (specified by {@link Cached#keyProperties()}) in case the target object is an {@link PO}.
@@ -70,9 +67,8 @@ class TargetPOKeyPropertiesPartDescriptor implements ICachedMethodPartDescriptor
 		// include specified property values into the key
 		for (final String keyProp : keyProperties)
 		{
-			if (targetObject instanceof PO)
+			if (targetObject instanceof PO po)
 			{
-				final PO po = (PO)targetObject;
 				if (po.get_ColumnIndex(keyProp) < 0)
 				{
 					final String msg = "Invalid keyProperty '" + keyProp

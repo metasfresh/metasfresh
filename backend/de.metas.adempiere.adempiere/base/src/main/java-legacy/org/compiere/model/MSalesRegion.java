@@ -44,7 +44,7 @@ public class MSalesRegion extends X_C_SalesRegion
 	 */
 	public static MSalesRegion get (Properties ctx, int C_SalesRegion_ID)
 	{
-		Integer key = new Integer (C_SalesRegion_ID);
+		Integer key = Integer.valueOf(C_SalesRegion_ID);
 		MSalesRegion retValue = (MSalesRegion) s_cache.get (key);
 		if (retValue != null)
 			return retValue;

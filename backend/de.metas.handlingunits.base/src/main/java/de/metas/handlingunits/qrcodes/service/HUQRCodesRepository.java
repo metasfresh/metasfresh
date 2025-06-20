@@ -163,7 +163,7 @@ public class HUQRCodesRepository
 				.list();
 
 		return records.size() == 1
-				? Optional.of(toHUQRCode(records.get(0)))
+				? Optional.of(toHUQRCode(records.getFirst()))
 				: Optional.empty();
 	}
 
@@ -250,8 +250,7 @@ public class HUQRCodesRepository
 		final ImmutableSetMultimap<HUQRCodeRepoId, HuId> qrCodeId2AssignedHUIds = getAssignedHuIds(qrCodeIds);
 		return qrCodes.stream()
 				.map(qrCode -> toHUQRCodeAssignment(qrCode, qrCodeId2AssignedHUIds))
-				.filter(Optional::isPresent)
-				.map(Optional::get);
+				.flatMap(Optional::stream);
 	}
 
 	@NonNull

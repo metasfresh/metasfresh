@@ -198,7 +198,7 @@ public class Converters
 				.splitToList(streets1And2);
 
 		return ImmutablePair.of(
-				list.size() > 0 ? list.get(0) : null,
+				list.size() > 0 ? list.getFirst() : null,
 				list.size() > 1 ? list.get(1) : null);
 	}
 

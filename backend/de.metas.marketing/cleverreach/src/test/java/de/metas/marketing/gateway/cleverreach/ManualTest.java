@@ -123,7 +123,7 @@ public class ManualTest
 			// Check:
 			assertThat(addedCampaignResults).hasSize(1);
 
-			final LocalToRemoteSyncResult localToRemoteSyncResult = addedCampaignResults.get(0);
+			final LocalToRemoteSyncResult localToRemoteSyncResult = addedCampaignResults.getFirst();
 			assertThat(localToRemoteSyncResult.getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.INSERTED_ON_REMOTE);
 			assertThat(localToRemoteSyncResult.getSynchedDataRecord()).isInstanceOf(Campaign.class);
 
@@ -143,9 +143,9 @@ public class ManualTest
 					)
 			);
 			assertThat(updatedCampaignResults).hasSize(1);
-			assertThat(updatedCampaignResults.get(0).getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.UPDATED_ON_REMOTE);
+			assertThat(updatedCampaignResults.getFirst().getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.UPDATED_ON_REMOTE);
 
-			updatedCampaign = Campaign.cast(updatedCampaignResults.get(0).getSynchedDataRecord());
+			updatedCampaign = Campaign.cast(updatedCampaignResults.getFirst().getSynchedDataRecord());
 			assertThat(updatedCampaign.getRemoteId()).isEqualTo(addedCampaign.getRemoteId());
 			assertThat(updatedCampaign.getName()).isEqualTo(nameOfCampaignToUpdate);
 		}

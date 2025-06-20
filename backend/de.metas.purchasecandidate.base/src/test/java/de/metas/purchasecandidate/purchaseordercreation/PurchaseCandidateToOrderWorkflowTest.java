@@ -211,7 +211,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 		assertThat(candidate2.getPurchaseErrorItems()).hasSize(1);
 
 		assertThat(purchaseCandidates).allSatisfy(candidate -> {
-			final Throwable candidate2Throwable = candidate.getPurchaseErrorItems().get(0).getThrowable();
+			final Throwable candidate2Throwable = candidate.getPurchaseErrorItems().getFirst().getThrowable();
 			assertThat(candidate2Throwable).hasMessageContaining(SOMETHING_WENT_WRONG);
 		});
 	}
@@ -225,7 +225,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				preparePurchaseCandidate().warehouseId(WarehouseId.ofRepoId(1)).build(),
 				preparePurchaseCandidate().warehouseId(WarehouseId.ofRepoId(2)).build());
 
-		useVendorGatewayInvoker(purchaseCandidates.get(0).getVendorId(), NullVendorGatewayInvoker.INSTANCE);
+		useVendorGatewayInvoker(purchaseCandidates.getFirst().getVendorId(), NullVendorGatewayInvoker.INSTANCE);
 
 		workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates);
 	}

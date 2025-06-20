@@ -64,25 +64,6 @@ class ManufacturingOrderReportProcessCommandTest
 		testHelper = HUTestHelper.newInstanceOutOfTrx();
 	}
 
-	@Nested
-	public class resolveHUId
-	{
-		private de.metas.manufacturing.rest_api.v1.ManufacturingOrderReportProcessCommand command;
-
-		@BeforeEach
-		public void beforeEach()
-		{
-			command = de.metas.manufacturing.rest_api.v1.ManufacturingOrderReportProcessCommand.builder()
-					.huReservationService(new HUReservationService(new HUReservationRepository()))
-					.auditRepository(new ManufacturingOrderReportAuditRepository())
-					.jsonObjectMapper(JsonObjectMapperHolder.newJsonObjectMapper())
-					.request(JsonRequestManufacturingOrdersReport.builder()
-							.receipts(ImmutableList.of())
-							.issues(ImmutableList.of())
-							.build())
-					.build();
-		}
-
 		@Builder(builderMethodName = "hu", builderClassName = "$HUBuilder")
 		private HuId createHU(
 				@Nullable final String huValue,
@@ -127,6 +108,15 @@ class ManufacturingOrderReportProcessCommandTest
 			return HuId.ofRepoId(hu.getM_HU_ID());
 		}
 
+	private void createHUSerialNoAttribute(final I_M_HU hu, final String serialNo)
+	{
+		final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
+		huAttribute.setM_HU_ID(hu.getM_HU_ID());
+		huAttribute.setM_Attribute_ID(testHelper.attr_SerialNo.getM_Attribute_ID());
+		huAttribute.setValue(serialNo);
+		InterfaceWrapperHelper.saveRecord(huAttribute);
+	}
+
 		private void createHULotNumberAttribute(final I_M_HU hu, final String lotNumber)
 		{
 			final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
@@ -145,13 +135,23 @@ class ManufacturingOrderReportProcessCommandTest
 			InterfaceWrapperHelper.saveRecord(huAttribute);
 		}
 
-		private void createHUSerialNoAttribute(final I_M_HU hu, final String serialNo)
+	@Nested
+	public class resolveHUId
+	{
+		private de.metas.manufacturing.rest_api.v1.ManufacturingOrderReportProcessCommand command;
+
+		@BeforeEach
+		public void beforeEach()
 		{
-			final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
-			huAttribute.setM_HU_ID(hu.getM_HU_ID());
-			huAttribute.setM_Attribute_ID(testHelper.attr_SerialNo.getM_Attribute_ID());
-			huAttribute.setValue(serialNo);
-			InterfaceWrapperHelper.saveRecord(huAttribute);
+			command = de.metas.manufacturing.rest_api.v1.ManufacturingOrderReportProcessCommand.builder()
+					.huReservationService(new HUReservationService(new HUReservationRepository()))
+					.auditRepository(new ManufacturingOrderReportAuditRepository())
+					.jsonObjectMapper(JsonObjectMapperHolder.newJsonObjectMapper())
+					.request(JsonRequestManufacturingOrdersReport.builder()
+							.receipts(ImmutableList.of())
+							.issues(ImmutableList.of())
+							.build())
+					.build();
 		}
 
 		@Test

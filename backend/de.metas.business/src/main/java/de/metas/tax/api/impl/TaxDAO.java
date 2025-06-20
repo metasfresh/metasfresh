@@ -146,7 +146,7 @@ public class TaxDAO implements ITaxDAO
 				.list();
 		if (list.size() == 1)
 		{
-			return TaxUtils.from(list.get(0));
+			return TaxUtils.from(list.getFirst());
 		}
 		else
 		{
@@ -256,7 +256,7 @@ public class TaxDAO implements ITaxDAO
 
 		if (taxes.size() > 1)
 		{
-			final Tax firstTax = taxes.get(0);
+			final Tax firstTax = taxes.getFirst();
 			final Tax secondTax = taxes.get(1);
 			final boolean multipleTaxesWithSameSeq = Objects.equals(firstTax.getSeqNo(), secondTax.getSeqNo());
 			if (multipleTaxesWithSameSeq)
@@ -269,9 +269,9 @@ public class TaxDAO implements ITaxDAO
 		}
 		else if (taxes.size() == 1)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Exact match found: C_Tax_ID={}", taxes.get(0).getTaxId().getRepoId());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Exact match found: C_Tax_ID={}", taxes.getFirst().getTaxId().getRepoId());
 		}
-		return taxes.isEmpty() ? null : taxes.get(0);
+		return taxes.isEmpty() ? null : taxes.getFirst();
 	}
 
 	@NonNull

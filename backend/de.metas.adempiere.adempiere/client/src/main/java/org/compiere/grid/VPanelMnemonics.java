@@ -130,9 +130,8 @@ class VPanelMnemonics
 	 */
 	private void setMnemonic(final VEditor editor, final char predefinedMnemonic)
 	{
-		if (editor instanceof VCheckBox)
+		if (editor instanceof VCheckBox cb)
 		{
-			final VCheckBox cb = (VCheckBox)editor;
 			String text = cb.getText();
 			final int pos = text.indexOf('&');
 			if (pos != -1 && predefinedMnemonic != 0)
@@ -158,9 +157,8 @@ class VPanelMnemonics
 			}
 		}
 		// Button
-		else if (editor instanceof VButton)
+		else if (editor instanceof VButton b)
 		{
-			final VButton b = (VButton)editor;
 			String text = b.getText();
 			final int pos = text.indexOf('&');
 			if (pos != -1 && predefinedMnemonic != 0)
@@ -275,9 +273,8 @@ class VPanelMnemonics
 		for (int i = 0; i < size; i++)
 		{
 			final Component c = m_fields.get(i);
-			if (c instanceof CLabel)
+			if (c instanceof CLabel l)
 			{
-				final CLabel l = (CLabel)c;
 				if (set)
 				{
 					l.setDisplayedMnemonic(l.getSavedMnemonic());
@@ -287,9 +284,8 @@ class VPanelMnemonics
 					l.setDisplayedMnemonic(0);
 				}
 			}
-			else if (c instanceof VCheckBox)
+			else if (c instanceof VCheckBox cb)
 			{
-				final VCheckBox cb = (VCheckBox)c;
 				if (set)
 				{
 					cb.setMnemonic(cb.getSavedMnemonic());
@@ -299,9 +295,8 @@ class VPanelMnemonics
 					cb.setMnemonic(0);
 				}
 			}
-			else if (c instanceof VButton)
+			else if (c instanceof VButton b)
 			{
-				final VButton b = (VButton)c;
 				if (set)
 				{
 					b.setMnemonic(b.getSavedMnemonic());

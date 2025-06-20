@@ -183,7 +183,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 			// Set parameter's default values
 			ProcessDefaultParametersUpdater.newInstance()
-					.addDefaultParametersProvider(processClassInstance instanceof IProcessDefaultParametersProvider ? (IProcessDefaultParametersProvider)processClassInstance : null)
+					.addDefaultParametersProvider(processClassInstance instanceof IProcessDefaultParametersProvider ipdpp ? ipdpp : null)
 					.onDefaultValue((parameter, value) -> parametersDoc.processValueChange(
 							parameter.getColumnName(),
 							value,

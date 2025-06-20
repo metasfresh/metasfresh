@@ -56,7 +56,7 @@ final class CompositeDocumentFilterDescriptorsProvider implements DocumentFilter
 		}
 		else if (nonNullProviders.size() == 1)
 		{
-			return nonNullProviders.get(0);
+			return nonNullProviders.getFirst();
 		}
 
 		return new CompositeDocumentFilterDescriptorsProvider(nonNullProviders);

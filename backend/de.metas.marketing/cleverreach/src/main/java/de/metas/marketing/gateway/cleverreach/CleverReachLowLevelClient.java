@@ -217,9 +217,8 @@ public class CleverReachLowLevelClient
 
 	private static AdempiereException convertException(@NonNull final RuntimeException rte)
 	{
-		if (rte instanceof HttpClientErrorException)
+		if (rte instanceof HttpClientErrorException hcee)
 		{
-			final HttpClientErrorException hcee = (HttpClientErrorException)rte;
 
 			final JSONObjectMapper<ErrorResponse> mapper = JSONObjectMapper.forClass(ErrorResponse.class);
 			final ErrorResponse errorResponse = mapper.readValue(hcee.getResponseBodyAsString());

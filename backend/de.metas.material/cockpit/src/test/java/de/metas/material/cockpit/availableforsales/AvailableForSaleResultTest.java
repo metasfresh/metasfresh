@@ -70,10 +70,10 @@ public class AvailableForSaleResultTest
 		final List<AvailableForSalesLookupBucketResult> groups = resultBuilder.build().getAvailableForSalesResults();
 		assertThat(groups).hasSize(2);
 
-		assertThat(groups.get(0).getProductId().getRepoId()).isEqualTo(100001);
-		assertThat(groups.get(0).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("1").getAsString());
-		assertThat(groups.get(0).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("2");
-		assertThat(groups.get(0).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("1");
+		assertThat(groups.getFirst().getProductId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.getFirst().getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("1").getAsString());
+		assertThat(groups.getFirst().getQuantities().getQtyOnHandStock()).isEqualByComparingTo("2");
+		assertThat(groups.getFirst().getQuantities().getQtyToBeShipped()).isEqualByComparingTo("1");
 
 		assertThat(groups.get(1).getProductId().getRepoId()).isEqualTo(100001);
 		assertThat(groups.get(1).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("2").getAsString());

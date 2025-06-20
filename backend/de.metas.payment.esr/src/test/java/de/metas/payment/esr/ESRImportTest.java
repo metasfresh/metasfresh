@@ -134,7 +134,7 @@ public class ESRImportTest extends ESRTestBase
 		// check allocations
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines.size(), is(1));
-		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(allocLines.getFirst().getAmount(), comparesEqualTo(new BigDecimal(50)));
 
 	}
 
@@ -233,7 +233,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(lines.size(), is(2));
 
 		// check first import line
-		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
+		final I_ESR_ImportLine esrImportLine1 = lines.getFirst();
 		assertThat(esrImportLine1.isValid(), is(true));
 		assertThat(esrImportLine1.isProcessed(), is(true));
 		assertThat(esrImportLine1.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
@@ -275,7 +275,7 @@ public class ESRImportTest extends ESRTestBase
 		// check allocations - first payment
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine1.getC_Invoice());
 		assertThat(allocLines.size(), is(1));
-		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(25)));
+		assertThat(allocLines.getFirst().getAmount(), comparesEqualTo(new BigDecimal(25)));
 
 		// check allocations - second payment
 		allocLines = Services.get(IPaymentDAO.class).retrieveAllocationLines(esrLine1Payment2);
@@ -382,7 +382,7 @@ public class ESRImportTest extends ESRTestBase
 		// shall be one allocation
 		allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines.size(), is(1));
-		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(allocLines.getFirst().getAmount(), comparesEqualTo(new BigDecimal(50)));
 
 		// esr processed
 		assertThat(esrImport.isProcessed(), is(true));
@@ -467,8 +467,8 @@ public class ESRImportTest extends ESRTestBase
 
 		final List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines.size(), is(2));
-		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(25)));
-		assertThat(allocLines.get(0).getC_Invoice_ID(), is(getC_Invoice().getC_Invoice_ID()));
+		assertThat(allocLines.getFirst().getAmount(), comparesEqualTo(new BigDecimal(25)));
+		assertThat(allocLines.getFirst().getC_Invoice_ID(), is(getC_Invoice().getC_Invoice_ID()));
 		assertThat(allocLines.get(1).getWriteOffAmt(), comparesEqualTo(new BigDecimal(25)));
 		assertThat(allocLines.get(1).getC_Invoice_ID(), notNullValue());
 
@@ -552,7 +552,7 @@ public class ESRImportTest extends ESRTestBase
 		// alocations
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines.size(), is(1));
-		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(allocLines.getFirst().getAmount(), comparesEqualTo(new BigDecimal(50)));
 
 		// esr processed
 		refresh(esrImport, true);
@@ -642,11 +642,11 @@ public class ESRImportTest extends ESRTestBase
 		// allocations
 		allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines.size(), is(1));
-		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(allocLines.getFirst().getAmount(), comparesEqualTo(new BigDecimal(50)));
 
 		allocLines = Services.get(IPaymentDAO.class).retrieveAllocationLines(esrLine1Payment);
 		assertThat(allocLines.size(), is(2));
-		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(allocLines.getFirst().getAmount(), comparesEqualTo(new BigDecimal(50)));
 		assertThat(allocLines.get(1).getAmount(), comparesEqualTo(new BigDecimal(20)));
 
 		// esr processed
@@ -780,7 +780,7 @@ public class ESRImportTest extends ESRTestBase
 		// allocations
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines.size(), is(1));
-		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(allocLines.getFirst().getAmount(), comparesEqualTo(new BigDecimal(50)));
 
 		// esr processed
 		refresh(esrImport, true);
@@ -931,7 +931,7 @@ public class ESRImportTest extends ESRTestBase
 
 		final List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(inv);
 		assertThat(allocLines.size(), is(1));
-		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(allocLines.getFirst().getAmount(), comparesEqualTo(new BigDecimal(50)));
 
 		// esr processed
 		refresh(esrImport, true);
@@ -1597,7 +1597,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.process(esrImport);
 
 		final List<I_ESR_ImportLine> lines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
-		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
+		final I_ESR_ImportLine esrImportLine1 = lines.getFirst();
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		final I_ESR_ImportLine esrImportLine3 = lines.get(2);
 

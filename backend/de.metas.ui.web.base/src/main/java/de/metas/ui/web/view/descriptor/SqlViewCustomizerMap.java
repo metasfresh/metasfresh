@@ -85,9 +85,9 @@ public final class SqlViewCustomizerMap
 
 	private static int getOrder(@NonNull final SqlViewCustomizer viewCustomizer)
 	{
-		if (viewCustomizer instanceof Ordered)
+		if (viewCustomizer instanceof Ordered ordered)
 		{
-			return ((Ordered)viewCustomizer).getOrder();
+			return ordered.getOrder();
 		}
 		else
 		{

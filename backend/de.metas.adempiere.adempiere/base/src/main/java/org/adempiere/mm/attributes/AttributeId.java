@@ -1,16 +1,14 @@
 package org.adempiere.mm.attributes;
 
-import java.util.Objects;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Objects;
 
 /*
  * #%L
@@ -47,13 +45,13 @@ public class AttributeId implements RepoIdAware
 
 	public static AttributeId ofRepoIdObj(@NonNull final Object repoIdObj)
 	{
-		if (repoIdObj instanceof AttributeId)
+		if (repoIdObj instanceof AttributeId id)
 		{
-			return (AttributeId)repoIdObj;
+			return id;
 		}
-		else if (repoIdObj instanceof Integer)
+		else if (repoIdObj instanceof Integer integer)
 		{
-			return ofRepoId((int)repoIdObj);
+			return ofRepoId(integer);
 		}
 		else
 		{

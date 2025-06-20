@@ -130,10 +130,10 @@ class ExternalReferenceRestControllerServiceTest
 						.build());
 
 		final List<JsonExternalReferenceItem> items = response.getItems();
-		assertThat(items.get(0).getLookupItem()).isEqualTo(lookupItem1);
-		assertThat(items.get(0).getMetasfreshId()).isNull();
-		assertThat(items.get(0).getSystemName()).isNull();
-		assertThat(items.get(0).getExternalReferenceId()).isNull();
+		assertThat(items.getFirst().getLookupItem()).isEqualTo(lookupItem1);
+		assertThat(items.getFirst().getMetasfreshId()).isNull();
+		assertThat(items.getFirst().getSystemName()).isNull();
+		assertThat(items.getFirst().getExternalReferenceId()).isNull();
 
 		final I_S_ExternalReference externalReference_24 = getExternalRefByRecordId(records, 24);
 		assertThat(items.get(1).getLookupItem()).isEqualTo(lookupItem2);

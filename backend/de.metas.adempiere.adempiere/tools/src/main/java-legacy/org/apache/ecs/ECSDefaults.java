@@ -42,9 +42,9 @@ public class ECSDefaults
 		}
 	}
 
-	private static boolean filter_state = new Boolean(resource.getString("filter_state")).booleanValue();
+	private static boolean filter_state = Boolean.valueOf(resource.getString("filter_state")).booleanValue();
 
-    private static boolean filter_attribute_state = new Boolean(resource.getString("filter_attribute_state")).booleanValue();
+    private static boolean filter_attribute_state = Boolean.valueOf(resource.getString("filter_attribute_state")).booleanValue();
 
     private static char attribute_equality_sign = resource.getString("attribute_equality_sign").charAt(1);
 
@@ -58,9 +58,9 @@ public class ECSDefaults
 
     private static char attribute_quote_char = resource.getString("attribute_quote_char").charAt(0);
 
-    private static boolean attribute_quote = new Boolean(resource.getString("attribute_quote")).booleanValue();
+    private static boolean attribute_quote = Boolean.valueOf(resource.getString("attribute_quote")).booleanValue();
 
-	private static boolean end_element = new Boolean(resource.getString("end_element")).booleanValue();
+	private static boolean end_element = Boolean.valueOf(resource.getString("end_element")).booleanValue();
 
 	private static String codeset = resource.getString("codeset");
 
@@ -72,7 +72,7 @@ public class ECSDefaults
 
 	private static char end_tag = resource.getString("end_tag").charAt(0);
 
-	private static boolean pretty_print = new Boolean(resource.getString("pretty_print")).booleanValue();
+	private static boolean pretty_print = Boolean.valueOf(resource.getString("pretty_print")).booleanValue();
 
 
 	/**

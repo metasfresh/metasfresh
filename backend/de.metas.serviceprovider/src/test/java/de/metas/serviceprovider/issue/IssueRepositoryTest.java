@@ -94,7 +94,7 @@ public class IssueRepositoryTest
 		final List<IssueEntity> nodeList = issueHierarchy.listIssues();
 
 		assertEquals(nodeList.size(), 4);
-		assertEquals(nodeList.get(0).getIssueId(), IssueId.ofRepoId(1));
+		assertEquals(nodeList.getFirst().getIssueId(), IssueId.ofRepoId(1));
 		assertEquals(nodeList.get(1).getIssueId(), IssueId.ofRepoId(2));
 		assertEquals(nodeList.get(2).getIssueId(), IssueId.ofRepoId(4));
 		assertEquals(nodeList.get(3).getIssueId(), IssueId.ofRepoId(8));

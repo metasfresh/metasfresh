@@ -30,10 +30,12 @@ import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serial;
 import java.util.EventObject;
 
 class SelectionColumnCellEditor extends AbstractCellEditor implements TableCellEditor
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public SelectionColumnCellEditor()

@@ -92,13 +92,13 @@ public class WFNodeTransitionCondition
 		}
 
 		final boolean result;
-		if (valueObj instanceof Number)
+		if (valueObj instanceof Number number)
 		{
-			result = evaluateAsNumbers((Number)valueObj, value1, value2);
+			result = evaluateAsNumbers(number, value1, value2);
 		}
-		else if (valueObj instanceof Boolean)
+		else if (valueObj instanceof Boolean boolean1)
 		{
-			result = evaluateAsBooleans((Boolean)valueObj, value1);
+			result = evaluateAsBooleans(boolean1, value1);
 		}
 		else
 		{

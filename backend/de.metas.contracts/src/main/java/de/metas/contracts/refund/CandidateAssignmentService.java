@@ -228,7 +228,7 @@ public class CandidateAssignmentService
 					.collect(ImmutableList.toImmutableList());
 
 			final RefundInvoiceCandidate highestRefundInvoiceCandidate = sortedByMinQty
-					.get(sortedByMinQty.size() - 1);
+					.getLast();
 
 			Quantity gap = Quantity.zero(assignableInvoiceCandidate.getQuantity().getUOM());
 

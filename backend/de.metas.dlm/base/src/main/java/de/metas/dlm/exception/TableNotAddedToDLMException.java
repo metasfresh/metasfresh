@@ -4,6 +4,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Table;
 
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
+
+import java.io.Serial;
 import de.metas.util.StringUtils;
 
 /*
@@ -36,6 +38,7 @@ import de.metas.util.StringUtils;
  */
 public class TableNotAddedToDLMException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -8314830541276513678L;
 
 	/**

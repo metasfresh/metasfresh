@@ -47,7 +47,7 @@ public class ESRTestUtil
 	{
 		final List<I_ESR_ImportLine> esrImportLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 		assertThat(esrImportLines).hasSize(1);
-		final I_ESR_ImportLine esrImportLine = esrImportLines.get(0);
+		final I_ESR_ImportLine esrImportLine = esrImportLines.getFirst();
 		return esrImportLine;
 	}
 

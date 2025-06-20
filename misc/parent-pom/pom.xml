@@ -31,29 +31,25 @@
 
     <properties>
         <!-- this is our default; individual projects might need to specify their own settings -->
-        <metasfresh.java.version>1.8</metasfresh.java.version>
+        <metasfresh.java.version>21</metasfresh.java.version>
 
         <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
-        <jackson.version>2.14.1</jackson.version>
-        <amqp-client.version>5.10.0</amqp-client.version>
-        
+        <jackson.version>2.17.1</jackson.version>
+        <amqp-client.version>5.20.0</amqp-client.version>
+
         <jasperreports.version>6.21.2</jasperreports.version>
 
         <itextpdf.version>5.5.13.3</itextpdf.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
+        <spring-boot-admin.version>3.2.2</spring-boot-admin.version>
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
-        <springfox-swagger.version>3.0.0</springfox-swagger.version>
-        <!--        Compatibility with Springfox-->
-        <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
-        <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
-        <springfox-enum-plugin.version>3.0.0</springfox-enum-plugin.version>
-        
+        <springdoc-swagger.version>1.8.0</springdoc-swagger.version>
+
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
-        <slf4j-api.version>1.7.25</slf4j-api.version>
+        <slf4j-api.version>2.0.9</slf4j-api.version>
 
         <!-- test related versions -->
         <!--
@@ -64,17 +60,18 @@
         <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
         <xmlunit.version>2.10.0</xmlunit.version>
 
-        <mockito.version>2.7.22</mockito.version>
-        <byte-buddy.version>1.12.20</byte-buddy.version>
+        <mockito.version>5.7.0</mockito.version>
+        <byte-buddy.version>1.14.11</byte-buddy.version>
         <objenesis.version>3.3</objenesis.version>
 
         <!-- please keep junit jupiter and platform versions synched up -->
-        <junit-jupiter.version>5.9.3</junit-jupiter.version>
-        <junit-platform.version>1.9.3</junit-platform.version>
+        <junit-jupiter.version>5.10.2</junit-jupiter.version>
+        <junit-platform.version>1.10.2</junit-platform.version>
 
-        <commons-io.version>2.11.0</commons-io.version>
-        <commons-lang3.version>3.12.0</commons-lang3.version>
-        <guava.version>30.1.1-jre</guava.version>
+        <commons-io.version>2.13.0</commons-io.version>
+        <commons-lang3.version>3.13.0</commons-lang3.version>
+        <guava.version>33.0.0-jre</guava.version>
+        <org.springdoc.version>2.8.8</org.springdoc.version>
     </properties>
 
     <modules>
@@ -95,7 +92,7 @@
             <version>4.0.2</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- 
         dependency of org.skyscreamer:jsonassert which is a dependency of json-snapshot
         I get a ClassNotFoundException JSONException, despite ofc it *should* be there transitively 
@@ -112,7 +109,7 @@
             <version>0.0.20131108.vaadin1</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -131,7 +128,7 @@
             <version>${junit-platform.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
     </dependencies>
 
     <dependencyManagement>
@@ -140,7 +137,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.18</version>
+                <version>1.18.38</version>
             </dependency>
 
             <dependency>
@@ -187,7 +184,41 @@
                 <artifactId>jsr305</artifactId>
                 <version>3.0.2</version>
             </dependency>
-            
+
+            <!-- JAXB dependencies for Jakarta EE 9+ -->
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>4.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>4.0.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>4.0.5</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>2.1.3</version>
+            </dependency>
+
+            <!-- JAX-WS dependencies for SOAP client generation -->
+            <dependency>
+                <groupId>jakarta.xml.ws</groupId>
+                <artifactId>jakarta.xml.ws-api</artifactId>
+                <version>4.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.ws</groupId>
+                <artifactId>jaxws-rt</artifactId>
+                <version>4.0.2</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
@@ -205,32 +236,29 @@
                 <artifactId>jp.osdn.ocrb</artifactId>
                 <version>0.2.1</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
                 <version>${logstash-logback-encoder.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>17.0.0</version>
             </dependency>
-            
+
         </dependencies>
 
     </dependencyManagement>
 
     <build>
         <plugins>
-            <!-- This plugin sometimes causes trouble in eclipse. we could move it to the "jenkins-BUILD_NUMBER-set" profile below,
-            but then when running locally against logstash, we would need to have some special configs which we don't have in prod
-             -->
             <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <version>4.0.4</version>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>9.0.2</version>
                 <executions>
                     <execution>
                         <id>get-the-git-infos</id>
@@ -242,6 +270,7 @@
                     </execution>
                 </executions>
                 <configuration>
+
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
                     <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
                     <!--includeOnlyProperties>
@@ -317,7 +346,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.13.0</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
@@ -334,9 +363,26 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.jvnet.jaxb2.maven2</groupId>
-                    <artifactId>maven-jaxb2-plugin</artifactId>
-                    <version>0.14.0</version>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>jaxb2-maven-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.xml.bind</groupId>
+                            <artifactId>jakarta.xml.bind-api</artifactId>
+                            <version>4.0.1</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.glassfish.jaxb</groupId>
+                            <artifactId>jaxb-runtime</artifactId>
+                            <version>4.0.5</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>jakarta.activation</groupId>
+                            <artifactId>jakarta.activation-api</artifactId>
+                            <version>2.1.3</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 
                 <plugin>
@@ -560,14 +606,19 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
-				<!-- https://github.com/qaware/go-offline-maven-plugin
-					enables our docker builds to resolve dependencies in a separate layer
-					and therefore cache it. -->
-				<plugin>
-					<groupId>de.qaware.maven</groupId>
-					<artifactId>go-offline-maven-plugin</artifactId>
-					<version>1.2.8</version>
-				</plugin>
+                <!-- https://github.com/qaware/go-offline-maven-plugin
+                    enables our docker builds to resolve dependencies in a separate layer
+                    and therefore cache it. -->
+                <plugin>
+                    <groupId>de.qaware.maven</groupId>
+                    <artifactId>go-offline-maven-plugin</artifactId>
+                    <version>1.2.8</version>
+                    <configuration>
+                        <!-- not sure - the sources might be needed to be put inside the final artifact -->
+                        <!--<downloadSources>false</downloadSources>-->
+                        <downloadJavadoc>false</downloadJavadoc>
+                    </configuration>
+                </plugin>
 
             </plugins>
         </pluginManagement>

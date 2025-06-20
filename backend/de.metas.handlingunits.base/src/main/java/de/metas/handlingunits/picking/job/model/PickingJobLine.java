@@ -271,8 +271,7 @@ public class PickingJobLine
 	{
 		return steps.stream()
 				.map(PickingJobStep::getLastPickedHU)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.max(Comparator.comparing(PickingJobStepPickedToHU::getCreatedAt))
 				.map(PickingJobStepPickedToHU::getActualPickedHU)
 				.map(HUInfo::getId);

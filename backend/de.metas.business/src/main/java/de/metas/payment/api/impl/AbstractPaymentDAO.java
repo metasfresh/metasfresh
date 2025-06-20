@@ -79,7 +79,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 			return null;
 		}
 
-		return ExternalId.of(externalIDs.get(0));
+		return ExternalId.of(externalIDs.getFirst());
 	}
 
 	@Override

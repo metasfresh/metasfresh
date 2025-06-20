@@ -22,8 +22,8 @@
 
 <jxb:bindings
         xmlns:xs="http://www.w3.org/2001/XMLSchema"
-        xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
-        version="2.1">
+        xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+        version="3.0">
 
     <!-- Raise theEnumMemberSizeCap limit -->
     <!-- otherwise we get org.xml.sax.SAXParseException: Simple type "LanguageType" was not mapped to Enum due to EnumMemberSizeCap limit. Facets count: 493, current limit: 256. You can use customization attribute "typesafeEnumMaxMembers" to extend the limit. -->

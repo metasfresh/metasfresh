@@ -109,8 +109,8 @@ public class TransactionEventHandlerTest
 		assertThat(result.get(1).getParentId()).isEqualTo(candidate.getParentId());
 		assertThat(result.get(1).getQuantity()).isEqualTo(ZERO);
 
-		assertThat(result.get(0).getId()).isEqualTo(CandidateId.NULL);
-		assertThat(result.get(0).getParentId()).isEqualTo(CandidateId.NULL);
-		assertThat(result.get(0).getQuantity()).isEqualByComparingTo("23");
+		assertThat(result.getFirst().getId()).isEqualTo(CandidateId.NULL);
+		assertThat(result.getFirst().getParentId()).isEqualTo(CandidateId.NULL);
+		assertThat(result.getFirst().getQuantity()).isEqualByComparingTo("23");
 	}
 }

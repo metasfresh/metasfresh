@@ -24,6 +24,7 @@ package org.compiere.swing;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.io.Serial;
 import java.util.Properties;
 
 import javax.swing.JLabel;
@@ -47,6 +48,7 @@ public class WindowHeaderNotice extends JPanel
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -914277060790906131L;
 
 	private final JLabel label = new JLabel();

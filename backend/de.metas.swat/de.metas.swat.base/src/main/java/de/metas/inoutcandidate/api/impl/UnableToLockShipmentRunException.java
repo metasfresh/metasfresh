@@ -25,6 +25,8 @@ package de.metas.inoutcandidate.api.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when some shipment schedules could not be locked for shipment run.
  * 
@@ -36,6 +38,7 @@ public class UnableToLockShipmentRunException extends AdempiereException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 2410195779729984628L;
 
 	public static final String MSG = "ShipmentRun_Unable_To_Lock";

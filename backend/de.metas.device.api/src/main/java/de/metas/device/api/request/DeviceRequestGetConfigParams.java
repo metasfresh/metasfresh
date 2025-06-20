@@ -54,6 +54,6 @@ public final class DeviceRequestGetConfigParams implements IDeviceRequest<IDevic
 	@Override
 	public String toString()
 	{
-		return String.format("DeviceRequestGetConfigParams []");
+		return "DeviceRequestGetConfigParams []".formatted();
 	}
 }

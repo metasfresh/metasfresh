@@ -628,7 +628,7 @@ public class JsonShipmentService
 
 		final Optional<ShipmentScheduleId> shipmentScheduleId = Optional.ofNullable(shipmentSchedulePA.getShipmentScheduleIdByOrderLineId(orderLineId));
 
-		if (!shipmentScheduleId.isPresent())
+		if (shipmentScheduleId.isEmpty())
 		{
 			throw new AdempiereException("No shipment schedule found for orderLineId" + orderLineId);
 		}

@@ -183,9 +183,8 @@ public final class CompositeValidationRule implements IValidationRule
 
 	private static void unboxAndAppendToList(@Nullable final IValidationRule rule, @NonNull final ArrayList<IValidationRule> list)
 	{
-		if (rule instanceof CompositeValidationRule)
+		if (rule instanceof CompositeValidationRule compositeRule)
 		{
-			final CompositeValidationRule compositeRule = (CompositeValidationRule)rule;
 			for (final IValidationRule childRule : compositeRule.rules)
 			{
 				unboxAndAppendToList(childRule, list);
@@ -212,7 +211,7 @@ public final class CompositeValidationRule implements IValidationRule
 			}
 			else if (rules.size() == 1)
 			{
-				return rules.get(0);
+				return rules.getFirst();
 			}
 			else
 			{
@@ -246,9 +245,8 @@ public final class CompositeValidationRule implements IValidationRule
 				return this;
 			}
 
-			if (explodeComposite && rule instanceof CompositeValidationRule)
+			if (explodeComposite && rule instanceof CompositeValidationRule compositeRule)
 			{
-				final CompositeValidationRule compositeRule = (CompositeValidationRule)rule;
 				addAll(compositeRule.getValidationRules(), true);
 			}
 			else

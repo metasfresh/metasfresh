@@ -631,9 +631,8 @@ public class BoardDescriptorRepository
 
 		//
 		// Determine by value type
-		if (value instanceof Amount)
+		if (value instanceof Amount amount)
 		{
-			final Amount amount = (Amount)value;
 			return TranslatableStrings.join(" ", TranslatableStrings.amount(amount));
 
 		}
@@ -667,13 +666,13 @@ public class BoardDescriptorRepository
 		}
 		else if (widgetType.isLookup())
 		{
-			if (value instanceof LookupValue)
+			if (value instanceof LookupValue lookupValue1)
 			{
-				return ((LookupValue)value).getDisplayNameTrl();
+				return lookupValue1.getDisplayNameTrl();
 			}
-			else if (value instanceof JSONLookupValue)
+			else if (value instanceof JSONLookupValue lookupValue)
 			{
-				return TranslatableStrings.constant(((JSONLookupValue)value).getCaption().trim());
+				return TranslatableStrings.constant(lookupValue.getCaption().trim());
 			}
 		}
 		else if (widgetType.isBoolean())

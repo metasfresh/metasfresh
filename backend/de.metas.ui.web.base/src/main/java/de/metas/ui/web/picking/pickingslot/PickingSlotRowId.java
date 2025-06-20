@@ -71,7 +71,7 @@ public final class PickingSlotRowId
 			throw new IllegalArgumentException("Invalid id: " + parts);
 		}
 
-		final PickingSlotId pickingSlotId = !Check.isEmpty(parts.get(0), true) ? PickingSlotId.ofRepoIdOrNull(Integer.parseInt(parts.get(0))) : null;
+		final PickingSlotId pickingSlotId = !Check.isEmpty(parts.getFirst(), true) ? PickingSlotId.ofRepoIdOrNull(Integer.parseInt(parts.getFirst())) : null;
 		final HuId huId = partsCount >= 2 ? HuId.ofRepoIdOrNull(Integer.parseInt(parts.get(1))) : null;
 		final int huStorageProductId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : 0;
 

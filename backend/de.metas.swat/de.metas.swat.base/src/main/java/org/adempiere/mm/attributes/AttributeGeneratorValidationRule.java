@@ -68,11 +68,8 @@ public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 			return false;
 		}
 
-		if (handler instanceof IAttributeValueGenerator)
+		if (handler instanceof IAttributeValueGenerator generator)
 		{
-			//
-			// generator shall have the same type as our attribute
-			final IAttributeValueGenerator generator = (IAttributeValueGenerator)handler;
 			final String generatorAcceptsValueType = generator.getAttributeValueType();
 			return generatorAcceptsValueType == null || valueType.equals(generatorAcceptsValueType);
 		}

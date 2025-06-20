@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.Serial;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -69,9 +70,10 @@ import it.cnr.imaa.essi.lablib.gui.checkboxtree.QuadristateButtonModel.State;
 
 public class QuadristateCheckbox extends JCheckBox {
 
-    /**
+	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -4949797740238852560L;
 
 	public QuadristateCheckbox(String text, Icon icon, State state) {
@@ -87,9 +89,10 @@ public class QuadristateCheckbox extends JCheckBox {
 	// Reset the keyboard action map
 	ActionMap map = new ActionMapUIResource();
 	map.put("pressed", new AbstractAction() {
-	    /**
+		/**
 		 * 
 		 */
+		@Serial
 		private static final long serialVersionUID = 1L;
 
 		@Override

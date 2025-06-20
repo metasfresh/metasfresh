@@ -53,9 +53,9 @@ public abstract class AbstractRModelAggregatedValue implements IRModelAggregated
 		{
 			return BigDecimal.ZERO;
 		}
-		else if (valueObj instanceof BigDecimal)
+		else if (valueObj instanceof BigDecimal decimal)
 		{
-			return (BigDecimal)valueObj;
+			return decimal;
 		}
 		else
 		{

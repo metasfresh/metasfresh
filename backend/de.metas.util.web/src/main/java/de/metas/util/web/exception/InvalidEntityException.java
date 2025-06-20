@@ -25,10 +25,13 @@ package de.metas.util.web.exception;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.i18n.ITranslatableString;
+
+import java.io.Serial;
 import lombok.NonNull;
 
 public class InvalidEntityException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = 6604967036646252654L;
 
 	public InvalidEntityException(@NonNull final ITranslatableString message)

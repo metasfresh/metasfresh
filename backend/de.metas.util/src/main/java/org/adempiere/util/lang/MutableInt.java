@@ -65,9 +65,8 @@ public final class MutableInt implements Comparable<MutableInt>, Serializable
 			return true;
 		}
 
-		if (obj instanceof MutableInt)
+		if (obj instanceof MutableInt other)
 		{
-			final MutableInt other = (MutableInt)obj;
 			return value == other.value;
 		}
 		else

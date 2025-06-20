@@ -28,10 +28,13 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 import lombok.NonNull;
 
 public class MissingPropertyException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -3485523266695546853L;
 
 	public MissingPropertyException(

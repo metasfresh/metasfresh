@@ -94,7 +94,7 @@ public class RefundInvoiceCandidate
 
 		final I_C_UOM uomRecord = assignedQuantity.getUOM();
 
-		if (!nextRefundConfig.isPresent())
+		if (nextRefundConfig.isEmpty())
 		{
 			return Quantity.infinite(uomRecord);
 		}

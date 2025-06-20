@@ -209,8 +209,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				// Stop if we reached the MAXIMUM limit
 				if (loadLimitMax > 0 && loadCount >= loadLimitMax)
 				{
-					logger.warn("Reached load count MAXIMUM level. Stop loading. \n SQL: {} \n loadCount: {}"
-									+ "\n To change this limit check {} sysconfig.",
+					logger.warn("""
+									Reached load count MAXIMUM level. Stop loading.\s
+									 SQL: {}\s
+									 loadCount: {}
+									 To change this limit check {} sysconfig.""",
 							sql, loadCount, SYSCONFIG_LoadLimitMax);
 					break;
 				}
@@ -218,8 +221,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				// WARN if we reached the Warning limit
 				if (!loadLimitWarnReported && loadLimitWarn > 0 && loadCount >= loadLimitWarn)
 				{
-					logger.warn("Reached load count Warning level. Continue loading. \n SQL: {} \n loadCount: {}"
-									+ "\n To change this limit check {} sysconfig.",
+					logger.warn("""
+									Reached load count Warning level. Continue loading.\s
+									 SQL: {}\s
+									 loadCount: {}
+									 To change this limit check {} sysconfig.""",
 							sql, loadCount, SYSCONFIG_LoadLimitWarn);
 					loadLimitWarnReported = true;
 				}
@@ -336,7 +342,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			}
 			else if (idFields.size() == 1)
 			{
-				final Object idObj = getValue(idFields.get(0));
+				final Object idObj = getValue(idFields.getFirst());
 				return DocumentId.ofObject(idObj);
 			}
 			else
@@ -816,9 +822,9 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		{
 			return true;
 		}
-		else if (value instanceof String)
+		else if (value instanceof String string)
 		{
-			return ((String)value).isEmpty();
+			return string.isEmpty();
 		}
 		else
 		{

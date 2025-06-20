@@ -294,7 +294,7 @@ public class StockQtyAndUOMQtys
 					.appendParametersToMessage()
 					.setParameter("differentValues", differentValues);
 		}
-		return differentValues.get(0);
+		return differentValues.getFirst();
 	}
 
 	public static void assumeCommonProductAndUom(@NonNull final StockQtyAndUOMQty... qtys)

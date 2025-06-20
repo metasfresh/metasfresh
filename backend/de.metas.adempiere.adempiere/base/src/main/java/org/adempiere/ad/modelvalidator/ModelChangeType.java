@@ -121,8 +121,8 @@ public enum ModelChangeType implements TimingType
 
 	public static boolean isBeforeSaveTrx(final TimingType timingType)
 	{
-		return timingType instanceof ModelChangeType
-				? ((ModelChangeType)timingType).isBeforeSaveTrx()
+		return timingType instanceof ModelChangeType mct
+				? mct.isBeforeSaveTrx()
 				: false;
 	}
 }

@@ -1,11 +1,16 @@
 package de.metas.vertical.pharma.msv3.server.security;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.transaction.Transactional;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3MetasfreshUserId;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent.ChangeType;
+import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUser;
+import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUserRepository;
+import jakarta.transaction.Transactional;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,17 +20,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
-import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3MetasfreshUserId;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent.ChangeType;
-import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUser;
-import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUserRepository;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * #%L

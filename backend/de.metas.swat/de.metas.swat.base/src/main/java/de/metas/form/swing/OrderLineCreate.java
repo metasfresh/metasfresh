@@ -37,6 +37,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +83,7 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 4930221599499941808L;
 
 	private final int windowNo;
@@ -203,8 +205,8 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 		//
 		if (focusField != null) {
 			focusField.requestFocus();
-			if (focusField instanceof JTextComponent) {
-				((JTextComponent) focusField).selectAll();
+			if (focusField instanceof JTextComponent component) {
+				component.selectAll();
 			}
 		}
 	}
@@ -238,10 +240,10 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 		Object value = fQtyOrdered.getValue();
 		if (value == null || value.toString().trim().length() == 0)
 			return Env.ZERO;
-		else if (value instanceof BigDecimal)
-			return (BigDecimal) value;
-		else if (value instanceof Integer)
-			return BigDecimal.valueOf(((Integer) value));
+		else if (value instanceof BigDecimal decimal)
+			return decimal;
+		else if (value instanceof Integer integer)
+			return BigDecimal.valueOf(integer);
 		else
 			return new BigDecimal(value.toString());
 	}

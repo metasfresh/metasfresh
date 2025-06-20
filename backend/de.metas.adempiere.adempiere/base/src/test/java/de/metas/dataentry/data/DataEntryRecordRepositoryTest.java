@@ -63,15 +63,16 @@ public class DataEntryRecordRepositoryTest
 	@Test
 	public void saveData_empty() throws JSONException
 	{
-		final String expectedEmptyJSON = "{\r\n" +
-				"  \"createdUpdatedInfos\" : { },\r\n" +
-				"  \"dates\" : { },\r\n" +
-				"  \"listValues\" : { },\r\n" +
-				"  \"numbers\" : { },\r\n" +
-				"  \"strings\" : { },\r\n" +
-				"  \"yesNos\" : { }\r\n" +
-				"}\r\n" +
-				"";
+		final String expectedEmptyJSON = """
+				{
+				  "createdUpdatedInfos" : { },
+				  "dates" : { },
+				  "listValues" : { },
+				  "numbers" : { },
+				  "strings" : { },
+				  "yesNos" : { }
+				}
+				""";
 
 		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
 		final DataEntryRecord dataEntryRecord = DataEntryRecord

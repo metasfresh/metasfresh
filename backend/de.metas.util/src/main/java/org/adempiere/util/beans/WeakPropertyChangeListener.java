@@ -142,9 +142,8 @@ import de.metas.util.StringUtils;
 		final Object source = evt.getSource();
 
 		final PropertyChangeEvent evtNew;
-		if (source instanceof Reference)
+		if (source instanceof Reference<?> sourceRef)
 		{
-			final Reference<?> sourceRef = (Reference<?>)source;
 			final Object sourceObj = sourceRef.get();
 			if (sourceObj == null)
 			{

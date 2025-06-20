@@ -556,7 +556,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 			if (bpl.isShipToDefault())
 			{
-				shipToLocations.add(0, bpl);
+				shipToLocations.addFirst(bpl);
 			}
 			else
 			{
@@ -615,7 +615,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 		else if (bpLocations.size() == 1)
 		{
-			return bpLocations.get(0);
+			return bpLocations.getFirst();
 		}
 		else
 		{
@@ -1649,7 +1649,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				throw new AdempiereException("Cycle detected: " + path);
 			}
 
-			path.add(0, currentBPartnerId);
+			path.addFirst(currentBPartnerId);
 
 			currentBPartnerId = getParentIdInTrx(currentBPartnerId);
 		}

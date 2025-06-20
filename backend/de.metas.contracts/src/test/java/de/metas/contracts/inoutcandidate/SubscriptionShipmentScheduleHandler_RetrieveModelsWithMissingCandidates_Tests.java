@@ -135,9 +135,9 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 		final List<? extends Object> result = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
 
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0)).isInstanceOf(I_C_SubscriptionProgress.class);
+		assertThat(result.getFirst()).isInstanceOf(I_C_SubscriptionProgress.class);
 
-		final I_C_SubscriptionProgress retrievedProgress = (I_C_SubscriptionProgress)result.get(0);
+		final I_C_SubscriptionProgress retrievedProgress = (I_C_SubscriptionProgress)result.getFirst();
 		assertThat(retrievedProgress.getC_SubscriptionProgress_ID()).isEqualTo(firstRecord.getC_SubscriptionProgress_ID());
 	}
 
@@ -150,7 +150,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 			assertThat(r).isInstanceOf(I_C_SubscriptionProgress.class);
 		});
 
-		final I_C_SubscriptionProgress retrievedProgress = (I_C_SubscriptionProgress)secondResult.get(0);
+		final I_C_SubscriptionProgress retrievedProgress = (I_C_SubscriptionProgress)secondResult.getFirst();
 		assertThat(retrievedProgress.getC_SubscriptionProgress_ID()).isEqualTo(firstRecord.getC_SubscriptionProgress_ID());
 
 		final I_C_SubscriptionProgress retrievedProgressInTheFuture = (I_C_SubscriptionProgress)secondResult.get(1);

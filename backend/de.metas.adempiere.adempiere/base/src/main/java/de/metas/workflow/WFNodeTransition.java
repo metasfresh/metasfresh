@@ -99,7 +99,7 @@ public class WFNodeTransition
 		}
 
 		//	First condition always AND
-		boolean ok = conditions.get(0).evaluate(fromActivity);
+		boolean ok = conditions.getFirst().evaluate(fromActivity);
 		for (int i = 1; i < conditions.size(); i++)
 		{
 			final WFNodeTransitionCondition condition = conditions.get(i);
