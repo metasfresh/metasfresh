@@ -10,7 +10,6 @@ import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -91,7 +90,6 @@ public class ManufacturingJobService
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
@@ -345,11 +343,6 @@ public class ManufacturingJobService
 	{
 		InSetPredicate<ResourceId> onlyPlantIds = InSetPredicate.any();
 
-		// if (query.getPlantId() != null)
-		// {
-		// 	onlyPlantIds = onlyPlantIds.intersectWith(query.getPlantId());
-		// }
-
 		if (!onlyPlantIds.isNone())
 		{
 			final ImmutableSet<ResourceTypeId> facetResourceTypeIds = query.getActiveFacetIds().getResourceTypeIds();
@@ -532,7 +525,6 @@ public class ManufacturingJobService
 					.ppOrderBL(ppOrderBL)
 					.ppOrderBOMBL(ppOrderBOMBL)
 					.uomConversionBL(uomConversionBL)
-					.huPIItemProductBL(hupiItemProductBL)
 					.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
 					//
 					.request(ReceiveGoodsRequest.builder()
