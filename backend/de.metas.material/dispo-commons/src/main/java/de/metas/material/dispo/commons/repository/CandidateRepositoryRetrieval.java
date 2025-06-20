@@ -380,20 +380,7 @@ public class CandidateRepositoryRetrieval
 		final ImmutableList<CandidateId> orderedCandidateIds = addOrderingLatestFirst(queryBuilderWithoutOrdering)
 				.create()
 				.listIds(CandidateId::ofRepoId);
-		if (orderedCandidateIds.isEmpty())
-		{
-			return null;
-		}
-		final CandidateId previousCandidateId;
-		if (!orderedCandidateIds.contains(candidateId))
-		{
-			previousCandidateId = orderedCandidateIds.get(orderedCandidateIds.size() - 1);
-		}
-		else
-		{
-			previousCandidateId = orderedCandidateIds.get(orderedCandidateIds.indexOf(candidateId) - 1);
-		}
-		return retrieveLatestMatchOrNull(CandidatesQuery.fromId(previousCandidateId));
+		return orderedCandidateIds.isEmpty() ? null : retrieveLatestMatchOrNull(CandidatesQuery.fromId(orderedCandidateIds.get(0)));
 	}
 
 	@NonNull
