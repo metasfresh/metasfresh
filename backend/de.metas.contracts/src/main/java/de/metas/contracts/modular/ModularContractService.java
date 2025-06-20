@@ -450,7 +450,7 @@ public class ModularContractService
 		{
 			final Set<OrderId> relatedSalesOrdersIds = getSalesOrderIdsLinkedToPurchaseModularContract(modularContractIds);
 
-			final boolean notClosedSalesOrderExists = relatedSalesOrdersIds.stream().anyMatch(not(orderBL::isClosed));
+			final boolean notClosedSalesOrderExists = relatedSalesOrdersIds.stream().anyMatch(not(orderBL::isVoidedOrClosed));
 			if(notClosedSalesOrderExists)
 			{
 				throw new AdempiereException(MSG_CONTRACT_HAS_NOT_CLOSED_SALES_ORDERS);
