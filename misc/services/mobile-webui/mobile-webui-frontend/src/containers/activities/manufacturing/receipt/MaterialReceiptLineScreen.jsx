@@ -83,6 +83,7 @@ const MaterialReceiptLineScreen = () => {
     catchWeight,
     catchWeightUom,
     bestBeforeDate,
+    productionDate,
     lotNo,
     isBarcodeScan = false,
     isDone = true,
@@ -104,6 +105,7 @@ const MaterialReceiptLineScreen = () => {
         catchWeight,
         catchWeightUom,
         bestBeforeDate,
+        productionDate,
         lotNo,
         isBarcodeScan,
       })

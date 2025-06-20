@@ -141,10 +141,10 @@ import java.util.Optional;
 	@Nullable
 	private String lotNumber;
 
-	@SuppressWarnings("OptionalAssignedToNull")
+	@SuppressWarnings({ "OptionalAssignedToNull", "OptionalUsedAsFieldOrParameterType" })
 	private Optional<String> lotNumberFromSequence = null;
-	@Nullable
-	private LocalDate bestBeforeDate;
+	@Nullable private LocalDate bestBeforeDate;
+	@Nullable private LocalDate productionDate;
 	//
 	private boolean processReceiptCandidates;
 
@@ -254,7 +254,7 @@ import java.util.Optional;
 
 		//
 		// Create Allocation Request
-		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive, ppOrderReceiptCandidateCollector.orgId);
+		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive);
 
 		//
 		// Execute transfer
@@ -350,10 +350,17 @@ import java.util.Optional;
 					huAttributesBL.updateHUAttributeRecursive(huId, AttributeConstants.ATTR_LotNumber, lotNumber, null);
 				}
 			}
+
 			if (bestBeforeDate != null
 					&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 			{
 				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+			}
+
+			if (productionDate != null
+					&& huAttributes.hasAttribute(AttributeConstants.ProductionDate))
+			{
+				huAttributes.setValue(AttributeConstants.ProductionDate, productionDate);
 			}
 
 			huAttributesBL.updateHUAttributeRecursive(
@@ -380,9 +387,9 @@ import java.util.Optional;
 			if (sequenceId != null)
 			{
 				lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
-																	 .sequenceId(sequenceId)
-																	 .clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
-																	 .build());
+						.sequenceId(sequenceId)
+						.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
+						.build());
 
 			}
 			this.lotNumberFromSequence = lotNumber;
@@ -418,7 +425,7 @@ import java.util.Optional;
 		return locatorId;
 	}
 
-	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive, final OrgId orgId)
+	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive)
 	{
 		final ProductId productId = getProductId();
 		final ZonedDateTime date = getMovementDate();
@@ -559,6 +566,13 @@ import java.util.Optional;
 	public IPPOrderReceiptHUProducer bestBeforeDate(@Nullable final LocalDate bestBeforeDate)
 	{
 		this.bestBeforeDate = bestBeforeDate;
+		return this;
+	}
+
+	@Override
+	public IPPOrderReceiptHUProducer productionDate(@Nullable final LocalDate productionDate)
+	{
+		this.productionDate = productionDate;
 		return this;
 	}
 
