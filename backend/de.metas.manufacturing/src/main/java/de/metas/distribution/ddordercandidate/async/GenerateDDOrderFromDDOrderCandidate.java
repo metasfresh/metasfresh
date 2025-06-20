@@ -3,11 +3,13 @@ package de.metas.distribution.ddordercandidate.async;
 import ch.qos.logback.classic.Level;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateProcessRequest;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -27,11 +29,15 @@ public class GenerateDDOrderFromDDOrderCandidate extends WorkpackageProcessorAda
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
-		ddOrderCandidateService.process(getProcessRequest());
+		final UserId userId = UserId.ofRepoId(CoalesceUtil.firstGreaterThanZero(
+				workPackage.getAD_User_InCharge_ID(),
+				workPackage.getAD_User_ID())); // if both are <=0 we end up with UserId.SYSTEM which is OK
+		
+		ddOrderCandidateService.process(getProcessRequest(userId));
 		return Result.SUCCESS;
 	}
 
-	private DDOrderCandidateProcessRequest getProcessRequest()
+	private DDOrderCandidateProcessRequest getProcessRequest(@NonNull final UserId userId)
 	{
 		final DDOrderCandidateEnqueueRequest enqueueRequest = DDOrderCandidateEnqueueService.extractRequest(getParameters());
 		final PInstanceId selectionId = enqueueRequest.getSelectionId();
@@ -41,6 +47,7 @@ public class GenerateDDOrderFromDDOrderCandidate extends WorkpackageProcessorAda
 		logCandidatesToProcess(candidates, selectionId);
 
 		return DDOrderCandidateProcessRequest.builder()
+				.userId(userId)
 				.candidates(candidates)
 				.build();
 	}

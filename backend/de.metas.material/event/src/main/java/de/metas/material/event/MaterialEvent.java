@@ -53,6 +53,7 @@ import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -164,6 +165,9 @@ public interface MaterialEvent
 	@NonNull
 	@JsonIgnore
 	default ClientAndOrgId getClientAndOrgId() {return getEventDescriptor().getClientAndOrgId();}
+
+	@JsonIgnore
+	default UserId getUserId() {return getEventDescriptor().getUserId(); }
 
 	@Nullable
 	@JsonIgnore

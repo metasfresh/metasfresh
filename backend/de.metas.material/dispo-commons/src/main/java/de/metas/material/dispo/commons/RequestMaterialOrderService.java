@@ -79,12 +79,12 @@ public class RequestMaterialOrderService
 	 */
 	public void requestMaterialOrderForCandidates(
 			@NonNull final MaterialDispoGroupId groupId,
-			@Nullable final String traceId)
+			@NonNull final EventDescriptor eventDescriptor)
 	{
 		try
 		{
 			final CandidatesGroup group = candidateRepository.retrieveGroup(groupId);
-			requestMaterialOrderForCandidates(group, traceId);
+			requestMaterialOrderForCandidates(group, eventDescriptor);
 		}
 		catch (final RuntimeException e)
 		{
@@ -94,7 +94,8 @@ public class RequestMaterialOrderService
 		}
 	}
 
-	public void requestMaterialOrderForCandidates(@NonNull final CandidatesGroup group, @Nullable final String traceId)
+	public void requestMaterialOrderForCandidates(@NonNull final CandidatesGroup group,
+												  @NonNull final EventDescriptor eventDescriptor)
 	{
 		if (group.isEmpty())
 		{
@@ -107,16 +108,16 @@ public class RequestMaterialOrderService
 			switch (businessCase)
 			{
 				case PRODUCTION:
-					createAndFirePPOrderRequestedEvent(group);
+					createAndFirePPOrderRequestedEvent(group, eventDescriptor);
 					break;
 				case DISTRIBUTION:
-					createAndFireDDOrderRequestedEvent(group, traceId);
+					createAndFireDDOrderRequestedEvent(group, eventDescriptor);
 					break;
 				case PURCHASE:
-					createAndFirePurchaseCandidateRequestedEvent(group, traceId);
+					createAndFirePurchaseCandidateRequestedEvent(group, eventDescriptor);
 					break;
 				case FORECAST:
-					createAndFireForecastRequestedEvent(group);
+					createAndFireForecastRequestedEvent(group, eventDescriptor);
 					break;
 				default:
 					break;
@@ -135,14 +136,16 @@ public class RequestMaterialOrderService
 	 *              all have the same {@link Candidate#getGroupId()}
 	 *              and all have appropriate not-null {@link Candidate#getBusinessCaseDetail()}s that need to be {@link ProductionDetail} instances.
 	 */
-	private void createAndFirePPOrderRequestedEvent(@NonNull final CandidatesGroup group)
+	private void createAndFirePPOrderRequestedEvent(@NonNull final CandidatesGroup group,
+													@NonNull final EventDescriptor eventDescriptor)
 	{
-		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
+		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group, eventDescriptor);
 		materialEventService.enqueueEventNow(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	PPOrderRequestedEvent createPPOrderRequestedEvent(@NonNull final CandidatesGroup group)
+	PPOrderRequestedEvent createPPOrderRequestedEvent(@NonNull final CandidatesGroup group,
+													  @NonNull final EventDescriptor eventDescriptor)
 	{
 		group.assertNotEmpty();
 
@@ -214,23 +217,25 @@ public class RequestMaterialOrderService
 		ppOrderDataBuilder.materialDispoGroupId(group.getEffectiveGroupId());
 
 		return PPOrderRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(group.getClientAndOrgId()))
+				.eventDescriptor(eventDescriptor.withClientAndOrg(group.getClientAndOrgId()))
 				.dateOrdered(de.metas.common.util.time.SystemTime.asInstant())
 				.ppOrder(ppOrderBuilder.ppOrderData(ppOrderDataBuilder.build()).build())
 				.build();
 	}
 
-	private void createAndFireDDOrderRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
+	private void createAndFireDDOrderRequestedEvent(@NonNull final CandidatesGroup group, 
+													@NonNull final EventDescriptor eventDescriptor)
 	{
-		final DDOrderCandidateRequestedEvent event = createDDOrderCandidateRequestedEvent(group, traceId);
+		final DDOrderCandidateRequestedEvent event = createDDOrderCandidateRequestedEvent(group, eventDescriptor);
 		materialEventService.enqueueEventNow(event);
 	}
 
 	@VisibleForTesting
-	DDOrderCandidateRequestedEvent createDDOrderCandidateRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
+	DDOrderCandidateRequestedEvent createDDOrderCandidateRequestedEvent(@NonNull final CandidatesGroup group,
+																		@NonNull final EventDescriptor eventDescriptor)
 	{
 		return DDOrderCandidateRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(group.getClientAndOrgId(), traceId))
+				.eventDescriptor(eventDescriptor.withClientAndOrg(group.getClientAndOrgId()))
 				.dateOrdered(SystemTime.asInstant())
 				.ddOrderCandidateData(toDDOrderCandidateData(group))
 				.build();
@@ -272,20 +277,22 @@ public class RequestMaterialOrderService
 				.build();
 	}
 
-	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
+	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group,
+															  @NonNull final EventDescriptor eventDescriptor)
 	{
-		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group, traceId);
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group, eventDescriptor);
 		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
-	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
+	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, 
+																				  @NonNull final EventDescriptor eventDescriptor)
 	{
 		final Candidate singleCandidate = group.getSingleCandidate();
 
 		final Dimension dimension = singleCandidate.getDimension();
 
 		return PurchaseCandidateRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(singleCandidate.getClientAndOrgId(), traceId))
+				.eventDescriptor(eventDescriptor.withClientAndOrg(singleCandidate.getClientAndOrgId()))
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.salesOrderLineRepoId(singleCandidate.getAdditionalDemandDetail().getOrderLineId())
@@ -309,20 +316,22 @@ public class RequestMaterialOrderService
 				.build();
 	}
 
-	private void createAndFireForecastRequestedEvent(@NonNull final CandidatesGroup group)
+	private void createAndFireForecastRequestedEvent(@NonNull final CandidatesGroup group,
+													 @NonNull final EventDescriptor eventDescriptor)
 	{
-		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForecastRequestedEvent(group);
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForecastRequestedEvent(group, eventDescriptor);
 		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
-	private PurchaseCandidateRequestedEvent createForecastRequestedEvent(@NonNull final CandidatesGroup group)
+	private PurchaseCandidateRequestedEvent createForecastRequestedEvent(@NonNull final CandidatesGroup group,
+																		 @NonNull final EventDescriptor eventDescriptor)
 	{
 		final Candidate singleCandidate = group.getSingleCandidate();
 
 		final Dimension dimension = singleCandidate.getDimension();
 
 		return PurchaseCandidateRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
+				.eventDescriptor(eventDescriptor.withClientAndOrg(singleCandidate.getClientAndOrgId()))
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
 				.forecastId(singleCandidate.getDemandDetail().getForecastId())
@@ -356,6 +365,7 @@ public class RequestMaterialOrderService
 				.orElse(null);
 	}
 
+	@Nullable
 	private static PPOrderRef getPpOrderRef(final Candidate candidate)
 	{
 		final ProductionDetail productionDetail = candidate.getBusinessCaseDetail(ProductionDetail.class).orElse(null);

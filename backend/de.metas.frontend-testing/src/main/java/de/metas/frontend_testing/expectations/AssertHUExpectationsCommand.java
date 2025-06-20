@@ -84,8 +84,13 @@ class AssertHUExpectationsCommand
 
 	private HuId getHUIdByMatcherString(@NonNull final String matcherStr)
 	{
-		@NonNull final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(matcherStr);
-		return services.getHuIdByQRCode(qrCode);
+		final HuId huId = context.getOptionalId(Identifier.ofString(matcherStr), HuId.class).orElse(null);
+		if (huId != null)
+		{
+			return huId;
+		}
+
+		return services.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(matcherStr));
 	}
 
 	private void assertAttributes(@NonNull final Map<String, String> expectations, @NonNull final HuId huId)
