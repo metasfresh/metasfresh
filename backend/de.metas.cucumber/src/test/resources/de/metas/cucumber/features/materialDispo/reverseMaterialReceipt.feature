@@ -93,7 +93,7 @@ Feature: Reversal of material receipt
       | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected       | Qty | ATP |
       | c_1        | SUPPLY              | PURCHASE                  | product      | 2021-04-15T15:00:00 | 0   | 0   |
       | c_2        | UNEXPECTED_INCREASE | PURCHASE                  | product      | 2021-04-14T00:00:00 | 10  | 10  |
-      | c_3        | UNEXPECTED_DECREASE | PURCHASE                  | product      | 2021-04-14T00:00:00 | 10  | -10 |
+      | c_3        | UNEXPECTED_DECREASE | PURCHASE                  | product      | 2021-04-14T00:00:00 | 10  | 0   |
 
 
 

@@ -8,8 +8,6 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -211,7 +209,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
 				.create()
-				.listIds(ShipmentScheduleId::ofRepoId);
+				.idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
 
 	@Override
@@ -421,7 +419,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 					.setOnlySelection(selectionId)
 					.create()
-					.listIds(ShipmentScheduleId::ofRepoId);
+					.idsAsSet(ShipmentScheduleId::ofRepoId);
 			if (!shipmentScheduleIds.isEmpty())
 			{
 				request = CacheInvalidateMultiRequest.rootRecords(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
@@ -623,7 +621,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
 				.create()
-				.listIds(ShipmentScheduleId::ofRepoId);
+				.idsAsSet(ShipmentScheduleId::ofRepoId);
 	}
 
 	@Override

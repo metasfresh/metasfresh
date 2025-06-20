@@ -397,6 +397,6 @@ public class DocTypeDAO implements IDocTypeDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_C_DocType_Invoicing_Pool_ID, docTypeInvoicingPoolId)
 				.create()
-				.listIds(DocTypeId::ofRepoId);
+				.idsAsSet(DocTypeId::ofRepoId);
 	}
 }

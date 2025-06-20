@@ -89,7 +89,7 @@ public class PurchaseOrderToShipperTransportationRepository
 				.filter(queryFilter)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, false)
 				.create()
-				.listIds(OrderId::ofRepoId)
+				.idsAsSet(OrderId::ofRepoId)
 				.stream()
 				.filter(orderId -> purchaseOrderNotInShipperTransportation(orderId))
 				.collect(ImmutableList.toImmutableList());
