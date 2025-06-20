@@ -61,7 +61,7 @@ public class JsonErrorItem
 	@JsonInclude(Include.NON_EMPTY)
 	String stackTrace;
 
-	Map<String, String> parameters;
+	Map<String, Object> parameters;
 
 	@JsonInclude(Include.NON_EMPTY)
 	JsonMetasfreshId adIssueId;
@@ -95,7 +95,7 @@ public class JsonErrorItem
 			@JsonProperty("userFriendlyError") boolean userFriendlyError,
 			@JsonProperty("detail") @Nullable final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
-			@JsonProperty("parameters") @Nullable @Singular final Map<String, String> parameters,
+			@JsonProperty("parameters") @Nullable @Singular final Map<String, Object> parameters,
 			@JsonProperty("adIssueId") @Nullable final JsonMetasfreshId adIssueId,
 			@JsonProperty("orgCode") @Nullable final String orgCode,
 			@JsonProperty("sourceClassName") @Nullable final String sourceClassName,

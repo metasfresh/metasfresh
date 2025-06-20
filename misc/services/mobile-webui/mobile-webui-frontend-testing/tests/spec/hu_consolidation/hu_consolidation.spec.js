@@ -9,7 +9,11 @@ import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 import { PickingSlotScreen } from '../../utils/screens/huConsolidation/PickingSlotScreen';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({
+                                    products,
+                                    packingInstructions,
+                                    handlingUnits
+                                } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -37,14 +41,17 @@ const createMasterdata = async () => {
             products: {
                 "P1": { prices: [{ price: 1 }] },
                 "P2": { prices: [{ price: 1 }] },
+                ...products,
             },
             packingInstructions: {
                 "PI_P1": { lu: "LU", qtyTUsPerLU: 20, tu: "TU1", product: "P1", qtyCUsPerTU: 4 },
                 "PI_P2": { lu: "LU", qtyTUsPerLU: 20, tu: "TU2", product: "P2", qtyCUsPerTU: 5 },
+                ...packingInstructions,
             },
             handlingUnits: {
                 "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI_P1' },
                 "HU2": { product: 'P2', warehouse: 'wh', packingInstructions: 'PI_P2' },
+                ...handlingUnits,
             },
             salesOrders: {
                 "SO1": {
@@ -107,6 +114,14 @@ const pickHUsToPickingSlot = async ({ masterdata }) => await test.step("Pick", a
                 ]
             }
         },
+        hus: {
+            tu11: { storages: { 'P1': '4 PCE' } },
+            tu12: { storages: { 'P1': '4 PCE' } },
+            tu13: { storages: { 'P1': '4 PCE' } },
+            tu21: { storages: { 'P2': '5 PCE' } },
+            tu22: { storages: { 'P2': '5 PCE' } },
+            tu23: { storages: { 'P2': '5 PCE' } },
+        }
     });
 
     return { context };
@@ -181,4 +196,48 @@ test('Manual print current target label', async ({ page }) => {
     await HUConsolidationJobScreen.printTargetLabel();
 
     // await HUConsolidationJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Consolidate to an existing LU', async ({ page }) => {
+    const masterdata = await createMasterdata({
+        products: {
+            "P3": { prices: [{ price: 1 }] },
+        },
+        packingInstructions: {
+            "PI_P3": { lu: "LU", qtyTUsPerLU: 20, tu: "TU3", product: "P3", qtyCUsPerTU: 10 },
+        },
+        handlingUnits: {
+            "EXISTING_HU": { product: 'P3', warehouse: 'wh', packingInstructions: 'PI_P3' },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    const { context } = await pickHUsToPickingSlot({ masterdata });
+
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huConsolidation');
+    await HUConsolidationJobsListScreen.waitForScreen();
+    await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId })
+    await HUConsolidationJobScreen.setTargetLU({ qrCode: masterdata.handlingUnits.EXISTING_HU.qrCode });
+    await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
+    await PickingSlotScreen.clickConsolidateHUButton({ huId: context.tu11 });
+    await PickingSlotScreen.clickConsolidateHUButton({ huId: context.tu21 }); // just to have 2 different products...
+    await PickingSlotScreen.goBack();
+
+    await HUConsolidationJobScreen.complete();
+
+    await Backend.expect({
+        hus: {
+            [masterdata.handlingUnits.EXISTING_HU.qrCode]: {
+                storages: {
+                    'P3': '200 PCE', // qty already existing before tihs aggregation
+                    'P1': '4 PCE', // tu11
+                    'P2': '5 PCE', // tu21
+                },
+            }
+        }
+    });
 });

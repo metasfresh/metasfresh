@@ -52,4 +52,17 @@ public class Assertions
 		}
 	}
 
+	public static void fail(final String message)
+	{
+		final SoftAssertions softly = softAssertionsHolder.get();
+		if (softly != null)
+		{
+			softly.fail(message);
+		}
+		else
+		{
+			throw Failure.builder().message(message).build()
+					.toException();
+		}
+	}
 }

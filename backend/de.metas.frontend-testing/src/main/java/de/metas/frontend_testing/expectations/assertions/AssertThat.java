@@ -6,6 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -77,6 +78,20 @@ public class AssertThat<T>
 		return this;
 	}
 
+	public AssertThat<T> isEmpty()
+	{
+		final int actualSize = getSize();
+		if (actualSize != 0)
+		{
+			fail("Expected " + what + " to be empty but it has " + actualSize + " elements",
+					failure -> failure
+							.putContext("actual", actual)
+			);
+		}
+
+		return this;
+	}
+
 	@SuppressWarnings("SameParameterValue")
 	public AssertThat<T> hasSameSize(@NonNull final Collection<?> expected)
 	{
@@ -99,6 +114,10 @@ public class AssertThat<T>
 		if (actual instanceof Collection)
 		{
 			return ((Collection<?>)actual).size();
+		}
+		else if (actual instanceof Map)
+		{
+			return ((Map<?, ?>)actual).size();
 		}
 		else
 		{

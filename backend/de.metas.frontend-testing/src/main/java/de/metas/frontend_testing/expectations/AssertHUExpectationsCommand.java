@@ -1,6 +1,6 @@
 package de.metas.frontend_testing.expectations;
 
-import de.metas.frontend_testing.expectations.assertions.Assertions;
+import com.google.common.collect.ImmutableList;
 import de.metas.frontend_testing.expectations.request.JsonHUExpectation;
 import de.metas.frontend_testing.expectations.request.QtyAndUOMString;
 import de.metas.frontend_testing.masterdata.Identifier;
@@ -13,12 +13,16 @@ import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
+import static de.metas.frontend_testing.expectations.assertions.Assertions.fail;
+import static de.metas.frontend_testing.expectations.assertions.Assertions.softly;
+import static de.metas.frontend_testing.expectations.assertions.Assertions.softlyPutContext;
 
 @Builder
 class AssertHUExpectationsCommand
@@ -58,28 +62,39 @@ class AssertHUExpectationsCommand
 				.streamProductStorages()
 				.collect(GuavaCollectors.toHashMapByKey(IHUProductStorage::getProductId));
 
-		expectations.forEach((productIdentifierStr, expectedQtyStr) -> {
-			final Identifier productIdentifier = Identifier.ofString(productIdentifierStr);
-			final ProductId productId = context.getId(productIdentifier, ProductId.class);
-			final IHUProductStorage actualStorage = actualStorages.remove(productId);
-			if (actualStorage == null)
-			{
-				throw new AdempiereException("No storage found for product " + productId + " in HU " + huId);
-			}
+		softly(() -> {
+			softlyPutContext("huId", context.describeId(huId));
+			softlyPutContext("expectations", expectations);
+			softlyPutContext("actualStorages", ImmutableList.copyOf(actualStorages.values()));
 
-			assertHUStorage(QtyAndUOMString.parseString(expectedQtyStr), actualStorage);
+			expectations.forEach((productIdentifierStr, expectedQtyStr) -> {
+				final Identifier productIdentifier = Identifier.ofString(productIdentifierStr);
+				softlyPutContext("productIdentifier", productIdentifier);
+
+				final ProductId productId = context.getId(productIdentifier, ProductId.class);
+				softlyPutContext("productId", productId);
+
+				final IHUProductStorage actualStorage = actualStorages.remove(productId);
+				if (actualStorage == null)
+				{
+					fail("No storage found for product " + context.describeId(productId) + " in HU " + context.describeId(huId));
+				}
+				else
+				{
+					assertHUStorage(QtyAndUOMString.parseString(expectedQtyStr), actualStorage);
+				}
+			});
+
+			assertThat(actualStorages).as("remaining not matched by expectations storages").isEmpty();
 		});
-
-		if (!actualStorages.isEmpty())
-		{
-			throw new AdempiereException("Following storages were not expected for " + huId + ": " + actualStorages.values());
-		}
 	}
 
 	private void assertHUStorage(@NonNull final QtyAndUOMString expectedQtyStr, @NonNull final IHUProductStorage actualStorage)
 	{
 		final Quantity expectedQty = expectedQtyStr.toQuantity();
-		Assertions.assertThat(actualStorage.getQty()).as("Qty").isEqualTo(expectedQty);
+		softlyPutContext("expectedQty", expectedQty);
+
+		assertThat(actualStorage.getQty()).as("Qty").isEqualTo(expectedQty);
 	}
 
 	private HuId getHUIdByMatcherString(@NonNull final String matcherStr)
@@ -102,11 +117,20 @@ class AssertHUExpectationsCommand
 
 		final ImmutableAttributeSet actualAttributes = services.getAttributes(huId);
 
-		expectations.forEach((attributeCodeStr, expectedValueStr) -> {
-			final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeStr);
-			final String actualValueStr = actualAttributes.getValueAsString(attributeCode);
-			Assertions.assertThat(actualValueStr).as("Attribute " + attributeCode).isEqualTo(expectedValueStr);
+		softly(() -> {
+			softlyPutContext("huId", context.describeId(huId));
+			softlyPutContext("expectations", expectations);
+			softlyPutContext("actualAttributes", actualAttributes);
+
+			expectations.forEach((attributeCodeStr, expectedValueStr) -> {
+				final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeStr);
+				softlyPutContext("attributeCode", attributeCode);
+
+				final String actualValueStr = actualAttributes.getValueAsString(attributeCode);
+				assertThat(actualValueStr).as("Attribute " + attributeCode).isEqualTo(expectedValueStr);
+			});
 		});
+
 	}
 
 }
