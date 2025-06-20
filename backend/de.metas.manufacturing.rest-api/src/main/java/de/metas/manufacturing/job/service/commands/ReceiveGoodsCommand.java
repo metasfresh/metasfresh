@@ -3,6 +3,7 @@ package de.metas.manufacturing.job.service.commands;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -30,6 +31,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,7 +56,7 @@ public class ReceiveGoodsCommand
 {
 	private static final AdMessageKey MSG_ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED");
 	private static final AdMessageKey MSG_MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED");
-	private static final AdMessageKey MSG_DO_NOT_RECEIVE_TO_DESTROYED_HUS = AdMessageKey.of("de.metas.manufacturing.job.service.commands.DO_NOT_RECEIVE_TO_DESTROYED_HUS");
+	private static final AdMessageKey MSG_NOT_ACTIVE_HU = AdMessageKey.of("de.metas.manufacturing.job.service.commands.NOT_ACTIVE_HU");
 
 	//
 	// Services
@@ -63,6 +65,7 @@ public class ReceiveGoodsCommand
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	//
 	// Parameters
@@ -178,7 +181,7 @@ public class ReceiveGoodsCommand
 		{
 			final I_M_HU existingHU = handlingUnitsBL.getById(existingHUId);
 
-			assertIfDestroyed(existingHU);
+			assertActive(existingHU);
 
 			if (handlingUnitsBL.isLoadingUnit(existingHU))
 			{
@@ -256,11 +259,11 @@ public class ReceiveGoodsCommand
 		}
 	}
 
-	private void assertIfDestroyed(@NotNull final I_M_HU targetHU)
+	private void assertActive(@NotNull final I_M_HU targetHU)
 	{
-		if (handlingUnitsBL.isDestroyed(targetHU))
+		if (!huStatusBL.isStatusActive(targetHU))
 		{
-			throw new AdempiereException(MSG_DO_NOT_RECEIVE_TO_DESTROYED_HUS);
+			throw new AdempiereException(MSG_NOT_ACTIVE_HU);
 		}
 	}
 
