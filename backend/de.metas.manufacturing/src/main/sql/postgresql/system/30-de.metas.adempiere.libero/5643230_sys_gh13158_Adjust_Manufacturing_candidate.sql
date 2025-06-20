@@ -97,3 +97,4 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=700645
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,700645,0,544794,547107,609549,'F',TO_TIMESTAMP('2022-06-14 09:41:53','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Sequenz Nr.',30,0,0,TO_TIMESTAMP('2022-06-14 09:41:53','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+

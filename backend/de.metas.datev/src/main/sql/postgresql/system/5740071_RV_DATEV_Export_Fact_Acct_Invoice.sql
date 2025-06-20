@@ -1,13 +1,16 @@
 DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
 ;
 
+DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice()
+;
+
 DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
     p_IsOneLinePerInvoiceTax char(1)
 )
 ;
 
 
-CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
+CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice_fn(
     p_IsOneLinePerInvoiceTax char(1) = 'N'
 )
     RETURNS TABLE
@@ -164,7 +167,7 @@ $BODY$
 
 CREATE OR REPLACE VIEW RV_DATEV_Export_Fact_Acct_Invoice AS
 SELECT *
-FROM RV_DATEV_Export_Fact_Acct_Invoice()
+FROM RV_DATEV_Export_Fact_Acct_Invoice_fn('N'::char)
 ;
 
 

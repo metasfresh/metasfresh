@@ -543,6 +543,8 @@ DELETE FROM AD_Field WHERE AD_Field_ID=709967
 /* DDL */ SELECT public.db_alter_table('DATEV_ExportLine','ALTER TABLE DATEV_ExportLine DROP COLUMN IF EXISTS GrandTotal')
 ;
 
+DELETE FROM datev_exportformatcolumn where ad_column_id=585327;
+
 -- Column: DATEV_ExportLine.GrandTotal
 -- Column: DATEV_ExportLine.GrandTotal
 -- 2024-11-15T10:06:22.834Z
