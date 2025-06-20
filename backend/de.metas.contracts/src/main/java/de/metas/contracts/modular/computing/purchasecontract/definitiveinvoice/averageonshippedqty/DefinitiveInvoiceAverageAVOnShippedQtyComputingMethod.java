@@ -41,7 +41,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -140,15 +139,13 @@ public class DefinitiveInvoiceAverageAVOnShippedQtyComputingMethod extends Abstr
 				.orElseGet(() -> Money.zero(request.getCurrencyId()));
 
 		final Money diffAmount = definitiveTotalAmount.subtract(finalTotalAmount);
-		if(diffAmount.isZero())
-		{
-			return computingMethodService.toZeroResponseWithLogs(request, logs);
-		}
-
 		final Quantity definitiveTotalQty = computingMethodService.getQtySum(shipmentLogs, stockUOMId);
 		final Quantity finalTotalQty = computingMethodService.getQtySum(invoiceLineLogs, stockUOMId);
 		final Quantity diffQty = definitiveTotalQty.subtract(finalTotalQty);
-		Check.assume(diffQty.isPositive(), "Qty diff should be positive at this point, as qty diff zero should also have amount diff zero");
+		if(diffAmount.isZero() || diffQty.isZero()) //check both as diff amount might not be zero because of rounding
+		{
+			return computingMethodService.toZeroResponseWithLogs(request, logs);
+		}
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())

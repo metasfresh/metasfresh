@@ -356,6 +356,8 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isClosed(@NonNull I_C_Order order);
 
+	boolean isVoidedOrClosed(@NonNull final OrderId orderId);
+
 	void open(@NonNull OrderId orderId);
 
 	boolean isNotJustOpened(@NonNull I_C_Order orderRecord);

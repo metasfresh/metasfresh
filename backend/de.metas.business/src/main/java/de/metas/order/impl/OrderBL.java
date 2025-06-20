@@ -1414,6 +1414,18 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isVoidedOrClosed(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		return isClosed(order) || isVoided(order);
+	}
+
+	private boolean isVoided(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isVoided();
+	}
+
+	@Override
 	public void open(@NonNull final OrderId orderId)
 	{
 		final I_C_Order orderRecord = getById(orderId);
