@@ -174,24 +174,17 @@ public class HUStatusBL implements IHUStatusBL
 			return false; // can be the case with a new/unsaved HU
 		}
 
-		if (X_M_HU.HUSTATUS_Destroyed.equals(huStatus))
+		switch (huStatus)
 		{
-			return false;
+			case X_M_HU.HUSTATUS_Destroyed:
+			case X_M_HU.HUSTATUS_Shipped:
+			case X_M_HU.HUSTATUS_Planning:
+				return false;
+			default:
+				// we consider the rest of the statuses to be physical
+				// (active, picked and issued)
+				return true;
 		}
-
-		if (X_M_HU.HUSTATUS_Planning.equals(huStatus))
-		{
-			return false;
-		}
-
-		if (X_M_HU.HUSTATUS_Shipped.equals(huStatus))
-		{
-			return false;
-		}
-
-		// we consider the rest of the statuses to be physical
-		// (active, picked and issued)
-		return true;
 	}
 
 	@Override
@@ -285,6 +278,7 @@ public class HUStatusBL implements IHUStatusBL
 		setHUStatus(huContext, hu, huStatus, forceFetchPackingMaterial);
 	}
 
+	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public void setHUStatus(
 			@NonNull final IHUContext huContext,

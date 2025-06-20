@@ -2,9 +2,7 @@ package de.metas.hu_consolidation.mobile.rest_api.json;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
-import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

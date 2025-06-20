@@ -76,6 +76,7 @@ public interface IHUStatusBL extends ISingletonService
 
 	boolean isStatusIssued(@NonNull HuId huId);
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean isStatusActiveOrIssued(I_M_HU huRecord);
 
 	boolean isStatusDestroyed(I_M_HU huRecord);
@@ -84,7 +85,6 @@ public interface IHUStatusBL extends ISingletonService
 
 	/**
 	 * Check if an HU has a status that is "physical"/ "concrete"/ "material" Which means the HU exists as a box/ will still be used by us.
-	 *
 	 * The following hu statuses are not physical:
 	 * <ul>
 	 * <li>{@link X_M_HU#HUSTATUS_Planning Planning}: is a draft state, may or may not be used further
@@ -92,9 +92,7 @@ public interface IHUStatusBL extends ISingletonService
 	 * <li>{@link X_M_HU#HUSTATUS_Shipped Shipped}: no longer in our warehouses
 	 * </ul>
 	 * NOTE: if status is <code>null</code>, it is considered not physical.
-	 *
 	 * In the future, if another status of such kind (let's call it "intangible"), please add it to the implementation of this method.
-	 *
 	 * Note: please also keep in sync with the view {@code MD_Stock_From_HUs_V}.
 	 * <p>
 	 *
@@ -114,7 +112,6 @@ public interface IHUStatusBL extends ISingletonService
 
 	/**
 	 * Same as {@link #setHUStatus(IHUContext, I_M_HU, String)}, but if <code>forceFetchPackingMaterial=true</code>, then the packing material will be fetched automatically.
-	 *
 	 * NOTE: this method is not saving the HU.
 	 */
 	void setHUStatus(IHUContext huContext, I_M_HU hu, String huStatus, boolean forceFetchPackingMaterial);
