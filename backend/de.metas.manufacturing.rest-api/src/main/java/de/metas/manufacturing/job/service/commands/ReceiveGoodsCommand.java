@@ -54,6 +54,7 @@ public class ReceiveGoodsCommand
 {
 	private static final AdMessageKey MSG_ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED");
 	private static final AdMessageKey MSG_MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED");
+	private static final AdMessageKey MSG_DO_NOT_RECEIVE_TO_DESTROYED_HUS = AdMessageKey.of("de.metas.manufacturing.job.service.commands.DO_NOT_RECEIVE_TO_DESTROYED_HUS");
 
 	//
 	// Services
@@ -176,6 +177,9 @@ public class ReceiveGoodsCommand
 		else
 		{
 			final I_M_HU existingHU = handlingUnitsBL.getById(existingHUId);
+
+			assertIfDestroyed(existingHU);
+
 			if (handlingUnitsBL.isLoadingUnit(existingHU))
 			{
 				return receiveToExistingLU(existingHU, qrCodeTarget.getTuPIItemProductId());
@@ -249,6 +253,14 @@ public class ReceiveGoodsCommand
 			{
 				throw new AdempiereException(MSG_MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED);
 			}
+		}
+	}
+
+	private void assertIfDestroyed(@NotNull final I_M_HU targetHU)
+	{
+		if (handlingUnitsBL.isDestroyed(targetHU))
+		{
+			throw new AdempiereException(MSG_DO_NOT_RECEIVE_TO_DESTROYED_HUS);
 		}
 	}
 
