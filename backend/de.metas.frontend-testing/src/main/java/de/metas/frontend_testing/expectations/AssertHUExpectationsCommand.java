@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.expectations.request.JsonHUExpectation;
 import de.metas.frontend_testing.expectations.request.QtyAndUOMString;
 import de.metas.frontend_testing.masterdata.Identifier;
@@ -195,7 +196,21 @@ class AssertHUExpectationsCommand
 	private void assertAttributeValue_Date(final String expectedValueStr, final ImmutableAttributeSet actualAttributes, final AttributeCode attributeCode)
 	{
 		final LocalDate actualValue = actualAttributes.getValueAsLocalDate(attributeCode);
-		final LocalDate expectedValue = expectedValueStr != null ? TimeUtil.asLocalDate(expectedValueStr) : null;
+
+		final LocalDate expectedValue;
+		if (expectedValueStr == null || expectedValueStr.trim().equals("-"))
+		{
+			expectedValue = null;
+		}
+		else if (expectedValueStr.equalsIgnoreCase("today"))
+		{
+			expectedValue = SystemTime.asLocalDate();
+		}
+		else
+		{
+			expectedValue = TimeUtil.asLocalDate(expectedValueStr);
+		}
+
 		assertThat(actualValue).as("Date attribute " + attributeCode).isEqualTo(expectedValue);
 	}
 

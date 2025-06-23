@@ -34,6 +34,11 @@ export const parseCustomQRCode = ({ string, format }) => {
 
     for (const formatPart of format.parts) {
       const partResult = parseCustomQRCodePart({ string, formatPart });
+      // console.log('parseCustomQRCodePart', {
+      //   formatPart: JSON.stringify(formatPart),
+      //   partResult: JSON.stringify(partResult),
+      //   string,
+      // });
       if (partResult?.error) {
         return {
           error: partResult.error,
