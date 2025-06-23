@@ -98,7 +98,7 @@ $P{ad_language}.equals( "it_CH" ) ? "Datum" :
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{DocNo}+"  " + $F{documentno}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{DocNo}+":  " + $F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement stretchType="ContainerHeight" x="340" y="19" width="110" height="16" uuid="052669cc-a7b6-45cd-95fa-2ace1e51d026">
@@ -145,6 +145,7 @@ $P{ad_language}.equals( "it_CH" ) ? "Datum" :
 	<detail>
 		<band splitType="Stretch"/>
 		<band height="15">
+			<printWhenExpression><![CDATA[$F{attributes}!=null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="50" y="0" width="60" height="13" forecolor="#000000" uuid="704be157-7af6-4e96-8b5a-35c96af7bc7b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
