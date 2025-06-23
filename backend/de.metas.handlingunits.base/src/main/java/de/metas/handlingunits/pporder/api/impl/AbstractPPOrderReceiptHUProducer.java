@@ -144,7 +144,7 @@ import java.util.Optional;
 	@SuppressWarnings({ "OptionalAssignedToNull", "OptionalUsedAsFieldOrParameterType" })
 	private Optional<String> lotNumberFromSequence = null;
 	@Nullable private LocalDate bestBeforeDate;
-	@Nullable private LocalDate productionDate;
+	@Nullable private LocalDate _productionDate;
 	//
 	private boolean processReceiptCandidates;
 
@@ -357,10 +357,9 @@ import java.util.Optional;
 				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 			}
 
-			if (productionDate != null
-					&& huAttributes.hasAttribute(AttributeConstants.ProductionDate))
+			if (huAttributes.hasAttribute(AttributeConstants.ProductionDate))
 			{
-				huAttributes.setValue(AttributeConstants.ProductionDate, productionDate);
+				huAttributes.setValue(AttributeConstants.ProductionDate, getProductionDate());
 			}
 
 			huAttributesBL.updateHUAttributeRecursive(
@@ -572,8 +571,18 @@ import java.util.Optional;
 	@Override
 	public IPPOrderReceiptHUProducer productionDate(@Nullable final LocalDate productionDate)
 	{
-		this.productionDate = productionDate;
+		this._productionDate = productionDate;
 		return this;
+	}
+
+	@NonNull
+	private LocalDate getProductionDate()
+	{
+		if (_productionDate == null)
+		{
+			_productionDate = getMovementDate().toLocalDate();
+		}
+		return _productionDate;
 	}
 
 	@Override
