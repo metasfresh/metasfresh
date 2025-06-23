@@ -104,6 +104,9 @@ public class ScannableCodeFormatPart
 				case BestBeforeDate:
 					result.bestBeforeDate(toLocalDate(valueStr));
 					break;
+				case ProductionDate:
+					result.productionDate(toLocalDate(valueStr));
+					break;
 			}
 
 			return BooleanWithReason.TRUE;
