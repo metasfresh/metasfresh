@@ -34,6 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +43,7 @@ public class AggregationFactory implements IAggregationFactory
 {
 	/**
 	 * Programatically registered default {@link IAggregationKeyBuilder}s.
-	 *
+	 * <p>
 	 * To create a a key for accessing them, please use {@link #mkDefaultAggregationKey(Class, String)}.
 	 */
 	private final Map<ArrayKey, IAggregationKeyBuilder<?>> defaultAggregationKeyBuilders = new ConcurrentHashMap<>();
@@ -57,7 +58,18 @@ public class AggregationFactory implements IAggregationFactory
 
 	@Override
 	public <ModelType> IAggregationKeyBuilder<ModelType> getDefaultAggregationKeyBuilder(final Properties ctx, final Class<ModelType> modelClass, final Boolean isSOTrx,
-			final String aggregationUsageLevel)
+																						 final String aggregationUsageLevel)
+	{
+		final IAggregationKeyBuilder<ModelType> defaultAggregationKeyBuilder = getDefaultAggregationKeyBuilderOrNull(ctx, modelClass, isSOTrx, aggregationUsageLevel);
+		if (defaultAggregationKeyBuilder == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_Aggregation_ID@ (@IsDefault@, " + modelClass + ")");
+		}
+		return defaultAggregationKeyBuilder;
+	}
+
+	@Nullable
+	public <ModelType> IAggregationKeyBuilder<ModelType> getDefaultAggregationKeyBuilderOrNull(final Properties ctx, final Class<ModelType> modelClass, final Boolean isSOTrx, final String aggregationUsageLevel)
 	{
 		final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 
@@ -75,15 +87,9 @@ public class AggregationFactory implements IAggregationFactory
 		// Check programmatically registered default
 		{
 			final ArrayKey key = mkDefaultAggregationKey(modelClass, aggregationUsageLevel);
-			@SuppressWarnings("unchecked")
-			final IAggregationKeyBuilder<ModelType> aggregationKeyBuilder = (IAggregationKeyBuilder<ModelType>)defaultAggregationKeyBuilders.get(key);
-			if (aggregationKeyBuilder != null)
-			{
-				return aggregationKeyBuilder;
-			}
+			@SuppressWarnings("unchecked") final IAggregationKeyBuilder<ModelType> aggregationKeyBuilder = (IAggregationKeyBuilder<ModelType>)defaultAggregationKeyBuilders.get(key);
+			return aggregationKeyBuilder;
 		}
-
-		throw new AdempiereException("@NotFound@ @C_Aggregation_ID@ (@IsDefault@, " + modelClass + ")");
 	}
 
 	@Override

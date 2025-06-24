@@ -45,6 +45,11 @@ public interface IAggregationFactory extends ISingletonService
 	<ModelType> IAggregationKeyBuilder<ModelType> getDefaultAggregationKeyBuilder(Properties ctx, Class<ModelType> modelClass, Boolean isSOTrx, String aggregationUsageLevel);
 
 	/**
+	 * @return default aggregation key builder, or null if none registered
+	 */
+	<ModelType> IAggregationKeyBuilder<ModelType> getDefaultAggregationKeyBuilderOrNull(Properties ctx, Class<ModelType> modelClass, Boolean isSOTrx, String aggregationUsageLevel);
+
+	/**
 	 * Sets the default aggregation key builder to be used if nothing else was found.
 	 * 
 	 * Basically this is the LAST place that will be checked.

@@ -66,7 +66,7 @@ public class PPOrderCandidateAggregationFactory
 		}
 		else
 		{
-			return aggregationFactory.getDefaultAggregationKeyBuilder(Env.getCtx(), I_PP_Order_Candidate.class, true, AGGREGATIONUSAGELEVEL_Header);
+			return aggregationFactory.getDefaultAggregationKeyBuilderOrNull(Env.getCtx(), I_PP_Order_Candidate.class, true, AGGREGATIONUSAGELEVEL_Header);
 		}
 	}
 }
