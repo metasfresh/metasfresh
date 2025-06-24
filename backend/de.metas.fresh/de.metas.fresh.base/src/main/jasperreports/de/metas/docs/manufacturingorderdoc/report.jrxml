@@ -508,7 +508,7 @@ where pp_order.pp_order_id = $P{RECORD_ID}]]>
 	<pageHeader>
 		<band height="87" splitType="Stretch">
 			<subreport isUsingCache="false" runToBottom="false" overflowType="Stretch">
-				<reportElement key="subreport-10" positionType="Float" x="0" y="41" width="595" height="23" uuid="4a54592e-76d1-4778-8807-2ec154f165d3"/>
+				<reportElement key="subreport-10" positionType="Float" x="0" y="63" width="595" height="23" uuid="4a54592e-76d1-4778-8807-2ec154f165d3"/>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -519,7 +519,7 @@ where pp_order.pp_order_id = $P{RECORD_ID}]]>
 				<subreportExpression><![CDATA["de/metas/docs/manufacturingorderdoc/report_page_header.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="false" runToBottom="false" overflowType="Stretch">
-				<reportElement key="subreport-8" positionType="Float" x="0" y="21" width="595" height="16" uuid="1c2f9f56-d4a1-435a-85c3-9c260cc89395"/>
+				<reportElement key="subreport-8" positionType="Float" x="0" y="43" width="595" height="16" uuid="1c2f9f56-d4a1-435a-85c3-9c260cc89395"/>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -530,7 +530,7 @@ where pp_order.pp_order_id = $P{RECORD_ID}]]>
 				<subreportExpression><![CDATA["de/metas/docs/manufacturingorderdoc/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="0" y="0" width="595" height="85" uuid="edc7e20b-455d-4b81-9eb5-325d10252251">
+				<reportElement key="subreport-4" x="0" y="0" width="595" height="50" uuid="edc7e20b-455d-4b81-9eb5-325d10252251">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintLogo}.equals("Y")]]></printWhenExpression>
 				</reportElement>
