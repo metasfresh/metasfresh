@@ -65,101 +65,114 @@ Feature: EDI INVOIC export via postgREST
 
     Then the metasfresh REST-API responds with
     """
-[ {
-  "metasfresh_INVOIC" : [ {
-    "Invoice_ID" : @salesInvoiceS0467_010_ID@,
-    "Invoice_Receiver_Tec_GLN" : null,
-    "Invoice_Sender_Tec_GLN" : null,
-    "Invoice_Sender_CountryCode" : "DE",
-    "Invoice_Sender_VATaxId" : null,
-    "Invoice_DocumentNo" : "S0467_010",
-    "Invoice_Date" : "2025-05-01T00:00:00",
-    "Invoice_Acct_Date" : "2025-05-01T00:00:00",
-    "DocType_Base" : "ARI",
-    "DocType_Sub" : null,
-    "CreditMemo_Reason" : null,
-    "CreditMemo_ReasonText" : null,
-    "Order_POReference" : null,
-    "Order_Date" : null,
-    "Shipment_Date" : null,
-    "Shipment_DocumentNo" : null,
-    "DESADV_DocumentNo" : null,
-    "Invoice_Currency_Code" : "EUR",
-    "Invoice_GrandTotal" : 5.95,
-    "Invoice_TotalLines" : 5.0,
-    "Invoice_TotalVAT" : 0.95,
-    "Invoice_TotalVATBaseAmt" : 5.0,
-    "Invoice_SurchargeAmt" : 0.0,
-    "Invoice_TotalLinesWithSurchargeAmt" : 5.0,
-    "Invoice_TotalVATWithSurchargeAmt" : 0.95,
-    "Invoice_GrandTotalWithSurchargeAmt" : 5.95,
-    "Partners" : [ {
-      "EANCOM_LocationType" : "SU",
-      "GLN" : null,
-      "Name" : "metasfresh AG",
-      "Name2" : null,
-      "PartnerNo" : "metasfresh",
-      "VATaxID" : null,
-      "ReferenceNo" : null,
-      "SiteName" : null,
-      "Setup_Place_No" : null,
-      "Address1" : "Am Nossbacher Weg 2",
-      "Address2" : null,
-      "Postal" : "53179",
-      "City" : "Bonn",
-      "CountryCode" : "DE",
-      "Phone" : null,
-      "Fax" : null,
-      "CustomEdiAttributes" : null
-    } ],
-    "PaymentTerms" : [ {
-      "Net_Days" : 30
-    } ],
-    "PaymentDiscounts" : [ {
-      "Discount_Name" : "30 Tage netto",
-      "Tax_Percent" : 19.0,
-      "Discount_Days" : 0,
-      "Discount_Percent" : 0,
-      "Discount_BaseAmt" : 5.0,
-      "Discount_Amt" : 0.0
-    } ],
-    "Lines" : [ {
-      "Invoice_Line" : 10,
-      "Invoice_QtyInvoiced" : 1,
-      "Invoice_QtyInvoiced_UOM" : "PCE",
-      "ORDERS_Line" : null,
-      "ORDERS_QtyInvoiced" : null,
-      "ORDERS_QtyInvoiced_UOM" : null,
-      "Order_POReference" : null,
-      "Order_Line" : 10,
-      "Order_QtyInvoiced" : 1,
-      "Order_QtyInvoiced_UOM" : "PCE",
-      "Currency_Code" : "EUR",
-      "PricePerUnit" : 5.0,
-      "PriceUOM" : "PCE",
-      "Discount_Amt" : 0,
-      "QtyBasedOn" : null,
-      "NetAmt" : 5.0,
-      "Tax_Percent" : 19.0,
-      "Tax_Amount" : 0.95,
-      "Product_Name" : "postgRESTExportProductName",
-      "Product_Description" : "postgRESTExportProductDescription",
-      "Product_Buyer_CU_GTIN" : null,
-      "Product_Buyer_TU_GTIN" : null,
-      "Product_Buyer_ProductNo" : null,
-      "Product_Supplier_TU_GTIN" : null,
-      "Product_Supplier_ProductNo" : "postgRESTExportProductValue"
-    } ],
-    "Sums" : [ {
-      "TotalAmt" : 5.95,
-      "Tax_Amt" : 0.95,
-      "Tax_BaseAmt" : 5.0,
-      "Tax_Percent" : 19.0,
-      "Tax_Exempt" : false,
-      "SurchargeAmt" : 0.0,
-      "Tax_BaseAmtWithSurchargeAmt" : 5.0,
-      "Tax_AmtWithSurchargeAmt" : 0.95
-    } ]
-  } ]
-} ]
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @salesInvoiceS0467_010_ID@,
+      "Invoice_Receiver_Tec_GLN": null,
+      "Invoice_Sender_Tec_GLN": null,
+      "Invoice_Sender_CountryCode": "DE",
+      "Invoice_Sender_VATaxId": null,
+      "Invoice_DocumentNo": "S0467_010",
+      "Invoice_Date": "2025-05-01T00:00:00",
+      "Invoice_Acct_Date": "2025-05-01T00:00:00",
+      "DocType_Base": "ARI",
+      "DocType_Sub": null,
+      "CreditMemo_Reason": null,
+      "CreditMemo_ReasonText": null,
+      "Order_POReference": null,
+      "Order_Date": null,
+      "Shipment_Date": null,
+      "Shipment_DocumentNo": null,
+      "DESADV_DocumentNo": null,
+      "Invoice_Currency_Code": "EUR",
+      "Invoice_GrandTotal": 5.95,
+      "Invoice_TotalLines": 5.0,
+      "Invoice_TotalVAT": 0.95,
+      "Invoice_TotalVATBaseAmt": 5.0,
+      "Invoice_SurchargeAmt": 0.0,
+      "Invoice_TotalLinesWithSurchargeAmt": 5.0,
+      "Invoice_TotalVATWithSurchargeAmt": 0.95,
+      "Invoice_GrandTotalWithSurchargeAmt": 5.95,
+      "Partners": [
+        {
+          "EANCOM_LocationType": "SU",
+          "GLN": null,
+          "Name": "metasfresh AG",
+          "Name2": null,
+          "PartnerNo": "metasfresh",
+          "VATaxID": null,
+          "ReferenceNo": null,
+          "SiteName": null,
+          "Setup_Place_No": null,
+          "Address1": "Am Nossbacher Weg 2",
+          "Address2": null,
+          "Postal": "53179",
+          "City": "Bonn",
+          "CountryCode": "DE",
+          "Phone": null,
+          "Fax": null,
+          "CustomEdiAttributes": null
+        }
+      ],
+      "PaymentTerms": [
+        {
+          "Net_Days": 30
+        }
+      ],
+      "PaymentDiscounts": [
+        {
+          "Discount_Name": "30 Tage netto",
+          "Tax_Percent": 19.0,
+          "Discount_Days": 0,
+          "Discount_Percent": 0,
+          "Discount_BaseAmt": 5.0,
+          "Discount_Amt": 0.0
+        }
+      ],
+      "Lines": [
+        {
+          "Invoice_Line": 10,
+          "Invoice_QtyInvoiced": 1,
+          "Invoice_QtyInvoiced_UOM": "PCE",
+          "ORDERS_Line": null,
+          "ORDERS_QtyInvoiced": null,
+          "ORDERS_QtyInvoiced_UOM": null,
+          "Order_POReference": null,
+          "Order_Line": 10,
+          "Order_QtyInvoiced": 1,
+          "Order_QtyInvoiced_UOM": "PCE",
+          "Currency_Code": "EUR",
+          "PricePerUnit": 5.0,
+          "PriceUOM": "PCE",
+          "Discount_Amt": 0,
+          "QtyBasedOn": null,
+          "NetAmt": 5.0,
+          "Tax_Percent": 19.0,
+          "Tax_Amount": 0.95,
+          "Product_Name": "postgRESTExportProductName",
+          "Product_Description": "postgRESTExportProductDescription",
+          "Product_Buyer_CU_GTIN": null,
+          "Product_Buyer_TU_GTIN": null,
+          "Product_Buyer_ProductNo": null,
+          "Product_Supplier_TU_GTIN": null,
+          "Product_Supplier_ProductNo": "postgRESTExportProductValue"
+        }
+      ],
+      "Sums": [
+        {
+          "TotalAmt": 5.95,
+          "Tax_Amt": 0.95,
+          "Tax_BaseAmt": 5.0,
+          "Tax_Percent": 19.0,
+          "Tax_Exempt": false,
+          "SurchargeAmt": 0.0,
+          "Tax_BaseAmtWithSurchargeAmt": 5.0,
+          "Tax_AmtWithSurchargeAmt": 0.95
+        }
+      ],
+      "Version": "0.2"
+    }
+  ]
+}
     """

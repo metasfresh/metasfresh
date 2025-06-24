@@ -98,8 +98,8 @@ public class PostgRESTClient
 		final PostgRESTResponseFormat responseFormat = request.getResponseFormat();
 		
 		final List<MediaType> acceptableMediaTypes = new ArrayList<>();
-		acceptableMediaTypes.add(MediaType.valueOf(responseFormat.getContentType()));
 		request.getAdditionalAccepts().forEach(a -> acceptableMediaTypes.add(MediaType.valueOf(a)));
+		acceptableMediaTypes.add(MediaType.valueOf(responseFormat.getContentType()));
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(acceptableMediaTypes);
