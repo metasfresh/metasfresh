@@ -103,7 +103,7 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final MaterialNeedsPlannerRow materialNeedsPlannerRow = MaterialNeedsPlannerRow.ofRow(getSingleSelectedRow());
+		final MaterialNeedsPlannerRow materialNeedsPlannerRow = MaterialNeedsPlannerRow.ofViewRow(getSingleSelectedRow());
 
 		if (PARAM_M_Product_ID.equals(parameter.getColumnName()))
 		{
