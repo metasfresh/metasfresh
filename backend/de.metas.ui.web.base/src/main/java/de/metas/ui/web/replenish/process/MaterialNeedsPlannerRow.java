@@ -43,7 +43,7 @@ public class MaterialNeedsPlannerRow
 	@NonNull BigDecimal levelMax;
 
 	@NonNull
-	public static MaterialNeedsPlannerRow ofRow(@NonNull final IViewRow row)
+	public static MaterialNeedsPlannerRow ofViewRow(@NonNull final IViewRow row)
 	{
 		return MaterialNeedsPlannerRow.builder()
 				.warehouseId(row.getFieldValueAsNullableRepoId(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Warehouse_ID, WarehouseId::ofRepoIdOrNull))

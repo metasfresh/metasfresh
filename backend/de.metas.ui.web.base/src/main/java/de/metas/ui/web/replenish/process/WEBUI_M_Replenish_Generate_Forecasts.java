@@ -80,7 +80,7 @@ public class WEBUI_M_Replenish_Generate_Forecasts extends ViewBasedProcessTempla
 		}
 
 		final boolean allRowsHaveDemand = streamSelectedRows()
-				.map(MaterialNeedsPlannerRow::ofRow)
+				.map(MaterialNeedsPlannerRow::ofViewRow)
 				.allMatch(MaterialNeedsPlannerRow::isDemandFilled);
 
 		if (!allRowsHaveDemand)
@@ -95,7 +95,7 @@ public class WEBUI_M_Replenish_Generate_Forecasts extends ViewBasedProcessTempla
 	protected String doIt() throws Exception
 	{
 		final List<ForecastRequest> forecastRequests = streamSelectedRows()
-				.map(MaterialNeedsPlannerRow::ofRow)
+				.map(MaterialNeedsPlannerRow::ofViewRow)
 				.filter(MaterialNeedsPlannerRow::isDemandFilled)
 				.collect(Collectors.groupingBy(MaterialNeedsPlannerRow::getWarehouseId))
 				.entrySet()
