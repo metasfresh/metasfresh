@@ -22,22 +22,21 @@ package de.metas.aggregation.api.impl;
  * #L%
  */
 
-
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AggregationFactory implements IAggregationFactory
 {
@@ -49,7 +48,7 @@ public class AggregationFactory implements IAggregationFactory
 	private final Map<ArrayKey, IAggregationKeyBuilder<?>> defaultAggregationKeyBuilders = new ConcurrentHashMap<>();
 
 	@Override
-	public <ModelType> IAggregationKeyBuilder<ModelType> getAggregationKeyBuilder(final Properties ctx, final Class<ModelType> modelClass, final int aggregationId)
+	public <ModelType> IAggregationKeyBuilder<ModelType> getAggregationKeyBuilder(final Properties ctx, final Class<ModelType> modelClass, final AggregationId aggregationId)
 	{
 		final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 		final Aggregation aggregation = aggregationDAO.retrieveAggregation(ctx, aggregationId);

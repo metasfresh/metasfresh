@@ -22,10 +22,9 @@ package de.metas.aggregation.api;
  * #L%
  */
 
+import de.metas.util.ISingletonService;
 
 import java.util.Properties;
-
-import de.metas.util.ISingletonService;
 
 /**
  * Factory service used to create {@link IAggregationKeyBuilder}s.
@@ -38,7 +37,7 @@ public interface IAggregationFactory extends ISingletonService
 	/**
 	 * @return aggregation key builder; never returns <code>null</code>
 	 */
-	<ModelType> IAggregationKeyBuilder<ModelType> getAggregationKeyBuilder(Properties ctx, Class<ModelType> modelClass, int aggregationId);
+	<ModelType> IAggregationKeyBuilder<ModelType> getAggregationKeyBuilder(Properties ctx, Class<ModelType> modelClass, AggregationId aggregationId);
 
 	/**
 	 * @return default aggregation key builder; never returns <code>null</code>
