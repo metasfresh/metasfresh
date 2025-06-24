@@ -411,59 +411,6 @@
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>2.4.2</version>
                 </plugin>
-
-                <plugin>
-                    <!-- this plugin is used to create the client-code for SOAP-APIs -->
-                    <groupId>com.sun.xml.ws</groupId>
-                    <artifactId>jaxws-maven-plugin</artifactId>
-                    <version>4.0.2</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>jakarta.xml.ws</groupId>
-                            <artifactId>jakarta.xml.ws-api</artifactId>
-                            <version>4.0.0</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>jakarta.xml.bind</groupId>
-                            <artifactId>jakarta.xml.bind-api</artifactId>
-                            <version>4.0.0</version>
-                        </dependency>
-                        <!-- yes, it seems that activation-api 2.1.0 and 2.1.1 are both needed-->
-                        <dependency>
-                            <groupId>jakarta.activation</groupId>
-                            <artifactId>jakarta.activation-api</artifactId>
-                            <version>2.1.0</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>jakarta.activation</groupId>
-                            <artifactId>jakarta.activation-api</artifactId>
-                            <version>2.1.1</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>jakarta.xml.soap</groupId>
-                            <artifactId>jakarta.xml.soap-api</artifactId>
-                            <version>3.0.0</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.ws</groupId>
-                            <artifactId>jaxws-tools</artifactId>
-                            <version>4.0.2</version>
-                        </dependency>
-                    </dependencies>
-                    <configuration>
-                        <!-- Common configuration that can be overridden -->
-                        <keep>true</keep>
-                        <verbose>true</verbose>
-                        <extension>true</extension>
-                        <target>3.0</target>
-                        <args>
-                            <arg>-B-XautoNameResolution</arg>
-                        </args>
-                        <vmArgs>
-                            <vmArg>-Djakarta.xml.bind.verbose=true</vmArg>
-                        </vmArgs>
-                    </configuration>
-                </plugin>
             </plugins>
         </pluginManagement>
 

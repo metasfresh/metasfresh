@@ -508,6 +508,27 @@
                 </plugin>
 
                 <plugin>
+                    <!-- This plugin is used to create the client-code for SOAP-APIs -->
+                    <!-- Note that declaring depdencies in here does not work in conjunction with the docker-builds and the go-offline-maven-plugin -->
+                    <groupId>com.sun.xml.ws</groupId>
+                    <artifactId>jaxws-maven-plugin</artifactId>
+                    <version>4.0.3</version>
+                    <configuration>
+                        <!-- Common configuration that can be overridden -->
+                        <keep>true</keep>
+                        <verbose>true</verbose>
+                        <extension>true</extension>
+                        <target>3.0</target>
+                        <args>
+                            <arg>-B-XautoNameResolution</arg>
+                        </args>
+                        <vmArgs>
+                            <vmArg>-Djakarta.xml.bind.verbose=true</vmArg>
+                        </vmArgs>
+                    </configuration>
+                </plugin>
+
+                <plugin>
                     <!--
                         gh #968: If we run mvn properties:write-project-properties
                         then store the properties to a file calle "app.properties".
@@ -617,6 +638,39 @@
                         <!-- not sure - the sources might be needed to be put inside the final artifact -->
                         <!--<downloadSources>false</downloadSources>-->
                         <downloadJavadoc>false</downloadJavadoc>
+                        <dynamicDependencies>
+                            <!-- All the following are needed for com.sun.xml.ws:jaxws-maven-plugin:4.0.3 -->
+                            <dynamicDependency>
+                                <groupId>jakarta.xml.ws</groupId>
+                                <artifactId>jakarta.xml.ws-api</artifactId>
+                                <version>4.0.1</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                            <dynamicDependency>
+                                <groupId>jakarta.xml.bind</groupId>
+                                <artifactId>jakarta.xml.bind-api</artifactId>
+                                <version>4.0.1</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                            <dynamicDependency>
+                                <groupId>jakarta.activation</groupId>
+                                <artifactId>jakarta.activation-api</artifactId>
+                                <version>2.1.2</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                            <dynamicDependency>
+                                <groupId>jakarta.xml.soap</groupId>
+                                <artifactId>jakarta.xml.soap-api</artifactId>
+                                <version>3.0.1</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                            <dynamicDependency>
+                                <groupId>com.sun.xml.ws</groupId>
+                                <artifactId>jaxws-tools</artifactId>
+                                <version>4.0.2</version>
+                                <repositoryType>PLUGIN</repositoryType>
+                            </dynamicDependency>
+                        </dynamicDependencies>
                     </configuration>
                 </plugin>
 
