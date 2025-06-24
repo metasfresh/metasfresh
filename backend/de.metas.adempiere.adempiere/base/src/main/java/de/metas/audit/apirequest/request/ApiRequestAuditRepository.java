@@ -109,6 +109,14 @@ public class ApiRequestAuditRepository
 
 			apiRequestAuditQuery.setOrderBy(orderBy);
 		}
+		else
+		{
+			final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_API_Request_Audit.class)
+					.addColumnAscending(I_API_Request_Audit.COLUMNNAME_API_Request_Audit_ID)
+					.createQueryOrderBy();
+
+			apiRequestAuditQuery.setOrderBy(orderBy);
+		}
 
 		final int bufferSize = sysConfigBL.getIntValue(SYS_CONFIG_ITERATOR_BUFFER_SIZE, -1);
 		if (bufferSize > 0)
