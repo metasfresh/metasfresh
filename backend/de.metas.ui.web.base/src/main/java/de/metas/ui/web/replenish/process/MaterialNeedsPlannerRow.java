@@ -22,12 +22,17 @@
 
 package de.metas.ui.web.replenish.process;
 
+
+import de.metas.material.replenish.ReplenishInfo;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.replenishment.I_M_Material_Needs_Planner_V;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.window.model.Document;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -53,6 +58,24 @@ public class MaterialNeedsPlannerRow
 				.build();
 	}
 
+	@NonNull
+	public static MaterialNeedsPlannerRow ofDocument(@NonNull final Document document)
+	{
+		final ProductId productId = document.getFieldView(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Product_ID).getValueAsId(ProductId.class)
+				.orElseThrow(() -> new FillMandatoryException(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Product_ID));
+		final WarehouseId warehouseId = document.getFieldView(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Warehouse_ID).getValueAsId(WarehouseId.class)
+				.orElse(null);
+		final BigDecimal levelMin = document.getFieldView(I_M_Material_Needs_Planner_V.COLUMNNAME_Level_Min).getValueAsBigDecimal().orElse(BigDecimal.ZERO);
+		final BigDecimal levelMax = document.getFieldView(I_M_Material_Needs_Planner_V.COLUMNNAME_Level_Max).getValueAsBigDecimal().orElse(BigDecimal.ZERO);
+
+		return MaterialNeedsPlannerRow.builder()
+				.warehouseId(warehouseId)
+				.productId(productId)
+				.levelMin(levelMin)
+				.levelMax(levelMax)
+				.build();
+	}
+
 	public boolean isDemandFilled()
 	{
 		if (getWarehouseId() == null)
@@ -62,4 +85,22 @@ public class MaterialNeedsPlannerRow
 
 		return getLevelMin().compareTo(BigDecimal.ZERO) > 0;
 	}
+
+	public ReplenishInfo toReplenishInfo()
+	{
+		if (warehouseId == null)
+		{
+			throw new FillMandatoryException(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Warehouse_ID);
+		}
+
+		return ReplenishInfo.builder()
+				.identifier(ReplenishInfo.Identifier.builder()
+						.productId(productId)
+						.warehouseId(warehouseId)
+						.build())
+				.min(StockQtyAndUOMQtys.ofQtyInStockUOM(levelMin, productId))
+				.max(StockQtyAndUOMQtys.ofQtyInStockUOM(levelMax, productId))
+				.build();
+	}
+
 }
