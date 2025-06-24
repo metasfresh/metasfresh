@@ -117,11 +117,15 @@ public class PostgRESTProcessExecutor extends JavaProcess
 		final IStringExpression jsonPathExpression = expressionFactory.compile(prepareJSONPath(jsonPathRaw), IStringExpression.class);
 		final String jsonPath = jsonPathExpression.evaluate(getEvalContext(), IExpressionEvaluator.OnVariableNotFound.Fail);
 
-		final GetRequest getRequest = GetRequest
+		final GetRequest.GetRequestBuilder getRequestBuilder = GetRequest
 				.builder()
 				.baseURL(createRequestURL(config, jsonPath))
-				.responseFormat(responseFormat)
-				.build();
+				.responseFormat(responseFormat);
+		if (parameters.expectSingleResult)
+		{
+			getRequestBuilder.additionalAccept("application/vnd.pgrst.object+json"); // see https://docs.postgrest.org/en/stable/references/api/resource_representation.html#singular-or-plural
+		}
+		final GetRequest getRequest = getRequestBuilder.build();
 
 		final String fileName = processInfo.getPinstanceId().getRepoId() + responseFormat.getFilenameExtension();
 		final String fileNameForReportData = processRecord.getValue() + "_" + fileName;
@@ -193,5 +197,11 @@ public class PostgRESTProcessExecutor extends JavaProcess
 	protected static class CustomPostgRESTParameters
 	{
 		boolean storeJsonFile;
+
+		/**
+		 * Expect one object from postgREST, not an array. Fail if there are zero or more than one objects.
+		 */
+		@Builder.Default
+		boolean expectSingleResult = false;
 	}
 }
