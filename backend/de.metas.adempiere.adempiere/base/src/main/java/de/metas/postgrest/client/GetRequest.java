@@ -24,10 +24,12 @@ package de.metas.postgrest.client;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.springframework.util.MultiValueMap;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 
 import static de.metas.postgrest.client.PostgRESTResponseFormat.JSON;
@@ -48,4 +50,7 @@ public class GetRequest
 	@Nullable
 	MultiValueMap<String, String> queryParameters;
 
+	@Singular
+	@NonNull
+	Collection<String> additionalAccepts;
 }

@@ -127,145 +127,144 @@ Feature: EDI DESADV export via postgREST
     """
     Then the metasfresh REST-API responds with
     """
-[{
-    "metasfresh_DESADV": {
-      "Parties": {
-        "Buyer": {
-          "Name": "desadvReceiverName",
-          "Name2": null,
-          "Value": "desadvReceiverValue"
-        },
-        "Invoicee": {
-          "Name": "desadvReceiverName",
-          "Name2": null,
-          "Value": "desadvReceiverValue"
-        },
-        "Supplier": {
-          "Name": "metasfresh AG",
-          "Name2": null,
-          "Value": "metasfresh"
-        },
-        "DeliveryParty": {
-          "Name": "desadvReceiverName",
-          "Name2": null,
-          "Value": "desadvReceiverValue"
-        },
-        "Buyer_Location": {
-          "GLN": "1234567890123",
-          "City": null,
-          "Postal": null,
-          "Address1": null,
-          "Address2": null,
-          "CountryCode": "DE"
-        },
-        "Invoicee_Location": {
-          "GLN": "1234567890123",
-          "City": null,
-          "Postal": null,
-          "Address1": null,
-          "Address2": null,
-          "CountryCode": "DE"
-        },
-        "Supplier_Location": {
-		  "GLN": null,
-		  "City": "Bonn",
-		  "Postal": "53179",
-		  "Address1": "Am Nossbacher Weg 2",
-		  "Address2": null,
-		  "CountryCode": "DE"
-        },
-        "UltimateConsignee": {
-          "Name": "desadvReceiverName",
-          "Name2": null,
-          "Value": "desadvReceiverValue"
-        },
-        "DeliveryParty_Location": {
-          "GLN": "1234567890123",
-          "City": null,
-          "Postal": null,
-          "Address1": null,
-          "Address2": null,
-          "CountryCode": "DE"
-        },
-        "UltimateConsignee_Location": {
-          "GLN": "1234567890123",
-          "City": null,
-          "Postal": null,
-          "Address1": null,
-          "Address2": null,
-          "CountryCode": "DE"
-        }
+{
+  "metasfresh_DESADV": {
+    "Parties": {
+      "Buyer": {
+        "Name": "desadvReceiverName",
+        "Name2": null,
+        "Value": "desadvReceiverValue"
       },
-      "Version": "0.2",
-      "Currency": {
-        "ISO_Code": "EUR",
-        "CurSymbol": "€"
+      "Invoicee": {
+        "Name": "desadvReceiverName",
+        "Name2": null,
+        "Value": "desadvReceiverValue"
       },
-      "Packings": [
-        {
-          "SeqNo": 1,
-          "LineItems": [
-            {
-              "Line": 10,
-              "QtyTU": 10,
-              "LotNumber": null,
-              "DesadvLine": {
-                "Product": {
-                  "Name": "postgRESTExportProductName",
-                  "GTIN_CU": "bPartnerProductGTIN",
-                  "GTIN_TU": null,
-                  "NetWeight": 0,
-                  "Description": "postgRESTExportProductDescription",
-                  "GrossWeight": null,
-                  "BuyerProductNo": null,
-                  "GrossWeightUOM": {},
-                  "SupplierProductNo": "postgRESTExportProductValue"
-                },
-                "OrderLine": 10,
-                "DesadvLine": 10,
-                "InvoicingUOM": {
-                  "Name": "Stück",
-                  "X12DE355": "PCE"
-                },
-                "ShipmentLine": 10,
-                "DesadvLineUOM": {
-                  "Name": "Stück",
-                  "X12DE355": "PCE"
-                },
-                "OrderDocumentNo": "@o_1_DocumentNo@",
-                "OrderPOReference": "testReference",
-                "QtyOrderedInDesadvLineUOM": 100,
-                "QtyDeliveredInInvoicingUOM": 100,
-                "QtyDeliveredInDesadvLineUOM": 100
+      "Supplier": {
+        "Name": "metasfresh AG",
+        "Name2": null,
+        "Value": "metasfresh"
+      },
+      "DeliveryParty": {
+        "Name": "desadvReceiverName",
+        "Name2": null,
+        "Value": "desadvReceiverValue"
+      },
+      "Buyer_Location": {
+        "GLN": "1234567890123",
+        "City": null,
+        "Postal": null,
+        "Address1": null,
+        "Address2": null,
+        "CountryCode": "DE"
+      },
+      "Invoicee_Location": {
+        "GLN": "1234567890123",
+        "City": null,
+        "Postal": null,
+        "Address1": null,
+        "Address2": null,
+        "CountryCode": "DE"
+      },
+      "Supplier_Location": {
+        "GLN": null,
+        "City": "Bonn",
+        "Postal": "53179",
+        "Address1": "Am Nossbacher Weg 2",
+        "Address2": null,
+        "CountryCode": "DE"
+      },
+      "UltimateConsignee": {
+        "Name": "desadvReceiverName",
+        "Name2": null,
+        "Value": "desadvReceiverValue"
+      },
+      "DeliveryParty_Location": {
+        "GLN": "1234567890123",
+        "City": null,
+        "Postal": null,
+        "Address1": null,
+        "Address2": null,
+        "CountryCode": "DE"
+      },
+      "UltimateConsignee_Location": {
+        "GLN": "1234567890123",
+        "City": null,
+        "Postal": null,
+        "Address1": null,
+        "Address2": null,
+        "CountryCode": "DE"
+      }
+    },
+    "Version": "0.2",
+    "Currency": {
+      "ISO_Code": "EUR",
+      "CurSymbol": "€"
+    },
+    "Packings": [
+      {
+        "SeqNo": 1,
+        "LineItems": [
+          {
+            "Line": 10,
+            "QtyTU": 10,
+            "LotNumber": null,
+            "DesadvLine": {
+              "Product": {
+                "Name": "postgRESTExportProductName",
+                "GTIN_CU": "bPartnerProductGTIN",
+                "GTIN_TU": null,
+                "NetWeight": 0,
+                "Description": "postgRESTExportProductDescription",
+                "GrossWeight": null,
+                "BuyerProductNo": null,
+                "GrossWeightUOM": {},
+                "SupplierProductNo": "postgRESTExportProductValue"
               },
-              "QtyCUsPerLU": 100,
-              "QtyCUsPerTU": 10,
-              "BestBeforeDate": null,
-              "GTIN_TU_PackingMaterial": "bPartnerProductGTIN",
-              "QtyCUsPerLU_InInvoiceUOM": 100,
-              "QtyCUsPerTU_InInvoiceUOM": 10,
-              "M_HU_PackagingCode_TU_Text": "ISO1"
-            }
-          ],
-          "IPA_SSCC18": "012345670010000005",
-          "GTIN_PackingMaterial": "gtinPiItemProduct",
-          "M_HU_PackagingCode_Text": "ISO1"
-        }
-      ],
-      "M_InOut_ID": @shipment_S0468_010_ID@,
-      "DateOrdered": "2025-04-17T00:00:00",
-      "POReference": "testReference",
-      "DatePromised": "2025-04-18T00:00:00+00:00",
-      "MovementDate": "2025-05-15T00:00:00",
-      "EDI_Desadv_ID": @d_1@,
-      "DeliveryViaRule": "P",
-      "ShipmentDocumentNo": "@shipment_S0468_010_DocumentNo@",
-      "InvoicableQtyBasedOn": "Nominal",
-      "TechnicalRecipientGLN": "1234567890",
-      "DesadvLineWithNoPacking": []
-    }
+              "OrderLine": 10,
+              "DesadvLine": 10,
+              "InvoicingUOM": {
+                "Name": "Stück",
+                "X12DE355": "PCE"
+              },
+              "ShipmentLine": 10,
+              "DesadvLineUOM": {
+                "Name": "Stück",
+                "X12DE355": "PCE"
+              },
+              "OrderDocumentNo": "@o_1_DocumentNo@",
+              "OrderPOReference": "testReference",
+              "QtyOrderedInDesadvLineUOM": 100,
+              "QtyDeliveredInInvoicingUOM": 100,
+              "QtyDeliveredInDesadvLineUOM": 100
+            },
+            "QtyCUsPerLU": 100,
+            "QtyCUsPerTU": 10,
+            "BestBeforeDate": null,
+            "GTIN_TU_PackingMaterial": "bPartnerProductGTIN",
+            "QtyCUsPerLU_InInvoiceUOM": 100,
+            "QtyCUsPerTU_InInvoiceUOM": 10,
+            "M_HU_PackagingCode_TU_Text": "ISO1"
+          }
+        ],
+        "IPA_SSCC18": "012345670010000005",
+        "GTIN_PackingMaterial": "gtinPiItemProduct",
+        "M_HU_PackagingCode_Text": "ISO1"
+      }
+    ],
+    "M_InOut_ID": @shipment_S0468_010_ID@,
+    "DateOrdered": "2025-04-17T00:00:00",
+    "POReference": "testReference",
+    "DatePromised": "2025-04-18T00:00:00+00:00",
+    "MovementDate": "2025-05-15T00:00:00",
+    "EDI_Desadv_ID": @d_1@,
+    "DeliveryViaRule": "P",
+    "ShipmentDocumentNo": "@shipment_S0468_010_DocumentNo@",
+    "InvoicableQtyBasedOn": "Nominal",
+    "TechnicalRecipientGLN": "1234567890",
+    "DesadvLineWithNoPacking": []
   }
-]
+}
     """
 
 #   no need to wait. the process runs synchronously

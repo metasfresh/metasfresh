@@ -29,7 +29,7 @@ class ScannableCodeFormatTest
 						ScannableCodeFormatPart.builder().startPosition(1).endPosition(4).type(ScannableCodeFormatPartType.ProductCode).build(),
 						ScannableCodeFormatPart.builder().startPosition(5).endPosition(10).type(ScannableCodeFormatPartType.WeightInKg).build(),
 						ScannableCodeFormatPart.builder().startPosition(11).endPosition(18).type(ScannableCodeFormatPartType.LotNo).build(),
-						ScannableCodeFormatPart.builder().startPosition(19).endPosition(24).type(ScannableCodeFormatPartType.Ignored).build(),
+						ScannableCodeFormatPart.builder().startPosition(19).endPosition(24).type(ScannableCodeFormatPartType.ProductionDate).build(),
 						ScannableCodeFormatPart.builder().startPosition(25).endPosition(30).type(ScannableCodeFormatPartType.BestBeforeDate).build()
 				))
 				.build();
@@ -41,6 +41,7 @@ class ScannableCodeFormatTest
 		assertThat(parsedScannedCode.getWeightKg()).isEqualTo("099999");
 		assertThat(parsedScannedCode.getLotNo()).isEqualTo("00000123");
 		assertThat(parsedScannedCode.getBestBeforeDate()).isEqualTo("2025-04-10");
+		assertThat(parsedScannedCode.getProductionDate()).isEqualTo("2025-04-03");
 	}
 
 	@Nested

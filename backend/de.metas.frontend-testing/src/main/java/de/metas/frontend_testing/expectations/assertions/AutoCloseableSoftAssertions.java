@@ -33,8 +33,9 @@ public final class AutoCloseableSoftAssertions implements IAutoCloseable
 		}
 		opened = true;
 
-		softAssertions = new SoftAssertions();
 		previousSoftAssertions = softAssertionsHolder.get();
+		softAssertions = new SoftAssertions(previousSoftAssertions);
+
 		softAssertionsHolder.set(softAssertions);
 	}
 

@@ -45,7 +45,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class PostgRESTClient
@@ -74,7 +75,7 @@ public class PostgRESTClient
 			builder.queryParams(getRequest.getQueryParameters());
 		}
 
-		final HttpEntity<String> request = new HttpEntity<>(buildHttpHeaders(getRequest.getResponseFormat()));
+		final HttpEntity<String> request = new HttpEntity<>(buildHttpHeaders(getRequest));
 
 		final URI uri = builder.build().encode().toUri();
 
@@ -92,10 +93,16 @@ public class PostgRESTClient
 		return responseEntity.getBody();
 	}
 
-	private HttpHeaders buildHttpHeaders(@NonNull final PostgRESTResponseFormat responseFormat)
+	private HttpHeaders buildHttpHeaders(@NonNull final GetRequest request)
 	{
+		final PostgRESTResponseFormat responseFormat = request.getResponseFormat();
+		
+		final List<MediaType> acceptableMediaTypes = new ArrayList<>();
+		request.getAdditionalAccepts().forEach(a -> acceptableMediaTypes.add(MediaType.valueOf(a)));
+		acceptableMediaTypes.add(MediaType.valueOf(responseFormat.getContentType()));
+
 		final HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Collections.singletonList(MediaType.valueOf(responseFormat.getContentType())));
+		headers.setAccept(acceptableMediaTypes);
 
 		return headers;
 	}

@@ -534,6 +534,7 @@ public class ManufacturingJobService
 							.qtyToReceiveBD(receiveFrom.getQtyReceived())
 							.date(date)
 							.bestBeforeDate(TimeUtil.asLocalDate(receiveFrom.getBestBeforeDate()))
+							.productionDate(TimeUtil.asLocalDate(receiveFrom.getProductionDate()))
 							.lotNo(receiveFrom.getLotNo())
 							.catchWeight(getTargetCatchWeight(receiveFrom).orElse(null))
 							.isBarcodeScan(receiveFrom.isBarcodeScan())
