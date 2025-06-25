@@ -122,7 +122,6 @@ public class PPOrderCandidateService
 	private final PPOrderCandidatePojoConverter ppOrderCandidatePojoConverter;
 	private final PostMaterialEventService materialEventService;
 
-
 	private static final Logger logger = LogManager.getLogger(PPOrderCandidateService.class);
 
 	@NonNull
@@ -297,19 +296,24 @@ public class PPOrderCandidateService
 	{
 		final Quantity finishedGoodQty = Quantitys.of(orderCandidateRecord.getQtyToProcess(), UomId.ofRepoId(orderCandidateRecord.getC_UOM_ID()));
 
+		final Quantity qtyRequired = orderCandidateRecord.isClosed() ? finishedGoodQty.toZero() : getQtyRequired(orderCandidateRecord, bomLine, finishedGoodQty);
+
+		orderLineCandidate.setQtyEntered(qtyRequired.toBigDecimal());
+		orderLineCandidate.setC_UOM_ID(qtyRequired.getUOM().getC_UOM_ID());
+	}
+
+	private Quantity getQtyRequired(final @NonNull I_PP_Order_Candidate orderCandidateRecord, final @NonNull I_PP_Product_BOMLine bomLine, final Quantity finishedGoodQty)
+	{
 		final ComputeQtyRequiredRequest request = ComputeQtyRequiredRequest.builder()
 				.finishedGoodQty(finishedGoodQty)
 				.productBOMLineId(ProductBOMLineId.ofRepoId(bomLine.getPP_Product_BOMLine_ID()))
 				.build();
 
-		final Quantity qtyRequired = Optional.ofNullable(orderBOMBL.getQtyRequired(request))
+		return Optional.ofNullable(orderBOMBL.getQtyRequired(request))
 				.orElseThrow(() -> new AdempiereException("Couldn't calculate qtyRequired for bom line!")
 						.appendParametersToMessage()
 						.setParameter("PP_Product_BOMLine_ID", bomLine.getPP_Product_BOMLine_ID())
 						.setParameter("PP_Order_Candidate_ID", orderCandidateRecord.getPP_Order_Candidate_ID()));
-
-		orderLineCandidate.setQtyEntered(qtyRequired.toBigDecimal());
-		orderLineCandidate.setC_UOM_ID(qtyRequired.getUOM().getC_UOM_ID());
 	}
 
 	@NonNull
