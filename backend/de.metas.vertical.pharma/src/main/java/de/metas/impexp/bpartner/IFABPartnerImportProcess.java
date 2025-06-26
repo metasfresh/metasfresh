@@ -69,13 +69,13 @@ public class IFABPartnerImportProcess extends SimpleImportProcessTemplate<I_I_Ph
 	}
 
 	@Override
-	protected I_I_Pharma_BPartner retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Pharma_BPartner retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_Pharma_BPartner(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 		IFABPartnerImportTableSqlUpdater.updateBPartnerImportTable(selection);

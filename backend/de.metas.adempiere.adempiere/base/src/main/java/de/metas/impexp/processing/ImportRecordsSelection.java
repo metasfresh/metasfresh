@@ -1,10 +1,16 @@
 package de.metas.impexp.processing;
 
+import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.process.PInstanceId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.With;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 
@@ -32,56 +38,67 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+@Builder
 @ToString
 public final class ImportRecordsSelection
 {
-	private final String importTableName;
-	private final String importKeyColumnName;
-	private final ClientId clientId;
-	private final PInstanceId selectionId;
+	@NonNull private final String importTableName;
+	@NonNull private final String importKeyColumnName;
 
-	@Builder
-	private ImportRecordsSelection(
-			@NonNull final String importTableName,
-			@NonNull final String importKeyColumnName,
-			@NonNull final ClientId clientId,
-			@Nullable final PInstanceId selectionId)
-	{
-		this.importTableName = importTableName;
-		this.importKeyColumnName = importKeyColumnName;
-		this.clientId = clientId;
-		this.selectionId = selectionId;
-	}
+	@NonNull private final ClientId clientId;
+	@Nullable @Getter @With private final PInstanceId selectionId;
+	@Getter @With private final boolean empty;
 
 	/**
 	 * @return `AND ...` where clause
 	 */
-	public String toSqlWhereClause()
-	{
-		return toSqlWhereClause(importTableName);
-	}
+	public String toSqlWhereClause() {return toSqlWhereClause0(importTableName, true);}
 
 	/**
 	 * @return `AND ...` where clause
 	 */
 	public String toSqlWhereClause(@Nullable final String importTableAlias)
 	{
-		final String importTableAliasWithDot = StringUtils.trimBlankToOptional(importTableAlias)
-				.map(alias -> alias + ".")
-				.orElse("");
+		return toSqlWhereClause0(importTableAlias, true);
+	}
+
+	private String toSqlWhereClause0(@Nullable final String importTableAlias, final boolean prefixWithAND)
+	{
+		final String importTableAliasWithDot = StringUtils.trimBlankToOptional(importTableAlias).map(alias -> alias + ".").orElse("");
 
 		final StringBuilder whereClause = new StringBuilder();
-
-		// AD_Client
-		whereClause.append(" AND ").append(importTableAliasWithDot).append("AD_Client_ID=").append(clientId.getRepoId());
-
-		// Selection_ID
-		if (selectionId != null)
+		if (prefixWithAND)
 		{
-			final String importKeyColumnNameFQ = importTableAliasWithDot + importKeyColumnName;
-			whereClause.append(" AND ").append(DB.createT_Selection_SqlWhereClause(selectionId, importKeyColumnNameFQ));
+			whereClause.append(" AND ");
+		}
+		whereClause.append("(");
+
+		if (empty)
+		{
+			return "1=2";
+		}
+		else
+		{
+			// AD_Client
+			whereClause.append(importTableAliasWithDot).append(ImportTableDescriptor.COLUMNNAME_AD_Client_ID).append("=").append(clientId.getRepoId());
+
+			// Selection_ID
+			if (selectionId != null)
+			{
+				final String importKeyColumnNameFQ = importTableAliasWithDot + importKeyColumnName;
+				whereClause.append(" AND ").append(DB.createT_Selection_SqlWhereClause(selectionId, importKeyColumnNameFQ));
+			}
 		}
 
+		whereClause.append(")");
+
 		return whereClause.toString();
+	}
+
+	public IQueryFilter<Object> toQueryFilter(@Nullable final String importTableAlias)
+	{
+		return empty
+				? ConstantQueryFilter.of(false)
+				: TypedSqlQueryFilter.of(toSqlWhereClause0(importTableAlias, false));
 	}
 }

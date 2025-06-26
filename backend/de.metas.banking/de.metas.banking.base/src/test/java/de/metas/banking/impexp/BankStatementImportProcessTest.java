@@ -22,6 +22,7 @@
 
 package de.metas.banking.impexp;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -31,14 +32,17 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.impexp.ActualImportRecordsResult;
 import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctions;
 import de.metas.impexp.processing.DBFunctionsRepository;
-import de.metas.impexp.processing.ImportGroup;
-import de.metas.impexp.processing.ImportProcessResult;
+import de.metas.impexp.processing.ImportDataDeleteRequest;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.ImportSource;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -66,10 +70,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class BankStatementImportProcessTest
@@ -187,55 +193,99 @@ public class BankStatementImportProcessTest
 		return null;
 	}
 
-	private ImportProcessResult importRecords(final I_I_BankStatement... importRecords)
+	private void importRecords(final I_I_BankStatement... importRecords)
 	{
-		final ImmutableList<I_I_BankStatement> importRecordsList = ImmutableList.copyOf(importRecords);
 		final BankStatementImportProcess importProcess = new BankStatementImportProcess()
 		{
 			@Override
-			protected void updateAndValidateImportRecords()
+			protected void updateAndValidateImportRecordsImpl()
 			{
-				System.out.println("updateAndValidateImportRecords() does nothing when running in unit test mode"
-										   + "\n\t call trace: " + Trace.toOneLineStackTraceString());
+				System.out.println("updateAndValidateImportRecordsImpl() does nothing when running in unit test mode"
+						+ "\n\t call trace: " + Trace.toOneLineStackTraceString());
 			}
 
 			@Override
-			protected void resetStandardColumns()
+			protected ImportSource<I_I_BankStatement> createInputSource()
+			{
+				return newImportSource(importRecords);
+			}
+		};
+
+		importProcess.setCtx(Env.getCtx());
+		importProcess.run();
+	}
+
+	private ImportSource<I_I_BankStatement> newImportSource(final I_I_BankStatement... importRecords)
+	{
+		final ImmutableList<I_I_BankStatement> importRecordsList = ImmutableList.copyOf(importRecords);
+		return new ImportSource<I_I_BankStatement>()
+		{
+			@Override
+			public String toString()
+			{
+				return MoreObjects.toStringHelper("ImportSource")
+						.addValue(importRecordsList)
+						.toString();
+			}
+
+			@Override
+			public String getTableName() {return I_I_BankStatement.Table_Name;}
+
+			@Override
+			public String getKeyColumnName() {return I_I_BankStatement.COLUMNNAME_I_BankStatement_ID;}
+
+			@Override
+			public boolean isEmpty() {return importRecordsList.isEmpty();}
+
+			@Override
+			public PInstanceId getMainSelectionId() {return null;}
+
+			@Override
+			public ImportRecordsSelection getSelection() {throw new UnsupportedOperationException("not yet implemented");}
+
+			@Override
+			public int deleteImportRecords(@NonNull final ImportDataDeleteRequest request) {return 0;}
+
+			@Override
+			public void resetStandardColumns()
 			{
 				System.out.println("resetStandardColumns() does nothing when running in unit test mode"
-										   + "\n\t call trace: " + Trace.toOneLineStackTraceString());
+						+ "\n\t call trace: " + Trace.toOneLineStackTraceString());
 			}
 
 			@Override
-			protected Iterator<I_I_BankStatement> retrieveRecordsToImport()
+			public Iterator<I_I_BankStatement> retrieveRecordsToImport()
 			{
 				return importRecordsList.iterator();
 			}
 
 			@Override
-			protected void markAsError(
-					@NonNull final ImportGroup<RecordIdGroupKey, I_I_BankStatement> importGroup,
-					@NonNull final Throwable exception)
+			public void runSQLAfterRowImport(final I_I_BankStatement importRecord) {}
+
+			@Override
+			public void runSQLAfterAllImport() {}
+
+			@Override
+			public ActualImportRecordsResult.Error markAsError(@NonNull final Set<Integer> importRecordIds, @NonNull final Throwable exception)
 			{
 				throw AdempiereException.wrapIfNeeded(exception)
-						.setParameter("importGroup", importGroup)
+						.setParameter("importRecordIds", importRecordIds)
 						.appendParametersToMessage();
 			}
-		};
 
-		importProcess.setCtx(Env.getCtx());
-		return importProcess.run();
+			private void removeIdsFromSelection(@NonNull final Set<Integer> importRecordIds) {}
+		};
 	}
 
 	@Test
 	void importToExistingBankStatement()
 	{
 		final BankStatementId bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
-																							 .orgId(OrgId.ANY)
-																							 .orgBankAccountId(euroOrgBankAccountId)
-																							 .name("Bank Statement 1")
-																							 .statementDate(LocalDate.parse("2020-03-22"))
-																							 .build());
+				.orgId(OrgId.ANY)
+				.orgBankAccountId(euroOrgBankAccountId)
+				.name("Bank Statement 1")
+				.statementDate(LocalDate.parse("2020-03-22"))
+				.build());
 
 		final RecordBuilder recordBuilder = record()
 				.bankStatementId(bankStatementId)

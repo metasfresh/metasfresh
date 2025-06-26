@@ -62,7 +62,7 @@ public class PostalCodeImportProcess extends SimpleImportProcessTemplate<I_I_Pos
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 	}
 
@@ -73,7 +73,7 @@ public class PostalCodeImportProcess extends SimpleImportProcessTemplate<I_I_Pos
 	}
 
 	@Override
-	protected I_I_Postal retrieveImportRecord(final Properties ctx, final ResultSet rs)
+	public I_I_Postal retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Postal(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

@@ -75,7 +75,7 @@ public class FlatrateTermImportProcess extends SimpleImportProcessTemplate<I_I_F
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -85,7 +85,7 @@ public class FlatrateTermImportProcess extends SimpleImportProcessTemplate<I_I_F
 	}
 
 	@Override
-	protected I_I_Flatrate_Term retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Flatrate_Term retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		final PO po = TableModelLoader.instance.getPO(ctx, I_I_Flatrate_Term.Table_Name, rs, ITrx.TRXNAME_ThreadInherited);
 		return InterfaceWrapperHelper.create(po, I_I_Flatrate_Term.class);

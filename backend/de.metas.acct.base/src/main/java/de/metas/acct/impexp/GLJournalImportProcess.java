@@ -71,7 +71,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final ImportRecordsSelection selection = getImportRecordsSelection();
@@ -896,7 +896,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	}
 
 	@Override
-	protected I_I_GLJournal retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
+	public I_I_GLJournal retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
 	{
 		return new X_I_GLJournal(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

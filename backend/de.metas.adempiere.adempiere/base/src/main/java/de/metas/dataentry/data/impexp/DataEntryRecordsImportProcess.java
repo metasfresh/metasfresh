@@ -101,13 +101,13 @@ public class DataEntryRecordsImportProcess extends SimpleImportProcessTemplate<I
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		// nothing here
 	}
 
 	@Override
-	protected I_I_DataEntry_Record retrieveImportRecord(final Properties ctx, final ResultSet rs)
+	public I_I_DataEntry_Record retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_DataEntry_Record(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

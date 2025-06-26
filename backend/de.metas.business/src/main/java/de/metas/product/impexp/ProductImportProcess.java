@@ -106,7 +106,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -126,7 +126,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	}
 
 	@Override
-	protected I_I_Product retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Product retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_Product(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

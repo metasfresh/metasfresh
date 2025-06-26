@@ -48,7 +48,7 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 		MDiscountSchemaImportTableSqlUpdater.updateDiscountSchemaImportTable(selection);
@@ -61,7 +61,7 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 	}
 
 	@Override
-	protected I_I_DiscountSchema retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_DiscountSchema retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_DiscountSchema(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

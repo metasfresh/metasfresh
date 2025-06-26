@@ -86,7 +86,7 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -186,7 +186,7 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 	}
 
 	@Override
-	protected I_I_Request retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Request retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		final PO po = TableModelLoader.instance.getPO(ctx, I_I_Request.Table_Name, rs, ITrx.TRXNAME_ThreadInherited);
 		return InterfaceWrapperHelper.create(po, I_I_Request.class);

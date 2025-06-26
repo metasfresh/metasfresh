@@ -19,6 +19,7 @@ public class IFAInitialImportProcess extends JavaProcess
 		importProcess.setCtx(getCtx());
 		importProcess.setParameters(getParameterAsIParams());
 		importProcess.setLoggable(this);
+		importProcess.notifyUserId(getUserId());
 	}
 	
 	// NOTE: we shall run this process out of transaction because the actual import process is managing the transaction

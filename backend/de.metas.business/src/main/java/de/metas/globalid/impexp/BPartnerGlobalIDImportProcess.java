@@ -63,7 +63,7 @@ public class BPartnerGlobalIDImportProcess extends SimpleImportProcessTemplate<I
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 		BPartnerGlobalIDImportTableSqlUpdater.updateBPartnerGlobalIDImortTable(selection);
@@ -76,7 +76,7 @@ public class BPartnerGlobalIDImportProcess extends SimpleImportProcessTemplate<I
 	}
 
 	@Override
-	protected I_I_BPartner_GlobalID retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
+	public I_I_BPartner_GlobalID retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
 	{
 		return new X_I_BPartner_GlobalID(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

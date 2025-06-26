@@ -103,7 +103,6 @@ public class DataImportService
 
 		return DataImportCommand.builder()
 				.dataImportService(this)
-				.importProcessFactory(importProcessFactory)
 				.dataImportRunService(dataImportRunService)
 				.insertIntoImportTableService(insertIntoImportTableService)
 				//
@@ -132,12 +131,7 @@ public class DataImportService
 		try
 		{
 			final ImportProcessResult processResult = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
-					.setCtx(Env.getCtx())
-					.clientId(request.getClientId())
-					.setParameters(request.getAdditionalParameters())
-					.selectedRecords(request.getSelectionId())
-					.validateOnly(true)
-					.run();
+					.validate(request);
 
 			stopwatch.stop();
 
@@ -153,12 +147,7 @@ public class DataImportService
 	public ValidateAndActualImportRecordsResult validateAndImportRecordsNow(@NonNull final ImportRecordsRequest request)
 	{
 		final ImportProcessResult result = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
-				.setCtx(Env.getCtx())
-				.setLoggable(Loggables.get())
-				.selectedRecords(request.getSelectionId())
-				.completeDocuments(request.isCompleteDocuments())
-				.setParameters(request.getAdditionalParameters())
-				.run();
+				.validateAndImport(request);
 
 		if (request.getNotifyUserId() != null)
 		{
@@ -208,8 +197,6 @@ public class DataImportService
 	public int deleteImportRecords(@NonNull final ImportDataDeleteRequest request)
 	{
 		return importProcessFactory.newImportProcessForTableName(request.getImportTableName())
-				.setCtx(Env.getCtx())
-				.setLoggable(Loggables.get())
 				.setParameters(request.getAdditionalParameters())
 				.deleteImportRecords(request);
 	}

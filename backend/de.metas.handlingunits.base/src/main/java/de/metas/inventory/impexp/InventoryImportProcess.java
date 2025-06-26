@@ -127,7 +127,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -228,7 +228,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	}
 
 	@Override
-	protected I_I_Inventory retrieveImportRecord(final Properties ctx, final ResultSet rs)
+	public I_I_Inventory retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Inventory(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

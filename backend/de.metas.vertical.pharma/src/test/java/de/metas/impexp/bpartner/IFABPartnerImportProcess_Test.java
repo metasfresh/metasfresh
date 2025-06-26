@@ -83,8 +83,6 @@ public class IFABPartnerImportProcess_Test
 	 * <code>B00SSATZ	B00ADRNR	B00NAME1	B00NAME2	B00NAME3	B00LAND	B00PLZZU1	B00ORTZU	B00STR	B00HNRV	B00HNRVZ	B00HNRB	B00HNRBZ	B00PLZPF1	B00ORTPF	B00PF1		B00TEL1	B00TEL2	B00FAX1	B00FAX2	B00EMAIL	B00EMAIL2	B00HOMEPAG</code><br>
 	 * <code>1			9528		testco1		test1		name1		DE			45721	City1		Street1	 12		23			34		45												1234	2343	3453	3432	te@test.com	te1@test.com	www.test.com	</code><br>
 	 * <code>1			20		 	testco2		test2		name2		DE			41564	City2		Street2	 12		23			34		45			41553		POBOxCity	20 22 25	1234	2343	3453	3432	te@test.com	te1@test.com	www.test.com	</code><br>
-	 *
-	 * @param lines
 	 */
 	private List<I_I_Pharma_BPartner> prepareImportRecords()
 	{
