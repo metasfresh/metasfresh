@@ -7,6 +7,7 @@ export const ATTR_GTIN = 'GTIN';
 export const ATTR_weightNet = 'weightNet';
 export const ATTR_weightNetUOM = 'weightNetUOM';
 export const ATTR_bestBeforeDate = 'bestBeforeDate';
+export const ATTR_productionDate = 'productionDate';
 export const ATTR_lotNo = 'lotNo';
 export const ATTR_displayable = 'displayable';
 export const ATTR_isTUToBePickedAsWhole = 'isTUToBePickedAsWhole';

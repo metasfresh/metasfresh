@@ -51,7 +51,7 @@ public class PurchaseOrderToShipperTransportationService
 				.addInArrayFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.filter(queryFilter)
 				.create()
-				.listIds(OrderId::ofRepoId)
+				.idsAsSet(OrderId::ofRepoId)
 				.stream()
 				.filter(orderId -> repo.purchaseOrderNotInShipperTransportation(orderId))
 				.collect(ImmutableList.toImmutableList());

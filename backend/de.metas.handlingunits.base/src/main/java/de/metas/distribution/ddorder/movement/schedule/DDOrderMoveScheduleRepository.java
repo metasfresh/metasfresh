@@ -260,7 +260,7 @@ public class DDOrderMoveScheduleRepository
 				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID, ddOrderLineId)
 				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_Status, DDOrderMoveScheduleStatus.NOT_STARTED)
 				.create()
-				.listIds(DDOrderMoveScheduleId::ofRepoId);
+				.idsAsSet(DDOrderMoveScheduleId::ofRepoId);
 
 		deleteByScheduleIds(scheduleIds);
 	}
@@ -280,7 +280,7 @@ public class DDOrderMoveScheduleRepository
 				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_ID, ddOrderId)
 				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_Status, DDOrderMoveScheduleStatus.NOT_STARTED)
 				.create()
-				.listIds(DDOrderMoveScheduleId::ofRepoId);
+				.idsAsSet(DDOrderMoveScheduleId::ofRepoId);
 
 		deleteByScheduleIds(scheduleIds);
 	}

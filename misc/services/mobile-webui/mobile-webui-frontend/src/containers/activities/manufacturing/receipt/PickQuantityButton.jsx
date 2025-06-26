@@ -25,13 +25,24 @@ const PickQuantityButton = ({ qtyTarget, uom, catchWeightUom, caption, isDisable
     catchWeight,
     catchWeightUom,
     bestBeforeDate,
+    productionDate,
     lotNo,
+    barcodeType,
     isDone = true,
   }) => {
     if (isDone) {
       setDialogOpen(false);
     }
-    onClick({ qtyEnteredAndValidated, catchWeight, catchWeightUom, bestBeforeDate, lotNo, isDone });
+    onClick({
+      qtyEnteredAndValidated,
+      catchWeight,
+      catchWeightUom,
+      bestBeforeDate,
+      productionDate,
+      lotNo,
+      isBarcodeScan: !!barcodeType,
+      isDone,
+    });
   };
 
   return (

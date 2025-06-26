@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/manufacturingorderdoc/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
+	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintLogo" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select * from pp_order
+where pp_order.pp_order_id = $P{RECORD_ID}]]>
+	</queryString>
+	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="documentno"/>
+		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="s_resource_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="s_resource_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="s_resource_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="m_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_product_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="m_warehouse_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_warehouse_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="m_warehouse_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="assay" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="assay"/>
+		<property name="com.jaspersoft.studio.field.label" value="assay"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="c_activity_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_activity_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_activity_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="c_campaign_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_campaign_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_campaign_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="c_doctypetarget_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_doctypetarget_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_doctypetarget_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="c_doctype_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_doctype_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_doctype_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="c_orderline_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_orderline_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_orderline_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="c_uom_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_uom_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_uom_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="copyfrom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="copyfrom"/>
+		<property name="com.jaspersoft.studio.field.label" value="copyfrom"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="created" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="created"/>
+		<property name="com.jaspersoft.studio.field.label" value="created"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="createdby" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="createdby"/>
+		<property name="com.jaspersoft.studio.field.label" value="createdby"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="dateconfirm" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="dateconfirm"/>
+		<property name="com.jaspersoft.studio.field.label" value="dateconfirm"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="datedelivered" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="datedelivered"/>
+		<property name="com.jaspersoft.studio.field.label" value="datedelivered"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="datefinish" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="datefinish"/>
+		<property name="com.jaspersoft.studio.field.label" value="datefinish"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="datefinishschedule" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="datefinishschedule"/>
+		<property name="com.jaspersoft.studio.field.label" value="datefinishschedule"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="dateordered" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="dateordered"/>
+		<property name="com.jaspersoft.studio.field.label" value="dateordered"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="datepromised" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="datepromised"/>
+		<property name="com.jaspersoft.studio.field.label" value="datepromised"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="datestart" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="datestart"/>
+		<property name="com.jaspersoft.studio.field.label" value="datestart"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="datestartschedule" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="datestartschedule"/>
+		<property name="com.jaspersoft.studio.field.label" value="datestartschedule"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="docaction" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docaction"/>
+		<property name="com.jaspersoft.studio.field.label" value="docaction"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
+		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="floatafter" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="floatafter"/>
+		<property name="com.jaspersoft.studio.field.label" value="floatafter"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="floatbefored" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="floatbefored"/>
+		<property name="com.jaspersoft.studio.field.label" value="floatbefored"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="isactive" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isactive"/>
+		<property name="com.jaspersoft.studio.field.label" value="isactive"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="isapproved" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isapproved"/>
+		<property name="com.jaspersoft.studio.field.label" value="isapproved"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="isprinted" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isprinted"/>
+		<property name="com.jaspersoft.studio.field.label" value="isprinted"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="isqtypercentage" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isqtypercentage"/>
+		<property name="com.jaspersoft.studio.field.label" value="isqtypercentage"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="issotrx" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="issotrx"/>
+		<property name="com.jaspersoft.studio.field.label" value="issotrx"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="isselected" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isselected"/>
+		<property name="com.jaspersoft.studio.field.label" value="isselected"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="line"/>
+		<property name="com.jaspersoft.studio.field.label" value="line"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="lot" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="lot"/>
+		<property name="com.jaspersoft.studio.field.label" value="lot"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="m_attributesetinstance_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_attributesetinstance_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="m_attributesetinstance_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="ordertype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ordertype"/>
+		<property name="com.jaspersoft.studio.field.label" value="ordertype"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="pp_order_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="pp_order_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="pp_order_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="pp_product_bom_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="pp_product_bom_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="pp_product_bom_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="planner_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="planner_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="planner_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="posted" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="posted"/>
+		<property name="com.jaspersoft.studio.field.label" value="posted"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="priorityrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="priorityrule"/>
+		<property name="com.jaspersoft.studio.field.label" value="priorityrule"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="processed" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="processed"/>
+		<property name="com.jaspersoft.studio.field.label" value="processed"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="processing" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="processing"/>
+		<property name="com.jaspersoft.studio.field.label" value="processing"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qtybatchsize" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtybatchsize"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtybatchsize"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qtybatchs" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtybatchs"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtybatchs"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qtydelivered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtydelivered"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtydelivered"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qtyentered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyentered"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtyentered"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qtyordered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyordered"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtyordered"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qtyreject" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyreject"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtyreject"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qtyreserved" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyreserved"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtyreserved"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qtyscrap" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyscrap"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtyscrap"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="scheduletype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="scheduletype"/>
+		<property name="com.jaspersoft.studio.field.label" value="scheduletype"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="serno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="serno"/>
+		<property name="com.jaspersoft.studio.field.label" value="serno"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="updated" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="updated"/>
+		<property name="com.jaspersoft.studio.field.label" value="updated"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="updatedby" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="updatedby"/>
+		<property name="com.jaspersoft.studio.field.label" value="updatedby"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="user1_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="user1_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="user1_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="user2_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="user2_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="user2_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="ad_client_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_client_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_client_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="yield" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="yield"/>
+		<property name="com.jaspersoft.studio.field.label" value="yield"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="ad_orgtrx_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_orgtrx_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_orgtrx_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="ad_workflow_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_workflow_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_workflow_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="preparationdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="preparationdate"/>
+		<property name="com.jaspersoft.studio.field.label" value="preparationdate"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="c_bpartner_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_bpartner_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="m_locator_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_locator_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="m_locator_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="m_hu_lutu_configuration_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_hu_lutu_configuration_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="m_hu_lutu_configuration_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="c_orderline_mto_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_orderline_mto_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_orderline_mto_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qm_qtydeliveredpercofraw" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qm_qtydeliveredpercofraw"/>
+		<property name="com.jaspersoft.studio.field.label" value="qm_qtydeliveredpercofraw"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qm_qtydeliveredavg" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qm_qtydeliveredavg"/>
+		<property name="com.jaspersoft.studio.field.label" value="qm_qtydeliveredavg"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="mrp_generated" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="mrp_generated"/>
+		<property name="com.jaspersoft.studio.field.label" value="mrp_generated"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="mrp_allowcleanup" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="mrp_allowcleanup"/>
+		<property name="com.jaspersoft.studio.field.label" value="mrp_allowcleanup"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="mrp_todelete" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="mrp_todelete"/>
+		<property name="com.jaspersoft.studio.field.label" value="mrp_todelete"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="qtybeforeclose" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtybeforeclose"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtybeforeclose"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="m_material_tracking_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_material_tracking_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="m_material_tracking_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="isinvoicecandidate" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isinvoicecandidate"/>
+		<property name="com.jaspersoft.studio.field.label" value="isinvoicecandidate"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="planningstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="planningstatus"/>
+		<property name="com.jaspersoft.studio.field.label" value="planningstatus"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="pp_product_planning_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="pp_product_planning_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="pp_product_planning_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="c_project_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_project_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_project_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="ispickingorder" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ispickingorder"/>
+		<property name="com.jaspersoft.studio.field.label" value="ispickingorder"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="postingerror_issue_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="postingerror_issue_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="postingerror_issue_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="exportstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="exportstatus"/>
+		<property name="com.jaspersoft.studio.field.label" value="exportstatus"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="canbeexportedfrom" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="canbeexportedfrom"/>
+		<property name="com.jaspersoft.studio.field.label" value="canbeexportedfrom"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="docbasetype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docbasetype"/>
+		<property name="com.jaspersoft.studio.field.label" value="docbasetype"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="problemcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="problemcode"/>
+		<property name="com.jaspersoft.studio.field.label" value="problemcode"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="repairordersummary" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="repairordersummary"/>
+		<property name="com.jaspersoft.studio.field.label" value="repairordersummary"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="repairserviceperformed_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="repairserviceperformed_product_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="repairserviceperformed_product_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="ad_user_responsible_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_user_responsible_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_user_responsible_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="current_receiving_lu_hu_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="current_receiving_lu_hu_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="current_receiving_lu_hu_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="current_receiving_tu_pi_item_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="current_receiving_tu_pi_item_product_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="current_receiving_tu_pi_item_product_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="m_shipmentschedule_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_shipmentschedule_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="m_shipmentschedule_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="currentscaledeviceid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="currentscaledeviceid"/>
+		<property name="com.jaspersoft.studio.field.label" value="currentscaledeviceid"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="m_hu_pi_item_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_hu_pi_item_product_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="m_hu_pi_item_product_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="seqno" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="seqno"/>
+		<property name="com.jaspersoft.studio.field.label" value="seqno"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="ic114_leichmehl_entered_docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ic114_leichmehl_entered_docno"/>
+		<property name="com.jaspersoft.studio.field.label" value="ic114_leichmehl_entered_docno"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<field name="workstation_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="workstation_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="workstation_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="pp_order"/>
+	</field>
+	<pageHeader>
+		<band height="87" splitType="Stretch">
+			<subreport isUsingCache="false" runToBottom="false" overflowType="Stretch">
+				<reportElement key="subreport-10" positionType="Float" x="0" y="63" width="595" height="23" uuid="4a54592e-76d1-4778-8807-2ec154f165d3"/>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/manufacturingorderdoc/report_page_header.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="false" runToBottom="false" overflowType="Stretch">
+				<reportElement key="subreport-8" positionType="Float" x="0" y="43" width="595" height="16" uuid="1c2f9f56-d4a1-435a-85c3-9c260cc89395"/>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/manufacturingorderdoc/report_description.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-4" x="0" y="0" width="595" height="50" uuid="edc7e20b-455d-4b81-9eb5-325d10252251">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintLogo}.equals("Y")]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="50" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" stretchType="ContainerBottom" x="0" y="0" width="595" height="50" isPrintWhenDetailOverflows="true" uuid="f4aecc68-d647-409b-bde5-65f943103dc3"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/manufacturingorderdoc/report_details.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="38" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-62" x="507" y="13" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="19def8f8-db8e-472e-845e-a0f7ab5aea53"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+ "  / "]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-63" x="444" y="13" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b8c6c7c4-819f-4a5e-a9c7-87ca22b20655"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-64" x="524" y="13" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="6b4b91a6-d40e-4a81-af69-b8f0917a5c01"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

@@ -102,7 +102,7 @@ public class C_Order_ProductionSimulationView_Launcher extends JavaProcess imple
 			log.error("Error encountered while launching ProductionSimulationModal:", exception);
 
 			postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
-														  .eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
+														  .eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientAndOrgId()))
 														  .build());
 
 			throw AdempiereException.wrapIfNeeded(exception);

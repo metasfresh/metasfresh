@@ -238,7 +238,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		return retrieveInvoiceCandidatesForRecordQuery(reference)
 				.create()
-				.listIds(InvoiceCandidateId::ofRepoId);
+				.idsAsSet(InvoiceCandidateId::ofRepoId);
 	}
 
 	@Override

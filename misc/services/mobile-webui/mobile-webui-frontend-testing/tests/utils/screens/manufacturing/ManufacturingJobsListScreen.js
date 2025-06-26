@@ -20,5 +20,17 @@ export const ManufacturingJobsListScreen = {
     startJob: async ({ documentNo }) => await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
         await page.locator('.wflauncher-button').filter({ hasText: documentNo }).tap();
         await ManufacturingJobScreen.waitForScreen();
+        return {
+            jobId: await ManufacturingJobsListScreen.getJobId(),
+        }
     }),
+
+    getJobId: async () => {
+        const currentUrl = await page.url();
+
+        const regex = /\/mfg-(\d+)/;
+        const match = currentUrl.match(regex);
+        return match ? match[1] : null;
+    },
+
 };

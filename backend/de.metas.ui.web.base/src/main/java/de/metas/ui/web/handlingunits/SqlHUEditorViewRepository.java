@@ -551,7 +551,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 								SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias()),
 								context))
 				.create()
-				.listIds(HuId::ofRepoId);
+				.idsAsSet(HuId::ofRepoId);
 	}
 
 	@Override

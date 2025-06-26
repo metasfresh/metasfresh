@@ -60,7 +60,35 @@ const createMasterdata = async () => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Receive several by-products using L+M codes to a new TU (Catch Weight)', async ({ page }) => {
+test('Receive several by-products using manual input to a new TU', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('mfg');
+    await ManufacturingJobsListScreen.waitForScreen();
+    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+    await ManufacturingJobScreen.clickReceiveButton({ index: 2 }); // i.e., first by-product
+    await MaterialReceiptLineScreen.selectNewTUTarget({ tuPIItemProductTestId: masterdata.packingInstructions.BY_PRODUCT_PI.tuPIItemProductTestId });
+    await MaterialReceiptLineScreen.receiveQty({
+        switchToManualInput: true,
+        qtyEntered: 9,
+        catchWeight: 0.987,
+        expectGoBackToJob: true
+    });
+    await ManufacturingJobScreen.expectReceiveButton({
+        index: 2,
+        qtyToReceive: '10 Stk',
+        qtyReceived: '9 Stk',
+        //catchWeight: '987 g', // TODO figure out why this is not displayed!?
+    })
+
+    await ManufacturingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Receive several by-products using L+M codes to a new TU', async ({ page }) => {
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -80,12 +108,12 @@ test('Receive several by-products using L+M codes to a new TU (Catch Weight)', a
         expectGoBackToJob: false
     });
     await MaterialReceiptLineScreen.goBack();
-    
+
     await ManufacturingJobScreen.complete();
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Receive By-Products from 2 manufacturing orders into same HU (Catch Weight)', async ({ page }) => {
+test('Receive By-Products from 2 manufacturing orders into same HU', async ({ page }) => {
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);

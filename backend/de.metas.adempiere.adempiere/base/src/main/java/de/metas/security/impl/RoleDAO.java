@@ -12,7 +12,6 @@ import de.metas.security.IRolesTreeNode;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Role;
-import de.metas.security.RoleGroup;
 import de.metas.security.RoleId;
 import de.metas.security.RoleInclude;
 import de.metas.security.TableAccessLevel;
@@ -189,7 +188,7 @@ public class RoleDAO implements IRoleDAO
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_Role.COLUMN_AD_Role_ID)
 				.create()
-				.listIds(RoleId::ofRepoId);
+				.idsAsSet(RoleId::ofRepoId);
 	}
 
 	@Override
@@ -216,7 +215,7 @@ public class RoleDAO implements IRoleDAO
 				.orderBy(I_AD_Role.COLUMN_AD_Role_ID) // just to have a predictible order
 				//
 				.create()
-				.listIds(RoleId::ofRepoId);
+				.idsAsSet(RoleId::ofRepoId);
 	}
 
 	@Override
@@ -258,7 +257,7 @@ public class RoleDAO implements IRoleDAO
 				.addEqualsFilter(I_AD_Role.COLUMNNAME_IsManual, false)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(RoleId::ofRepoId);
+				.idsAsSet(RoleId::ofRepoId);
 
 		return getByIds(roleIds);
 	}
@@ -272,7 +271,7 @@ public class RoleDAO implements IRoleDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.setRequiredAccess(Access.READ)
-				.listIds(RoleId::ofRepoId);
+				.idsAsSet(RoleId::ofRepoId);
 
 		return getByIds(roleIds);
 	}

@@ -153,7 +153,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.setOnlySelection(selectionId)
 				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
 				.create()
-				.listIds(HuId::ofRepoId);
+				.idsAsSet(HuId::ofRepoId);
 	}
 
 	@Override
@@ -963,7 +963,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 						.addOnlyActiveRecordsFilter()
 						.addInArrayFilter(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID, parentPIVersionIdsToCheck)
 						.create()
-						.listIds(HuPackingInstructionsId::ofRepoId);
+						.idsAsSet(HuPackingInstructionsId::ofRepoId);
 			}
 			else
 			{
@@ -1018,7 +1018,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.andCollect(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, I_M_HU_PI.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(HuPackingInstructionsId::ofRepoId);
+				.idsAsSet(HuPackingInstructionsId::ofRepoId);
 
 	}
 

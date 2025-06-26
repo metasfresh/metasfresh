@@ -20,6 +20,12 @@ export const closeTarget = ({ wfProcessId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+export const printTargetLabel = ({ wfProcessId }) => {
+  return axios
+    .post(toUrl(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/target/printLabel`))
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const consolidate = ({ wfProcessId, fromPickingSlotQRCode, huId }) => {
   return axios
     .post(toUrl(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/consolidate`), {

@@ -70,6 +70,7 @@ Feature: Shipping HUs interaction with material schedule
       | s_s_1                            | s_1                   |
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | INVENTORY_UP        |                               | p_1                     |                      | 100 | 100                    | 2021-04-09T00:00:00             |
       | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |                                 |
       | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     |                      | -15 | 85                     | 2021-04-11T00:00:00             |
     When the shipment identified by s_1 is reactivated

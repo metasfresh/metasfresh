@@ -65,7 +65,7 @@ const createMasterdata = async () => {
                         { startPosition: 1, endPosition: 4, type: 'PRODUCT_CODE' },
                         { startPosition: 5, endPosition: 10, type: 'WEIGHT_KG' },
                         { startPosition: 11, endPosition: 18, type: 'LOT' },
-                        { startPosition: 19, endPosition: 24, type: 'IGNORE' },
+                        { startPosition: 19, endPosition: 24, type: 'PRODUCTION_DATE', dateFormat: 'yyMMdd' },
                         { startPosition: 25, endPosition: 30, type: 'BEST_BEFORE_DATE', dateFormat: 'yyMMdd' },
                     ],
                 }
@@ -91,13 +91,19 @@ test('Receive using custom QR Code format', async ({ page }) => {
         await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
         await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: bomQRCode });
         // NOTE: the product code in the QR code is not validated because, at the moment, product codes from any type of barcode are not being validated.
-        await MaterialReceiptLineScreen.receiveQty({ catchWeightQRCode: 'A593707G000384C05321124E000001', expectGoBackToJob: false });
+        await MaterialReceiptLineScreen.receiveQty({
+            catchWeightQRCode: 'A593707G000384C05321124E000001',
+            expectGoBackToJob: false
+        });
         await MaterialReceiptLineScreen.goBack();
         await Backend.expect({
             hus: {
                 [bomQRCode]: {
                     storages: { 'BOM': '1 PCE' },
-                    attributes: { 'WeightNet': '0.384' }
+                    attributes: { 'WeightNet': '0.384' },
+                    cus: [
+                        { qty: '1 PCE', attributes: { 'WeightNet': '0.384', 'HU_BestBeforeDate': '-', 'ProductionDate': 'today', 'Lot-Nummer': '5321124' } },
+                    ]
                 }
             }
         });
@@ -107,13 +113,20 @@ test('Receive using custom QR Code format', async ({ page }) => {
         await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
         await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: bomQRCode });
         // NOTE: the product code in the QR code is not validated because, at the moment, product codes from any type of barcode are not being validated.
-        await MaterialReceiptLineScreen.receiveQty({ catchWeightQRCode: '100009999900000123250403260410', expectGoBackToJob: false });
+        await MaterialReceiptLineScreen.receiveQty({
+            catchWeightQRCode: '100009999900000123250403260410',
+            expectGoBackToJob: false
+        });
         await MaterialReceiptLineScreen.goBack();
         await Backend.expect({
             hus: {
                 [bomQRCode]: {
                     storages: { 'BOM': '2 PCE' },
-                    attributes: { 'WeightNet': '100.383' } // 0.384 + 99.999
+                    attributes: { 'WeightNet': '100.383' }, // 0.384 + 99.999
+                    cus: [
+                        { qty: '1 PCE', attributes: { 'WeightNet': '0.384', 'HU_BestBeforeDate': '-', 'ProductionDate': 'today', 'Lot-Nummer': '5321124' } },
+                        { qty: '1 PCE', attributes: { 'WeightNet': '99.999', 'HU_BestBeforeDate': '2026-04-10', 'ProductionDate': '2025-04-03', 'Lot-Nummer': '123' } },
+                    ]
                 }
             }
         });

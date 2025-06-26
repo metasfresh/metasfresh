@@ -519,7 +519,7 @@ public class ProductDAO implements IProductDAO
 				.createQueryBuilder(I_M_Product.class) // in trx!
 				.addInArrayFilter(I_M_Product.COLUMN_S_Resource_ID, resourceIds)
 				.create()
-				.listIds(ProductId::ofRepoId);
+				.idsAsSet(ProductId::ofRepoId);
 		if (productIds.isEmpty())
 		{
 			return;
@@ -676,7 +676,7 @@ public class ProductDAO implements IProductDAO
 				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
 				.setLimit(QueryLimit.TWO)
 				.create()
-				.listIds(ProductId::ofRepoIdOrNull);
+				.idsAsSet(ProductId::ofRepoIdOrNull);
 
 		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
 	}
@@ -690,7 +690,7 @@ public class ProductDAO implements IProductDAO
 				.addStringStartsWith(I_M_Product.COLUMNNAME_Value, valuePrefix)
 				.setLimit(QueryLimit.TWO)
 				.create()
-				.listIds(ProductId::ofRepoIdOrNull);
+				.idsAsSet(ProductId::ofRepoIdOrNull);
 
 		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
 	}
@@ -766,7 +766,7 @@ public class ProductDAO implements IProductDAO
 				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
 				.orderBy(I_M_Product.COLUMNNAME_Value)
 				.create()
-				.listIds(ProductId::ofRepoId);
+				.idsAsSet(ProductId::ofRepoId);
 	}
 
 	@Override
@@ -824,7 +824,7 @@ public class ProductDAO implements IProductDAO
 				.addStringLikeFilter(I_M_Product.COLUMNNAME_Value, queryString, true)
 				.addStringLikeFilter(I_M_Product.COLUMNNAME_Name, queryString, true);
 
-		return queryBuilder.create().listIds(ProductId::ofRepoIdOrNull);
+		return queryBuilder.create().idsAsSet(ProductId::ofRepoIdOrNull);
 	}
 
 	@Override

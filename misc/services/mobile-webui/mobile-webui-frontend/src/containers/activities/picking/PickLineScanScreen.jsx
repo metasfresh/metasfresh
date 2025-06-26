@@ -146,7 +146,6 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
   const customQRCodeFormats = getCustomQRCodeFormats({ activity });
-  console.log('getPropsFromState', { activity, customQRCodeFormats });
 
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
@@ -192,6 +191,7 @@ const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   }
 
   result['bestBeforeDate'] = qrCodeObj.bestBeforeDate;
+  result['productionDate'] = qrCodeObj.productionDate;
   result['lotNo'] = qrCodeObj.lotNo;
 
   console.log('resolveScannedBarcode', { result, qrCodeObj });
@@ -258,6 +258,7 @@ const usePostQtyPicked = ({
     catchWeightUom = null,
     isTUToBePickedAsWhole = false,
     bestBeforeDate = null,
+    productionDate = null,
     lotNo = null,
     productNo,
     ean13ProductCode,
@@ -279,6 +280,7 @@ const usePostQtyPicked = ({
       catchWeightUom,
       isShowBestBeforeDate,
       bestBeforeDate,
+      productionDate,
       isShowLotNo,
       lotNo,
       productNo,

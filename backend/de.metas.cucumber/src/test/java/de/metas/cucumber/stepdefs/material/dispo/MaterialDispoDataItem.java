@@ -48,6 +48,7 @@ import java.util.Optional;
 public class MaterialDispoDataItem
 {
 	@NonNull CandidateId candidateId;
+	@NonNull CandidateId stockCandidateId;
 	@NonNull CandidateType type;
 	@Nullable CandidateBusinessCase businessCase;
 	@NonNull MaterialDescriptor materialDescriptor;
@@ -62,6 +63,7 @@ public class MaterialDispoDataItem
 		return MaterialDispoDataItem.builder()
 				.materialDescriptor(dataCandidate.getMaterialDescriptor())
 				.candidateId(dataCandidate.getId())
+				.stockCandidateId(stockCandidate.getId())
 				.type(dataCandidate.getType())
 				.businessCase(dataCandidate.getBusinessCase())
 				.businessCaseDetail(dataCandidate.getBusinessCaseDetail())

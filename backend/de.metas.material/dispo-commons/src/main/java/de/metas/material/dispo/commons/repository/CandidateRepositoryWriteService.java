@@ -55,6 +55,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_QtyDetails;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -830,6 +831,15 @@ public class CandidateRepositoryWriteService
 		deletePurchaseDetailsRecords(candidateId);
 		deleteStockChangeDetailsRecords(candidateId);
 		deleteTransactionDetailsRecords(candidateId);
+		deleteQtyDetails(candidateId);
+	}
+
+	private void deleteQtyDetails(@NonNull final CandidateId candidateId)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate_QtyDetails.class)
+				.addEqualsFilter(I_MD_Candidate_QtyDetails.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.delete();
 	}
 
 	private void deleteDemandDetailsRecords(@NonNull final CandidateId candidateId)
@@ -974,7 +984,7 @@ public class CandidateRepositoryWriteService
 		BigDecimal previousQty;
 	}
 
-	public void updateQtyDetails(@NonNull final Candidate candidate, @NonNull final Candidate stockCandidate, @Nullable final Candidate previousStockCandidate)
+	public BigDecimal getCurrentAtpAndUpdateQtyDetails(@NonNull final Candidate candidate, @NonNull final Candidate stockCandidate, @Nullable final Candidate previousStockCandidate)
 	{
 		final Candidate actualPreviousStockCandidate = CoalesceUtil.coalesceSuppliers(() -> previousStockCandidate,
 				() -> getPreviousStockCandidateOrNull(stockCandidate));
@@ -996,6 +1006,7 @@ public class CandidateRepositoryWriteService
 				))
 				.build();
 		candidateQtyDetailsRepository.save(request);
+		return candidate.getStockImpactPlannedQuantity().add(previousQty);
 	}
 
 	@Nullable
@@ -1019,6 +1030,6 @@ public class CandidateRepositoryWriteService
 				.matchExactStorageAttributesKey(true)
 				.build();
 
-		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(findPreviousStockQuery);
+		return candidateRepositoryRetrieval.retrievePreviousMatchForCandidateIdOrNull(findPreviousStockQuery, stockCandidate.getId());
 	}
 }

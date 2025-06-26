@@ -176,11 +176,14 @@ const GetQuantityDialog = ({
         catchWeight: qrCode.weightNet,
         catchWeightUom: catchWeightUom,
         bestBeforeDate: qrCode.bestBeforeDate,
+        productionDate: qrCode.productionDate,
         lotNo: qrCode.lotNo,
         productNo: qrCode.productNo,
         barcodeType: qrCode.barcodeType,
+        barcode: result.scannedBarcode,
         isDone: false,
       };
+      uiTrace.putContext(onQtyChangePayload);
 
       const confirmationPrompt = await getConfirmationPrompt(1);
 

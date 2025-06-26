@@ -79,7 +79,7 @@ public class CampaignRepository
 				.addEqualsFilter(I_MKTG_Campaign.COLUMN_MKTG_Platform_ID, platformId.getRepoId())
 				.orderBy(I_MKTG_Campaign.COLUMN_MKTG_Campaign_ID)
 				.create()
-				.listIds(CampaignId::ofRepoId);
+				.idsAsSet(CampaignId::ofRepoId);
 
 		final Collection<Campaign> campaigns = cache.getAllOrLoad(campaignIds, this::retrieveByIds);
 		return ImmutableList.copyOf(campaigns);

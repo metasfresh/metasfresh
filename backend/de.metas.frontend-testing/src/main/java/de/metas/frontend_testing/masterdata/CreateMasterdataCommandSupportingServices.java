@@ -10,6 +10,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.mobile.MobileConfigService;
 import de.metas.product.ProductRepository;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.util.web.security.UserAuthTokenService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CreateMasterdataCommandSupportingServices
 {
+	@NonNull public final UserAuthTokenService userAuthTokenService;
 	@NonNull public final ProductRepository productRepository;
 	@NonNull public final MobileConfigService mobileConfigService;
 	@NonNull public final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
