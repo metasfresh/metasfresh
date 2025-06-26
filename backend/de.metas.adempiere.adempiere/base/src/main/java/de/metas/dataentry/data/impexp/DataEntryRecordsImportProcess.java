@@ -1,20 +1,5 @@
 package de.metas.dataentry.data.impexp;
 
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.X_I_Replenish;
-import org.compiere.util.Env;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecord;
@@ -34,7 +19,6 @@ import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.dataentry.model.X_I_DataEntry_Record;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -42,6 +26,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.X_I_Replenish;
+import org.compiere.util.Env;
+
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /*
  * #%L

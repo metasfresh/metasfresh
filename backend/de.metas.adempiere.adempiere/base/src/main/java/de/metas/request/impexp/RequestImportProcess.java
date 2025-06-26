@@ -175,7 +175,7 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 				+ "\n AND " + sqlImportWhereClause);
 	}
 
-	private final void markAsError(final String errorMsg, final String sqlWhereClause)
+	private void markAsError(final String errorMsg, final String sqlWhereClause)
 	{
 		final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "

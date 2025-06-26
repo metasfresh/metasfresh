@@ -193,7 +193,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.docTypeId(docTypeId)
 				.warehouseOrgId(warehouseOrgId)
 				.warehouseId(warehouseId)
-				.inventoryDate(CoalesceUtil.coalesce(importRecord.getInventoryDate(), now))
+				.inventoryDate(CoalesceUtil.coalesceNotNull(importRecord.getInventoryDate(), now))
 				.build();
 	}
 

@@ -172,7 +172,8 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 		log.debug("Set R_RequestType_ID for {} records", no);
 	}
 
-	private final void markAsError(final String errorMsg, final String sqlWhereClause)
+	@SuppressWarnings("SameParameterValue")
+	private void markAsError(final String errorMsg, final String sqlWhereClause)
 	{
 		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "

@@ -167,10 +167,6 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 
 	/**
 	 * reuse previous discount schema
-	 *
-	 * @param importRecord
-	 * @param previousImportRecord
-	 * @return
 	 */
 	private ImportRecordResult doNothingAndUsePreviousDiscountSchema(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_I_DiscountSchema previousImportRecord)
 	{
@@ -179,7 +175,7 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 		return ImportRecordResult.Nothing;
 	}
 
-	private I_M_DiscountSchemaBreak importDiscountSchemaBreak(@NonNull final I_I_DiscountSchema importRecord)
+	private void importDiscountSchemaBreak(@NonNull final I_I_DiscountSchema importRecord)
 	{
 		I_M_DiscountSchemaBreak schemaBreak = importRecord.getM_DiscountSchemaBreak();
 		if (schemaBreak == null)
@@ -194,7 +190,6 @@ public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I
 		InterfaceWrapperHelper.save(schemaBreak);
 
 		importRecord.setM_DiscountSchemaBreak_ID(schemaBreak.getM_DiscountSchemaBreak_ID());
-		return schemaBreak;
 	}
 
 	private void setDiscountSchemaBreakFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)

@@ -1,15 +1,5 @@
 package de.metas.impexp.bpartner;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Objects;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.vertical.pharma.model.I_C_BPartner;
@@ -17,6 +7,14 @@ import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 import de.metas.vertical.pharma.model.X_I_Pharma_BPartner;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+
+import java.sql.ResultSet;
+import java.util.Objects;
+import java.util.Properties;
 
 /*
  * #%L
@@ -42,7 +40,7 @@ import lombok.NonNull;
 
 public class IFABPartnerImportProcess extends SimpleImportProcessTemplate<I_I_Pharma_BPartner>
 {
-	private final String DEACTIVATE_OPERATION_CODE = "2";
+	private static final String DEACTIVATE_OPERATION_CODE = "2";
 
 	@Override
 	public Class<I_I_Pharma_BPartner> getImportModelClass()
@@ -69,7 +67,7 @@ public class IFABPartnerImportProcess extends SimpleImportProcessTemplate<I_I_Ph
 	}
 
 	@Override
-	public I_I_Pharma_BPartner retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Pharma_BPartner retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Pharma_BPartner(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -82,7 +80,7 @@ public class IFABPartnerImportProcess extends SimpleImportProcessTemplate<I_I_Ph
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,@NonNull final I_I_Pharma_BPartner importRecord, final boolean isInsertOnly)
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Pharma_BPartner importRecord, final boolean isInsertOnly)
 	{
 		final I_C_BPartner existentBPartner = IFABPartnerImportHelper.fetchManufacturer(importRecord.getb00adrnr());
 

@@ -41,7 +41,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;

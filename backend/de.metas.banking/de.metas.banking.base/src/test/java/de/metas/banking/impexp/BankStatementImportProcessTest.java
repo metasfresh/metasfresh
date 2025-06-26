@@ -272,8 +272,6 @@ public class BankStatementImportProcessTest
 						.setParameter("importRecordIds", importRecordIds)
 						.appendParametersToMessage();
 			}
-
-			private void removeIdsFromSelection(@NonNull final Set<Integer> importRecordIds) {}
 		};
 	}
 

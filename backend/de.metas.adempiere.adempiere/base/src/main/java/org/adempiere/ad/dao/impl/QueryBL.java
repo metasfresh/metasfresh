@@ -112,7 +112,7 @@ public class QueryBL implements IQueryBL
 	@Override
 	public <T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(final Class<T> modelClass)
 	{
-		return new CompositeQueryUpdater<T>();
+		return new CompositeQueryUpdater<>();
 	}
 
 	@Override
@@ -125,7 +125,7 @@ public class QueryBL implements IQueryBL
 		for (final IQueryFilter<T> f : filters)
 		{
 			final boolean accept = f.accept(model);
-			sb.append("\nFilter(accept=" + accept + "): " + f.toString());
+			sb.append("\nFilter(accept=" + accept + "): " + f);
 		}
 		sb.append("\n-------------------------------------------------------------------------------");
 
