@@ -8,7 +8,7 @@ ARG CACHEBUST=1
 ARG REGISTRY=
 FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
-FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:21-jdk
 
 RUN apk update && apk upgrade && apk add bash && apk add curl && apk add zip && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
 

@@ -2,7 +2,7 @@ ARG REFNAME=local
 ARG REGISTRY=
 FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
-FROM eclipse-temurin:17.0.7_7-jdk AS runtime
+FROM eclipse-temurin:21-jdk AS runtime
 
 RUN apt-get -y update && apt-get -y install locales netcat postgresql-client && rm -rf /var/lib/apt/lists/*
 
