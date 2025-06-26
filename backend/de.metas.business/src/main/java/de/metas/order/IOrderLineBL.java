@@ -75,7 +75,7 @@ public interface IOrderLineBL extends ISingletonService
 	<T extends I_C_OrderLine> T createOrderLine(org.compiere.model.I_C_Order order, final Class<T> orderLineClass);
 
 	/**
-	 * Set Defaults from Order. Does not set C_Order_ID. Also invoked by the createOrderLine methods
+	 * Set Defaults from Order. <b>Does not set C_Order_ID</b>. Also invoked by the createOrderLine methods
 	 */
 	void setOrder(org.compiere.model.I_C_OrderLine ol, I_C_Order order);
 

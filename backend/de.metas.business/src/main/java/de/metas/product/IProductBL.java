@@ -46,6 +46,7 @@ import org.compiere.model.I_M_Product;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -144,6 +145,8 @@ public interface IProductBL extends ISingletonService
 		return UomId.ofRepoId(getStockUOM(productId).getC_UOM_ID());
 	}
 
+	Map<ProductId, String> getProductNames(@NonNull Set<ProductId> productIds);
+
 	Optional<UomId> getCatchUOMId(ProductId productId);
 
 	Optional<Quantity> computeGrossWeight(@NonNull ProductId productId, @NonNull Quantity qty);
@@ -216,7 +219,16 @@ public interface IProductBL extends ISingletonService
 
 	boolean isHaddexProduct(ProductId productId);
 
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
 	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
+	@NonNull
+	AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull ProductId productId);
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
@@ -248,4 +260,6 @@ public interface IProductBL extends ISingletonService
 
 	@NonNull
 	List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
+
+	boolean isExistingValue(@NonNull String value, @NonNull ClientId clientId);
 }

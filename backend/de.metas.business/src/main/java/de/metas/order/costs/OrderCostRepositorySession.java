@@ -73,7 +73,7 @@ public class OrderCostRepositorySession
 				.addInArrayFilter(I_C_Order_Cost.COLUMNNAME_C_Order_ID, orderIds)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(OrderCostId::ofRepoId);
+				.idsAsSet(OrderCostId::ofRepoId);
 	}
 
 	public List<OrderCost> getByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)

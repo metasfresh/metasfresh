@@ -16,11 +16,16 @@ import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 
 public class MasterdataContext
 {
@@ -60,14 +65,21 @@ public class MasterdataContext
 
 	public <T extends RepoIdAware> T getId(@NonNull final Identifier identifier, final Class<T> idClass)
 	{
+		return getOptionalId(identifier, idClass)
+				.orElseThrow(() -> new IllegalArgumentException("No actual ID found for " + identifier + "/" + idClass.getSimpleName() + " in " + identifiers.keySet()));
+	}
+
+	public <T extends RepoIdAware> Optional<T> getOptionalId(@NonNull final Identifier identifier, final Class<T> idClass)
+	{
+		if (identifier.isNullPlaceholder())
+		{
+			return Optional.empty();
+		}
+
 		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(idClass, identifier);
 		//noinspection unchecked
 		final T id = (T)identifiers.get(typeAndIdentifier);
-		if (id == null)
-		{
-			throw new IllegalArgumentException("No identifier found for " + typeAndIdentifier + " in " + identifiers.keySet());
-		}
-		return id;
+		return Optional.ofNullable(id);
 	}
 
 	public <T extends RepoIdAware> T getIdOfType(@NonNull final Class<T> idClass)
@@ -136,6 +148,69 @@ public class MasterdataContext
 		//noinspection unchecked
 		final T object = (T)objects.get(identifier);
 		return Optional.ofNullable(object);
+	}
+
+	public <T extends RepoIdAware> void putSameOrMissingId(
+			@NonNull String what,
+			@NonNull final Identifier identifier,
+			@Nullable final T actualId,
+			@NonNull final Class<T> idType
+	)
+	{
+		if (identifier.isNullPlaceholder())
+		{
+			assertThat(actualId).as(what).isNull();
+		}
+		else
+		{
+			final T expectedId = getOptionalId(identifier, idType).orElse(null);
+			if (expectedId == null)
+			{
+				assertThat(actualId).as(what).isNotNull();
+				if (actualId != null)
+				{
+					putIdentifier(identifier, actualId);
+				}
+			}
+			else
+			{
+				assertThat(actualId).as(what).isEqualTo(expectedId);
+			}
+		}
+	}
+
+	public Map<String, Object> toJson()
+	{
+		final HashMap<String, Object> result = new HashMap<>();
+
+		identifiers.forEach((typeAndIdentifier, id) -> result.put(typeAndIdentifier.getIdentifier().getAsString(), id.getRepoId()));
+
+		return result;
+	}
+
+	public <T extends RepoIdAware> String describeId(@Nullable final T id)
+	{
+		if (id == null)
+		{
+			return "<null>";
+		}
+
+		final List<TypeAndIdentifier> keys = identifiers.entrySet()
+				.stream()
+				.filter(entry -> Objects.equals(entry.getValue(), id))
+				.map(Map.Entry::getKey)
+				.distinct()
+				.collect(Collectors.toList());
+
+		if (keys.size() == 1)
+		{
+			final Identifier identifier = keys.get(0).getIdentifier();
+			return identifier.getAsString() + "/" + id.getRepoId();
+		}
+		else
+		{
+			return id.toString();
+		}
 	}
 
 	//

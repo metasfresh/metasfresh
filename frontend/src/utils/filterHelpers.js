@@ -7,21 +7,24 @@ import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 
 function formatFilterParameter(filterParameter, filterData) {
   const { parameterName, value, valueTo } = filterParameter;
-  const dataFilterParameter = filterData.parameters.find(
+  const dataFilterParameter = filterData?.parameters?.find(
     (param) => param.parameterName === parameterName
   );
-  const { widgetType } = dataFilterParameter;
 
-  if (DATE_FIELD_TYPES.includes(widgetType)) {
-    const dateFormat = getFormatForDateField(widgetType);
-    const date = getFormattedDate(value, dateFormat);
-    const dateTo = getFormattedDate(valueTo, dateFormat);
+  if (dataFilterParameter) {
+    const { widgetType } = dataFilterParameter;
 
-    filterParameter = {
-      parameterName,
-      value: date,
-      valueTo: dateTo,
-    };
+    if (DATE_FIELD_TYPES.includes(widgetType)) {
+      const dateFormat = getFormatForDateField(widgetType);
+      const date = getFormattedDate(value, dateFormat);
+      const dateTo = getFormattedDate(valueTo, dateFormat);
+
+      filterParameter = {
+        parameterName,
+        value: date,
+        valueTo: dateTo,
+      };
+    }
   }
 
   return filterParameter;

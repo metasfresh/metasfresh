@@ -22,11 +22,11 @@ package org.adempiere.exceptions;
  * #L%
  */
 
-import javax.annotation.Nullable;
-
 import de.metas.error.AdIssueId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 
 /**
  * Utility methods for working with {@link IIssueReportableAware} exceptions.
@@ -88,6 +88,7 @@ public final class IssueReportableExceptions
 		return false;
 	}
 
+	@Nullable
 	public static AdIssueId getAdIssueIdOrNull(@NonNull final Throwable exception)
 	{
 		if (exception instanceof IIssueReportableAware)

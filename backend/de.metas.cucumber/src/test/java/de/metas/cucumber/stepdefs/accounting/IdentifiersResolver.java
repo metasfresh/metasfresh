@@ -5,20 +5,28 @@ import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.match_inv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.payment.PaymentId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_MatchInv;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +36,8 @@ public class IdentifiersResolver
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final C_AllocationHdr_StepDefData allocationTable;
+	@NonNull private final M_MatchInv_StepDefData matchInvTable;
+	@NonNull private final M_InOut_StepDefData inOutTable;
 
 	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferencesOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
@@ -62,6 +72,12 @@ public class IdentifiersResolver
 		allocationTable.getIdOptional(identifier)
 				.map(id -> TableRecordReference.of(I_C_AllocationHdr.Table_Name, id))
 				.ifPresent(result::add);
+		matchInvTable.getIdOptional(identifier)
+				.map(MatchInvId::toRecordRef)
+				.ifPresent(result::add);
+		inOutTable.getIdOptional(identifier)
+				.map(InOutId::toRecordRef)
+				.ifPresent(result::add);
 
 		if (result.isEmpty())
 		{
@@ -80,16 +96,45 @@ public class IdentifiersResolver
 	public Optional<StepDefDataIdentifier> getIdentifier(final TableRecordReference documentRef)
 	{
 		final String tableName = documentRef.getTableName();
+		final int recordId = documentRef.getRecord_ID();
+
 		switch (tableName)
 		{
 			case I_C_Invoice.Table_Name:
-				return invoiceTable.getFirstIdentifierById(InvoiceId.ofRepoId(documentRef.getRecord_ID()));
+				return invoiceTable.getFirstIdentifierById(InvoiceId.ofRepoId(recordId));
 			case I_C_Payment.Table_Name:
-				return paymentTable.getFirstIdentifierById(PaymentId.ofRepoId(documentRef.getRecord_ID()));
+				return paymentTable.getFirstIdentifierById(PaymentId.ofRepoId(recordId));
 			case I_C_AllocationHdr.Table_Name:
-				return allocationTable.getFirstIdentifierById(PaymentAllocationId.ofRepoId(documentRef.getRecord_ID()));
+				return allocationTable.getFirstIdentifierById(PaymentAllocationId.ofRepoId(recordId));
+			case I_M_MatchInv.Table_Name:
+				return matchInvTable.getFirstIdentifierById(MatchInvId.ofRepoId(recordId));
+			case I_M_InOut.Table_Name:
+				return inOutTable.getFirstIdentifierById(InOutId.ofRepoId(recordId));
 			default:
 				return Optional.empty();
 		}
+	}
+
+	public TableRecordReferenceSet getAccountableDocumentRefs()
+	{
+		final HashSet<TableRecordReference> result = new HashSet<>();
+
+		invoiceTable.streamIds()
+				.map(id -> TableRecordReference.of(I_C_Invoice.Table_Name, id))
+				.forEach(result::add);
+		paymentTable.streamIds()
+				.map(id -> TableRecordReference.of(I_C_Payment.Table_Name, id))
+				.forEach(result::add);
+		allocationTable.streamIds()
+				.map(id -> TableRecordReference.of(I_C_AllocationHdr.Table_Name, id))
+				.forEach(result::add);
+		matchInvTable.streamIds()
+				.map(MatchInvId::toRecordRef)
+				.forEach(result::add);
+		inOutTable.streamIds()
+				.map(InOutId::toRecordRef)
+				.forEach(result::add);
+
+		return TableRecordReferenceSet.of(result);
 	}
 }

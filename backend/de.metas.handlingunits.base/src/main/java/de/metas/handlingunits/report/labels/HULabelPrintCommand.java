@@ -4,10 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReport;
+import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.process.AdProcessId;
 import de.metas.report.PrintCopies;
@@ -27,35 +29,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+@Builder
 class HULabelPrintCommand
 {
-	private final HULabelConfigService huLabelConfigService;
-	private final IMHUProcessDAO huProcessDAO;
-	private final HUQRCodesService huQRCodesService;
-	private final HULabelService huLabelService;
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+	@NonNull private final HULabelConfigService huLabelConfigService;
+	@NonNull private final IMHUProcessDAO huProcessDAO;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HULabelService huLabelService;
 
 	@NonNull final HULabelPrintRequest request;
-
-	@Builder
-	private HULabelPrintCommand(
-			final @NonNull HULabelConfigService huLabelConfigService,
-			final @NonNull IMHUProcessDAO huProcessDAO,
-			final @NonNull HUQRCodesService huQRCodesService,
-			final @NonNull HULabelService huLabelService,
-			final @NonNull HULabelPrintRequest request)
-	{
-		this.huLabelConfigService = huLabelConfigService;
-		this.huProcessDAO = huProcessDAO;
-		this.huQRCodesService = huQRCodesService;
-		this.huLabelService = huLabelService;
-
-		this.request = request;
-	}
 
 	public void execute()
 	{
 		final BatchToPrintCollector batchToPrintCollector = newBatchesToPrintCollector();
+		batchToPrintCollector.explodeAndAddAll(HUToReportWrapper.ofList(handlingUnitsBL.getByIds(request.getHuIds())));
 		batchToPrintCollector.explodeAndAddAll(request.getHus());
 		if (batchToPrintCollector.isEmpty())
 		{
@@ -154,7 +143,7 @@ class HULabelPrintCommand
 			this.printCopiesOverride = printCopiesOverride;
 		}
 
-		public void explodeAndAddAll(@NonNull final List<HUToReport> hus)
+		public void explodeAndAddAll(@NonNull final List<? extends HUToReport> hus)
 		{
 			for (final HUToReport hu : hus)
 			{

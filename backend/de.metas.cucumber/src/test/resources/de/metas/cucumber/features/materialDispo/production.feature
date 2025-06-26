@@ -75,7 +75,7 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID | PO_DiscountSchema_ID |
       | endcustomer_1 | N        | Y          | ps_1               |                      |
       | endvendor_1   | Y        | N          | ps_1               | ds_1                 |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_2                     |
     # note - we expect 2021-04-16 to be converted to 2021-04-15 22:00:00 UTC, because of the time zone (summer - DST) and timezone that we set in the "metasfresh has date and time.."

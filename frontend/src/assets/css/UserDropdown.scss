@@ -1,3 +1,6 @@
+@import './variables.scss';
+@import './layers.scss';
+
 .user-dropdown-container {
   position: relative;
 
@@ -12,7 +15,7 @@
     position: absolute;
     top: 54px;
     right: -1px;
-    z-index: 0;
+    z-index: $z-index-header-menu;
     min-width: 200px;
     background-color: #F8FAFB;
     border: 1px solid #e1e8ee;

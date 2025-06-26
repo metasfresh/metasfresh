@@ -29,6 +29,8 @@ export default defineConfig({
         react: true,  // Enables React component detection
 
         // actionTimeout: 60000, // per action timeout
+
+        video: 'on',
     },
 
     /* Configure projects for major browsers */

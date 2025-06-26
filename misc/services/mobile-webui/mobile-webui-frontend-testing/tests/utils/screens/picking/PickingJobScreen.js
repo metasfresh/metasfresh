@@ -8,6 +8,7 @@ import { PickingJobsListScreen } from "./PickingJobsListScreen";
 import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
 import { PickFromHUScanScreen } from './PickFromHUScanScreen';
 import { expect } from '@playwright/test';
+import { PickLineScanScreen } from './PickLineScanScreen';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -20,6 +21,14 @@ export const PickingJobScreen = {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    getPickingJobId: async () => {
+        const currentUrl = await page.url();
+
+        const regex = /\/picking-(\d+)/;
+        const match = currentUrl.match(regex);
+        return match ? match[1] : null;
+    },
+
     scanPickFromHU: async ({ qrCode }) => await step(`${NAME} - Scan pick from HU ${qrCode}`, async () => {
         const button = page.getByTestId(`scan-activity-${ACTIVITY_ID_ScanPickFromHU}-button`);
         await button.waitFor();
@@ -31,16 +40,20 @@ export const PickingJobScreen = {
         await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    scanPickingSlot: async ({ qrCode }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
+    scanPickingSlot: async ({ qrCode, expectScanHUScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
         const button = page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`);
         await button.waitFor();
         await expect(button).toBeEnabled();
         await button.tap();
         await PickingSlotScanScreen.waitForScreen();
         await PickingSlotScanScreen.typeQRCode(qrCode);
-        await PickingJobScreen.waitForScreen();
-        await button.waitFor();
-        await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+        if (expectScanHUScreen) {
+            await PickLineScanScreen.waitForScreen();
+        } else {
+            await PickingJobScreen.waitForScreen();
+            await button.waitFor();
+            await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+        }
     }),
 
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {
@@ -73,11 +86,11 @@ export const PickingJobScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
-    pickHU: async ({ qrCode, qtyEntered, expectQtyEntered, catchWeightQRCode, qtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
+    pickHU: async ({ qrCode, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
         await PickingJobScanHUScreen.waitForScreen();
         await PickingJobScanHUScreen.typeQRCode(qrCode);
-        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered, catchWeightQRCode, qtyNotFoundReason });
+        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason });
         await PickingJobScreen.waitForScreen();
     }),
 
@@ -88,17 +101,17 @@ export const PickingJobScreen = {
 
     expectLineButton: async ({ index, qtyPicked, qtyPickedCatchWeight, qtyToPick, color }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
         const lineButton = locateLineButton({ index });
-        
-        if(qtyPicked !== undefined) {
-            await expectLineButtonAttribute({lineButton, attribute: 'data-qtycurrent', value: qtyPicked});
+
+        if (qtyPicked !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtycurrent', value: qtyPicked });
         }
-        if(qtyPickedCatchWeight !== undefined) {
-            await expectLineButtonAttribute({lineButton, attribute: 'data-qtycurrentcatchweight', value: qtyPickedCatchWeight});
+        if (qtyPickedCatchWeight !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtycurrentcatchweight', value: qtyPickedCatchWeight });
         }
-        if(qtyToPick !== undefined) {
-            await expectLineButtonAttribute({lineButton, attribute: 'data-qtytarget', value: qtyToPick});
+        if (qtyToPick !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtytarget', value: qtyToPick });
         }
-        if(color !== undefined) {
+        if (color !== undefined) {
             await step(`${NAME} - Expect line button color='${color}'`, async () => {
                 const indicator = lineButton.locator(`[data-testid="line-0-${index - 1}-button-Indicator"]`);
                 await expect(indicator).toHaveClass(`indicator-${color}`);

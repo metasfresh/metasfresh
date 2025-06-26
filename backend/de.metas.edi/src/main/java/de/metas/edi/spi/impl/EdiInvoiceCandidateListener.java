@@ -22,20 +22,21 @@ package de.metas.edi.spi.impl;
  * #L%
  */
 
-
-import java.util.List;
-
+import de.metas.edi.api.IEDIDocumentBL;
+import de.metas.invoicecandidate.model.I_C_Invoice;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.invoicecandidate.model.I_C_Invoice;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
+import java.util.List;
 
 public class EdiInvoiceCandidateListener implements IInvoiceCandidateListener
 {
 	public static final EdiInvoiceCandidateListener instance = new EdiInvoiceCandidateListener();
+	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
 	private EdiInvoiceCandidateListener()
 	{
@@ -51,7 +52,7 @@ public class EdiInvoiceCandidateListener implements IInvoiceCandidateListener
 		final de.metas.edi.model.I_C_Invoice ediInvoice = InterfaceWrapperHelper.create(invoice, de.metas.edi.model.I_C_Invoice.class);
 
 		// make sure the EdiEnabled flag is set based on the invoice candidates of the invoice to be completed
-		ediInvoice.setIsEdiEnabled(isEdiEnabled);
+		ediDocumentBL.setEdiEnabled(ediInvoice, isEdiEnabled);
 
 	}
 

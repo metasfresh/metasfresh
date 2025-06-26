@@ -96,51 +96,53 @@ public class ProcessExecutionResult
 
 	private static final Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
-	private PInstanceId pinstanceId;
+	@Getter private PInstanceId pinstanceId;
 
-	/**
-	 * Summary of Execution
-	 */
-	private String summary = "";
-	/**
-	 * Execution had an error
-	 */
-	private boolean error = false;
-	private transient boolean errorWasReportedToUser = false;
+	/** Summary of Execution */
+	@Setter @Getter private String summary = "";
 
-	/**
-	 * Process timed out
-	 */
-	private boolean timeout = false;
+	/** true if the process execution failed */
+	@Getter private boolean error = false;
 
-	/**
-	 * Log Info
-	 */
+	@Getter private transient boolean errorWasReportedToUser = false;
+
+	/** Process timed out */
+	@Getter @Setter private boolean timeout = false;
+
+	/** Log Info */
 	@Nullable
 	private transient List<ProcessInfoLog> logs;
+
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
 
 	//
 	// Reporting
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private transient MPrintFormat printFormat;
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Nullable
 	private ReportResultData reportData;
 
 	/**
-	 * If the process fails with an Throwable, the Throwable is caught and stored here
+	 * If the process fails with a Throwable, the Throwable is caught and stored here
 	 */
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
 	@Nullable
 	private transient Throwable throwable = null;
 
-	private boolean refreshAllAfterExecution = false;
+	/**
+	 * Tells if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
+	 */
+	@Setter @Getter private boolean refreshAllAfterExecution = false;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToRefreshAfterExecution = null;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	/**
+	 * Tells the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
+	 */
+	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToSelectAfterExecution = null;
 
 	/**
@@ -172,17 +174,7 @@ public class ProcessExecutionResult
 	@Getter
 	@Nullable
 	private String webuiViewId = null;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@Getter
-	@Nullable
-	private String stringResult = null;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@Getter
-	@Nullable
-	private String stringResultContentType = null;
-
+	
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Getter
 	@Setter
@@ -214,9 +206,7 @@ public class ProcessExecutionResult
 			@JsonProperty("recordsToOpen") @Nullable final RecordsToOpen recordsToOpen,
 			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
 			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
-			@JsonProperty("webuiViewId") @Nullable final String webuiViewId,
-			@JsonProperty("stringResult") @Nullable final String stringResult,
-			@JsonProperty("stringResultContentType") @Nullable final String stringResultContentType)
+			@JsonProperty("webuiViewId") @Nullable final String webuiViewId)
 	{
 		this.pinstanceId = pinstanceId;
 		this.summary = summary;
@@ -231,8 +221,6 @@ public class ProcessExecutionResult
 		this.webuiViewToOpen = webuiViewToOpen;
 		this.displayQRCode = displayQRCode;
 		this.webuiViewId = webuiViewId;
-		this.stringResult = stringResult;
-		this.stringResultContentType = stringResultContentType;
 	}
 
 	@Override
@@ -254,21 +242,6 @@ public class ProcessExecutionResult
 	/* package */void setPInstanceId(final PInstanceId pinstanceId)
 	{
 		this.pinstanceId = pinstanceId;
-	}
-
-	public PInstanceId getPinstanceId()
-	{
-		return pinstanceId;
-	}
-
-	public String getSummary()
-	{
-		return summary;
-	}
-
-	public void setSummary(final String summary)
-	{
-		this.summary = summary;
 	}
 
 	public void addSummary(final String additionalSummary)
@@ -311,14 +284,6 @@ public class ProcessExecutionResult
 		error = true;
 	}
 
-	/**
-	 * @return true if the process execution failed
-	 */
-	public boolean isError()
-	{
-		return error;
-	}
-
 	public void setThrowableIfNotSet(final Throwable throwable)
 	{
 		// Don't set it if it was already set
@@ -326,7 +291,6 @@ public class ProcessExecutionResult
 		{
 			return;
 		}
-
 		this.throwable = throwable;
 	}
 
@@ -347,21 +311,6 @@ public class ProcessExecutionResult
 		errorWasReportedToUser = true;
 	}
 
-	public boolean isErrorWasReportedToUser()
-	{
-		return errorWasReportedToUser;
-	}
-
-	public void setTimeout(final boolean timeout)
-	{
-		this.timeout = timeout;
-	}
-
-	public boolean isTimeout()
-	{
-		return timeout;
-	}
-
 	/**
 	 * Sets if the process logs (if any) shall be displayed to user
 	 */
@@ -369,12 +318,6 @@ public class ProcessExecutionResult
 	{
 		Check.assumeNotNull(showProcessLogsPolicy, "showProcessLogsPolicy not null");
 		this.showProcessLogsPolicy = showProcessLogsPolicy;
-	}
-
-	public void setStringResult(@Nullable final String result, @NonNull final String contentType)
-	{
-		this.stringResult = result;
-		this.stringResultContentType = contentType;
 	}
 
 	/**
@@ -395,48 +338,6 @@ public class ProcessExecutionResult
 				logger.warn("Unknown ShowProcessLogsPolicy: {}. Considering {}", showProcessLogsPolicy, ShowProcessLogs.Always);
 				return true;
 		}
-	}
-
-	/**
-	 * Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
-	 */
-	public void setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
-	{
-		this.refreshAllAfterExecution = refreshAllAfterExecution;
-	}
-
-	/**
-	 * @return if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
-	 */
-	public boolean isRefreshAllAfterExecution()
-	{
-		return refreshAllAfterExecution;
-	}
-
-	public void setRecordToRefreshAfterExecution(final TableRecordReference recordToRefreshAfterExecution)
-	{
-		this.recordToRefreshAfterExecution = recordToRefreshAfterExecution;
-	}
-
-	public TableRecordReference getRecordToRefreshAfterExecution()
-	{
-		return recordToRefreshAfterExecution;
-	}
-
-	/**
-	 * @return the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 */
-	public TableRecordReference getRecordToSelectAfterExecution()
-	{
-		return recordToSelectAfterExecution;
-	}
-
-	/**
-	 * Sets the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 */
-	public void setRecordToSelectAfterExecution(final TableRecordReference recordToSelectAfterExecution)
-	{
-		this.recordToSelectAfterExecution = recordToSelectAfterExecution;
 	}
 
 	public void setRecordsToOpen(final Collection<TableRecordReference> records, final int adWindowId)
@@ -563,23 +464,13 @@ public class ProcessExecutionResult
 		return recordsToOpen;
 	}
 
-	public void setPrintFormat(final MPrintFormat printFormat)
-	{
-		this.printFormat = printFormat;
-	}
-
-	public MPrintFormat getPrintFormat()
-	{
-		return printFormat;
-	}
-
 	public void setReportData(@NonNull final Resource data)
 	{
 		final String filename = Check.assumeNotNull(data.getFilename(), "Resource shall have the filename set: {}", data);
 		setReportData(data, filename, MimeType.getMimeType(data.getFilename()));
 	}
 
-	public void setReportData(@NonNull final Resource data, @Nullable final String filename, final String contentType)
+	public void setReportData(@NonNull final Resource data, @NonNull final String filename, @NonNull final String contentType)
 	{
 		setReportData(ReportResultData.builder()
 				.reportData(data)
@@ -597,6 +488,7 @@ public class ProcessExecutionResult
 	{
 		setReportData(ReportResultData.ofFile(file, fileName));
 	}
+
 	public void setReportData(@Nullable final ReportResultData reportData)
 	{
 		this.reportData = reportData;
@@ -614,6 +506,12 @@ public class ProcessExecutionResult
 		return reportData != null ? reportData.getReportData() : null;
 	}
 
+	@JsonIgnore
+	public boolean isReportDataResourceAvailable()
+	{
+		return reportData != null;
+	}
+	
 	@Nullable
 	public String getReportFilename()
 	{

@@ -1,10 +1,10 @@
 package de.metas.cucumber.stepdefs.distributionorder;
 
-import de.metas.cucumber.stepdefs.APIRequest;
-import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableRow;
-import de.metas.cucumber.stepdefs.REST_API_StepDef;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.api.APIRequest;
+import de.metas.cucumber.stepdefs.api.APIResponse;
+import de.metas.cucumber.stepdefs.api.REST_API_StepDef;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.DistributionWorkflow_RestController_StepDef;

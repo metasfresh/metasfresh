@@ -33,13 +33,12 @@ const getCurrentPickingTargetInfo = ({ state, wfProcessId, activityId, lineId })
   else {
     luPickingTarget = activity?.dataStored?.luPickingTarget;
     tuPickingTarget = activity?.dataStored?.tuPickingTarget;
+    isPickWithNewLU = activity.dataStored.isPickWithNewLU;
 
     if (isLineLevelPickTarget({ activity })) {
       isAllowReopeningLU = false;
-      isPickWithNewLU = true;
       isAllowNewTU = true;
     } else {
-      isPickWithNewLU = activity.dataStored.isPickWithNewLU;
       isAllowReopeningLU = isPickWithNewLU;
       isAllowNewTU = activity.dataStored.isAllowNewTU;
     }

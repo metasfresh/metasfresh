@@ -168,4 +168,9 @@ public class PickingSlotBL implements IPickingSlotBL
 		return pickingSlotDAO.getById(pickingSlotId);
 	}
 
+	@Override
+	public boolean isPickingRackSystem(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return pickingSlotDAO.isPickingRackSystem(pickingSlotId);
+	}
 }

@@ -46,7 +46,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -93,6 +92,12 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+	public <T extends I_M_InOut> T getByIdOutOfTrx(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutId.getRepoId(), modelClass);
+	}
+	
+	@Override
 	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
@@ -113,11 +118,14 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public <T extends I_M_InOutLine> List<T> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds, final Class<T> returnType)
 	{
-		final Set<Integer> ids = inoutLineIds.stream().map(InOutLineId::getRepoId).collect(Collectors.toSet());
+		if (inoutLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
 		return queryBL.createQueryBuilder(returnType)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, ids)
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, inoutLineIds)
 				.create()
 				.list(returnType);
 	}
@@ -131,10 +139,9 @@ public class InOutDAO implements IInOutDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, shipperTransportationId)
 				.create()
-				.listIds(InOutId::ofRepoId)
+				.idsAsSet(InOutId::ofRepoId)
 				.asList();
 	}
-
 
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
@@ -169,7 +176,7 @@ public class InOutDAO implements IInOutDAO
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inoutIds)
 				.create()
-				.listIds(InOutLineId::ofRepoId);
+				.idsAsSet(InOutLineId::ofRepoId);
 
 	}
 
@@ -360,7 +367,7 @@ public class InOutDAO implements IInOutDAO
 		return queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(InOutId::ofRepoId)
+				.idsAsSet(InOutId::ofRepoId)
 				.stream();
 	}
 
@@ -526,7 +533,7 @@ public class InOutDAO implements IInOutDAO
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, null)
 				.create()
-				.listIds(InOutId::ofRepoId)
+				.idsAsSet(InOutId::ofRepoId)
 				.asList();
 	}
 

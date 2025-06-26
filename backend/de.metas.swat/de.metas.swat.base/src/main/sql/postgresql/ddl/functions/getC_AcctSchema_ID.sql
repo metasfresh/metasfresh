@@ -29,9 +29,6 @@ END;$BODY$
   LANGUAGE plpgsql STABLE
   COST 100;
   
-ALTER FUNCTION getC_AcctSchema_ID(numeric, numeric)
-  OWNER TO adempiere;
-
 COMMENT ON FUNCTION getC_AcctSchema_ID(numeric, numeric) IS '
  This function returns the C_AcctSchema_ID of the record with the given AD_Client_ID and AD_OrgOnly_ID.
  Inactive records are ignored. If no C_AcctSchema record with the given AD_OrgOnly_ID exists, then it falls back and returns the record which is set in AD_ClientInfo. 

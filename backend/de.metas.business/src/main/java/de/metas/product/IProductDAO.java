@@ -137,6 +137,8 @@ public interface IProductDAO extends ISingletonService
 
 	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
 
+	boolean isExistingValue(@NonNull String value, @NonNull ClientId clientId);
+
 	@Value
 	class ProductQuery
 	{

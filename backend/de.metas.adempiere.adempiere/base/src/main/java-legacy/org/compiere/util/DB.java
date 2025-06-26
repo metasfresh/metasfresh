@@ -1920,15 +1920,15 @@ public class DB
 	 */
 	public String TO_CHAR(final String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED)
 	{
-		return Database.TO_CHAR(columnName, displayType);
+		return Database.TO_CHAR(columnName);
 	}
 
 	/**
 	 * @see #TO_CHAR(String, int, String)
 	 */
-	public String TO_CHAR(final String columnName, final int displayType)
+	public String TO_CHAR(final String columnName)
 	{
-		return Database.TO_CHAR(columnName, displayType);
+		return Database.TO_CHAR(columnName);
 	}
 
 	/**

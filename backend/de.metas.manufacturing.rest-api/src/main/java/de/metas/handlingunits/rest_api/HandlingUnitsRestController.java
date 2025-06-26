@@ -55,6 +55,7 @@ import de.metas.inventory.InventoryCandidateService;
 import de.metas.printing.frontend.FrontendPrinter;
 import de.metas.printing.frontend.FrontendPrinterData;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -158,7 +159,7 @@ public class HandlingUnitsRestController
 				final JsonHU jsonHU = toNewJsonHU(huQRCode);
 				return ResponseEntity.ok(JsonGetSingleHUResponse.ofResult(jsonHU));
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				return toBadRequestResponseEntity(ex);
 			}
@@ -369,9 +370,6 @@ public class HandlingUnitsRestController
 
 	private JsonHU toNewJsonHU(final @NonNull HUQRCode huQRCode)
 	{
-		final I_M_Product product = productBL.getById(huQRCode.getProductId());
-		final I_C_UOM uom = productBL.getStockUOM(product);
-
 		return JsonHU.builder()
 				.id(null)
 				.huStatusCaption("-")
@@ -379,18 +377,26 @@ public class HandlingUnitsRestController
 				.qrCode(HandlingUnitsService.toJsonHUQRCode(huQRCode))
 				.warehouseValue(null)
 				.locatorValue(null)
-				.product(JsonHUProduct.builder()
-						.productValue(product.getValue())
-						.productName(product.getName())
-						.qty("0")
-						.uom(uom.getX12DE355())
-						.build())
+				.product(huQRCode.getProductId().map(this::toJsonProduct).orElse(null))
 				.attributes2(JsonHUAttributes.builder()
 						.list(huQRCode.getAttributes().stream()
 								.map(this::toJsonHUAttribute)
 								.collect(ImmutableList.toImmutableList()))
 						.build())
 				.jsonHUType(toJsonHUType(huQRCode.getPackingInfo().getHuUnitType()))
+				.build();
+	}
+
+	private JsonHUProduct toJsonProduct(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productBL.getById(productId);
+		final I_C_UOM uom = productBL.getStockUOM(product);
+
+		return JsonHUProduct.builder()
+				.productValue(product.getValue())
+				.productName(product.getName())
+				.qty("0")
+				.uom(uom.getX12DE355())
 				.build();
 	}
 
@@ -418,7 +424,7 @@ public class HandlingUnitsRestController
 				.build();
 	}
 
-	private static JsonHUType toJsonHUType(@NonNull HUQRCodeUnitType huUnitType)
+	private static JsonHUType toJsonHUType(@NonNull final HUQRCodeUnitType huUnitType)
 	{
 		switch (huUnitType)
 		{

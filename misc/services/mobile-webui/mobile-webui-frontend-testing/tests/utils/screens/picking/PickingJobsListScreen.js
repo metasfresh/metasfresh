@@ -1,9 +1,10 @@
-import { page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobsListFiltersScreen } from "./PickingJobsListFiltersScreen";
 import { PickingJobsListScanScreen } from './PickingJobsListScanScreen';
 import { expect } from '@playwright/test';
+import { ApplicationsListScreen } from '../ApplicationsListScreen';
 
 const NAME = 'PickingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -13,6 +14,10 @@ export const PickingJobsListScreen = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout });
         await page.locator('.loading').waitFor({ state: 'detached', timeout });
+    }),
+
+    expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
+        await expect(containerElement()).toBeVisible();
     }),
 
     filterByDocumentNo: async (documentNo) => await test.step(`${NAME} - Filter by documentNo ${documentNo}`, async () => {
@@ -39,16 +44,22 @@ export const PickingJobsListScreen = {
         await PickingJobsListScanScreen.waitForScreen();
     }),
 
-    startJob: async ({ documentNo, index, qtyToDeliver }) => {
+    startJob: async ({ index, documentNo, qtyToDeliver, customerLocationId }) => {
         if (documentNo != null) {
             return await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
                 await locateJobButtons({ documentNo }).tap();
                 await PickingJobScreen.waitForScreen();
+                return {
+                    pickingJobId: await PickingJobScreen.getPickingJobId(),
+                }
             });
         } else if (index != null) {
             return await test.step(`${NAME} - Start job by index ${index - 1}`, async () => {
-                await locateJobButtons({ qtyToDeliver, index }).tap()
+                await locateJobButtons({ index, qtyToDeliver, customerLocationId }).tap()
                 await PickingJobScreen.waitForScreen();
+                return {
+                    pickingJobId: await PickingJobScreen.getPickingJobId(),
+                }
             });
         } else {
             throw "No documentNo or index provided";
@@ -74,15 +85,25 @@ export const PickingJobsListScreen = {
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
     }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await PickingJobsListScreen.expectVisible();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await ApplicationsListScreen.waitForScreen();
+    }),
+
 };
 
-const locateJobButtons = ({ documentNo, index, qtyToDeliver, productId } = {}) => {
+const locateJobButtons = ({ documentNo, index, qtyToDeliver, productId, customerLocationId } = {}) => {
     let selector = '.wflauncher-button';
     if (qtyToDeliver != null) {
         selector += `[data-qtytodeliver="${qtyToDeliver}"]`;
     }
     if (productId != null) {
         selector += `[data-productid="${productId}"]`;
+    }
+    if (customerLocationId != null) {
+        selector += `[data-customerlocationid="${customerLocationId}"]`;
     }
 
     let locator = page.locator(selector);

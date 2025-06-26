@@ -9,6 +9,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -82,4 +84,15 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 	{
 		InterfaceWrapperHelper.deleteAll(qtyPickedRecords);
 	}
+
+	@Override
+	public StockQtyAndUOMQty extractQtyPicked(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked alloc,
+			@NonNull final ProductId productId)
+	{
+		return StockQtyAndUOMQtys.create(
+				alloc.getQtyPicked(), productId,
+				alloc.getQtyDeliveredCatch(), UomId.ofRepoIdOrNull(alloc.getCatch_UOM_ID()));
+	}
+
 }

@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCodeFormatRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
@@ -18,6 +19,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 
 @Value
@@ -38,4 +40,5 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonSalesOrderCreateRequest> salesOrders;
 	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
 	@Nullable Map<String, JsonPPOrderRequest> manufacturingOrders;
+	@Nullable List<JsonCustomQRCodeFormatRequest> customQRCodeFormats;
 }

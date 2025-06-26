@@ -386,17 +386,32 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		switch (aggregationType)
 		{
 			case SALES_ORDER:
+			{
 				caption = productName;
 				break;
+			}
 			case PRODUCT:
+			{
 				caption = TranslatableStrings.builder()
 						.append(currentPickingTarget.getPickingSlotCaption().orElse(""))
 						.appendIfNotEmpty(", ")
 						.append(salesOrderDocumentNo)
 						.build();
 				break;
+			}
+			case DELIVERY_LOCATION:
+			{
+				caption = TranslatableStrings.builder()
+						.append(productName)
+						.appendIfNotEmpty(", ")
+						.append(salesOrderDocumentNo)
+						.build();
+				break;
+			}
 			default:
+			{
 				throw new AdempiereException("Unknown aggregation type: " + aggregationType);
+			}
 		}
 
 		return PickingJobLine.builder()

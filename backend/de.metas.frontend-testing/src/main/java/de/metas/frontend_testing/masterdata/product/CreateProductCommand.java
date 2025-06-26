@@ -34,8 +34,10 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
@@ -63,6 +65,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class CreateProductCommand
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(CreateProductCommand.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
@@ -96,10 +99,11 @@ public class CreateProductCommand
 				.build();
 	}
 
-	public I_M_Product createProduct()
+	private I_M_Product createProduct()
 	{
-		final String valuePrefix = StringUtils.trimBlankToNull(request.getValuePrefix());
-		final String value = valuePrefix != null ? Identifier.ofString(valuePrefix).toUniqueString() : identifier.toUniqueString();
+		renamePreviousEAN13ProductCodes();
+
+		final String value = generateValue();
 
 		final I_M_Product productRecord = newInstanceOutOfTrx(I_M_Product.class);
 		final UomId productUomId = Optional.ofNullable(request.getUom()).map(uomDAO::getUomIdByX12DE355).orElse(UomId.EACH);
@@ -108,7 +112,7 @@ public class CreateProductCommand
 		productRecord.setValue(value);
 		productRecord.setName(value);
 		productRecord.setGTIN(request.getGtin());
-		productRecord.setEAN13_ProductCode(request.getEan13ProductCode());
+		productRecord.setEAN13_ProductCode(StringUtils.trimBlankToNull(request.getEan13ProductCode()));
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
 		productRecord.setProductType(ProductType.Item.getCode());
 		productRecord.setIsStocked(true);
@@ -121,6 +125,39 @@ public class CreateProductCommand
 		context.putIdentifier(identifier, productId);
 
 		return productRecord;
+	}
+
+	private String generateValue()
+	{
+		final String valuePrefix = StringUtils.trimBlankToNull(request.getValuePrefix());
+		final JsonCreateProductRequest.RandomValueSpec randomValueSpec = request.getRandomValue();
+		if (valuePrefix != null && randomValueSpec != null)
+		{
+			throw new AdempiereException("Cannot specify both valuePrefix and randomValue");
+		}
+
+		if (valuePrefix != null)
+		{
+			return Identifier.ofString(valuePrefix).toUniqueString();
+		}
+		else if (randomValueSpec != null)
+		{
+			return newRandom(randomValueSpec).next();
+		}
+		else
+		{
+			return identifier.toUniqueString();
+		}
+	}
+
+	private RandomProductValueGenerator newRandom(@NonNull final JsonCreateProductRequest.RandomValueSpec randomValueSpec)
+	{
+		return RandomProductValueGenerator.builder()
+				.size(randomValueSpec.getSize())
+				.isIncludeLetters(randomValueSpec.isIncludeLetters())
+				.isIncludeDigits(randomValueSpec.isIncludeDigits())
+				.validPredicate(randomValue -> !productBL.isExistingValue(randomValue, ClientId.METASFRESH))
+				.build();
 	}
 
 	private void createUOMConversions(@NonNull final ProductId productId)
@@ -313,6 +350,7 @@ public class CreateProductCommand
 	{
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomRecord.getPP_Product_BOM_ID());
 		final ProductId lineProductId = context.getId(line.getProduct(), ProductId.class);
+		final BOMComponentType componentType = line.getComponentType() != null ? line.getComponentType() : BOMComponentType.Component;
 
 		final I_PP_Product_BOMLine lineRecord = newInstance(I_PP_Product_BOMLine.class);
 		lineRecord.setPP_Product_BOM_ID(bomId.getRepoId());
@@ -321,7 +359,7 @@ public class CreateProductCommand
 		final UomId uomId = line.getUom() != null ? uomDAO.getUomIdByX12DE355(line.getUom()) : productBL.getStockUOMId(lineProductId);
 		lineRecord.setC_UOM_ID(uomId.getRepoId());
 
-		lineRecord.setComponentType(BOMComponentType.Component.getCode());
+		lineRecord.setComponentType(componentType.getCode());
 		lineRecord.setValidFrom(bomRecord.getValidFrom());
 
 		if (line.isPercentage())
@@ -337,4 +375,26 @@ public class CreateProductCommand
 
 		saveRecord(lineRecord);
 	}
+
+	private void renamePreviousEAN13ProductCodes()
+	{
+		final String ean13ProductCode = StringUtils.trimBlankToNull(request.getEan13ProductCode());
+		if (ean13ProductCode == null)
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode)
+				.create()
+				.forEach(record -> {
+					final String ean13ProductCode_before = record.getEAN13_ProductCode();
+					final String ean13ProductCode_after = "old" + ean13ProductCode_before;
+					record.setEAN13_ProductCode(ean13ProductCode_after);
+					InterfaceWrapperHelper.saveRecord(record);
+					logger.info("Updated {}: changed EAN13_ProductCode from {} to {}", record, ean13ProductCode_before, ean13ProductCode_after);
+				});
+	}
+
 }

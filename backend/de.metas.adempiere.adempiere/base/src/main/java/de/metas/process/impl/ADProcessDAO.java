@@ -77,6 +77,7 @@ public class ADProcessDAO implements IADProcessDAO
 		return InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
 	}
 
+	@NonNull
 	@Override
 	public AdProcessId retrieveProcessIdByClass(final Class<?> processClass)
 	{
@@ -101,7 +102,7 @@ public class ADProcessDAO implements IADProcessDAO
 				.addEqualsFilter(I_AD_Process.COLUMN_Classname, processClassname)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(AdProcessId::ofRepoId);
+				.idsAsSet(AdProcessId::ofRepoId);
 
 		if (processIds.isEmpty())
 		{
@@ -641,7 +642,7 @@ public class ADProcessDAO implements IADProcessDAO
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
 				.create()
-				.listIds(AdProcessId::ofRepoId);
+				.idsAsSet(AdProcessId::ofRepoId);
 	}
 
 	@NonNull

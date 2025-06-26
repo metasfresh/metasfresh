@@ -1,3 +1,6 @@
+@import './variables.scss';
+@import './layers.scss';
+
 .tooltip-wrapp {
   background: white;
   color: $brand-font-color-secondary;
@@ -5,7 +8,7 @@
   border: 1px solid $tooltip-border-color;
   padding: 5px;
   text-align: center;
-  z-index: 200;
+  z-index: $z-index-tooltip;
   border-radius: 3px;
   position: absolute;
   top: 110%;
@@ -97,7 +100,7 @@
   position: absolute;
   display: none;
   width: 480px;
-  z-index: 100;
+  z-index: $z-index-tooltip;
 }
 
 .tooltip-extended-show {
@@ -159,7 +162,7 @@
   border: 1px solid $tooltip-border-color;
   padding: 5px;
   text-align: center;
-  z-index: 200;
+  z-index: $z-index-tooltip;
   border-radius: 3px;
   max-width: 300px;
   width: auto;

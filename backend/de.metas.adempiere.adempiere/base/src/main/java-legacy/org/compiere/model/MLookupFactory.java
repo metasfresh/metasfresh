@@ -692,11 +692,11 @@ public class MLookupFactory
 				// #1046
 				// Make sure the date doesn't have time too
 				final String stringForDate = columnSQL + "::date";
-				return DB.TO_CHAR(stringForDate, ldc.getDisplayType());
+				return DB.TO_CHAR(stringForDate);
 			}
 
 			// if the display type is not Date, let it work as before
-			return DB.TO_CHAR(columnSQL, ldc.getDisplayType());
+			return DB.TO_CHAR(columnSQL);
 		}
 		// TableDir
 		else if ((ldc.getDisplayType() == DisplayType.TableDir
@@ -767,13 +767,13 @@ public class MLookupFactory
 		// ID
 		else if (DisplayType.isID(ldc.getDisplayType()))
 		{
-			return DB.TO_CHAR(columnSQL, ldc.getDisplayType());
+			return DB.TO_CHAR(columnSQL);
 		}
 		// Button
 		else if (DisplayType.Button == ldc.getDisplayType() && ldc.getColumnName().endsWith("_ID"))
 		{
 			// metas: handle Record_ID buttons same as regular IDs
-			return DB.TO_CHAR(columnSQL, ldc.getDisplayType());
+			return DB.TO_CHAR(columnSQL);
 		}
 		// String
 		else

@@ -262,7 +262,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		paymentTerm.setAD_Org_ID(0);
 		InterfaceWrapperHelper.save(paymentTerm);
 		paymentTermId = PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
-		
+
 		final I_C_UOM uomRecord = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, trxName);
 		InterfaceWrapperHelper.save(uomRecord);
 		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
@@ -505,10 +505,10 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * @see #createInvoiceCandidate()
 	 */
 	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
-			final int priceEntered,
-			final int qty,
-			final boolean isManual,
-			final boolean isSOTrx)
+															  final int priceEntered,
+															  final int qty,
+															  final boolean isManual,
+															  final boolean isSOTrx)
 	{
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
@@ -525,11 +525,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * @see #createInvoiceCandidate()
 	 */
 	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
-			final int priceEntered,
-			final int qty,
-			final int discount,
-			final boolean isManual,
-			final boolean isSOTrx)
+															  final int priceEntered,
+															  final int qty,
+															  final int discount,
+															  final boolean isManual,
+															  final boolean isSOTrx)
 	{
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
@@ -724,7 +724,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					new InvoiceCandidateRecordService(),
 					groupsRepo,
 					attachmentEntryService,
-					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
+					DocumentLocationBL.newInstanceForUnitTesting());
 		}
 		return invoiceCandidateValidator;
 	}

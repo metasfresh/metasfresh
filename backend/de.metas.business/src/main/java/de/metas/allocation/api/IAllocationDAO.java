@@ -73,7 +73,7 @@ public interface IAllocationDAO extends ISingletonService
 	 * @param invoice            the invoice for which we retrieve the open amount
 	 * @param creditMemoAdjusted if <code>true</code> and <code>invoice</code> is a credit memo, then the open amount is negated.
 	 */
-	BigDecimal retrieveOpenAmt(I_C_Invoice invoice, boolean creditMemoAdjusted);
+	Money retrieveOpenAmtInInvoiceCurrency(I_C_Invoice invoice, boolean creditMemoAdjusted);
 
 	/**
 	 * Retrieve that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has already been allocated.

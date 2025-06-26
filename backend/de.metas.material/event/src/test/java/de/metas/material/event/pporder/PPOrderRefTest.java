@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +16,7 @@ class PPOrderRefTest
 	void testSerializeDeserialize() throws JsonProcessingException
 	{
 		testSerializeDeserialize(PPOrderRef.builder()
-				.ppOrderCandidateId(1)
+				.ppOrderCandidateId(PPOrderCandidateId.ofRepoId(1))
 				.ppOrderLineCandidateId(2)
 				.ppOrderId(PPOrderId.ofRepoId(3))
 				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(4))

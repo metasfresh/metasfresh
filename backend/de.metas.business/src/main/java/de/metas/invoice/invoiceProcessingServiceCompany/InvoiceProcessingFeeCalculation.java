@@ -47,6 +47,9 @@ public class InvoiceProcessingFeeCalculation
 	@NonNull
 	BPartnerId customerId;
 
+	/**
+	 * The invoice for the processing of which we require a service invoice.
+	 */
 	@NonNull
 	InvoiceId invoiceId;
 

@@ -11,6 +11,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.api.DesadvInOutLine;
+import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.EDIExportStatus;
@@ -357,7 +358,7 @@ public class DesadvBL implements IDesadvBL
 
 		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
 
-		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(desadv);
+		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(EDIDesadvId.ofRepoId(desadv.getEDI_Desadv_ID()));
 
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
@@ -748,7 +749,7 @@ public class DesadvBL implements IDesadvBL
 
 		for (final I_EDI_Desadv desadvRecord : desadvsToSkip)
 		{
-			if (desadvRecord.getFulfillmentPercent().compareTo(desadvRecord.getFulfillmentPercentMin()) <= 0)
+			if (desadvRecord.getFulfillmentPercent().compareTo(desadvRecord.getFulfillmentPercentMin()) < 0)
 			{
 				skippedDesadvsString.append("#")
 						.append(desadvRecord.getDocumentNo())

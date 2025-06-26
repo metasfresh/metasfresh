@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -9,6 +10,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -46,6 +48,7 @@ public class PickingJobCandidateRetrieveCommand
 	// State
 	@NonNull private final LinkedHashSet<PickingJobCandidate> orderBasedCandidates = new LinkedHashSet<>();
 	@NonNull private final LinkedHashMap<ProductBasedAggregationKey, ProductBasedAggregation> productBasedAggregates = new LinkedHashMap<>();
+	@NonNull private final LinkedHashMap<DeliveryLocationBasedAggregationKey, DeliveryLocationBasedAggregation> deliveryLocationBasedAggregates = new LinkedHashMap<>();
 
 	public List<PickingJobCandidate> execute()
 	{
@@ -58,6 +61,7 @@ public class PickingJobCandidateRetrieveCommand
 		final ImmutableList.Builder<PickingJobCandidate> result = ImmutableList.builder();
 		result.addAll(orderBasedCandidates);
 		productBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate()));
+		deliveryLocationBasedAggregates.values().forEach(aggregation -> result.add(aggregation.toPickingJobCandidate()));
 
 		return result.build();
 	}
@@ -75,6 +79,11 @@ public class PickingJobCandidateRetrieveCommand
 			case PRODUCT:
 			{
 				productBasedAggregates.computeIfAbsent(ProductBasedAggregationKey.of(item), ProductBasedAggregation::new).add(item);
+				break;
+			}
+			case DELIVERY_LOCATION:
+			{
+				deliveryLocationBasedAggregates.computeIfAbsent(DeliveryLocationBasedAggregationKey.of(item), DeliveryLocationBasedAggregation::new).add(item);
 				break;
 			}
 			default:
@@ -179,4 +188,64 @@ public class PickingJobCandidateRetrieveCommand
 					.build();
 		}
 	}
+
+	//
+	//
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	private static class DeliveryLocationBasedAggregationKey
+	{
+		@NonNull OrgId orgId;
+		@Nullable InstantAndOrgId preparationDate;
+		@Nullable String customerName;
+		@Nullable BPartnerLocationId deliveryBPLocationId;
+		@Nullable WarehouseTypeId warehouseTypeId;
+
+		public static DeliveryLocationBasedAggregationKey of(@NonNull final Packageable item)
+		{
+			return builder()
+					.orgId(item.getOrgId())
+					.preparationDate(item.getPreparationDate())
+					.customerName(item.getCustomerName())
+					.deliveryBPLocationId(item.getCustomerLocationId())
+					.warehouseTypeId(item.getWarehouseTypeId())
+					.build();
+		}
+	}
+
+	private static class DeliveryLocationBasedAggregation
+	{
+		@NonNull private final DeliveryLocationBasedAggregationKey key;
+		private boolean partiallyPickedBefore = false;
+		@NonNull private final HashSet<ShipmentScheduleId> shipmentScheduleIds = new HashSet<>();
+
+		public DeliveryLocationBasedAggregation(@NonNull final DeliveryLocationBasedAggregationKey key)
+		{
+			this.key = key;
+		}
+
+		public void add(@NonNull final Packageable item)
+		{
+			this.partiallyPickedBefore = this.partiallyPickedBefore || isPartiallyPickedOrDelivered(item);
+			this.shipmentScheduleIds.add(item.getShipmentScheduleId());
+		}
+
+		public PickingJobCandidate toPickingJobCandidate()
+		{
+			return PickingJobCandidate.builder()
+					.aggregationType(PickingJobAggregationType.DELIVERY_LOCATION)
+					.preparationDate(key.getPreparationDate())
+					.customerName(key.getCustomerName())
+					.deliveryBPLocationId(key.getDeliveryBPLocationId())
+					.warehouseTypeId(key.getWarehouseTypeId())
+					.partiallyPickedBefore(partiallyPickedBefore)
+					.shipmentScheduleIds(ImmutableSet.copyOf(shipmentScheduleIds))
+					.build();
+		}
+	}
+
 }

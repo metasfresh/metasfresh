@@ -37,4 +37,5 @@ public class DhlConstants
 	public static final String STANDARD_GRUPPENPROFIL = "STANDARD_GRUPPENPROFIL";
 	public static final String REMOVED = "<<removed>>";
 	public static final String PARAM_RESPONSE_BODY_AS_STRING = "responseBodyAsString";
+	public static final String IRL_COUNTRY = "IRL";
 }

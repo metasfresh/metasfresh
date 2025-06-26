@@ -118,6 +118,7 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 
 			final Candidate parentOfSupplyCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidate.getParentId()));
 			candidateRepositoryWrite.updateCandidateById(parentOfSupplyCandidate.withSeqNo(demandCandidate.getSeqNo() - 2));
+			candidateRepositoryWrite.getCurrentAtpAndUpdateQtyDetails(supplyCandidate, parentOfSupplyCandidate, null);
 		}
 
 		//
@@ -197,7 +198,6 @@ abstract class DDOrderCandidateAdvisedOrCreatedHandler<T extends AbstractDDOrder
 	{
 		if (event.isSimulated())
 		{
-			return;
 		}
 
 		// final OrgId orgId = event.getEventDescriptor().getOrgId();

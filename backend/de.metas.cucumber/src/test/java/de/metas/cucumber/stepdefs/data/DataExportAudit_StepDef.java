@@ -33,6 +33,8 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Location_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -66,7 +68,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DataExportAudit_StepDef
 {
@@ -165,9 +167,13 @@ public class DataExportAudit_StepDef
 	@And("^after not more than (.*)s, there are added records in Data_Export_Audit$")
 	public void data_export_audit_validation(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(tableRow ->
 		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadDataExportAudit(tableRow));
+			StepDefUtil.tryAndWait(
+					timeoutSec,
+					1000,
+					() -> loadDataExportAudit(tableRow),
+					() -> System.out.println("No record found for " + tableRow.toTabularRow().toString()));
 
 			final String dataExportAuditIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_Data_Export_Audit.COLUMNNAME_Data_Export_Audit_ID + ".Identifier");
 			final String parentIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_Data_Export_Audit.COLUMNNAME_Data_Export_Audit_Parent_ID + ".Identifier");
@@ -187,10 +193,11 @@ public class DataExportAudit_StepDef
 			{
 				assertThat(dataExportAudit.getData_Export_Audit_Parent_ID()).isEqualTo(0);
 			}
-		}
+		});
+
 	}
 
-	private Boolean loadDataExportAudit(@NonNull final Map<String, String> tableRow)
+	private Boolean loadDataExportAudit(@NonNull final DataTableRow tableRow)
 	{
 		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_Data_Export_Audit.COLUMNNAME_Record_ID + ".Identifier");

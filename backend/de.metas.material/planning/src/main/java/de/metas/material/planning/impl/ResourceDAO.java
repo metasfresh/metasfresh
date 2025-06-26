@@ -236,7 +236,7 @@ public class ResourceDAO implements IResourceDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeRecord.getS_ResourceType_ID())
 				.create()
-				.listIds(ResourceId::ofRepoId);
+				.idsAsSet(ResourceId::ofRepoId);
 		if (resourceIds.isEmpty())
 		{
 			return;
@@ -262,7 +262,7 @@ public class ResourceDAO implements IResourceDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_AD_User_ID, userId)
 				.create()
-				.listIds(ResourceId::ofRepoId);
+				.idsAsSet(ResourceId::ofRepoId);
 	}
 
 	@Override
@@ -278,7 +278,7 @@ public class ResourceDAO implements IResourceDAO
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeIds)
 				.create()
-				.listIds(ResourceId::ofRepoId);
+				.idsAsSet(ResourceId::ofRepoId);
 	}
 
 
@@ -289,7 +289,7 @@ public class ResourceDAO implements IResourceDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
 				.create()
-				.listIds(ResourceId::ofRepoId);
+				.idsAsSet(ResourceId::ofRepoId);
 
 	}
 }

@@ -23,6 +23,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -31,6 +32,7 @@ import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.inout.InOutId;
 import de.metas.util.Services;
@@ -68,13 +70,15 @@ public class ShipmentServiceTestImpl implements IShipmentService
 	{
 		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = InterfaceWrapperHelper.loadByRepoIdAwares(request.getScheduleIds(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
 
-		final List<ShipmentScheduleWithHU> shipmentScheduleWithHUS = shipmentScheduleWithHUService
-				.createShipmentSchedulesWithHU(shipmentSchedules,
-						request.getQuantityTypeToUse(),
-						request.isOnTheFlyPickToPackingInstructions(),
-						QtyToDeliverMap.EMPTY,
-						true  /* backwards compatibility: true - fail if no picked HUs found*/
-				);
+		final List<ShipmentScheduleWithHU> shipmentScheduleWithHUS = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
+				PrepareForShipmentSchedulesRequest.builder()
+						.shipmentSchedules(ImmutableList.copyOf(shipmentSchedules))
+						.quantityTypeToUse(request.getQuantityTypeToUse())
+						.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
+						.qtyToDeliverOverrides(QtyToDeliverMap.EMPTY)
+						.isFailIfNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found
+						.build()
+		);
 
 		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(request.getIsShipDateToday());
 

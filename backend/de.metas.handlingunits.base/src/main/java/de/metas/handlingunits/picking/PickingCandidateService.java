@@ -35,9 +35,12 @@ import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
+import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
+import de.metas.handlingunits.picking.slot.PickingSlotListener;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -49,6 +52,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
@@ -85,13 +89,15 @@ import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
-public class PickingCandidateService
+public class PickingCandidateService implements PickingSlotListener
 {
+	private final static AdMessageKey DRAFTED_PICKING_CANDIDATES_ERR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.DRAFTED_PICKING_CANDIDATES_ERR_MSG");
+	
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final PickingConfigRepository pickingConfigRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final HuId2SourceHUsService sourceHUsRepository;
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
 	private final ADReferenceService adReferenceService;
@@ -412,10 +418,20 @@ public class PickingCandidateService
 													 }));
 	}
 
+	@Override
+	public void beforeReleasePickingSlot(final @NonNull ReleasePickingSlotRequest request)
+	{
+		final boolean clearedAllUnprocessedHUs = clearPickingSlot(request.getPickingSlotId(), request.isRemoveUnprocessedHUsFromSlot());
+		if (!clearedAllUnprocessedHUs)
+		{
+			throw new AdempiereException(DRAFTED_PICKING_CANDIDATES_ERR_MSG).markAsUserValidationError();
+		}
+	}
+
 	/**
 	 * @return true, if all drafted picking candidates have been removed from the slot, false otherwise
 	 */
-	public boolean clearPickingSlot(@NonNull final PickingSlotId pickingSlotId, final boolean removeUnprocessedHUsFromSlot)
+	private boolean clearPickingSlot(@NonNull final PickingSlotId pickingSlotId, final boolean removeUnprocessedHUsFromSlot)
 	{
 		if (removeUnprocessedHUsFromSlot)
 		{

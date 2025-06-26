@@ -50,6 +50,7 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -60,6 +61,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @EqualsAndHashCode
 public class DataTableRow
@@ -476,7 +478,21 @@ public class DataTableRow
 				.map(amount -> amount.toMoney(currencyCodeMapper));
 	}
 
+	public Optional<Money> getAsOptionalMoney(
+			@NonNull final String valueColumnName,
+			@Nullable final Supplier<CurrencyCode> defaultCurrencyCodeSupplier,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		return getAsOptionalAmount(valueColumnName, defaultCurrencyCodeSupplier)
+				.map(amount -> amount.toMoney(currencyCodeMapper));
+	}
+
 	public Optional<Amount> getAsOptionalAmount(@NonNull final String valueColumnName)
+	{
+		return getAsOptionalAmount(valueColumnName, null);
+	}
+
+	public Optional<Amount> getAsOptionalAmount(@NonNull final String valueColumnName, @Nullable final Supplier<CurrencyCode> defaultCurrencyCodeSupplier)
 	{
 		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
 		if (valueStr == null)
@@ -502,6 +518,11 @@ public class DataTableRow
 		if (currencyCode == null)
 		{
 			currencyCode = getAsOptionalCurrencyCode().orElse(null);
+		}
+
+		if (currencyCode == null && defaultCurrencyCodeSupplier != null)
+		{
+			currencyCode = defaultCurrencyCodeSupplier.get();
 		}
 
 		if (currencyCode == null)
@@ -561,14 +582,33 @@ public class DataTableRow
 		return getAsOptionalInstant(columnName).map(Timestamp::from);
 	}
 
+	/**
+	 * Convert the given string. Examples:
+	 * <ul>
+	 *     <li>2007-12-03</li>
+	 *     <li>2007-12-03Z</li>
+	 *     <li>2007-12-03T10:15:30</li>
+	 *     <li>2007-12-03T10:15:30Z</li>
+	 * </ul>
+	 * Append the prefix {@code Z} to indicate that no timezone-conversion shall be done.
+	 * Otherwise, the code assumes the given time is in the TZ returned by {@link ZoneId#systemDefault()} and converts it to UTC from there.
+	 */
 	public Instant getAsInstant(@NonNull final String columnName)
 	{
 		return parseInstant(getAsString(columnName), columnName);
 	}
 
+	/**
+	 * Similar to {@link #getAsInstant(String)}.
+	 */
 	public Optional<Instant> getAsOptionalInstant(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseInstant(valueStr, columnName));
+	}
+
+	public Optional<Duration> getAsOptionalDuration(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseDuration(valueStr, columnName));
 	}
 
 	@NonNull
@@ -577,18 +617,20 @@ public class DataTableRow
 		try
 		{
 			if (valueStr.contains("T"))
-			{
+			{ // we have a date+time
 				if (valueStr.endsWith("Z"))
 				{
 					return Instant.parse(valueStr);
 				}
-				else
-				{
-					return toInstant(LocalDateTime.parse(valueStr));
-				}
+				return toInstant(LocalDateTime.parse(valueStr));
 			}
 			else
-			{
+			{ // we have a date
+				if (valueStr.endsWith("Z"))
+				{
+					final String effectiveString = valueStr.replace("Z", "T00:00:00.00Z");
+					return Instant.parse(effectiveString);
+				}
 				return toInstant(LocalDate.parse(valueStr).atStartOfDay());
 			}
 		}
@@ -598,10 +640,23 @@ public class DataTableRow
 		}
 	}
 
+	@NonNull
+	private static Duration parseDuration(@NonNull final String valueStr, final String columnInfo)
+	{
+		try
+		{
+			return Duration.parse(valueStr);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid Duration `" + valueStr + "`");
+		}
+	}
+
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
-		// because that's the timezone java.sql.Timestamp would use it too,
+		// because the timezone java.sql.Timestamp would use it too,
 		// and because most of currently logic is silently assuming that
 		final ZoneId jvmTimeZone = ZoneId.systemDefault();
 		return ldt.atZone(jvmTimeZone).toInstant();

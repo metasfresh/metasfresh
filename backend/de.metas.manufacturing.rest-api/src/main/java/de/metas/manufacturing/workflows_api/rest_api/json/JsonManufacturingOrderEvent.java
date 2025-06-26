@@ -45,9 +45,11 @@ public class JsonManufacturingOrderEvent
 		@NonNull String lineId;
 		@NonNull BigDecimal qtyReceived;
 		@Nullable String bestBeforeDate;
+		@Nullable String productionDate;
 		@Nullable String lotNo;
 		@Nullable BigDecimal catchWeight;
 		@Nullable String catchWeightUomSymbol;
+		boolean isBarcodeScan;
 		@Nullable JsonLUReceivingTarget aggregateToLU;
 		@Nullable JsonTUReceivingTarget aggregateToTU;
 

@@ -101,7 +101,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
 	public static final WFActivityId ACTIVITY_ID_ScanPickFromHU = WFActivityId.ofString("scanPickFromHU");
-	public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("scanPickingSlot"); // keep in sync with javascript code
+	public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("scanPickingSlot"); // keep in sync with JavaScript code
 	public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("pickLines");
 	public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("complete");
 
@@ -281,12 +281,24 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				return toWFActivities_SalesOrderBasedAggregation(pickingJob);
 			case PRODUCT:
 				return toWFActivities_ProductBasedAggregation(pickingJob);
+
+			case DELIVERY_LOCATION:
+				return toWFActivities_DeliveryLocationBasedAggregation(pickingJob);
 			default:
 				throw new AdempiereException("Unknown aggregation type: " + aggregationType);
 		}
 	}
 
 	private static ImmutableList<WFActivity> toWFActivities_SalesOrderBasedAggregation(@NonNull final PickingJob pickingJob)
+	{
+		return ImmutableList.of(
+				toWActivity_ScanPickingSlot(pickingJob),
+				toWFActivity_PickLines(pickingJob),
+				toWFActivity_Complete(pickingJob)
+		);
+	}
+
+	private static ImmutableList<WFActivity> toWFActivities_DeliveryLocationBasedAggregation(@NonNull final PickingJob pickingJob)
 	{
 		return ImmutableList.of(
 				toWActivity_ScanPickingSlot(pickingJob),

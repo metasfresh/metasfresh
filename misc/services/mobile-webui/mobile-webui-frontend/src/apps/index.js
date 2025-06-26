@@ -4,6 +4,7 @@ import * as workplaceManagerApp from './workplaceManager';
 import * as workstationManagerApp from './workstationManager';
 import * as pickingApp from './picking';
 import * as posApp from './pos';
+import * as huConsolidationApp from './huConsolidation';
 
 const registeredApplications = {};
 
@@ -113,3 +114,4 @@ registerApplication(workplaceManagerApp.applicationDescriptor);
 registerApplication(workstationManagerApp.applicationDescriptor);
 registerApplication(pickingApp.applicationDescriptor);
 registerApplication(posApp.applicationDescriptor);
+registerApplication(huConsolidationApp.applicationDescriptor);
