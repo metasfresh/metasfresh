@@ -1,6 +1,9 @@
-queue_rules:
+merge_protections:
   - name: default
-    conditions:
+    if:
+      - check-success=testspace-analytics
+      - check-success=continuous-integration/jenkins/branch
+    success_conditions:
       - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
 
@@ -12,7 +15,8 @@ pull_request_rules:
 
   - name: After UAT-PR is integrated, add branch-label and delete the PR-branch
     conditions:
-      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
+      - merged
+      - merged-at>2023-03-15T00:00:00Z # don't jump on every merged PR throughout history
       - or: &ALL_BASE_BRANCHES # this rule should apply to both the project-branches from above, and master
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
@@ -78,18 +82,19 @@ pull_request_rules:
       label:
         add:
           - "branch:{{base}}"
-      delete_head_branch:
+      delete_head_branch: {}
 
   - name: After master-PR is integrated, add two labels branch:master and in:5.177_master; also, delete the PR-branch
     conditions:
-      - merged-at > '2024-07-09 00:00Z' # don't jump on every merged PR throughout history
+      - merged
+      - merged-at>2024-07-09T00:00:00Z # don't jump on every merged PR throughout history
       - base=master
     actions:
       label:
         add:
           - "branch:{{base}}"
           - "in:5.178_master"
-      delete_head_branch:
+      delete_head_branch: {}
 
   - name: Automatic squash-merge successful PRs into the respective base-branch
     conditions:
@@ -103,9 +108,8 @@ pull_request_rules:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
     actions:
-      queue:
-        name: default
-        method: squash
+      merge:
+        method: merge
 
   - name: Automatic merge commit (not squash) successful PRs
     conditions:
@@ -119,7 +123,6 @@ pull_request_rules:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
     actions:
-      queue:
-        name: default
-        method: merge
+      merge:
+        method: squash
 
