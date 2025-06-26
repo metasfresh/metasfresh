@@ -34,7 +34,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
@@ -101,14 +101,16 @@ public class ApiRequestAuditRepository
 
 		final IQuery<I_API_Request_Audit> apiRequestAuditQuery = apiRequestQueryBuilder.create();
 
+		final IQueryOrderByBuilder<I_API_Request_Audit> orderBy = queryBL.createQueryOrderByBuilder(I_API_Request_Audit.class);
 		if (query.isOrderByTimeAscending())
 		{
-			final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_API_Request_Audit.class)
-					.addColumnAscending(I_API_Request_Audit.COLUMNNAME_Time)
-					.createQueryOrderBy();
-
-			apiRequestAuditQuery.setOrderBy(orderBy);
+			orderBy.addColumnAscending(I_API_Request_Audit.COLUMNNAME_Time);
 		}
+		else
+		{
+			orderBy.addColumnAscending(I_API_Request_Audit.COLUMNNAME_API_Request_Audit_ID);
+		}
+		apiRequestAuditQuery.setOrderBy(orderBy.createQueryOrderBy());
 
 		final int bufferSize = sysConfigBL.getIntValue(SYS_CONFIG_ITERATOR_BUFFER_SIZE, -1);
 		if (bufferSize > 0)
