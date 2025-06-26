@@ -4,7 +4,7 @@ FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
 FROM eclipse-temurin:21-jdk
 
-RUN apt-get -y update && apt-get -y install curl
+RUN apt-get -y update && apt-get -y upgrade
 
 WORKDIR /app
 
