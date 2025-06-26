@@ -22,13 +22,9 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.dao.selection.pagination.PaginationService;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -39,9 +35,11 @@ import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 
-import de.metas.dao.selection.pagination.PaginationService;
-import de.metas.dao.selection.pagination.QueryResultPage;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 public class QueryBL implements IQueryBL
 {
@@ -96,7 +94,7 @@ public class QueryBL implements IQueryBL
 	@Override
 	public IQueryOrderBy createSqlQueryOrderBy(final String orderBy)
 	{
-		return new SqlQueryOrderBy(orderBy);
+		return SqlQueryOrderBy.of(orderBy);
 	}
 
 	@Override
