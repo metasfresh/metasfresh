@@ -33,6 +33,8 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.impexp.ActualImportRecordsResult;
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.MockedImportRecordsAsyncExecutor;
 import de.metas.impexp.format.ImportTableDescriptor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctions;
@@ -92,7 +94,8 @@ public class BankStatementImportProcessTest
 
 		setupDBFunctionsRepository();
 		setupImportTableDescriptorRepository();
-
+		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
+		
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
 	}

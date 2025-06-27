@@ -1,23 +1,20 @@
 package de.metas.impexp.bpartner;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.MockedImportRecordsAsyncExecutor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -41,23 +38,18 @@ import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		// needed to register the spring context with the Adempiere main class
-		StartupListener.class, ShutdownListener.class,
-
-		// needed so that the spring context can discover those components
-		DBFunctionsRepository.class,
-		ImportTableDescriptorRepository.class
-})
 public class IFABPartnerImportProcess_Test
 {
 	private Properties ctx;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
+
 		ctx = Env.getCtx();
 		IIFABPartnerFactory.createCountry("DE");
 	}
@@ -72,7 +64,7 @@ public class IFABPartnerImportProcess_Test
 
 		importRecords.forEach(record -> importProcess.importRecord(new Mutable<>(), record, false /* isInsertOnly */));
 
-		importRecords.forEach(record -> IFABPartnerImportTestHelper.assertIFABPartnerImported(record));
+		importRecords.forEach(IFABPartnerImportTestHelper::assertIFABPartnerImported);
 
 
 	}
