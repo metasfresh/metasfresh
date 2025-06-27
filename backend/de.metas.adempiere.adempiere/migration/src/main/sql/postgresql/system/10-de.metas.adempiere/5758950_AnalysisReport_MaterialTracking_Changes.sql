@@ -159,3 +159,13 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
 -- 2025-06-27T12:23:21.260Z
 UPDATE AD_Column SET ColumnSQL='(SELECT ai.value::numeric  from qm_analysis_report qm           JOIN M_AttributeSetInstance asi on qm.M_AttributeSetInstance_ID = asi.M_AttributeSetInstance_ID           JOIN M_AttributeInstance ai on asi.m_attributesetinstance_id = ai.m_attributesetinstance_id  where ai.M_Attribute_ID = 540018    AND qm.qm_analysis_report_id = qm_analysis_report_id)',Updated=TO_TIMESTAMP('2025-06-27 12:23:21.260000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=590462
 ;
+
+
+
+-- SysConfig Name: MaterialTracking_Query_IgnorePartnerAndProduct
+-- SysConfig Value: Y
+-- 2025-06-27T12:52:16.179Z
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='When ''N'' , the material tracking attribute value must belong to the partner and product of the document.
+When ''Y'', the material tracking attribute value could belong to any partner and product.',Updated=TO_TIMESTAMP('2025-06-27 12:52:16.177000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_SysConfig_ID=541765
+;
+
