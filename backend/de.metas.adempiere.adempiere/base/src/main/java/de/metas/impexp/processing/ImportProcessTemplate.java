@@ -35,6 +35,7 @@ import org.adempiere.util.api.IParams;
 import org.adempiere.util.api.Params;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReferenceSelection;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
@@ -327,6 +328,14 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		}
 		resultCollector = ImportProcessResult.newCollector(getTargetTableName()).importTableName(getImportTableName());
 
+		loggable.addLog("AD_Client_ID: " + getClientId().getRepoId());
+		loggable.addLog("ValidateOnly: " + validateOnly);
+		loggable.addLog("CompleteDocuments: " + completeDocuments);
+		loggable.addLog("SelectedRecordRefs: " + selectedRecordRefs);
+		loggable.addLog("Async: " + async);
+		loggable.addLog("Limit: " + limit);
+		loggable.addLog("NotifyUserId: " + UserId.toRepoId(notifyUserId));
+
 		if (async)
 		{
 			scheduleAsync(false);
@@ -418,6 +427,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_BEFORE_VALIDATE);
 		trxManager.runInNewTrx(this::updateAndValidateImportRecordsImpl);
 		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_AFTER_VALIDATE);
+		loggable.addLog("Records were updated and validated - " + resultCollector.toResult().getSummary());
 	}
 
 	/**
@@ -434,6 +444,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 	{
 		if (!isImportData())
 		{
+			loggable.addLog("Skip importing the data");
 			return;
 		}
 
@@ -503,6 +514,11 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 					{
 						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValueNotNull();
 						importGroup(currentGroup, stateHolder);
+					}
+
+					@Override
+					public void cancelChunk()
+					{
 					}
 				})
 				.build();

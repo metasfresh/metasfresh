@@ -42,20 +42,25 @@ public abstract class AbstractImportJavaProcess<ImportRecordType> extends JavaPr
 
 	private IImportProcess<ImportRecordType> newImportProcess()
 	{
-		return importProcessFactory.newImportProcess(importRecordClass)
-				.async(true)
+		final IImportProcess<ImportRecordType> importProcess = importProcessFactory.newImportProcess(importRecordClass)
+				.async(false)
 				.setCtx(getCtx())
 				.setLoggable(this)
 				.setParameters(getParameterAsIParams())
-				.limit(QueryLimit.ofInt(getBatchSize()))
-				.notifyUserId(getUserId())
-				;
+				.limit(QueryLimit.NO_LIMIT)
+				.notifyUserId(getUserId());
+
+		customizeImportProcess(importProcess);
+
+		return importProcess;
 	}
 
-	private int getBatchSize()
+	protected void customizeImportProcess(@NonNull final IImportProcess<ImportRecordType> importProcess) {}
+
+	protected final QueryLimit getBatchSize()
 	{
 		int batchSize = sysConfigBL.getIntValue(SYSCONFIG_BatchSize, -1, getClientId().getRepoId(), OrgId.ANY.getRepoId());
-		return batchSize > 0 ? batchSize : DEFAULT_BatchSize;
+		return QueryLimit.ofInt(batchSize > 0 ? batchSize : DEFAULT_BatchSize);
 	}
 
 }
