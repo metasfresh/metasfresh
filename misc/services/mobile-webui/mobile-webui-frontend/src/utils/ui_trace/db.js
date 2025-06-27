@@ -13,7 +13,7 @@ export const saveEvent = async (event) => {
     await db.events.add(record);
     // console.log('saveEvent', { record });
   } catch (error) {
-    console.error('Error saving event', error);
+    console.error('Error saving event', { error, event });
   }
 };
 

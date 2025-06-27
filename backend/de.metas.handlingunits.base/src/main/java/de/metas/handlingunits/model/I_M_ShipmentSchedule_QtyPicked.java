@@ -24,34 +24,43 @@ import java.math.BigDecimal;
  * #L%
  */
 
-
 public interface I_M_ShipmentSchedule_QtyPicked extends de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked
 {
 	// @formatter:off
 	String COLUMNNAME_M_TU_HU_ID = "M_TU_HU_ID";
+	@Override
 	void setM_TU_HU_ID(int M_TU_HU_ID);
+	@Override
 	int getM_TU_HU_ID();
 	de.metas.handlingunits.model.I_M_HU getM_TU_HU() throws RuntimeException;
 	void setM_TU_HU(de.metas.handlingunits.model.I_M_HU M_HU);
 
 	String COLUMNNAME_M_LU_HU_ID = "M_LU_HU_ID";
+	@Override
 	void setM_LU_HU_ID(int M_LU_HU_ID);
+	@Override
 	int getM_LU_HU_ID();
 	de.metas.handlingunits.model.I_M_HU getM_LU_HU() throws RuntimeException;
 	void setM_LU_HU(de.metas.handlingunits.model.I_M_HU M_LU_HU);
 
 	String COLUMNNAME_VHU_ID = "VHU_ID";
+	@Override
 	void setVHU_ID(int VHU_ID);
+	@Override
 	int getVHU_ID();
 	de.metas.handlingunits.model.I_M_HU getVHU() throws RuntimeException;
 	void setVHU(de.metas.handlingunits.model.I_M_HU VHU);
 
 	String COLUMNNAME_QtyTU = "QtyTU";
+	@Override
 	void setQtyTU(BigDecimal QtyTU);
+	@Override
 	BigDecimal getQtyTU();
 
 	String COLUMNNAME_QtyLU = "QtyLU";
+	@Override
 	void setQtyLU(BigDecimal QtyLU);
+	@Override
 	BigDecimal getQtyLU();
 	// @formatter:on
 }

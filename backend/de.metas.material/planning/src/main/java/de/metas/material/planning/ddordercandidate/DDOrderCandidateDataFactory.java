@@ -42,7 +42,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-class DDOrderCandidateDataFactory
+public class DDOrderCandidateDataFactory
 {
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull final IProductBL productBL = Services.get(IProductBL.class);

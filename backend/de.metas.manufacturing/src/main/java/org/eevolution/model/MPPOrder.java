@@ -289,9 +289,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public boolean voidIt()
 	{
 		final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
-		final PPOrderChangedEventFactory eventFactory = newPpOrderChangedEventFactory();
-
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 
 		//
 		// Make sure there was nothing reported on this manufacturing order
@@ -300,6 +297,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		{
 			throw new LiberoException("Cannot void this document because exist transactions"); // TODO: Create Message for Translation
 		}
+
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 
 		//
 		// Set QtyRequired=0 on all BOM Lines
@@ -340,11 +339,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		// reset candidate
 		ppOrderCandidateService.resetByPPOrderId(PPOrderId.ofRepoId(getPP_Order_ID()));
-
-		final PPOrderChangedEvent changeEvent = eventFactory.inspectPPOrderAfterChange();
-
-		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		materialEventService.enqueueEventAfterNextCommit(changeEvent);
 		return true;
 	}
 

@@ -23,31 +23,31 @@
 DROP VIEW IF EXISTS "de.metas.edi".c_remittanceadvice_diag_SI_to_I_allocs_v
 ;
 
-CREATE VIEW "de.metas.edi".c_remittanceadvice_diag_SI_to_I_allocs_v AS
-SELECT 'serviceInvoice-to-invoice'                                                                                                   AS allocation_type,
-       ral.created                                                                                                                   AS ral_created,
+CREATE OR REPLACE VIEW "de.metas.edi".c_remittanceadvice_diag_SI_to_I_allocs_v AS
+SELECT 'serviceInvoice-to-invoice'                                      AS allocation_type,
+       ral.created                                                      AS ral_created,
        ral.c_remittanceadvice_id,
        ral.c_remittanceadvice_line_id,
-       inv.c_invoice_id                                                                                                              AS inv_c_invoice_id,
-       inv.docstatus                                                                                                                 AS inv_docstatus,
-       sinv_dt.docbasetype                                                                                                           AS sinv_c_invoice_docbasetype,
-       sinv_dt.name                                                                                                                  AS sinv_c_invoice_doctypename,
-       sinv.c_invoice_id                                                                                                             AS sinv_c_invoice_id,
-       sinv.docstatus                                                                                                                AS sinv_docstatus,
-       sinv.docstatus = 'CO'                                                                                                         AS sinv_docstatus_ok,
-       sinv.ref_invoice_id                                                                                                           AS sinv_ref_invoice_id,
-       COALESCE(sinv.ref_invoice_id, 0) = COALESCE(inv.c_invoice_id, 1)                                                              AS sinv_ref_invoice_id_ok,
-       al.amount                                                                                                                     AS al_amount,
-       (CASE WHEN inv_dt.docbasetype IN ('ARI', 'APC') THEN ral.servicefeeamount * -1 ELSE ral.servicefeeamount * 1 END)             AS al_amount_exp,
-       al.amount = (CASE WHEN inv_dt.docbasetype IN ('ARI', 'APC') THEN ral.servicefeeamount * -1 ELSE ral.servicefeeamount * 1 END) AS al_amount_ok,
-       al.discountamt                                                                                                                AS al_discountamt,
-       0                                                                                                                             AS al_discountamt_exp,
-       al.discountamt = 0                                                                                                            AS al_discountamt_ok,
-       al.writeoffamt                                                                                                                AS al_writeoffamt,
-       al.writeoffamt = 0                                                                                                            AS al_writeoffamt_ok,
-       al.overunderamt                                                                                                               AS al_overunderamt,
-       al.c_allocationhdr_id                                                                                                         AS al_c_allocationhdr_id,
-       al.c_allocationline_id                                                                                                        AS al_c_allocationline_id
+       inv.c_invoice_id                                                 AS inv_c_invoice_id,
+       inv.docstatus                                                    AS inv_docstatus,
+       sinv_dt.docbasetype                                              AS sinv_c_invoice_docbasetype,
+       sinv_dt.name                                                     AS sinv_c_invoice_doctypename,
+       sinv.c_invoice_id                                                AS sinv_c_invoice_id,
+       sinv.docstatus                                                   AS sinv_docstatus,
+       sinv.docstatus = 'CO'                                            AS sinv_docstatus_ok,
+       sinv.ref_invoice_id                                              AS sinv_ref_invoice_id,
+       COALESCE(sinv.ref_invoice_id, 0) = COALESCE(inv.c_invoice_id, 1) AS sinv_ref_invoice_id_ok,
+       al.amount                                                        AS al_amount,
+       ral.servicefeeamount * -1                                        AS al_amount_exp,
+       al.amount = ral.servicefeeamount * -1                            AS al_amount_ok,
+       al.discountamt                                                   AS al_discountamt,
+       0                                                                AS al_discountamt_exp,
+       al.discountamt = 0                                               AS al_discountamt_ok,
+       al.writeoffamt                                                   AS al_writeoffamt,
+       al.writeoffamt = 0                                               AS al_writeoffamt_ok,
+       al.overunderamt                                                  AS al_overunderamt,
+       al.c_allocationhdr_id                                            AS al_c_allocationhdr_id,
+       al.c_allocationline_id                                           AS al_c_allocationline_id
 FROM c_remittanceadvice_line ral
          JOIN c_remittanceadvice ra ON ral.c_remittanceadvice_id = ra.c_remittanceadvice_id
          JOIN c_invoice inv ON ral.c_invoice_id = inv.c_invoice_id

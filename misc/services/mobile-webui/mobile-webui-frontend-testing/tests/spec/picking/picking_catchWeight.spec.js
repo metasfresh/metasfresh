@@ -70,10 +70,12 @@ test('Leich+Mehl', async ({ page }) => {
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
     await PickingJobScreen.pickHU({
         qrCode: masterdata.handlingUnits.HU1.qrCode,
         catchWeightQRCode: [
@@ -84,7 +86,26 @@ test('Leich+Mehl', async ({ page }) => {
             'LMQ#1#0.101#08.11.2025#500',
         ],
     });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '5 Stk', qtyPickedCatchWeight: '505 g' });
+
     await PickingJobScreen.complete();
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu2', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu3', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu4', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu5', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                        ]
+                    }
+                }
+            }
+        }
+    });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -100,12 +121,16 @@ test('GS1', async ({ page }) => {
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
     await PickingJobScreen.pickHU({
         qrCode: masterdata.handlingUnits.HU1.qrCode,
         catchWeightQRCode: [
             '019731187634181131030075201527080910501',
         ],
     });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '7.52 kg' });
+
     await PickingJobScreen.complete();
 });
 
@@ -122,12 +147,16 @@ test('EAN13 with prefix 28', async ({ page }) => {
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
     await PickingJobScreen.pickHU({
         qrCode: masterdata.handlingUnits.HU1.qrCode,
         catchWeightQRCode: [
             '2800027002616',
         ],
     });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '261 g' });
+
     await PickingJobScreen.complete();
 });
 
@@ -168,15 +197,20 @@ test('EAN13 with prefix 29', async ({ page }) => {
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
     await PickingJobScreen.pickHU({
         qrCode: masterdata.handlingUnits.HU1.qrCode,
         catchWeightQRCode: [
             '2948882005745',
         ],
     });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '574 g' });
+
     await PickingJobScreen.complete();
 });
 
+// noinspection JSUnusedLocalSymbols
 test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
     const masterdata = await createMasterdata();
 
@@ -199,7 +233,6 @@ test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
         });
     });
 });
-
 
 // noinspection JSUnusedLocalSymbols
 test('Check Last BestBeforeDate is displayed when MobileUIPickingProfile.ShowLastPickedBestBeforeDateForLines = Y', async ({ page }) => {

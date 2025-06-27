@@ -70,6 +70,9 @@ public interface IDocOutboundDAO extends ISingletonService
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(ArchiveId archiveId);
 
+	@NonNull
+	I_C_Doc_Outbound_Log retrieveLog(@NonNull DocOutboundLogId logId);
+	
 	@Nullable
 	I_C_Doc_Outbound_Log retrieveLog(@NonNull TableRecordReference tableRecordReference);
 

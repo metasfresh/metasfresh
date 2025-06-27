@@ -146,6 +146,14 @@ public class DDOrderCandidateAdvisedHandler
 			throw new AdempiereException("supplyRequiredDescriptor shall be set for " + event);
 		}
 
+		if (CandidateType.DEMAND.equals(candidateType))
+		{
+			//The order of events is Advised -> Requested -> Created.
+			// The DD_Order_Candidate (and its MD_Candidates) will be created in the Requested event.
+			// So we can safely return FALSE here.
+			return CandidatesQuery.FALSE;
+		}
+
 		return CandidatesQuery.builder()
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
@@ -182,7 +190,7 @@ public class DDOrderCandidateAdvisedHandler
 			return Optional.of(ppOrderRef.getPpOrderId());
 		}
 
-		if (ppOrderRef.getPpOrderCandidateId() <= 0)
+		if (ppOrderRef.getPpOrderCandidateId() == null)
 		{
 			return Optional.empty();
 		}

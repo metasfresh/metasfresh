@@ -6,13 +6,13 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.util.lang.Percent;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Invoice Line predecessor which is returned by {@link IAggregationBL#aggregate()}.
- *
+ * Invoice Line predecessor which is returned by {@link IAggregationBL#mkInvoiceLine()}.
+ * <p/>
  * One or more invoice candidates are aggregated in one instance of this class
  */
 public interface IInvoiceLineRW
@@ -52,9 +52,9 @@ public interface IInvoiceLineRW
 	void setDiscount(Percent discount);
 
 	// 03439 add description
-	String getDescription();
+	@Nullable String getDescription();
 
-	void setDescription(String description);
+	void setDescription(@Nullable String description);
 
 	// end of 03439 add description
 
@@ -90,10 +90,10 @@ public interface IInvoiceLineRW
 
 	void setLineNo(int lineNo);
 
-	void setInvoiceLineAttributes(Set<IInvoiceLineAttribute> invoiceLineAttributes);
+	void setInvoiceLineAttributes(List<IInvoiceLineAttribute> invoiceLineAttributes);
 
 	/** @return product attributes */
-	Set<IInvoiceLineAttribute> getInvoiceLineAttributes();
+	List<IInvoiceLineAttribute> getInvoiceLineAttributes();
 
 	List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate();
 

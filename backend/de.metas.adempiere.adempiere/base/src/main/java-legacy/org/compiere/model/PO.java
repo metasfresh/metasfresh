@@ -70,7 +70,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
 import org.compiere.util.ISqlUpdateReturnProcessor;
-import org.compiere.util.Ini;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
@@ -2856,11 +2855,7 @@ public abstract class PO
 				return true;
 			}
 		}
-		if (m_custom != null && m_custom.size() > 0)
-		{
-			return true; // there are custom columns modified
-		}
-		return false;
+		return m_custom != null && m_custom.size() > 0; // there are custom columns modified
 	}    // is_Change
 
 	/**
@@ -3231,7 +3226,7 @@ public abstract class PO
 			if (index != -1 && p_info.isUseDocSequence(index))
 			{
 				String value = (String)get_Value(index);
-				if (value != null && IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
+				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
 				{
 					value = null;
 				}
@@ -3480,7 +3475,7 @@ public abstract class PO
 		//
 		// Execute actual database INSERT
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert.toString(),
-				(Object[])null,  // params,
+				null,  // params,
 				m_trxName,
 				0,  // timeOut,
 				loadAfterInsertProcessor);
@@ -4946,7 +4941,7 @@ public abstract class PO
 	}
 
 	/**
-	 * Mark this PO as beeing created, updated or deleted by an manual user action (from window).
+	 * Mark this PO as being created, updated or deleted by a manual user action (from a window).
 	 */
 	public final void set_ManualUserAction(final int windowNo)
 	{
@@ -4960,6 +4955,15 @@ public abstract class PO
 
 		this.m_isManualUserAction = true;
 		this.m_windowNo = windowNo;
+	}
+
+	/**
+	 * Mark this PO as not being created, updated or deleted by a manual user action (from a window).
+	 */
+	public final void unset_ManualUserAction()
+	{
+		this.m_isManualUserAction = false;
+		this.m_windowNo = 0;
 	}
 
 	@Override
@@ -5153,7 +5157,7 @@ public abstract class PO
 
 	public boolean isCopiedFromOtherRecord() {return getDynAttribute(DYNATTR_CopiedFromRecordId) != null;}
 
-	public void setCopiedFromRecordId(int fromRecordId) {setDynAttribute(DYNATTR_CopiedFromRecordId, fromRecordId);}
+	public void setCopiedFromRecordId(final int fromRecordId) {setDynAttribute(DYNATTR_CopiedFromRecordId, fromRecordId);}
 
 	private class POReturningAfterInsertLoader implements ISqlUpdateReturnProcessor
 	{

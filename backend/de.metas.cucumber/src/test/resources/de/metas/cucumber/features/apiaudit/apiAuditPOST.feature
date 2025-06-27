@@ -211,7 +211,7 @@ Feature: API Audit POST http method
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
       | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | N                 |
 
-    When add HTTP header
+    When add HTTP headers
       | Key         | Value |
       | X-Api-Async | true  |
 

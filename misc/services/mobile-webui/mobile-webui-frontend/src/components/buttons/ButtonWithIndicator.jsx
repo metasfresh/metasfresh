@@ -40,7 +40,7 @@ const ButtonWithIndicator = ({
 
   const fireOnClick = uiTrace.traceFunction(onClick, {
     eventName: 'buttonClick',
-    id,
+    componentId: id,
     testId,
     caption,
     showWarningSign,

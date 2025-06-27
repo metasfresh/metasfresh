@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 980521418L;
+	private static final long serialVersionUID = -75182844L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final int MobileUI_UserProfile_Picking_Job_ID, @Nullable final String trxName)
@@ -78,7 +78,7 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
-	public boolean isAllowCompletingPartialPickingJob()
+	public boolean isAllowCompletingPartialPickingJob() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowCompletingPartialPickingJob);
 	}
@@ -132,6 +132,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setIsAnonymousHuPickedOnTheFly (final boolean IsAnonymousHuPickedOnTheFly)
+	{
+		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
+	public boolean isAnonymousHuPickedOnTheFly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
 	public void setIsCatchWeightTUPickingEnabled (final boolean IsCatchWeightTUPickingEnabled)
 	{
 		set_Value (COLUMNNAME_IsCatchWeightTUPickingEnabled, IsCatchWeightTUPickingEnabled);
@@ -168,6 +180,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setIsShipOnCloseLU (final boolean IsShipOnCloseLU)
+	{
+		set_Value (COLUMNNAME_IsShipOnCloseLU, IsShipOnCloseLU);
+	}
+
+	@Override
+	public boolean isShipOnCloseLU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipOnCloseLU);
+	}
+
+	@Override
 	public void setIsShowConfirmationPromptWhenOverPick (final boolean IsShowConfirmationPromptWhenOverPick)
 	{
 		set_Value (COLUMNNAME_IsShowConfirmationPromptWhenOverPick, IsShowConfirmationPromptWhenOverPick);
@@ -186,7 +210,7 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
-	public boolean isShowLastPickedBestBeforeDateForLines()
+	public boolean isShowLastPickedBestBeforeDateForLines() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
 	}
@@ -227,6 +251,8 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public static final String PICKINGJOBAGGREGATIONTYPE_Sales_order = "sales_order";
 	/** product = product */
 	public static final String PICKINGJOBAGGREGATIONTYPE_Product = "product";
+	/** delivery_location = delivery_location */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Delivery_location = "delivery_location";
 	@Override
 	public void setPickingJobAggregationType (final @Nullable java.lang.String PickingJobAggregationType)
 	{

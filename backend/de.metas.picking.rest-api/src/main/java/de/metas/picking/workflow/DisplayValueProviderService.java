@@ -44,7 +44,7 @@ public class DisplayValueProviderService
 		return DisplayValueProvider.builder()
 				.partnerDAO(partnerDAO)
 				.orgDAO(orgDAO)
-				.documentLocationBL(documentLocationBL)
+				.renderedAddressProvider(documentLocationBL.newRenderedAddressProvider())
 				//
 				.profile(profile)
 				//

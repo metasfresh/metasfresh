@@ -16,7 +16,8 @@ import java.util.List;
 @Jacksonized
 public class JsonSalesOrderCreateRequest
 {
-	@NonNull Identifier bpartner;
+	@Nullable Identifier bpartner;
+	@Nullable Identifier location;
 	@NonNull Identifier warehouse;
 	@NonNull ZonedDateTime datePromised;
 	@NonNull List<Line> lines;

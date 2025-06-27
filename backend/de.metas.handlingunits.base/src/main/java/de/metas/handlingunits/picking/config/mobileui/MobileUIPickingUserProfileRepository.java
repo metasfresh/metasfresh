@@ -111,6 +111,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.isPickWithNewLU(profileRecord.isPickingWithNewLU())
+				.isShipOnCloseLU(profileRecord.isShipOnCloseLU())
 				.isAllowNewTU(profileRecord.isAllowNewTU())
 				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
@@ -118,6 +119,7 @@ public class MobileUIPickingUserProfileRepository
 				.isShowConfirmationPromptWhenOverPick(profileRecord.isShowConfirmationPromptWhenOverPick())
 				.isAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob())
 				.isShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines())
+				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
@@ -219,6 +221,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
 		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
 		record.setIsPickingWithNewLU(from.isPickWithNewLU());
+		record.setIsShipOnCloseLU(from.isShipOnCloseLU());
 		record.setIsAllowNewTU(from.isAllowNewTU());
 		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
@@ -226,6 +229,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());
 		record.setIsShowConfirmationPromptWhenOverPick(from.isShowConfirmationPromptWhenOverPick());
 		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
+		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
@@ -287,6 +291,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(record.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
 				.isPickWithNewLU(record.isPickingWithNewLU())
+				.isShipOnCloseLU(record.isShipOnCloseLU())
 				.isAllowNewTU(record.isAllowNewTU())
 				.considerSalesOrderCapacity(record.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(record.isCatchWeightTUPickingEnabled())
@@ -295,6 +300,7 @@ public class MobileUIPickingUserProfileRepository
 				.isShowLastPickedBestBeforeDateForLines(record.isShowLastPickedBestBeforeDateForLines())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(record.getCreateShipmentPolicy()))
 				.isAllowCompletingPartialPickingJob(record.isAllowCompletingPartialPickingJob())
+				.isAnonymousPickHUsOnTheFly(record.isAnonymousHuPickedOnTheFly())
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))
 				.build();

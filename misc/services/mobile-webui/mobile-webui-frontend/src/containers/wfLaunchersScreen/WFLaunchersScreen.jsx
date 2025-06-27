@@ -205,8 +205,9 @@ const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filterByDocum
     filterByQRCode,
     filterByDocumentNo,
     facets,
-    onWebsocketMessage: ({ applicationId, applicationLaunchers }) =>
-      onNewLaunchers({ applicationId, applicationLaunchers }),
+    onWebsocketMessage: ({ applicationId, applicationLaunchers }) => {
+      onNewLaunchers({ applicationId, applicationLaunchers });
+    },
   });
 
   return {

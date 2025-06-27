@@ -10,6 +10,7 @@ import de.metas.common.util.pair.ImmutablePair;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -30,6 +31,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
@@ -103,6 +105,7 @@ public class HURepository
 	{
 		private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		private final transient IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 		private final transient IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
 		private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
@@ -122,8 +125,8 @@ public class HURepository
 		private ImmutablePair<HuId, HUBuilder> extractIdAndBuilder(@NonNull final I_M_HU rootHuRecord)
 		{
 			final HuId huId = extractHuId(rootHuRecord);
-			final HUBuilder rootHu = createHUBuilder(rootHuRecord);
-			return ImmutablePair.of(huId, rootHu);
+			final HUBuilder huBuilder = createHUBuilder(rootHuRecord);
+			return ImmutablePair.of(huId, huBuilder);
 		}
 
 		private HuId extractHuId(@NonNull final I_M_HU rootHuRecord)
@@ -136,14 +139,18 @@ public class HURepository
 			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 			final Quantity weightNet = extractWeightNetOrNull(attributeStorage);
 
+			final String huUnitType = Check.assumeNotEmpty(handlingUnitsBL.getHU_UnitType(huRecord),
+					"Missing HU_UnitType for M_HU_ID={}", huRecord.getM_HU_ID());
+
 			return HU.builder()
 					.id(HuId.ofRepoId(huRecord.getM_HU_ID()))
 					.orgId(OrgId.ofRepoIdOrAny(huRecord.getAD_Org_ID()))
-					.type(HUType.ofCode(handlingUnitsBL.getHU_UnitType(huRecord)))
+					.type(HUType.ofCode(huUnitType))
 					.packagingCode(extractPackagingCodeId(huRecord))
 					.attributes(attributeStorage)
-					.weightNet(Optional.ofNullable(weightNet))
-					.packagingGTINs(extractPackagingGTINs(huRecord));
+					.weightNet(weightNet)
+					.packagingGTINs(extractPackagingGTINs(huRecord))
+					.referencingModels(huAssignmentDAO.retrieveReferencingRecordsForHU(huRecord, false));
 		}
 
 		/**
@@ -215,10 +222,10 @@ public class HURepository
 
 				final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 				final Optional<Quantity> weightNetPerHU = Optional.ofNullable(extractWeightNetOrNull(attributeStorage))
-								.map(weightNet -> weightNet.divide(logicalNumberOfTUs));
+						.map(weightNet -> weightNet.divide(logicalNumberOfTUs));
 
-				childBuilder.weightNet(weightNetPerHU);
-				
+				childBuilder.weightNet(weightNetPerHU.orElse(null));
+
 				for (int i = 0; i < logicalNumberOfTUs; i++)
 				{
 					final HU currentChild = childBuilder.build();
@@ -240,16 +247,15 @@ public class HURepository
 
 		private ImmutableMap<ProductId, Quantity> extractProductsAndQuantities(@NonNull final I_M_HU huRecord)
 		{
-			final ImmutableMap<ProductId, Quantity> productsAndQuantities = handlingUnitsBL
+			return handlingUnitsBL
 					.getStorageFactory()
 					.getStorage(huRecord).getProductStorages()
 					.stream()
 					.collect(ImmutableMap.toImmutableMap(
 							IHUProductStorage::getProductId,
 							IHUProductStorage::getQtyInStockingUOM));
-			return productsAndQuantities;
 		}
-		
+
 		@Nullable
 		private Quantity extractWeightNetOrNull(@NonNull final IAttributeStorage attributeStorage)
 		{
@@ -280,21 +286,22 @@ public class HURepository
 
 		}
 
-		private Optional<PackagingCode> extractPackagingCodeId(@NonNull final I_M_HU hu)
+		@Nullable
+		private PackagingCode extractPackagingCodeId(@NonNull final I_M_HU hu)
 		{
 			final I_M_HU_PI_Version piVersionrecord = loadOutOfTrx(hu.getM_HU_PI_Version_ID(), I_M_HU_PI_Version.class);
 			final int packagingCodeRecordId = piVersionrecord.getM_HU_PackagingCode_ID();
 			if (packagingCodeRecordId <= 0)
 			{
-				return Optional.empty();
+				return null;
 			}
 			final I_M_HU_PackagingCode packagingCodeRecord = loadOutOfTrx(packagingCodeRecordId, I_M_HU_PackagingCode.class);
 
-			return Optional.of(PackagingCode.builder()
-									   .id(PackagingCodeId.ofRepoId(packagingCodeRecordId))
-									   .onlyForType(Optional.ofNullable(HUType.ofCodeOrNull(packagingCodeRecord.getHU_UnitType())))
-									   .value(packagingCodeRecord.getPackagingCode())
-									   .build());
+			return PackagingCode.builder()
+					.id(PackagingCodeId.ofRepoId(packagingCodeRecordId))
+					.onlyForType(Optional.ofNullable(HUType.ofCodeOrNull(packagingCodeRecord.getHU_UnitType())))
+					.value(packagingCodeRecord.getPackagingCode())
+					.build();
 
 		}
 

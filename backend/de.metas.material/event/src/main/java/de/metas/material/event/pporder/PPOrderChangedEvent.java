@@ -17,6 +17,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.PPOrderAndBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
@@ -89,7 +90,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 			@JsonProperty("deletedPPOrderLines") @Singular final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines,
 			@JsonProperty("newPPOrderLines") @Singular final List<PPOrderLine> newPPOrderLines)
 	{
-		Check.assumeGreaterThanZero(ppOrderAfterChanges.getPpOrderId(), "ppOrderAfterChanges shall be saved");
+		Check.assumeGreaterThanZero(PPOrderId.toRepoId(ppOrderAfterChanges.getPpOrderId()), "ppOrderAfterChanges shall be saved");
 
 		this.eventDescriptor = eventDescriptor;
 		this.newDatePromised = newDatePromised;
@@ -115,7 +116,7 @@ public class PPOrderChangedEvent implements MaterialEvent
 				&& (oldDocStatus == null || oldDocStatus.isNotProcessed());
 	}
 
-	public int getPpOrderId()
+	public PPOrderId getPpOrderId()
 	{
 		return getPpOrderAfterChanges().getPpOrderId();
 	}

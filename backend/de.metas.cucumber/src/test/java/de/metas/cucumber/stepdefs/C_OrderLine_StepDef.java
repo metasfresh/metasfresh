@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
@@ -30,6 +31,7 @@ import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -37,7 +39,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.order.OrderId;
+import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxId;
@@ -45,12 +47,12 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -59,6 +61,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -77,55 +80,32 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_C_OrderLine.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 
+@RequiredArgsConstructor
 public class C_OrderLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IOrderLineBL  orderLineBL = Services.get(IOrderLineBL.class);;
 
-	private final M_Product_StepDefData productTable;
-	private final C_BPartner_StepDefData partnerTable;
-	private final C_Order_StepDefData orderTable;
-	private final C_OrderLine_StepDefData orderLineTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
-	private final C_Flatrate_Term_StepDefData contractTable;
-	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final M_Attribute_StepDefData attributeTable;
-	private final C_Tax_StepDefData taxTable;
-	private final M_Warehouse_StepDefData warehouseTable;
-	private final IdentifierIds_StepDefData identifierIdsTable;
-
-	public C_OrderLine_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_BPartner_StepDefData partnerTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
-			@NonNull final C_Flatrate_Term_StepDefData contractTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final M_Attribute_StepDefData attributeTable,
-			@NonNull final C_Tax_StepDefData taxTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final IdentifierIds_StepDefData identifierIdsTable)
-	{
-		this.productTable = productTable;
-		this.partnerTable = partnerTable;
-		this.orderTable = orderTable;
-		this.orderLineTable = orderLineTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
-		this.flatrateConditionsTable = flatrateConditionsTable;
-		this.contractTable = contractTable;
-		this.huPiItemProductTable = huPiItemProductTable;
-		this.attributeTable = attributeTable;
-		this.taxTable = taxTable;
-		this.warehouseTable = warehouseTable;
-		this.identifierIdsTable = identifierIdsTable;
-	}
+	private final @NonNull M_Product_StepDefData productTable;
+	private final @NonNull C_BPartner_StepDefData partnerTable;
+	private final @NonNull C_BPartner_Location_StepDefData partnerLocationTable;
+	private final @NonNull C_Order_StepDefData orderTable;
+	private final @NonNull C_OrderLine_StepDefData orderLineTable;
+	private final @NonNull M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final @NonNull C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
+	private final @NonNull C_Flatrate_Term_StepDefData contractTable;
+	private final @NonNull C_TaxCategory_StepDefData taxCategoryTable;
+	private final @NonNull M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final @NonNull M_Attribute_StepDefData attributeTable;
+	private final @NonNull C_Tax_StepDefData taxTable;
+	private final @NonNull M_Warehouse_StepDefData warehouseTable;
+	private final @NonNull IdentifierIds_StepDefData identifierIdsTable;
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
@@ -134,7 +114,11 @@ public class C_OrderLine_StepDef
 				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.forEach(tableRow -> {
 					final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
-					orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+
+					// make sure all defaults are set. If not, this method might be called later, when the orderLine is saved and might then override things set in this stepdef
+					final I_C_Order orderRecord = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+					orderLine.setC_Order_ID(orderRecord.getC_Order_ID());
+					orderLineBL.setOrder(orderLine, orderRecord);
 
 					final StepDefDataIdentifier productIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
 					final ProductId productId = productTable.getIdOptional(productIdentifier)
@@ -146,9 +130,6 @@ public class C_OrderLine_StepDef
 					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
 							.map(attributeSetInstanceTable::getId)
 							.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
-
-					final OrderId orderId = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupIdIn(orderTable);
-					orderLine.setC_Order_ID(orderId.getRepoId());
 
 					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
 							.map(partnerTable::getId)
@@ -461,6 +442,7 @@ public class C_OrderLine_StepDef
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
+		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final Integer expectedProductId = productTable.getOptional(productIdentifier)
 				.map(I_M_Product::getM_Product_ID)
@@ -516,11 +498,18 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getQtyItemCapacity()).isEqualByComparingTo(qtyItemCapacity);
 		}
 
-		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
-
 		if (dateOrdered != null)
 		{
 			assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
+		}
+
+		if (Check.isNotBlank(taxCategoryIdentifier))
+		{
+			final Integer taxCategoryId = taxCategoryTable.getOptional(taxCategoryIdentifier)
+					.map(I_C_TaxCategory::getC_TaxCategory_ID)
+					.orElseGet(() -> Integer.parseInt(taxCategoryIdentifier));
+
+			assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
 		}
 
 		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());

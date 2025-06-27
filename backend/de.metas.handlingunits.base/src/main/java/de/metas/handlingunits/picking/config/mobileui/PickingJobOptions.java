@@ -17,6 +17,7 @@ public class PickingJobOptions
 	boolean isAllowPickingAnyHU;
 	boolean isAlwaysSplitHUsEnabled;
 	boolean isPickWithNewLU;
+	boolean isShipOnCloseLU;
 	boolean isAllowNewTU;
 	boolean isCatchWeightTUPickingEnabled;
 	boolean considerSalesOrderCapacity;
@@ -24,6 +25,7 @@ public class PickingJobOptions
 	boolean isShowConfirmationPromptWhenOverPick;
 	boolean isAllowCompletingPartialPickingJob;
 	boolean isShowLastPickedBestBeforeDateForLines;
+	boolean isAnonymousPickHUsOnTheFly;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
@@ -33,7 +35,8 @@ public class PickingJobOptions
 			@Nullable final PickingJobAggregationType aggregationType,
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
-			final boolean isPickWithNewLU,
+			final boolean isPickWithNewLU, 
+			final boolean isShipOnCloseLU,
 			final boolean isAllowNewTU,
 			final boolean isCatchWeightTUPickingEnabled,
 			final boolean considerSalesOrderCapacity,
@@ -41,6 +44,7 @@ public class PickingJobOptions
 			final boolean isShowConfirmationPromptWhenOverPick,
 			final boolean isAllowCompletingPartialPickingJob,
 			final boolean isShowLastPickedBestBeforeDateForLines,
+			final boolean isAnonymousPickHUsOnTheFly,
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
 			@Nullable final PickingLineGroupBy pickingLineGroupBy,
 			@Nullable final PickingLineSortBy pickingLineSortBy)
@@ -49,6 +53,7 @@ public class PickingJobOptions
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
 		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
 		this.isPickWithNewLU = isPickWithNewLU;
+		this.isShipOnCloseLU = isShipOnCloseLU;
 		this.isAllowNewTU = isAllowNewTU;
 		this.isCatchWeightTUPickingEnabled = isCatchWeightTUPickingEnabled;
 		this.considerSalesOrderCapacity = considerSalesOrderCapacity;
@@ -56,6 +61,7 @@ public class PickingJobOptions
 		this.isShowConfirmationPromptWhenOverPick = isShowConfirmationPromptWhenOverPick;
 		this.isAllowCompletingPartialPickingJob = isAllowCompletingPartialPickingJob;
 		this.isShowLastPickedBestBeforeDateForLines = isShowLastPickedBestBeforeDateForLines;
+		this.isAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly;
 		this.createShipmentPolicy = createShipmentPolicy;
 		this.pickingLineGroupBy = pickingLineGroupBy;
 		this.pickingLineSortBy = pickingLineSortBy;

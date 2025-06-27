@@ -5,8 +5,10 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.gljournal.GLJournalLineSide;
 import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.FixedConversionRate;
@@ -28,7 +30,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Post GL Journal Documents.
@@ -112,27 +113,30 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 
 		if (glJournalLine.isAllowAccountDR())
 		{
-			final DocLine_GLJournal docLineDR = createDocLine(glJournalLine);
-			docLineDR.setAmount(glJournalLine.getAmtSourceDr(), BigDecimal.ZERO);
-			docLineDR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
-			docLineDR.setConvertedAmt(glJournalLine.getAmtAcctDr(), BigDecimal.ZERO);
-			docLineDR.setAccount(glJournalLine.getAccount_DR());
-
-
-			docLines.add(docLineDR);
+			docLines.add(createDocLine_Normal(glJournalLine, PostingSign.DEBIT));
 		}
 		if (glJournalLine.isAllowAccountCR())
 		{
-			final DocLine_GLJournal docLineCR = createDocLine(glJournalLine);
-			docLineCR.setAmount(BigDecimal.ZERO, glJournalLine.getAmtSourceCr());
-			docLineCR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
-			docLineCR.setConvertedAmt(BigDecimal.ZERO, glJournalLine.getAmtAcctCr());
-			docLineCR.setAccount(glJournalLine.getAccount_CR());
-
-			docLines.add(docLineCR);
+			docLines.add(createDocLine_Normal(glJournalLine, PostingSign.CREDIT));
 		}
 
 		return docLines;
+	}
+
+	private DocLine_GLJournal createDocLine_Normal(final I_GL_JournalLine glJournalLine, final PostingSign postingSign)
+	{
+		final DocLine_GLJournal docLine = createDocLine(glJournalLine);
+
+		final GLJournalLineSide glJournalLineSide = glJournalLineBL.extractSide(glJournalLine, postingSign);
+		docLine.setAccount(glJournalLineSide.getAccount());
+		docLine.setC_ConversionType_ID(glJournalLineSide.getConversionTypeId());
+		docLine.setAmountDrOrCr(glJournalLineSide.getAmtSource(), postingSign);
+		docLine.setConvertedAmt(glJournalLineSide.getAmtAcct(), postingSign);
+		docLine.setProductId(glJournalLineSide.getProductId());
+		docLine.setLocatorId(glJournalLineSide.getLocatorId());
+		docLine.setSalesOrderId(glJournalLineSide.getSalesOrderId());
+
+		return docLine;
 	}
 
 	private List<DocLine_GLJournal> createDocLines_Tax(final I_GL_JournalLine glJournalLine)
@@ -232,11 +236,6 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		return Quantity.of(glJournalLine.getQty(), uom);
 	}
 
-	/**************************************************************************
-	 * Get Source Currency Balance - subtracts line and tax amounts from total - no rounding
-	 *
-	 * @return positive amount, if total invoice is bigger than lines
-	 */
 	@Override
 	public BigDecimal getBalance()
 	{
@@ -280,7 +279,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			// account DR CR
 			for (final DocLine_GLJournal line : getDocLines())
 			{
-				if (line.getAcctSchemaId() != null && !Objects.equals(line.getAcctSchemaId(), as.getId()))
+				if (line.getAcctSchemaId() != null && !AcctSchemaId.equals(line.getAcctSchemaId(), as.getId()))
 				{
 					continue;
 				}
@@ -294,6 +293,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 						.setAccount(line.getAccount())
 						.setAmtSource(line.getCurrencyId(), line.getAmtSourceDr(), line.getAmtSourceCr())
 						.setCurrencyConversionCtx(currencyConversionCtx)
+						.locatorId(line.getLocatorId())
 						.buildAndAdd();
 			}    // for all lines
 		}

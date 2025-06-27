@@ -140,6 +140,9 @@ public final class PickingJob
 	@JsonIgnore
 	public boolean isAllowPickingAnyHU() {return header.isAllowPickingAnyHU();}
 
+	@JsonIgnore
+	public boolean isAnonymousPickHUsOnTheFly() {return header.isAnonymousPickHUsOnTheFly();}
+
 	public UserId getLockedBy() {return header.getLockedBy();}
 
 	public PickingJob withLockedBy(@Nullable final UserId lockedBy)
@@ -167,6 +170,11 @@ public final class PickingJob
 
 	@NonNull
 	public PickingSlotIdAndCaption getPickingSlotNotNull() {return currentPickingTarget.getPickingSlotNotNull();}
+
+	public Optional<PickingSlotId> getPickingSlotIdEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getPickingSlotId);
+	}
 
 	public boolean isProcessed()
 	{

@@ -1,5 +1,6 @@
 package de.metas.manufacturing.job.service.commands;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPIItemProductBL;
@@ -15,6 +16,7 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
@@ -38,6 +40,7 @@ import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -50,7 +53,8 @@ import java.util.Optional;
 
 public class ReceiveGoodsCommand
 {
-	private static final AdMessageKey ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED");
+	private static final AdMessageKey MSG_ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED");
+	private static final AdMessageKey MSG_MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED");
 
 	//
 	// Services
@@ -76,7 +80,7 @@ public class ReceiveGoodsCommand
 	// State
 	private I_PP_Order _ppOrder; // lazy
 	private I_PP_Order_BOMLine _coProductLine;
-	private final List<I_M_HU> receivedHUs = new ArrayList<>();
+	private final ArrayList<I_M_HU> receivedHUs = new ArrayList<>();
 
 	@Builder
 	private ReceiveGoodsCommand(
@@ -149,7 +153,7 @@ public class ReceiveGoodsCommand
 			if (HUQRCodeUnitType.TU.equals(huUnitType))
 			{
 				final I_M_HU tu = createHUProducer().receiveSingleTU(getQtyToReceive(null),
-																	 packingInfo.getPackingInstructionsId());
+						packingInfo.getPackingInstructionsId());
 				collectReceivedHU(tu);
 				final HuId tuId = HuId.ofRepoId(tu.getM_HU_ID());
 
@@ -172,9 +176,13 @@ public class ReceiveGoodsCommand
 			{
 				return receiveToExistingLU(existingHU, qrCodeTarget.getTuPIItemProductId());
 			}
+			else if (handlingUnitsBL.isTransportUnit(existingHU))
+			{
+				return receiveToExistingTU(existingHU);
+			}
 			else
 			{
-				throw new AdempiereException(ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED);
+				throw new AdempiereException(MSG_ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED);
 			}
 		}
 	}
@@ -197,6 +205,8 @@ public class ReceiveGoodsCommand
 			@NonNull final I_M_HU existingLU,
 			@Nullable final HUPIItemProductId suggestedTUPIItemProductId)
 	{
+		assertMixingDifferentProductsAllowed(existingLU);
+
 		HUPIItemProductId tuPIItemProductId = suggestedTUPIItemProductId;
 		if (tuPIItemProductId == null)
 		{
@@ -214,6 +224,28 @@ public class ReceiveGoodsCommand
 				.luId(luId)
 				.tuPIItemProductId(tuPIItemProductId)
 				.build();
+	}
+
+	private ReceivingTarget receiveToExistingTU(@NonNull final I_M_HU existingTU)
+	{
+		assertMixingDifferentProductsAllowed(existingTU);
+
+		final I_M_HU vhu = createHUProducer().receiveVHU(getQtyToReceive(null));
+		collectReceivedHU(vhu);
+		HUTransformService.newInstance().cusToExistingTU(ImmutableList.of(vhu), existingTU);
+		return ReceivingTarget.builder().tuId(HuId.ofRepoId(existingTU.getM_HU_ID())).build();
+	}
+
+	private void assertMixingDifferentProductsAllowed(@NotNull final I_M_HU targetHU)
+	{
+		if (isCoProduct())
+		{
+			final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(targetHU);
+			if (!huStorage.isEmptyOrSingleProductStorageMatching(getProductId()))
+			{
+				throw new AdempiereException(MSG_MIXING_DIFFERENT_PRODUCTS_NOT_ALLOWED);
+			}
+		}
 	}
 
 	private I_PP_Order getPPOrder()
@@ -402,9 +434,9 @@ public class ReceiveGoodsCommand
 		}
 
 		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL,
-																					handlingUnitsBL.createMutableHUContextForProcessing(),
-																					getProductId(),
-																					catchWeight);
+				handlingUnitsBL.createMutableHUContextForProcessing(),
+				getProductId(),
+				catchWeight);
 
 		weightUpdater.updatePackToHUs(receivedHUs);
 	}
@@ -435,5 +467,10 @@ public class ReceiveGoodsCommand
 		}
 
 		return loadingAndSavingSupportServices.getQuantities(getPPOrder()).getQtyReceived();
+	}
+
+	private boolean isCoProduct()
+	{
+		return getCOProductLine() != null;
 	}
 }

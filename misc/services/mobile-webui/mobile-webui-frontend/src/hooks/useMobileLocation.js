@@ -3,7 +3,7 @@ import { useRouteMatch } from 'react-router-dom';
 export const useMobileLocation = () => {
   const {
     url,
-    params: { applicationId, wfProcessId, workflowId, activityId, lineId, stepId, altStepId, ...otherParams },
+    params: { applicationId, wfProcessId, workflowId, activityId, lineId, stepId, altStepId, id, ...otherParams },
   } = useRouteMatch();
 
   return {
@@ -15,5 +15,6 @@ export const useMobileLocation = () => {
     lineId,
     stepId,
     altStepId,
+    id,
   };
 };

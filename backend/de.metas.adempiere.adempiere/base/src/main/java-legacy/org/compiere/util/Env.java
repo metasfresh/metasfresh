@@ -1250,6 +1250,12 @@ public final class Env
 		return ClientAndOrgId.ofClientAndOrg(Env.getClientId(ctx), Env.getOrgId(ctx));
 	}
 
+	public static void setClientAndOrgId(@NonNull final Properties ctx, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		setClientId(ctx, clientAndOrgId.getClientId());
+		setOrgId(ctx, clientAndOrgId.getOrgId());
+	}
+
 	/**
 	 * Get Login AD_User_ID
 	 *

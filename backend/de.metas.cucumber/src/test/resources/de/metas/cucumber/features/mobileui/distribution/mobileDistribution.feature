@@ -101,7 +101,7 @@ Feature: mobileUI Distribution
 
     # NOTE: atm closing the distribution job throws exception because the printer is not configured
 #    And Complete current distribution job
-#    And after not more than 0s, following DD_Orders are found
+#    And after not more than 60s, following DD_Orders are found
 #      | Identifier | DocStatus |
 #      | ddo        | CL        |
 

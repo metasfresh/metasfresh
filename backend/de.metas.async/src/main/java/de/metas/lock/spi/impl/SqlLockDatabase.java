@@ -26,6 +26,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBUniqueConstraintException;
@@ -275,10 +276,16 @@ public class SqlLockDatabase extends AbstractLockDatabase
 			@NonNull final AdTableId adTableId,
 			@NonNull final ISqlQueryFilter filter)
 	{
+		final String tableName = TableIdsCache.instance.getTableName(adTableId);
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+
+		final String sqlWhere = I_T_Lock.COLUMNNAME_Record_ID + " IN (SELECT " + keyColumnName + " FROM " + tableName + " WHERE " + filter.getSql() + ")";
+		final List<Object> sqlWhereParams = filter.getSqlParams(null);
+
 		return retrieveExistingLocksForWhereClause(
 				adTableId,
-				filter.getSql(),
-				filter.getSqlParams(null));
+				sqlWhere,
+				sqlWhereParams);
 	}
 
 	private ImmutableList<ExistingLockInfo> retrieveExistingLocksForSelection(
@@ -635,7 +642,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final boolean autoCleanup = DisplayType.toBoolean(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup));
+				final boolean autoCleanup = DisplayType.toBooleanNonNull(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup), false);
 				final int countLocked = rs.getInt("CountLocked");
 				final ILock lock = newLock(lockOwner, autoCleanup, countLocked);
 

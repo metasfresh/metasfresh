@@ -106,7 +106,7 @@ import java.util.Set;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType" })
 public final class ProcessInfo implements Serializable
 {
-	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
+	private static final Logger logger = LogManager.getLogger(ProcessInfo.class);
 
 	private static final AdMessageKey MSG_NO_TABLE_RECORD_REFERENCE_FOUND = AdMessageKey.of("de.metas.process.NoTableRecordReferenceFound");
 
@@ -120,7 +120,8 @@ public final class ProcessInfo implements Serializable
 			@NonNull final ProcessInfoBuilder builder)
 	{
 		this.ctx = ctx;
-
+		this.processCalledFrom = builder.getProcessCalledFrom();
+				
 		adProcessId = builder.getAD_Process_ID();
 		pinstanceId = builder.getPInstanceId();
 
@@ -183,11 +184,13 @@ public final class ProcessInfo implements Serializable
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
+	@NonNull
+	@Getter
+	private final ProcessCalledFrom processCalledFrom;
+	
 	private Properties ctx;
 
-	/**
-	 * Title of the Process/Report
-	 */
+	/** Title of the Process/Report */
 	@Getter
 	private final String title;
 	@Getter
@@ -204,10 +207,10 @@ public final class ProcessInfo implements Serializable
 	private final Set<TableRecordReference> selectedIncludedRecords;
 
 	private final String whereClause;
-	private final ClientId clientId;
+	@Getter private final ClientId clientId;
 	private final OrgId orgId;
-	private final UserId userId;
-	private final RoleId roleId;
+	@Getter private final UserId userId;
+	@Getter private final RoleId roleId;
 	@Getter
 	private final AdWindowId adWindowId;
 
@@ -340,6 +343,7 @@ public final class ProcessInfo implements Serializable
 		result.setPInstanceId(pinstanceId);
 	}
 
+	@Nullable
 	public String getClassName()
 	{
 		return className.orElse(null);
@@ -349,7 +353,7 @@ public final class ProcessInfo implements Serializable
 	public JavaProcess newProcessClassInstance()
 	{
 		final String classname = getClassName();
-		if (Check.isEmpty(classname, true))
+		if (Check.isBlank(classname))
 		{
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
@@ -544,29 +548,14 @@ public final class ProcessInfo implements Serializable
 		return Optional.of(record);
 	}
 
-	public ClientId getClientId()
-	{
-		return clientId;
-	}
-
 	public int getAD_Client_ID()
 	{
 		return getClientId().getRepoId();
 	}
 
-	public UserId getUserId()
-	{
-		return userId;
-	}
-
 	public int getAD_User_ID()
 	{
 		return UserId.toRepoId(getUserId());
-	}
-
-	public RoleId getRoleId()
-	{
-		return roleId;
 	}
 
 	public int getAD_Window_ID()
@@ -796,11 +785,15 @@ public final class ProcessInfo implements Serializable
 		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
 		private static final String SYSCONFIG_UseLoginLanguageForDraftDocuments = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
 
-		private PInstanceId pInstanceId;
+		@NonNull
+		@Getter
+		private ProcessCalledFrom processCalledFrom = ProcessCalledFrom.Unknown;
+		
+		@Nullable private PInstanceId pInstanceId;
 		private transient I_AD_PInstance _adPInstance;
 		private AdProcessId adProcessId;
 		private transient I_AD_Process _adProcess;
-		private ClientId _adClientId;
+		@Nullable private ClientId _adClientId;
 		private UserId _adUserId;
 		private RoleId _adRoleId;
 		private AdWindowId _adWindowId = null;
@@ -1092,6 +1085,13 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		public ProcessInfoBuilder setProcessCalledFrom(@NonNull final ProcessCalledFrom processCalledFrom)
+		{
+			this.processCalledFrom = processCalledFrom;
+			return this; 
+		}
+		
+		@Nullable
 		private I_AD_PInstance getAD_PInstanceOrNull()
 		{
 			final PInstanceId adPInstanceId = getPInstanceId();
@@ -1859,6 +1859,7 @@ public final class ProcessInfo implements Serializable
 			return Env.getLanguage(ctx);
 		}
 
+		@Nullable
 		private static Language extractLanguageFromWindowContext(final Properties ctx, final int windowNo)
 		{
 			if (!Env.isRegularWindowNo(windowNo))
@@ -1894,10 +1895,9 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
-		private static Language extractLanguageFromRecordRef(final Properties ctx, @Nullable final TableRecordReference recordRef)
+		@Nullable
+		private static Language extractLanguageFromRecordRef(@NonNull final Properties ctx, @Nullable final TableRecordReference recordRef)
 		{
-			Check.assumeNotNull(ctx, "Parameter ctx is not null");
-
 			if (recordRef == null)
 			{
 				return null;
@@ -1943,8 +1943,9 @@ public final class ProcessInfo implements Serializable
 		 * TODO: extract some sort of language-provider-SPI
 		 *
 		 * @return the login language if conditions fulfilled, null otherwise.
-		 * @implSpec task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
+		 * @implSpec task 09614_Support_de_DE_Language_in_Reports_%28101717274915%29
 		 */
+		@Nullable
 		private static Language extractLanguageFromDraftInOut(@NonNull final Properties ctx, @Nullable final TableRecordReference recordRef)
 		{
 			final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_UseLoginLanguageForDraftDocuments, true);

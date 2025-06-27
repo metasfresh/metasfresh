@@ -11,6 +11,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.impl.NotificationRepository;
+import de.metas.notification.impl.NotificationSeverity;
 import de.metas.process.MockedCustomizedWindowInfoMapRepository;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
@@ -91,6 +92,7 @@ public class NotificationRepositoryTest
 																									   .recordDisplayText("targetRecordDisplayText")
 																									   .adWindowId(AdWindowId.optionalOfRepoId(444))
 																									   .build())
+																				 .severity(NotificationSeverity.Warning)
 																				 .build());
 
 		final List<UserNotification> userNotifications = notificationRepo.getByUserId(UserId.ofRepoId(123), QueryLimit.NO_LIMIT);

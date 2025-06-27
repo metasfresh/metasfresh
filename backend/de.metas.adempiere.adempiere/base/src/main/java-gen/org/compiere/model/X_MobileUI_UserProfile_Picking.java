@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1338941339L;
+	private static final long serialVersionUID = -160958225L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -78,7 +78,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isAllowCompletingPartialPickingJob()
+	public boolean isAllowCompletingPartialPickingJob() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowCompletingPartialPickingJob);
 	}
@@ -132,6 +132,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsAnonymousHuPickedOnTheFly (final boolean IsAnonymousHuPickedOnTheFly)
+	{
+		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
+	public boolean isAnonymousHuPickedOnTheFly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
 	public void setIsCatchWeightTUPickingEnabled (final boolean IsCatchWeightTUPickingEnabled)
 	{
 		set_Value (COLUMNNAME_IsCatchWeightTUPickingEnabled, IsCatchWeightTUPickingEnabled);
@@ -162,7 +174,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isFilterByBarcode()
+	public boolean isFilterByBarcode() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFilterByBarcode);
 	}
@@ -177,6 +189,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isPickingWithNewLU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
+	}
+
+	@Override
+	public void setIsShipOnCloseLU (final boolean IsShipOnCloseLU)
+	{
+		set_Value (COLUMNNAME_IsShipOnCloseLU, IsShipOnCloseLU);
+	}
+
+	@Override
+	public boolean isShipOnCloseLU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipOnCloseLU);
 	}
 
 	@Override
@@ -239,6 +263,8 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public static final String PICKINGJOBAGGREGATIONTYPE_Sales_order = "sales_order";
 	/** product = product */
 	public static final String PICKINGJOBAGGREGATIONTYPE_Product = "product";
+	/** delivery_location = delivery_location */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Delivery_location = "delivery_location";
 	@Override
 	public void setPickingJobAggregationType (final java.lang.String PickingJobAggregationType)
 	{

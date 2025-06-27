@@ -167,7 +167,7 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
     return false;
   } else {
     const errorMsg = result?.error ? result.error : trl('error.qrCode.invalid');
-    console.debug(`parseQRCodeString: ${errorMsg}`, { string, allResults });
+    console.trace(`parseQRCodeString: ${errorMsg}`, { string, allResults });
     throw errorMsg;
   }
 };

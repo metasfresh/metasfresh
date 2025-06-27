@@ -43,6 +43,7 @@ import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -225,7 +226,11 @@ public class PickingJobQuery
 
 		private boolean isCustomerMatching(final BPartnerId customerId) {return customerIds.isEmpty() || customerIds.contains(customerId);}
 
-		private boolean isDeliveryDateMatching(final PickingJobReference pickingJobReference) {return isDeliveryDateMatching(pickingJobReference.getDeliveryDate().toLocalDate());}
+		private boolean isDeliveryDateMatching(final PickingJobReference pickingJobReference)
+		{
+			final ZonedDateTime deliveryDate = pickingJobReference.getDeliveryDate();
+			return deliveryDate != null && isDeliveryDateMatching(deliveryDate.toLocalDate());
+		}
 
 		private boolean isDeliveryDateMatching(final LocalDate deliveryDay) {return deliveryDays.isEmpty() || deliveryDays.contains(deliveryDay);}
 

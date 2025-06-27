@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implements I_M_ShipmentSchedule_QtyPicked, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 5054528L;
+	private static final long serialVersionUID = 2033499692L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_QtyPicked (final Properties ctx, final int M_ShipmentSchedule_QtyPicked_ID, @Nullable final String trxName)
@@ -102,6 +102,21 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setM_LU_HU_ID (final int M_LU_HU_ID)
+	{
+		if (M_LU_HU_ID < 1) 
+			set_Value (COLUMNNAME_M_LU_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_LU_HU_ID, M_LU_HU_ID);
+	}
+
+	@Override
+	public int getM_LU_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_LU_HU_ID);
+	}
+
+	@Override
 	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
@@ -144,6 +159,21 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setM_TU_HU_ID (final int M_TU_HU_ID)
+	{
+		if (M_TU_HU_ID < 1) 
+			set_Value (COLUMNNAME_M_TU_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_TU_HU_ID, M_TU_HU_ID);
+	}
+
+	@Override
+	public int getM_TU_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_TU_HU_ID);
+	}
+
+	@Override
 	public void setProcessed (final boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Processed);
@@ -169,6 +199,19 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setQtyLU (final @Nullable BigDecimal QtyLU)
+	{
+		set_Value (COLUMNNAME_QtyLU, QtyLU);
+	}
+
+	@Override
+	public BigDecimal getQtyLU() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyLU);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyPicked (final BigDecimal QtyPicked)
 	{
 		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
@@ -179,5 +222,33 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPicked);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyTU (final @Nullable BigDecimal QtyTU)
+	{
+		set_Value (COLUMNNAME_QtyTU, QtyTU);
+	}
+
+	@Override
+	public BigDecimal getQtyTU() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setVHU_ID (final int VHU_ID)
+	{
+		if (VHU_ID < 1) 
+			set_Value (COLUMNNAME_VHU_ID, null);
+		else 
+			set_Value (COLUMNNAME_VHU_ID, VHU_ID);
+	}
+
+	@Override
+	public int getVHU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_VHU_ID);
 	}
 }

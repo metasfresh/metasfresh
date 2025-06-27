@@ -1,6 +1,8 @@
 import { test } from "../../../playwright.config";
 import { FRONTEND_BASE_URL, page } from "../common";
 
+let lastMasterdata = null;
+
 export const Backend = {
     createMasterdata: async ({
                                  authToken,
@@ -20,35 +22,28 @@ export const Backend = {
         });
 
         const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+
         console.log(`Created master data (${language}):\n` + JSON.stringify(responseBody, null, 2));
 
-        if (responseBody.errors || responseBody.stackTrace) {
-            throw Error("Got error while creating master data:\n" + JSON.stringify(responseBody, null, 2));
-        }
+        lastMasterdata = responseBody;
 
         return responseBody;
     }),
 
-    getFreePickingSlot: async ({ bpartnerCode } = {}) => await test.step(`Backend: get free picking slot`, async () => {
+    expect: async (expectations) => await test.step(`Backend: expect`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
-        const request = { bpartnerCode };
-        console.log(`Sending request":\n` + JSON.stringify(request, null, 2));
-        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/getFreePickingSlot`, {
-            data: request,
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/expect`, {
+            data: {
+                ...expectations,
+                masterdata: lastMasterdata
+            },
             headers: {
                 'Content-Type': 'application/json',
             }
         });
         const responseBody = await response.json();
-        console.log(`Got response:\n` + JSON.stringify(responseBody, null, 2));
-
-        if (responseBody.error || responseBody.errors || responseBody.stackTrace) {
-            throw "Got error on last backend call";
-        }
-
-        const { qrCode: pickingSlotQRCode } = responseBody;
-        console.log(`Found free picking slot: ${pickingSlotQRCode}`);
-        return { pickingSlotQRCode };
+        assertNoErrors({ responseBody });
     }),
 }
 
@@ -84,3 +79,12 @@ export const loadConfigFromFrontendApp = async () => await test.step(`Fetching f
 
     return serverUrl + '/api/v2';
 });
+
+const assertNoErrors = ({ responseBody }) => {
+    if (responseBody.error
+        || responseBody.errors
+        || responseBody.stackTrace
+        || responseBody.failure) {
+        throw Error("Got error on last backend call:\n" + JSON.stringify(responseBody, null, 2));
+    }
+};

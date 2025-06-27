@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.picking.api.IPickingSlotBL;
@@ -34,11 +35,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class PickingSlotDAO implements IPickingSlotDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final CCache<Integer, ImmutableSet<PickingSlotId>> rackSystemPickingSlotIdsCache = CCache.<Integer, ImmutableSet<PickingSlotId>>builder()
+			.tableName(I_M_PickingSlot.Table_Name)
+			.build();
+
 	@Override
 	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)
 	{
 		final I_M_PickingSlot record = getById(pickingSlotId);
 		return toPickingSlotIdAndCaption(record);
+	}
+
+	@Override
+	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final Set<PickingSlotId> pickingSlotIds)
+	{
+		return getByIds(pickingSlotIds, I_M_PickingSlot.class)
+				.stream()
+				.map(PickingSlotDAO::toPickingSlotIdAndCaption)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -74,10 +90,16 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	}
 
 	@Override
+	public <T extends I_M_PickingSlot> List<T> getByIds(@NonNull Set<PickingSlotId> pickingSlotIds, @NonNull Class<T> modelType)
+	{
+		return InterfaceWrapperHelper.loadByRepoIdAwares(pickingSlotIds, modelType);
+	}
+
+	@Override
 	@Cached(cacheName = I_M_PickingSlot.Table_Name)
 	public List<I_M_PickingSlot> retrievePickingSlots(final @CacheCtx Properties ctx, final @CacheTrx @Nullable String trxName)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_PickingSlot.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -179,5 +201,26 @@ public class PickingSlotDAO implements IPickingSlotDAO
 		InterfaceWrapperHelper.save(record);
 
 		return toPickingSlotIdAndCaption(record);
+	}
+
+	@Override
+	public boolean isPickingRackSystem(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return retrieveAllPickingSlotIdsWhichAreRackSystems().contains(pickingSlotId);
+	}
+
+	@Override
+	public ImmutableSet<PickingSlotId> getAllPickingSlotIdsWhichAreRackSystems()
+	{
+		return rackSystemPickingSlotIdsCache.getOrLoad(0, this::retrieveAllPickingSlotIdsWhichAreRackSystems);
+	}
+
+	private ImmutableSet<PickingSlotId> retrieveAllPickingSlotIdsWhichAreRackSystems()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_M_PickingSlot.class)
+				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(PickingSlotId::ofRepoId);
 	}
 }

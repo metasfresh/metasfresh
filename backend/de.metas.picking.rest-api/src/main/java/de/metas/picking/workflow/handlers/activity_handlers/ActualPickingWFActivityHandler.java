@@ -163,6 +163,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 				.pickWithNewLU(pickingJobOptions.isPickWithNewLU())
 				.allowNewTU(pickingJobOptions.isAllowNewTU())
 				.showPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
+				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
 				.build();
 	}
 
@@ -225,9 +226,9 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 				.orElse("");
 
 		return Optional.of(WFProcessHeaderProperty.builder()
-								   .caption(msgBL.getTranslatableMsgText(LAST_PICKED_HU_BEST_BEFORE_DATE))
-								   .value(lastPickedHUBestBeforeDate)
-								   .build());
+				.caption(msgBL.getTranslatableMsgText(LAST_PICKED_HU_BEST_BEFORE_DATE))
+				.value(lastPickedHUBestBeforeDate)
+				.build());
 	}
 
 	private void cacheLastPickedHUsForEachLineIfNeeded(

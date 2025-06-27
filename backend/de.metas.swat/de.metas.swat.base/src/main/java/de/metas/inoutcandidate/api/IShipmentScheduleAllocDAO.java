@@ -37,40 +37,42 @@ import org.compiere.model.I_M_InOutLine;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IShipmentScheduleAllocDAO extends ISingletonService
 {
 	/**
-	 * Retrieves not-delivered QtyPicked records for given <code>shipmentSchedule</code>.<br>
+	 * Retrieves not-delivered QtyPicked records for given shipment schedules.<br>
 	 * Records are ordered by ID. Only active records are returned.
 	 * <br>
 	 * Important: also return records which reference destroyed HUs, since this BL doesn't know or care about HUs.
 	 *
-	 * @param shipmentSchedule
-	 * @param clazz
 	 * @return QtyPicked records
-	 * @see #retrieveNotOnShipmentLineRecords(I_M_ShipmentSchedule, String)
 	 */
-	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(I_M_ShipmentSchedule shipmentSchedule, Class<T> clazz);
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(ShipmentScheduleId shipmentScheduleId, Class<T> clazz);
 
 	/**
-	 * Return a query builder for those {@link I_M_ShipmentSchedule_QtyPicked} records that reference the given shipmentSchedule and that do also reference an
+	 * Return a query builder for those {@link I_M_ShipmentSchedule_QtyPicked} records that reference the given shipment schedule and that do also reference an
 	 * {@link I_M_InOutLine}.
 	 * <p>
 	 * Records are ordered by ID. Only active records are returned.
 	 *
-	 * @param shipmentSchedule
 	 * @return QtyPicked records
 	 */
-	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsQuery(I_M_ShipmentSchedule shipmentSchedule);
+	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsQuery(ShipmentScheduleId shipmentScheduleId);
+
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(
+			@NonNull Set<ShipmentScheduleId> shipmentScheduleIds,
+			@NonNull Class<T> clazz);
+
+	Stream<I_M_ShipmentSchedule_QtyPicked> stream(@NonNull ShipmentScheduleAllocQuery query);
 
 	/**
-	 * Retrieves Picked (but not delivered) Qty for given <code>shipmentSchedule</code>.
+	 * Retrieves Picked (but not delivered) Qty for a given shipment schedule.
 	 *
-	 * @param shipmentSchedule
 	 * @return QtyPicked value; never return null
 	 */
-	BigDecimal retrieveNotOnShipmentLineQty(I_M_ShipmentSchedule shipmentSchedule);
+	BigDecimal retrieveNotOnShipmentLineQty(ShipmentScheduleId shipmentScheduleId);
 
 	/**
 	 * Retrieve all Picked records (delivered or not, active or not)
@@ -84,7 +86,6 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	/**
 	 * Retrieve all the schedules of the given InOut, based on the M_ShipmentSchedule_QtyPicked entries
 	 *
-	 * @param inout
 	 * @return the schedules if found, null otherwise.
 	 */
 	List<I_M_ShipmentSchedule> retrieveSchedulesForInOut(org.compiere.model.I_M_InOut inout);

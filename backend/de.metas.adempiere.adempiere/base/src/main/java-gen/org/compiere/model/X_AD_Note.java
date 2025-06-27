@@ -658,4 +658,27 @@ public class X_AD_Note extends org.compiere.model.PO implements I_AD_Note, org.c
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_WhereClause);
 	}
+
+	/**
+	 * NotificationSeverity AD_Reference_ID=541947
+	 * Reference name: NotificationSeverity
+	 */
+	public static final int NOTIFICATIONSEVERITY_AD_Reference_ID=541947;
+	/** Notice = Notice */
+	public static final String NOTIFICATIONSEVERITY_Notice = "Notice";
+	/** Warning = Warning */
+	public static final String NOTIFICATIONSEVERITY_Warning = "Warning";
+	/** Error = Error */
+	public static final String NOTIFICATIONSEVERITY_Error = "Error";
+	@Override
+	public void setNotificationSeverity (final java.lang.String NotificationSeverity)
+	{
+		set_Value (COLUMNNAME_NotificationSeverity, NotificationSeverity);
+	}
+
+	@Override
+	public java.lang.String getNotificationSeverity()
+	{
+		return get_ValueAsString(COLUMNNAME_NotificationSeverity);
+	}
 }

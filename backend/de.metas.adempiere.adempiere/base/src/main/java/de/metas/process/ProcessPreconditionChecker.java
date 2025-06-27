@@ -10,6 +10,7 @@ import org.compiere.util.Ini;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 /*
@@ -211,6 +212,7 @@ public class ProcessPreconditionChecker
 		return this;
 	}
 
+	@Nullable
 	private Class<?> loadClass(final String classname, final boolean isServerProcess)
 	{
 		if (classname == null)

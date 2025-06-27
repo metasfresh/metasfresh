@@ -81,9 +81,10 @@ public class MobileConfigCommand
 			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
 		}
 
-		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
+		MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
 		mobilePickingConfigRepository.save(newProfile);
 
+		newProfile = mobilePickingConfigRepository.getProfile(); // reload to make sure we are returning exactly what's in DB
 		return toJson(newProfile);
 	}
 
@@ -96,9 +97,11 @@ public class MobileConfigCommand
 				.createShipmentPolicy(profile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
+				.shipOnCloseLU(profile.getDefaultPickingJobOptions().isShipOnCloseLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
 				.filterByQRCode(profile.isFilterByBarcode())
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
+				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
 				.build();
 	}
 
@@ -125,6 +128,7 @@ public class MobileConfigCommand
 		{
 			builder.isPickWithNewLU(from.getPickWithNewLU());
 		}
+		builder.isShipOnCloseLU(from.getShipOnCloseLU() != null ? from.getShipOnCloseLU() : false);
 		if (from.getAllowNewTU() != null)
 		{
 			builder.isAllowNewTU(from.getAllowNewTU());
@@ -140,6 +144,10 @@ public class MobileConfigCommand
 		if (from.getShowLastPickedBestBeforeDateForLines() != null)
 		{
 			builder.isShowLastPickedBestBeforeDateForLines(from.getShowLastPickedBestBeforeDateForLines());
+		}
+		if (from.getAnonymousPickHUsOnTheFly() != null)
+		{
+			builder.isAnonymousPickHUsOnTheFly(from.getAnonymousPickHUsOnTheFly());
 		}
 
 		return builder.build();

@@ -140,7 +140,7 @@ class DDOrderCandidateProcessCommand
 		aggregates.values().forEach(this::createDDOrder);
 	}
 
-	private void addToAggregates(DDOrderCandidate ddOrderCandidate)
+	private void addToAggregates(final DDOrderCandidate ddOrderCandidate)
 	{
 		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate);
 
@@ -454,7 +454,7 @@ class DDOrderCandidateProcessCommand
 					.productId(candidate.getProductId())
 					.hupiItemProductId(candidate.getHupiItemProductId())
 					.attributeSetInstanceId(candidate.getAttributeSetInstanceId())
-					.uomId(candidate.getQty().getUomId())
+					.uomId(candidate.getQtyEntered().getUomId())
 					.distributionNetworkAndLineId(candidate.getDistributionNetworkAndLineId())
 					.salesOrderLineId(candidate.getSalesOrderLineId())
 					.isAllowPush(candidate.isAllowPush())

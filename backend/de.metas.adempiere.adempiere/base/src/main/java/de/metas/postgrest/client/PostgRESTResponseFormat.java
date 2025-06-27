@@ -27,29 +27,30 @@ import com.google.common.collect.Maps;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_Process;
 
 import java.util.Arrays;
 
+@RequiredArgsConstructor
 public enum PostgRESTResponseFormat implements ReferenceListAwareEnum
 {
-	CSV(X_AD_Process.POSTGRESTRESPONSEFORMAT_Csv, "text/csv"),
-	JSON(X_AD_Process.POSTGRESTRESPONSEFORMAT_Json, "application/json");
+	CSV(X_AD_Process.POSTGRESTRESPONSEFORMAT_Csv, "text/csv", ".csv"),
+	JSON(X_AD_Process.POSTGRESTRESPONSEFORMAT_Json, "application/json", ".json"),
+	;
 
+	@NonNull
 	@Getter
 	private final String code;
 
+	@NonNull
 	@Getter
 	private final String contentType;
 
-	PostgRESTResponseFormat(
-			@NonNull final String code,
-			@NonNull final String contentType)
-	{
-		this.code = code;
-		this.contentType = contentType;
-	}
+	@NonNull
+	@Getter
+	private final String filenameExtension;
 
 	public static PostgRESTResponseFormat ofCode(@NonNull final String code)
 	{

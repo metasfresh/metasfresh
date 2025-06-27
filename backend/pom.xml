@@ -196,6 +196,7 @@
         <module>de.metas.servicerepair.webui</module>
 
         <module>de.metas.picking.rest-api</module>
+        <module>de.metas.hu_consolidation.mobile</module>
         <module>de.metas.distribution.rest-api</module>
 
         <module>de.metas.pos.base</module>
@@ -208,6 +209,7 @@
         <!-- <module>extensionsupport</module> -->
 
         <module>de.metas.frontend-testing</module>
+        <module>de.metas.qualitymgmt</module>
     </modules>
 
     <dependencyManagement>

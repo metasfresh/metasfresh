@@ -137,6 +137,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.qualitymgmt</groupId>
+            <artifactId>de.metas.qualitymgmt</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
             <groupId>de.metas.business</groupId>
             <artifactId>de.metas.business.rest-api-impl</artifactId>
             <version>${metasfresh.version}</version>
@@ -540,6 +548,15 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.hu_consolidation</groupId>
+            <artifactId>de.metas.hu_consolidation.mobile</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
 
 
         <!-- Elasticsearch -->

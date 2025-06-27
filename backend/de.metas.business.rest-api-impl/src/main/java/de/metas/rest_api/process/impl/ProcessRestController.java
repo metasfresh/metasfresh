@@ -28,6 +28,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessBasicInfo;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessType;
@@ -79,7 +80,7 @@ import java.util.stream.Collectors;
 @Profile(Profiles.PROFILE_App)
 public class ProcessRestController
 {
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
@@ -111,8 +112,9 @@ public class ProcessRestController
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
-		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
-		processInfoBuilder.setAD_Process_ID(processId.get());
+		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
+				.setAD_Process_ID(processId.get())
+				.setProcessCalledFrom(ProcessCalledFrom.API);
 
 		final boolean parametersPresent = request != null && !Check.isEmpty(request.getProcessParameters());
 
@@ -135,7 +137,7 @@ public class ProcessRestController
 		final List<ProcessBasicInfo> processList = processService.getProcessesByType(ProcessType.getTypesRunnableFromAppRestController());
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Retrieved {} process-info items", processList.size());
-				
+
 		final List<JSONProcessBasicInfo> jsonProcessList = processList
 				.stream()
 				.map(this::buildJSONProcessBasicInfo)
@@ -156,16 +158,16 @@ public class ProcessRestController
 	{
 		if (processExecutionResult.isError())
 		{
-			throw AdempiereException.wrapIfNeeded(processExecutionResult.getThrowable());
+			if(processExecutionResult.getThrowable() != null)
+			{
+				throw AdempiereException.wrapIfNeeded(processExecutionResult.getThrowable());
+			}
+			else
+			{
+				throw new AdempiereException(processExecutionResult.getSummary());
+			}
 		}
-		else if (Check.isNotBlank(processExecutionResult.getStringResult()))
-		{
-			return ResponseEntity
-					.ok()
-					.contentType(MediaType.valueOf(processExecutionResult.getStringResultContentType()))
-					.body(processExecutionResult.getStringResult());
-		}
-		else if (Check.isNotBlank(processExecutionResult.getReportFilename()))
+		else if (processExecutionResult.isReportDataResourceAvailable())
 		{
 			final String contentType = Check.isNotBlank(processExecutionResult.getReportContentType())
 					? processExecutionResult.getReportContentType()
@@ -174,7 +176,8 @@ public class ProcessRestController
 			return ResponseEntity.ok()
 					.contentType(MediaType.parseMediaType(contentType))
 					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
-					.body(processExecutionResult.getReportData());
+					.header(HttpHeaders.ACCEPT_RANGES, "none") // the download is not resumable
+					.body(processExecutionResult.getReportDataResource());
 		}
 		else
 		{

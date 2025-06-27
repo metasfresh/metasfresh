@@ -37,10 +37,12 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean pickWithNewLU;
+		@Nullable Boolean shipOnCloseLU;
 		@Nullable Boolean allowNewTU;
 		@Nullable Boolean allowSkippingRejectedReason;
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean showLastPickedBestBeforeDateForLines;
+		@Nullable Boolean anonymousPickHUsOnTheFly;
 
 		@Nullable List<Customer> customers;
 

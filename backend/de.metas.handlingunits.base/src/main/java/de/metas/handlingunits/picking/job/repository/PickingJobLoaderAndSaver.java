@@ -280,6 +280,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		@Nullable final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(record);
 		@Nullable final Timestamp preparationDate = record.getPreparationDate();
 		@Nullable final Timestamp deliveryDate = record.getDeliveryDate();
+		@NonNull final PickingJobOptions pickingJobOptions = getPickingJobOptions(deliveryBPLocationId);
 
 		return PickingJobHeader.builder()
 				.aggregationType(PickingJobAggregationType.ofCode(record.getPickingJobAggregationType()))
@@ -290,6 +291,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.deliveryBPLocationId(deliveryBPLocationId)
 				.deliveryRenderedAddress(record.getDeliveryToAddress())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
+				.isAnonymousPickHUsOnTheFly(pickingJobOptions.isAnonymousPickHUsOnTheFly())
 				.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
 				.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getHandOver_Partner_ID(), record.getHandOver_Location_ID()))
 				.build();
@@ -384,17 +386,32 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		switch (aggregationType)
 		{
 			case SALES_ORDER:
+			{
 				caption = productName;
 				break;
+			}
 			case PRODUCT:
+			{
 				caption = TranslatableStrings.builder()
 						.append(currentPickingTarget.getPickingSlotCaption().orElse(""))
 						.appendIfNotEmpty(", ")
 						.append(salesOrderDocumentNo)
 						.build();
 				break;
+			}
+			case DELIVERY_LOCATION:
+			{
+				caption = TranslatableStrings.builder()
+						.append(productName)
+						.appendIfNotEmpty(", ")
+						.append(salesOrderDocumentNo)
+						.build();
+				break;
+			}
 			default:
+			{
 				throw new AdempiereException("Unknown aggregation type: " + aggregationType);
+			}
 		}
 
 		return PickingJobLine.builder()
@@ -871,8 +888,13 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return packingInfo.isFiniteTU() ? PickingUnit.TU : PickingUnit.CU;
 	}
 
-	private PickingJobOptions getPickingJobOptions(@NonNull final BPartnerId customerId)
+	private PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId)
 	{
 		return loadingSupportingServices.getPickingJobOptions(customerId);
+	}
+
+	private PickingJobOptions getPickingJobOptions(@Nullable final BPartnerLocationId deliveryLocationId)
+	{
+		return loadingSupportingServices.getPickingJobOptions(deliveryLocationId != null ? deliveryLocationId.getBpartnerId() : null);
 	}
 }

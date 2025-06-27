@@ -1,7 +1,8 @@
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ExternalSystem_Config
  *  @author metasfresh (generated) 
@@ -57,7 +58,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAuditFileFolder (java.lang.String AuditFileFolder);
+	void setAuditFileFolder (String AuditFileFolder);
 
 	/**
 	 * Get Audit log folder.
@@ -66,7 +67,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getAuditFileFolder();
+	String getAuditFileFolder();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_AuditFileFolder = new ModelColumn<>(I_ExternalSystem_Config.class, "AuditFileFolder", null);
 	String COLUMNNAME_AuditFileFolder = "AuditFileFolder";
@@ -103,7 +104,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	void setDescription (@Nullable String Description);
 
 	/**
 	 * Get Description.
@@ -112,7 +113,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	@Nullable String getDescription();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Description = new ModelColumn<>(I_ExternalSystem_Config.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -168,7 +169,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	void setName (String Name);
 
 	/**
 	 * Get Name.
@@ -177,7 +178,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	String getName();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Config.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
@@ -190,7 +191,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setType (java.lang.String Type);
+	void setType (String Type);
 
 	/**
 	 * Get Type.
@@ -200,7 +201,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getType();
+	String getType();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Type = new ModelColumn<>(I_ExternalSystem_Config.class, "Type", null);
 	String COLUMNNAME_Type = "Type";

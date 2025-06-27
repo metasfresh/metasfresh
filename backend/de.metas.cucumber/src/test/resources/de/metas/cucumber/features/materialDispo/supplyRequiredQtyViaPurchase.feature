@@ -63,7 +63,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.Name             | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | endvendor_location_1   | 2311202200000 | endvendor_1              | EndVendor_01042022_1 | Y                   | Y                   |
       | endcustomer_location_1 | 2311202200001 | endcustomer_1            | EndVendor_01042022_1 | Y                   | Y                   |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
     And metasfresh contains M_Inventories:
@@ -211,7 +211,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.Name             | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | endvendor_location_1   | 2311202200002 | endvendor_1              | EndVendor_01042022_2 | Y                   | Y                   |
       | endcustomer_location_1 | 2311202200003 | endcustomer_1            | EndVendor_01042022_2 | Y                   | Y                   |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
     And metasfresh contains M_Inventories:
@@ -358,7 +358,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
       | endcustomer_1 | EndCustomer_01042022_3 | N            | Y              | ps_1                          |                                     |
       | endvendor_1   | EndVendor_01042022_3   | Y            | N              | ps_1                          | ds_1                                |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
     And metasfresh contains M_Inventories:

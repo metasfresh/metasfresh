@@ -34,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -58,7 +59,7 @@ public class PostgRESTClient
 		this.configRepository = configRepository;
 	}
 
-	public String performGet(@NonNull final GetRequest getRequest)
+	public Resource performGet(@NonNull final GetRequest getRequest)
 	{
 		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(getRequest.getBaseURL());
 		Loggables.withLogger(log, Level.DEBUG).addLog("*** performGet(): for request {}", getRequest);
@@ -77,7 +78,7 @@ public class PostgRESTClient
 
 		final URI uri = builder.build().encode().toUri();
 
-		final ResponseEntity<String> responseEntity = restTemplate().exchange(uri, HttpMethod.GET, request, String.class);
+		final ResponseEntity<Resource> responseEntity = restTemplate().exchange(uri, HttpMethod.GET, request, Resource.class);
 
 		final boolean responseWithErrors = !responseEntity.getStatusCode().is2xxSuccessful();
 

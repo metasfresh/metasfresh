@@ -51,6 +51,7 @@ export const NEXT_NextPickingLine = 'nextPickingLine';
 
 const PickLineScanScreen = () => {
   const { url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'PickLineScanScreen',
     back: pickingLineScreenLocation,
   });
 

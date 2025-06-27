@@ -82,7 +82,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		}
 	};
 
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandidateHandlerBL.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandidateHandlerBL.class);
 
 	@Override
 	public List<IInvoiceCandidateHandler> retrieveImplementationsForTable(final Properties ctx, final String tableName)

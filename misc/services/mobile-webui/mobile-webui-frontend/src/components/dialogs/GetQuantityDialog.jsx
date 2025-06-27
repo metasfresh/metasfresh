@@ -116,8 +116,9 @@ const GetQuantityDialog = ({
       try {
         const promise = onQtyChange(payload)?.catch?.((error) => toastErrorFromObj(error));
         doFinally(promise, () => setProcessing(false));
-      } finally {
+      } catch (error) {
         setProcessing(false);
+        throw error;
       }
     },
     [onQtyChange]
@@ -385,7 +386,7 @@ const GetQuantityDialog = ({
                         <div className="field">
                           <div className="control">
                             <DateInput
-                              id="bestBeforeDate"
+                              testId="bestBeforeDate"
                               type="date"
                               value={bestBeforeDate}
                               disabled={readOnly}
@@ -403,7 +404,7 @@ const GetQuantityDialog = ({
                         <div className="field">
                           <div className="control">
                             <input
-                              id="lotNo"
+                              data-testid="lotNo"
                               className="input"
                               type="text"
                               value={lotNo}

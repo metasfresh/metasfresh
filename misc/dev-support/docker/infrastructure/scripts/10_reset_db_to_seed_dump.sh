@@ -52,7 +52,7 @@ docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BR
 echo "The local database is now reset to the seed dump."
 echo "Now you can use this command:" 
 echo ""
-echo "docker-compose --file $COMPOSE_FILE --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure logs -f db"
+echo "./00_cmd.sh ${BRANCH_NAME} logs -f db"
 echo ""
 echo "..to see when the DB is actually up."
 echo "When the DB is up, apply the local migration scripts and then proceed with converting this DB into a template."

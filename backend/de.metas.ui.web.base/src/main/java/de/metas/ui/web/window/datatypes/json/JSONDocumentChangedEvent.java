@@ -157,6 +157,7 @@ public class JSONDocumentChangedEvent
 		return Optional.ofNullable(getValueAsBigDecimal(null));
 	}
 
+	@Nullable
 	private static BigDecimal toBigDecimal(@Nullable final Object value)
 	{
 		if (value == null)

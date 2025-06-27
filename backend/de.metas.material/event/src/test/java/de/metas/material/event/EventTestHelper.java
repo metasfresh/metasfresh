@@ -5,10 +5,8 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.event.Event;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -76,16 +74,6 @@ public class EventTestHelper
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 
 	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofString("1");
-
-	public static SupplyRequiredDescriptor createSupplyRequiredDescriptorWithProductId(final int productId)
-	{
-		return SupplyRequiredDescriptor.builder()
-				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID)
-				.demandCandidateId(41)
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
-				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
-				.build();
-	}
 
 	public static MaterialDescriptor newMaterialDescriptor()
 	{
