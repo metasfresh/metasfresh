@@ -104,8 +104,7 @@ import java.util.Properties;
 		final boolean ignorePartnerAndProduct = sysConfigBL.getBooleanValue(SYS_CONFIG_MaterialTracking_Query_IgnorePartnerAndProduct, false);
 		if(!ignorePartnerAndProduct)
 		{
-			Check.assume(productId > 0 || !Check.isEmpty(lot, true), "Either productId or lot has to be set, but is: productId={}, lot={}", productId, lot);
-
+			Check.assume(productId > 0 || Check.isNotBlank(lot), "Either productId or lot has to be set, but is: productId={}, lot={}", productId, lot);
 			//
 			// M_Product_ID
 			if (productId > 0)
