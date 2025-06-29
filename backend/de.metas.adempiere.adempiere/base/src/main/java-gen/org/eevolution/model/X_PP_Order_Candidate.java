@@ -193,14 +193,14 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	@Override
 	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
 	{
-		if (M_HU_PI_Item_Product_ID < 1) 
+		if (M_HU_PI_Item_Product_ID < 1)
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
 	}
 
 	@Override
-	public int getM_HU_PI_Item_Product_ID() 
+	public int getM_HU_PI_Item_Product_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
 	}
@@ -407,6 +407,19 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public BigDecimal getQtyProcessed() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyProcessed_OnDate (final @Nullable BigDecimal QtyProcessed_OnDate)
+	{
+		set_Value (COLUMNNAME_QtyProcessed_OnDate, QtyProcessed_OnDate);
+	}
+
+	@Override
+	public BigDecimal getQtyProcessed_OnDate()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

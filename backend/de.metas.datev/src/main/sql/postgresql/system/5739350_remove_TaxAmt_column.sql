@@ -60,6 +60,9 @@ DELETE FROM AD_Field WHERE AD_Field_ID=709968
 /* DDL */ SELECT public.db_alter_table('DATEV_ExportLine','ALTER TABLE DATEV_ExportLine DROP COLUMN IF EXISTS TaxAmt')
 ;
 
+
+DELETE FROM datev_exportformatcolumn where ad_column_id=585326;
+
 -- Column: DATEV_ExportLine.TaxAmt
 -- Column: DATEV_ExportLine.TaxAmt
 -- 2024-11-18T07:57:36.423Z
