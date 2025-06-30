@@ -23,6 +23,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -84,9 +85,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 	private static CalculateShippingDateRule extractShippingDateRule(@NonNull final IParams parameters)
 	{
-		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
-		final boolean isShipmentDateDeliveryDate = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateDeliveryDate);
-		final ShipmentDateRule shipmentDateRule = ShipmentDateRule.ofFlags(isShipmentDateToday, isShipmentDateDeliveryDate);
+		final ShipmentDateRule shipmentDateRule = Check.assumePresent(parameters.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_ShipmentDateRule, ShipmentDateRule.class), "PARAM_ShipmentDateRule should be set");
 
 		final LocalDate fixedShipmentDate = parameters.getParameterAsLocalDate(ShipmentScheduleWorkPackageParameters.PARAM_FixedShipmentDate);
 		return computeShippingDateRule(shipmentDateRule, fixedShipmentDate);

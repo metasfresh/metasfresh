@@ -281,8 +281,7 @@ public class ShipmentService implements IShipmentService
 				.quantityType(request.getQuantityTypeToUse())
 				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 				.completeShipments(request.getIsCompleteShipment())
-				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
-				.isShipmentDateDeliveryDate(Boolean.TRUE.equals(request.getIsShipDateDeliveryDay()))
+				.shipmentDateRule(ShipmentDateRule.ofFlags(Boolean.TRUE.equals(request.getIsShipDateToday()), Boolean.TRUE.equals(request.getIsShipDateDeliveryDay())))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
 				.build();
