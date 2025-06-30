@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.shipmentschedule.api;
 
+import de.metas.common.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -46,6 +47,14 @@ public enum ShipmentDateRule implements ReferenceListAwareEnum
 	public static ShipmentDateRule ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
+	}
+
+	public static ShipmentDateRule ofFlags(final boolean isShipDateToday, final boolean isShipDateDeliveryDate)
+	{
+		Check.assume(!(isShipDateToday && isShipDateDeliveryDate), "isShipDateToday and isShipDateDeliveryDate cannot both be true");
+		if(isShipDateToday) { return ShipmentDateRule.Today; }
+		else if (isShipDateDeliveryDate) { return ShipmentDateRule.DeliveryDate; }
+		else { return ShipmentDateRule.DeliveryDateOrToday; }
 	}
 
 	@Value
@@ -74,4 +83,7 @@ public enum ShipmentDateRule implements ReferenceListAwareEnum
 					.build();
 		};
 	}
+
+	public boolean isShipDateToday() { return getFlags().isShipDateToday(); }
+	public boolean isShipDateDeliveryDay() { return getFlags().isShipDateDeliveryDay(); }
 }

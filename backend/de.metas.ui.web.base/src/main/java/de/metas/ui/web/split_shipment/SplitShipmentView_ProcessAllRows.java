@@ -34,15 +34,14 @@ public class SplitShipmentView_ProcessAllRows extends SplitShipmentView_ProcessT
 	protected String doIt()
 	{
 		final SplitShipmentView view = getView();
-		final ShipmentDateRule.ShipmentDateRuleFlags shipmentDateRuleFlags = sysConfigBL.getReferenceListAware(SYS_CFG_ShipDateRule, ShipmentDateRule.DeliveryDate, ShipmentDateRule.class).getFlags();
+		final ShipmentDateRule shipmentDateRule = sysConfigBL.getReferenceListAware(SYS_CFG_ShipDateRule, ShipmentDateRule.DeliveryDate, ShipmentDateRule.class);
 		
 		shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
 				.scheduleIds(ImmutableSet.of(view.getShipmentScheduleId()))
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_SPLIT_SHIPMENT)
 				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(true)
-				.isShipDateToday(shipmentDateRuleFlags.isShipDateToday())
-				.isShipDateDeliveryDay(shipmentDateRuleFlags.isShipDateDeliveryDay())
+				.shipmentDateRule(shipmentDateRule)
 				.build());
 		
 		view.invalidateAll();

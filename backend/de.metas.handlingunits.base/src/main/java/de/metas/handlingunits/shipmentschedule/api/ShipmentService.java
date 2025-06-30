@@ -58,7 +58,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -156,8 +155,7 @@ public class ShipmentService implements IShipmentService
 							request.getQuantityTypeToUse(),
 							request.isOnTheFlyPickToPackingInstructions(),
 							request.getIsCompleteShipment(),
-							request.getIsShipDateToday(),
-							request.getIsShipDateDeliveryDay());
+							request.getShipmentDateRule());
 
 					generateShipments(generateShipmentsRequest);
 
@@ -301,8 +299,7 @@ public class ShipmentService implements IShipmentService
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			final boolean onTheFlyPickToPackingInstructions,
 			@NonNull final Boolean isCompleteShipment,
-			@Nullable final Boolean isShipDateToday,
-			@Nullable final Boolean isShipDateDeliveryDay)
+			@NonNull final ShipmentDateRule shipmentDateRule)
 	{
 		return GenerateShipmentsRequest.builder()
 				.asyncBatchId(asyncBatchId)
@@ -311,8 +308,8 @@ public class ShipmentService implements IShipmentService
 				.scheduleToQuantityToDeliverOverride(ImmutableMap.of())
 				.quantityTypeToUse(quantityTypeToUse)
 				.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
-				.isShipDateToday(isShipDateToday)
-				.isShipDateToday(isShipDateDeliveryDay)
+				.isShipDateToday(shipmentDateRule.isShipDateToday())
+				.isShipDateDeliveryDay(shipmentDateRule.isShipDateDeliveryDay())
 				.isCompleteShipment(isCompleteShipment)
 				.build();
 	}

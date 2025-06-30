@@ -8,11 +8,11 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.common.util.Check;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentDateRule;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
@@ -61,16 +61,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
 	@NonNull
-	public static CalculateShippingDateRule computeShippingDateRule(@Nullable final Boolean isShipDateToday,
-																	@Nullable final Boolean isShipDateDeliveryDate,
+	public static CalculateShippingDateRule computeShippingDateRule(@NonNull final ShipmentDateRule shipmentDateRule,
 																	@Nullable final LocalDate fixedDate)
 	{
-		Check.assume(!(Boolean.TRUE.equals(isShipDateToday) && Boolean.TRUE.equals(isShipDateDeliveryDate)), "isShipDateToday and isShipDateDeliveryDate cannot both be true");
-		if (Boolean.TRUE.equals(isShipDateToday))
+		if (shipmentDateRule.isShipDateToday())
 		{
 			return CalculateShippingDateRule.TODAY;
 		}
-		else if (Boolean.TRUE.equals(isShipDateDeliveryDate))
+		else if (shipmentDateRule.isShipDateDeliveryDay())
 		{
 			return CalculateShippingDateRule.DELIVERY_DATE;
 		}
@@ -88,8 +86,10 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	{
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 		final boolean isShipmentDateDeliveryDate = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateDeliveryDate);
+		final ShipmentDateRule shipmentDateRule = ShipmentDateRule.ofFlags(isShipmentDateToday, isShipmentDateDeliveryDate);
+
 		final LocalDate fixedShipmentDate = parameters.getParameterAsLocalDate(ShipmentScheduleWorkPackageParameters.PARAM_FixedShipmentDate);
-		return computeShippingDateRule(isShipmentDateToday, isShipmentDateDeliveryDate, fixedShipmentDate);
+		return computeShippingDateRule(shipmentDateRule, fixedShipmentDate);
 	}
 
 	@Override
