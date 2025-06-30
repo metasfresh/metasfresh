@@ -1,12 +1,12 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Get_InOut_Cargo_Weight (IN Record_ID     numeric,
-                                                                                   IN p_AD_Language Character Varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight (IN Record_ID     numeric,
+                                                                                        IN p_AD_Language Character Varying)
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Get_InOut_Cargo_Weight(IN Record_ID     numeric,
-                                                                          IN p_AD_Language Character Varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight(IN Record_ID     numeric,
+                                                                               IN p_AD_Language Character Varying)
     RETURNS TABLE
             (
-                CargoWeight numeric,
+                catchweight numeric,
                 weight_uom  character varying
             )
 AS

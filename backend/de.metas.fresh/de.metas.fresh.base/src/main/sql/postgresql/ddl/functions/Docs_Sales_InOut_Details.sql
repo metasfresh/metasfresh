@@ -86,7 +86,7 @@ SELECT iol.line,
        ol.iscampaignprice,
        ol.qtyordered,
        COALESCE(uomt_ol.UOMSymbol, uom_ol.UOMSymbol)                                                   AS orderUOMSymbol,
-       w.CargoWeight                                                                                   AS catchweight,
+       w.catchweight                                                                                   AS catchweight,
        w.weight_uom                                                                                    AS weight_uom
 FROM M_InOutLine iol
          INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
@@ -180,7 +180,7 @@ FROM M_InOutLine iol
      de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID,
                                                                       att.M_AttributeSetInstance_ID) AS bpp ON TRUE
          LEFT OUTER JOIN
-     de_metas_endcustomer_fresh_reports.Get_InOut_Cargo_Weight(p_Record_ID, p_AD_Language) AS w ON TRUE
+     de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight(p_Record_ID, p_AD_Language) AS w ON TRUE
 WHERE iol.M_InOut_ID = p_Record_ID
   AND iol.isActive = 'Y'
   AND (COALESCE(pc.M_Product_Category_ID, -1) !=
