@@ -162,7 +162,7 @@ public class M_ShipmentSchedule_StepDef
 	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final M_InOut_StepDefData shipmentTable;
-	private final M_ShipmentSchedule_Split_StepDefData splitShipmentScheduleTable;
+	private final M_ShipmentSchedule_Split_StepDefData shipmentScheduleSplitTable;
 
 	private final TestContext testContext;
 	private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
@@ -251,7 +251,7 @@ public class M_ShipmentSchedule_StepDef
 					.create()
 					.list();
 
-			return records.size() == 0;
+			return records.isEmpty();
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, noRecords);
@@ -311,7 +311,20 @@ public class M_ShipmentSchedule_StepDef
 
 		assertThat(split.getId()).isNotNull();
 
-		splitShipmentScheduleTable.putOrReplace(row.getAsIdentifier(), InterfaceWrapperHelper.load(split.getId(), I_M_ShipmentSchedule_Split.class));
+		shipmentScheduleSplitTable.putOrReplace(row.getAsIdentifier(), InterfaceWrapperHelper.load(split.getId(), I_M_ShipmentSchedule_Split.class));
+	}
+
+	@And("^after not more than (.*)s, split inOutId is set:$")
+	public void validate_shipment_schedule_split_m_inout_id_set(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String shipmentScheduleSplitIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule_Split.COLUMNNAME_M_ShipmentSchedule_Split_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final Supplier<Boolean> isInOutIdSet = () ->  InOutId.ofRepoIdOrNull(shipmentScheduleSplitTable.get(shipmentScheduleSplitIdentifier).getM_InOut_ID()) != null;
+			StepDefUtil.tryAndWait(timeoutSec, 500, isInOutIdSet);
+		}
 	}
 
 	@And("update shipment schedules")
