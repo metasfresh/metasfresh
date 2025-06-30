@@ -8,6 +8,7 @@ ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
 COPY --from=backend /root/.m2 /root/.m2/
+COPY --from=backend /opt/metasfresh/backend/metasfresh-dist/dist/target/docker/app/reports/ reports/
 
 WORKDIR /cucumber
 COPY backend/de.metas.cucumber/ .

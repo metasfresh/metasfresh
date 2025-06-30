@@ -21,11 +21,11 @@ Feature: Jasper Reprot Tests
     And metasfresh contains M_PriceLists
       | Identifier  | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
       | pl_purchase | ps_1               | CH           | CHF           | false |
-      | pl_sales    | ps_1               | CH           | CHF           | true |
+      | pl_sales    | ps_1               | CH           | CHF           | true  |
     And metasfresh contains M_PriceList_Versions
       | Identifier   | M_PriceList_ID |
       | plv_purchase | pl_purchase    |
-      | plv_sales | pl_sales    |
+      | plv_sales    | pl_sales       |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | pp_1       | plv_purchase           | product      | 8.0      | PCE      |
