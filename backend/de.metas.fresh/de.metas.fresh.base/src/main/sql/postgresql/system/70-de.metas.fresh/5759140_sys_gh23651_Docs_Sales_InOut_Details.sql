@@ -86,7 +86,7 @@ SELECT iol.line,
        ol.iscampaignprice,
        ol.qtyordered,
        COALESCE(uomt_ol.UOMSymbol, uom_ol.UOMSymbol)                                                   AS orderUOMSymbol,
-       w.CargoWeight                                                                                   AS CargoWeight,
+       w.CargoWeight                                                                                   AS catchweight,
        w.weight_uom                                                                                    AS weight_uom
 FROM M_InOutLine iol
          INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID

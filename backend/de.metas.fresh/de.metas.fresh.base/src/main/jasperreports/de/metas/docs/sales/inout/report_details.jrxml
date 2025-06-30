@@ -95,8 +95,8 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	<field name="orderuomsymbol" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="orderuomsymbol"/>
 	</field>
-	<field name="cargoweight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="cargoweight"/>
+	<field name="catchweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
 	</field>
 	<field name="weight_uom" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="weight_uom"/>
@@ -423,14 +423,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textElement>
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{CargoWeight}+" :"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Weight}+" :"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
 				<reportElement x="108" y="8" width="48" height="12" uuid="176b8871-6783-4b60-8aa8-657b7d60a298"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{cargoweight}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="159" y="8" width="100" height="12" uuid="66348794-7295-4fae-ae07-f042c09142de"/>

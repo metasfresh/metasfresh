@@ -96,8 +96,8 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	<field name="orderuomsymbol" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="orderuomsymbol"/>
 	</field>
-	<field name="cargoweight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="cargoweight"/>
+	<field name="catchweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
 	</field>
 	<field name="weight_uom" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="weight_uom"/>
@@ -536,7 +536,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	<summary>
 		<band height="20">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[$F{cargoweight}!=null]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{catchweight}!=null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
 				<reportElement x="37" y="8" width="71" height="12" uuid="5817547c-5671-4774-b8a4-6902e1cfb565">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -544,7 +544,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textElement>
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{CargoWeight}+" :"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Weight}+" :"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="159" y="8" width="100" height="12" uuid="3ec17787-be2d-4458-aaad-60233cc4ad69"/>
@@ -558,7 +558,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{cargoweight}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>
