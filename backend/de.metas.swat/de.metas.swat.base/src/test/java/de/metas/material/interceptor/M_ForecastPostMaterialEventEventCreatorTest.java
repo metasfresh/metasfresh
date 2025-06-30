@@ -2,6 +2,7 @@ package de.metas.material.interceptor;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -84,7 +85,7 @@ public class M_ForecastPostMaterialEventEventCreatorTest
 			forecastLineRecord1 = newInstance(I_M_ForecastLine.class);
 			forecastLineRecord1.setM_Forecast(forecastModel);
 			forecastLineRecord1.setC_BPartner_ID(BPARTNER_ID_OF_FIRST_FORECAST_LINE.getRepoId());
-			forecastLineRecord1.setDatePromised(TimeUtil.parseTimestamp("2017-10-21"));
+			forecastLineRecord1.setDatePromised(TimeUtil.asTimestamp(SystemTime.asInstant()));
 			forecastLineRecord1.setQty(new BigDecimal("21"));
 			forecastLineRecord1.setM_Product_ID(product1.getM_Product_ID());
 			forecastLineRecord1.setM_Warehouse_ID(warehouse1.getM_Warehouse_ID());
@@ -99,7 +100,7 @@ public class M_ForecastPostMaterialEventEventCreatorTest
 			save(product2);
 			forecastLineRecord2 = newInstance(I_M_ForecastLine.class);
 			forecastLineRecord2.setM_Forecast(forecastModel);
-			forecastLineRecord2.setDatePromised(TimeUtil.parseTimestamp("2017-10-22"));
+			forecastLineRecord2.setDatePromised(TimeUtil.asTimestamp(SystemTime.asInstant()));
 			forecastLineRecord2.setQty(new BigDecimal("22"));
 			forecastLineRecord2.setM_Product_ID(product2.getM_Product_ID());
 			forecastLineRecord2.setM_Warehouse_ID(warehouse2.getM_Warehouse_ID());
