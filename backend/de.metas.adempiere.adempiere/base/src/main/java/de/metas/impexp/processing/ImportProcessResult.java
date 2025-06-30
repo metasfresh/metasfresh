@@ -167,7 +167,7 @@ public class ImportProcessResult
 			countImportRecordsConsidered.add(count);
 		}
 
-		public boolean isCountImportRecordsConsidered() {return countImportRecordsConsidered.isGreaterThanZero();}
+		public int getCountImportRecordsConsidered() {return countImportRecordsConsidered.toIntOr(0);}
 
 		public void addInsertsIntoTargetTable(final int count)
 		{
@@ -216,7 +216,5 @@ public class ImportProcessResult
 		public OptionalInt toOptionalInt() {return unknownValue ? OptionalInt.empty() : OptionalInt.of(value);}
 
 		public int toIntOr(final int defaultValue) {return unknownValue ? defaultValue : value;}
-
-		public boolean isGreaterThanZero() {return !unknownValue && value > 0;}
 	}
 }

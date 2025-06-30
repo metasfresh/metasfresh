@@ -95,7 +95,7 @@ public class BankStatementImportProcessTest
 		setupDBFunctionsRepository();
 		setupImportTableDescriptorRepository();
 		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
-		
+
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
 	}
@@ -247,7 +247,20 @@ public class BankStatementImportProcessTest
 			public ImportRecordsSelection getSelection() {throw new UnsupportedOperationException("not yet implemented");}
 
 			@Override
+			public int deleteImportedRecordsOfMainSelection()
+			{
+				return 0;
+			}
+
+			@Override
 			public int deleteImportRecords(@NonNull final ImportDataDeleteRequest request) {return 0;}
+
+			@Override
+			public void clearErrorsForMainSelection()
+			{
+				System.out.println("clearErrorsForMainSelection() does nothing when running in unit test mode"
+						+ "\n\t call trace: " + Trace.toOneLineStackTraceString());
+			}
 
 			@Override
 			public void resetStandardColumns()

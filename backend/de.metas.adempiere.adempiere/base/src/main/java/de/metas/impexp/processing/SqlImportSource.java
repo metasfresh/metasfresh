@@ -15,9 +15,9 @@ import de.metas.util.ILoggable;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.IteratorUtils;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.SqlQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
@@ -43,8 +43,9 @@ import java.util.Set;
 public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRecordType>
 {
 	// Services
-	@NonNull private final ILoggable loggable;
+	@NonNull private final IQueryBL queryBL;
 	@NonNull private final IErrorManager errorManager;
+	@NonNull private final ILoggable loggable;
 
 	// Params
 	@NonNull private final ImportTableDescriptor tableDescriptor;
@@ -52,12 +53,13 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 	@NonNull private final DBFunctions dbFunctions;
 	@Nullable private final Map<String, Object> importRecordDefaultValues;
 	@NonNull private final ClientId clientId;
+	@NonNull private final QueryLimit limit;
 	@NonNull private final SqlQueryOrderBy sqlOrderBy;
 
 	//
 	// State
 	@NonNull private final ImportRecordsSelection mainSelection;
-	@NonNull @Getter private final ImportRecordsSelection selection;
+	@Nullable private ImportRecordsSelection _batchSelection; // lazy
 
 	@Builder
 	private SqlImportSource(
@@ -73,17 +75,16 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 			@Nullable final PInstanceId selectionId,
 			@Nullable final QueryLimit limit)
 	{
-		this.loggable = loggable;
+		this.queryBL = queryBL;
 		this.errorManager = errorManager;
+		this.loggable = loggable;
 		this.tableDescriptor = tableDescriptor;
 		this.recordLoader = recordLoader;
 		this.dbFunctions = dbFunctions;
 		this.importRecordDefaultValues = importRecordDefaultValues;
 		this.clientId = clientId;
+		this.limit = limit != null ? limit : QueryLimit.NO_LIMIT;
 		this.sqlOrderBy = SqlQueryOrderBy.of(StringUtils.trimBlankToOptional(importOrderBySql).orElse(tableDescriptor.getKeyColumnName()));
-
-		//
-		// Main selection
 		this.mainSelection = ImportRecordsSelection.builder()
 				.importTableName(tableDescriptor.getTableName())
 				.importKeyColumnName(tableDescriptor.getKeyColumnName())
@@ -91,38 +92,54 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 				.selectionId(selectionId)
 				.build();
 
-		//
-		//
+		loggable.addLog("Using " + this.dbFunctions);
+	}
+
+	@NonNull
+	@Override
+	public ImportRecordsSelection getSelection()
+	{
+		ImportRecordsSelection batchSelection = this._batchSelection;
+		if (batchSelection == null)
+		{
+			batchSelection = this._batchSelection = createBatchSelection();
+		}
+		return batchSelection;
+	}
+
+	@NonNull
+	private ImportRecordsSelection createBatchSelection()
+	{
 		if (mainSelection.isEmpty())
 		{
-			this.selection = mainSelection;
+			return mainSelection;
 		}
-		else if (limit == null || limit.isNoLimit())
+		else if (limit.isNoLimit())
 		{
-			this.selection = mainSelection;
+			return mainSelection;
 		}
 		else
 		{
-			final String importTableName = tableDescriptor.getTableName();
-			final PInstanceId batchSelectionId = queryBL.createQueryBuilderOutOfTrx(importTableName)
+			final String importTableName = mainSelection.getImportTableName();
+			final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilderOutOfTrx(importTableName)
 					.filter(mainSelection.toQueryFilter(importTableName))
-					.addNotEqualsFilter(ImportTableDescriptor.COLUMNNAME_I_IsImported, "Y") // not already imported, but accept with Errors because might be corrected in meantime
+					.addNotEqualsFilter(ImportTableDescriptor.COLUMNNAME_I_IsImported, "Y") // not already imported, but accept with Errors because might be corrected in the meantime
+					;
+
+			final PInstanceId batchSelectionId = queryBuilder
 					.create()
 					.setOrderBy(sqlOrderBy)
 					.setLimit(limit)
 					.createSelection();
-
 			if (batchSelectionId == null)
 			{
-				this.selection = mainSelection.withEmpty(true);
+				return mainSelection.withEmpty(true);
 			}
 			else
 			{
-				this.selection = mainSelection.withSelectionId(batchSelectionId);
+				return mainSelection.withSelectionId(batchSelectionId);
 			}
 		}
-
-		loggable.addLog("Using " + this.dbFunctions);
 	}
 
 	@Override
@@ -132,7 +149,10 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 	public String getKeyColumnName() {return tableDescriptor.getKeyColumnName();}
 
 	@Override
-	public boolean isEmpty() {return selection.isEmpty();}
+	public boolean isEmpty()
+	{
+		return getSelection().isEmpty();
+	}
 
 	@Override
 	public PInstanceId getMainSelectionId() {return mainSelection.getSelectionId();}
@@ -192,6 +212,17 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 	}
 
 	@Override
+	public int deleteImportedRecordsOfMainSelection()
+	{
+		final String importTableName = mainSelection.getImportTableName();
+		final String sql = "DELETE FROM " + importTableName
+				+ " WHERE 1=1"
+				+ "\n /* standard import filter */ " +/* AND */mainSelection.toSqlWhereClause(importTableName)
+				+ "\n /* only imported */ AND " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='Y'";
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	@Override
 	public int deleteImportRecords(@NonNull final ImportDataDeleteRequest request)
 	{
 		final String sql = toSqlDelete(request);
@@ -204,7 +235,7 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 		final StringBuilder sql = new StringBuilder("DELETE FROM " + importTableName + " WHERE 1=1");
 
 		//
-		sql.append("\n /* standard import filter */ ").append(/* AND */selection.toSqlWhereClause(importTableName));
+		sql.append("\n /* standard import filter */ ").append(/* AND */getSelection().toSqlWhereClause(importTableName));
 
 		//
 		// Delete mode filters
@@ -243,16 +274,35 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 		return sql.toString();
 	}
 
-	/**
-	 * Reset standard columns (Client, Org, IsActive, Created/Updated).
-	 * <p>
-	 * Called before starting to validate.
-	 */
+	@Override
+	public void clearErrorsForMainSelection()
+	{
+		final String importTableName = mainSelection.getImportTableName();
+
+		final String sql = "UPDATE " + importTableName
+				+ " SET "
+				+ "  " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "= 'N' "
+				+ ", " + ImportTableDescriptor.COLUMNNAME_I_ErrorMsg + " = ' ' "
+				+ "\n WHERE "
+				+ "\n COALESCE(" + ImportTableDescriptor.COLUMNNAME_I_IsImported + ", 'N') <> 'Y' "
+				+ "\n " +/* AND */ mainSelection.toSqlWhereClause();
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, null, ITrx.TRXNAME_ThreadInherited);
+		loggable.addLog("Cleared errors for {} records", no);
+
+		if (no > 0)
+		{
+			this._batchSelection = null;
+		}
+	}
+
 	@Override
 	public void resetStandardColumns()
 	{
+		final ImportRecordsSelection selection = getSelection();
+		final String importTableName = selection.getImportTableName();
+
 		final ArrayList<Object> sqlParams = new ArrayList<>();
-		final StringBuilder sql = new StringBuilder("UPDATE " + tableDescriptor.getTableName()
+		final StringBuilder sql = new StringBuilder("UPDATE " + importTableName
 				+ " SET "
 				+ "  " + ImportTableDescriptor.COLUMNNAME_AD_Client_ID + " = COALESCE(AD_Client_ID, " + clientId.getRepoId() + ")"
 				+ ", " + ImportTableDescriptor.COLUMNNAME_AD_Org_ID + "=COALESCE(AD_Org_ID, " + OrgId.ANY.getRepoId() + ")"
@@ -276,8 +326,9 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 			}
 		}
 
-		sql.append("\n WHERE (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) ")
-				.append(" ").append(/* AND */ selection.toSqlWhereClause());
+		sql.append("\n WHERE ")
+				.append("\n (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) ")
+				.append("\n ").append(/* AND */ selection.toSqlWhereClause());
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited);
@@ -289,7 +340,8 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 	{
 		final Properties ctx = Env.getCtx();
 
-		final String importTableName = tableDescriptor.getTableName();
+		final ImportRecordsSelection selection = getSelection();
+		final String importTableName = selection.getImportTableName();
 		final String sql = "SELECT * "
 				+ " FROM " + importTableName
 				+ " WHERE "
@@ -364,7 +416,9 @@ public class SqlImportSource<ImportRecordType> implements ImportSource<ImportRec
 
 	private DataImportRunId getDataImportRunIdOfImportedRecords()
 	{
-		final String importTableName = tableDescriptor.getTableName();
+		final ImportRecordsSelection selection = getSelection();
+		final String importTableName = selection.getImportTableName();
+
 		return DataImportRunId.ofRepoIdOrNull(
 				DB.getSQLValueEx(
 						ITrx.TRXNAME_ThreadInherited,
