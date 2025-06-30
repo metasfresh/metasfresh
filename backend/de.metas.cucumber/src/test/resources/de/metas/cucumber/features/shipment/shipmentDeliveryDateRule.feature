@@ -34,8 +34,8 @@ Feature: Shipment DeliveryDateRule
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - PreparationDate as movementDate
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.PreparationDate     | OPT.POReference        |
-      | o_1        | true    | endcustomer_1            | 2021-04-16  | 1000012              | 2021-04-18T21:00:00.00Z | DeliveryDateRuleTest_1 |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate     | OPT.POReference        |
+      | o_1        | true    | endcustomer_1            | 2021-04-16  | 2021-04-18T21:00:00.00Z | DeliveryDateRuleTest_1 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -57,8 +57,8 @@ Feature: Shipment DeliveryDateRule
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - Today as movementDate if PreparationDate is in the past
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.PreparationDate     | OPT.POReference        |
-      | o_2        | true    | endcustomer_1            | 2021-04-10  | 1000012              | 2021-04-12T21:00:00.00Z | DeliveryDateRuleTest_2 |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate     | OPT.POReference        |
+      | o_2        | true    | endcustomer_1            | 2021-04-10  | 2021-04-12T21:00:00.00Z | DeliveryDateRuleTest_2 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_2       | o_2                   | p_1                     | 10         |
@@ -80,8 +80,8 @@ Feature: Shipment DeliveryDateRule
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - Today as movementDate
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.PreparationDate     | OPT.POReference        |
-      | o_3        | true    | endcustomer_1            | 2021-04-10  | 1000012              | 2021-04-12T21:00:00.00Z | DeliveryDateRuleTest_3 |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate     | OPT.POReference        |
+      | o_3        | true    | endcustomer_1            | 2021-04-10  | 2021-04-12T21:00:00.00Z | DeliveryDateRuleTest_3 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_1                     | 10         |
@@ -103,8 +103,8 @@ Feature: Shipment DeliveryDateRule
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - PreparationDate even if in the past as movementDate
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.PreparationDate     | OPT.POReference        |
-      | o_4        | true    | endcustomer_1            | 2021-04-10  | 1000012              | 2021-04-12T21:00:00.00Z | DeliveryDateRuleTest_4 |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate     | OPT.POReference        |
+      | o_4        | true    | endcustomer_1            | 2021-04-10  | 2021-04-12T21:00:00.00Z | DeliveryDateRuleTest_4 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_4       | o_4                   | p_1                     | 10         |
@@ -127,8 +127,8 @@ Feature: Shipment DeliveryDateRule
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - FixedDate as movementDate
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.PreparationDate     | OPT.POReference        |
-      | o_5        | true    | endcustomer_1            | 2021-04-10  | 1000012              | 2021-04-12T21:00:00.00Z | DeliveryDateRuleTest_5 |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate     | OPT.POReference        |
+      | o_5        | true    | endcustomer_1            | 2021-04-10  | 2021-04-12T21:00:00.00Z | DeliveryDateRuleTest_5 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_5       | o_5                   | p_1                     | 10         |
@@ -150,8 +150,8 @@ Feature: Shipment DeliveryDateRule
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on split shipments
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.PreparationDate     | OPT.POReference        |
-      | o_6        | true    | endcustomer_1            | 2021-04-16  | 1000012              | 2021-04-18T21:00:00.00Z | DeliveryDateRuleTest_6 |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate     | OPT.POReference        |
+      | o_6        | true    | endcustomer_1            | 2021-04-16  | 2021-04-18T21:00:00.00Z | DeliveryDateRuleTest_6 |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_6       | o_6                   | p_1                     | 100        |
