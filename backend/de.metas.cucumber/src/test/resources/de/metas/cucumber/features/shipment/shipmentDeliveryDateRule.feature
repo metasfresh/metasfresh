@@ -30,7 +30,7 @@ Feature: Shipment DeliveryDateRule
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
 
 
-  @Id:S0XXX.1_100
+  @Id:S0470.1_100
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - PreparationDate as movementDate
     And metasfresh contains C_Orders:
@@ -53,7 +53,7 @@ Feature: Shipment DeliveryDateRule
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus | OPT.MovementDate | OPT.POReference        |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-16  | true      | CO        | 2021-04-18       | DeliveryDateRuleTest_1 |
 
-  @Id:S0XXX.1_200
+  @Id:S0470.1_200
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - Today as movementDate if PreparationDate is in the past
     And metasfresh contains C_Orders:
@@ -76,7 +76,7 @@ Feature: Shipment DeliveryDateRule
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus | OPT.MovementDate | OPT.POReference        |
       | s_2                   | endcustomer_1            | l_1                               | 2021-04-10  | true      | CO        | 2021-04-16       | DeliveryDateRuleTest_2 |
 
-  @Id:S0XXX.1_300
+  @Id:S0470.1_300
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - Today as movementDate
     And metasfresh contains C_Orders:
@@ -99,7 +99,7 @@ Feature: Shipment DeliveryDateRule
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus | OPT.MovementDate | OPT.POReference        |
       | s_3                   | endcustomer_1            | l_1                               | 2021-04-10  | true      | CO        | 2021-04-16       | DeliveryDateRuleTest_3 |
 
-  @Id:S0XXX.1_400
+  @Id:S0470.1_400
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - PreparationDate even if in the past as movementDate
     And metasfresh contains C_Orders:
@@ -123,7 +123,7 @@ Feature: Shipment DeliveryDateRule
       | s_4                   | endcustomer_1            | l_1                               | 2021-04-10  | true      | CO        | 2021-04-12       | DeliveryDateRuleTest_4 |
 
 
-  @Id:S0XXX.1_500
+  @Id:S0470.1_500
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on generate shipments - FixedDate as movementDate
     And metasfresh contains C_Orders:
@@ -146,7 +146,7 @@ Feature: Shipment DeliveryDateRule
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus | OPT.MovementDate | OPT.POReference        |
       | s_5                   | endcustomer_1            | l_1                               | 2021-04-10  | true      | CO        | 2021-04-13       | DeliveryDateRuleTest_5 |
 
-  @Id:S0XXX.2_100
+  @Id:S0470.2_100
   @from:cucumber
   Scenario: Shipment DeliveryDateRule on split shipments
     And metasfresh contains C_Orders:
