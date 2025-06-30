@@ -7,31 +7,31 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(IN p
                                                                             IN p_AD_Language Character Varying(6))
     RETURNS TABLE
             (
-                Line              Numeric(10, 0),
-                Name              Character Varying,
-                Attributes        Text,
-                HUQty             Numeric,
-                HUName            Text,
-                qtyEntered        Numeric,
-                PriceEntered      Numeric,
-                UOMSymbol         Character Varying(10),
-                StdPrecision      Numeric(10, 0),
-                LineNetAmt        Numeric,
-                Discount          Numeric,
-                IsDiscountPrinted Character(1),
+                Line                   Numeric(10, 0),
+                Name                   Character Varying,
+                Attributes             Text,
+                HUQty                  Numeric,
+                HUName                 Text,
+                qtyEntered             Numeric,
+                PriceEntered           Numeric,
+                UOMSymbol              Character Varying(10),
+                StdPrecision           Numeric(10, 0),
+                LineNetAmt             Numeric,
+                Discount               Numeric,
+                IsDiscountPrinted      Character(1),
                 IsShipmentPricePrinted Character(1),
-                QtyPattern        text,
-                Description       Character Varying,
-                bp_product_no     character varying(30),
-                bp_product_name   character varying(100),
-                best_before_date  text,
-                lotno             character varying,
-                p_value           character varying(30),
-                p_description     character varying(255),
-                inout_description character varying(255),
-                iscampaignprice   character(1),
-                qtyordered        Numeric,
-                orderUOMSymbol    Character Varying(10),
+                QtyPattern             text,
+                Description            Character Varying,
+                bp_product_no          character varying(30),
+                bp_product_name        character varying(100),
+                best_before_date       text,
+                lotno                  character varying,
+                p_value                character varying(30),
+                p_description          character varying(255),
+                inout_description      character varying(255),
+                iscampaignprice        character(1),
+                qtyordered             Numeric,
+                orderUOMSymbol         Character Varying(10),
                 CargoWeight            Numeric,
                 weight_uom             Character Varying
             )
@@ -75,7 +75,7 @@ SELECT iol.line,
        -- in case there is no C_BPartner_Product, fallback to the default ones
        COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                                                    AS bp_product_no,
        COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                                          AS bp_product_name,
-       TO_CHAR(att.best_before_date :: date, 'dd.MM.YYYY')                                                AS best_before_date,
+       TO_CHAR(att.best_before_date :: date, 'dd.MM.YYYY')                                             AS best_before_date,
        att.lotno,
        p.value                                                                                         AS p_value,
        CASE
@@ -161,20 +161,20 @@ FROM M_InOutLine iol
          LEFT OUTER JOIN C_UOM_Trl uomct ON uomct.c_UOM_ID = uom.C_UOM_ID AND uomct.AD_Language = p_AD_Language
     -- Attributes
          LEFT OUTER JOIN LATERAL (SELECT STRING_AGG(at.ai_value, ', '
-                                 ORDER BY LENGTH(at.ai_value), at.ai_value)
-                                 FILTER (WHERE at.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
-                                                                              AS Attributes,
+                                         ORDER BY LENGTH(at.ai_value), at.ai_value)
+                                         FILTER (WHERE at.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
+                                                                                      AS Attributes,
 
-                                 at.M_AttributeSetInstance_ID,
-                                 STRING_AGG(REPLACE(at.ai_value, 'MHD: ', ''), ', ')
-                                 FILTER (WHERE at.at_value LIKE 'HU_BestBeforeDate')
-                                                                              AS best_before_date,
-                                 STRING_AGG(ai_value, ', ')
-                                 FILTER (WHERE at.at_value LIKE 'Lot-Nummer') AS lotno
+                                         at.M_AttributeSetInstance_ID,
+                                         STRING_AGG(REPLACE(at.ai_value, 'MHD: ', ''), ', ')
+                                         FILTER (WHERE at.at_value LIKE 'HU_BestBeforeDate')
+                                                                                      AS best_before_date,
+                                         STRING_AGG(ai_value, ', ')
+                                         FILTER (WHERE at.at_value LIKE 'Lot-Nummer') AS lotno
 
-                          FROM Report.fresh_Attributes(iol.M_AttributeSetInstance_ID) at
-                          WHERE at.IsPrintedInDocument = 'Y'
-                          GROUP BY at.M_AttributeSetInstance_ID) att ON TRUE
+                                  FROM Report.fresh_Attributes(iol.M_AttributeSetInstance_ID) at
+                                  WHERE at.IsPrintedInDocument = 'Y'
+                                  GROUP BY at.M_AttributeSetInstance_ID) att ON TRUE
 
          LEFT OUTER JOIN
      de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID,

@@ -89,6 +89,18 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	<field name="iscampaignprice" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="iscampaignprice"/>
 	</field>
+	<field name="qtyordered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qtyordered"/>
+	</field>
+	<field name="orderuomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="orderuomsymbol"/>
+	</field>
+	<field name="cargoweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="cargoweight"/>
+	</field>
+	<field name="weight_uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="weight_uom"/>
+	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -401,4 +413,32 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 		</band>
 	</lastPageFooter>
+	<summary>
+		<band height="20">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
+				<reportElement x="37" y="8" width="71" height="12" uuid="82b42d52-5283-4472-8974-b6b6564c7aeb">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{CargoWeight}+" :"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
+				<reportElement x="108" y="8" width="48" height="12" uuid="176b8871-6783-4b60-8aa8-657b7d60a298"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cargoweight}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="159" y="8" width="100" height="12" uuid="66348794-7295-4fae-ae07-f042c09142de"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{weight_uom}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
 </jasperReport>
