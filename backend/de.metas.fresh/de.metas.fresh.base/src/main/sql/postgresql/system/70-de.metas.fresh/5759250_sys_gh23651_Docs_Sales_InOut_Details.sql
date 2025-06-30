@@ -32,7 +32,7 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(IN p
                 iscampaignprice        character(1),
                 qtyordered             Numeric,
                 orderUOMSymbol         Character Varying(10),
-                CargoWeight            Numeric,
+                catchweight            Numeric,
                 weight_uom             Character Varying
             )
 AS
