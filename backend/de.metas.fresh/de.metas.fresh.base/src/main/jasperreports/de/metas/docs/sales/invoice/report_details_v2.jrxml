@@ -835,7 +835,7 @@ $F{shiplocation}
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-34" mode="Transparent" x="468" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -1088,7 +1088,7 @@ $F{shiplocation}
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{weightSum}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="134" y="8" width="100" height="12" uuid="c8d275d1-8b81-459c-8dc6-56ba0714d3a6"/>

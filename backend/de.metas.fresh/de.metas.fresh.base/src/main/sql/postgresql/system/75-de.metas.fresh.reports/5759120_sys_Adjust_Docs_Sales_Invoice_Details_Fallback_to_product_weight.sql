@@ -109,8 +109,8 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        p.IsPrintWhenPackingMaterial,
        report.getPricePatternForJasper(i.m_pricelist_id)      AS PricePattern,
        report.getAmountPatternForJasper(c.c_currency_id)    AS AmountPattern,
-       w.catchweight,
-       w.weight_uom
+       catchweight,
+       weight_uom
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
          INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
@@ -152,7 +152,8 @@ FROM C_InvoiceLine il
                                                                              ORDER BY x.DocNo) AS reference,
                                                                   x.shipLocation,
                                                                   x.tour,
-                                                                  x.M_InOut_ID
+                                                                  x.catchweight,
+                                                                  x.weight_uom
                           FROM (SELECT DISTINCT ON (iliol.C_InvoiceLine_ID) iliol.C_InvoiceLine_ID,
                                                                             First_Agg(COALESCE(dtt.Printname, dt.Printname)
                                                                                       ORDER BY io.DocumentNo)  AS DocType,
@@ -163,7 +164,8 @@ FROM C_InvoiceLine il
                                                                             io.poreference                     AS reference,
                                                                             bpl.name                           AS shipLocation,
                                                                             t.name                             AS tour,
-                                                                            io.M_InOut_ID
+                                                                            w.catchweight,
+                                                                            w.weight_uom                       AS weight_uom
                                 FROM (SELECT DISTINCT ON (C_InvoiceLine_ID) M_InOut_ID,
                                                                             C_InvoiceLine_ID,
                                                                             M_InOutLine_ID
@@ -178,12 +180,31 @@ FROM C_InvoiceLine il
                                          LEFT OUTER JOIN C_DocType_Trl dtt
                                                          ON io.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_AD_Language
                                          LEFT OUTER JOIN M_tour t ON io.m_tour_id = t.m_tour_id
+                                         LEFT OUTER JOIN LATERAL
+                                    (SELECT COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS weight_uom,
+                                            SUM(
+                                                    COALESCE((CASE
+                                                                  WHEN qtydeliveredcatch IS NOT NULL
+                                                                      THEN qtydeliveredcatch
+                                                                      ELSE uomConvert(iol.M_Product_ID, iol.C_UOM_ID, (SELECT c_uom_Id FROM C_uom WHERE isactive = 'Y' AND x12de355 = 'KGM'), qtyentered) -- UOM for KG
+                                                              END), iol.qtyentered * p.weight)) AS catchweight,
+                                            SUM(iol.QtyEnteredTU)                   AS HUQty,
+                                            iol.m_inout_id,
+                                            iol.m_inoutline_id
+                                     FROM M_InOutline iol
+                                              LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = COALESCE(iol.catch_uom_id, (SELECT c_uom_Id FROM C_uom WHERE isactive = 'Y' AND x12de355 = 'KGM')) -- fallback to KG
+                                              LEFT OUTER JOIN C_UOM_Trl uomt ON uomt.c_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = p_AD_Language
+                                              INNER JOIN M_Product p ON p.M_Product_ID = iol.M_Product_ID
+                                     where iol.m_inout_id = io.m_inout_id
+                                     GROUP BY uomt.UOMSymbol, uom.UOMSymbol, iol.m_inoutline_id) w ON w.m_inoutline_id = iliol.m_inoutline_id
 
-                                GROUP BY C_InvoiceLine_ID, io.poreference, bpl.C_BPartner_Location_ID, t.name, io.M_InOut_ID) x
+                                GROUP BY C_InvoiceLine_ID, io.poreference, bpl.C_BPartner_Location_ID, t.name,
+                                         w.catchweight,
+                                         w.weight_uom) x
 
-                          GROUP BY x.C_InvoiceLine_ID, x.shipLocation, x.tour, x.M_InOut_ID) io ON il.C_InvoiceLine_ID = io.C_InvoiceLine_ID
-         LEFT OUTER JOIN
-     de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight(io.m_inout_id, p_AD_Language) AS w ON TRUE
+                          GROUP BY x.C_InvoiceLine_ID, x.shipLocation, x.tour, catchweight,
+                                   weight_uom) io ON il.C_InvoiceLine_ID = io.C_InvoiceLine_ID
+
 
     -- Get Packing instruction
          LEFT OUTER JOIN (SELECT STRING_AGG(Name, E'\n'
