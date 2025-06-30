@@ -1,0 +1,113 @@
+/*
+ * #%L
+ * de.metas.cucumber
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.cucumber.stepdefs.report;
+
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.i18n.Language;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessCalledFrom;
+import de.metas.process.ProcessInfo;
+import de.metas.report.server.LocalReportServer;
+import de.metas.report.server.OutputType;
+import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@RequiredArgsConstructor
+public class AD_Process_StepDef
+{
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final M_InOut_StepDefData inOutTable;
+	@NonNull private final C_Invoice_StepDefData invoiceLineTable;
+
+	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
+
+	@And("The jasper process is run")
+	public void run_jasper_processes(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::run_jasper_process);
+	}
+
+	public void run_jasper_process(@NonNull final DataTableRow row)
+	{
+		final String value = row.getAsString(I_AD_Process.COLUMNNAME_Value);
+		final AdProcessId processId = processDAO.retrieveProcessIdByValue(value);
+		assertThat(processId).isNotNull();
+
+		final String tableName = row.getAsString(I_AD_Table.COLUMNNAME_TableName);
+		final int recordId = getRecordIdForTable(tableName, row.getAsIdentifier());
+
+		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.Scheduler)
+				.setAD_Process_ID(processId)
+				.setAD_PInstance(pInstanceDAO.createAD_PInstance(processId))
+				.setReportLanguage(Language.getBaseLanguage())
+				.setJRDesiredOutputType(OutputType.PDF)
+				.setRecord(TableRecordReference.of(tableName, recordId))
+				.build();
+
+		pInstanceDAO.saveProcessInfoOnly(jasperProcessInfo);
+
+		final LocalReportServer server = new LocalReportServer();
+		server.report(
+				processId.getRepoId(),
+				jasperProcessInfo.getPinstanceId().getRepoId(),
+				Language.getBaseLanguage().getAD_Language(),
+				OutputType.PDF
+		);
+	}
+
+	private int getRecordIdForTable(final String tableName, final StepDefDataIdentifier recordIdentifier)
+	{
+		switch (tableName)
+		{
+			case I_C_Order.Table_Name: return orderTable.get(recordIdentifier).getC_Order_ID();
+			case I_M_InOut.Table_Name: return inOutTable.get(recordIdentifier).getM_InOut_ID();
+			case I_C_Invoice.Table_Name: return invoiceLineTable.get(recordIdentifier).getC_Invoice_ID();
+			default: throw new AdempiereException("Unsupported TableName!")
+					.appendParametersToMessage()
+					.setParameter("TableName", tableName);
+		}
+	}
+}
