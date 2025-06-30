@@ -156,7 +156,8 @@ public class ShipmentService implements IShipmentService
 							request.getQuantityTypeToUse(),
 							request.isOnTheFlyPickToPackingInstructions(),
 							request.getIsCompleteShipment(),
-							request.getIsShipDateToday());
+							request.getIsShipDateToday(),
+							request.getIsShipDateDeliveryDay());
 
 					generateShipments(generateShipmentsRequest);
 
@@ -283,6 +284,7 @@ public class ShipmentService implements IShipmentService
 				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 				.completeShipments(request.getIsCompleteShipment())
 				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
+				.isShipmentDateDeliveryDate(Boolean.TRUE.equals(request.getIsShipDateDeliveryDay()))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
 				.build();
@@ -299,7 +301,8 @@ public class ShipmentService implements IShipmentService
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			final boolean onTheFlyPickToPackingInstructions,
 			@NonNull final Boolean isCompleteShipment,
-			@Nullable final Boolean isShipDateToday)
+			@Nullable final Boolean isShipDateToday,
+			@Nullable final Boolean isShipDateDeliveryDay)
 	{
 		return GenerateShipmentsRequest.builder()
 				.asyncBatchId(asyncBatchId)
@@ -309,6 +312,7 @@ public class ShipmentService implements IShipmentService
 				.quantityTypeToUse(quantityTypeToUse)
 				.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
 				.isShipDateToday(isShipDateToday)
+				.isShipDateToday(isShipDateDeliveryDay)
 				.isCompleteShipment(isCompleteShipment)
 				.build();
 	}

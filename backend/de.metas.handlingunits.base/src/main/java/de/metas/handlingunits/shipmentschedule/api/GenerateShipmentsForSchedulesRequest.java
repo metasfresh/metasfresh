@@ -51,4 +51,7 @@ public class GenerateShipmentsForSchedulesRequest
 
 	@Nullable
 	Boolean isShipDateToday;
+
+	@Nullable
+	Boolean isShipDateDeliveryDay;
 }

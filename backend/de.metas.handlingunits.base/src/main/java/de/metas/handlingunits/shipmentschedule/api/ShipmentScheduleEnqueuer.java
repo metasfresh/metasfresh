@@ -225,6 +225,7 @@ public class ShipmentScheduleEnqueuer
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateDeliveryDate, workPackageParameters.isShipmentDateDeliveryDate())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_FixedShipmentDate, workPackageParameters.getFixedShipmentDate())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_ForexContractRef, JsonObjectMapperHolder.toJson(workPackageParameters.getForexContractRef()))
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, workPackageParameters.getDeliveryPlanningId())
@@ -385,6 +386,7 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
+		public static final String PARAM_IsShipmentDateDeliveryDate = "IsShipDeliveryDate";
 		public static final String PARAM_FixedShipmentDate = "FixedShipmentDate";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
 		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
@@ -413,6 +415,7 @@ public class ShipmentScheduleEnqueuer
 
 		boolean completeShipments;
 		boolean isShipmentDateToday;
+		boolean isShipmentDateDeliveryDate;
 		@Nullable LocalDate fixedShipmentDate;
 
 		/**
