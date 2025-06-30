@@ -167,7 +167,8 @@ FROM C_InvoiceLine il
                                                                             w.catchweight,
                                                                             w.weight_uom                       AS weight_uom
                                 FROM (SELECT DISTINCT ON (C_InvoiceLine_ID) M_InOut_ID,
-                                                                            C_InvoiceLine_ID
+                                                                            C_InvoiceLine_ID,
+                                                                            M_InOutLine_ID
                                       FROM Report.fresh_IL_to_IOL_V
                                       WHERE C_Invoice_ID = p_C_Invoice_ID) iliol
                                          LEFT OUTER JOIN M_InOut io ON iliol.M_InOut_ID = io.M_InOut_ID
@@ -185,16 +186,17 @@ FROM C_InvoiceLine il
                                                     COALESCE((CASE
                                                                   WHEN qtydeliveredcatch IS NOT NULL
                                                                       THEN qtydeliveredcatch
-                                                                      ELSE uomConvert(M_Product_ID, iol.C_UOM_ID, (SELECT c_uom_Id FROM C_uom WHERE isactive = 'Y' AND x12de355 = 'KGM'), qtyentered) -- UOM for KG
-                                                              END), 0))             AS catchweight,
+                                                                      ELSE uomConvert(iol.M_Product_ID, iol.C_UOM_ID, (SELECT c_uom_Id FROM C_uom WHERE isactive = 'Y' AND x12de355 = 'KGM'), qtyentered) -- UOM for KG
+                                                              END), iol.qtyentered * p.weight)) AS catchweight,
                                             SUM(iol.QtyEnteredTU)                   AS HUQty,
-                                            iol.m_inout_id
+                                            iol.m_inout_id,
+                                            iol.m_inoutline_id
                                      FROM M_InOutline iol
                                               LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = COALESCE(iol.catch_uom_id, (SELECT c_uom_Id FROM C_uom WHERE isactive = 'Y' AND x12de355 = 'KGM')) -- fallback to KG
                                               LEFT OUTER JOIN C_UOM_Trl uomt ON uomt.c_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = p_AD_Language
-                                         AND iol.isPackagingMaterial = 'N'
+                                              INNER JOIN M_Product p ON p.M_Product_ID = iol.M_Product_ID
                                      where iol.m_inout_id = io.m_inout_id
-                                     GROUP BY uomt.UOMSymbol, uom.UOMSymbol, iol.m_inout_id) w ON w.m_inout_id = io.m_inout_id
+                                     GROUP BY uomt.UOMSymbol, uom.UOMSymbol, iol.m_inoutline_id) w ON w.m_inoutline_id = iliol.m_inoutline_id
 
                                 GROUP BY C_InvoiceLine_ID, io.poreference, bpl.C_BPartner_Location_ID, t.name,
                                          w.catchweight,
