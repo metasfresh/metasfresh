@@ -35,7 +35,6 @@ import org.adempiere.util.api.IParams;
 import org.adempiere.util.api.Params;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReferenceSelection;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
@@ -73,6 +72,8 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 	@NonNull private final ImportTableDescriptorRepository importTableDescriptorRepo = SpringContextHolder.instance.getBean(ImportTableDescriptorRepository.class);
 	@NonNull private final ImportRecordsAsyncExecutor asyncImportScheduler = SpringContextHolder.instance.getBean(ImportRecordsAsyncExecutor.class);
 
+	private static final int LOG_PROGRESS_EACH_N_ROWS = 100;
+
 	//
 	// Parameters
 	@NonNull private Properties _ctx = Env.getCtx();
@@ -90,6 +91,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 	// State
 	private ImportProcessResultCollector resultCollector;
 	private ImportSource<ImportRecordType> _importSource; // lazy
+	private int countImportRecordsConsideredLastLogged = 0;
 
 	private void assertNotStarted()
 	{
@@ -319,6 +321,8 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		return resultCollector;
 	}
 
+	private boolean isRunningInAsyncWorkpackage() {return limit.isLimited();}
+
 	@Override
 	public final ImportProcessResult run()
 	{
@@ -328,6 +332,10 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		}
 		resultCollector = ImportProcessResult.newCollector(getTargetTableName()).importTableName(getImportTableName());
 
+		// Assume we are not running in another transaction because that could introduce deadlocks,
+		// because we are creating the transactions here.
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		loggable.addLog("AD_Client_ID: " + getClientId().getRepoId());
 		loggable.addLog("ValidateOnly: " + validateOnly);
 		loggable.addLog("CompleteDocuments: " + completeDocuments);
@@ -336,12 +344,25 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		loggable.addLog("Limit: " + limit);
 		loggable.addLog("NotifyUserId: " + UserId.toRepoId(notifyUserId));
 
+		//
+		// Case: asked to enqueue the data to import for asynchronous processing
 		if (async)
 		{
-			scheduleAsync(false);
+			prepareBeforeImporting();
+			scheduleAsync();
 		}
+		//
+		// Case: called by asynchronous processor to import a batch of data
+		else if (isRunningInAsyncWorkpackage())
+		{
+			// NOTE: in this case we assume the data preparation was already performed for the main selection before enqueuing
+			runNow();
+		}
+		//
+		// Case: called to directly import the data now
 		else
 		{
+			prepareBeforeImporting();
 			runNow();
 		}
 
@@ -350,8 +371,11 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		return result;
 	}
 
-	private void scheduleAsync(boolean isSubsequentRequest)
+	private void scheduleAsync()
 	{
+		final ImportSource<ImportRecordType> importSource = getImportSource();
+		importSource.clearErrorsForMainSelection();
+
 		asyncImportScheduler.schedule(ImportRecordsRequest.builder()
 				.importTableName(getImportTableName())
 				.clientId(getClientId())
@@ -359,20 +383,27 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 				.notifyUserId(notifyUserId)
 				.limit(limit)
 				.completeDocuments(isCompleteDocuments())
-				.isSubsequentRequest(isSubsequentRequest)
 				.additionalParameters(getParameters())
 				.build());
 
 		loggable.addLog("Scheduled next workpackage");
 	}
 
+	private void prepareBeforeImporting()
+	{
+		final ImportSource<ImportRecordType> importSource = getImportSource();
+
+		if (isDeleteOldImported())
+		{
+			int countDeleted = importSource.deleteImportedRecordsOfMainSelection();
+			getResultCollector().setCountImportRecordsDeleted(countDeleted);
+		}
+
+		importSource.clearErrorsForMainSelection();
+	}
+
 	private void runNow()
 	{
-
-		// Assume we are not running in another transaction because that could introduce deadlocks,
-		// because we are creating the transactions here.
-		trxManager.assertThreadInheritedTrxNotExists();
-
 		final ImportSource<ImportRecordType> importSource = getImportSource();
 		if (importSource.isEmpty())
 		{
@@ -380,32 +411,18 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 			return;
 		}
 
-		deleteOldImportedRecordsIfNeeded();
 		importSource.resetStandardColumns();
 		updateAndValidateImportRecords();
 		importDataIfNeeded();
 
-		if (resultCollector.isCountImportRecordsConsidered())
+		if (limit.isLimited() && limit.isLessThanOrEqualTo(resultCollector.getCountImportRecordsConsidered()))
 		{
-			scheduleAsync(true);
+			scheduleAsync();
 		}
 		else
 		{
 			loggable.addLog("Import done");
 		}
-	}
-
-	private void deleteOldImportedRecordsIfNeeded()
-	{
-		if (!isDeleteOldImported()) {return;}
-
-		final ImportSource<ImportRecordType> importSource = getImportSource();
-		final int countImportRecordsDeleted = importSource.deleteImportRecords(ImportDataDeleteRequest.builder()
-				.mode(ImportDataDeleteMode.ONLY_IMPORTED)
-				.importTableName(getImportTableName())
-				.build());
-		resultCollector.setCountImportRecordsDeleted(countImportRecordsDeleted);
-		loggable.addLog("{} old imported record(s) deleted", countImportRecordsDeleted);
 	}
 
 	@Override
@@ -451,6 +468,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		//
 		// Actual import (allow the method to manage the transaction)
 		newImportRecordsExecutor().execute(retrieveRecordsToImport());
+		logCurrentProgress(true);
 
 		//
 		// run whatever after import code
@@ -475,7 +493,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 					public void onCompleteChunkError(final Throwable ex)
 					{
 						// do nothing.
-						// the error will be handled in "afterCompleteChunkError" method
+						// the error will be handled in the "afterCompleteChunkError" method
 					}
 
 					@Override
@@ -514,11 +532,6 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 					{
 						final ImportGroup<ImportGroupKey, ImportRecordType> currentGroup = currentImportGroupHolder.getValueNotNull();
 						importGroup(currentGroup, stateHolder);
-					}
-
-					@Override
-					public void cancelChunk()
-					{
 					}
 				})
 				.build();
@@ -560,6 +573,10 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		catch (Exception ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
+		}
+		finally
+		{
+			logCurrentProgress(false);
 		}
 	}
 
@@ -609,5 +626,17 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 		importGroup.markImportRecordsAsStale(); // just in case some BL wants to get values from it
 		getResultCollector().actualImportError(error);
 
+	}
+
+	private void logCurrentProgress(boolean force)
+	{
+		final int countImportRecordsConsidered = getResultCollector().getCountImportRecordsConsidered();
+		if (force
+				|| (countImportRecordsConsidered - countImportRecordsConsideredLastLogged) >= LOG_PROGRESS_EACH_N_ROWS)
+		{
+			loggable.addLog("Progress: " + getResultCollector().toResult().getSummary());
+			loggable.flush();
+			countImportRecordsConsideredLastLogged = countImportRecordsConsidered;
+		}
 	}
 }

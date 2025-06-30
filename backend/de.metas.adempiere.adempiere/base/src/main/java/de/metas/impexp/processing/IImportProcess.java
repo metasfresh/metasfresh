@@ -55,7 +55,6 @@ public interface IImportProcess<ImportRecordType>
 	String PARAM_Selection_ID = "Selection_ID";
 	String PARAM_IsInsertOnly = "IsInsertOnly";
 	String PARAM_IsDocComplete = "IsDocComplete";
-	String PARAM_IsSubsequentRequest = "IsSubsequentRequest";
 
 	/**
 	 * Sets the processing context

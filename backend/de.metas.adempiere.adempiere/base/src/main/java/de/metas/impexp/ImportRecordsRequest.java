@@ -62,9 +62,6 @@ public class ImportRecordsRequest
 	private static final String PARAM_IsDocComplete = IImportProcess.PARAM_IsDocComplete;
 	boolean completeDocuments;
 
-	private static final String PARAM_IsSubsequentRequest = IImportProcess.PARAM_IsSubsequentRequest;
-	boolean isSubsequentRequest;
-
 	@NonNull Params additionalParameters;
 
 	@Builder
@@ -75,7 +72,6 @@ public class ImportRecordsRequest
 			@Nullable QueryLimit limit,
 			@Nullable final UserId notifyUserId,
 			final boolean completeDocuments,
-			final boolean isSubsequentRequest,
 			@Nullable Params additionalParameters)
 	{
 		this.importTableName = importTableName;
@@ -84,7 +80,6 @@ public class ImportRecordsRequest
 		this.limit = limit != null ? limit : QueryLimit.NO_LIMIT;
 		this.notifyUserId = notifyUserId;
 		this.completeDocuments = completeDocuments;
-		this.isSubsequentRequest = isSubsequentRequest;
 		this.additionalParameters = Params.builder()
 				.putAll(additionalParameters != null ? additionalParameters : Params.EMPTY)
 				.value(PARAM_ImportTableName, this.importTableName)
@@ -93,7 +88,6 @@ public class ImportRecordsRequest
 				.value(PARAM_Limit, this.limit.toIntOrZero())
 				.value(PARAM_NotifyUserId, this.notifyUserId)
 				.value(PARAM_IsDocComplete, this.completeDocuments)
-				.value(PARAM_IsSubsequentRequest, this.isSubsequentRequest)
 				.build();
 	}
 
@@ -114,7 +108,6 @@ public class ImportRecordsRequest
 				.limit(QueryLimit.ofNullableOrNoLimit(params.getParameterAsInt(PARAM_Limit, 0)))
 				.notifyUserId(params.getParameterAsId(PARAM_NotifyUserId, UserId.class))
 				.completeDocuments(params.getParameterAsBool(PARAM_IsDocComplete))
-				.isSubsequentRequest(params.getParameterAsBool(PARAM_IsSubsequentRequest))
 				.additionalParameters(Params.copyOf(params))
 				.build();
 	}
