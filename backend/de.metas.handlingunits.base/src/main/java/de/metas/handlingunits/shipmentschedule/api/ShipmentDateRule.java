@@ -26,10 +26,8 @@ import de.metas.common.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 
 @AllArgsConstructor
 @Getter
@@ -52,38 +50,13 @@ public enum ShipmentDateRule implements ReferenceListAwareEnum
 	public static ShipmentDateRule ofFlags(final boolean isShipDateToday, final boolean isShipDateDeliveryDate)
 	{
 		Check.assume(!(isShipDateToday && isShipDateDeliveryDate), "isShipDateToday and isShipDateDeliveryDate cannot both be true");
-		if(isShipDateToday) { return ShipmentDateRule.Today; }
-		else if (isShipDateDeliveryDate) { return ShipmentDateRule.DeliveryDate; }
-		else { return ShipmentDateRule.DeliveryDateOrToday; }
+		if (isShipDateToday) {return ShipmentDateRule.Today;}
+		else if (isShipDateDeliveryDate) {return ShipmentDateRule.DeliveryDate;}
+		else {return ShipmentDateRule.DeliveryDateOrToday;}
 	}
 
-	@Value
-	@Builder
-	public static class ShipmentDateRuleFlags
-	{
-		boolean isShipDateToday;
-		boolean isShipDateDeliveryDay;
-	}
+	public boolean isShipDateToday() {return this == Today;}
 
-	public ShipmentDateRuleFlags getFlags()
-	{
-		return switch (this)
-		{
-			case Today -> ShipmentDateRuleFlags.builder()
-					.isShipDateToday(true)
-					.isShipDateDeliveryDay(false)
-					.build();
-			case DeliveryDate -> ShipmentDateRuleFlags.builder()
-					.isShipDateToday(false)
-					.isShipDateDeliveryDay(true)
-					.build();
-			case DeliveryDateOrToday -> ShipmentDateRuleFlags.builder()
-					.isShipDateToday(false)
-					.isShipDateDeliveryDay(false)
-					.build();
-		};
-	}
+	public boolean isShipDateDeliveryDay() {return this == DeliveryDate;}
 
-	public boolean isShipDateToday() { return getFlags().isShipDateToday(); }
-	public boolean isShipDateDeliveryDay() { return getFlags().isShipDateDeliveryDay(); }
 }
