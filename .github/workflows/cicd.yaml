@@ -1008,7 +1008,7 @@ jobs:
       max-parallel: 10
       fail-fast: false
       matrix:
-        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, catchall ]
+        profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, report, flaky, catchall ]
         include:
           - profile: profile1
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @flaky and not @ignore"
@@ -1024,10 +1024,12 @@ jobs:
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor6 and not @flaky and not @ignore"
           - profile: profile7
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor7 and not @flaky and not @ignore"
+          - profile: report
+            params: -Dcucumber.filter.tags="@report and not @flaky and not @ignore"
           - profile: flaky
             params: -Dcucumber.filter.tags="@flaky and not @ignore"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore and not @flaky"
+            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @report and not @ignore and not @flaky"
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
