@@ -50,23 +50,80 @@ Feature: Jasper Reprot Tests
       | po1_l1     | po1        | product      | 10         |
     And the order identified by po1 is completed
     And after not more than 60s, M_ReceiptSchedule are found:
-      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | rs1                             | po1                   | po1_l1                    | vendor                   | vendorLocation                    | product                 | 10         | warehouseStd              |
+      | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
+      | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | warehouseStd   |
     And The jasper process is run
       | Value               | TableName | Identifier |
       | Bestellung (Jasper) | C_Order   | po1        |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | hu1                | rs1                             | N               | 1     | N               | 1     | N               | 10          | 101                                | 1000006                      |
+      | M_HU_LUTU_Configuration_ID | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | OPT.M_LU_HU_PI_ID |
+      | huLuTuConfig               | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | 101                     | 1000006           |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And create material receipt
-      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | hu1                | rs1                             | receipt1              |
+      | M_HU_ID | M_ReceiptSchedule_ID | M_InOut_ID |
+      | hu1     | rs1                  | receipt1   |
     And validate the created material receipt lines
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | C_OrderLine_ID |
-      | receipt1_line1 | receipt1   | product      | po1_l1         |
+      | receipt1_l1    | receipt1   | product      | po1_l1         |
     And The jasper process is run
       | Value                 | TableName | Identifier |
-      | Bestellung (Jasper)   | C_Order   | po1        |
       | Wareneingang (Jasper) | M_InOut   | receipt1   |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID |
+      | po_ic_1                | po1_l1         |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID |
+      | po_ic_1                |
+    And process invoice candidates
+      | C_Invoice_Candidate_ID |
+      | po_ic_1                |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID      | C_Invoice_Candidate_ID |
+      | purchaseInvoice_1 | po_ic_1                |
+    And The jasper process is run
+      | Value             | TableName | Identifier        |
+      | Rechnung (Jasper) | C_Invoice | purchaseInvoice_1 |
+
+  @from:cucumber
+  Scenario: Sales Report Test
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | so1        | true    | customer      | 2021-04-16  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so1_l1     | so1        | product      | 10         |
+    When the order identified by so1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss1        | so1_l1         | N             |
+    And The jasper process is run
+      | Value            | TableName | Identifier |
+      | Auftrag (Jasper) | C_Order   | po1        |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss1                   | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss1                   | shipment1  |
+    And The jasper process is run
+      | Value                 | TableName | Identifier |
+      | Lieferschein (Jasper) | M_InOut   | po1        |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID | C_OrderLine_ID | QtyToInvoice |
+      | so_ic1                 | so1_l1         | 10           |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID |
+      | so_ic1                 |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID | C_Invoice_ID  |
+      | so_ic1                 | salesInvoice1 |
+    And validate created invoices
+      | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | processed | docStatus |
+      | salesInvoice1 | customer      | customerLocation       | true      | CO        |
+    And The jasper process is run
+      | Value             | TableName | Identifier    |
+      | Rechnung (Jasper) | C_Invoice | salesInvoice1 |
+
+  
+
