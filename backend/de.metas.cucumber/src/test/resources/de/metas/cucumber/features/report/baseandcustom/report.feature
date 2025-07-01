@@ -8,6 +8,9 @@ Feature: Jasper Report Tests
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | true                     |
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |
       | warehouseStd   | StdWarehouse |
@@ -84,6 +87,9 @@ Feature: Jasper Report Tests
       | Value                     | TableName | Identifier        |
       | Eingangsrechnung (Jasper) | C_Invoice | purchaseInvoice_1 |
 
+
+
+
   @from:cucumber
   Scenario: Sales Report Test
     And metasfresh contains C_Orders:
@@ -124,5 +130,10 @@ Feature: Jasper Report Tests
       | Value             | TableName | Identifier    |
       | Rechnung (Jasper) | C_Invoice | salesInvoice1 |
 
-  
 
+
+  @from:cucumber
+  Scenario: Deactivate StoreArchiveOnFileSystem
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | false                    |
