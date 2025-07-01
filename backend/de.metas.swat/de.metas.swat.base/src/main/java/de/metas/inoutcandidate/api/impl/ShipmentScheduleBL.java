@@ -176,7 +176,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
@@ -673,6 +672,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.filter(record -> !record.isClosed())
 				.map(record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.collect(Collectors.toSet());
+
+		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);//as local variable, to prevent start-up error
 		invalidSchedulesService.flagForRecompute(shipmentScheduleIdsToRecompute);
 	}
 
