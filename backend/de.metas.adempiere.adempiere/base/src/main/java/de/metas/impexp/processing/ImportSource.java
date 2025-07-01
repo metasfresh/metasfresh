@@ -17,7 +17,11 @@ public interface ImportSource<ImportRecordType>
 
 	ImportRecordsSelection getSelection();
 
+	int deleteImportedRecordsOfMainSelection();
+
 	int deleteImportRecords(@NonNull ImportDataDeleteRequest request);
+
+	void clearErrorsForMainSelection();
 
 	/**
 	 * Reset standard columns (Client, Org, IsActive, Created/Updated).

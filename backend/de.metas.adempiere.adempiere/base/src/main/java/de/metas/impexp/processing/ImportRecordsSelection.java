@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 @ToString
 public final class ImportRecordsSelection
 {
-	@NonNull private final String importTableName;
+	@NonNull @Getter private final String importTableName;
 	@NonNull private final String importKeyColumnName;
 
 	@NonNull private final ClientId clientId;
