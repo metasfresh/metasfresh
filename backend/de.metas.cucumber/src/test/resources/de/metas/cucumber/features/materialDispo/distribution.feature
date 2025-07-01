@@ -338,9 +338,9 @@ Feature: create distribution to balance demand
       | ol_1                      | 8              |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID |
-      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |
-      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |
-      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       |
+      | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 14  | -14                    | targetWH       |
+      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |
+      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | -14                    | sourceWH       |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
@@ -348,15 +348,12 @@ Feature: create distribution to balance demand
 
     And after not more than 60s, following DD_Order_Candidates are found
       | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty   | Processed |
-      | c1         | p_1          | sourceWH            | targetWH         | 0 PCE | N         |
-      | c2         | p_1          | sourceWH            | targetWH         | 8 PCE | N         |
+      | c1         | p_1          | sourceWH            | targetWH         | 8 PCE | N         |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID |
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 8   | -8                     | targetWH       |                       |
-      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -8                     | targetWH       | c1                    |
-      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |
-      | c_4        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 8   | 0                      | targetWH       | c2                    |
-      | c_5        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 8   | -8                     | sourceWH       | c2                    |
+      | c_2        | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 8   | 0                      | targetWH       | c1                    |
+      | c_3        | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 8   | -8                     | sourceWH       | c1                    |
 
 
 # ###############################################################################################################################################
@@ -388,7 +385,7 @@ Feature: create distribution to balance demand
     Then after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID | DD_OrderLine_ID |
       # Sales order / shipment schedule:
-      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | targetWH       |                       |                 |
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 14  | -14                    | targetWH       |                       |                 |
       # DD_Order_Candidate:
       | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -14                    | targetWH       | c1                    |                 |
       | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |                 |
@@ -403,12 +400,12 @@ Feature: create distribution to balance demand
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID | DD_OrderLine_ID |
       # Sales order / shipment schedule:
-      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       |                       |                 |
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 14  | -14                    | targetWH       |                       |                 |
       # DD_Order_Candidate:
-      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | targetWH       | c1                    |                 |
+      | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -14                    | targetWH       | c1                    |                 |
       | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |                 |
       # DD_Order:
-      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 14                     | targetWH       |                       | ddOrderLine1    |
+      | 4          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 14  | 0                      | targetWH       |                       | ddOrderLine1    |
       | 5          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | -14 | -14                    | sourceWH       |                       | ddOrderLine1    |
     And the order identified by SO is completed
 
@@ -418,7 +415,7 @@ Feature: create distribution to balance demand
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID | DD_Order_Candidate_ID | DD_OrderLine_ID |
       # Sales order / shipment schedule:
-      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 8   | -8                    | targetWH       |                       |                 |
+      | 1          | DEMAND            | SHIPMENT                  | p_1          | 2022-07-04T00:00:00Z | 8   | -8                     | targetWH       |                       |                 |
       # DD_Order_Candidate:
       | 2          | SUPPLY            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | -8                     | targetWH       | c1                    |                 |
       | 3          | DEMAND            | DISTRIBUTION              | p_1          | 2022-07-04T00:00:00Z | 0   | 0                      | sourceWH       | c1                    |                 |

@@ -318,7 +318,7 @@ Feature: create multiple production candidates
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
-      | ppOrderCandidate_3_1 | true      | p_1          | bom_1             | ppln_1                 | testResource  | 3 PCE      | 0 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+      | ppOrderCandidate_3_1 | true      | p_1          | bom_1             | ppln_1                 | testResource  | 3 PCE      | 0 PCE        | 3 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
       | ppOrderCandidate_3_2 | true      | p_1          | bom_1             | ppln_1                 | testResource  | 9 PCE      | 5 PCE        | 4 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
 
     And after not more than 60s, PP_Orders are found
