@@ -32,7 +32,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 offer_date            timestamp WITHOUT TIME ZONE,
                 deliverytoaddress     character varying,
                 validuntil            timestamp,
-                versionno             character varying
+                versionno             character varying,
                 warehouse             character varying,
                 projectno             character varying
             )
