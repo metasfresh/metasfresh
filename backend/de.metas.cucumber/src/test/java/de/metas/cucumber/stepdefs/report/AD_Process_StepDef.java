@@ -38,17 +38,22 @@ import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessInfo;
 import de.metas.report.server.LocalReportServer;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.ArchiveRequest;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
+import org.springframework.core.io.ByteArrayResource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,6 +66,7 @@ public class AD_Process_StepDef
 
 	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
+	@NonNull private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 	@And("The jasper process is run")
 	public void run_jasper_processes(@NonNull final DataTable dataTable)
@@ -84,18 +90,33 @@ public class AD_Process_StepDef
 				.setAD_PInstance(pInstanceDAO.createAD_PInstance(processId))
 				.setReportLanguage(Language.getBaseLanguage())
 				.setJRDesiredOutputType(OutputType.PDF)
+				.setArchiveReportData(true)
 				.setRecord(TableRecordReference.of(tableName, recordId))
 				.build();
 
 		pInstanceDAO.saveProcessInfoOnly(jasperProcessInfo);
 
 		final LocalReportServer server = new LocalReportServer();
-		server.report(
+		final ReportResult reportResult = server.report(
 				processId.getRepoId(),
 				jasperProcessInfo.getPinstanceId().getRepoId(),
 				Language.getBaseLanguage().getAD_Language(),
 				OutputType.PDF
 		);
+
+		archiveBL.archive(ArchiveRequest.builder()
+				.ctx(jasperProcessInfo.getCtx())
+				.trxName(ITrx.TRXNAME_ThreadInherited)
+				.data(new ByteArrayResource(reportResult.getReportContent()))
+				.force(true) // archive it even if AutoArchive says no
+				.save(true)
+				.isReport(jasperProcessInfo.isReportingProcess())
+				.recordRef(jasperProcessInfo.getRecordRefNotNull())
+				.processId(jasperProcessInfo.getAdProcessId())
+				.pinstanceId(jasperProcessInfo.getPinstanceId())
+				.archiveName(reportResult.getReportFilename())
+				.isDirectProcessQueueItem(false)
+				.build());
 	}
 
 	private int getRecordIdForTable(final String tableName, final StepDefDataIdentifier recordIdentifier)

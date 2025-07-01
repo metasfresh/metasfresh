@@ -34,6 +34,8 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ReplicationStrategy;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.model.X_AD_Client.AUTOARCHIVE_AllReportsDocuments;
+import static org.compiere.model.X_AD_Client.AUTOARCHIVE_Documents;
 
 public class AD_Client_StepDef
 {
@@ -81,8 +83,16 @@ public class AD_Client_StepDef
 		row.getAsOptionalBoolean(I_AD_Client.COLUMNNAME_StoreArchiveOnFileSystem)
 				.ifPresent(isStoreArchiveOnFileSystem ->
 						{
+							if (isStoreArchiveOnFileSystem)
+							{
+								clientRecord.setUnixArchivePath(CUCUMBER_UNIX_ARCHIVE_PATH);
+								clientRecord.setAutoArchive(AUTOARCHIVE_AllReportsDocuments);
+							}
+							else
+							{
+								clientRecord.setAutoArchive(AUTOARCHIVE_Documents);
+							}
 							clientRecord.setStoreArchiveOnFileSystem(isStoreArchiveOnFileSystem);
-							clientRecord.setUnixArchivePath(CUCUMBER_UNIX_ARCHIVE_PATH);
 						}
 				);
 
