@@ -126,18 +126,19 @@ Feature: create multiple production candidates
     And the order identified by o_1 is completed
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
-      | oc_2       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 12 PCE     | 12 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_2       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 2 PCE      | 2 PCE        | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
-      | oc_2                  | p_2          | 120 PCE    | CO            | boml_1                |
+      | oc_1                  | p_2          | 100 PCE    | CO            | boml_1                |
+      | oc_2                  | p_2          | 20 PCE     | CO            | boml_1                |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP  | M_Warehouse_ID |
       | 1/c_1      | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | 12  | -12  | production_WH  |
-      | 2/c_2      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 0   | -12  | production_WH  |
-      | 3/c_l_1    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 0   | 0    | production_WH  |
-      | 4/c_3      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 12  | 0    | production_WH  |
-      | 5/c_l_3    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 120 | -120 | production_WH  |
+      | 2/c_2      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10  | -2   | production_WH  |
+      | 3/c_l_1    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 100 | -100 | production_WH  |
+      | 4/c_3      | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 2   | 0    | production_WH  |
+      | 5/c_l_3    | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | 20  | -120 | production_WH  |
 
     #
     # Process those 2 PP_Order_Candidates.
@@ -152,11 +153,12 @@ Feature: create multiple production candidates
       | ppo_1      | p_1          | bom_1             | ppln_1                 | testResource  | 12 PCE     | 12         | endcustomer_2 | 2021-04-16T21:00:00Z | DR        |
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
-      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | testResource  | 12 PCE     | 0 PCE        | 12 PCE       | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_1       | true      | p_1          | bom_1             | ppln_1                 | testResource  | 10 PCE     | 0 PCE        | 10 PCE       | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | testResource  | 2 PCE      | 0 PCE        | 2 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
-      | oc_2                  | ppo_1       | 12 PCE     |
+      | oc_1                  | ppo_1       | 10 PCE     |
+      | oc_2                  | ppo_1       | 2 PCE      |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP  | M_Warehouse_ID |
       | 1/c_1      | DEMAND            | SHIPMENT                  | p_1          | 2021-04-16T21:00:00Z | 12  | -12  | production_WH  |
@@ -286,9 +288,8 @@ Feature: create multiple production candidates
     And the order identified by o_3 is completed
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | SeqNo |
-      | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
-      | ppOrderCandidate_3_2 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 10 PCE     | 10 PCE       | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
-      | ppOrderCandidate_3_3 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 2 PCE      | 2 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
+      | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 3 PCE      | 3 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
+      | ppOrderCandidate_3_2 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 9 PCE      | 9 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10    |
 
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID | QtyToProcess |
@@ -300,36 +301,35 @@ Feature: create multiple production candidates
       | PP_Order_Candidate_ID |
       | ppOrderCandidate_3_1  |
       | ppOrderCandidate_3_2  |
-      | ppOrderCandidate_3_3  |
 
     # we are expecting two PP_Orders for ppOrderCandidate_3_2 and ppOrderCandidate_3_3, because
-    # CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 4+2=6
-    # so all (4) of ppOrderCandidate_3_2 end up in the first PP_Order, i.e. ppOrder_3_1.
+    # CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 3+4=7
+    # so all (3) of ppOrderCandidate_3_2 end up in the first PP_Order, i.e. ppOrder_3_1.
+    Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate_3_1
+      | PP_Order_ID | QtyEntered |
+      | ppOrder_3_1 | 3          |
+
+    # Then of ppOrderCandidate_3_3's 2PCE, 2 end up on the same PP_Order ppOrder_3_1 which then is (full) with 5 items,
+    # Therefore the remaining 2PCE of ppOrderCandidate_3_3 end up in a new PP_Order, i.e. ppOrder_3_2.
     Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate_3_2
       | PP_Order_ID | QtyEntered |
-      | ppOrder_3_1 | 4          |
-    # Then of ppOrderCandidate_3_3's 2PCE, 1 end up on the same PP_Order ppOrder_3_1 which then is (full) with 5 items,
-    # Therefore the remaining 1PCE of ppOrderCandidate_3_3 end up in a new PP_Order, i.e. ppOrder_3_2.
-    Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate_3_3
-      | PP_Order_ID | QtyEntered |
-      | ppOrder_3_1 | 1          |
-      | ppOrder_3_2 | 1          |
+      | ppOrder_3_1 | 2          |
+      | ppOrder_3_2 | 2          |
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
-      | ppOrderCandidate_3_1 | false     | p_1          | bom_1             | ppln_1                 | testResource  | 0 PCE      | 0 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
-      | ppOrderCandidate_3_2 | true      | p_1          | bom_1             | ppln_1                 | testResource  | 10 PCE     | 6 PCE        | 4 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
-      | ppOrderCandidate_3_3 | true      | p_1          | bom_1             | ppln_1                 | testResource  | 2 PCE      | 0 PCE        | 2 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+      | ppOrderCandidate_3_1 | true      | p_1          | bom_1             | ppln_1                 | testResource  | 3 PCE      | 0 PCE        | 0 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+      | ppOrderCandidate_3_2 | true      | p_1          | bom_1             | ppln_1                 | testResource  | 9 PCE      | 5 PCE        | 4 PCE        | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
 
     And after not more than 60s, PP_Orders are found
       | Identifier  | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         | DocStatus |
       | ppOrder_3_1 | p_1          | bom_1             | ppln_1                 | testResource  | 5 PCE      | 5          | endcustomer_2 | 2022-11-07T21:00:00Z | CO        |
-      | ppOrder_3_2 | p_1          | bom_1             | ppln_1                 | testResource  | 1 PCE      | 1          | endcustomer_2 | 2022-11-07T21:00:00Z | CO        |
+      | ppOrder_3_2 | p_1          | bom_1             | ppln_1                 | testResource  | 2 PCE      | 2          | endcustomer_2 | 2022-11-07T21:00:00Z | CO        |
     And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
-      | ppOrderCandidate_3_2  | ppOrder_3_1 | 4 PCE      |
-      | ppOrderCandidate_3_3  | ppOrder_3_1 | 1 PCE      |
-      | ppOrderCandidate_3_3  | ppOrder_3_2 | 1 PCE      |
+      | ppOrderCandidate_3_1  | ppOrder_3_1 | 3 PCE      |
+      | ppOrderCandidate_3_2  | ppOrder_3_1 | 2 PCE      |
+      | ppOrderCandidate_3_2  | ppOrder_3_2 | 2 PCE      |
 
 
 
