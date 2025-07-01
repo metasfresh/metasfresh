@@ -459,28 +459,22 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier    | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      # oc_1_S0460_40 was emptied when o_1_S0460_40 was reactivated
-      | oc_1_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 0 PCE      | 0 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      # oc_1_S0460_40 was updated when o_1_S0460_40 was completed
+      | oc_1_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 1 PCE      | 1 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
       # because ppo_2_S0460_40 was not voided, oc_2_S0460_40 was not emptied
       | oc_2_S0460_40 | product_2_1_S0460_40 | bom_2_S0460_40    | ppln_2_1_S0460_40      | resource_S0460 | 40 PCE     | 0 PCE        | 40 PCE       | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
-      # oc_3_S0460_40 was created when o_1_S0460_40 was completed
-      | oc_3_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 1 PCE      | 0 PCE        | 1 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | true          |
       # because oc_2_S0460_40 will provide enough qty of product_2_1_S0460_40, no child PP_Order_candidate is created for oc_3_S0460_40
 
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID | M_Product_ID         | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
-      | oc_1_S0460_40         | product_2_1_S0460_40 | 0 PCE      | CO            | boml_2_1_S0460_40     |
-      | oc_1_S0460_40         | product_2_2_S0460_40 | 0 PCE      | CO            | boml_2_2_S0460_40     |
-      | oc_2_S0460_40         | product_3_1_S0460_40 | 0 PCE      | CO            | boml_3_1_S0460_40     |
-      | oc_1_S0460_40         | product_2_1_S0460_40 | 0 PCE      | CO            | boml_2_1_S0460_40     |
-      | oc_1_S0460_40         | product_2_2_S0460_40 | 0 PCE      | CO            | boml_2_2_S0460_40     |
+      | oc_1_S0460_40         | product_2_1_S0460_40 | 20 PCE     | CO            | boml_2_1_S0460_40     |
+      | oc_1_S0460_40         | product_2_2_S0460_40 | 10 PCE     | CO            | boml_2_2_S0460_40     |
       | oc_2_S0460_40         | product_3_1_S0460_40 | 0 PCE      | CO            | boml_3_1_S0460_40     |
 
     And after not more than 60s, PP_Orders are found
       | Identifier     | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyOrdered | C_BPartner_ID     | DatePromised         | DocStatus |
       | ppo_1_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 0 PCE      | 0          | customer_S0460_40 | 2024-09-22T21:00:00Z | VO        |
       | ppo_2_S0460_40 | product_2_1_S0460_40 | bom_2_S0460_40    | ppln_2_1_S0460_40      | resource_S0460 | 40 PCE     | 40         | customer_S0460_40 | 2024-09-22T21:00:00Z | CO        |
-      | ppo_3_S0460_40 | product_1_1_S0460_40 | bom_1_S0460_40    | ppln_1_1_S0460_40      | resource_S0460 | 1 PCE      | 1          | customer_S0460_40 | 2024-09-22T21:00:00Z | CO        |
 
 ##################################################
 
@@ -567,12 +561,12 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID | PP_Order_Candidate_ID | PP_OrderLine_Candidate_ID |
-      | 01/d_1_1_S0460_50 | DEMAND            | SHIPMENT                  | product_1_1  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       |                       |                           |
-      | 02/s_1_1_S0460_50 | SUPPLY            | PRODUCTION                | product_1_1  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       | oc_1_S0460_50         |                           |
-      | 03/d_2_1_S0460_50 | DEMAND            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       | oc_1_S0460_50         | oc_1_1_S0460_50           |
-      | 04/d_2_2_S0460_50 | DEMAND            | PRODUCTION                | product_2_2  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       | oc_1_S0460_50         | oc_1_2_S0460_50           |
-      | 05/s_2_1_S0460_50 | SUPPLY            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       | oc_2_S0460_50         |                           |
-      | 06/d_3_1_S0460_50 | DEMAND            | PRODUCTION                | product_3_1  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       | oc_2_S0460_50         | oc_2_1_S0460_50           |
+      | 01/d_1_1_S0460_50 | DEMAND            | SHIPMENT                  | product_1_1  | 2024-09-22T21:00:00Z | 11  | -11 | WH_S0460       |                       |                           |
+      | 02/s_1_1_S0460_50 | SUPPLY            | PRODUCTION                | product_1_1  | 2024-09-22T21:00:00Z | 11  | 0   | WH_S0460       | oc_1_S0460_50         |                           |
+      | 03/d_2_1_S0460_50 | DEMAND            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 11  | -11 | WH_S0460       | oc_1_S0460_50         | oc_1_1_S0460_50           |
+      | 04/d_2_2_S0460_50 | DEMAND            | PRODUCTION                | product_2_2  | 2024-09-22T21:00:00Z | 22  | -22 | WH_S0460       | oc_1_S0460_50         | oc_1_2_S0460_50           |
+      | 05/s_2_1_S0460_50 | SUPPLY            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 11  | 0   | WH_S0460       | oc_2_S0460_50         |                           |
+      | 06/d_3_1_S0460_50 | DEMAND            | PRODUCTION                | product_3_1  | 2024-09-22T21:00:00Z | 33  | -33 | WH_S0460       | oc_2_S0460_50         | oc_2_1_S0460_50           |
 
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
@@ -586,51 +580,36 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
     # oc_2_S0460_50: 39.2KGM of the semi-product is actually 6.533 PCE, which is rounded up to 7PCE (because UOM-precision=0), so we have 7PCE also in the 2nd PP_Order_Candidate!
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier    | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | OPT.IsClosed | OPT.Processed |
-      | oc_3_S0460_50 | product_1_1  | bom_1_S0460_50    | ppln_1_1_S0460_50      | resource_S0460 | 7 PCE      | 7 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
-      | oc_4_S0460_50 | product_2_1  | bom_2_S0460_50    | ppln_2_1_S0460_50      | resource_S0460 | 7 PCE      | 7 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      | oc_1_S0460_50 | product_1_1  | bom_1_S0460_50    | ppln_1_1_S0460_50      | resource_S0460 | 7 PCE      | 7 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
+      | oc_2_S0460_50 | product_2_1  | bom_2_S0460_50    | ppln_2_1_S0460_50      | resource_S0460 | 7 PCE      | 7 PCE        | 0 PCE        | 2024-09-22T21:00:00Z | 2024-09-22T21:00:00Z | false        | false         |
     # oc_2_S0460_50: we want to produce 11PCE of the semi-product, which times 3 is 33
     And after not more than 60s, PP_OrderLine_Candidates are found
       | Identifier      | PP_Order_Candidate_ID | M_Product_ID | QtyEntered | ComponentType | PP_Product_BOMLine_ID |
-      | oc_3_1_S0460_50 | oc_3_S0460_50         | product_2_1  | 39.2 KGM   | CO            | boml_2_1_S0460_50     |
-      | oc_3_2_S0460_50 | oc_3_S0460_50         | product_2_2  | 14 PCE     | CO            | boml_2_2_S0460_50     |
-      | oc_4_1_S0460_50 | oc_4_S0460_50         | product_3_1  | 21 PCE     | CO            | boml_3_1_S0460_50     |
+      | oc_1_1_S0460_50 | oc_1_S0460_50         | product_2_1  | 39.2 KGM   | CO            | boml_2_1_S0460_50     |
+      | oc_1_2_S0460_50 | oc_1_S0460_50         | product_2_2  | 14 PCE     | CO            | boml_2_2_S0460_50     |
+      | oc_2_1_S0460_50 | oc_2_S0460_50         | product_3_1  | 21 PCE     | CO            | boml_3_1_S0460_50     |
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID | PP_Order_Candidate_ID | PP_OrderLine_Candidate_ID |
       | 01/d_1_1_S0460_50 | DEMAND            | SHIPMENT                  | product_1_1  | 2024-09-22T21:00:00Z | 7   | -7  | WH_S0460       |                       |                           |
-      | 02/s_1_1_S0460_50 | SUPPLY            | PRODUCTION                | product_1_1  | 2024-09-22T21:00:00Z | 0   | -7  | WH_S0460       | oc_1_S0460_50         |                           |
-      | 03/d_2_1_S0460_50 | DEMAND            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       | oc_1_S0460_50         | oc_1_1_S0460_50           |
-      | 04/d_2_2_S0460_50 | DEMAND            | PRODUCTION                | product_2_2  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       | oc_1_S0460_50         | oc_1_2_S0460_50           |
-      | 05/s_2_1_S0460_50 | SUPPLY            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       | oc_2_S0460_50         |                           |
-      | 06/d_3_1_S0460_50 | DEMAND            | PRODUCTION                | product_3_1  | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0460       | oc_2_S0460_50         | oc_2_1_S0460_50           |
-      | 07/s_1_1_S0460_50 | SUPPLY            | PRODUCTION                | product_1_1  | 2024-09-22T21:00:00Z | 7   | 0   | WH_S0460       | oc_3_S0460_50         |                           |
-      | 08/d_2_1_S0460_50 | DEMAND            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 7   | -7  | WH_S0460       | oc_3_S0460_50         | oc_3_1_S0460_50           |
-      | 09/d_2_2_S0460_50 | DEMAND            | PRODUCTION                | product_2_2  | 2024-09-22T21:00:00Z | 14  | -14 | WH_S0460       | oc_3_S0460_50         | oc_3_2_S0460_50           |
-      | 10/s_2_1_S0460_50 | SUPPLY            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 7   | 0   | WH_S0460       | oc_4_S0460_50         |                           |
-      | 11/d_3_1_S0460_50 | DEMAND            | PRODUCTION                | product_3_1  | 2024-09-22T21:00:00Z | 21  | -21 | WH_S0460       | oc_4_S0460_50         | oc_4_1_S0460_50           |
+      | 02/s_1_1_S0460_50 | SUPPLY            | PRODUCTION                | product_1_1  | 2024-09-22T21:00:00Z | 7   | 0   | WH_S0460       | oc_1_S0460_50         |                           |
+      | 03/d_2_1_S0460_50 | DEMAND            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 7   | -7  | WH_S0460       | oc_1_S0460_50         | oc_1_1_S0460_50           |
+      | 04/d_2_2_S0460_50 | DEMAND            | PRODUCTION                | product_2_2  | 2024-09-22T21:00:00Z | 14  | -14 | WH_S0460       | oc_1_S0460_50         | oc_1_2_S0460_50           |
+      | 05/s_2_1_S0460_50 | SUPPLY            | PRODUCTION                | product_2_1  | 2024-09-22T21:00:00Z | 7   | 0   | WH_S0460       | oc_2_S0460_50         |                           |
+      | 06/d_3_1_S0460_50 | DEMAND            | PRODUCTION                | product_3_1  | 2024-09-22T21:00:00Z | 21  | -21 | WH_S0460       | oc_2_S0460_50         | oc_2_1_S0460_50           |
 
 
-    And metasfresh contains this MD_Candidate_Demand_Detail data
+    And metasfresh contains this MD_Candidate_QtyDetails data
       | Identifier | MD_Candidate_ID   | Detail_MD_Candidate_ID | Qty |
       | 01_1       | 01/d_1_1_S0460_50 |                        | 0   |
       | 01_2       | 01/d_1_1_S0460_50 | 01/d_1_1_S0460_50      | -7  |
       | 02_1       | 02/s_1_1_S0460_50 | 01/d_1_1_S0460_50      | -7  |
-      | 02_2       | 02/s_1_1_S0460_50 | 02/s_1_1_S0460_50      | 0   |
+      | 02_2       | 02/s_1_1_S0460_50 | 02/s_1_1_S0460_50      | 7   |
       | 03_1       | 03/d_2_1_S0460_50 |                        | 0   |
-      | 03_2       | 03/d_2_1_S0460_50 | 03/d_2_1_S0460_50      | 0   |
+      | 03_2       | 03/d_2_1_S0460_50 | 03/d_2_1_S0460_50      | -7  |
       | 04_1       | 04/d_2_2_S0460_50 |                        | 0   |
-      | 04_2       | 04/d_2_2_S0460_50 | 04/d_2_2_S0460_50      | 0   |
-      | 05_1       | 05/s_2_1_S0460_50 | 03/d_2_1_S0460_50      | 0   |
-      | 05_2       | 05/s_2_1_S0460_50 | 05/s_2_1_S0460_50      | 0   |
+      | 04_2       | 04/d_2_2_S0460_50 | 04/d_2_2_S0460_50      | -14 |
+      | 05_1       | 05/s_2_1_S0460_50 | 03/d_2_1_S0460_50      | -7  |
+      | 05_2       | 05/s_2_1_S0460_50 | 05/s_2_1_S0460_50      | 7   |
       | 06_1       | 06/d_3_1_S0460_50 |                        | 0   |
-      | 06_2       | 06/d_3_1_S0460_50 | 06/d_3_1_S0460_50      | 0   |
-      | 07_1       | 07/s_1_1_S0460_50 | 02/s_1_1_S0460_50      | -7  |
-      | 07_2       | 07/s_1_1_S0460_50 | 07/s_1_1_S0460_50      | 7   |
-      | 08_1       | 08/d_2_1_S0460_50 | 05/s_2_1_S0460_50      | 0   |
-      | 08_2       | 08/d_2_1_S0460_50 | 08/d_2_1_S0460_50      | -7  |
-      | 09_1       | 09/d_2_2_S0460_50 | 04/d_2_2_S0460_50      | 0   |
-      | 09_2       | 09/d_2_2_S0460_50 | 09/d_2_2_S0460_50      | -14 |
-      | 10_1       | 10/s_2_1_S0460_50 | 08/d_2_1_S0460_50      | -7  |
-      | 10_2       | 10/s_2_1_S0460_50 | 10/s_2_1_S0460_50      | 7   |
-      | 11_1       | 11/d_3_1_S0460_50 | 06/d_3_1_S0460_50      | 0   |
-      | 11_2       | 11/d_3_1_S0460_50 | 11/d_3_1_S0460_50      | -21 |
+      | 06_2       | 06/d_3_1_S0460_50 | 06/d_3_1_S0460_50      | -21 |

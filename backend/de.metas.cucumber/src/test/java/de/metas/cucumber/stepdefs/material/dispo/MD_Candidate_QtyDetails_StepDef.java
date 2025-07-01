@@ -44,8 +44,8 @@ public class MD_Candidate_QtyDetails_StepDef
 	@NonNull private final MD_Candidate_QtyDetails_StepDefData qtyDetailsTable;
 	@NonNull private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
 
-	@And("metasfresh contains this MD_Candidate_Demand_Detail data")
-	public void metasfresh_generates_this_MD_Candidate_Demand_Detail_data(@NonNull final DataTable dataTable)
+	@And("metasfresh contains this MD_Candidate_QtyDetails data")
+	public void metasfresh_generates_this_MD_Candidate_QtyDetails_data(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::validateQtyDetails);
 	}
