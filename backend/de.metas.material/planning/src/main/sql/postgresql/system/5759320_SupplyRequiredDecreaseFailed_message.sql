@@ -2,7 +2,7 @@
 
 -- Value: de.metas.material.dispo.SupplyRequiredDecreasedIncomplete
 -- 2025-07-01T07:04:39.544Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545565,0,TO_TIMESTAMP('2025-07-01 07:04:39.391000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.material.dispo','Y','Eine automatische Mengenreduzierung konnte nicht durchgeführt werden. Manuelle Anpassungen sind erforderlich. Verbleibende Menge zu reduzieren: {}.','E',TO_TIMESTAMP('2025-07-01 07:04:39.391000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.material.dispo.SupplyRequiredDecreaseFailed')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545565,0,TO_TIMESTAMP('2025-07-01 07:04:39.391000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.material.dispo','Y','Mengenänderungen können nicht automatisch in die Folgebelege übertragen werden, da diese bereits in Bearbeitung sind. Es sind manuelle Anpassungen erforderlich. Noch zu ändernde Restmenge: {}.','E',TO_TIMESTAMP('2025-07-01 07:04:39.391000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.material.dispo.SupplyRequiredDecreaseFailed')
 ;
 
 -- 2025-07-01T07:04:39.547Z
@@ -11,7 +11,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- Value: de.metas.material.dispo.SupplyRequiredDecreasedIncomplete
 -- 2025-07-01T07:04:57.190Z
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Could not handle automatically a reduction in quantity. Manual adjustments are necessary. Remaining qty to reduce: {}.',Updated=TO_TIMESTAMP('2025-07-01 07:04:57.190000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545565
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Quantity changes cannot be automatically transferred to follow-on documents as these are already being processed. Manual adjustments are required. Remaining quantity to be changed: {}.',Updated=TO_TIMESTAMP('2025-07-01 07:04:57.190000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545565
 ;
 
 -- 2025-07-01T07:04:57.191Z
