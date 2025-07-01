@@ -10,7 +10,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 
 -- 2022-06-13T11:29:17.414Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,555901,TO_TIMESTAMP('2022-06-13 12:29:17','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_FoodAdvice',1,'Y','N','Y','Y','M_FoodAdvice','N',1000000,TO_TIMESTAMP('2022-06-13 12:29:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,555901,TO_TIMESTAMP('2022-06-13 12:29:17','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_FoodAdvice',1,'Y','N','Y','Y','M_FoodAdvice',1000000,TO_TIMESTAMP('2022-06-13 12:29:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-06-13T11:29:17.423Z
@@ -240,7 +240,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 
 -- 2022-06-13T11:53:20.462Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,555902,TO_TIMESTAMP('2022-06-13 12:53:20','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_FoodAdvice_Trl',1,'Y','N','Y','Y','M_FoodAdvice_Trl','N',1000000,TO_TIMESTAMP('2022-06-13 12:53:20','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,555902,TO_TIMESTAMP('2022-06-13 12:53:20','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_FoodAdvice_Trl',1,'Y','N','Y','Y','M_FoodAdvice_Trl',1000000,TO_TIMESTAMP('2022-06-13 12:53:20','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-06-13T11:53:20.467Z

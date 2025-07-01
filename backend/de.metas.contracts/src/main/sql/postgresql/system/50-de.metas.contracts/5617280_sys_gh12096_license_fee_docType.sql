@@ -50,7 +50,7 @@ UPDATE C_DocType SET IsSOTrx='Y',Updated=TO_TIMESTAMP('2021-12-06 21:14:59','YYY
 
 -- 2021-12-06T19:48:46.542Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (1000000,1000000,555672,TO_TIMESTAMP('2021-12-06 21:48:46','YYYY-MM-DD HH24:MI:SS'),100,1000000,100,1,'Y','N','N','N','Lizenzgebühr Doc No','N',1000000,TO_TIMESTAMP('2021-12-06 21:48:46','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (1000000,1000000,555672,TO_TIMESTAMP('2021-12-06 21:48:46','YYYY-MM-DD HH24:MI:SS'),100,1000000,100,1,'Y','N','N','N','Lizenzgebühr Doc No',1000000,TO_TIMESTAMP('2021-12-06 21:48:46','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-12-06T19:48:48.753Z

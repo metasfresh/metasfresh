@@ -8,7 +8,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2022-11-10T10:28:08.616Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556046,TO_TIMESTAMP('2022-11-10 12:28:08.244','YYYY-MM-DD HH24:MI:SS.US'),100,1000000,50000,'Table PP_Order_Weighting_Run',1,'Y','N','Y','Y','PP_Order_Weighting_Run','N',1000000,TO_TIMESTAMP('2022-11-10 12:28:08.244','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556046,TO_TIMESTAMP('2022-11-10 12:28:08.244','YYYY-MM-DD HH24:MI:SS.US'),100,1000000,50000,'Table PP_Order_Weighting_Run',1,'Y','N','Y','Y','PP_Order_Weighting_Run',1000000,TO_TIMESTAMP('2022-11-10 12:28:08.244','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2022-11-10T10:28:08.760Z
@@ -420,7 +420,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2022-11-10T13:05:51.937Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556047,TO_TIMESTAMP('2022-11-10 15:05:51.846','YYYY-MM-DD HH24:MI:SS.US'),100,1000000,50000,'Table PP_Order_Weighting_RunCheck',1,'Y','N','Y','Y','PP_Order_Weighting_RunCheck','N',1000000,TO_TIMESTAMP('2022-11-10 15:05:51.846','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556047,TO_TIMESTAMP('2022-11-10 15:05:51.846','YYYY-MM-DD HH24:MI:SS.US'),100,1000000,50000,'Table PP_Order_Weighting_RunCheck',1,'Y','N','Y','Y','PP_Order_Weighting_RunCheck',1000000,TO_TIMESTAMP('2022-11-10 15:05:51.846','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2022-11-10T13:05:51.946Z
@@ -762,7 +762,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2022-11-10T13:18:30.382Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556048,TO_TIMESTAMP('2022-11-10 15:18:30.289','YYYY-MM-DD HH24:MI:SS.US'),100,1000000,50000,'Table PP_Weighting_Spec',1,'Y','N','Y','Y','PP_Weighting_Spec','N',1000000,TO_TIMESTAMP('2022-11-10 15:18:30.289','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556048,TO_TIMESTAMP('2022-11-10 15:18:30.289','YYYY-MM-DD HH24:MI:SS.US'),100,1000000,50000,'Table PP_Weighting_Spec',1,'Y','N','Y','Y','PP_Weighting_Spec',1000000,TO_TIMESTAMP('2022-11-10 15:18:30.289','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2022-11-10T13:18:30.386Z
