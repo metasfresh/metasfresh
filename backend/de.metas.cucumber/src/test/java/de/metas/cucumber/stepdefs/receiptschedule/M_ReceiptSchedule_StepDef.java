@@ -134,27 +134,27 @@ public class M_ReceiptSchedule_StepDef
 					final StepDefDataIdentifier orderIdentifier = row.getAsIdentifier(COLUMNNAME_C_Order_ID);
 					final I_C_Order order = orderTable.get(orderIdentifier);
 
-					final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier orderLineIdentifier = row.getAsIdentifier(COLUMNNAME_C_OrderLine_ID);
 					final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 
-					final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier bPartnerIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
 					final I_C_BPartner bPartnerRecord = bPartnerTable.get(bPartnerIdentifier);
 
-					final String bpPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier bpPartnerLocationIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID);
 					final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bpPartnerLocationIdentifier)
 							.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-							.orElseGet(() -> Integer.parseInt(bpPartnerLocationIdentifier));
+							.orElseGet(bpPartnerLocationIdentifier::getAsInt);
 					Assertions.assertThat(bPartnerLocationID).isNotNull();
 
-					final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
 					final Integer productID = productTable.getOptional(productIdentifier)
 							.map(I_M_Product::getM_Product_ID)
-							.orElseGet(() -> Integer.parseInt(productIdentifier));
+							.orElseGet(productIdentifier::getAsInt);
 					Assertions.assertThat(productID).isNotNull();
 
 					final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyOrdered);
 
-					final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
 					final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
 
 					assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());

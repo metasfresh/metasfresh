@@ -1,7 +1,6 @@
 @report
 @from:cucumber
-@ghActions:run_on_executor6
-Feature: Jasper Reprot Tests
+Feature: Jasper Report Tests
 
   Background:
     Given infrastructure and metasfresh are running
@@ -73,8 +72,8 @@ Feature: Jasper Reprot Tests
       | C_Invoice_Candidate_ID | C_OrderLine_ID |
       | po_ic_1                | po1_l1         |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
-      | C_Invoice_Candidate_ID |
-      | po_ic_1                |
+      | C_Invoice_Candidate_ID.Identifier |
+      | po_ic_1                           |
     And process invoice candidates
       | C_Invoice_Candidate_ID |
       | po_ic_1                |
@@ -82,8 +81,8 @@ Feature: Jasper Reprot Tests
       | C_Invoice_ID      | C_Invoice_Candidate_ID |
       | purchaseInvoice_1 | po_ic_1                |
     And The jasper process is run
-      | Value             | TableName | Identifier        |
-      | Rechnung (Jasper) | C_Invoice | purchaseInvoice_1 |
+      | Value                     | TableName | Identifier        |
+      | Eingangsrechnung (Jasper) | C_Invoice | purchaseInvoice_1 |
 
   @from:cucumber
   Scenario: Sales Report Test
@@ -99,7 +98,7 @@ Feature: Jasper Reprot Tests
       | ss1        | so1_l1         | N             |
     And The jasper process is run
       | Value            | TableName | Identifier |
-      | Auftrag (Jasper) | C_Order   | po1        |
+      | Auftrag (Jasper) | C_Order   | so1        |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | ss1                   | D            | true                | false       |
@@ -108,10 +107,10 @@ Feature: Jasper Reprot Tests
       | ss1                   | shipment1  |
     And The jasper process is run
       | Value                 | TableName | Identifier |
-      | Lieferschein (Jasper) | M_InOut   | po1        |
+      | Lieferschein (Jasper) | M_InOut   | shipment1  |
     And after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID | C_OrderLine_ID | QtyToInvoice |
-      | so_ic1                 | so1_l1         | 10           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | so_ic1                            | so1_l1                    | 10           |
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID |
       | so_ic1                 |

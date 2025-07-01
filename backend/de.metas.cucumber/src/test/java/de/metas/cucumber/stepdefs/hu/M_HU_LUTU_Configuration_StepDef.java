@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -209,7 +210,7 @@ public class M_HU_LUTU_Configuration_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID)
 				.forEach(tableRow -> {
-					final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier receiptScheduleIdentifier = tableRow.getAsIdentifier(I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID);
 					final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
 					assertThat(receiptSchedule).isNotNull();
 					InterfaceWrapperHelper.refresh(receiptSchedule);
@@ -255,13 +256,13 @@ public class M_HU_LUTU_Configuration_StepDef
 
 		if (noOfHusGenerated != null)
 		{
-			final String huListIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "OPT.HUList." + TABLECOLUMN_IDENTIFIER);
+			final StepDefDataIdentifier huListIdentifier = tableRow.getAsIdentifier("HUList");
 			assertThat(hus.size()).isEqualTo(noOfHusGenerated);
 			huListTable.putOrReplace(huListIdentifier, hus);
 		}
 		else
 		{
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final StepDefDataIdentifier huIdentifier = tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID);
 			assertThat(hus.size()).isEqualTo(1);
 			huTable.putOrReplace(huIdentifier, hus.get(0));
 		}
@@ -270,22 +271,23 @@ public class M_HU_LUTU_Configuration_StepDef
 	@NonNull
 	private I_M_HU_LUTU_Configuration computeLUTUConfiguration(@NonNull final I_M_HU_LUTU_Configuration lutuConfig, @NonNull final DataTableRow row)
 	{
-		final String piProductItemIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final
+		StepDefDataIdentifier piProductItemIdentifier = row.getAsIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID);
 		final Integer huPiItemProductId = huPiItemProductTable.getOptional(piProductItemIdentifier)
 				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
-				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));
+				.orElseGet(piProductItemIdentifier::getAsInt);
 		assertThat(huPiItemProductId).isNotNull();
 
-		final boolean isInfiniteQtyCU = DataTableUtil.extractBooleanForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyCU);
-		final BigDecimal qtyCUsPerTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCUsPerTU);
+		final boolean isInfiniteQtyCU = row.getAsBoolean(I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyCU);
+		final BigDecimal qtyCUsPerTU = row.getAsBigDecimal(I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCUsPerTU);
 
 		// CU
 		lutuConfig.setQtyCUsPerTU(qtyCUsPerTU);
 		lutuConfig.setIsInfiniteQtyCU(isInfiniteQtyCU);
 
 		// TU
-		final boolean isInfiniteQtyTU = DataTableUtil.extractBooleanForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyTU);
-		final BigDecimal qtyTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyTU);
+		final boolean isInfiniteQtyTU = row.getAsBoolean(I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyTU);
+		final BigDecimal qtyTU = row.getAsBigDecimal(I_M_HU_LUTU_Configuration.COLUMNNAME_QtyTU);
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), huPiItemProductId, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
@@ -295,15 +297,15 @@ public class M_HU_LUTU_Configuration_StepDef
 		lutuConfig.setIsInfiniteQtyTU(isInfiniteQtyTU);
 
 		// LU
-		final boolean isInfiniteQtyLU = DataTableUtil.extractBooleanForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyLU);
-		final BigDecimal qtyLU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyLU);
+		final boolean isInfiniteQtyLU = row.getAsBoolean(I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyLU);
+		final BigDecimal qtyLU = row.getAsBigDecimal(I_M_HU_LUTU_Configuration.COLUMNNAME_QtyLU);
 
 		if (qtyLU.signum() > 0)
 		{
-			final String luHuPiIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT.M_LU_HU_PI_ID." + TABLECOLUMN_IDENTIFIER);
+			final StepDefDataIdentifier luHuPiIdentifier = row.getAsIdentifier(I_M_HU_LUTU_Configuration.COLUMNNAME_M_LU_HU_PI_ID);
 			final Integer luHuPiId = huPiTable.getOptional(luHuPiIdentifier)
 					.map(I_M_HU_PI::getM_HU_PI_ID)
-					.orElseGet(() -> Integer.parseInt(luHuPiIdentifier));
+					.orElseGet(luHuPiIdentifier::getAsInt);
 			assertThat(luHuPiId).isNotNull();
 
 			final I_M_HU_PI luPI = InterfaceWrapperHelper.create(Env.getCtx(), luHuPiId, I_M_HU_PI.class, ITrx.TRXNAME_None);
@@ -327,7 +329,7 @@ public class M_HU_LUTU_Configuration_StepDef
 
 		InterfaceWrapperHelper.saveRecord(lutuConfig);
 
-		final String lutuIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final StepDefDataIdentifier lutuIdentifier = row.getAsIdentifier(I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID);
 		huLutuConfigurationTable.putOrReplace(lutuIdentifier, lutuConfig);
 
 		return lutuConfig;
