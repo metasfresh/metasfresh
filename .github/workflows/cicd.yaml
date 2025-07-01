@@ -1060,7 +1060,6 @@ jobs:
       - name: push-results
         run: |
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/metasfreshArchives/**/*.pdf"
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                                                                                       
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
       - name: push-database-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
