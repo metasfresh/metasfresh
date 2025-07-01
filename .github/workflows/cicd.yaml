@@ -1082,10 +1082,11 @@ jobs:
         with:
           name: cucumber-logs-${{ matrix.profile }}
           path: cucumber.log
+          retention-days: 30
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: jasper reports PDFs
+          name: jasperReportsPDFs-${{ matrix.profile }}
           path: cucumber/metasfreshArchives/
           retention-days: 30
 
