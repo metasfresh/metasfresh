@@ -1059,8 +1059,6 @@ jobs:
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results
         run: |
-#          find cucumber -type d -links 2 -not -path "cucumber/metasfreshArchives/*" -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;
-#          find cucumber -type d -links 2 -exec testspace "artifact:[cucumber/${{ matrix.profile }}]cucumber/*.pdf" \;
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
           testspace "[cucumber/${{ matrix.profile }}]cucumber/metasfreshArchives/**/*.pdf"
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                                                                                       
