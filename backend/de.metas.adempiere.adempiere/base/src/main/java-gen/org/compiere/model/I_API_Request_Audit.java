@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for API_Request_Audit
  *  @author metasfresh (generated) 
@@ -49,6 +50,33 @@ public interface I_API_Request_Audit
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Process Instance.
+	 * Instance of a Process
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_PInstance_ID (int AD_PInstance_ID);
+
+	/**
+	 * Get Process Instance.
+	 * Instance of a Process
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_PInstance_ID();
+
+	@Nullable org.compiere.model.I_AD_PInstance getAD_PInstance();
+
+	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
+
+	ModelColumn<I_API_Request_Audit, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_API_Request_Audit.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
+	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
 	/**
 	 * Set Role.
