@@ -41,7 +41,7 @@ Feature: Jasper Report Tests
       | vendorLocation   | vendor        | CH           | Y               | Y               |
       | customerLocation | customer      | CH           | Y               | Y               |
 
-
+  @S0471_100
   @from:cucumber
   Scenario: Purchase Report Test
     When metasfresh contains C_Orders:
@@ -89,7 +89,7 @@ Feature: Jasper Report Tests
 
 
 
-
+  @S0471_200
   @from:cucumber
   Scenario: Sales Report Test
     And metasfresh contains C_Orders:
@@ -129,6 +129,7 @@ Feature: Jasper Report Tests
     And The jasper process is run
       | Value             | TableName | Identifier    |
       | Rechnung (Jasper) | C_Invoice | salesInvoice1 |
+
 
 
 
