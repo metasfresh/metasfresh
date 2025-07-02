@@ -117,7 +117,7 @@ public class C_OLCandToOrderEnqueuer
 	private OlCandEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId selectionId, @Nullable final AsyncBatchId asyncBatchId)
 	{
 		final ILock mainLock = lockSelection(selectionId);
-		try (final ILockAutoCloseable l = mainLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
+		try (final ILockAutoCloseable ignored = mainLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
 		{
 			return enqueueSelectionInTrx(mainLock, selectionId, asyncBatchId);
 		}

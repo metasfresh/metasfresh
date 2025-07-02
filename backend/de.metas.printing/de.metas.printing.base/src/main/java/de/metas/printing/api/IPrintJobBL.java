@@ -25,7 +25,7 @@ package de.metas.printing.api;
 
 import java.util.List;
 
-import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.AsyncBatchId;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
@@ -99,5 +99,5 @@ public interface IPrintJobBL extends ISingletonService
 	/**
 	 * Enqueue print job instructions for async pdf printing
 	 */
-	void enqueuePrintJobInstructions(I_C_Print_Job_Instructions jobInstructions, I_C_Async_Batch asyncBatch);
+	void enqueuePrintJobInstructions(@NonNull I_C_Print_Job_Instructions jobInstructions, AsyncBatchId asyncBatchId);
 }
