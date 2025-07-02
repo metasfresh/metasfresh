@@ -78,7 +78,7 @@ Feature: create purchase simulation
     And the order identified by o_1 is completed
     And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
       | Identifier | QtyToPurchase |
-      | pc_1       | 100           |
+      | pc_1       | 100 PCE       |
 
     Then after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | C_Purchase_Candidate_ID |
@@ -89,7 +89,7 @@ Feature: create purchase simulation
 
     And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
       | Identifier | QtyToPurchase |
-      | pc_1       | 0             |
+      | pc_1       | 100 PCE       |
 
     And after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | C_Purchase_Candidate_ID |
@@ -103,7 +103,7 @@ Feature: create purchase simulation
 
     And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
       | Identifier | QtyToPurchase |
-      | pc_1       | 30            |
+      | pc_1       | 30 PCE        |
 
     And after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | C_Purchase_Candidate_ID |
@@ -124,7 +124,7 @@ Feature: create purchase simulation
     And the order identified by o_1 is completed
     And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
       | Identifier | QtyToPurchase |
-      | pc_1       | 100           |
+      | pc_1       | 100 PCE       |
 
     Then after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | C_Purchase_Candidate_ID |
@@ -164,7 +164,7 @@ Feature: create purchase simulation
 
     And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
       | Identifier | QtyToPurchase |
-      | pc_1       | 0             |
+      | pc_1       | 100 PCE       |
 
     And after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |

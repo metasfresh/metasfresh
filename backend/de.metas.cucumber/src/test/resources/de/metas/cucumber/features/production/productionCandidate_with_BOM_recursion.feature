@@ -455,6 +455,8 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1_S0460_40             | 1              |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     When the order identified by o_1_S0460_40 is completed
 
     Then after not more than 60s, PP_Order_Candidates are found
