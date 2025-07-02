@@ -52,7 +52,7 @@ public class M_HU_PI_StepDef
 	public void add_M_HU_PI(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName("M_HU_PI_ID")
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_HU_PI_ID)
 				.forEach((row) -> {
 					final String name = row.suggestValueAndName().getName();
 					final boolean active = row.getAsOptionalBoolean("IsActive").orElseTrue();

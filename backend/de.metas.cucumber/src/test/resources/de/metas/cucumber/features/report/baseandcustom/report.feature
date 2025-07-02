@@ -7,13 +7,13 @@ Feature: Jasper Report Tests
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
-    And metasfresh has date and time 2021-04-14T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |
       | 1000000    | true                     |
-    And load M_Warehouse:
-      | M_Warehouse_ID | Value        |
-      | warehouseStd   | StdWarehouse |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | wh             |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -40,26 +40,45 @@ Feature: Jasper Report Tests
       | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation   | vendor        | CH           | Y               | Y               |
       | customerLocation | customer      | CH           | Y               | Y               |
+    And metasfresh contains C_Tax
+      | Identifier        | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | de_ch_tax         | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
+      | ch_ch_tax         | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
 
   @S0471_100
   @from:cucumber
   Scenario: Purchase Report Test
     When metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | DatePromised        | M_Warehouse_ID |
-      | po1        | N       | vendor        | 2021-04-16  | POO         | ps_1               | 2021-04-15T15:00:00 | warehouseStd   |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID |
+      | po1        | N       | vendor        | 2025-04-01  | POO         | ps_1               | wh             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | po1_l1     | po1        | product      | 10         |
     And the order identified by po1 is completed
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
-      | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | warehouseStd   |
+      | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | wh   |
     And The jasper process is run
       | Value               | Record_ID  |
       | Bestellung (Jasper) | po1        |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | LU         |
+      | TU         |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | LU_Version         | LU         | LU          | Y         |
+      | TU_Version         | TU         | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | OPT.Included_HU_PI_ID |
+      | huPiItemLU      | LU_Version         | 10  | HU       | TU                    |
+      | huPiItemTU      | TU_Version         |     | MI       |                       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | product_TU_10CU         | huPiItemTU      | product      | 10  | 2021-01-01 |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
-      | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | 101                     | 1000006       |
+      | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | product_TU_10CU         | LU            |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And create material receipt
@@ -93,15 +112,15 @@ Feature: Jasper Report Tests
   @from:cucumber
   Scenario: Sales Report Test
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | so1        | true    | customer      | 2021-04-16  |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so1        | true    | customer      | 2025-04-01  | wh             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so1_l1     | so1        | product      | 10         |
     When the order identified by so1 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss1        | so1_l1         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
+      | ss1        | so1_l1         | N             | wh             |
     And The jasper process is run
       | Value            | Record_ID  |
       | Auftrag (Jasper) | so1        |
