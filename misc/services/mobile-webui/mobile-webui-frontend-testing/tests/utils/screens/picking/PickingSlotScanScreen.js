@@ -12,6 +12,10 @@ export const PickingSlotScanScreen = {
         await containerElement().waitFor();
     }),
 
+    waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
+        await expect(page.locator('#input-text')).toHaveValue('');
+    }),
+
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {
         await page.type('#input-text', qrCode);
     }),
@@ -42,10 +46,10 @@ const locatePickingSlotButtons = ({ index, qrCode, bpartnerLocationId, countHUs 
     if (qrCode != null) {
         selector += `[data-testid="${cssEscape(qrCode)}"]`;
     }
-    if(bpartnerLocationId != null) {
+    if (bpartnerLocationId != null) {
         selector += `[data-bpartnerlocationid="${bpartnerLocationId}"]`;
     }
-    if(countHUs != null) {
+    if (countHUs != null) {
         selector += `[data-detail-value1="${countHUs}"]`;
     }
 

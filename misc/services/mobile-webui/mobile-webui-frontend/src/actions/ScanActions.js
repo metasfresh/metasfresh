@@ -3,6 +3,7 @@ import { getScannedBarcodeSuggestions, postScannedBarcode } from '../api/scanner
 import { updateWFProcess } from './WorkflowActions';
 import { fireWFActivityCompleted } from '../apps';
 import { useQuery } from '../hooks/useQuery';
+import { toastError } from '../utils/toast';
 
 export const setScannedBarcode = ({
   applicationId,
@@ -32,10 +33,11 @@ export const setScannedBarcode = ({
     } catch (error) {
       dispatch(updateScannedBarcodeState({ wfProcessId, activityId, scannedBarcode: null }));
 
-      throw {
+      toastError({
         axiosError: error,
-        fallbackMessageKey: 'activities.scanBarcode.invalidScannedBarcode',
-      };
+        fallbackMessageKey: 'error.qrCode.invalid',
+        context: { wfProcessId, activityId, scannedBarcode },
+      });
     }
   };
 };
