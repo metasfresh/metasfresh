@@ -74,7 +74,7 @@ Feature: Jasper Report Tests
       | product_TU_10CU         | huPiItemTU      | product      | 10  | 2021-01-01 |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
-      | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | product_TU_10CU         | huPiItemLU    |
+      | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | product_TU_10CU         | LU            |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And create material receipt
