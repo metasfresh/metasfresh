@@ -8,6 +8,7 @@ Feature: Jasper Report Tests
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
+    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |
       | 1000000    | true                     |
@@ -57,7 +58,7 @@ Feature: Jasper Report Tests
     And the order identified by po1 is completed
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
-      | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | wh   |
+      | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | wh             |
     And The jasper process is run
       | Value               | Record_ID  |
       | Bestellung (Jasper) | po1        |
