@@ -40,19 +40,30 @@ export const PickingJobScreen = {
         await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    scanPickingSlot: async ({ qrCode, expectScanHUScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
-        const button = page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`);
+    clickPickingSlotButton: async () => await step(`${NAME} - Click Picking Slot button`, async () => {
+        const button = pickingSlotButton();
         await button.waitFor();
         await expect(button).toBeEnabled();
         await button.tap();
+
         await PickingSlotScanScreen.waitForScreen();
+    }),
+
+    expectPickingSlotButtonGreen: async () => await step(`${NAME} - Expect Picking Slot button to be green`, async () => {
+        const button = pickingSlotButton();
+        await button.waitFor();
+        await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    scanPickingSlot: async ({ qrCode, expectScanHUScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
+        await PickingJobScreen.clickPickingSlotButton();
         await PickingSlotScanScreen.typeQRCode(qrCode);
+
         if (expectScanHUScreen) {
             await PickLineScanScreen.waitForScreen();
         } else {
             await PickingJobScreen.waitForScreen();
-            await button.waitFor();
-            await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+            await PickingJobScreen.expectPickingSlotButtonGreen();
         }
     }),
 
@@ -137,6 +148,10 @@ export const PickingJobScreen = {
 //
 //
 //
+
+const pickingSlotButton = () => {
+    return page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`);
+}
 
 const locateLineButton = ({ index }) => {
     return page.locator(`#line-0-${index - 1}-button`);
