@@ -456,20 +456,6 @@ public class PickingJobService implements PickingSlotListener
 		}
 	}
 
-	public void getPickingSlotSuggestions(@NonNull final PickingJobId pickingJobId, @Nullable PickingJobLineId lineId)
-	{
-		final PickingJob pickingJob = getById(pickingJobId);
-		if (lineId != null)
-		{
-
-		}
-		final PickingJobLine line = pickingJob.getLineById(lineId);
-		line.getCustomerId();
-		line.getDeliveryBPLocationId();
-		pickingJob.getCustomerId();
-		pickingJob.getDeliveryBPLocationId();
-	}
-
 	public PickingJob closeLine(final PickingJob pickingJob, final PickingJobLineId pickingLineId)
 	{
 		final PickingJob pickingJobChanged = pickingJob.withChangedLine(pickingLineId, line -> line.withManuallyClosed(true));

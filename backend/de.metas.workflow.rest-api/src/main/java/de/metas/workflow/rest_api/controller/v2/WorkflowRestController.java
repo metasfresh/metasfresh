@@ -273,7 +273,6 @@ public class WorkflowRestController
 			@PathVariable("wfProcessId") final String wfProcessIdStr,
 			@PathVariable("wfActivityId") final String wfActivityIdStr)
 	{
-		final UserId invokerId = Env.getLoggedUserId();
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		assertAccess(wfProcessId.getApplicationId());
 
