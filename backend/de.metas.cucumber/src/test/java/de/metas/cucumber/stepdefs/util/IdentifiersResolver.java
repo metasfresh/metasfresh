@@ -57,8 +57,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class IdentifiersResolver
 {
-	public static final String RECORD_ID = "Record_ID";
-
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_Payment_StepDefData paymentTable;
 	@NonNull private final C_AllocationHdr_StepDefData allocationTable;

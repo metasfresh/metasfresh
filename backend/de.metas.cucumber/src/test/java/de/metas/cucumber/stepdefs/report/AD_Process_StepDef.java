@@ -47,12 +47,13 @@ import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.springframework.core.io.ByteArrayResource;
 
-import static de.metas.cucumber.stepdefs.util.IdentifiersResolver.RECORD_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class AD_Process_StepDef
 {
+	@NonNull private static final String RECORD_ID = "Record_ID";
+
 	@NonNull private final IdentifiersResolver identifiersResolver;
 
 	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);

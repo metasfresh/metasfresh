@@ -103,9 +103,9 @@ public class M_HU_LUTU_Configuration_StepDef
 	public void create_M_HU_LUTU_Configuration_for_pp_order(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID)
 				.forEach(tableRow -> {
-					final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-					final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+					final I_PP_Order ppOrder = ppOrderTable.get(tableRow.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID));
 
 					final de.metas.handlingunits.model.I_PP_Order huPPOrder = InterfaceWrapperHelper.load(ppOrder.getPP_Order_ID(), de.metas.handlingunits.model.I_PP_Order.class);
 
@@ -329,9 +329,7 @@ public class M_HU_LUTU_Configuration_StepDef
 
 		InterfaceWrapperHelper.saveRecord(lutuConfig);
 
-		row.getAsOptionalIdentifier(I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID).ifPresent(
-				lutuIdentifier -> huLutuConfigurationTable.putOrReplace(lutuIdentifier, lutuConfig)
-		);
+		row.getAsOptionalIdentifier().ifPresent(lutuIdentifier -> huLutuConfigurationTable.putOrReplace(lutuIdentifier, lutuConfig));
 
 		return lutuConfig;
 	}
