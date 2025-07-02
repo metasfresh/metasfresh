@@ -128,10 +128,13 @@ public class SupplyRequiredDecreasedNotificationProducer
 		}
 
 		//deadletter recipient
-		final UserId supervisorId = orgDAO.getOrgInfoById(descriptor.getOrgId()).getSupervisorId();
-		if (userIds.isEmpty() && supervisorId != null && supervisorId.isRegularUser())
+		if (userIds.isEmpty())
 		{
-			userIds.add(supervisorId);
+			final UserId supervisorId = orgDAO.getOrgInfoById(descriptor.getOrgId()).getSupervisorId();
+			if (supervisorId != null && supervisorId.isRegularUser())
+			{
+				userIds.add(supervisorId);
+			}
 		}
 
 		return userIds;
