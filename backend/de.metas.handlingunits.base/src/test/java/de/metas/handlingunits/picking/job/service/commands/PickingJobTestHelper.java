@@ -63,6 +63,7 @@ import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingConfigRepository;
@@ -193,7 +194,8 @@ public class PickingJobTestHelper
 				inventoryService,
 				huReservationService,
 				workplaceService,
-				profileRepository
+				profileRepository,
+				DummyDocumentLocationBL.newInstanceForUnitTesting()
 		);
 
 		huTracer = new HUTracerInstance()

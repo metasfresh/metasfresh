@@ -46,10 +46,4 @@ public class PickingSlotRepository
 	{
 		return pickingSlotDAO.getPickingSlotIdAndCaptions(pickingSlotIds);
 	}
-
-	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final PickingSlotQuery query)
-	{
-		return pickingSlotDAO.retrievePickingSlotIdAndCaptions(query);
-	}
-
 }

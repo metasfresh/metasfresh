@@ -65,11 +65,11 @@ public class DocumentLocation
 		}
 		if (bpartnerLocationId != null && !bpartnerLocationId.getBpartnerId().equals(bpartnerId))
 		{
-			throw new AdempiereException("" + bpartnerId + " and " + bpartnerLocationId + " shall match");
+			throw new AdempiereException("Given " + bpartnerId + " and " + bpartnerLocationId + " shall match");
 		}
 		if (contactId != null && !contactId.getBpartnerId().equals(bpartnerId))
 		{
-			throw new AdempiereException("" + bpartnerId + " and " + contactId + " shall match");
+			throw new AdempiereException("Given " + bpartnerId + " and " + contactId + " shall match");
 		}
 
 		this.bpartnerId = bpartnerId;
@@ -86,17 +86,6 @@ public class DocumentLocation
 				.bpartnerLocationId(bpartnerLocationId)
 				.contactId(null)
 				.locationId(null)
-				.bpartnerAddress(null)
-				.build();
-	}
-
-	public static DocumentLocation ofBPartnerLocationAndCaptureId(@NonNull BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
-	{
-		return builder()
-				.bpartnerId(bPartnerLocationAndCaptureId.getBpartnerId())
-				.bpartnerLocationId(bPartnerLocationAndCaptureId.getBpartnerLocationId())
-				.contactId(null)
-				.locationId(bPartnerLocationAndCaptureId.getLocationCaptureId())
 				.bpartnerAddress(null)
 				.build();
 	}
