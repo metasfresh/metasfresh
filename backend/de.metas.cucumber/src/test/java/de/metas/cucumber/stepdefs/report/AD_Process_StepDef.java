@@ -22,14 +22,9 @@
 
 package de.metas.cucumber.stepdefs.report;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
-import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
@@ -47,22 +42,18 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 import org.springframework.core.io.ByteArrayResource;
 
+import static de.metas.cucumber.stepdefs.util.IdentifiersResolver.RECORD_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class AD_Process_StepDef
 {
-	@NonNull private final C_Order_StepDefData orderTable;
-	@NonNull private final M_InOut_StepDefData inOutTable;
-	@NonNull private final C_Invoice_StepDefData invoiceLineTable;
+	@NonNull private final IdentifiersResolver identifiersResolver;
 
 	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
@@ -80,8 +71,7 @@ public class AD_Process_StepDef
 		final AdProcessId processId = processDAO.retrieveProcessIdByValue(value);
 		assertThat(processId).isNotNull();
 
-		final String tableName = row.getAsString(I_AD_Table.COLUMNNAME_TableName);
-		final int recordId = getRecordIdForTable(tableName, row.getAsIdentifier());
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(row.getAsIdentifier(RECORD_ID));
 
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
@@ -91,7 +81,7 @@ public class AD_Process_StepDef
 				.setReportLanguage(Language.getBaseLanguage())
 				.setJRDesiredOutputType(OutputType.PDF)
 				.setArchiveReportData(true)
-				.setRecord(TableRecordReference.of(tableName, recordId))
+				.setRecord(recordRef)
 				.build();
 
 		pInstanceDAO.saveProcessInfoOnly(jasperProcessInfo);
@@ -117,18 +107,5 @@ public class AD_Process_StepDef
 				.archiveName(reportResult.getReportFilename())
 				.isDirectProcessQueueItem(false)
 				.build());
-	}
-
-	private int getRecordIdForTable(final String tableName, final StepDefDataIdentifier recordIdentifier)
-	{
-		switch (tableName)
-		{
-			case I_C_Order.Table_Name: return orderTable.get(recordIdentifier).getC_Order_ID();
-			case I_M_InOut.Table_Name: return inOutTable.get(recordIdentifier).getM_InOut_ID();
-			case I_C_Invoice.Table_Name: return invoiceLineTable.get(recordIdentifier).getC_Invoice_ID();
-			default: throw new AdempiereException("Unsupported TableName!")
-					.appendParametersToMessage()
-					.setParameter("TableName", tableName);
-		}
 	}
 }

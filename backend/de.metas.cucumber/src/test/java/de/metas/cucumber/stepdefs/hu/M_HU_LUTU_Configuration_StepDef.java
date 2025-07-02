@@ -329,8 +329,9 @@ public class M_HU_LUTU_Configuration_StepDef
 
 		InterfaceWrapperHelper.saveRecord(lutuConfig);
 
-		final StepDefDataIdentifier lutuIdentifier = row.getAsIdentifier(I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID);
-		huLutuConfigurationTable.putOrReplace(lutuIdentifier, lutuConfig);
+		row.getAsOptionalIdentifier(I_M_HU_LUTU_Configuration.COLUMNNAME_M_HU_LUTU_Configuration_ID).ifPresent(
+				lutuIdentifier -> huLutuConfigurationTable.putOrReplace(lutuIdentifier, lutuConfig)
+		);
 
 		return lutuConfig;
 	}

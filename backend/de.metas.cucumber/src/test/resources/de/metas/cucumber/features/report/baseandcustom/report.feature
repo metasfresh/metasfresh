@@ -55,11 +55,11 @@ Feature: Jasper Report Tests
       | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
       | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | warehouseStd   |
     And The jasper process is run
-      | Value               | TableName | Identifier |
-      | Bestellung (Jasper) | C_Order   | po1        |
+      | Value               | Record_ID  |
+      | Bestellung (Jasper) | po1        |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | OPT.M_LU_HU_PI_ID |
-      | huLuTuConfig               | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | 101                     | 1000006           |
+      | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
+      | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | 101                     | 1000006       |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And create material receipt
@@ -69,8 +69,8 @@ Feature: Jasper Report Tests
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | C_OrderLine_ID |
       | receipt1_l1    | receipt1   | product      | po1_l1         |
     And The jasper process is run
-      | Value                 | TableName | Identifier |
-      | Wareneingang (Jasper) | M_InOut   | receipt1   |
+      | Value                 | Record_ID  |
+      | Wareneingang (Jasper) | receipt1   |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID | C_OrderLine_ID |
       | po_ic_1                | po1_l1         |
@@ -84,8 +84,8 @@ Feature: Jasper Report Tests
       | C_Invoice_ID      | C_Invoice_Candidate_ID |
       | purchaseInvoice_1 | po_ic_1                |
     And The jasper process is run
-      | Value                     | TableName | Identifier        |
-      | Eingangsrechnung (Jasper) | C_Invoice | purchaseInvoice_1 |
+      | Value                     | Record_ID         |
+      | Eingangsrechnung (Jasper) | purchaseInvoice_1 |
 
 
 
@@ -103,8 +103,8 @@ Feature: Jasper Report Tests
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss1        | so1_l1         | N             |
     And The jasper process is run
-      | Value            | TableName | Identifier |
-      | Auftrag (Jasper) | C_Order   | so1        |
+      | Value            | Record_ID  |
+      | Auftrag (Jasper) | so1        |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | ss1                   | D            | true                | false       |
@@ -112,8 +112,8 @@ Feature: Jasper Report Tests
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ss1                   | shipment1  |
     And The jasper process is run
-      | Value                 | TableName | Identifier |
-      | Lieferschein (Jasper) | M_InOut   | shipment1  |
+      | Value                 | Record_ID  |
+      | Lieferschein (Jasper) | shipment1  |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | so_ic1                            | so1_l1                    | 10           |
@@ -127,8 +127,8 @@ Feature: Jasper Report Tests
       | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | processed | docStatus |
       | salesInvoice1 | customer      | customerLocation       | true      | CO        |
     And The jasper process is run
-      | Value             | TableName | Identifier    |
-      | Rechnung (Jasper) | C_Invoice | salesInvoice1 |
+      | Value             | Record_ID     |
+      | Rechnung (Jasper) | salesInvoice1 |
 
 
 
