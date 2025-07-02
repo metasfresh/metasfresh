@@ -138,7 +138,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			final IQueryBuilder<I_C_BPartner> tmp = queryBL
 					.createQueryBuilder(I_C_BPartner.class)
 					.addEqualsFilter(I_C_BPartner.COLUMN_C_BPartner_ID, query.getBPartnerId());
-			if (query.getSoTrx() != null && query.getSoTrx().isPurchase())
+			if (query.getSoTrx().isPurchase())
 			{
 				queryBuilder = tmp.andCollect(I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID, I_C_PaymentTerm.class);
 			}
@@ -146,6 +146,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			{
 				queryBuilder = tmp.andCollect(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID, I_C_PaymentTerm.class);
 			}
+			queryBuilder.addOnlyActiveRecordsFilter();
 		}
 		else
 		{

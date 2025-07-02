@@ -639,8 +639,8 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 					+ "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
-					+ " WHERE i.PaymentTermValue=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
-					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+					+ " WHERE i.PaymentTermValue=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID) AND pt.IsActive='Y') "
+					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
 
@@ -664,7 +664,7 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 					+ "SET PO_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
-					+ " WHERE i.PaymentTerm=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ " WHERE i.PaymentTerm=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID) AND pt.IsActive='Y') "
 					+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));

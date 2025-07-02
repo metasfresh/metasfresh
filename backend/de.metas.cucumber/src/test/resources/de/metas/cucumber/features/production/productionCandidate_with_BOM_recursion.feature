@@ -350,6 +350,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
 ############################################################
 
+  @flaky # https://github.com/metasfresh/metasfresh/actions/runs/16017440967/attempts/1
   @from:cucumber
   Scenario: Auto-create PP_Order from candidate. Void PP_Order for parent product. Re-open sales order and decrease qty. PP_Order_Candidate is updated for parent qty. No change to child PP_Order_Candidate/PP_Order
 

@@ -299,8 +299,8 @@ public abstract class StepDefData<T>
 
 		@NonNull
 		Instant recordAdded;
-		@NonNull
 
+		@NonNull
 		Instant recordUpdated;
 
 		public T getRecord()

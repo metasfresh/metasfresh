@@ -42,9 +42,12 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
@@ -526,41 +529,38 @@ public class M_ShipmentSchedule_StepDef
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		final ShipmentScheduleQueries.ShipmentScheduleQueriesBuilder queries = ShipmentScheduleQueries.builder();
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.forEach(tableRow ->
+						{
+							final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class);
 
-			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID + ".Identifier");
+							final StepDefDataIdentifier orderLineIdentifier = tableRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID);
+							final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+							queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
 
-			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+							final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
 
-			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
+							if (warehouseId > 0)
+							{
+								queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseId);
+							}
 
-			if (warehouseId > 0)
-			{
-				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseId);
-			}
+							tableRow.getAsOptionalBigDecimal(COLUMNNAME_QtyToDeliver).ifPresent(qtyToDeliver -> queryBuilder.addEqualsFilter(COLUMNNAME_QtyToDeliver, qtyToDeliver));
 
-			final BigDecimal qtyToDeliver = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, COLUMNNAME_QtyToDeliver);
-			if (qtyToDeliver != null)
-			{
-				queryBuilder.addEqualsFilter(COLUMNNAME_QtyToDeliver, qtyToDeliver);
-			}
+							final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
 
-			final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
+							final String isToRecompute = tableRow.getAsOptionalString(I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute).orElse(null);
 
-			final String isToRecompute = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_IsToRecompute);
-
-			final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
-					.shipmentScheduleIdentifier(DataTableUtil.extractRecordIdentifier(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID))
-					.query(query)
-					.isToRecompute(StringUtils.toBoolean(isToRecompute, null))
-					.build();
-			queries.query(shipmentScheduleQuery);
-		}
+							final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
+									.shipmentScheduleIdentifier(tableRow.getAsIdentifier().getAsString())
+									.query(query)
+									.isToRecompute(StringUtils.toBoolean(isToRecompute, null))
+									.build();
+							queries.query(shipmentScheduleQuery);
+						}
+				);
 		return queries.build();
 	}
 

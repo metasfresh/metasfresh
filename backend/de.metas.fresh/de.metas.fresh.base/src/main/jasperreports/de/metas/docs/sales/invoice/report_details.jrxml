@@ -911,7 +911,7 @@ $F{shiplocation}
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{weightSum}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="134" y="8" width="100" height="12" uuid="621776e4-4520-4015-a1af-d60f0202bc6c"/>

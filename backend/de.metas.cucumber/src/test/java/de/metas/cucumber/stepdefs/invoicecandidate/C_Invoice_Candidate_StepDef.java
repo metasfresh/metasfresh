@@ -645,8 +645,6 @@ public class C_Invoice_Candidate_StepDef
 	@And("process invoice candidates")
 	public void process_invoice_cand(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-
 		DataTableRows.of(dataTable)
 				.forEach(row -> {
 					try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
@@ -693,11 +691,7 @@ public class C_Invoice_Candidate_StepDef
 	@And("^after not more than (.*)s locate up2date invoice candidates by order line:$")
 	public void locate_invoice_candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			findInvoiceCandidateByOrderLine(timeoutSec, row);
-		}
+		DataTableRows.of(dataTable).forEach(row -> findInvoiceCandidateByOrderLine(timeoutSec, row));
 	}
 
 	@And("^after not more than (.*)s locate invoice candidates by order id:$")
@@ -879,10 +873,9 @@ public class C_Invoice_Candidate_StepDef
 		saveRecord(invoiceCandidateRecord);
 	}
 
-	private void findInvoiceCandidateByOrderLine(final int timeoutSec, @NonNull final Map<String, String> row) throws InterruptedException
+	private void findInvoiceCandidateByOrderLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-
+		final StepDefDataIdentifier orderLineIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 
 		final ItemProvider<List<I_C_Invoice_Candidate>> provider = () -> {
@@ -904,7 +897,7 @@ public class C_Invoice_Candidate_StepDef
 
 		assertThat(invoiceCandidates.size()).isEqualTo(1);
 
-		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final StepDefDataIdentifier invoiceCandidateIdentifier = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID);
 
 		invoiceCandTable.put(invoiceCandidateIdentifier, invoiceCandidates.get(0));
 	}

@@ -27,7 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
-import de.metas.cucumber.stepdefs.accounting.IdentifiersResolver;
+import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;

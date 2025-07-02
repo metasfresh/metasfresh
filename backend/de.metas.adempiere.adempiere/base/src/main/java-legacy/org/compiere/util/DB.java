@@ -481,7 +481,7 @@ public class DB
 	 */
 	@Deprecated
 	public CPreparedStatement prepareStatement(final String sql,
-			final int resultSetType, final int resultSetConcurrency)
+											   final int resultSetType, final int resultSetConcurrency)
 	{
 		return prepareStatement(sql, resultSetType, resultSetConcurrency, null);
 	}    // prepareStatement
@@ -496,9 +496,9 @@ public class DB
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public CPreparedStatement prepareStatement(final String sql,
-			final int resultSetType,
-			final int resultSetConcurrency,
-			final String trxName)
+											   final int resultSetType,
+											   final int resultSetConcurrency,
+											   final String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 		{
@@ -1004,10 +1004,10 @@ public class DB
 	}
 
 	public int executeUpdateAndThrowExceptionOnFail(final String sql,
-			final Object[] params,
-			@Nullable final String trxName,
-			final int timeOut,
-			final ISqlUpdateReturnProcessor updateReturnProcessor)
+													final Object[] params,
+													@Nullable final String trxName,
+													final int timeOut,
+													final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
 				.sql(sql)
@@ -2282,11 +2282,20 @@ public class DB
 	 *
 	 * @return number of records that were deleted
 	 */
-	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
+	public int deleteT_Selection(@NonNull final PInstanceId pinstanceId, @Nullable final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { pinstanceId }, trxName);
 		return no;
+	}
+
+	public int deleteT_SelectionRecords(
+			@NonNull final PInstanceId selectionId,
+			@NonNull final Collection<Integer> recordIds,
+			@Nullable final String trxName)
+	{
+		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=? AND " + DB.buildSqlList("T_SELECTION_ID", recordIds, null);
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { selectionId }, trxName);
 	}
 
 	/**

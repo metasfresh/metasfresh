@@ -1,46 +1,38 @@
 package de.metas.impexp.processing;
 
+import de.metas.impexp.ActualImportRecordsResult;
+import de.metas.impexp.ValidateImportRecordsResult;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.OptionalInt;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.impexp.ActualImportRecordsResult;
-import de.metas.impexp.ValidateImportRecordsResult;
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
-
 /**
  * The result of an {@link IImportProcess} execution.
- * 
- * @author tsa
  *
+ * @author tsa
  */
 @Value
-public final class ImportProcessResult
+public class ImportProcessResult
 {
 	public static ImportProcessResultCollector newCollector(@NonNull final String targetTableName)
 	{
 		return new ImportProcessResultCollector(targetTableName);
 	}
 
-	@NonNull
-	private final Instant importStartTime;
-	@NonNull
-	private final Instant importEndTime;
-
-	@NonNull
-	ValidateImportRecordsResult importRecordsValidation;
-
-	@Nullable
-	ActualImportRecordsResult actualImport;
+	@NonNull Instant importStartTime;
+	@NonNull Instant importEndTime;
+	@NonNull ValidateImportRecordsResult importRecordsValidation;
+	@NonNull ActualImportRecordsResult actualImport;
 
 	private ImportProcessResult(@NonNull final ImportProcessResultCollector collector)
 	{
@@ -63,9 +55,51 @@ public final class ImportProcessResult
 				.build();
 	}
 
+	public String getSummary()
+	{
+		final StringBuilder sb = new StringBuilder();
+		sb.append("Took ").append(getDuration());
+
+		final Duration durationPerRecord = getDurationPerRecord();
+		if (durationPerRecord != null)
+		{
+			sb.append(" (").append(durationPerRecord).append("/record)");
+		}
+
+		final String validationSummary = StringUtils.trimBlankToNull(importRecordsValidation.getSummary());
+		if (validationSummary != null)
+		{
+			if (sb.length() > 0) {sb.append("; ");}
+			sb.append(validationSummary);
+		}
+
+		final String actualImportSummary = StringUtils.trimBlankToNull(actualImport.getSummary());
+		if (actualImportSummary != null)
+		{
+			if (sb.length() > 0) {sb.append("; ");}
+			sb.append(actualImportSummary);
+		}
+
+		return sb.toString();
+	}
+
 	public Duration getDuration()
 	{
 		return Duration.between(getImportStartTime(), getImportEndTime());
+	}
+
+	@Nullable
+	private Duration getDurationPerRecord()
+	{
+		final int recordsCount = actualImport.getCountImportRecordsConsidered().orElse(0);
+		if (recordsCount <= 0)
+		{
+			return null;
+		}
+		else
+		{
+			return getDuration().dividedBy(recordsCount);
+		}
 	}
 
 	//
@@ -77,28 +111,27 @@ public final class ImportProcessResult
 	@ToString
 	public static class ImportProcessResultCollector
 	{
-		@NonNull
-		private final Instant importStartTime;
+		@NonNull private final Instant importStartTime;
 
 		//
 		// Records cleanup before validation+import
-		private final Counter countImportRecordsDeleted = new Counter();
+		@NonNull private final Counter countImportRecordsDeleted = new Counter();
 
 		//
 		// Mass validation
-		private final Counter countImportRecordsWithValidationErrors = new Counter();
+		@NonNull private final Counter countImportRecordsWithValidationErrors = new Counter();
 
 		//
 		// Actual data import
-		@NonNull
-		private String importTableName;
-		@Nullable
-		private final String targetTableName;
-		private final Counter countImportRecordsConsidered = new Counter();
-		/** target table name, where the records were imported (e.g. C_BPartner) */
-		private final Counter countInsertsIntoTargetTable = new Counter();
-		private final Counter countUpdatesIntoTargetTable = new Counter();
-		private final ArrayList<ActualImportRecordsResult.Error> actualImportErrors = new ArrayList<>();
+		@NonNull private String importTableName;
+		@NonNull private final String targetTableName;
+		@NonNull private final Counter countImportRecordsConsidered = new Counter();
+		/**
+		 * target table name, where the records were imported (e.g. C_BPartner)
+		 */
+		@NonNull private final Counter countInsertsIntoTargetTable = new Counter();
+		@NonNull private final Counter countUpdatesIntoTargetTable = new Counter();
+		@NonNull private final ArrayList<ActualImportRecordsResult.Error> actualImportErrors = new ArrayList<>();
 
 		private ImportProcessResultCollector(@NonNull final String targetTableName)
 		{
@@ -134,6 +167,8 @@ public final class ImportProcessResult
 			countImportRecordsConsidered.add(count);
 		}
 
+		public int getCountImportRecordsConsidered() {return countImportRecordsConsidered.toIntOr(0);}
+
 		public void addInsertsIntoTargetTable(final int count)
 		{
 			countInsertsIntoTargetTable.add(count);
@@ -151,11 +186,16 @@ public final class ImportProcessResult
 	}
 
 	@EqualsAndHashCode
-	@ToString
 	private static final class Counter
 	{
 		private boolean unknownValue;
 		private int value = 0;
+
+		@Override
+		public String toString()
+		{
+			return unknownValue ? "N/A" : String.valueOf(value);
+		}
 
 		public void set(final int value)
 		{
@@ -173,14 +213,8 @@ public final class ImportProcessResult
 			set(this.value + valueToAdd);
 		}
 
-		public OptionalInt toOptionalInt()
-		{
-			return unknownValue ? OptionalInt.empty() : OptionalInt.of(value);
-		}
+		public OptionalInt toOptionalInt() {return unknownValue ? OptionalInt.empty() : OptionalInt.of(value);}
 
-		public int toIntOr(final int defaultValue)
-		{
-			return unknownValue ? defaultValue : value;
-		}
+		public int toIntOr(final int defaultValue) {return unknownValue ? defaultValue : value;}
 	}
 }
