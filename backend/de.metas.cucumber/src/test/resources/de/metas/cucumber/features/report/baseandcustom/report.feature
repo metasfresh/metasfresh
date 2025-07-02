@@ -57,9 +57,24 @@ Feature: Jasper Report Tests
     And The jasper process is run
       | Value               | Record_ID  |
       | Bestellung (Jasper) | po1        |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | LU         |
+      | TU         |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | LU_Version         | LU         | LU          | Y         |
+      | TU_Version         | TU         | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | OPT.Included_HU_PI_ID |
+      | huPiItemLU      | LU_Version         | 10  | HU       | TU                    |
+      | huPiItemTU      | TU_Version         |     | MI       |                       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+      | product_TU_10CU         | huPiItemTU      | product      | 10  | 2021-01-01 |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
-      | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | 101                     | 1000006       |
+      | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | product_TU_10CU         | huPiItemLU    |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And create material receipt
