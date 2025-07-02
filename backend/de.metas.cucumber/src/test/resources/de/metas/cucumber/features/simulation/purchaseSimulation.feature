@@ -64,6 +64,7 @@ Feature: create purchase simulation
     And delete C_OrderLine identified by ol_1, but keep its id into identifierIds table
     And no C_PurchaseCandidate found for orderLine ol_1
 
+  @flaky #because it assumes that purchasecandidates have not been turned by the process into purchase orders (yet)
   @from:cucumber
   Scenario: Create Sales Order. Create C_PurchaseCandidate automatically. Reactivate and reduce qty. C_PurchaseCandidate total qty is reduced
     When update existing PP_Product_Plannings
