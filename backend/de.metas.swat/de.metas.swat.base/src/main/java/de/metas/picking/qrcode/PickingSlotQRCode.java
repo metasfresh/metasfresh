@@ -26,6 +26,10 @@ public class PickingSlotQRCode
 		return Objects.equals(o1, o2);
 	}
 
+	@Override
+	@Deprecated
+	public String toString() {return toGlobalQRCodeJsonString();}
+
 	public String toGlobalQRCodeJsonString() {return PickingSlotQRCodeJsonConverter.toGlobalQRCodeJsonString(this);}
 
 	public static PickingSlotQRCode ofGlobalQRCodeJsonString(@NonNull final String json) {return PickingSlotQRCodeJsonConverter.fromGlobalQRCodeJsonString(json);}

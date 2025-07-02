@@ -37,6 +37,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonScannedBarcodeSuggestions;
 import de.metas.workflow.rest_api.controller.v2.json.JsonLaunchersQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplication;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplicationsList;
@@ -265,6 +266,18 @@ public class WorkflowRestController
 		final WFProcess wfProcess = workflowRestAPIService.setScannedBarcode(invokerId, wfProcessId, wfActivityId, request.getBarcode());
 
 		return toJson(wfProcess);
+	}
+
+	@GetMapping("/wfProcess/{wfProcessId}/{wfActivityId}/scannedBarcode/suggestions")
+	public JsonScannedBarcodeSuggestions getScannedBarcodeSuggestions(
+			@PathVariable("wfProcessId") final String wfProcessIdStr,
+			@PathVariable("wfActivityId") final String wfActivityIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		assertAccess(wfProcessId.getApplicationId());
+
+		final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityIdStr);
+		return workflowRestAPIService.getScannedBarcodeSuggestions(wfProcessId, wfActivityId);
 	}
 
 	@PostMapping("/wfProcess/{wfProcessId}/{wfActivityId}/userConfirmation")

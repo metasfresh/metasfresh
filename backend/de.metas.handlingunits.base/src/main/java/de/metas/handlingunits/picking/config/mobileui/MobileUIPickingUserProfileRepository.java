@@ -30,6 +30,7 @@ import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -120,6 +121,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob())
 				.isShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines())
 				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
+				.displayPickingSlotSuggestions(OptionalBoolean.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()))
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
@@ -230,6 +232,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsShowConfirmationPromptWhenOverPick(from.isShowConfirmationPromptWhenOverPick());
 		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
 		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
+		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().orElse(false));
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
@@ -301,6 +304,7 @@ public class MobileUIPickingUserProfileRepository
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(record.getCreateShipmentPolicy()))
 				.isAllowCompletingPartialPickingJob(record.isAllowCompletingPartialPickingJob())
 				.isAnonymousPickHUsOnTheFly(record.isAnonymousHuPickedOnTheFly())
+				.displayPickingSlotSuggestions(OptionalBoolean.ofNullableString(record.getIsDisplayPickingSlotSuggestions()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))
 				.build();

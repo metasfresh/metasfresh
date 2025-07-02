@@ -9,7 +9,7 @@ import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 import { generateEAN13 } from '../../utils/ean13';
 
-const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, P1_ean13ProductCode } = {}) => {
+const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, displayPickingSlotSuggestions, P1_ean13ProductCode } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -26,6 +26,7 @@ const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly, P1_e
                     allowNewTU: true,
                     filterByQRCode: filterByQRCode ?? false,
                     anonymousPickHUsOnTheFly: anonymousPickHUsOnTheFly ?? false,
+                    displayPickingSlotSuggestions,
                     customers: [
                         { customer: "customer1" },
                         { customer: "customer2" },
@@ -279,3 +280,4 @@ test('Anonymous pick HUs on the fly', async ({ page }) => {
     await PickingJobScreen.waitForScreen();
     await PickingJobScreen.complete();
 });
+

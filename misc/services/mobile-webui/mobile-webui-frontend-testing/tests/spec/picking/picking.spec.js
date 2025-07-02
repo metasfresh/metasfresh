@@ -6,8 +6,9 @@ import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStep
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { expectErrorToast } from '../../utils/common';
+import { expectErrorToast, FAST_ACTION_TIMEOUT } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
+import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 
 const createMasterdata = async ({
                                     allowCompletingPartialPickingJob = false,
@@ -189,9 +190,12 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-    await expectErrorToast('Invalid QR code', async () => {
-        await PickingJobScreen.scanPickingSlot({ qrCode: 'invalid QR code' });
-    });
+
+    await PickingJobScreen.scanPickingSlot({ qrCode: 'this is an invalid QR code', expectNextScreen: 'PickingSlotScanScreen' });
+    await ErrorToast.waitToPopup(async (toastLocator) => {
+        const textContent = await toastLocator.textContent();
+        console.log(`[ OK ] Expected error toast detected: ${textContent}`)
+    }, FAST_ACTION_TIMEOUT);
 });
 
 // noinspection JSUnusedLocalSymbols

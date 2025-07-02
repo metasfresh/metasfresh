@@ -1,12 +1,12 @@
 package de.metas.notification;
 
-import java.util.List;
-
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+
+import java.util.List;
 
 /*
  * #%L
@@ -32,8 +32,6 @@ import lombok.NonNull;
 
 public interface INotificationBL extends ISingletonService
 {
-	NotificationSenderTemplate newNotificationSender();
-
 	void send(UserNotificationRequest request);
 
 	void sendAfterCommit(UserNotificationRequest request);
