@@ -43,7 +43,7 @@ public class DataTableRows
 				.collect(GuavaCollectors.collectUsingListAccumulator(DataTableRows::new));
 	}
 
-	private static DataTableRows ofRows(@NonNull final Collection<DataTableRow> rows)
+	public static DataTableRows ofRows(@NonNull final Collection<DataTableRow> rows)
 	{
 		return new DataTableRows(ImmutableList.copyOf(rows));
 	}
