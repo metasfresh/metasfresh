@@ -113,27 +113,28 @@ Feature: sales order interaction with material cockpit - no product planning
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
-    And the order identified by o_1 is completed
+    When the order identified by o_1 is completed
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    And after not more than 120s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | -10                        | -10                           | 0                            | 10                               |
     And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
-    And the order identified by o_1 is reactivated
+    When the order identified by o_1 is reactivated
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    And after not more than 120s, metasfresh has this MD_Cockpit data
+    Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | -10                        | -10                           | 0                            | 10                               |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            | 0                                |
+
     And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
-      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 0              | 0               |
 
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
@@ -144,7 +145,7 @@ Feature: sales order interaction with material cockpit - no product planning
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_SalesOrder_AtDate |
-      | cp_2       | p_1                     | 2021-04-16  |                              | 12                              | 12                      | -12                        | -12                           | 0                            | 12                               |
+      | cp_2       | p_1                     | 2021-04-16  |                              | 12                              | 12                      | -12                        | -12                           | 0                            | 2                                |
     And after not more than 120s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 12             | 12              |

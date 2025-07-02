@@ -99,7 +99,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
@@ -662,19 +661,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void openShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
 	{
-
 		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
-		records.stream()
-				.filter(I_M_ShipmentSchedule::isClosed)
-				.forEach(this::openShipmentSchedule);
-
-		final Set<ShipmentScheduleId> shipmentScheduleIdsToRecompute = records.stream()
-				.filter(record -> !record.isClosed())
-				.map(record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
-				.collect(Collectors.toSet());
-
-		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);//as local variable, to prevent start-up error
-		invalidSchedulesService.flagForRecompute(shipmentScheduleIdsToRecompute);
+		for (final I_M_ShipmentSchedule record : records)
+		{
+			if (record.isClosed())
+			{
+				openShipmentSchedule(record);
+			}
+		}
 	}
 
 	@Override

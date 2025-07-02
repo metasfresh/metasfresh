@@ -36,7 +36,22 @@ public class C_Order_ShipmentSchedule
 	private final IShipmentScheduleInvalidateRepository scheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final @NonNull AdMessageKey ERR_NoReactivationIfNotVoidedNotReversedShipments = AdMessageKey.of("ERR_NoReactivationIfNotVoidedNotReversedShipments");
+	private final @NonNull AdMessageKey ERR_NoReactivationIfNotVoidedNotReversedShipments= AdMessageKey.of("ERR_NoReactivationIfNotVoidedNotReversedShipments");
+
+
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
+	public void closeExistingScheds(@NonNull final I_C_Order orderRecord)
+	{
+		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderDAO
+				.retrieveAllOrderLineIds(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
+				.stream()
+				.map(OrderAndLineId::getOrderLineId)
+				.map(orderLineId -> TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId))
+				.collect(ImmutableList.toImmutableList());
+
+		shipmentScheduleBL.closeShipmentSchedulesFor(orderLineRecordRefs);
+	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void openExistingScheds(@NonNull final I_C_Order orderRecord)

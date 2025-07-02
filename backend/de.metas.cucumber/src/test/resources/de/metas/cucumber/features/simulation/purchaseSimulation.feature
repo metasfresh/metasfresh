@@ -64,53 +64,6 @@ Feature: create purchase simulation
     And delete C_OrderLine identified by ol_1, but keep its id into identifierIds table
     And no C_PurchaseCandidate found for orderLine ol_1
 
-  @flaky #because it assumes that purchasecandidates have not been turned by the process into purchase orders (yet)
-  @from:cucumber
-  Scenario: Create Sales Order. Create C_PurchaseCandidate automatically. Reactivate and reduce qty. C_PurchaseCandidate total qty is reduced
-    When update existing PP_Product_Plannings
-      | Identifier | IsCreatePlan |
-      | ppln_1     | true         |
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
-      | o_1        | true    | customer_1               | 2021-04-04  | 2021-04-04T00:00:00Z |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | p_1                     | 100        |
-    And the order identified by o_1 is completed
-    And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
-      | Identifier | QtyToPurchase |
-      | pc_1       | 100 PCE       |
-
-    Then after not more than 30s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | C_Purchase_Candidate_ID |
-      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 100 | -100                   |                         |
-      | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100 | 0                      | pc_1                    |
-
-    And the order identified by o_1 is reactivated
-
-    And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
-      | Identifier | QtyToPurchase |
-      | pc_1       | 100 PCE       |
-
-    And after not more than 30s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | C_Purchase_Candidate_ID |
-      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 100 | -100                   |                         |
-      | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100 | 0                      | pc_1                    |
-
-    And update C_OrderLine:
-      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
-      | ol_1                      | 30             |
-    And the order identified by o_1 is completed
-
-    And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
-      | Identifier | QtyToPurchase |
-      | pc_1       | 30 PCE        |
-
-    And after not more than 30s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | C_Purchase_Candidate_ID |
-      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 30  | -30                    |                         |
-      | c_3        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 30  | 0                      | pc_1                    |
-
   @from:cucumber
   Scenario: Create Sales Order. Create C_PurchaseCandidate. Create C_Order for it. Reactivate and reduce qty. C_PurchaseCandidate is not adjusted.
     When update existing PP_Product_Plannings
@@ -165,12 +118,12 @@ Feature: create purchase simulation
 
     And after not more than 30s, C_PurchaseCandidate found for orderLine ol_1
       | Identifier | QtyToPurchase |
-      | pc_1       | 100 PCE       |
+      | pc_1       | 0 PCE         |
 
     And after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 100 | -100                   |
-      | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100 | 0                      |
+      | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 0   | 0                      |
+      | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100 | 100                    |
 
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |

@@ -54,7 +54,7 @@ Feature: material dispo reacts to order docactions
 
     Then after not more than 60s, the MD_Candidate table has only the following records
       | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | 01/d_1_1_S0461_10 | DEMAND            | SHIPMENT                  | product_1_1_S0461_10 | 2024-09-22T21:00:00Z | 12  | -12 | WH_S0461       |
+      | 01/d_1_1_S0461_10 | DEMAND            | SHIPMENT                  | product_1_1_S0461_10 | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0461       |
 
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
