@@ -1,13 +1,16 @@
 package de.metas.handlingunits.materialtracking.spi.impl.attribute;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.materialtracking.IMaterialTrackingDAO;
+import de.metas.materialtracking.MaterialTrackingId;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
-
-import java.util.List;
-
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Evaluatee;
@@ -16,13 +19,11 @@ import org.compiere.util.NamePair;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import java.util.List;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.materialtracking.MaterialTrackingId;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.product.ProductId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -59,7 +60,12 @@ public class MaterialTrackingAttributeValuesProviderTest
 		attributeRecord.setValue(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID);
 		saveRecord(attributeRecord);
 
-		materialTrackingAttributeValuesProvider = new MaterialTrackingAttributeValuesProvider(attributeRecord);
+		materialTrackingAttributeValuesProvider = MaterialTrackingAttributeValuesProvider.builder()
+				.materialTrackingDAO(Services.get(IMaterialTrackingDAO.class))
+				.huAttributesBL(Services.get(IHUAttributesBL.class))
+				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
+				.attribute(attributeRecord)
+				.build();
 	}
 
 	@Test

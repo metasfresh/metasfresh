@@ -33,6 +33,7 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 
+import javax.annotation.Nullable;
 import java.math.MathContext;
 import java.util.Date;
 import java.util.Properties;
@@ -41,16 +42,20 @@ public interface IAttributesBL extends ISingletonService
 {
 	I_M_Attribute getAttributeById(AttributeId attributeId);
 
+	@NonNull
 	AttributeAction getAttributeAction(Properties ctx);
 
+	@NonNull
 	IAttributeValueGenerator getAttributeValueGenerator(org.compiere.model.I_M_Attribute attributeParam);
 
 	/**
 	 * Returns a new attribute value generator instance for the given <code>attributeParam</code>
 	 * or <code>null</code> if the given parameter has no <code>AD_JavaClass_ID</code> set or that class is not an IAttributeValueGenerator.
 	 */
+	@Nullable
 	IAttributeValueGenerator getAttributeValueGeneratorOrNull(org.compiere.model.I_M_Attribute attributeParam);
 
+	@Nullable
 	IAttributeValuesProvider createAttributeValuesProvider(AttributeId attributeId);
 
 	/**
@@ -58,6 +63,7 @@ public interface IAttributesBL extends ISingletonService
 	 *
 	 * @return {@link IAttributeValuesProvider} or null
 	 */
+	@Nullable
 	IAttributeValuesProvider createAttributeValuesProvider(org.compiere.model.I_M_Attribute attribute);
 
 	/**
@@ -68,6 +74,7 @@ public interface IAttributesBL extends ISingletonService
 	 *
 	 * @return {@link I_M_Attribute} or null
 	 */
+	@Nullable
 	I_M_Attribute getAttributeOrNull(ProductId productId, AttributeId attributeId);
 
 	boolean hasAttributeAssigned(ProductId productId, AttributeId attributeId);
@@ -97,6 +104,7 @@ public interface IAttributesBL extends ISingletonService
 	int getNumberDisplayType(I_M_Attribute attribute);
 
 	boolean isStorageRelevant(final AttributeId attributeId);
-	
+
+	@Nullable
 	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 }
