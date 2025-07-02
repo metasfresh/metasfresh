@@ -101,12 +101,19 @@ public class DocumentLocation
 				.build();
 	}
 
-
 	public DocumentLocation withLocationId(@Nullable final LocationId locationId)
 	{
 		return !Objects.equals(this.locationId, locationId)
 				? toBuilder().locationId(locationId).build()
 				: this;
+	}
+
+	public DocumentLocation withRenderedAddress(@NonNull final RenderedAddressAndCapturedLocation renderedAddress)
+	{
+		return toBuilder()
+				.locationId(renderedAddress.getCapturedLocationId())
+				.bpartnerAddress(renderedAddress.getRenderedAddress())
+				.build();
 	}
 
 	private DocumentLocation withoutRenderedAddress()
