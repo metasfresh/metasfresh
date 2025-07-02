@@ -11,9 +11,9 @@ Feature: Jasper Report Tests
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |
       | 1000000    | true                     |
-    And load M_Warehouse:
-      | M_Warehouse_ID | Value        |
-      | warehouseStd   | StdWarehouse |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | wh             |
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
@@ -40,20 +40,24 @@ Feature: Jasper Report Tests
       | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation   | vendor        | CH           | Y               | Y               |
       | customerLocation | customer      | CH           | Y               | Y               |
+    And metasfresh contains C_Tax
+      | Identifier        | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | de_ch_tax         | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
+      | ch_ch_tax         | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
 
   @S0471_100
   @from:cucumber
   Scenario: Purchase Report Test
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | DatePromised        | M_Warehouse_ID |
-      | po1        | N       | vendor        | 2021-04-16  | POO         | ps_1               | 2021-04-15T15:00:00 | warehouseStd   |
+      | po1        | N       | vendor        | 2021-04-16  | POO         | ps_1               | 2021-04-15T15:00:00 | wh   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | po1_l1     | po1        | product      | 10         |
     And the order identified by po1 is completed
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
-      | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | warehouseStd   |
+      | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | wh   |
     And The jasper process is run
       | Value               | Record_ID  |
       | Bestellung (Jasper) | po1        |
@@ -108,15 +112,15 @@ Feature: Jasper Report Tests
   @from:cucumber
   Scenario: Sales Report Test
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | so1        | true    | customer      | 2021-04-16  |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so1        | true    | customer      | 2021-04-16  | wh             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so1_l1     | so1        | product      | 10         |
     When the order identified by so1 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss1        | so1_l1         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
+      | ss1        | so1_l1         | N             | wh             |
     And The jasper process is run
       | Value            | Record_ID  |
       | Auftrag (Jasper) | so1        |
