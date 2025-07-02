@@ -80,7 +80,7 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	@NonNull @Getter private final CurrentPickingTarget currentPickingTarget;
 
 	@NonNull @Getter private final ImmutableList<PickingJobLine> lines;
-	@NonNull @Getter private final ImmutableMap<PickingJobLineId, PickingJobLine> linesById;
+	@NonNull @Getter @JsonIgnore private final ImmutableMap<PickingJobLineId, PickingJobLine> linesById;
 
 	@NonNull @Getter private final ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives;
 
