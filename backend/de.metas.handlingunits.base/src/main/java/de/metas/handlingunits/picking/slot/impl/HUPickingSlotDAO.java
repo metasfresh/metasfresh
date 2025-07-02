@@ -6,11 +6,12 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotDAO;
-import de.metas.handlingunits.picking.slot.PickingSlotQuery;
+import de.metas.handlingunits.picking.slot.PickingSlotQueueQuery;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -55,12 +56,12 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
-	public List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs(@NonNull final PickingSlotQuery query)
+	public List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs(@NonNull final PickingSlotQueueQuery query)
 	{
 		return queryAllPickingSlotHUs(query).list();
 	}
 
-	private IQueryBuilder<I_M_PickingSlot_HU> queryAllPickingSlotHUs(final @NonNull PickingSlotQuery query)
+	private IQueryBuilder<I_M_PickingSlot_HU> queryAllPickingSlotHUs(final @NonNull PickingSlotQueueQuery query)
 	{
 		final IQueryBuilder<I_M_PickingSlot_HU> queryBuilder = queryBL.createQueryBuilder(I_M_PickingSlot_HU.class)
 				.addOnlyActiveRecordsFilter()
@@ -102,9 +103,10 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 				.list(I_M_HU.class);
 
 		final I_M_PickingSlot huPickingSlot = InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class);
-		if (huPickingSlot.getM_HU_ID() > 0)
+		final HuId currentHUId = HuId.ofRepoIdOrNull(huPickingSlot.getM_HU_ID());
+		if (currentHUId != null)
 		{
-			final I_M_HU currentHU = huPickingSlot.getM_HU();
+			final I_M_HU currentHU = Services.get(IHandlingUnitsDAO.class).getById(currentHUId);
 			result.add(currentHU);
 		}
 

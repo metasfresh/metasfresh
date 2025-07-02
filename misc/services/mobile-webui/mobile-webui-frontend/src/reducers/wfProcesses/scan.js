@@ -47,6 +47,7 @@ registerHandler({
     draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
     draftActivityDataStored.completeStatus = computeActivityStatus({ draftActivityDataStored });
     draftActivityDataStored.confirmationModalMsg = fromActivity.componentProps.confirmationModalMsg;
+    draftActivityDataStored.displaySuggestions = fromActivity.componentProps.displaySuggestions;
   },
 });
 

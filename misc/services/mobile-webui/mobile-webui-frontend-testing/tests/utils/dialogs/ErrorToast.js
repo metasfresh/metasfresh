@@ -13,7 +13,7 @@ export const ErrorToast = {
         const toastLocator = containerElement();
         return toastLocator.waitFor({ state: 'attached', ...{ timeout } })
             .then(async () => {
-                await callback(toastLocator);
+                await callback?.(toastLocator);
             });
     },
 
