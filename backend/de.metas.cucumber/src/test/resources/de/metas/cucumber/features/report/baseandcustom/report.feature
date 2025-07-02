@@ -49,8 +49,8 @@ Feature: Jasper Report Tests
   @from:cucumber
   Scenario: Purchase Report Test
     When metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | DatePromised        | M_Warehouse_ID |
-      | po1        | N       | vendor        | 2021-04-16  | POO         | ps_1               | 2021-04-15T15:00:00 | wh   |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID |
+      | po1        | N       | vendor        | 2025-04-01  | POO         | ps_1               | wh             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | po1_l1     | po1        | product      | 10         |
@@ -113,7 +113,7 @@ Feature: Jasper Report Tests
   Scenario: Sales Report Test
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
-      | so1        | true    | customer      | 2021-04-16  | wh             |
+      | so1        | true    | customer      | 2025-04-01  | wh             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so1_l1     | so1        | product      | 10         |
