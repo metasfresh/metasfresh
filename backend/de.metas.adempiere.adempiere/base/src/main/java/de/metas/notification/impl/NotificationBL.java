@@ -45,8 +45,7 @@ public class NotificationBL implements INotificationBL
 	private static final Logger logger = LogManager.getLogger(NotificationBL.class);
 	private final CompositeRecordTextProvider ctxProviders = new CompositeRecordTextProvider();
 
-	@Override
-	public NotificationSenderTemplate newNotificationSender()
+	private NotificationSenderTemplate newNotificationSender()
 	{
 		final NotificationSenderTemplate sender = new NotificationSenderTemplate();
 		sender.setRecordTextProvider(ctxProviders);
@@ -60,7 +59,7 @@ public class NotificationBL implements INotificationBL
 		{
 			newNotificationSender().sendAfterCommit(request);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed sending notification: {}", request, ex);
 		}
@@ -78,7 +77,7 @@ public class NotificationBL implements INotificationBL
 
 			newNotificationSender().sendAfterCommit(requests);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed sending notifications: {}", requests, ex);
 		}
@@ -91,7 +90,7 @@ public class NotificationBL implements INotificationBL
 		{
 			newNotificationSender().send(request);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed sending notification: {}", request, ex);
 		}
