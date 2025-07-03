@@ -20,11 +20,24 @@ export const closeTarget = ({ wfProcessId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const consolidate = ({ wfProcessId, fromPickingSlotQRCode }) => {
+export const printTargetLabel = ({ wfProcessId }) => {
+  return axios
+    .post(toUrl(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/target/printLabel`))
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const consolidate = ({ wfProcessId, fromPickingSlotQRCode, huId }) => {
   return axios
     .post(toUrl(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/consolidate`), {
       wfProcessId,
       fromPickingSlotQRCode,
+      huId,
     })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getPickingSlotContent = ({ wfProcessId, pickingSlotId }) => {
+  return axios
+    .get(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/pickingSlot/${pickingSlotId}`)
     .then((response) => unboxAxiosResponse(response));
 };

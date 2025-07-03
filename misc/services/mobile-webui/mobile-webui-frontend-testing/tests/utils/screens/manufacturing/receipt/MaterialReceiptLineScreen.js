@@ -47,10 +47,10 @@ export const MaterialReceiptLineScreen = {
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
-    receiveQty: async ({ qtyEntered, expectQtyEntered, catchWeightQRCode, expectGoBackToJob = true }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
+    receiveQty: async ({ switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, expectGoBackToJob = true }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
         await page.getByTestId('receive-qty-button').tap();
 
-        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered, catchWeightQRCode });
+        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode });
         // await MaterialReceiptLineScreen.waitForScreen(); // while processing
 
         // final screen

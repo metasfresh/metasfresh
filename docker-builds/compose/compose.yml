@@ -34,6 +34,7 @@ services:
       timeout: 10s
       start_period: 60s
       retries: 30
+      start_interval: 10s
     environment:
       - RABBITMQ_DEFAULT_USER=metasfresh
       - RABBITMQ_DEFAULT_PASS=metasfresh

@@ -1536,7 +1536,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		// Execute
 		final ImmutableSet<BPartnerId> bpartnerIds = queryBuilder
 				.create()
-				.listIds(BPartnerId::ofRepoId);
+				.idsAsSet(BPartnerId::ofRepoId);
 
 		if (bpartnerIds.isEmpty() && query.isFailIfNotExists())
 		{
@@ -1632,7 +1632,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, salesRepBPartnerId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(BPartnerId::ofRepoId)
+				.idsAsSet(BPartnerId::ofRepoId)
 				.stream();
 	}
 

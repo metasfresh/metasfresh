@@ -1,13 +1,21 @@
 package de.metas.hu_consolidation.mobile.rest_api;
 
 import de.metas.Profiles;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
+import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateResponse;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobAvailableTargets;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
+import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
@@ -15,6 +23,7 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
@@ -36,6 +45,7 @@ public class HUConsolidationRestController
 	@NonNull private final MobileApplicationService mobileApplicationService;
 	@NonNull private final HUConsolidationApplication mobileApplication;
 	@NonNull private final WorkflowRestController workflowRestController;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	private void assertApplicationAccess()
 	{
@@ -61,9 +71,52 @@ public class HUConsolidationRestController
 		assertApplicationAccess();
 
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
-		final HUConsolidationTarget target = jsonTarget != null ? jsonTarget.unbox() : null;
+		final HUConsolidationTarget target = fromJson(jsonTarget);
 		final WFProcess wfProcess = mobileApplication.setTarget(wfProcessId, target, getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
+	}
+
+	@Nullable
+	private HUConsolidationTarget fromJson(@Nullable final JsonHUConsolidationTarget json)
+	{
+		if (json == null) {return null;}
+
+		HuId luId = json.getLuId();
+		HUQRCode luQRCode = StringUtils.trimBlankToOptional(json.getLuQRCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null);
+		if (luId == null && luQRCode != null)
+		{
+			luId = huQRCodesService.getHuIdByQRCode(luQRCode);
+		}
+		if (luQRCode == null && luId != null)
+		{
+			luQRCode = huQRCodesService.getSingleQRCodeByHuIdOrEmpty(luId).orElse(null);
+		}
+
+		String caption = StringUtils.trimBlankToNull(json.getCaption());
+		if (caption == null && luQRCode != null)
+		{
+			caption = luQRCode.toDisplayableQRCode();
+		}
+		if (caption == null)
+		{
+			throw new AdempiereException("No caption found or could be determined for " + json);
+		}
+
+		return HUConsolidationTarget.builder()
+				.caption(caption)
+				.luPIId(json.getLuPIId())
+				.luId(luId)
+				.luQRCode(luQRCode)
+				.build();
+	}
+
+	@PostMapping("/job/{wfProcessId}/target/printLabel")
+	public void printTargetLabel(@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		mobileApplication.printTargetLabel(wfProcessId, getLoggedUserId());
 	}
 
 	@PostMapping("/job/{wfProcessId}/target/close")
@@ -77,14 +130,33 @@ public class HUConsolidationRestController
 	}
 
 	@PostMapping("/job/{wfProcessId}/consolidate")
-	public JsonWFProcess consolidate(
+	public JsonConsolidateResponse consolidate(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
 			@RequestBody @NonNull final JsonConsolidateRequest request)
 	{
 		assertApplicationAccess();
 
-		final WFProcess wfProcess = mobileApplication.consolidate(request.withWFProcessId(wfProcessIdStr), getLoggedUserId());
-		return workflowRestController.toJson(wfProcess);
+		final JsonConsolidateRequest requestEffective = request.withWFProcessId(wfProcessIdStr);
+		final WFProcess wfProcess = mobileApplication.consolidate(requestEffective, getLoggedUserId());
+
+		JsonHUConsolidationJobPickingSlotContent pickingSlotContent = mobileApplication.getPickingSlotContent(requestEffective.getJobId(), request.getFromPickingSlotId());
+
+		return JsonConsolidateResponse.builder()
+				.wfProcess(workflowRestController.toJson(wfProcess))
+				.pickingSlotContent(pickingSlotContent)
+				.build();
+	}
+
+	@GetMapping("/job/{wfProcessId}/pickingSlot/{pickingSlotId}")
+	public JsonHUConsolidationJobPickingSlotContent getPickingSlotContent(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@PathVariable("pickingSlotId") @NonNull final String pickingSlotIdStr)
+	{
+		assertApplicationAccess();
+
+		final HUConsolidationJobId jobId = HUConsolidationJobId.ofWFProcessId(WFProcessId.ofString(wfProcessIdStr));
+		final PickingSlotId pickingSlotId = PickingSlotId.ofObject(pickingSlotIdStr);
+		return mobileApplication.getPickingSlotContent(jobId, pickingSlotId);
 	}
 
 }

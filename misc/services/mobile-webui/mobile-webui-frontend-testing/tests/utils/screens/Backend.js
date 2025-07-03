@@ -44,7 +44,23 @@ export const Backend = {
         });
         const responseBody = await response.json();
         assertNoErrors({ responseBody });
+
+        return responseBody;
     }),
+
+    getWFProcess: async ({ wfProcessId }) => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': getAuthToken(),
+            }
+        });
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+
+        return responseBody;
+    },
 }
 
 //
@@ -88,3 +104,11 @@ const assertNoErrors = ({ responseBody }) => {
         throw Error("Got error on last backend call:\n" + JSON.stringify(responseBody, null, 2));
     }
 };
+
+const getAuthToken = () => {
+    const token = lastMasterdata?.login?.user?.token;
+    if (!token) {
+        throw new Error('No token found in masterdata:\n' + JSON.stringify(lastMasterdata, null, 2));
+    }
+    return token;
+}

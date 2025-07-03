@@ -1,5 +1,9 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Functions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.Profiles;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -28,6 +32,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -142,7 +150,8 @@ public class StockCandidateService
 	 *
 	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId()} > 0.
 	 */
-	public CandidateSaveResult updateQtyAndDate(@NonNull final Candidate candidateToUpdate)
+	@VisibleForTesting
+	CandidateSaveResult updateQtyAndDate(@NonNull final Candidate candidateToUpdate)
 	{
 		Check.errorIf(candidateToUpdate.getId().isNull(),
 				"Parameter 'candidateToUpdate' needs to have a not-null Id; candidateToUpdate=%s",
@@ -166,71 +175,64 @@ public class StockCandidateService
 
 	/**
 	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code materialDescriptor}.
-	 * Iterate them and add the given {@code delta} to their quantity.
+	 * Iterate them and apply the previous stock qty + current document qty.
 	 */
-	public void applyDeltaToMatchingLaterStockCandidates(@NonNull final CandidateSaveResult stockWithDelta)
+	public void applyDeltaToMatchingLaterStockCandidates(@NonNull final CandidateSaveResult saveResult)
 	{
-		final Candidate deltaCandidate = stockWithDelta.getCandidate();
-		if (deltaCandidate.isSimulated())
+		final Candidate initialCandidate = saveResult.getCandidate();
+		if (initialCandidate.isSimulated())
+		{
+			return;
+		}
+		final CandidatesQuery query = createStockQueryAfterDate(saveResult);
+		final List<Candidate> stockCandidatesToUpdate = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+		if (stockCandidatesToUpdate.isEmpty())
 		{
 			return;
 		}
 
-		final CandidatesQuery query = createStockQueryBetweenDates(stockWithDelta);
+		final ImmutableMap<CandidateId, Candidate> stockIdToMainCandidateMap = computeStockIdToMainCandidateMap(stockCandidatesToUpdate);
 
-		final BigDecimal deltaUntilRangeEnd;
-		final BigDecimal deltaAfterRangeEnd;
-		if (stockWithDelta.isDateMoved())
+		Candidate previousStockCandidate = getPreviousStockOrNullForCandidate(stockCandidatesToUpdate.get(0));
+		final MaterialDispoGroupId groupId = initialCandidate.getGroupId();
+		for (final Candidate stockCandidate : stockCandidatesToUpdate)
 		{
-			if (stockWithDelta.isDateMovedForwards())
-			{
-				Check.assumeNotNull(stockWithDelta.getPreviousQty(), "PreviousQty cannot be null on update case!");
+			@NonNull final Candidate mainCandidate = Objects.requireNonNull(stockIdToMainCandidateMap.get(stockCandidate.getId()));
+			final Candidate updatedStockCandidate = stockCandidate
+					.withQuantity(candidateRepositoryWriteService.getCurrentAtpAndUpdateQtyDetails(mainCandidate, stockCandidate, previousStockCandidate))
+					.withGroupId(groupId);
+			candidateRepositoryWriteService.updateCandidateById(updatedStockCandidate);
 
-				deltaUntilRangeEnd = stockWithDelta.getPreviousQty().negate();
-				deltaAfterRangeEnd = stockWithDelta.getQtyDelta();
-			}
-			else
-			{
-				deltaUntilRangeEnd = deltaCandidate.getQuantity();
-				deltaAfterRangeEnd = stockWithDelta.getQtyDelta();
-			}
+			previousStockCandidate = updatedStockCandidate;
 		}
-		else
-		{
-			deltaUntilRangeEnd = stockWithDelta.getQtyDelta();
-			deltaAfterRangeEnd = null;
-		}
+	}
 
-		final List<Candidate> candidatesToUpdateWithinRange = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
-		for (final Candidate candidate : candidatesToUpdateWithinRange)
-		{
-			final BigDecimal newQty = candidate.getQuantity().add(deltaUntilRangeEnd);
+	private ImmutableMap<CandidateId, Candidate> computeStockIdToMainCandidateMap(final List<Candidate> stockCandidatesToUpdate)
+	{
+		final Set<CandidateId> parentIdSet = stockCandidatesToUpdate.stream()
+				.map(Candidate::getParentId)
+				.filter(candidateId -> !candidateId.isNull())
+				.collect(Collectors.toSet());
+		final Set<CandidateId> idSet = stockCandidatesToUpdate.stream()
+				.map(Candidate::getId)
+				.collect(Collectors.toSet());
 
-			candidateRepositoryWriteService.updateCandidateById(candidate
-					.withQuantity(newQty)
-					.withGroupId(deltaCandidate.getGroupId()));
-		}
-		if (deltaAfterRangeEnd == null || deltaAfterRangeEnd.signum() == 0)
-		{
-			return; // we are done
-		}
+		final ImmutableList<Candidate> mainCandidates = candidateRepositoryRetrieval.retrieveMainCandidatesForStockCandidates(idSet, parentIdSet);
+		final Map<CandidateId, Candidate> mainCandidateIdToCandidateMap = mainCandidates.stream()
+				.collect(Collectors.toMap(Candidate::getId, Functions.identity()));
+		final Map<CandidateId, Candidate> suppplyStockToMainCandidateMap = mainCandidates.stream()
+				.filter(mainCandidate -> !mainCandidate.getParentId().isNull() && !mainCandidate.getId().equals(mainCandidate.getParentId()))
+				.collect(Collectors.toMap(Candidate::getParentId, Functions.identity()));
 
-		final MaterialDescriptorQuery materialDescriptorQuery = query.getMaterialDescriptorQuery();
-		final MaterialDescriptorQuery materialDescriptToQueryAfterRange = materialDescriptorQuery.toBuilder()
-				.timeRangeStart(materialDescriptorQuery.getTimeRangeEnd())
-				.timeRangeEnd(null)
+		final Map<CandidateId, Candidate> demandStockToMainCandidateMap = stockCandidatesToUpdate.stream()
+				.filter(stockCandidate -> !stockCandidate.getParentId().isNull()
+						&& mainCandidateIdToCandidateMap.containsKey(stockCandidate.getParentId())
+						&& !suppplyStockToMainCandidateMap.containsKey(stockCandidate.getId()))
+				.collect(Collectors.toMap(Candidate::getId, stockCandidate -> mainCandidateIdToCandidateMap.get(stockCandidate.getParentId())));
+		return ImmutableMap.<CandidateId, Candidate>builder()
+				.putAll(suppplyStockToMainCandidateMap)
+				.putAll(demandStockToMainCandidateMap)
 				.build();
-		final CandidatesQuery queryAfterRange = query.withMaterialDescriptorQuery(materialDescriptToQueryAfterRange);
-		final List<Candidate> candidatesToUpdateAfterRange = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(queryAfterRange);
-		candidatesToUpdateAfterRange.removeIf(deltaCandidate::isStockCandidateOfThisCandidate);
-		for (final Candidate candidate : candidatesToUpdateAfterRange)
-		{
-			final BigDecimal newQty = candidate.getQuantity().add(deltaAfterRangeEnd);
-
-			candidateRepositoryWriteService.updateCandidateById(candidate
-					.withQuantity(newQty)
-					.withGroupId(deltaCandidate.getGroupId()));
-		}
 	}
 
 	@NonNull
@@ -262,18 +264,16 @@ public class StockCandidateService
 		return candidatesQueryBuilder.build();
 	}
 
-	private CandidatesQuery createStockQueryBetweenDates(
+	private CandidatesQuery createStockQueryAfterDate(
 			@NonNull final CandidateSaveResult saveResult)
 	{
 		final DateAndSeqNo rangeStart;
-		final DateAndSeqNo rangeEnd;
 		if (!saveResult.isDateMoved())
 		{
 			rangeStart = DateAndSeqNo
 					.ofCandidate(saveResult.getCandidate())
 					.min(saveResult.getPreviousTime())
-					.withOperator(Operator.EXCLUSIVE);
-			rangeEnd = null; // if the stock is not moving on the time axis, we look at all records, from rangeStart onwards
+					.withOperator(Operator.INCLUSIVE);
 		}
 		else
 		{
@@ -282,17 +282,8 @@ public class StockCandidateService
 				rangeStart = DateAndSeqNo
 						.ofCandidate(saveResult.getCandidate())
 						.min(saveResult.getPreviousTime())
-						.withOperator(Operator.EXCLUSIVE);
-
-				rangeEnd = DateAndSeqNo
-						.ofCandidate(saveResult.getCandidate())
-						.max(DateAndSeqNo
-								.builder()
-								.date(saveResult.getCandidate().getDate())
-								.seqNo(saveResult.getCandidate().getSeqNo())
-								.build())
-
 						.withOperator(Operator.INCLUSIVE);
+
 			}
 			else
 			{
@@ -303,20 +294,12 @@ public class StockCandidateService
 								.date(saveResult.getCandidate().getDate())
 								.seqNo(saveResult.getCandidate().getSeqNo())
 								.build())
-						.withOperator(Operator.EXCLUSIVE);
-
-				rangeEnd = DateAndSeqNo
-						.ofCandidate(saveResult.getCandidate())
-						.max(saveResult.getPreviousTime())
-
-						.withOperator(Operator.EXCLUSIVE);
+						.withOperator(Operator.INCLUSIVE);
 			}
 		}
-
 		final MaterialDescriptorQuery //
 				materialDescriptorQuery = createMaterialDescriptorQueryBuilder(saveResult.getCandidate().getMaterialDescriptor())
 				.timeRangeStart(rangeStart)
-				.timeRangeEnd(rangeEnd)
 				.build();
 
 		return CandidatesQuery.builder()
@@ -378,6 +361,6 @@ public class StockCandidateService
 	{
 		final CandidatesQuery previousStockQuery = createStockQueryUntilDate(candidate);
 
-		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(previousStockQuery);
+		return candidateRepositoryRetrieval.retrievePreviousMatchForCandidateIdOrNull(previousStockQuery, candidate.getId());
 	}
 }

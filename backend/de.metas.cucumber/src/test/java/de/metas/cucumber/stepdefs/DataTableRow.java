@@ -582,11 +582,25 @@ public class DataTableRow
 		return getAsOptionalInstant(columnName).map(Timestamp::from);
 	}
 
+	/**
+	 * Convert the given string. Examples:
+	 * <ul>
+	 *     <li>2007-12-03</li>
+	 *     <li>2007-12-03Z</li>
+	 *     <li>2007-12-03T10:15:30</li>
+	 *     <li>2007-12-03T10:15:30Z</li>
+	 * </ul>
+	 * Append the prefix {@code Z} to indicate that no timezone-conversion shall be done.
+	 * Otherwise, the code assumes the given time is in the TZ returned by {@link ZoneId#systemDefault()} and converts it to UTC from there.
+	 */
 	public Instant getAsInstant(@NonNull final String columnName)
 	{
 		return parseInstant(getAsString(columnName), columnName);
 	}
 
+	/**
+	 * Similar to {@link #getAsInstant(String)}.
+	 */
 	public Optional<Instant> getAsOptionalInstant(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseInstant(valueStr, columnName));
@@ -603,18 +617,20 @@ public class DataTableRow
 		try
 		{
 			if (valueStr.contains("T"))
-			{
+			{ // we have a date+time
 				if (valueStr.endsWith("Z"))
 				{
 					return Instant.parse(valueStr);
 				}
-				else
-				{
-					return toInstant(LocalDateTime.parse(valueStr));
-				}
+				return toInstant(LocalDateTime.parse(valueStr));
 			}
 			else
-			{
+			{ // we have a date
+				if (valueStr.endsWith("Z"))
+				{
+					final String effectiveString = valueStr.replace("Z", "T00:00:00.00Z");
+					return Instant.parse(effectiveString);
+				}
 				return toInstant(LocalDate.parse(valueStr).atStartOfDay());
 			}
 		}
@@ -640,7 +656,7 @@ public class DataTableRow
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
-		// because that's the timezone java.sql.Timestamp would use it too,
+		// because the timezone java.sql.Timestamp would use it too,
 		// and because most of currently logic is silently assuming that
 		final ZoneId jvmTimeZone = ZoneId.systemDefault();
 		return ldt.atZone(jvmTimeZone).toInstant();

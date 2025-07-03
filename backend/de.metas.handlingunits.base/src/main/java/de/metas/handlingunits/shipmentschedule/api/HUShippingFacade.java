@@ -229,7 +229,7 @@ public class HUShippingFacade
 		}
 
 		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments)
-				.listIds(InvoiceCandidateId::ofRepoId);
+				.idsAsSet(InvoiceCandidateId::ofRepoId);
 		if (invoiceCandidateIds.isEmpty())
 		{
 			throw new AdempiereException("@NotFound@ @C_Invoice_Candidate_ID@")

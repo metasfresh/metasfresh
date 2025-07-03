@@ -27,4 +27,9 @@ public class PickingSlotQueue
 				.map(PickingSlotQueueItem::getHuId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
+	public boolean containsHuId(@NonNull final HuId huId)
+	{
+		return items.stream().anyMatch(item -> HuId.equals(item.getHuId(), huId));
+	}
 }

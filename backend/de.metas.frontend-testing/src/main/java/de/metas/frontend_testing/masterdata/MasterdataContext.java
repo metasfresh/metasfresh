@@ -20,6 +20,8 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -174,6 +176,40 @@ public class MasterdataContext
 			{
 				assertThat(actualId).as(what).isEqualTo(expectedId);
 			}
+		}
+	}
+
+	public Map<String, Object> toJson()
+	{
+		final HashMap<String, Object> result = new HashMap<>();
+
+		identifiers.forEach((typeAndIdentifier, id) -> result.put(typeAndIdentifier.getIdentifier().getAsString(), id.getRepoId()));
+
+		return result;
+	}
+
+	public <T extends RepoIdAware> String describeId(@Nullable final T id)
+	{
+		if (id == null)
+		{
+			return "<null>";
+		}
+
+		final List<TypeAndIdentifier> keys = identifiers.entrySet()
+				.stream()
+				.filter(entry -> Objects.equals(entry.getValue(), id))
+				.map(Map.Entry::getKey)
+				.distinct()
+				.collect(Collectors.toList());
+
+		if (keys.size() == 1)
+		{
+			final Identifier identifier = keys.get(0).getIdentifier();
+			return identifier.getAsString() + "/" + id.getRepoId();
+		}
+		else
+		{
+			return id.toString();
 		}
 	}
 

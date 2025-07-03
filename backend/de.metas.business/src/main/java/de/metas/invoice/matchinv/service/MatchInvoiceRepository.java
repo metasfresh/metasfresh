@@ -204,7 +204,7 @@ public class MatchInvoiceRepository
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
 				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
 				.create()
-				.listIds(MatchInvId::ofRepoId);
+				.idsAsSet(MatchInvId::ofRepoId);
 	}
 
 	public Set<MatchInvId> getIdsProcessedButNotPostedByInvoiceLineIds(@NonNull final Set<InvoiceAndLineId> invoiceAndLineIds)
@@ -221,6 +221,6 @@ public class MatchInvoiceRepository
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
 				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
 				.create()
-				.listIds(MatchInvId::ofRepoId);
+				.idsAsSet(MatchInvId::ofRepoId);
 	}
 }

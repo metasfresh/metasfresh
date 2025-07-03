@@ -26,7 +26,6 @@ import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddordercandidate.AbstractDDOrderCandidateEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
@@ -43,6 +42,7 @@ import org.eevolution.api.PPOrderId;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -226,10 +226,8 @@ public class DDOrderCandidateAdvisedHandler
 			@NonNull final CandidatesGroup group,
 			@NonNull final DDOrderCandidateAdvisedEvent event)
 	{
-		final String traceId = event.getTraceId();
-
 		return DDOrderCandidateRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(group.getClientAndOrgId(), traceId))
+				.eventDescriptor(event.getEventDescriptor().withClientAndOrg(group.getClientAndOrgId()))
 				.dateOrdered(SystemTime.asInstant())
 				.ddOrderCandidateData(toDDOrderCandidateData(group))
 				.createDDOrder(event.isAdvisedToCreateDDOrder())
@@ -272,6 +270,7 @@ public class DDOrderCandidateAdvisedHandler
 				.build();
 	}
 
+	@Nullable
 	private static PPOrderRef getPpOrderRef(final Candidate candidate)
 	{
 		final ProductionDetail productionDetail = candidate.getBusinessCaseDetail(ProductionDetail.class).orElse(null);

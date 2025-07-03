@@ -461,7 +461,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, orgId)
 				.orderBy(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID)
 				.create()
-				.listIds(WarehouseId::ofRepoId);
+				.idsAsSet(WarehouseId::ofRepoId);
 	}
 
 	@Override
@@ -478,7 +478,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(WarehouseId::ofRepoId);
+				.idsAsSet(WarehouseId::ofRepoId);
 	}
 
 	private WarehousePickingGroupsIndex getWarehousePickingGroupsIndex()
@@ -819,7 +819,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		return queryBL.createQueryBuilder(I_M_Warehouse.class)
 				.addEqualsFilter(I_M_Warehouse.COLUMN_C_Location_ID, locationId)
 				.create()
-				.listIds(WarehouseId::ofRepoId);
+				.idsAsSet(WarehouseId::ofRepoId);
 	}
 
 	@NonNull

@@ -24,7 +24,12 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import React, { useCallback } from 'react';
 import { trl } from '../../../utils/translations';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { getActivityById, getLineById, getQtyRejectedReasonsFromActivity } from '../../../reducers/wfProcesses';
+import {
+  getActivityById,
+  getCustomQRCodeFormats,
+  getLineById,
+  getQtyRejectedReasonsFromActivity,
+} from '../../../reducers/wfProcesses';
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
@@ -74,6 +79,7 @@ const PickLineScanScreen = () => {
     qtyRejectedReasons,
     catchWeightUom,
     isShowPromptWhenOverPicking,
+    customQRCodeFormats,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId });
@@ -123,6 +129,7 @@ const PickLineScanScreen = () => {
       qtyRejectedReasons={qtyRejectedReasons}
       catchWeight={0}
       catchWeightUom={catchWeightUom}
+      customQRCodeFormats={customQRCodeFormats}
       isShowBestBeforeDate={isShowBestBeforeDate}
       isShowLotNo={isShowLotNo}
       isShowCloseTargetButton={!!luPickingTarget}
@@ -138,6 +145,7 @@ const PickLineScanScreen = () => {
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
+  const customQRCodeFormats = getCustomQRCodeFormats({ activity });
 
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
@@ -156,6 +164,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyRejectedReasons,
     catchWeightUom: line.catchWeightUOM,
     isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
+    customQRCodeFormats,
   };
 };
 
@@ -182,6 +191,7 @@ const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   }
 
   result['bestBeforeDate'] = qrCodeObj.bestBeforeDate;
+  result['productionDate'] = qrCodeObj.productionDate;
   result['lotNo'] = qrCodeObj.lotNo;
 
   console.log('resolveScannedBarcode', { result, qrCodeObj });
@@ -248,6 +258,7 @@ const usePostQtyPicked = ({
     catchWeightUom = null,
     isTUToBePickedAsWhole = false,
     bestBeforeDate = null,
+    productionDate = null,
     lotNo = null,
     productNo,
     ean13ProductCode,
@@ -269,6 +280,7 @@ const usePostQtyPicked = ({
       catchWeightUom,
       isShowBestBeforeDate,
       bestBeforeDate,
+      productionDate,
       isShowLotNo,
       lotNo,
       productNo,

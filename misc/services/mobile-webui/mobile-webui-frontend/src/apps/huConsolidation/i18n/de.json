@@ -6,7 +6,12 @@
   },
   "SelectHUConsolidationTargetScreen": {
     "caption": "Select Target",
-    "closeTarget": "Schließen"
+    "closeTarget": "Schließen",
+    "printLabel": "Drucken",
+    "scanQRCode": "QR scannen"
+  },
+  "ScanHUConsolidationTargetScreen": {
+    "caption": "QR scannen"
   },
   "PickingSlotScreen": {
     "consolidateAll": "Consolidate All"

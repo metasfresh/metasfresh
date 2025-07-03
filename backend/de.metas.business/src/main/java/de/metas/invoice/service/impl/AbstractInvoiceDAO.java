@@ -462,7 +462,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.createQueryBuilder(I_C_Invoice.class)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
-				.listIds(InvoiceId::ofRepoId)
+				.idsAsSet(InvoiceId::ofRepoId)
 				.stream();
 	}
 
@@ -660,7 +660,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, id)
 				.create()
-				.listIds(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
+				.idsAsSet(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
 	}
 
 	private boolean matchesDocType(@NonNull final I_C_Invoice serviceFeeInvoiceCandidate, @Nullable final DocBaseAndSubType targetDocType)

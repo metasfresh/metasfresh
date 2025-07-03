@@ -65,7 +65,7 @@ public class PickingJobRepository
 	{
 		final Set<PickingJobId> pickingJobIds = queryBuilderDraftJobsByPickerId(pickerId)
 				.create()
-				.listIds(PickingJobId::ofRepoId);
+				.idsAsSet(PickingJobId::ofRepoId);
 
 		if (pickingJobIds.isEmpty())
 		{
@@ -148,7 +148,7 @@ public class PickingJobRepository
 
 		final Set<PickingJobId> pickingJobIds = queryBuilder
 				.create()
-				.listIds(PickingJobId::ofRepoId);
+				.idsAsSet(PickingJobId::ofRepoId);
 
 		if (pickingJobIds.isEmpty())
 		{
@@ -211,7 +211,7 @@ public class PickingJobRepository
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_M_PickingSlot_ID, slotId)
 				.create()
-				.listIds(PickingJobId::ofRepoId);
+				.idsAsSet(PickingJobId::ofRepoId);
 
 		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
 				.loadByIds(pickingJobIds);

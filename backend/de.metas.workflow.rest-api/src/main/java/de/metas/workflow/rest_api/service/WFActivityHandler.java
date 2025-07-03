@@ -28,11 +28,12 @@ import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
-import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import lombok.NonNull;
 
 public interface WFActivityHandler
 {
+	String PROP_customQRCodeFormats = "customQRCodeFormats";
+
 	WFActivityType getHandledActivityType();
 
 	UIComponent getUIComponent(

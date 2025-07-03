@@ -18,6 +18,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -120,7 +121,7 @@ public class JsonConverters
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(request.getCurrencyCode());
 
-		final WarehouseId warehouseDestId = !Check.isEmpty(request.getWarehouseDestCode())
+		final WarehouseId warehouseDestId = Check.isNotBlank(request.getWarehouseDestCode())
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
@@ -189,6 +190,10 @@ public class JsonConverters
 
 		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
 
+		final int huPIItemProductId = CoalesceUtil.firstGreaterThanZero(
+				JsonMetasfreshId.toValueInt(request.getPackingMaterialId()),
+				HUPIItemProductId.toRepoIdVirtualToZero(productInfo.getHupiItemProductId()));
+		
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -218,10 +223,12 @@ public class JsonConverters
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
 				.productId(productInfo.getProductId())
+				.huPIItemProductId(huPIItemProductId)
+				.qtyItemCapacity(request.getQtyItemCapacity()) // if none is given, we will use the huPIItemProductId's capacity down the road
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
 				.uomId(uomId)
-				.huPIItemProductId(JsonMetasfreshId.toValueInt(request.getPackingMaterialId()))
+				
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
@@ -248,7 +255,7 @@ public class JsonConverters
 				.deliveryRule(request.getDeliveryRule())
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
-				.qtyItemCapacity(request.getQtyItemCapacity())
+
 				//
 				.assignSalesRepRule(assignSalesRepRule)
 				.salesRepInternalId(salesRepInternalId)
