@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.ean13.EAN13;
 import de.metas.ean13.EAN13ProductCode;
 import de.metas.gs1.GTIN;
@@ -861,6 +862,7 @@ public class PickingJobPickCommand
 				.actualPickedHU(getSingleTUInfo(tu))
 				.qtyPicked(qtyPicked)
 				.catchWeight(catchWeight)
+				.createdAt(SystemTime.asInstant())
 				.build();
 	}
 
@@ -886,9 +888,10 @@ public class PickingJobPickCommand
 		for (int i = 0; i < tu.getQtyTU().toInt(); i++)
 		{
 			result.add(pickedHUTemplate
-					.actualPickedHU(HUInfo.builder().id(tu.getId()).qrCode(huQRCodes.get(i)).build())
-					.qtyPicked(qtyPickedPerTU.get(i))
-					.build());
+							   .actualPickedHU(HUInfo.builder().id(tu.getId()).qrCode(huQRCodes.get(i)).build())
+							   .qtyPicked(qtyPickedPerTU.get(i))
+							   .createdAt(SystemTime.asInstant())
+							   .build());
 		}
 
 		return result.build();
