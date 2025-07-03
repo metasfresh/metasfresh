@@ -73,6 +73,7 @@ public class PickingBOMService
 				.orgId(orgId)
 				.warehouseId(warehouseId)
 				.productId(productId)
+				.includeWithNullProductId(false)
 				.attributeSetInstanceId(asiId)
 				.build();
 
