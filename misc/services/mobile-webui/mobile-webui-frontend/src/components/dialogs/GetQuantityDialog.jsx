@@ -180,7 +180,7 @@ const GetQuantityDialog = ({
         lotNo: qrCode.lotNo,
         productNo: qrCode.productNo,
         barcodeType: qrCode.barcodeType,
-        barcode: result.scannedBarcode,
+        barcode: result.scannedBarcode, // i.e. the catch weight QR code
         isDone: false,
       };
       uiTrace.putContext(onQtyChangePayload);

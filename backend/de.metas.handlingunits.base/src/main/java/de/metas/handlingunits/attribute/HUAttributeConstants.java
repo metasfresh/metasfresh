@@ -50,6 +50,8 @@ public final class HUAttributeConstants
 
 	public static final AttributeCode ATTR_Quarantine = AttributeCode.ofString("HU_Quarantine");
 	public static final String ATTR_Quarantine_Value_Quarantine = "quarantine";
+	
+	public static final AttributeCode ATTR_QRCode = AttributeCode.ofString("HU_QRCode");
 
 	public static String sqlBestBeforeDate(final String huIdColumnName)
 	{

@@ -98,7 +98,7 @@ export const updateManufacturingReceiptQty = ({
   bestBeforeDate,
   productionDate,
   lotNo,
-  isBarcodeScan,
+  barcode, // i.e. the catch weight QR code
 }) => {
   console.log('updateManufacturingReceiptQty', {
     wfProcessId,
@@ -111,7 +111,7 @@ export const updateManufacturingReceiptQty = ({
     bestBeforeDate,
     productionDate,
     lotNo,
-    isBarcodeScan,
+    barcode,
   });
   return (dispatch, getState) => {
     const { aggregateToLU, aggregateToTU } = getAggregateTarget({
@@ -133,7 +133,7 @@ export const updateManufacturingReceiptQty = ({
         bestBeforeDate,
         productionDate,
         lotNo,
-        isBarcodeScan,
+        barcode,
       },
       pickTo,
     }) //

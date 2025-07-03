@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
@@ -284,6 +285,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull HuId huId);
 
 	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull I_M_HU hu);
+
+	IAttributeStorage getAttributeStorage(I_M_HU hu);
 
 	ImmutableAttributeSet getImmutableAttributeSet(@NonNull I_M_HU hu);
 
