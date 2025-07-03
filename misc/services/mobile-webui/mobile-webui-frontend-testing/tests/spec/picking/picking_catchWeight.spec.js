@@ -296,7 +296,7 @@ test('Custom QR code format', async ({ page }) => {
                     { startPosition: 1, endPosition: 4, type: 'PRODUCT_CODE' },
                     { startPosition: 5, endPosition: 10, type: 'WEIGHT_KG' },
                     { startPosition: 11, endPosition: 18, type: 'LOT' },
-                    { startPosition: 19, endPosition: 24, type: 'IGNORE' },
+                    { startPosition: 19, endPosition: 24, type: 'PRODUCTION_DATE', dateFormat: 'yyMMdd' },
                     { startPosition: 25, endPosition: 30, type: 'BEST_BEFORE_DATE', dateFormat: 'yyMMdd' },
                 ],
             }
