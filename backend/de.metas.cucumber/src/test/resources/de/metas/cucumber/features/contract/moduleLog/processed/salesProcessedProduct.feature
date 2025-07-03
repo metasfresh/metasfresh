@@ -455,6 +455,11 @@ Feature: Modular contract log from sales order for processed product
       | M_ShipmentSchedule_ID.Identifier | QuantityType   | IsCompleteShipments | IsShipToday |
       | sch_1                            | SPLIT_SHIPMENT | true                | false       |
 
+    And after not more than 60s, split inOutId is set:
+      | M_ShipmentSchedule_Split_ID.Identifier |
+      | spl_1                                  |
+      | spl_2                                  |
+
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.M_ShipmentSchedule_Split_ID.Identifier |
       | sch_1                            | inout_1               | spl_1                                      |
@@ -642,9 +647,13 @@ Feature: Modular contract log from sales order for processed product
       | M_ShipmentSchedule_ID.Identifier | QuantityType   | IsCompleteShipments | IsShipToday |
       | sch_1                            | SPLIT_SHIPMENT | true                | false       |
 
+    And after not more than 60s, split inOutId is set:
+      | M_ShipmentSchedule_Split_ID.Identifier |
+      | spl_3                                  |
+
     And after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.M_ShipmentSchedule_Split_ID.Identifier | OPT.IgnoreCreated.M_InOut_ID.Identifier |
-      | sch_1                            | inout_3               | spl_3                                      | inout_1 , inout_2                       |
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.M_ShipmentSchedule_Split_ID.Identifier |
+      | sch_1                            | inout_3               | spl_3                                      |
 
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered | OPT.Harvesting_Year_ID.Identifier |

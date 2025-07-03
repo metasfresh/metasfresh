@@ -68,6 +68,9 @@ public class GenerateShipmentsRequest
 	@Nullable
 	Boolean isShipDateToday;
 
+	@Nullable
+	Boolean isShipDateDeliveryDay;
+
 	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, String> result = ImmutableMap.builder();
