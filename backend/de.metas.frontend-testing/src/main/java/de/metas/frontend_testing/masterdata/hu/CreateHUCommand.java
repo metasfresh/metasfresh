@@ -51,6 +51,9 @@ public class CreateHUCommand
 	@NonNull private final JsonCreateHURequest request;
 	@NonNull private final Identifier identifier;
 
+	private ProductId _productId;
+	private WarehouseId _warehouseId;
+
 	@Builder
 	private CreateHUCommand(
 			@NonNull final InventoryService inventoryService,
@@ -70,7 +73,7 @@ public class CreateHUCommand
 	public JsonCreateHUResponse execute()
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
-		
+
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
 
@@ -80,13 +83,15 @@ public class CreateHUCommand
 		return JsonCreateHUResponse.builder()
 				.huId(String.valueOf(huId.getRepoId()))
 				.qrCode(huQRCode.toGlobalQRCodeString())
+				.productId(getProductId())
+				.warehouseId(getWarehouseId())
 				.build();
 	}
 
 	private @NonNull HuId createCU()
 	{
-		final WarehouseId warehouseId = context.getId(request.getWarehouse(), WarehouseId.class);
-		final ProductId productId = context.getId(request.getProduct(), ProductId.class);
+		final WarehouseId warehouseId = getWarehouseId();
+		final ProductId productId = getProductId();
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 
 		return trxManager.callInThreadInheritedTrx(
@@ -102,6 +107,34 @@ public class CreateHUCommand
 								.build()
 				)
 		);
+	}
+
+	@NonNull
+	private ProductId getProductId()
+	{
+		ProductId productId = this._productId;
+		if (productId == null)
+		{
+			final Identifier productIdentifier = request.getProduct();
+			productId = this._productId = productIdentifier != null
+					? context.getId(productIdentifier, ProductId.class)
+					: context.getIdOfType(ProductId.class);
+		}
+		return productId;
+	}
+
+	@NonNull
+	private WarehouseId getWarehouseId()
+	{
+		WarehouseId warehouseId = this._warehouseId;
+		if (warehouseId == null)
+		{
+			final Identifier warehouseIdentifier = request.getWarehouse();
+			warehouseId = this._warehouseId = warehouseIdentifier != null
+					? context.getId(warehouseIdentifier, WarehouseId.class)
+					: context.getIdOfType(WarehouseId.class);
+		}
+		return warehouseId;
 	}
 
 	private BigDecimal computeQtyCUs()

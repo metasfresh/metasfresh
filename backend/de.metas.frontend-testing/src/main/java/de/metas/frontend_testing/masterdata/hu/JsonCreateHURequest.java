@@ -14,8 +14,8 @@ import java.math.BigDecimal;
 @Jacksonized
 public class JsonCreateHURequest
 {
-	@NonNull Identifier product;
-	@NonNull Identifier warehouse;
+	@Nullable Identifier product;
+	@Nullable Identifier warehouse;
 	@Nullable BigDecimal qty;
 	@Nullable Identifier packingInstructions;
 }
