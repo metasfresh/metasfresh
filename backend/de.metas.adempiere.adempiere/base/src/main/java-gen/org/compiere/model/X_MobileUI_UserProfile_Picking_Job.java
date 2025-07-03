@@ -12,11 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-<<<<<<< HEAD
-	private static final long serialVersionUID = -1050049838L;
-=======
 	private static final long serialVersionUID = 980521418L;
->>>>>>> adba836fca (MobileUI Kommissionierung - Show last picked HU BestBeforeDate (#20535))
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final int MobileUI_UserProfile_Picking_Job_ID, @Nullable final String trxName)
