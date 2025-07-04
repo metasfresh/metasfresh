@@ -97,7 +97,7 @@ $$
         -- 2021-12-20T12:31:45.270449300Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
         /* DDL */
-        SELECT update_Column_Translation_From_AD_Element(580408);
+        PERFORM update_Column_Translation_From_AD_Element(580408);
 
         -- 2021-12-20T12:31:49.111393500Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -154,7 +154,7 @@ $$
         -- 2021-12-10T17:42:45.051893700Z
         -- URL zum Konzept
         /* DDL */
-        SELECT update_Column_Translation_From_AD_Element(403);
+        PERFORM update_Column_Translation_From_AD_Element(403);
 
         -- 2021-12-10T17:42:49.987446400Z
         -- URL zum Konzept
