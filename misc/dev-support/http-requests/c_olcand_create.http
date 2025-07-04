@@ -4,7 +4,7 @@ Content-Type: application/json;charset=UTF-8
 accept: application/json;charset=UTF-8
 
 {
-  "orgCode": "Trotec GmbH",
+  "orgCode": "001",
   "externalLineId": "1", 
   "externalHeaderId": "1",
   "dataSource": "int-DEST.de.metas.ordercandidate",
