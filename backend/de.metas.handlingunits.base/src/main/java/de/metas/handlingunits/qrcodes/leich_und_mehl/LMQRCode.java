@@ -43,6 +43,7 @@ import java.util.Optional;
 @Jacksonized // NOTE: we are making it json friendly mainly for snapshot testing
 public class LMQRCode implements IHUQRCode
 {
+	@NonNull GlobalQRCode code;
 	@NonNull BigDecimal weightInKg;
 	@Nullable LocalDate bestBeforeDate;
 	@Nullable String lotNumber;
@@ -63,6 +64,13 @@ public class LMQRCode implements IHUQRCode
 	{
 		return LMQRCodeParser.fromGlobalQRCode(globalQRCode);
 	}
+
+	@Override
+	@Deprecated
+	public String toString() {return getAsString();}
+
+	@Override
+	public String getAsString() {return code.getAsString();}
 
 	@Override
 	public Optional<BigDecimal> getWeightInKg() {return Optional.of(weightInKg);}

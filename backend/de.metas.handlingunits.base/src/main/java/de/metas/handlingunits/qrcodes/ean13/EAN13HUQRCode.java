@@ -3,6 +3,7 @@ package de.metas.handlingunits.qrcodes.ean13;
 import de.metas.ean13.EAN13;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.scannable_code.ScannedCode;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,12 @@ public class EAN13HUQRCode implements IHUQRCode
 	}
 
 	@Nullable
+	public static EAN13HUQRCode fromScannedCodeOrNullIfNotHandled(@NonNull final ScannedCode scannedCode)
+	{
+		return fromStringOrNullIfNotHandled(scannedCode.getAsString());
+	}
+
+	@Nullable
 	public static EAN13HUQRCode fromStringOrNullIfNotHandled(@NonNull final String barcode)
 	{
 		return fromString(barcode).orElse(null);
@@ -35,6 +42,15 @@ public class EAN13HUQRCode implements IHUQRCode
 	{
 		return EAN13.fromString(barcode).map(EAN13HUQRCode::ofEAN13);
 	}
+
+	@Override
+	@Deprecated
+	public String toString() {return getAsString();}
+
+	public ScannedCode toScannedCode() {return ScannedCode.ofString(getAsString());}
+
+	@Override
+	public String getAsString() {return ean13.getAsString();}
 
 	@Override
 	public Optional<BigDecimal> getWeightInKg() {return ean13.getWeightInKg();}

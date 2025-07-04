@@ -28,6 +28,8 @@ import java.util.Optional;
 
 public interface IHUQRCode
 {
+	String getAsString();
+
 	Optional<BigDecimal> getWeightInKg();
 
 	Optional<LocalDate> getBestBeforeDate();
