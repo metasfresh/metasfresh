@@ -80,8 +80,9 @@ public class SupplyRequiredDecreasedHandler implements MaterialEventHandler<Supp
 
 		if (remainingQtyToHandle.signum() > 0)
 		{
-			Loggables.withLogger(log, Level.WARN).addLog("Could not decrease the qty for order {}. Qty left: {}", descriptor.getOrderId(), remainingQtyToHandle);
-			//TODO add notification here
+			Loggables.withLogger(log, Level.WARN).addLog("Could not decrease the qty for event {}. Qty left: {}", event, remainingQtyToHandle);
+			SupplyRequiredDecreasedNotificationProducer.newInstance().sendNotification(context, descriptor, remainingQtyToHandle);
 		}
 	}
+
 }

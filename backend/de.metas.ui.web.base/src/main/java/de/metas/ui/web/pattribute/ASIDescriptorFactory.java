@@ -187,7 +187,10 @@ public class ASIDescriptorFactory
 					? attributeValuesProvider.getAttributeValueType()
 					: X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 
-			widgetType = DocumentFieldWidgetType.List;
+			widgetType = attributeValuesProvider != null && attributeValuesProvider.isHighVolume()
+					? DocumentFieldWidgetType.Lookup
+					: DocumentFieldWidgetType.List;
+
 			lookupDescriptor = getLookupDescriptor(attribute);
 
 			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(keyValueType))

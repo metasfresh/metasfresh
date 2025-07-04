@@ -456,6 +456,8 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1_S0460_40             | 1              |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     When the order identified by o_1_S0460_40 is completed
 
     Then after not more than 60s, PP_Order_Candidates are found
@@ -611,7 +613,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | 11/d_3_1_S0460_50  | DEMAND            | PRODUCTION                | product_3_1  | 2024-09-22T21:00:00Z | 21  | -21 | WH_S0460       | oc_4_S0460_50         | oc_4_1_S0460_50           |
 
 
-    And metasfresh contains this MD_Candidate_Demand_Detail data
+    And metasfresh contains this MD_Candidate_QtyDetails data
       | Identifier | MD_Candidate_ID   | Detail_MD_Candidate_ID | Qty |
       | 01_1       | 01/d_1_1_S0460_50 |                        | 0   |
       | 01_2       | 01/d_1_1_S0460_50 | 01/d_1_1_S0460_50      | -7  |

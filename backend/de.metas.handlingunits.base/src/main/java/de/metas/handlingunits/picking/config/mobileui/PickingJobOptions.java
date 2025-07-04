@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.config.mobileui;
 
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
+import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -26,6 +27,7 @@ public class PickingJobOptions
 	boolean isAllowCompletingPartialPickingJob;
 	boolean isShowLastPickedBestBeforeDateForLines;
 	boolean isAnonymousPickHUsOnTheFly;
+	@NonNull OptionalBoolean displayPickingSlotSuggestions;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
@@ -35,7 +37,7 @@ public class PickingJobOptions
 			@Nullable final PickingJobAggregationType aggregationType,
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
-			final boolean isPickWithNewLU, 
+			final boolean isPickWithNewLU,
 			final boolean isShipOnCloseLU,
 			final boolean isAllowNewTU,
 			final boolean isCatchWeightTUPickingEnabled,
@@ -45,6 +47,7 @@ public class PickingJobOptions
 			final boolean isAllowCompletingPartialPickingJob,
 			final boolean isShowLastPickedBestBeforeDateForLines,
 			final boolean isAnonymousPickHUsOnTheFly,
+			@Nullable final OptionalBoolean displayPickingSlotSuggestions,
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
 			@Nullable final PickingLineGroupBy pickingLineGroupBy,
 			@Nullable final PickingLineSortBy pickingLineSortBy)
@@ -62,6 +65,7 @@ public class PickingJobOptions
 		this.isAllowCompletingPartialPickingJob = isAllowCompletingPartialPickingJob;
 		this.isShowLastPickedBestBeforeDateForLines = isShowLastPickedBestBeforeDateForLines;
 		this.isAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly;
+		this.displayPickingSlotSuggestions = displayPickingSlotSuggestions != null ? displayPickingSlotSuggestions : OptionalBoolean.FALSE;
 		this.createShipmentPolicy = createShipmentPolicy;
 		this.pickingLineGroupBy = pickingLineGroupBy;
 		this.pickingLineSortBy = pickingLineSortBy;
@@ -70,4 +74,29 @@ public class PickingJobOptions
 	public Optional<PickingLineGroupBy> getPickingLineGroupBy() {return Optional.ofNullable(pickingLineGroupBy);}
 
 	public Optional<PickingLineSortBy> getPickingLineSortBy() {return Optional.ofNullable(pickingLineSortBy);}
+
+	public PickingJobOptions fallbackTo(@NonNull final PickingJobOptions fallback)
+	{
+		boolean changed = false;
+
+		final OptionalBoolean displayPickingSlotSuggestionsNew;
+		if (this.displayPickingSlotSuggestions.isUnknown() && fallback.getDisplayPickingSlotSuggestions().isPresent())
+		{
+			displayPickingSlotSuggestionsNew = fallback.getDisplayPickingSlotSuggestions();
+			changed = true;
+		}
+		else
+		{
+			displayPickingSlotSuggestionsNew = this.displayPickingSlotSuggestions;
+		}
+
+		if (!changed)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.displayPickingSlotSuggestions(displayPickingSlotSuggestionsNew)
+				.build();
+	}
 }

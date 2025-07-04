@@ -24,11 +24,12 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 *
 	 * @return picking slot or null
 	 */
-	@Nullable I_M_PickingSlot retrievePickingSlotForHU(HuId huId);
+	@Nullable
+	I_M_PickingSlot retrievePickingSlotForHU(HuId huId);
 
 	List<I_M_PickingSlot_HU> retrievePickingSlotHUs(@NonNull PickingSlotId pickingSlotId, @NonNull Set<HuId> huIds);
 
-	List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs(@NonNull final PickingSlotQuery query);
+	List<I_M_PickingSlot_HU> retrieveAllPickingSlotHUs(@NonNull final PickingSlotQueueQuery query);
 
 	List<I_M_PickingSlot_HU> retrievePickingSlotHUs(@NonNull Set<PickingSlotId> pickingSlotIds);
 

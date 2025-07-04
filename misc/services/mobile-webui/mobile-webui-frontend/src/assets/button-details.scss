@@ -1,0 +1,47 @@
+@import './variables.scss';
+
+.button-details {
+  width: 100%;
+
+  .caption1 {
+    padding-top: 5px;
+    text-align: right;
+    float: left;
+    width: 25%;
+  }
+
+  .value1 {
+    float: left;
+    width: 25%;
+    font-size: 1.5em;
+  }
+
+  .caption2 {
+    padding-top: 5px;
+    text-align: right;
+    float: left;
+    width: 25%;
+  }
+
+  .value2 {
+    float: left;
+    width: 25%;
+    font-size: 1.5em;
+  }
+
+  @media only screen and (max-width: $small-screen-width) {
+    .caption1 {
+      padding-top: 0;
+    }
+    .value1 {
+      font-size: 1em;
+    }
+    .caption2 {
+      padding-top: 0;
+    }
+    .value2 {
+      font-size: 1em;
+    }
+  }
+}
+

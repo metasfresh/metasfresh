@@ -91,7 +91,7 @@ public class ScanScaleDeviceActivityHandler implements WFActivityHandler, SetSca
 	}
 
 	@Override
-	public WFProcess setScannedBarcode(final SetScannedBarcodeRequest request)
+	public WFProcess setScannedBarcode(final @NonNull SetScannedBarcodeRequest request)
 	{
 		final DeviceId newScaleDeviceId = DeviceQRCode.ofGlobalQRCodeJsonString(request.getScannedBarcode()).getDeviceId();
 		return ManufacturingMobileApplication.mapDocument(

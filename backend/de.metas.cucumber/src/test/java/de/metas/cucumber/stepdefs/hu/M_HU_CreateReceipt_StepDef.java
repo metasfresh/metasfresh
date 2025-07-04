@@ -23,8 +23,10 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -73,53 +75,53 @@ public class M_HU_CreateReceipt_StepDef
 	@And("create material receipt")
 	public void create_materialReceipt(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final String huListIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.HUList." + TABLECOLUMN_IDENTIFIER);
+		DataTableRows.of(dataTable).forEach(row ->
+				{
+					final StepDefDataIdentifier huIdentifier = row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).orElse(null);
+					final StepDefDataIdentifier huListIdentifier = row.getAsOptionalIdentifier("HUList").orElse(null);
 
-			assertThat(huIdentifier != null /*XOR*/ ^ huListIdentifier != null).isEqualTo(true);
+					assertThat(huIdentifier != null /*XOR*/ ^ huListIdentifier != null).isEqualTo(true);
 
-			final Set<HuId> huIdSet;
-			if (huIdentifier != null)
-			{
-				huIdSet = ImmutableSet.of(HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID()));
-			}
-			else
-			{
-				assertThat(huListIdentifier).isNotBlank();
+					final Set<HuId> huIdSet;
+					if (huIdentifier != null)
+					{
+						huIdSet = ImmutableSet.of(HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID()));
+					}
+					else
+					{
+						assertThat(huListIdentifier).isNotNull();
 
-				huIdSet = huListTable.get(huListIdentifier)
-						.stream()
-						.map(I_M_HU::getM_HU_ID)
-						.map(HuId::ofRepoId)
-						.collect(ImmutableSet.toImmutableSet());
-			}
+						huIdSet = huListTable.get(huListIdentifier)
+								.stream()
+								.map(I_M_HU::getM_HU_ID)
+								.map(HuId::ofRepoId)
+								.collect(ImmutableSet.toImmutableSet());
+					}
 
-			final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
-			InterfaceWrapperHelper.refresh(receiptSchedule);
+					final StepDefDataIdentifier receiptScheduleIdentifier = row.getAsIdentifier(I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID);
+					final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
+					InterfaceWrapperHelper.refresh(receiptSchedule);
 
-			final IHUReceiptScheduleBL.CreateReceiptsParameters parameters = IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
-					.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
-					.ctx(Env.getCtx())
-					.receiptSchedules(ImmutableList.of(receiptSchedule))
-					.selectedHuIds(huIdSet)
-					.build();
+					final IHUReceiptScheduleBL.CreateReceiptsParameters parameters = IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
+							.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
+							.ctx(Env.getCtx())
+							.receiptSchedules(ImmutableList.of(receiptSchedule))
+							.selectedHuIds(huIdSet)
+							.build();
 
-			final InOutGenerateResult inOutGenerateResult = huReceiptScheduleBL.processReceiptSchedules(parameters);
-			assertThat(inOutGenerateResult).isNotNull();
-			assertThat(inOutGenerateResult.getInOuts()).isNotEmpty();
-			assertThat(inOutGenerateResult.getInOuts().size()).isEqualTo(1);
+					final InOutGenerateResult inOutGenerateResult = huReceiptScheduleBL.processReceiptSchedules(parameters);
+					assertThat(inOutGenerateResult).isNotNull();
+					assertThat(inOutGenerateResult.getInOuts()).isNotEmpty();
+					assertThat(inOutGenerateResult.getInOuts().size()).isEqualTo(1);
 
-			final de.metas.inout.model.I_M_InOut inOut = inOutGenerateResult.getInOuts().get(0);
+					final de.metas.inout.model.I_M_InOut inOut = inOutGenerateResult.getInOuts().get(0);
 
-			final I_M_InOut huInOut = load(inOut.getM_InOut_ID(), I_M_InOut.class);
-			assertThat(huInOut).isNotNull();
+					final I_M_InOut huInOut = load(inOut.getM_InOut_ID(), I_M_InOut.class);
+					assertThat(huInOut).isNotNull();
 
-			final String inoutIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			inOutTable.putOrReplace(inoutIdentifier, huInOut);
-		}
+					final StepDefDataIdentifier inoutIdentifier = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID);
+					inOutTable.putOrReplace(inoutIdentifier, huInOut);
+				}
+		);
 	}
 }

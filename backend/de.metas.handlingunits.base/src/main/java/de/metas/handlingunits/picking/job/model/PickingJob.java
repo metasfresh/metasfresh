@@ -26,7 +26,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
@@ -68,29 +70,26 @@ import static de.metas.handlingunits.picking.job.service.PickingJobService.PICKI
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ToString
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class PickingJob
+public final class PickingJob implements PickingJobHeaderOrLine
 {
-	@Getter
-	@NonNull private final PickingJobId id;
+	@NonNull @Getter private final PickingJobId id;
 
 	@NonNull private final PickingJobHeader header;
 
 	@NonNull @Getter private final Optional<HUInfo> pickFromHU;
 	@NonNull @Getter private final CurrentPickingTarget currentPickingTarget;
 
-	@Getter
-	@NonNull private final ImmutableList<PickingJobLine> lines;
+	@NonNull @Getter private final ImmutableList<PickingJobLine> lines;
+	@NonNull @Getter @JsonIgnore private final ImmutableMap<PickingJobLineId, PickingJobLine> linesById;
 
-	@Getter
-	@NonNull private final ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives;
+	@NonNull @Getter private final ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives;
 
-	@Getter
-	private final PickingJobDocStatus docStatus;
+	@Getter private final PickingJobDocStatus docStatus;
 
-	@Getter
-	private final PickingJobProgress progress;
+	@Getter private final PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
+	@SuppressWarnings("OptionalAssignedToNull")
 	private PickingJob(
 			final @NonNull PickingJobId id,
 			final @NonNull PickingJobHeader header,
@@ -107,6 +106,7 @@ public final class PickingJob
 		this.pickFromHU = pickFromHU != null ? pickFromHU : Optional.empty();
 		this.currentPickingTarget = currentPickingTarget != null ? currentPickingTarget : CurrentPickingTarget.EMPTY;
 		this.lines = lines;
+		this.linesById = Maps.uniqueIndex(this.lines, PickingJobLine::getId);
 		this.pickFromAlternatives = pickFromAlternatives;
 		this.docStatus = docStatus;
 
@@ -133,6 +133,21 @@ public final class PickingJob
 
 	@Nullable
 	public BPartnerLocationId getDeliveryBPLocationId() {return header.getDeliveryBPLocationId();}
+
+	public Set<BPartnerLocationId> getDeliveryBPLocationIds()
+	{
+		final ImmutableSet.Builder<BPartnerLocationId> result = ImmutableSet.builder();
+		if (getDeliveryBPLocationId() != null)
+		{
+			result.add(getDeliveryBPLocationId());
+		}
+
+		streamLines()
+				.map(PickingJobLine::getDeliveryBPLocationId)
+				.forEach(result::add);
+
+		return result.build();
+	}
 
 	@Nullable
 	public BPartnerLocationId getHandoverLocationId() {return header.getHandoverLocationId();}
@@ -176,6 +191,8 @@ public final class PickingJob
 		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getPickingSlotId);
 	}
 
+	public boolean isDisplayPickingSlotSuggestions() {return header.isDisplayPickingSlotSuggestions();}
+
 	public boolean isProcessed()
 	{
 		return docStatus.isProcessed();
@@ -185,10 +202,7 @@ public final class PickingJob
 
 	public boolean isNothingPicked() {return getProgress().isNotStarted();}
 
-	private CurrentPickingTarget getCurrentPickingTarget(@Nullable final PickingJobLineId lineId)
-	{
-		return lineId != null ? getLineById(lineId).getCurrentPickingTarget() : currentPickingTarget;
-	}
+	private CurrentPickingTarget getCurrentPickingTarget(@Nullable final PickingJobLineId lineId) {return getHeaderOrLine(lineId).getCurrentPickingTarget();}
 
 	private <T> Optional<T> getCurrentPickingTargetEffectiveValue(
 			@Nullable final PickingJobLineId lineId,
@@ -357,12 +371,16 @@ public final class PickingJob
 		return streamLines().flatMap(PickingJobLine::streamShipmentScheduleId);
 	}
 
+	private PickingJobHeaderOrLine getHeaderOrLine(@Nullable final PickingJobLineId lineId) {return lineId != null ? getLineById(lineId) : this;}
+
 	public PickingJobLine getLineById(@NonNull final PickingJobLineId lineId)
 	{
-		return streamLines()
-				.filter(line -> PickingJobLineId.equals(line.getId(), lineId))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No line found for " + lineId));
+		final PickingJobLine line = linesById.get(lineId);
+		if (line == null)
+		{
+			throw new AdempiereException("No line found for " + lineId);
+		}
+		return line;
 	}
 
 	public Stream<PickingJobStep> streamSteps() {return streamLines().flatMap(PickingJobLine::streamSteps);}

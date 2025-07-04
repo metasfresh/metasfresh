@@ -93,24 +93,20 @@ test('Manual', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '7 Stk', qtyPickedCatchWeight: '789 g' });
 
-    // await PickingJobScreen.complete();
-    // await Backend.expect({
-    //     pickings: {
-    //         [pickingJobId]: {
-    //             shipmentSchedules: {
-    //                 P1: {
-    //                     qtyPicked: [
-    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu2', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu3', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu4', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-    //                         { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu5', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-    //                     ]
-    //                 }
-    //             }
-    //         }
-    //     }
-    // });
+    await PickingJobScreen.complete();
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "7 PCE", catchWeight: "0.789 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                        ]
+                    }
+                }
+            }
+        }
+    });
 });
 
 // noinspection JSUnusedLocalSymbols

@@ -11,12 +11,12 @@ import java.util.Set;
 
 @Value
 @Builder
-public class PickingSlotQuery
+public class PickingSlotQueueQuery
 {
 	@Nullable Set<PickingSlotId> onlyPickingSlotIds;
 	@Nullable Set<PickingSlotId> excludePickingSlotIds;
 
-	public static PickingSlotQuery onlyPickingSlotIds(@NonNull final Set<PickingSlotId> onlyPickingSlotIds)
+	public static PickingSlotQueueQuery onlyPickingSlotIds(@NonNull final Set<PickingSlotId> onlyPickingSlotIds)
 	{
 		Check.assumeNotEmpty(onlyPickingSlotIds, "onlyPickingSlotIds is not empty");
 		return builder().onlyPickingSlotIds(onlyPickingSlotIds).build();

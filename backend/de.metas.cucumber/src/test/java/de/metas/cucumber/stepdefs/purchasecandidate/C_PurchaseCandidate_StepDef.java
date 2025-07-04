@@ -178,7 +178,9 @@ public class C_PurchaseCandidate_StepDef
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, orderLineId);
 		if (quantityToPurchase != null)
 		{
-			builder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_QtyToPurchase, quantityToPurchase);
+			builder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_QtyToPurchase, quantityToPurchase.toBigDecimal());
+			builder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_UOM_ID, quantityToPurchase.getUomId());
+
 		}
 		return builder.create();
 	}
@@ -245,16 +247,16 @@ public class C_PurchaseCandidate_StepDef
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 		assertThat(orderLineId).isNotNull();
 
-		final Quantity qtyEntered = tableRow.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null);
+		final Quantity qtyToPurchase = tableRow.getAsOptionalQuantity(I_C_PurchaseCandidate.COLUMNNAME_QtyToPurchase, I_C_PurchaseCandidate.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355).orElse(null);
 
-		final List<I_C_PurchaseCandidate> candidates = getQueryByOrderLineIdAndQty(orderLineId, qtyEntered).list();
+		final List<I_C_PurchaseCandidate> candidates = getQueryByOrderLineIdAndQty(orderLineId, qtyToPurchase).list();
 		if (candidates.size() == 1)
 		{
 			return ItemProvider.ProviderResult.resultWasFound(candidates.get(0));
 		}
 		else if (candidates.isEmpty())
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("No C_PurchaseCandidate found for qtyEntered=" + qtyEntered);
+			return ItemProvider.ProviderResult.resultWasNotFound("No C_PurchaseCandidate found for qtyToPurchase=" + qtyToPurchase);
 		}
 		else
 		{
