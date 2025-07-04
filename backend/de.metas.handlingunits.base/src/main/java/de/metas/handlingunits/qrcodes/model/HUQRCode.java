@@ -149,7 +149,9 @@ public class HUQRCode implements IHUQRCode
 	@Override
 	public Optional<BigDecimal> getWeightInKg()
 	{
-		return getAttribute(Weightables.ATTR_WeightNet).map(HUQRCodeAttribute::getValueAsBigDecimal);
+		return getAttribute(Weightables.ATTR_WeightNet)
+				.map(HUQRCodeAttribute::getValueAsBigDecimal)
+				.filter(weight -> weight.signum() > 0);
 	}
 
 	@Override
