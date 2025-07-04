@@ -77,6 +77,7 @@ pull_request_rules:
               - base=intensive_care_release
               - base=soft_panda_release
               - base=vampire_textbook_release
+              - base=science_vessel_release
 
     actions:
       label:
