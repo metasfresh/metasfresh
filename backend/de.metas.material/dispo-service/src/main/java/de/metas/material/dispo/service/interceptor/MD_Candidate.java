@@ -24,8 +24,8 @@ package de.metas.material.dispo.service.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
-import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
-import de.metas.material.cockpit.view.mainrecord.UpdateMainStockDataRequest;
+import de.metas.material.cockpit.view.mainrecord.StockDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateStockDataRequest;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -68,7 +68,7 @@ public class MD_Candidate
 {
 	@NonNull private final PostMaterialEventService materialEventService;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	@NonNull private final MainDataRequestHandler mainDataRequestHandler;
+	@NonNull private final StockDataRequestHandler stockDataRequestHandler;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE },
@@ -130,12 +130,12 @@ public class MD_Candidate
 
 			final ZoneId orgZoneId = orgDAO.getTimeZone(eventDescriptor.getOrgId());
 
-			final UpdateMainStockDataRequest updateMainStockDataRequest = UpdateMainStockDataRequest.builder()
+			final UpdateStockDataRequest updateStockDataRequest = UpdateStockDataRequest.builder()
 					.identifier(MainDataRecordIdentifier.createForMaterial(materialDescriptor, orgZoneId))
 					.qtyStockCurrent(materialDescriptor.getQuantity())
 					.build();
 
-			mainDataRequestHandler.handleStockUpdateRequest(updateMainStockDataRequest);
+			stockDataRequestHandler.handleStockUpdateRequest(updateStockDataRequest);
 		}
 
 		if (isUpdateCurrentStockRequired(timingType))
@@ -146,12 +146,12 @@ public class MD_Candidate
 
 			final ZoneId orgZoneId = orgDAO.getTimeZone(eventDescriptor.getOrgId());
 
-			final UpdateMainStockDataRequest updateMainStockDataRequest = UpdateMainStockDataRequest.builder()
+			final UpdateStockDataRequest updateStockDataRequest = UpdateStockDataRequest.builder()
 					.identifier(MainDataRecordIdentifier.createForMaterial(materialDescriptor, orgZoneId))
 					.qtyStockCurrent(materialDescriptor.getQuantity())
 					.build();
 
-			mainDataRequestHandler.handleStockUpdateRequest(updateMainStockDataRequest);
+			stockDataRequestHandler.handleStockUpdateRequest(updateStockDataRequest);
 		}
 	}
 

@@ -22,20 +22,25 @@
 
 package de.metas.material.cockpit.view.mainrecord;
 
-import de.metas.material.cockpit.view.MainDataRecordIdentifier;
-import lombok.Builder;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import lombok.NonNull;
-import lombok.Value;
+import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import static de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler.retrieveOrCreateDataRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-@Value
-@Builder
-public class UpdateMainStockDataRequest
+@Service
+public class StockDataRequestHandler
 {
-	@NonNull
-	MainDataRecordIdentifier identifier;
+	public void handleStockUpdateRequest(@NonNull final UpdateStockDataRequest updateStockDataRequest)
+	{
+		synchronized (StockDataRequestHandler.class)
+		{
+			final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(updateStockDataRequest.getIdentifier());
 
-	@NonNull
-	BigDecimal qtyStockCurrent;
+			dataRecord.setMDCandidateQtyStock_AtDate(updateStockDataRequest.getQtyStockCurrent());
+			saveRecord(dataRecord);
+		}
+	}
+
 }
