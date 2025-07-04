@@ -101,22 +101,22 @@ public class OrderAndLineId
 		return Optional.ofNullable(ofRepoIdsOrNull(orderRepoId, orderLineRepoId));
 	}
 
-	public static int toOrderRepoId(final OrderAndLineId orderAndLineId)
+	public static int toOrderRepoId(@Nullable final OrderAndLineId orderAndLineId)
 	{
 		return getOrderRepoIdOr(orderAndLineId, -1);
 	}
 
-	public static int getOrderRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
+	public static int getOrderRepoIdOr(@Nullable final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderRepoId() : defaultValue;
 	}
 
-	public static int toOrderLineRepoId(final OrderAndLineId orderAndLineId)
+	public static int toOrderLineRepoId(@Nullable final OrderAndLineId orderAndLineId)
 	{
 		return getOrderLineRepoIdOr(orderAndLineId, -1);
 	}
 
-	public static int getOrderLineRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
+	public static int getOrderLineRepoIdOr(@Nullable final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderLineRepoId() : defaultValue;
 	}

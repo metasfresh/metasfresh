@@ -22,17 +22,16 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.util.Properties;
 
 public interface IQueryBL extends ISingletonService
 {
@@ -77,7 +76,7 @@ public interface IQueryBL extends ISingletonService
 	/**
 	 * @return query builder using current context and out of transaction
 	 */
-	default IQueryBuilder<Object> createQueryBuilderOutOfTrx(String modelTableName)
+	default IQueryBuilder<Object> createQueryBuilderOutOfTrx(@NonNull String modelTableName)
 	{
 		return createQueryBuilder(modelTableName, Env.getCtx(), ITrx.TRXNAME_None);
 	}
@@ -106,7 +105,7 @@ public interface IQueryBL extends ISingletonService
 
 	/**
 	 * @param tableName name of the table in question. <b>Can</b> be null
- */
+	 */
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(@Nullable String tableName);
 
 	<T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(Class<T> modelClass);

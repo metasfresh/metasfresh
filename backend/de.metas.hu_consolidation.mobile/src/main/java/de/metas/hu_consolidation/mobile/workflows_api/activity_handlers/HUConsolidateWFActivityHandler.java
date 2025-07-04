@@ -3,7 +3,7 @@ package de.metas.hu_consolidation.mobile.workflows_api.activity_handlers;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
-import de.metas.handlingunits.picking.slot.PickingSlotQuery;
+import de.metas.handlingunits.picking.slot.PickingSlotQueueQuery;
 import de.metas.handlingunits.picking.slot.PickingSlotQueuesSummary;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
@@ -92,7 +92,7 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 		}
 
 		final Set<PickingSlotIdAndCaption> pickingSlotIdAndCaptions = pickingSlotService.getPickingSlotIdAndCaptions(pickingSlotIds);
-		final PickingSlotQueuesSummary summary = pickingSlotService.getNotEmptyQueuesSummary(PickingSlotQuery.onlyPickingSlotIds(pickingSlotIds));
+		final PickingSlotQueuesSummary summary = pickingSlotService.getNotEmptyQueuesSummary(PickingSlotQueueQuery.onlyPickingSlotIds(pickingSlotIds));
 
 		return pickingSlotIdAndCaptions.stream()
 				.map(pickingSlotIdAndCaption -> JsonHUConsolidationJobPickingSlot.builder()

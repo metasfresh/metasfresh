@@ -11,6 +11,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.money.MoneyService;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
@@ -22,6 +23,7 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
@@ -118,6 +120,7 @@ public class FactAcctMatchersFactory
 	}
 
 	@SuppressWarnings("OptionalAssignedToNull")
+	@Nullable
 	private Optional<BPartnerId> extractBPartnerId(final @NonNull DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_BPartner_ID").orElse(null);
@@ -125,6 +128,7 @@ public class FactAcctMatchersFactory
 	}
 
 	@SuppressWarnings("OptionalAssignedToNull")
+	@Nullable
 	private Optional<TaxId> extractTaxId(final @NonNull DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_Tax_ID").orElse(null);
@@ -155,6 +159,7 @@ public class FactAcctMatchersFactory
 	}
 
 	@SuppressWarnings("OptionalAssignedToNull")
+	@Nullable
 	private Optional<ProductId> extractProductId(final @NonNull DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("M_Product_ID").orElse(null);

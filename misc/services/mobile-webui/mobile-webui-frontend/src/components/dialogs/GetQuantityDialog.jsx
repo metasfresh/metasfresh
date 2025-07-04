@@ -176,6 +176,7 @@ const GetQuantityDialog = ({
         catchWeight: qrCode.weightNet,
         catchWeightUom: catchWeightUom,
         bestBeforeDate: qrCode.bestBeforeDate,
+        productionDate: qrCode.productionDate,
         lotNo: qrCode.lotNo,
         productNo: qrCode.productNo,
         barcodeType: qrCode.barcodeType,

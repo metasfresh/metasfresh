@@ -21,7 +21,7 @@ public class JsonFailure
 	@NonNull String stacktrace;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@NonNull Map<String, String> context;
+	@NonNull Map<String, Object> context;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@NonNull List<JsonFailure> causes;

@@ -896,7 +896,7 @@ export function patch(
   isEdit,
   disconnected
 ) {
-  if (entity === 'documentView' && isModal) {
+  if (entity === 'documentView') {
     return patchViewAction({
       windowId: windowType,
       viewId,

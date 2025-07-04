@@ -15,6 +15,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJ
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfigService;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -102,6 +103,7 @@ public class MobileConfigCommand
 				.filterByQRCode(profile.isFilterByBarcode())
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
+				.displayPickingSlotSuggestions(profile.getDefaultPickingJobOptions().getDisplayPickingSlotSuggestions().toBooleanOrNull())
 				.build();
 	}
 
@@ -149,6 +151,8 @@ public class MobileConfigCommand
 		{
 			builder.isAnonymousPickHUsOnTheFly(from.getAnonymousPickHUsOnTheFly());
 		}
+
+		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
 
 		return builder.build();
 	}

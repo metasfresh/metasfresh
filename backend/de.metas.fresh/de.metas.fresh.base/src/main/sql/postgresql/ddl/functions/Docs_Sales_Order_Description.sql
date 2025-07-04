@@ -16,6 +16,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 offervaliddays        numeric,
                 bp_value              character varying,
                 eori                  character varying,
+                vataxid               character varying,
                 cont_name             text,
                 cont_phone            character varying,
                 cont_fax              character varying,
@@ -28,9 +29,12 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 datepromised          timestamp WITH TIME ZONE,
                 dt_description        text,
                 offer_documentno      character varying,
+                offer_date            timestamp WITHOUT TIME ZONE,
                 deliverytoaddress     character varying,
                 validuntil            timestamp,
-                versionno             character varying
+                versionno             character varying,
+                warehouse             character varying,
+                projectno             character varying
             )
     STABLE
     LANGUAGE sql
@@ -54,6 +58,7 @@ SELECT o.description                             AS description,
        o.offervaliddays,
        bp.value                                  AS bp_value,
        bp.eori                                   AS eori,
+       bp.vataxid                                AS vataxid,
        LTRIM(COALESCE(cogrt.name, cogrt.name, '') ||
              COALESCE(' ' || cont.title, '') ||
              COALESCE(' ' || cont.firstName, '') ||
@@ -72,6 +77,7 @@ SELECT o.description                             AS description,
        o.datepromised,
        COALESCE(dtt.Description, dt.Description) AS dt_description,
        offer.documentno                          AS offer_documentno,
+       offer.dateordered                         AS offer_date,
        CASE
            WHEN o.isdropship = 'Y'
                THEN REPLACE(
@@ -90,7 +96,9 @@ SELECT o.description                             AS description,
        CASE
            WHEN o.OrderType = 'ON'
                THEN o.versionno
-       END                                       AS versionno
+       END                                       AS versionno,
+       wh.name                                   AS warehouse,
+       pr.value                                  AS projectno
 FROM C_Order o
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
          LEFT OUTER JOIN AD_User srep ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
@@ -106,6 +114,13 @@ FROM C_Order o
 
     -- proposal order
          LEFT JOIN C_Order offer ON offer.C_Order_ID = o.ref_proposal_id
+
+    -- warehouse
+         LEFT JOIN m_warehouse wh ON o.m_warehouse_id = wh.m_warehouse_id
+
+    -- project
+         LEFT JOIN c_project pr ON o.c_project_id = pr.c_project_id
+
 WHERE o.C_Order_ID = record_id
 $$
 ;

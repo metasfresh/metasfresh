@@ -7,7 +7,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotCreateRequest;
 import de.metas.picking.api.PickingSlotId;
@@ -163,22 +162,36 @@ public class PickingSlotDAO implements IPickingSlotDAO
 			return false;
 		}
 
-		final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
-		if (!pickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, query.getAvailableForBPartnerId(), query.getAvailableForBPartnerLocationId()))
+		if (!PickingSlotUtils.isAvailableForBPartnerAndLocation(pickingSlot, query.getAvailableForBPartnerId(), query.getAvailableForBPartnerLocationId()))
 		{
 			return false;
 		}
 
 		// Check assigned BP
 		final BPartnerId assignedToBPartnerId = query.getAssignedToBPartnerId();
-		final BPartnerLocationId assignedToBPartnerLocationId = query.getAssignedToBPartnerLocationId();
 		if (assignedToBPartnerId != null)
 		{
 			if (assignedToBPartnerId.getRepoId() != pickingSlot.getC_BPartner_ID())
 			{
 				return false;
 			}
-			if (assignedToBPartnerLocationId != null && assignedToBPartnerLocationId.getRepoId() != pickingSlot.getC_BPartner_Location_ID())
+		}
+
+		//
+		// Check assigned BP Location
+		final Set<BPartnerLocationId> assignedToBPartnerLocationIds = query.getAssignedToBPartnerLocationIds();
+		if (assignedToBPartnerLocationIds != null && !assignedToBPartnerLocationIds.isEmpty())
+		{
+			boolean matching = false;
+			for (final BPartnerLocationId assignedToBPartnerLocationId : assignedToBPartnerLocationIds)
+			{
+				if (pickingSlot.getC_BPartner_ID() == assignedToBPartnerLocationId.getBpartnerId().getRepoId()
+						&& pickingSlot.getC_BPartner_Location_ID() == assignedToBPartnerLocationId.getRepoId())
+				{
+					matching = true;
+				}
+			}
+			if (!matching)
 			{
 				return false;
 			}
@@ -221,6 +234,6 @@ public class PickingSlotDAO implements IPickingSlotDAO
 				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(PickingSlotId::ofRepoId);
+				.idsAsSet(PickingSlotId::ofRepoId);
 	}
 }

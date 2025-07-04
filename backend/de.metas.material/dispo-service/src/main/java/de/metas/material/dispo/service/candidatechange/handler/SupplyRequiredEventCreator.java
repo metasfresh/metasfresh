@@ -67,12 +67,11 @@ public class SupplyRequiredEventCreator
 	{
 		verifyCandidateType(demandCandidate);
 
-		final SupplyRequiredDescriptor descriptor = createSupplyRequiredDescriptor(
-				demandCandidate,
-				decreasedQty,
-				null);
 		return SupplyRequiredDecreasedEvent.builder()
-				.supplyRequiredDescriptor(descriptor)
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor(
+						demandCandidate,
+						decreasedQty,
+						null))
 				.build();
 	}
 

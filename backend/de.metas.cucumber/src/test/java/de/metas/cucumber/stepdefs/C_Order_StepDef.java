@@ -109,6 +109,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 @RequiredArgsConstructor
@@ -145,7 +146,7 @@ public class C_Order_StepDef
 					final boolean isSOTrx = tableRow.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx);
 					final DocBaseType docBaseType = Optionals.firstPresentOfSuppliers(
 							() -> tableRow.getAsOptionalEnum(COLUMNNAME_DocBaseType, DocBaseType.class),
-							() -> !isSOTrx ? Optional.of(DocBaseType.PurchaseOrder) : Optional.empty() // if we don't do this, MOrder.beforeSave will automatically set IsSOTrx=true because C_DocTypeTarget_ID is not set 
+							() -> !isSOTrx ? Optional.of(DocBaseType.PurchaseOrder) : Optional.empty() // if we don't do this, MOrder.beforeSave will automatically set IsSOTrx=true because C_DocTypeTarget_ID is not set
 					).orElse(null);
 
 					final StepDefDataIdentifier bpartnerIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
@@ -166,10 +167,10 @@ public class C_Order_StepDef
 							.map(bpartnerLocationTable::getId)
 							.ifPresent(id -> order.setDropShip_Location_ID(id.getRepoId()));
 
-					order.setAD_Org_ID(tableRow
-							.getAsOptionalIdentifier(COLUMNNAME_AD_Org_ID)
+					final int orgId = tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_Org_ID)
 							.map(orgTable::getId)
-							.orElse(StepDefConstants.ORG_ID).getRepoId());
+							.orElse(StepDefConstants.ORG_ID).getRepoId();
+					order.setAD_Org_ID(orgId);
 
 					if (paymentTermId > 0)
 					{
@@ -270,16 +271,17 @@ public class C_Order_StepDef
 					{
 						final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
 
-						final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
-								.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
-								.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
-								.create()
-								.firstOnlyNotNull(I_C_DocType.class);
+						final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+								.docBaseType(docBaseType)
+								.docSubType(DocSubType.ofNullableCode(docSubType))
+								.adClientId(StepDefConstants.CLIENT_ID.getRepoId())
+								.adOrgId(orgId)
+								.build();
 
-						assertThat(docType).isNotNull();
+						final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
 
-						order.setC_DocType_ID(docType.getC_DocType_ID());
-						order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+						order.setC_DocType_ID(docTypeId.getRepoId());
+						order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 					}
 
 					final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
@@ -523,6 +525,12 @@ public class C_Order_StepDef
 			if (Check.isNotBlank(paymentRule))
 			{
 				order.setPaymentRule(paymentRule);
+			}
+
+			final Timestamp preparationDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + COLUMNNAME_PreparationDate);
+			if (preparationDate != null)
+			{
+				order.setPreparationDate(preparationDate);
 			}
 
 			InterfaceWrapperHelper.saveRecord(order);

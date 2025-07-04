@@ -7,6 +7,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
@@ -32,6 +34,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingSlotSuggestions;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
@@ -81,6 +84,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -111,6 +115,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
+	@NonNull private final IDocumentLocationBL documentLocationBL;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -687,5 +692,11 @@ public class PickingJobService implements PickingSlotListener
 						.huIdsToPick(request.getHuInfoList())
 						.build())
 				.forEach(PickingJobReopenCommand::execute);
+	}
+
+	public PickingSlotSuggestions getPickingSlotsSuggestions(final @NonNull PickingJob pickingJob)
+	{
+		final Set<DocumentLocation> deliveryLocations = documentLocationBL.getDocumentLocations(pickingJob.getDeliveryBPLocationIds());
+		return pickingSlotService.getPickingSlotsSuggestions(deliveryLocations);
 	}
 }

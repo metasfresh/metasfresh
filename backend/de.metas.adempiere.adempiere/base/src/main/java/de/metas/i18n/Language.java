@@ -247,7 +247,7 @@ public final class Language implements Serializable
 	 * @param langInfo either language (en) or locale (en_US) or display name
 	 * @return language instance
 	 */
-	public static Language getLanguage(final String langInfo)
+	public static Language getLanguage(@Nullable final String langInfo)
 	{
 		String langInfoActual = langInfo;
 		if (langInfoActual == null || langInfoActual.isEmpty())

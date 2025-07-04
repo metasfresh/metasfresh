@@ -2516,11 +2516,11 @@ public abstract class PO
 		}
 		else
 		{
-			services.performanceMonitoringServiceSaveEx(() -> saveEx0());
+			services.performanceMonitoringServiceSaveEx(this::saveEx0);
 		}
 	}
 
-	private final void saveEx0() throws AdempiereException
+	private void saveEx0() throws AdempiereException
 	{
 		//
 		// Check and prepare the saving
@@ -3230,7 +3230,7 @@ public abstract class PO
 				{
 					value = null;
 				}
-				if (Check.isEmpty(value, true))
+				if (Check.isBlank(value))
 				{
 					value = null; // metas: tsa: seq is not automatically fetched on tables with no docType if value is ""
 					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
@@ -3620,6 +3620,7 @@ public abstract class PO
 	 * @param xx    data
 	 * @return xx
 	 */
+	@Nullable
 	private Object encrypt(final int index, final Object xx)
 	{
 		if (xx == null)

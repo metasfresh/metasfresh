@@ -1974,9 +1974,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 			final String msgAskForRegeneration = Services.get(IMsgBL.class).getMsg(ctx, MSG_FixProblemDeleteWaitForRegeneration);
-			errorMessageToUse = new StringBuilder(errorMsg)
-					.append("\n").append(msgAskForRegeneration)
-					.toString();
+			errorMessageToUse = errorMsg
+					+ "\n" + msgAskForRegeneration;
 		}
 
 		ic.setIsError(true);
@@ -2093,7 +2092,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void updatePOReferenceFromOrder(final I_C_Invoice_Candidate candidate)
 	{
-		if (candidate.isProcessed() == true)
+		if (candidate.isProcessed())
 		{
 			return; // do nothing in case of processed ICs
 		}
@@ -2299,7 +2298,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						final AggregationId aggregationId = AggregationId.ofRepoIdOrNull(candidate.getHeaderAggregationKeyBuilder_ID());
 						if (aggregationId != null)
 						{
-							final Aggregation aggregation = aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId.getRepoId());
+							final Aggregation aggregation = aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId);
 							if (aggregation.hasInvoicePerShipmentAttribute())
 							{
 								logger.debug("Has aggregation attribute: InvoicePerShipment ; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());

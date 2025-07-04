@@ -57,17 +57,6 @@ public class MainDataRequestHandler
 		}
 	}
 
-	public void handleStockUpdateRequest(@NonNull final UpdateMainStockDataRequest updateMainStockDataRequest)
-	{
-		synchronized (MainDataRequestHandler.class)
-		{
-			final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(updateMainStockDataRequest.getIdentifier());
-
-			dataRecord.setMDCandidateQtyStock_AtDate(updateMainStockDataRequest.getQtyStockCurrent());
-			saveRecord(dataRecord);
-		}
-	}
-
 	@VisibleForTesting
 	static I_MD_Cockpit retrieveOrCreateDataRecord(@NonNull final MainDataRecordIdentifier identifier)
 	{

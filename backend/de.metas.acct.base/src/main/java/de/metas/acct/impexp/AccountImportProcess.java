@@ -98,7 +98,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		// nothing
 	}
@@ -110,7 +110,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	}
 
 	@Override
-	protected I_I_ElementValue retrieveImportRecord(Properties ctx, ResultSet rs)
+	public I_I_ElementValue retrieveImportRecord(Properties ctx, ResultSet rs)
 	{
 		return new X_I_ElementValue(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

@@ -108,6 +108,8 @@ public class CreateBPartnerCommand
 			singleBPLocationId = BPartnerLocationId.ofRepoId(bpLocationRecord.getC_BPartner_ID(), bpLocationRecord.getC_BPartner_Location_ID());
 			singleGLN = GLN.ofNullableString(bpLocationRecord.getGLN());
 			responseLocations = null;
+
+			context.putIdentifier(bpIdentifier, singleBPLocationId);
 		}
 		else
 		{

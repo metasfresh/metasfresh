@@ -115,6 +115,7 @@ public class CreateMasterdataCommand
 	private JsonLoginUserResponse createLoginUser(final String identifier, final JsonLoginUserRequest request)
 	{
 		return LoginUserCommand.builder()
+				.userAuthTokenService(services.userAuthTokenService)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

@@ -3,6 +3,7 @@ import {
   ATTR_bestBeforeDate,
   ATTR_displayable,
   ATTR_lotNo,
+  ATTR_productionDate,
   ATTR_productNo,
   ATTR_weightNet,
   ATTR_weightNetUOM,
@@ -33,6 +34,11 @@ export const parseCustomQRCode = ({ string, format }) => {
 
     for (const formatPart of format.parts) {
       const partResult = parseCustomQRCodePart({ string, formatPart });
+      // console.log('parseCustomQRCodePart', {
+      //   formatPart: JSON.stringify(formatPart),
+      //   partResult: JSON.stringify(partResult),
+      //   string,
+      // });
       if (partResult?.error) {
         return {
           error: partResult.error,
@@ -96,6 +102,13 @@ const parseCustomQRCodePart = ({ string, formatPart }) => {
     case 'BEST_BEFORE_DATE':
       return {
         [ATTR_bestBeforeDate]: parseLocalDate({
+          string: valueStr,
+          dateFormat: formatPart.dateFormat ?? DEFAULT_dateFormat,
+        }),
+      };
+    case 'PRODUCTION_DATE':
+      return {
+        [ATTR_productionDate]: parseLocalDate({
           string: valueStr,
           dateFormat: formatPart.dateFormat ?? DEFAULT_dateFormat,
         }),

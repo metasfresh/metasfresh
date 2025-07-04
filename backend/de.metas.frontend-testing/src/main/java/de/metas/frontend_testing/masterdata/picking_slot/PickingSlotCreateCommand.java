@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.picking_slot;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.picking.api.IPickingSlotDAO;
@@ -26,11 +27,15 @@ public class PickingSlotCreateCommand
 		final LocatorId locatorId = request.getLocator() != null
 				? context.getId(request.getLocator(), LocatorId.class)
 				: context.getIdOfType(LocatorId.class);
+		final BPartnerLocationId bpartnerLocationId = request.getBpartnerLocation() != null
+				? context.getId(request.getBpartnerLocation(), BPartnerLocationId.class)
+				: null;
 
 		final PickingSlotIdAndCaption pickingSlot = pickingSlotDAO.createPickingSlot(PickingSlotCreateRequest.builder()
 				.pickingSlotCode(code)
 				.locatorId(locatorId)
 				.isDynamic(true)
+				.bpartnerAndLocationId(bpartnerLocationId)
 				.build());
 
 		return JsonPickingSlotCreateResponse.builder()

@@ -32,6 +32,8 @@ import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.security.IUserRolePermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.GetScannedBarcodeSuggestionsRequest;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonScannedBarcodeSuggestions;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
@@ -226,6 +228,20 @@ public class WorkflowRestAPIService
 						.wfProcess(wfProcess)
 						.wfActivity(wfActivity)
 						.scannedBarcode(scannedBarcode)
+						.build());
+	}
+
+	public JsonScannedBarcodeSuggestions getScannedBarcodeSuggestions(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final WFActivityId wfActivityId)
+	{
+		final WFProcess wfProcess = getWorkflowBasedMobileApplication(wfProcessId.getApplicationId()).getWFProcessById(wfProcessId);
+		final WFActivity wfActivity = wfProcess.getActivityById(wfActivityId);
+
+		return wfActivityHandlersRegistry
+				.getFeature(wfActivity.getWfActivityType(), SetScannedBarcodeSupport.class)
+				.getScannedBarcodeSuggestions(GetScannedBarcodeSuggestionsRequest.builder()
+						.wfProcess(wfProcess)
 						.build());
 	}
 

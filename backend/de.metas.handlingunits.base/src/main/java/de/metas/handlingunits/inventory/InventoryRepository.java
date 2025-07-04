@@ -755,13 +755,13 @@ public class InventoryRepository
 		final ImmutableSet<InventoryLineId> linesViaHUId = queryBL.createQueryBuilder(I_M_InventoryLine.class)
 				.addInArrayFilter(I_M_InventoryLine.COLUMNNAME_M_HU_ID, huIds)
 				.create()
-				.listIds(InventoryLineId::ofRepoId);
+				.idsAsSet(InventoryLineId::ofRepoId);
 
 		final ImmutableSet<InventoryLineId> linesViaHUInventoryLine = queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
 				.addInArrayFilter(I_M_InventoryLine_HU.COLUMNNAME_M_HU_ID, huIds)
 				.andCollect(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_ID, I_M_InventoryLine.class)
 				.create()
-				.listIds(InventoryLineId::ofRepoId);
+				.idsAsSet(InventoryLineId::ofRepoId);
 
 		final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
 				.setJoinOr()

@@ -321,6 +321,27 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
 
 	/**
+	 * Set Show Picking Tray Suggestions.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsDisplayPickingSlotSuggestions (@Nullable java.lang.String IsDisplayPickingSlotSuggestions);
+
+	/**
+	 * Get Show Picking Tray Suggestions.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsDisplayPickingSlotSuggestions();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsDisplayPickingSlotSuggestions = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsDisplayPickingSlotSuggestions", null);
+	String COLUMNNAME_IsDisplayPickingSlotSuggestions = "IsDisplayPickingSlotSuggestions";
+
+	/**
 	 * Set Pick with LU.
 	 *
 	 * <br>Type: YesNo
