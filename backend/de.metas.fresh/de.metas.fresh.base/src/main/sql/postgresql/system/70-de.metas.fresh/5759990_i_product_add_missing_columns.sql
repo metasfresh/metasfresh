@@ -105,7 +105,7 @@ $$
 
         -- 2021-12-20T12:31:50.126558300Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        /* DDL */ SELECT public.db_alter_table('I_Product', 'ALTER TABLE public.I_Product ADD COLUMN Weight_UOM_ID NUMERIC(10)');
+        /* DDL */ PERFORM public.db_alter_table('I_Product', 'ALTER TABLE public.I_Product ADD COLUMN Weight_UOM_ID NUMERIC(10)');
 
         -- 2021-12-20T12:31:50.133367400Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
