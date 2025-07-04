@@ -44,6 +44,7 @@ import org.compiere.model.I_M_Attribute;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -105,6 +106,8 @@ public interface IHUQueryBuilder
 
 	/** Retrieves first {@link I_M_HU} */
 	I_M_HU first();
+
+	Optional<HuId> firstId();
 
 	/** Counts how many {@link I_M_HU}s are matched by our criteria */
 	int count();
