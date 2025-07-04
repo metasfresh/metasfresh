@@ -315,12 +315,6 @@ import java.util.Set;
 	}
 
 	@Override
-	public String getAttributesSummary()
-	{
-		return attributes.getAttributesSummary();
-	}
-
-	@Override
 	public IQueryBuilder<I_M_HU> createQueryBuilder()
 	{
 		//

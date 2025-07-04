@@ -50,9 +50,9 @@ import java.util.Set;
 
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
- *
+ * <p>
  * To create a new instance, please use {@link IHandlingUnitsDAO#createHUQueryBuilder()}.
- *
+ * <p>
  * Defaults:
  * <ul>
  * <li>only top level HUs are matched by default
@@ -64,10 +64,6 @@ import java.util.Set;
 @SuppressWarnings("UnusedReturnValue")
 public interface IHUQueryBuilder
 {
-	/**
-	 * @return user readable string about attributes filters
-	 */
-	String getAttributesSummary();
 
 	/** Creates a copy of this object */
 	IHUQueryBuilder copy();
@@ -80,7 +76,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Create an {@link IQueryFilter} based on what we set in our builder.
-	 *
+	 * <p>
 	 * NOTE: Using directly {@link IQueryFilter#accept(Object)} won't work in all cases (e.g. when matching attributes because other tables are involved)
 	 *
 	 * @return created query filter
@@ -97,7 +93,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Retrieves first {@link I_M_HU}.
-	 *
+	 * <p>
 	 * If there are more HUs an exception will be thrown.
 	 *
 	 * @return HU or <code>null</code>
@@ -114,7 +110,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Collects a unique list of models from on of {@link I_M_HU}'s columns.
-	 *
+	 * <p>
 	 * e.g. Collect all business partners from matched HUs
 	 *
 	 * <pre>
@@ -145,7 +141,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Filter only those HUs which have any of the given product(s) in their storages.
-	 *
+	 * <p>
 	 * NOTEs:
 	 * <ul>
 	 * <li>given product(s) are appended to the list of previously specified ones</li>
@@ -168,7 +164,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Filter only those HUs which are in any of the given warehouse(s).
-	 *
+	 * <p>
 	 * NOTE: given warehouse(s) are appended to the list of previously specified ones
 	 *
 	 * @return this
@@ -177,7 +173,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Filter only those HUs which are in any of the given warehouse(s).
-	 *
+	 * <p>
 	 * NOTE: given warehouse(s) are appended to the list of previously specified ones
 	 */
 	IHUQueryBuilder addOnlyInWarehouseId(final WarehouseId warehouseId);
@@ -198,7 +194,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Filter only those HUs which are assigned to any of the given bpartner(s).
-	 *
+	 * <p>
 	 * NOTE: given bpartner(s) are appended to the list of previously specified ones.
 	 *
 	 * @param bPartnerId HU's BPartner that can be accepted. If it's <code>null</code> we will search for HU's without BPartner too.
@@ -220,7 +216,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Filter only those HUs which are assigned to any of the given bpartner location(s).
-	 *
+	 * <p>
 	 * NOTE: given bpartner location(s) are appended to the list of previously specified ones.
 	 *
 	 * @param bpartnerLocationId HU's BPartner Location that can be accepted. If it's <code>null</code> we will search for HU's without BPartner Location too.
@@ -230,7 +226,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Match only top level HUs.
-	 *
+	 * <p>
 	 * It's same as calling {@link #setOnlyTopLevelHUs(boolean)} with <code>true</code>.
 	 *
 	 * @return this
@@ -240,9 +236,9 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Sets if we shall match only top level HUs or not.
-	 *
+	 * <p>
 	 * A HU is considered top level when it does not have any parent.
-	 *
+	 * <p>
 	 * NOTE: in case you are matching only top level HUs, then {@link #setM_HU_Item_Parent_ID(int)} will be ignored
 	 *
 	 * @param onlyTopLevelHUs true if only top level HUs shall be matched; false if any HU shall be matched
@@ -252,7 +248,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Sets parent HU Item that our HUs needs to have.
-	 *
+	 * <p>
 	 * In case we are matching only top level HUs, this parameter is ignored.
 	 */
 	IHUQueryBuilder setM_HU_Item_Parent_ID(final int huItemId);
@@ -267,9 +263,9 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Sets HU's HUStatus to be matched.
-	 *
+	 * <p>
 	 * If <code>null</code> then all HU statuses are matched.
-	 *
+	 * <p>
 	 * NOTE: this is a short version for clearing all HU Statuses to be included and then if not null, adding this HUStatus.
 	 */
 	IHUQueryBuilder setHUStatus(String huStatus);
@@ -355,7 +351,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Add miscelanous filter to be applied.
-	 *
+	 * <p>
 	 * NOTE: use this method when none of other filters from here applies.
 	 *
 	 * @param filter filter to be applied
@@ -392,9 +388,9 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Ask this builder to throw or to not throw an error if there were no HUs retrieved.
-	 *
+	 * <p>
 	 * Applies only if we call methods like {@link #list()}, {@link #firstOnly()}, {@link #first()} etc.
-	 *
+	 * <p>
 	 * Does not apply to {@link #collect(ModelColumn)}.
 	 *
 	 * @param errorIfNoHUs if true, an exception need to be thrown when there were no HUs retrieved.
@@ -415,7 +411,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Adds HUs which shall be selected. No other HUs, beside those ones will be considered.
-	 *
+	 * <p>
 	 * If the given list {@code null} this method will do nothing. If it is empty, no HUs will be considered.
 	 */
 	IHUQueryBuilder addOnlyHUIds(Collection<HuId> onlyHUIds);
