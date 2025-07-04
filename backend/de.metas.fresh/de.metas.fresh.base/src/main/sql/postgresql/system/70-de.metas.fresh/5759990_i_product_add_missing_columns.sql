@@ -51,7 +51,7 @@ $$
 
         -- 2021-12-20T12:23:21.362414100Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(580408, 'de_CH');
+        /* DDL */ PERFORM update_TRL_Tables_On_AD_Element_TRL_Update(580408, 'de_CH');
 
         -- 2021-12-20T12:23:28.909672800Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -63,7 +63,7 @@ $$
 
         -- 2021-12-20T12:23:28.910712300Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(580408, 'de_DE');
+        /* DDL */ PERFORM update_TRL_Tables_On_AD_Element_TRL_Update(580408, 'de_DE');
 
 
         -- 2021-12-20T12:31:45.267341100Z
