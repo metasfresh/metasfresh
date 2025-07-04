@@ -16,7 +16,6 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-@ToString
 public class EAN13HUQRCode implements IHUQRCode
 {
 	@NonNull private final EAN13 ean13;
