@@ -38,7 +38,7 @@ SELECT i.dateinvoiced,
        invc.cursymbol,
 
 
-       i.paymentrule,
+       i.paymentrule::varchar,
        p.datetrx,
        p.documentno,
        pbp.value AS bp_value,
