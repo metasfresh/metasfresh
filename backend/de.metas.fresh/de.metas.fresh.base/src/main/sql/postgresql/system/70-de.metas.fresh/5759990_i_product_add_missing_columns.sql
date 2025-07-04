@@ -158,7 +158,7 @@ $$
 
         -- 2021-12-10T17:42:49.987446400Z
         -- URL zum Konzept
-        /* DDL */ SELECT public.db_alter_table('I_Product', 'ALTER TABLE public.I_Product ADD COLUMN IsPurchased CHAR(1) DEFAULT ''N'' CHECK (IsPurchased IN (''Y'',''N'')) NOT NULL');
+        /* DDL */ PERFORM public.db_alter_table('I_Product', 'ALTER TABLE public.I_Product ADD COLUMN IsPurchased CHAR(1) DEFAULT ''N'' CHECK (IsPurchased IN (''Y'',''N'')) NOT NULL');
 
     EXCEPTION
         WHEN unique_violation THEN
