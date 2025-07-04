@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1550418583L;
+	private static final long serialVersionUID = 1907849333L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -512,6 +512,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public java.lang.String getISO_Code() 
 	{
 		return get_ValueAsString(COLUMNNAME_ISO_Code);
+	}
+
+	@Override
+	public void setIsPurchased (final boolean IsPurchased)
+	{
+		set_Value (COLUMNNAME_IsPurchased, IsPurchased);
+	}
+
+	@Override
+	public boolean isPurchased() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPurchased);
 	}
 
 	@Override
@@ -1248,6 +1260,21 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public java.lang.String getWeightUOM() 
 	{
 		return get_ValueAsString(COLUMNNAME_WeightUOM);
+	}
+
+	@Override
+	public void setWeight_UOM_ID (final int Weight_UOM_ID)
+	{
+		if (Weight_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Weight_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Weight_UOM_ID, Weight_UOM_ID);
+	}
+
+	@Override
+	public int getWeight_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Weight_UOM_ID);
 	}
 
 	@Override

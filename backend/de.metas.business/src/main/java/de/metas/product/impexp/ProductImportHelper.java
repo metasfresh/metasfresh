@@ -105,6 +105,7 @@ import java.math.BigDecimal;
 			product.setPackageSize(from.getPackageSize());
 		}
 		product.setIsSold(from.isSold());
+		product.setIsPurchased(from.isPurchased());
 		product.setIsStocked(from.isStocked());
 		if (from.getUPC() != null)
 		{
@@ -131,6 +132,10 @@ import java.math.BigDecimal;
 		if (from.getWeight() != null)
 		{
 			product.setGrossWeight(from.getWeight());
+		}
+		if (UomId.ofRepoIdOrNull(from.getWeight_UOM_ID()) != null)
+		{
+			product.setGrossWeight_UOM_ID(from.getWeight_UOM_ID());
 		}
 		if (from.getNetWeight() != null)
 		{
