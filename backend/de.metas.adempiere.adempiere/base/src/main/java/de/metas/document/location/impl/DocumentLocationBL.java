@@ -22,6 +22,7 @@
 
 package de.metas.document.location.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -51,6 +52,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class DocumentLocationBL implements IDocumentLocationBL
@@ -273,5 +275,27 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		toPlainDocumentLocation(locationAdapter)
 				.map(this::withUpdatedLocationId)
 				.ifPresent(location -> locationAdapter.setHandOver_Location_Value_ID(LocationId.toRepoId(location.getLocationId())));
+	}
+
+	@Override
+	public Set<DocumentLocation> getDocumentLocations(@NonNull final Set<BPartnerLocationId> bpartnerLocationIds)
+	{
+		if (bpartnerLocationIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return bpartnerLocationIds
+				.stream()
+				.map(this::getDocumentLocation)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public DocumentLocation getDocumentLocation(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		DocumentLocation documentLocation = DocumentLocation.ofBPartnerLocationId(bpartnerLocationId);
+		final RenderedAddressAndCapturedLocation renderedAddress = computeRenderedAddress(documentLocation);
+		return documentLocation.withRenderedAddress(renderedAddress);
 	}
 }

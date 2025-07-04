@@ -60,7 +60,7 @@ import java.util.stream.Stream;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class PickingJobLine
+public class PickingJobLine implements PickingJobHeaderOrLine
 {
 	@NonNull PickingJobLineId id;
 	@NonNull ITranslatableString caption;

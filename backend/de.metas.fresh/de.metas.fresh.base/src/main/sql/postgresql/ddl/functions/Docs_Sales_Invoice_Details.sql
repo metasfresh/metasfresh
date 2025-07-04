@@ -1,9 +1,9 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_C_Invoice_ID numeric,
-                                                                                      IN p_AD_Language  Character Varying(6))
+                                                                                       IN p_AD_Language  Character Varying(6))
 ;
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details(IN p_C_Invoice_ID numeric,
-                                                                                        IN p_AD_Language  Character Varying(6))
+                                                                                         IN p_AD_Language  Character Varying(6))
     RETURNS TABLE
             (
                 InOuts                     text,
@@ -11,6 +11,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 reference                  character varying(40),
                 shipLocation               character varying(60),
                 Tour                       text,
+                week_year                  character varying,
                 InOuts_DateFrom            text,
                 InOuts_DateTo              text,
                 InOuts_IsSameDate          boolean,
@@ -48,7 +49,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 PricePattern               text,
                 AmountPattern              text,
                 catchweight                numeric,
-                weight_uom                 character varying(10)
+                weight_uom                 character varying(10),
+                customs_number             text
             )
 AS
 $$
@@ -57,6 +59,7 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        io.reference,
        io.shipLocation,
        io.Tour,
+       io.week_year,
        TO_CHAR(io.DateFrom, 'DD.MM.YYYY')                     AS InOuts_DateFrom,
        TO_CHAR(io.DateTo, 'DD.MM.YYYY')                       AS InOuts_DateTo,
        DateFrom :: date = DateTo :: Date                      AS InOuts_IsSameDate,
@@ -91,7 +94,7 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS UOM,
        COALESCE(puomt.UOMSymbol, puom.UOMSymbol)              AS PriceUOM,
        puom.StdPrecision,
-       report.getQtyPattern(puom.StdPrecision) AS QtyPattern,
+       report.getQtyPattern(puom.StdPrecision)                AS QtyPattern,
        il.linenetamt,
        t.rate,
        i.isDiscountPrinted,
@@ -108,9 +111,10 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        ol.iscampaignprice,
        p.IsPrintWhenPackingMaterial,
        report.getPricePatternForJasper(i.m_pricelist_id)      AS PricePattern,
-       report.getAmountPatternForJasper(c.c_currency_id)    AS AmountPattern,
+       report.getAmountPatternForJasper(c.c_currency_id)      AS AmountPattern,
        w.catchweight,
-       w.weight_uom
+       w.weight_uom,
+       pcus.value || ' ' || COALESCE(pcus.name, '')           AS customs_number
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
          INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
@@ -122,6 +126,10 @@ FROM C_InvoiceLine il
     -- Get Product and its translation
          LEFT OUTER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID
          LEFT OUTER JOIN M_Product_Trl pt ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_AD_Language
+
+    -- Get customs number
+         LEFT OUTER JOIN m_customstariff pcus ON p.M_CustomsTariff_ID = pcus.M_CustomsTariff_ID
+
          LEFT OUTER JOIN LATERAL
     (
     SELECT M_Product_Category_ID =
@@ -143,26 +151,29 @@ FROM C_InvoiceLine il
 
     -- Get shipment details
          LEFT OUTER JOIN (SELECT DISTINCT ON (x.C_InvoiceLine_ID) x.C_InvoiceLine_ID,
-                                                                  First_Agg(x.DocType)         AS DocType,
+                                                                  First_Agg(x.DocType)             AS DocType,
                                                                   STRING_AGG(x.DocNo, ', '
-                                                                             ORDER BY x.DocNo) AS DocNo,
-                                                                  MIN(x.DateFrom)              AS DateFrom,
-                                                                  MAX(x.DateTo)                AS DateTo,
+                                                                             ORDER BY x.DocNo)     AS DocNo,
+                                                                  STRING_AGG(x.week_year, ', '
+                                                                             ORDER BY x.week_year) AS week_year,
+                                                                  MIN(x.DateFrom)                  AS DateFrom,
+                                                                  MAX(x.DateTo)                    AS DateTo,
                                                                   STRING_AGG(x.reference, ', '
-                                                                             ORDER BY x.DocNo) AS reference,
+                                                                             ORDER BY x.DocNo)     AS reference,
                                                                   x.shipLocation,
                                                                   x.tour,
                                                                   x.M_InOut_ID
                           FROM (SELECT DISTINCT ON (iliol.C_InvoiceLine_ID) iliol.C_InvoiceLine_ID,
                                                                             First_Agg(COALESCE(dtt.Printname, dt.Printname)
-                                                                                      ORDER BY io.DocumentNo)  AS DocType,
+                                                                                      ORDER BY io.DocumentNo)                                       AS DocType,
                                                                             STRING_AGG(io.DocumentNo, ', '
-                                                                                       ORDER BY io.DocumentNo) AS DocNo,
-                                                                            MIN(io.MovementDate)               AS DateFrom,
-                                                                            MAX(io.MovementDate)               AS DateTo,
-                                                                            io.poreference                     AS reference,
-                                                                            bpl.name                           AS shipLocation,
-                                                                            t.name                             AS tour,
+                                                                                       ORDER BY io.DocumentNo)                                      AS DocNo,
+                                                                            TO_CHAR(io.MovementDate, 'WW') || '.' || TO_CHAR(io.MovementDate, 'YY') AS week_year,
+                                                                            MIN(io.MovementDate)                                                    AS DateFrom,
+                                                                            MAX(io.MovementDate)                                                    AS DateTo,
+                                                                            io.poreference                                                          AS reference,
+                                                                            bpl.name                                                                AS shipLocation,
+                                                                            t.name                                                                  AS tour,
                                                                             io.M_InOut_ID
                                 FROM (SELECT DISTINCT ON (C_InvoiceLine_ID) M_InOut_ID,
                                                                             C_InvoiceLine_ID,
@@ -185,7 +196,7 @@ FROM C_InvoiceLine il
          LEFT OUTER JOIN
      de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight(io.m_inout_id, p_AD_Language) AS w ON TRUE
 
-    -- Get Packing instruction
+         -- Get Packing instruction
          LEFT OUTER JOIN (SELECT STRING_AGG(Name, E'\n'
                                             ORDER BY Name) AS Name,
                                  C_InvoiceLine_ID

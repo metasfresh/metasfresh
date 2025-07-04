@@ -23,6 +23,9 @@
 package de.metas.material.dispo.service.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.StockDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateStockDataRequest;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -37,8 +40,9 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
-import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
+import de.metas.organization.IOrgDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -52,6 +56,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated;
@@ -63,6 +68,8 @@ public class MD_Candidate
 {
 	@NonNull private final PostMaterialEventService materialEventService;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	@NonNull private final StockDataRequestHandler stockDataRequestHandler;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE },
 			ifColumnsChanged = { I_MD_Candidate.COLUMNNAME_Qty })
@@ -121,25 +128,30 @@ public class MD_Candidate
 					.quantity(lastMatchingStockForOldMaterialDescriptor != null ? lastMatchingStockForOldMaterialDescriptor.getQuantity() : BigDecimal.ZERO)
 					.build();
 
-			final StockCandidateChangedEvent stockCandidateChangedEvent = StockCandidateChangedEvent.builder()
-					.eventDescriptor(eventDescriptor)
-					.materialDescriptor(materialDescriptor)
-					.mdCandidateId(candidate.getMD_Candidate_ID())
+			final ZoneId orgZoneId = orgDAO.getTimeZone(eventDescriptor.getOrgId());
+
+			final UpdateStockDataRequest updateStockDataRequest = UpdateStockDataRequest.builder()
+					.identifier(MainDataRecordIdentifier.createForMaterial(materialDescriptor, orgZoneId))
+					.qtyStockCurrent(materialDescriptor.getQuantity())
 					.build();
 
-			materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
+			stockDataRequestHandler.handleStockUpdateRequest(updateStockDataRequest);
 		}
 
 		if (isUpdateCurrentStockRequired(timingType))
 		{
 			final EventDescriptor eventDescriptor = toEventDescriptor(candidate);
 
-			final StockCandidateChangedEvent stockCandidateChangedEvent = StockCandidateChangedEvent.builder()
-					.eventDescriptor(eventDescriptor)
-					.materialDescriptor(toMaterialDescriptor(candidate))
+			final MaterialDescriptor materialDescriptor = toMaterialDescriptor(candidate);
+
+			final ZoneId orgZoneId = orgDAO.getTimeZone(eventDescriptor.getOrgId());
+
+			final UpdateStockDataRequest updateStockDataRequest = UpdateStockDataRequest.builder()
+					.identifier(MainDataRecordIdentifier.createForMaterial(materialDescriptor, orgZoneId))
+					.qtyStockCurrent(materialDescriptor.getQuantity())
 					.build();
 
-			materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
+			stockDataRequestHandler.handleStockUpdateRequest(updateStockDataRequest);
 		}
 	}
 

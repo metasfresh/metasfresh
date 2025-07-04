@@ -93,7 +93,7 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public AttributeAction getAttributeAction(final Properties ctx)
+	public @NonNull AttributeAction getAttributeAction(final Properties ctx)
 	{
 		final String attributeActionCode = sysConfigs.getValue(SYSCONFIG_AttributeAction, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		if (Check.isEmpty(attributeActionCode, true))
@@ -104,7 +104,7 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public IAttributeValueGenerator getAttributeValueGenerator(final org.compiere.model.I_M_Attribute attributeParam)
+	public @NonNull IAttributeValueGenerator getAttributeValueGenerator(final org.compiere.model.I_M_Attribute attributeParam)
 	{
 		final IAttributeValueGenerator generator = getAttributeValueGeneratorOrNull(attributeParam);
 		if (generator == null)
