@@ -23,7 +23,6 @@
 package de.metas.material.cockpit.view.mainrecord;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.Profiles;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
@@ -33,7 +32,6 @@ import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -44,7 +42,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
-@Profile(Profiles.PROFILE_App) // the event handler is also just on this profile
 public class MainDataRequestHandler
 {
 	public void handleDataUpdateRequest(@NonNull final UpdateMainDataRequest dataUpdateRequest)
