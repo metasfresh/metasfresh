@@ -7,7 +7,6 @@ import de.metas.scannable_code.ScannedCode;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

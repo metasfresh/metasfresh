@@ -186,9 +186,6 @@ public class HUTransformTracingTests
 		assertThat(RetrieveDbRecordsUtil.queryAll().isEmpty(), is(true));
 	}
 
-	/**
-	 * Performs {@link HUTransformServiceTests#testAggregateCU_To_NewTUs_1Tomato()} and verifies the generated HU-trace records.
-	 */
 	@Test
 	public void testAggregateCU_To_NewTUs_1Tomato()
 	{

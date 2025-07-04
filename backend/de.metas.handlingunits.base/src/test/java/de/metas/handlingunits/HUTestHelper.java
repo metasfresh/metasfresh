@@ -556,7 +556,7 @@ public class HUTestHelper
 
 	/**
 	 * Setup module interceptors: "de.metas.handlingunits" module - FULL (interceptors, factories, etc), like in production (used by some integration tests).
-	 *
+	 * <p>
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
 	 *
 	 * <pre>

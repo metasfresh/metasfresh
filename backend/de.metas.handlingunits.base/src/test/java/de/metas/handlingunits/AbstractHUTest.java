@@ -108,8 +108,6 @@ public abstract class AbstractHUTest
 	 */
 	protected I_M_Attribute attr_WeightTareAdjust;
 
-	protected I_M_Attribute attr_AttributeNotFound;
-
 	/**
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_QualityDiscountPercent}
 	 */

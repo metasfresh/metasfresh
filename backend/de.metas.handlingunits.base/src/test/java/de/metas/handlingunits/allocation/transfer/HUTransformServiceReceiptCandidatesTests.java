@@ -253,7 +253,7 @@ public class HUTransformServiceReceiptCandidatesTests
 	 * <li><move 1.6kg of the salad to the TU
 	 * </ul>
 	 *
-	 * @task https://github.com/metasfresh/metasfresh-webui/issues/237 Transform CU on existing TU not working
+	 * @implSpec  <a href="https://github.com/metasfresh/metasfresh-webui/issues/237">Transform CU on existing TU not working</a>
 	 */
 	@Test
 	public void test_CUToExistingTU_create_mixed_TU_partialCU()
@@ -418,7 +418,7 @@ public class HUTransformServiceReceiptCandidatesTests
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/1177
+	 * @implSpec  <a href="https://github.com/metasfresh/metasfresh/issues/1177">task</a>
 	 */
 	@Test
 	public void testMultipleActionsIssue1177()

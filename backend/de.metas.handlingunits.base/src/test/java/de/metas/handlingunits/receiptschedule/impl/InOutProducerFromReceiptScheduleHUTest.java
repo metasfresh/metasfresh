@@ -448,7 +448,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	}
 
 	/**
-	 * @implNote task http://dewiki908/mediawiki/index.php/09670_Tageslot_Einlagerung_%28100236982974%29
+	 * @implNote <a href="http://dewiki908/mediawiki/index.php/09670_Tageslot_Einlagerung_%28100236982974%29">task</a>
 	 */
 	@Test
 	public void test_HU_LotNumberDate_propagated()

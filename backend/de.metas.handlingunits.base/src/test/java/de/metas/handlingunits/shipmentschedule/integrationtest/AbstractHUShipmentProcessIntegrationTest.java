@@ -41,7 +41,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
@@ -79,7 +78,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_AD_User;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -340,8 +338,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		{
 			//
 			// Add our aggregated HU to Shipper Transportation
-			Assert.assertTrue("HU is not eligible for shipper transportation: " + afterAggregation_HU,
-					huShipperTransportationBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU));
+			assertThat(huShipperTransportationBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU)).as("HU is not eligible for shipper transportation: " + afterAggregation_HU).isTrue();
 			huShipperTransportationBL
 					.addHUsToShipperTransportation(
 							ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()),
@@ -351,7 +348,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 			//
 			// Make sure M_Package was created and added to shipper transportation
 			final I_M_Package mpackage_AggregatedHU = huPackageDAO.retrievePackage(afterAggregation_HU);
-			Assert.assertNotNull("M_Package not created for Aggregated HU: " + afterAggregation_HU, mpackage_AggregatedHU);
+			assertThat(mpackage_AggregatedHU).as("M_Package not created for Aggregated HU: " + afterAggregation_HU).isNotNull();
 
 			mpackagesForAggregatedHUs.add(mpackage_AggregatedHU);
 		}
@@ -399,8 +396,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		//
 		// When matching expectations, sort the candidates so that they have the same indexes as the aggregated HUs
 		//
-		final List<ShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(huShippingFacade.getCandidates());
-		Collections.sort(candidatesSorted, new Comparator<ShipmentScheduleWithHU>()
+		final ArrayList<ShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(huShippingFacade.getCandidates());
+		candidatesSorted.sort(new Comparator<ShipmentScheduleWithHU>()
 		{
 			@Override
 			public int compare(final ShipmentScheduleWithHU schedWithHU1, final ShipmentScheduleWithHU schedWithHU2)
