@@ -71,6 +71,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -340,8 +341,7 @@ import java.util.Set;
 
 		//
 		// ORDER BY
-		queryBuilder.orderBy()
-				.addColumn(I_M_HU.COLUMN_M_HU_ID); // just to have a predictable order
+		queryBuilder.orderBy(I_M_HU.COLUMN_M_HU_ID); // just to have a predictable order
 
 		return queryBuilder;
 	}
@@ -584,7 +584,7 @@ import java.util.Set;
 			filtersFinal = queryBL.createCompositeQueryFilter(I_M_HU.class)
 					.setJoinOr()
 					.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_ID, _huIdsToAlwaysInclude);
-			if(!andFilters.isEmpty())
+			if (!andFilters.isEmpty())
 			{
 				filtersFinal.addFilter(andFilters);
 			}
@@ -661,6 +661,13 @@ import java.util.Set;
 		}
 
 		return hu;
+	}
+
+	@Override
+	public Optional<HuId> firstId()
+	{
+		final int huRepoId = createQuery().firstId();
+		return Optional.ofNullable(HuId.ofRepoIdOrNull(huRepoId));
 	}
 
 	@Override
