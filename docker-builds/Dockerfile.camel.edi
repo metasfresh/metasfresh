@@ -10,7 +10,7 @@ FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
 FROM eclipse-temurin:21-jdk
 
-RUN apt-get -y update && apt-get -y upgrade
+RUN apt-get -y update && apt-get -y upgrade && apt-get -y install dos2unix && apt-get -y install zip
 
 WORKDIR /opt/metasfresh-esb-camel/
 
