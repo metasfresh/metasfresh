@@ -307,7 +307,7 @@ public class PickingJobService implements PickingSlotListener
 						.pickingJobLineId(event.getPickingLineId())
 						.pickingJobStepId(event.getPickingStepId())
 						.pickFromKey(event.getPickFromKey())
-						.pickFromHUQRCode(event.getHuQRCode())
+						.pickFromQRCode(event.getQrCode())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
 						.isPickWholeTU(event.isPickWholeTU())
 						.checkIfAlreadyPacked(event.isCheckIfAlreadyPacked())
