@@ -1,4 +1,4 @@
--- Add missing columns because of commentig it out in 5619530_sys_gh12149_Extend_I_product.sql and 5618380_sys_gh12149_Extend_I_Product_table.sql
+-- Add missing columns because of commenting it out in 5619530_sys_gh12149_Extend_I_product.sql and 5618380_sys_gh12149_Extend_I_Product_table.sql
 
 DO
 $$
@@ -41,51 +41,9 @@ $$
           AND t.AD_Element_ID = 580408
           AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID);
 
-        -- 2021-12-20T12:22:19.385196700Z
-        -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        INSERT INTO AD_Column (AD_Client_ID, AD_Column_ID, AD_Element_ID, AD_Org_ID, AD_Reference_ID, AD_Reference_Value_ID, AD_Table_ID, ColumnName, Created, CreatedBy, DDL_NoForeignKey, EntityType, FacetFilterSeqNo, FieldLength, IsActive, IsAdvancedText, IsAllowLogging, IsAlwaysUpdateable, IsAutoApplyValidationRule, IsAutocomplete, IsCalculated, IsDimension, IsDLMPartitionBoundary, IsEncrypted,
-                               IsExcludeFromZoomTargets, IsFacetFilter, IsForceIncludeInGeneratedModel, IsGenericZoomKeyColumn, IsGenericZoomOrigin, IsIdentifier, IsKey, IsLazyLoading, IsMandatory, IsParent, IsSelectionColumn, IsShowFilterIncrementButtons, IsShowFilterInline, IsStaleable, IsSyncDatabase, IsTranslated, IsUpdateable, IsUseDocSequence, MaxFacetsToFetch, Name, SelectionColumnSeqNo,
-                               SeqNo, Updated, UpdatedBy, Version)
-        VALUES (0, 578970, 580408, 0, 18, 114, 208, 'Weight_UOM_ID', TO_TIMESTAMP('2021-12-20 14:22:19', 'YYYY-MM-DD HH24:MI:SS'), 100, 'N', 'D', 0, 10, 'Y', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 0, 'Darreichungsform-Einheit ', 0, 0, TO_TIMESTAMP('2021-12-20 14:22:19', 'YYYY-MM-DD HH24:MI:SS'), 100,
-                0);
-
-        -- 2021-12-20T12:22:19.386751600Z
-        -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
-        SELECT l.AD_Language,
-               t.AD_Column_ID,
-               t.Name,
-               'N',
-               t.AD_Client_ID,
-               t.AD_Org_ID,
-               t.Created,
-               t.Createdby,
-               t.Updated,
-               t.UpdatedBy,
-               'Y'
-        FROM AD_Language l,
-             AD_Column t
-        WHERE l.IsActive = 'Y'
-          AND (l.IsSystemLanguage = 'Y')
-          AND t.AD_Column_ID = 578970
-          AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID);
-
-        -- 2021-12-20T12:22:19.388846Z
-        -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        /* DDL */
-        SELECT update_Column_Translation_From_AD_Element(580408);
-
         -- 2021-12-20T12:23:14.654222Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
         UPDATE AD_Element SET Name='Bruttogewicht-Maßeinheit ', PrintName='Bruttogewicht-Maßeinheit ', Updated=TO_TIMESTAMP('2021-12-20 14:23:14', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID = 580408;
-
-        -- 2021-12-20T12:23:14.657330200Z
-        -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        UPDATE AD_Column SET ColumnName='Weight_UOM_ID', Name='Bruttogewicht-Maßeinheit ', Description=NULL, Help=NULL WHERE AD_Element_ID = 580408;
-
-        -- 2021-12-20T12:30:20.356869600Z
-        -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        /* DDL */ SELECT public.db_alter_table('M_Product', 'ALTER TABLE public.M_Product ADD COLUMN Weight_UOM_ID NUMERIC(10)');
 
         -- 2021-12-20T12:23:21.361375600Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -106,11 +64,6 @@ $$
         -- 2021-12-20T12:23:28.910712300Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
         /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(580408, 'de_DE');
-
-        -- 2021-12-20T12:30:21.382156100Z
-        -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        ALTER TABLE M_Product
-            ADD CONSTRAINT WeightUOM_MProduct FOREIGN KEY (Weight_UOM_ID) REFERENCES public.C_UOM DEFERRABLE INITIALLY DEFERRED;
 
 
         -- 2021-12-20T12:31:45.267341100Z
