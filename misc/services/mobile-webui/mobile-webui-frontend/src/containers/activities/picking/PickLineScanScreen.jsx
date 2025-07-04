@@ -259,9 +259,9 @@ const usePostQtyPicked = ({
     scannedBarcode = null,
     catchWeight = null,
     catchWeightUom = null,
-    bestBeforeDate = null,
+    bestBeforeDate,
     productionDate = null,
-    lotNo = null,
+    lotNo,
     productNo,
     ean13ProductCode,
     isCloseTarget = false,
@@ -318,9 +318,9 @@ const usePostQtyPicked = ({
       catchWeight,
       pickWholeTU: resolvedBarcodeData.isTUToBePickedAsWhole,
       checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
-      setBestBeforeDate: isShowBestBeforeDate,
+      setBestBeforeDate: isShowBestBeforeDate && bestBeforeDate !== undefined,
       bestBeforeDate,
-      setLotNo: isShowLotNo,
+      setLotNo: isShowLotNo && lotNo !== undefined,
       lotNo,
       isCloseTarget,
     })

@@ -72,6 +72,8 @@ public class LMQRCode implements IHUQRCode
 	@Override
 	public String getAsString() {return code.getAsString();}
 
+	public boolean isWeightRequired() {return true;}
+
 	@Override
 	public Optional<BigDecimal> getWeightInKg() {return Optional.of(weightInKg);}
 

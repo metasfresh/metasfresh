@@ -30,6 +30,8 @@ public interface IHUQRCode
 {
 	String getAsString();
 
+	default boolean isWeightRequired() {return false;}
+
 	Optional<BigDecimal> getWeightInKg();
 
 	Optional<LocalDate> getBestBeforeDate();
