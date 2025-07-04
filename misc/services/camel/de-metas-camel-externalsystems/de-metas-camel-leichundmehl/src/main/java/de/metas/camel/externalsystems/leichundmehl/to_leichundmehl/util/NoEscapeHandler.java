@@ -22,7 +22,7 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
 
-import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
+import org.glassfish.jaxb.core.marshaller.CharacterEscapeHandler;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -42,7 +42,6 @@ public class NoEscapeHandler implements CharacterEscapeHandler
 		{
 			out.write(buf[i]);
 		}
-		return;
 	}
 }
 
