@@ -1,6 +1,7 @@
 import { trl } from '../translations';
 
 export const ATTR_barcodeType = 'barcodeType';
+export const ATTR_isUnique = 'isUnique';
 export const ATTR_productId = 'productId';
 export const ATTR_productNo = 'productNo';
 export const ATTR_GTIN = 'GTIN';

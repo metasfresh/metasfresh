@@ -91,6 +91,7 @@ const PickLineScanScreen = () => {
       convertScannedBarcodeToResolvedResult({
         scannedBarcode,
         expectedProductId: productId,
+        customQRCodeFormats,
       }),
     [productId]
   );
@@ -169,18 +170,20 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 };
 
 // @VisibleForTesting
-export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
-  const parsedHUQRCode = parseQRCodeString(scannedBarcode);
+export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId, customQRCodeFormats }) => {
+  const parsedQRCode = parseQRCodeString({ string: scannedBarcode, customQRCodeFormats });
 
-  if (expectedProductId != null && parsedHUQRCode.productId != null && parsedHUQRCode.productId !== expectedProductId) {
+  if (expectedProductId != null && parsedQRCode.productId != null && parsedQRCode.productId !== expectedProductId) {
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  return convertQRCodeObjectToResolvedResult(parsedHUQRCode);
+  return convertQRCodeObjectToResolvedResult(parsedQRCode);
 };
 
 const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
-  const result = {};
+  const result = {
+    qrCode: qrCodeObj,
+  };
 
   if (qrCodeObj.weightNet != null) {
     result['catchWeight'] = qrCodeObj.weightNet;
@@ -194,7 +197,7 @@ const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   result['productionDate'] = qrCodeObj.productionDate;
   result['lotNo'] = qrCodeObj.lotNo;
 
-  console.log('resolveScannedBarcode', { result, qrCodeObj });
+  console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj });
   return result;
 };
 
@@ -256,7 +259,6 @@ const usePostQtyPicked = ({
     scannedBarcode = null,
     catchWeight = null,
     catchWeightUom = null,
-    isTUToBePickedAsWhole = false,
     bestBeforeDate = null,
     productionDate = null,
     lotNo = null,
@@ -270,6 +272,7 @@ const usePostQtyPicked = ({
   }) => {
     const lineIdEffective = resolvedBarcodeData?.lineId ?? lineIdParam;
     console.log('usePostQtyPicked.onResult', {
+      resolvedBarcodeData,
       lineIdEffective,
       lineId,
       lineIdParam,
@@ -313,7 +316,7 @@ const usePostQtyPicked = ({
       qtyRejectedReasonCode: reason,
       qtyRejected,
       catchWeight,
-      pickWholeTU: isTUToBePickedAsWhole,
+      pickWholeTU: resolvedBarcodeData.isTUToBePickedAsWhole,
       checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
       setBestBeforeDate: isShowBestBeforeDate,
       bestBeforeDate,
