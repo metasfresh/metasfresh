@@ -2,6 +2,7 @@ package de.metas.handlingunits.qrcodes.special;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
@@ -18,6 +19,12 @@ public final class PickOnTheFlyQRCode implements IHUQRCode
 	private static final String STRING_VALUE = "PICK_ON_THE_FLY";
 
 	@Nullable
+	public static PickOnTheFlyQRCode fromScannedCodeOrNullIfNotHandled(@NonNull final ScannedCode scannedCode)
+	{
+		return fromStringOrNullIfNotHandled(scannedCode.getAsString());
+	}
+
+	@Nullable
 	public static PickOnTheFlyQRCode fromStringOrNullIfNotHandled(@NonNull final String string)
 	{
 		final String stringNorm = StringUtils.trimBlankToNull(string);
@@ -32,8 +39,11 @@ public final class PickOnTheFlyQRCode implements IHUQRCode
 	}
 
 	@Override
+	@Deprecated
+	public String toString() {return getAsString();}
+
 	@JsonValue
-	public String toString() {return STRING_VALUE;}
+	public String getAsString() {return STRING_VALUE;}
 
 	@Override
 	public Optional<BigDecimal> getWeightInKg() {return Optional.empty();}

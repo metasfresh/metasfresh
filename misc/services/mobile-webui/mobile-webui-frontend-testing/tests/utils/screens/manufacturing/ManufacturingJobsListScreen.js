@@ -1,7 +1,8 @@
-import { page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { test } from '../../../../playwright.config';
 import { ManufacturingJobScreen } from './ManufacturingJobScreen';
 import { expect } from '@playwright/test';
+import { ApplicationsListScreen } from '../ApplicationsListScreen';
 
 const NAME = 'ManufacturingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -15,6 +16,12 @@ export const ManufacturingJobsListScreen = {
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await ManufacturingJobsListScreen.expectVisible();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await ApplicationsListScreen.waitForScreen();
     }),
 
     startJob: async ({ documentNo }) => await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {

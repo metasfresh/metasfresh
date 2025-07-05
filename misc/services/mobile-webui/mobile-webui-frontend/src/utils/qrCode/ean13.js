@@ -3,6 +3,7 @@ import {
   ATTR_barcodeType,
   ATTR_displayable,
   ATTR_isTUToBePickedAsWhole,
+  ATTR_isUnique,
   ATTR_productNo,
   ATTR_weightNet,
   ATTR_weightNetUOM,
@@ -46,6 +47,7 @@ export const parseEAN13CodeString = (barcode) => {
 
     const result = {};
     result[ATTR_barcodeType] = BARCODE_TYPE_EAN13;
+    result[ATTR_isUnique] = false;
     result[ATTR_displayable] = '' + weightInKg + ' kg';
     result[ATTR_productNo] = productNo;
     result[ATTR_weightNet] = weightInKg;

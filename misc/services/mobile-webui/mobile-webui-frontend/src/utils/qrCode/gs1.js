@@ -5,6 +5,7 @@ import {
   ATTR_displayable,
   ATTR_GTIN,
   ATTR_isTUToBePickedAsWhole,
+  ATTR_isUnique,
   ATTR_lotNo,
   ATTR_weightNet,
   ATTR_weightNetUOM,
@@ -70,6 +71,7 @@ export const parseGS1CodeString = (string) => {
     }
 
     result[ATTR_barcodeType] = BARCODE_TYPE_GS1;
+    result[ATTR_isUnique] = false;
     return { displayable: string, ...result };
   } catch (ex) {
     //console.log('parseQRCodeString_GS1: got error', { ex });

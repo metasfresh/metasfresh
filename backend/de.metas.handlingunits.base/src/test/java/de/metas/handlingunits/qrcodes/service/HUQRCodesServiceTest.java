@@ -24,7 +24,6 @@ package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
@@ -42,7 +41,6 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.organization.OrgId;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -96,9 +94,7 @@ class HUQRCodesServiceTest
 	void beforeEach()
 	{
 		this.helper = HUTestHelper.newInstanceOutOfTrx();
-		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(),
-				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-				new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+		this.huQRCodesService = HUQRCodesService.newInstanceForUnitTesting();
 
 		this.productId = BusinessTestHelper.createProductId("MyProduct", helper.uomEach);
 
@@ -306,7 +302,7 @@ class HUQRCodesServiceTest
 		@Test
 		void gs1()
 		{
-			final IHUQRCode huQRCode = HUQRCodesService.toHUQRCode("0197311876341811310300752015170809");
+			final IHUQRCode huQRCode = HUQRCodesService.newInstanceForUnitTesting().parse("0197311876341811310300752015170809");
 			assertThat(huQRCode).isInstanceOf(GS1HUQRCode.class);
 
 			final GS1HUQRCode gs1 = (GS1HUQRCode)huQRCode;
@@ -318,7 +314,7 @@ class HUQRCodesServiceTest
 		@Test
 		void ean13()
 		{
-			final IHUQRCode huQRCode = HUQRCodesService.toHUQRCode("2859414004825");
+			final IHUQRCode huQRCode = HUQRCodesService.newInstanceForUnitTesting().parse("2859414004825");
 			assertThat(huQRCode).isInstanceOf(EAN13HUQRCode.class);
 
 			final EAN13HUQRCode ean13 = (EAN13HUQRCode)huQRCode;

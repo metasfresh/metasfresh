@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,7 +32,7 @@ public class PickingJobStepEvent
 
 	//
 	// Common
-	@NonNull IHUQRCode huQRCode;
+	@NonNull ScannedCode qrCode;
 	
 	//
 	// Event Type: PICK

@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 public final class SpringContextHolder
 {
@@ -169,18 +170,33 @@ public final class SpringContextHolder
 	@Nullable
 	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @Nullable final T defaultImplementation)
 	{
-		if (Adempiere.isUnitTestMode())
+		return getBeanOrSupply(requiredType, () -> defaultImplementation);
+	}
+
+	/**
+	 * can be used if a service might be retrieved before the spring application context is up
+	 */
+	@Nullable
+	public static <T> T getBeanOrSupply(@NonNull final Class<T> requiredType, @NonNull final Supplier<T> defaultImplementationSupplier)
+	{
+		final boolean unitTestMode = Adempiere.isUnitTestMode();
+		if (unitTestMode)
 		{
-			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
+			final T beanImpl = instance.junitRegisteredBeans.getBeanOrNull(requiredType);
 			if (beanImpl != null)
 			{
 				return beanImpl;
 			}
 		}
 
-		final ApplicationContext springApplicationContext = getApplicationContext();
+		final ApplicationContext springApplicationContext = instance.getApplicationContext();
 		if (springApplicationContext == null)
 		{
+			final T defaultImplementation = defaultImplementationSupplier.get();
+			if (unitTestMode && defaultImplementation != null)
+			{
+				registerJUnitBean(requiredType, defaultImplementation);
+			}
 			return defaultImplementation;
 		}
 
@@ -190,10 +206,18 @@ public final class SpringContextHolder
 		}
 		catch (final NoSuchBeanDefinitionException | IllegalStateException e)
 		{
-			if (Adempiere.isUnitTestMode())
+			if (unitTestMode)
 			{
-				return defaultImplementation; // otherwise we would need to register NoopPerformanceMonitoringService for >800 unit tests
+				// otherwise we would need to register NoopPerformanceMonitoringService for >800 unit tests
+
+				final T defaultImplementation = defaultImplementationSupplier.get();
+				if (defaultImplementation != null)
+				{
+					registerJUnitBean(requiredType, defaultImplementation);
+				}
+				return defaultImplementation;
 			}
+			
 			throw e;
 		}
 	}
@@ -258,6 +282,8 @@ public final class SpringContextHolder
 				.stream(activeProfiles)
 				.anyMatch(env -> env.equalsIgnoreCase(profileName));
 	}
+
+	public static void assertUnitTestMode() {Adempiere.assertUnitTestMode();}
 
 	public static <T> void registerJUnitBean(@NonNull final T beanImpl)
 	{

@@ -25,6 +25,7 @@ import {
   ATTR_bestBeforeDate,
   ATTR_displayable,
   ATTR_isTUToBePickedAsWhole,
+  ATTR_isUnique,
   ATTR_lotNo,
   ATTR_productId,
   ATTR_productNo,
@@ -272,6 +273,7 @@ const parseQRCodePayload_HU_v1 = (payload) => {
 
   const result = { displayable };
   result[ATTR_barcodeType] = BARCODE_TYPE_HU;
+  result[ATTR_isUnique] = true;
 
   if (payload?.product?.id) {
     // IMPORTANT: convert it to string because all over in our code we assume IDs are strings.
@@ -303,6 +305,7 @@ const LMQ_BEST_BEFORE_DATE_FORMAT = /^(\d{2}).(\d{2}).(\d{4})$/;
 const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   const result = { displayable: payload };
   result[ATTR_barcodeType] = BARCODE_TYPE_LMQ;
+  result[ATTR_isUnique] = false;
 
   const parts = payload.split('#');
   if (parts.length >= 1 && parts[0] != null) {

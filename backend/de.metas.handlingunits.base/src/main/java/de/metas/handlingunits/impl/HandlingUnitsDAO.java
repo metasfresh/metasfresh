@@ -727,6 +727,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	@NonNull
 	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
 	{
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);

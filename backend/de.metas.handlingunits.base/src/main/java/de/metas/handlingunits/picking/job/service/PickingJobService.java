@@ -45,7 +45,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCandidateRe
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
-import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
@@ -307,7 +307,7 @@ public class PickingJobService implements PickingSlotListener
 						.pickingJobLineId(event.getPickingLineId())
 						.pickingJobStepId(event.getPickingStepId())
 						.pickFromKey(event.getPickFromKey())
-						.pickFromHUQRCode(event.getHuQRCode())
+						.pickFromQRCode(event.getQrCode())
 						.qtyToPickBD(Objects.requireNonNull(event.getQtyPicked()))
 						.isPickWholeTU(event.isPickWholeTU())
 						.checkIfAlreadyPacked(event.isCheckIfAlreadyPacked())

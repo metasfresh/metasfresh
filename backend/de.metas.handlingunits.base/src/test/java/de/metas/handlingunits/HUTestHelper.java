@@ -20,7 +20,6 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -83,10 +82,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRep
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
@@ -104,7 +100,6 @@ import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFac
 import de.metas.materialtransaction.MTransactionUtil;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
@@ -461,11 +456,7 @@ public class HUTestHelper
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
-		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
-		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(),
-				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-				qrCodeConfigurationService));
+		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
@@ -565,7 +556,7 @@ public class HUTestHelper
 
 	/**
 	 * Setup module interceptors: "de.metas.handlingunits" module - FULL (interceptors, factories, etc), like in production (used by some integration tests).
-	 *
+	 * <p>
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
 	 *
 	 * <pre>
@@ -586,9 +577,7 @@ public class HUTestHelper
 	{
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
-		final HUQRCodesService huqrCodesService = new HUQRCodesService(new HUQRCodesRepository(),
-				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-				new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
+		final HUQRCodesService huqrCodesService = HUQRCodesService.newInstanceForUnitTesting();
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
@@ -598,7 +587,8 @@ public class HUTestHelper
 						new PPOrderIssueScheduleService(
 								new PPOrderIssueScheduleRepository(),
 								new HUQtyService(InventoryService.newInstanceForUnitTesting())
-						)), huqrCodesService);
+						)),
+				huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(

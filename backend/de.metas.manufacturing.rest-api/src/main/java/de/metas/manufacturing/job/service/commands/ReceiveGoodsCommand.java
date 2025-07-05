@@ -3,11 +3,14 @@ package de.metas.manufacturing.job.service.commands;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
@@ -30,7 +33,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -69,16 +71,16 @@ public class ReceiveGoodsCommand
 
 	//
 	// Parameters
-	final @NonNull PPOrderId ppOrderId;
-	final @Nullable PPOrderBOMLineId coProductBOMLineId;
-	final @NonNull SelectedReceivingTarget receivingTarget;
-	final @NonNull BigDecimal qtyToReceiveBD;
-	final @NonNull ZonedDateTime date;
-	final @Nullable LocalDate bestBeforeDate;
-	final @Nullable LocalDate productionDate;
-	final @Nullable String lotNo;
-	final @Nullable Quantity catchWeight;
-	final boolean isBarcodeScan;
+	@NonNull private final PPOrderId ppOrderId;
+	@Nullable private final PPOrderBOMLineId coProductBOMLineId;
+	@NonNull private final SelectedReceivingTarget receivingTarget;
+	@NonNull private final BigDecimal qtyToReceiveBD;
+	@NonNull private final ZonedDateTime date;
+	@Nullable private final LocalDate bestBeforeDate;
+	@Nullable private final LocalDate productionDate;
+	@Nullable private final String lotNo;
+	@Nullable private final Quantity catchWeight;
+	@Nullable private final String barcode;
 
 	//
 	// State
@@ -109,9 +111,9 @@ public class ReceiveGoodsCommand
 		this.date = request.getDate();
 		this.bestBeforeDate = request.getBestBeforeDate();
 		this.productionDate = request.getProductionDate();
-		this.lotNo = request.getLotNo();
+		this.lotNo = StringUtils.trimBlankToNull(request.getLotNo());
 		this.catchWeight = request.getCatchWeight();
-		this.isBarcodeScan = request.isBarcodeScan();
+		this.barcode = StringUtils.trimBlankToNull(request.getBarcode());
 	}
 
 	@Nullable
@@ -124,7 +126,7 @@ public class ReceiveGoodsCommand
 		}
 		else if (this.receivingTarget.getReceiveToQRCode() != null)
 		{
-			receivingTarget = receiveByQRCode(this.receivingTarget.getReceiveToQRCode());
+			receivingTarget = receiveToQRCode(this.receivingTarget.getReceiveToQRCode());
 		}
 		else if (this.receivingTarget.getReceiveToNewTU() != null)
 		{
@@ -135,7 +137,7 @@ public class ReceiveGoodsCommand
 			throw new AdempiereException("Unhandled target: " + this.receivingTarget);
 		}
 
-		saveReceivingHUForLaterUse(receivingTarget);
+		saveReceivingTargetForLaterUse(receivingTarget);
 		setCatchWeightForReceivedHUs();
 
 		return ReceiveGoodsResult.builder()
@@ -145,7 +147,7 @@ public class ReceiveGoodsCommand
 	}
 
 	@Nullable
-	private ReceivingTarget receiveByQRCode(@NonNull final JsonHUQRCodeTarget qrCodeTarget)
+	private ReceivingTarget receiveToQRCode(@NonNull final JsonHUQRCodeTarget qrCodeTarget)
 	{
 		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(qrCodeTarget.getHuQRCode().getCode());
 		final HuId existingHUId = loadingAndSavingSupportServices.getHuIdByQRCodeIfExists(qrCode).orElse(null);
@@ -155,16 +157,13 @@ public class ReceiveGoodsCommand
 			final @NonNull HUQRCodeUnitType huUnitType = packingInfo.getHuUnitType();
 			if (HUQRCodeUnitType.TU.equals(huUnitType))
 			{
-				final I_M_HU tu = createHUProducer().receiveSingleTU(getQtyToReceive(),
-						packingInfo.getPackingInstructionsId());
-				collectReceivedHU(tu);
-				final HuId tuId = HuId.ofRepoId(tu.getM_HU_ID());
+				final HuId tuId = receiveSingleTU(packingInfo.getPackingInstructionsId());
 
 				loadingAndSavingSupportServices.assignQRCodeForReceiptHU(qrCode, tuId);
 
-				if (isBarcodeScan)
+				if (barcode != null)
 				{
-					return ReceivingTarget.builder().tuId(tuId).build();
+					return ReceivingTarget.ofExistingTUId(tuId);
 				}
 				else
 				{
@@ -182,7 +181,6 @@ public class ReceiveGoodsCommand
 		else
 		{
 			final I_M_HU existingHU = handlingUnitsBL.getById(existingHUId);
-
 			assertActive(existingHU);
 
 			if (handlingUnitsBL.isLoadingUnit(existingHU))
@@ -206,12 +204,10 @@ public class ReceiveGoodsCommand
 
 		final HUPIItemProductId tuPIItemProductId = newLUTarget.getTuPIItemProductId();
 		final List<I_M_HU> tusOrVhus = receiveTUs(tuPIItemProductId);
-		final HuId luId = addTUsToLU(tusOrVhus, null, newLUPIItem);
+		final I_M_HU lu = addTUsToLU(tusOrVhus, null, newLUPIItem);
+		setQRCodeAttribute(lu);
 
-		return ReceivingTarget.builder()
-				.luId(luId)
-				.tuPIItemProductId(tuPIItemProductId)
-				.build();
+		return ReceivingTarget.ofExistingLU(lu, tuPIItemProductId);
 	}
 
 	private ReceivingTarget receiveToExistingLU(
@@ -232,19 +228,16 @@ public class ReceiveGoodsCommand
 		}
 
 		final List<I_M_HU> tusOrVhus = receiveTUs(tuPIItemProductId);
-		final HuId luId = addTUsToLU(tusOrVhus, existingLU, null);
-		return ReceivingTarget.builder()
-				.luId(luId)
-				.tuPIItemProductId(tuPIItemProductId)
-				.build();
+		final I_M_HU lu = addTUsToLU(tusOrVhus, existingLU, null);
+		return ReceivingTarget.ofExistingLU(lu, tuPIItemProductId);
 	}
 
 	private ReceivingTarget receiveToExistingTU(@NonNull final I_M_HU existingTU)
 	{
 		assertMixingDifferentProductsAllowed(existingTU);
 
-		final I_M_HU vhu = createHUProducer().receiveVHU(getQtyToReceive());
-		collectReceivedHU(vhu);
+		final I_M_HU vhu = retrieveSingleVHU();
+
 		HUTransformService.newInstance().cusToExistingTU(ImmutableList.of(vhu), existingTU);
 		return ReceivingTarget.ofExistingTU(existingTU);
 	}
@@ -325,16 +318,6 @@ public class ReceiveGoodsCommand
 		Optional.ofNullable(bestBeforeDate).ifPresent(huProducer::bestBeforeDate);
 		Optional.ofNullable(productionDate).ifPresent(huProducer::productionDate);
 
-		if (Check.isNotBlank(lotNo))
-		{
-			huProducer.lotNumber(lotNo);
-		}
-
-		if (bestBeforeDate != null)
-		{
-			huProducer.bestBeforeDate(bestBeforeDate);
-		}
-
 		return huProducer
 				.movementDate(date)
 				.locatorId(locatorId);
@@ -365,7 +348,7 @@ public class ReceiveGoodsCommand
 				: ManufacturingJobLoaderAndSaver.extractReceivingTarget(getPPOrder());
 	}
 
-	private void saveReceivingHUForLaterUse(@Nullable final ReceivingTarget receivingTarget)
+	private void saveReceivingTargetForLaterUse(@Nullable final ReceivingTarget receivingTarget)
 	{
 		final I_PP_Order_BOMLine coProductLine = getCOProductLine();
 		if (coProductLine != null)
@@ -381,7 +364,7 @@ public class ReceiveGoodsCommand
 		}
 	}
 
-	private HuId addTUsToLU(
+	private I_M_HU addTUsToLU(
 			@NonNull final List<I_M_HU> tusOrVhus,
 			@Nullable final I_M_HU existingLU,
 			@Nullable final I_M_HU_PI_Item newLUPIItem)
@@ -412,7 +395,7 @@ public class ReceiveGoodsCommand
 			throw new AdempiereException("No LU was created");
 		}
 
-		return HuId.ofRepoId(lu.getM_HU_ID());
+		return lu;
 	}
 
 	private ReceivingTarget receiveToNewTU(@NonNull final JsonNewTUTarget newTUTarget)
@@ -420,7 +403,7 @@ public class ReceiveGoodsCommand
 		final HUPIItemProductId tuPIItemProductId = newTUTarget.getTuPIItemProductId();
 		final List<I_M_HU> hus = receiveTUs(tuPIItemProductId);
 
-		if (isBarcodeScan && hus.size() == 1)
+		if (barcode != null && hus.size() == 1)
 		{
 			return ReceivingTarget.ofExistingTU(hus.get(0));
 		}
@@ -435,7 +418,33 @@ public class ReceiveGoodsCommand
 	{
 		final List<I_M_HU> hus = createHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId);
 		collectReceivedHUs(hus);
+
+		if (hus.size() == 1)
+		{
+			setQRCodeAttribute(hus.get(0));
+		}
+
 		return hus;
+	}
+
+	@NonNull
+	private HuId receiveSingleTU(@NonNull final HuPackingInstructionsId tuPackingInstructionsId)
+	{
+		final I_M_HU tu = createHUProducer().receiveSingleTU(getQtyToReceive(), tuPackingInstructionsId);
+		collectReceivedHU(tu);
+		setQRCodeAttribute(tu);
+
+		return HuId.ofRepoId(tu.getM_HU_ID());
+	}
+
+	@NonNull
+	private I_M_HU retrieveSingleVHU()
+	{
+		final I_M_HU vhu = createHUProducer().receiveVHU(getQtyToReceive());
+		collectReceivedHU(vhu);
+		setQRCodeAttribute(vhu);
+
+		return vhu;
 	}
 
 	private void collectReceivedHU(@NonNull final I_M_HU hu)
@@ -500,5 +509,16 @@ public class ReceiveGoodsCommand
 	private boolean isCoProduct()
 	{
 		return getCOProductLine() != null;
+	}
+
+	private void setQRCodeAttribute(@NonNull final I_M_HU hu)
+	{
+		if (barcode == null) {return;}
+
+		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(hu);
+		if (!huAttributes.hasAttribute(HUAttributeConstants.ATTR_QRCode)) {return;}
+
+		huAttributes.setSaveOnChange(true);
+		huAttributes.setValue(HUAttributeConstants.ATTR_QRCode, barcode);
 	}
 }

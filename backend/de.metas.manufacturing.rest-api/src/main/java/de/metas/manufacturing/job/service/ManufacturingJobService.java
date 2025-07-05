@@ -537,7 +537,7 @@ public class ManufacturingJobService
 							.productionDate(TimeUtil.asLocalDate(receiveFrom.getProductionDate()))
 							.lotNo(receiveFrom.getLotNo())
 							.catchWeight(getTargetCatchWeight(receiveFrom).orElse(null))
-							.isBarcodeScan(receiveFrom.isBarcodeScan())
+							.barcode(receiveFrom.getBarcode())
 							.build())
 					//
 					.build().execute());

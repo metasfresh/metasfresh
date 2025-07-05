@@ -26,8 +26,11 @@ public class ScannableCodeFormatPart
 
 	@NonNull ScannableCodeFormatPartType type;
 
-	@Nullable PatternedDateTimeFormatter dateFormat;
 	@NonNull private static final PatternedDateTimeFormatter DEFAULT_DATE_FORMAT = PatternedDateTimeFormatter.ofPattern("yyMMdd");
+	@Nullable PatternedDateTimeFormatter dateFormat;
+
+	private static final int DEFAULT_DECIMAL_POINT_POSITION = 3;
+	int decimalPointPosition;
 
 	@Nullable String constantValue;
 
@@ -54,12 +57,15 @@ public class ScannableCodeFormatPart
 		{
 			case String:
 				this.dateFormat = null;
+				this.decimalPointPosition = 0;
 				break;
 			case Date:
 				this.dateFormat = coalesceNotNull(dateFormat, DEFAULT_DATE_FORMAT);
+				this.decimalPointPosition = 0;
 				break;
 			case Number:
 				this.dateFormat = null;
+				this.decimalPointPosition = DEFAULT_DECIMAL_POINT_POSITION;
 				break;
 			default:
 				throw new AdempiereException("Unexpected value: " + type.getDataType());
@@ -99,7 +105,7 @@ public class ScannableCodeFormatPart
 					result.weightKg(toBigDecimal(valueStr));
 					break;
 				case LotNo:
-					result.lotNo(valueStr);
+					result.lotNo(trimLeadingZeros(valueStr.trim()));
 					break;
 				case BestBeforeDate:
 					result.bestBeforeDate(toLocalDate(valueStr));
@@ -132,12 +138,29 @@ public class ScannableCodeFormatPart
 
 	private BigDecimal toBigDecimal(final String valueStr)
 	{
-		return new BigDecimal(valueStr);
+		BigDecimal valueBD = new BigDecimal(valueStr);
+
+		if (decimalPointPosition > 0)
+		{
+			valueBD = valueBD.scaleByPowerOfTen(-decimalPointPosition);
+		}
+
+		return valueBD;
 	}
 
 	private LocalDate toLocalDate(final String valueStr)
 	{
 		final PatternedDateTimeFormatter dateFormat = coalesceNotNull(this.dateFormat, DEFAULT_DATE_FORMAT);
 		return dateFormat.parseLocalDate(valueStr);
+	}
+
+	private static String trimLeadingZeros(final String valueStr)
+	{
+		int index = 0;
+		while (index < valueStr.length() && valueStr.charAt(index) == '0')
+		{
+			index++;
+		}
+		return index == 0 ? valueStr : valueStr.substring(index);
 	}
 }

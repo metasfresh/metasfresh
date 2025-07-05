@@ -224,6 +224,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
 
+	@NonNull
 	I_M_HU_PI_Version retrievePICurrentVersion(HuPackingInstructionsId piId);
 
 	/**
