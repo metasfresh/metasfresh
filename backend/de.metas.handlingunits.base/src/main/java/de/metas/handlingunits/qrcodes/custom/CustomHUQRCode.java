@@ -31,6 +31,8 @@ public class CustomHUQRCode implements IHUQRCode
 	@Override
 	public String getAsString() {return parsedScannedCode.getAsString();}
 
+	public Optional<String> getProductNo() {return Optional.ofNullable(parsedScannedCode.getProductNo());}
+
 	@Override
 	public Optional<BigDecimal> getWeightInKg()
 	{

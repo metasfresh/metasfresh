@@ -24,6 +24,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
+import java.util.Objects;
+
 @Builder
 class PickFromHUQRCodeResolver
 {
@@ -67,7 +69,8 @@ class PickFromHUQRCodeResolver
 		}
 		else if (pickFromHUQRCode instanceof CustomHUQRCode)
 		{
-			// TODO validate productNo
+			final CustomHUQRCode customQRCode = (CustomHUQRCode)pickFromHUQRCode;
+			validateQRCode_ProductNo(customQRCode, productId);
 			return findHUByQRCodeAttribute(pickFromHUQRCode, productId);
 		}
 		else
@@ -137,6 +140,23 @@ class PickFromHUQRCodeResolver
 		{
 			throw new AdempiereException(ERR_QR_ProductNotMatching)
 					.setParameter("ean13ProductNo", ean13ProductNo)
+					.setParameter("expectedProductNo", expectedProductNo)
+					.setParameter("expectedProductId", expectedProductId);
+		}
+	}
+
+	private void validateQRCode_ProductNo(
+			@NonNull final CustomHUQRCode customQRCode,
+			@NonNull final ProductId expectedProductId)
+	{
+		final String qrCodeProductNo = customQRCode.getProductNo().orElse(null);
+		if (qrCodeProductNo == null) {return;}
+
+		final String expectedProductNo = productBL.getProductValue(expectedProductId);
+		if (!Objects.equals(qrCodeProductNo, expectedProductNo))
+		{
+			throw new AdempiereException(ERR_QR_ProductNotMatching)
+					.setParameter("qrCodeProductNo", qrCodeProductNo)
 					.setParameter("expectedProductNo", expectedProductNo)
 					.setParameter("expectedProductId", expectedProductId);
 		}
