@@ -2,6 +2,7 @@ package de.metas.frontend_testing.expectations.request;
 
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 public class JsonExpectations
 {
 	@Nullable JsonCreateMasterdataResponse masterdata;
+	@Nullable Map<String, Object> context;
 
 	@Nullable Map<String, JsonPickingExpectation> pickings;
 	@Nullable Map<String, JsonManufacturingExpectation> manufacturings;

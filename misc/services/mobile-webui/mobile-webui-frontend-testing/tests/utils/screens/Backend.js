@@ -2,6 +2,7 @@ import { test } from "../../../playwright.config";
 import { FRONTEND_BASE_URL, page } from "../common";
 
 let lastMasterdata = null;
+let lastContext = null;
 
 export const Backend = {
     createMasterdata: async ({
@@ -36,13 +37,19 @@ export const Backend = {
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting/expect`, {
             data: {
                 ...expectations,
-                masterdata: lastMasterdata
+                masterdata: lastMasterdata,
+                context: lastContext,
             },
             headers: {
                 'Content-Type': 'application/json',
             }
         });
+
         const responseBody = await response.json();
+        if (responseBody?.context != null) {
+            lastContext = responseBody.context;
+        }
+
         assertNoErrors({ responseBody });
 
         return responseBody;
