@@ -131,7 +131,7 @@ public final class PackageableList implements Iterable<Packageable>
 				// don't filter out null catch UOMs
 				.distinct()
 				.collect(Collectors.toList());
-		return catchWeightUomIds.size() == 1 ? Optional.ofNullable(catchWeightUomIds.get(0)) : Optional.empty();
+		return catchWeightUomIds.size() == 1 ? Optional.ofNullable(catchWeightUomIds.getFirst()) : Optional.empty();
 	}
 
 	public Optional<OrderId> getSingleSalesOrderId() {return getSingleValue(Packageable::getSalesOrderId);}
@@ -174,7 +174,7 @@ public final class PackageableList implements Iterable<Packageable>
 		}
 		else if (values.size() == 1)
 		{
-			return Optional.of(values.get(0));
+			return Optional.of(values.getFirst());
 		}
 		else
 		{

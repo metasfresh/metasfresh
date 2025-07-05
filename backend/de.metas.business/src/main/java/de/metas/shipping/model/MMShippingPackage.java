@@ -18,6 +18,7 @@
  *****************************************************************************/
 package de.metas.shipping.model;
 
+import java.io.Serial;
 import java.math.BigDecimal;
 
 /*
@@ -57,6 +58,7 @@ public class MMShippingPackage extends X_M_ShippingPackage
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -150601859277117444L;
 
 	/**

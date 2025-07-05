@@ -58,8 +58,7 @@ public class LabelService
 		final Optional<ProcessedLabel> processedLabel = GithubImporterConstants.LabelType
 				.streamKnownLabelTypes()
 				.map(labelType -> buildProcessedLabel(labelType, label))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.findFirst();
 
 		return processedLabel.orElseGet(() -> buildUnknownLabel(label));

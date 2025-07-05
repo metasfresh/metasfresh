@@ -178,7 +178,7 @@ public class CustomsInvoiceServiceTest
 		{
 			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 			assertThat(lines).hasSize(1);
-			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			final CustomsInvoiceLine customsInvoiceLine = lines.getFirst();
 			assertThat(customsInvoiceLine.getId()).isNotNull();
 			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
 			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
@@ -190,7 +190,7 @@ public class CustomsInvoiceServiceTest
 			// Allocation:
 			{
 				assertThat(customsInvoiceLine.getAllocations()).hasSize(1);
-				final CustomsInvoiceLineAlloc alloc = customsInvoiceLine.getAllocations().get(0);
+				final CustomsInvoiceLineAlloc alloc = customsInvoiceLine.getAllocations().getFirst();
 				assertThat(alloc.getInoutAndLineId()).isEqualTo(shipmentLine1);
 				assertThat(alloc.getPrice()).isEqualTo(Money.of("10", chf));
 				assertThat(alloc.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
@@ -245,7 +245,7 @@ public class CustomsInvoiceServiceTest
 		{
 			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 			assertThat(lines).hasSize(1);
-			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			final CustomsInvoiceLine customsInvoiceLine = lines.getFirst();
 			assertThat(customsInvoiceLine.getId()).isNotNull();
 			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
 			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
@@ -257,7 +257,7 @@ public class CustomsInvoiceServiceTest
 			{
 				assertThat(customsInvoiceLine.getAllocations()).hasSize(2);
 
-				final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+				final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().getFirst();
 				assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
 				assertThat(alloc1.getPrice()).isEqualTo(Money.of("10", chf));
 				assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
@@ -317,7 +317,7 @@ public class CustomsInvoiceServiceTest
 		{
 			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 			assertThat(lines).hasSize(1);
-			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			final CustomsInvoiceLine customsInvoiceLine = lines.getFirst();
 
 			assertThat(customsInvoiceLine.getId()).isNotNull();
 			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
@@ -333,7 +333,7 @@ public class CustomsInvoiceServiceTest
 			{
 				assertThat(customsInvoiceLine.getAllocations()).hasSize(2);
 
-				final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+				final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().getFirst();
 				assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
 				assertThat(alloc1.getPrice()).isEqualTo(Money.of(10, chf));
 				assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
@@ -395,7 +395,7 @@ public class CustomsInvoiceServiceTest
 		{
 			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 			assertThat(lines).hasSize(1);
-			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			final CustomsInvoiceLine customsInvoiceLine = lines.getFirst();
 			assertThat(customsInvoiceLine.getId()).isNotNull();
 			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
 			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
@@ -410,7 +410,7 @@ public class CustomsInvoiceServiceTest
 			{
 				assertThat(customsInvoiceLine.getAllocations()).hasSize(2);
 
-				final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+				final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().getFirst();
 				assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
 				assertThat(alloc1.getPrice()).isEqualTo(Money.of(10, chf));
 				assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
@@ -440,7 +440,7 @@ public class CustomsInvoiceServiceTest
 		final Consumer<CustomsInvoice> customsInvoiceLineAssertions = customsInvoice -> {
 			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 			assertThat(lines).hasSize(1);
-			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			final CustomsInvoiceLine customsInvoiceLine = lines.getFirst();
 
 			assertThat(customsInvoiceLine.getId()).isNotNull();
 			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
@@ -452,7 +452,7 @@ public class CustomsInvoiceServiceTest
 			// Allocations
 			assertThat(customsInvoiceLine.getAllocations()).hasSize(1);
 
-			final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+			final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().getFirst();
 			assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
 			assertThat(alloc1.getPrice()).isEqualTo(Money.of(10, chf));
 			assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
@@ -533,7 +533,7 @@ public class CustomsInvoiceServiceTest
 
 			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 			assertThat(lines).hasSize(1);
-			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			final CustomsInvoiceLine customsInvoiceLine = lines.getFirst();
 
 			assertThat(customsInvoiceLine.getId()).isNotNull();
 			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
@@ -545,7 +545,7 @@ public class CustomsInvoiceServiceTest
 			// Allocations
 			assertThat(customsInvoiceLine.getAllocations()).hasSize(1);
 
-			final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().get(0);
+			final CustomsInvoiceLineAlloc alloc1 = customsInvoiceLine.getAllocations().getFirst();
 			assertThat(alloc1.getInoutAndLineId()).isEqualTo(shipmentLine1);
 			assertThat(alloc1.getPrice()).isEqualTo(Money.of(10, chf));
 			assertThat(alloc1.getQuantityInPriceUOM()).isEqualTo(qty("2", uom1));
@@ -570,7 +570,7 @@ public class CustomsInvoiceServiceTest
 
 			final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 			assertThat(lines).hasSize(1);
-			final CustomsInvoiceLine customsInvoiceLine = lines.get(0);
+			final CustomsInvoiceLine customsInvoiceLine = lines.getFirst();
 			assertThat(customsInvoiceLine.getLineNo()).isEqualTo(10);
 			assertThat(customsInvoiceLine.getProductId()).isEqualTo(product1);
 			assertThat(customsInvoiceLine.getQuantity()).isEqualTo(qty("7", uom1)); // i.e. 2 uom1 + 5 uom1

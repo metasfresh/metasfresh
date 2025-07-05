@@ -23,18 +23,16 @@
 
 package de.metas.vertical.pharma.securpharm.log;
 
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
 
 /**
  * API communication informations
@@ -58,7 +56,7 @@ public class SecurPharmLog
 	// Response
 	@NonNull
 	Instant responseTime;
-	HttpStatus responseCode;
+	HttpStatusCode responseCode;
 	String responseData;
 
 	@NonNull

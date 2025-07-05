@@ -244,7 +244,7 @@ public class ADProcessPostProcessService
 				throw new AdempiereException("Selecting more than " + MAX_REFERENCED_DOCUMENTPATHS_ALLOWED + " records is not allowed");
 			}
 
-			final TableRecordReference firstRecordRef = TableRecordReference.of(tableName, recordIds.get(0));
+			final TableRecordReference firstRecordRef = TableRecordReference.of(tableName, recordIds.getFirst());
 			final WindowId windowId = WindowId.of(RecordWindowFinder.findAdWindowId(firstRecordRef).get()); // assume all records are from same window
 			return recordIds.stream()
 					.map(recordId -> DocumentPath.rootDocumentPath(windowId, recordId))

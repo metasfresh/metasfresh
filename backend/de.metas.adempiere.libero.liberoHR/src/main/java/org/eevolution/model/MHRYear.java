@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -45,6 +46,7 @@ public class MHRYear extends X_HR_Year
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -7789699154024839462L;
 
 	/**

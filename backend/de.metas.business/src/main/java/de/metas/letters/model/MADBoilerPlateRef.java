@@ -27,6 +27,7 @@ package de.metas.letters.model;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -39,6 +40,7 @@ public class MADBoilerPlateRef extends X_AD_BoilerPlate_Ref
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 472075266306434709L;
 
 	/**

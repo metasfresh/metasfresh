@@ -3,35 +3,6 @@
  */
 package org.adempiere.util;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
@@ -40,6 +11,13 @@ import org.compiere.util.Env.Scope;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
+
+import java.io.Serial;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Context (Properties) wrapper to be able to evaluate grid row context
@@ -51,6 +29,7 @@ public class GridRowCtx extends Properties implements Evaluatee
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 8163657930039348267L;
 
 	private final Properties ctx;
@@ -157,17 +136,17 @@ public class GridRowCtx extends Properties implements Evaluatee
 			return null;
 		}
 		
-		if (value instanceof KeyNamePair)
+		if (value instanceof KeyNamePair pair1)
 		{
-			value = ((KeyNamePair)value).getKey();
+			value = pair1.getKey();
 		}
-		else if (value instanceof ValueNamePair)
+		else if (value instanceof ValueNamePair pair)
 		{
-			value = ((ValueNamePair)value).getID();
+			value = pair.getID();
 		}
-		else if (value instanceof Boolean)
+		else if (value instanceof Boolean boolean1)
 		{
-			value = ((Boolean)value).booleanValue() ? "Y" : "N";
+			value = boolean1.booleanValue() ? "Y" : "N";
 		}
 		return value.toString();
 	}

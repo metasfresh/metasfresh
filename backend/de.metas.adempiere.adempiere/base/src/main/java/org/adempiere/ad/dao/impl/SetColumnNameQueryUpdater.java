@@ -44,9 +44,9 @@ import java.util.Properties;
 		Check.assumeNotEmpty(columnName, "columnName not empty");
 		this.columnName = columnName;
 
-		if (value instanceof ModelColumnNameValue<?>)
+		if (value instanceof ModelColumnNameValue<?> nameValue)
 		{
-			this.valueColumn = (ModelColumnNameValue<?>)value;
+			this.valueColumn = nameValue;
 			this.value = null;
 		}
 		else
@@ -97,9 +97,9 @@ import java.util.Properties;
 		{
 			return null;
 		}
-		else if (value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware aware)
 		{
-			return ((RepoIdAware)value).getRepoId();
+			return aware.getRepoId();
 		}
 		else if (TimeUtil.isDateOrTimeObject(value))
 		{

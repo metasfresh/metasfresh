@@ -485,7 +485,7 @@ final class BPartnerCompositeSaver
 		}
 		else if (postalRecords.size() == 1)
 		{
-			return postalRecords.get(0);
+			return postalRecords.getFirst();
 		}
 		else if (countryId != null)
 		{

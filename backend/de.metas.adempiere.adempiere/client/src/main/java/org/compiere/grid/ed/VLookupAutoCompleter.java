@@ -351,14 +351,12 @@ import de.metas.util.Services;
 		{
 			editor.setValue(null);
 		}
-		else if (userObject instanceof ValueNamePair)
+		else if (userObject instanceof ValueNamePair vnp)
 		{
-			ValueNamePair vnp = (ValueNamePair)userObject;
 			value = vnp.getValue();
 		}
-		else if (userObject instanceof KeyNamePair)
+		else if (userObject instanceof KeyNamePair knp)
 		{
-			KeyNamePair knp = (KeyNamePair)userObject;
 			value = knp.getKey();
 		}
 		else

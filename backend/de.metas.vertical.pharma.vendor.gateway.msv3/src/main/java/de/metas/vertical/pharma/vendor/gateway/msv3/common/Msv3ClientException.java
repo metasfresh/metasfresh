@@ -4,6 +4,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 import de.metas.util.Check;
 import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 import lombok.Builder;
@@ -34,6 +36,7 @@ import lombok.Getter;
 public class Msv3ClientException
 		extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -8587023660085593406L;
 
 	@Getter

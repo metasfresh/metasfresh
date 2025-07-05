@@ -25,18 +25,24 @@ class SqlTest
 	void ofSql()
 	{
 		Assertions.assertThat(Sql.ofSql("SELECT 1 FROM MyTable").toSql())
-				.isEqualTo("-- 2023-01-02T04:05:06Z\n"
-						+ "SELECT 1 FROM MyTable\n"
-						+ ";\n\n");
+				.isEqualTo("""
+						-- 2023-01-02T04:05:06Z
+						SELECT 1 FROM MyTable
+						;
+						
+						""");
 	}
 
 	@Test
 	void ofSqlAndParams()
 	{
 		Assertions.assertThat(Sql.ofSql("SELECT 1 FROM MyTable WHERE A=?", ImmutableMap.of(1, "key1")).toSql())
-				.isEqualTo("-- 2023-01-02T04:05:06Z\n"
-						+ "SELECT 1 FROM MyTable WHERE A='key1'\n"
-						+ ";\n\n");
+				.isEqualTo("""
+						-- 2023-01-02T04:05:06Z
+						SELECT 1 FROM MyTable WHERE A='key1'
+						;
+						
+						""");
 	}
 
 }

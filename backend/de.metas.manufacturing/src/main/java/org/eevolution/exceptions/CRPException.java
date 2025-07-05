@@ -45,9 +45,9 @@ public class CRPException extends LiberoException
 	public static CRPException wrapIfNeeded(@NonNull final Throwable throwable)
 	{
 		final Throwable cause = extractCause(throwable);
-		if (cause instanceof CRPException)
+		if (cause instanceof CRPException exception)
 		{
-			return (CRPException)cause;
+			return exception;
 		}
 		else
 		{
@@ -99,9 +99,9 @@ public class CRPException extends LiberoException
 		if (this.order != null)
 		{
 			final String info;
-			if (order instanceof IDocument)
+			if (order instanceof IDocument document)
 			{
-				info = ((IDocument)order).getSummary();
+				info = document.getSummary();
 			}
 			else
 			{

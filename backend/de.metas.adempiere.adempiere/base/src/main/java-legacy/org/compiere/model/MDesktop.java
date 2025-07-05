@@ -214,7 +214,7 @@ public class MDesktop
 			while (rs.next())
 			{
 				int AD_Workbench_ID = rs.getInt(1);
-				m_workbenches.add (new Integer(AD_Workbench_ID));
+				m_workbenches.add (Integer.valueOf(AD_Workbench_ID));
 			}
 			rs.close();
 			pstmt.close();

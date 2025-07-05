@@ -42,6 +42,7 @@ package de.metas.printing.client.util;
  * made subject to such option by the copyright holder.
  */
 
+import java.io.Serial;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.Format;
@@ -83,6 +84,7 @@ public class MapFormat extends Format
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 2846158232274136688L;
 
 	/**
@@ -180,9 +182,9 @@ public class MapFormat extends Format
 		{
 			return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale).format(obj); // fix
 		}
-		else if (obj instanceof String)
+		else if (obj instanceof String string)
 		{
-			return (String)obj;
+			return string;
 		}
 
 		return obj.toString();

@@ -112,10 +112,10 @@ public class InfoProductATP implements IInfoProductDetail
 				line.add(null); // Date
 				double qtyOnHand = rs.getDouble(1);
 				qty += qtyOnHand;
-				line.add(new Double(qtyOnHand)); // Qty
+				line.add(Double.valueOf(qtyOnHand)); // Qty
 				line.add(null); // BPartner
-				line.add(new Double(rs.getDouble(3))); // QtyOrdered
-				line.add(new Double(rs.getDouble(2))); // QtyReserved
+				line.add(Double.valueOf(rs.getDouble(3))); // QtyOrdered
+				line.add(Double.valueOf(rs.getDouble(2))); // QtyReserved
 				line.add(rs.getString(7)); // Locator
 				String asi = rs.getString(4);
 				if (showDetail && (asi == null || asi.length() == 0))
@@ -173,15 +173,15 @@ public class InfoProductATP implements IInfoProductDetail
 				Double qtyOrdered = null;
 				if (X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(DocBaseType))
 				{
-					qtyOrdered = new Double(oq);
+					qtyOrdered = Double.valueOf(oq);
 					qty += oq;
 				}
 				else
 				{
-					qtyReserved = new Double(oq);
+					qtyReserved = Double.valueOf(oq);
 					qty -= oq;
 				}
-				line.add(new Double(qty)); // Qty
+				line.add(Double.valueOf(qty)); // Qty
 				line.add(rs.getString(6)); // BPartner
 				line.add(qtyOrdered); // QtyOrdered
 				line.add(qtyReserved); // QtyReserved

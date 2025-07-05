@@ -22,18 +22,15 @@
 
 package de.metas.lang;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
 
 /**
  * Helps with columns that pack >=1 external ID string(s).
@@ -79,7 +76,7 @@ public class ExternalIdsUtil
 			return -1;
 		}
 
-		final String recordIdStr = externalIdSegments.get(externalIdSegments.size() - 1);
+		final String recordIdStr = externalIdSegments.getLast();
 		try
 		{
 			return Integer.parseInt(recordIdStr);

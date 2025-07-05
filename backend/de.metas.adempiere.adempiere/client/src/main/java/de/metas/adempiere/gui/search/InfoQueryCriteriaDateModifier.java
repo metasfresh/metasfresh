@@ -377,9 +377,8 @@ public class InfoQueryCriteriaDateModifier implements IInfoQueryCriteria
 			return null;
 		}
 
-		if (field instanceof CEditor)
+		if (field instanceof CEditor editor)
 		{
-			final CEditor editor = (CEditor)field;
 			return editor.getValue();
 		}
 		else

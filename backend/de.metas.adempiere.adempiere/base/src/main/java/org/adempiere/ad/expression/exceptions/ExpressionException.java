@@ -26,6 +26,8 @@ import de.metas.i18n.ITranslatableString;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * Root of all expression exceptions
  *
@@ -33,6 +35,7 @@ import org.adempiere.exceptions.AdempiereException;
  */
 public class ExpressionException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -1795711700186090995L;
 
 	protected ExpressionException(final String msg, final Throwable cause)

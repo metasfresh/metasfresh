@@ -118,9 +118,8 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 			return null;
 		}
 
-		if (po instanceof MInOut)
+		if (po instanceof MInOut io)
 		{
-			final MInOut io = (MInOut)po;
 
 			final I_C_DocType ioDocType;
 			if (io.getC_DocType_ID() > 0)
@@ -216,9 +215,8 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 				}
 			}
 		}
-		else if (po instanceof MOrder)
+		else if (po instanceof MOrder o)
 		{
-			final MOrder o = (MOrder)po;
 
 			final I_C_DocType oDocType = Services.get(IOrderBL.class).getDocTypeOrNull(o);
 			if (oDocType != null && oDocType.isSOTrx() != o.isSOTrx())

@@ -244,7 +244,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		loadingUnits.addAll(helper.createHUs(huContext, luProducerDestination, cuQty));
 
 		Assert.assertEquals("Invalid amount of initial LoadingUnits", 1, loadingUnits.size());
-		final I_M_HU loadingUnit = loadingUnits.get(0);
+		final I_M_HU loadingUnit = loadingUnits.getFirst();
 		// HUXmlConverter.toString(HUXmlConverter.toXml(loadingUnit));
 		//
 		// Propagate WeightGross (this will also calculate Net); Net = Gross - Tare - TareAdjust
@@ -409,7 +409,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		assertThat(createdCUs.size(), is(1));
 
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final I_M_HU cuToSplit = createdCUs.get(0);
+		final I_M_HU cuToSplit = createdCUs.getFirst();
 		huStatusBL.setHUStatus(helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
 
 		save(cuToSplit);

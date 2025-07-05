@@ -143,9 +143,9 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 	private IHUAttributeTransferStrategy getHUAttributeTransferStrategy(final IHUAttributeTransferRequest request, final I_M_Attribute attribute)
 	{
 		final IAttributeSet attributesFrom = request.getAttributesFrom();
-		if (attributesFrom instanceof IAttributeStorage)
+		if (attributesFrom instanceof IAttributeStorage storage)
 		{
-			return ((IAttributeStorage)attributesFrom).retrieveTransferStrategy(attribute);
+			return storage.retrieveTransferStrategy(attribute);
 		}
 
 		final IAttributeStorage attributesTo = request.getAttributesTo();

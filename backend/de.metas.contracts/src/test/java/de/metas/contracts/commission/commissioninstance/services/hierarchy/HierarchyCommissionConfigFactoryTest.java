@@ -186,7 +186,7 @@ public class HierarchyCommissionConfigFactoryTest
 
 		// then
 		assertThat(configs).hasSize(1);
-		final CommissionConfig config = configs.get(0);
+		final CommissionConfig config = configs.getFirst();
 		assertThat(config.getCommissionType()).isEqualTo(CommissionType.HIERARCHY_COMMISSION);
 
 		final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(config);
@@ -402,7 +402,7 @@ public class HierarchyCommissionConfigFactoryTest
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
 		assertThat(configs).hasSize(1);
 
-		final CommissionConfig config = configs.get(0);
+		final CommissionConfig config = configs.getFirst();
 
 		assertThat(config.getCommissionType()).isEqualTo(CommissionType.HIERARCHY_COMMISSION);
 
@@ -470,7 +470,7 @@ public class HierarchyCommissionConfigFactoryTest
 
 		assertThat(configs).hasSize(1);
 
-		final CommissionConfig config = configs.get(0);
+		final CommissionConfig config = configs.getFirst();
 
 		assertThat(config.getCommissionType()).isEqualTo(CommissionType.HIERARCHY_COMMISSION);
 

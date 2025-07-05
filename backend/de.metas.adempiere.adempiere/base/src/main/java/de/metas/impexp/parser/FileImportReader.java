@@ -118,7 +118,7 @@ final class FileImportReader
 
 		private boolean checkLastLoadedDataLineIsNotBlank()
 		{
-			return Check.isNotBlank(loadedDataLines.get(loadedDataLines.size() - 1));
+			return Check.isNotBlank(loadedDataLines.getLast());
 		}
 
 		/**

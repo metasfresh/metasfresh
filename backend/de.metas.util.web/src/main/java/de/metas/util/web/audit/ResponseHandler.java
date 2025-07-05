@@ -28,6 +28,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.util.Loggables;
 import de.metas.util.web.audit.dto.ApiResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.compiere.util.Env;
@@ -35,7 +36,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;

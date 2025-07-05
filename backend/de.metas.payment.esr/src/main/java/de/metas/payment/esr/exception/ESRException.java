@@ -25,12 +25,15 @@ package de.metas.payment.esr.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 public class ESRException extends AdempiereException
 {
 
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 4215116713048970547L;
 
 	// public ESRException(String message, Throwable cause)

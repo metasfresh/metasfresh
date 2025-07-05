@@ -487,7 +487,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			}
 
 			// Actually process the candidate and generate the CC
-			final IssueCandidate candidate = candidates.get(0);
+			final IssueCandidate candidate = candidates.getFirst();
 			return createCostCollector(candidate, snapshotId);
 		}
 

@@ -282,7 +282,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final ImmutableList<PurchaseCandidatesGroup> candidatesGroups = result.get(purchaseDemand);
 		assertThat(candidatesGroups).hasSize(1);
 
-		final PurchaseCandidatesGroup candidatesGroup = candidatesGroups.get(0);
+		final PurchaseCandidatesGroup candidatesGroup = candidatesGroups.getFirst();
 		assertThat(candidatesGroup.getOrgId()).isEqualTo(orgId);
 		assertThat(candidatesGroup.getPurchaseCandidateIds()).containsOnly(PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID()));
 		assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(PO_QTY_ORDERED_ONE);
@@ -303,7 +303,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final ImmutableList<PurchaseCandidatesGroup> purchaseCandidatesGroups = result.get(purchaseDemand);
 		assertThat(purchaseCandidatesGroups).hasSize(1);
 
-		final PurchaseCandidatesGroup candidatesGroup = purchaseCandidatesGroups.get(0);
+		final PurchaseCandidatesGroup candidatesGroup = purchaseCandidatesGroups.getFirst();
 
 		assertThat(candidatesGroup.getOrgId()).isEqualTo(orgId);
 		assertThat(candidatesGroup.getPurchaseCandidateIds()).isEmpty();
@@ -340,7 +340,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		assertThat(result).isNotNull().hasSize(1);
 
-		final PurchaseDemandWithCandidates purchaseDemandWithCandidates = result.get(0);
+		final PurchaseDemandWithCandidates purchaseDemandWithCandidates = result.getFirst();
 		assertThat(purchaseDemandWithCandidates.getPurchaseDemand()).isEqualTo(purchaseDemand);
 
 		final List<PurchaseCandidatesGroup> purchaseCandidatesGroups = purchaseDemandWithCandidates.getPurchaseCandidatesGroups();
@@ -390,13 +390,13 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		assertThat(result).isNotNull().hasSize(1);
 
-		final PurchaseDemandWithCandidates purchaseDemandWithCandidates = result.get(0);
+		final PurchaseDemandWithCandidates purchaseDemandWithCandidates = result.getFirst();
 		assertThat(purchaseDemandWithCandidates.getPurchaseDemand()).isEqualTo(purchaseDemand);
 
 		final List<PurchaseCandidatesGroup> purchaseCandidatesGroups = purchaseDemandWithCandidates.getPurchaseCandidatesGroups();
 		assertThat(purchaseCandidatesGroups).isNotNull().hasSize(1);
 
-		final PurchaseCandidatesGroup candidatesGroup = purchaseCandidatesGroups.get(0);
+		final PurchaseCandidatesGroup candidatesGroup = purchaseCandidatesGroups.getFirst();
 		assertThat(candidatesGroup.isReadonly()).isFalse();
 		assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(PO_QTY_ORDERED_ONE);
 		assertThat(candidatesGroup.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(QTY_TO_PURCHASE_NINE);

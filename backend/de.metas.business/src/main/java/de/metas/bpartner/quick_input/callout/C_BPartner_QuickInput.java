@@ -29,6 +29,7 @@ import de.metas.location.PostalId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -40,7 +41,6 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
 
 @Component
 @Callout(I_C_BPartner_QuickInput.class)

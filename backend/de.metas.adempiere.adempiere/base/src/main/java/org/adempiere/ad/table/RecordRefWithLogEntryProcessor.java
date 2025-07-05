@@ -1,19 +1,18 @@
 package org.adempiere.ad.table;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeSet;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import de.metas.location.LocationId;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
 import org.adempiere.exceptions.AdempiereException;
@@ -24,20 +23,19 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-
-import de.metas.location.LocationId;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeSet;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -176,7 +174,7 @@ public class RecordRefWithLogEntryProcessor
 			final Optional<RecordRefWithLogEntry> firstRecordRefWithLogEntry = recordRefWithLogEntrys.stream()
 					.filter(LOCATION_ID_OLD_VALUE_NOT_NULL)
 					.min(comparator);
-			if (!firstRecordRefWithLogEntry.isPresent())
+			if (firstRecordRefWithLogEntry.isEmpty())
 			{
 				continue;
 			}
@@ -193,7 +191,7 @@ public class RecordRefWithLogEntryProcessor
 			try (final MDCCloseable mdc = TableRecordMDC.putTableRecordReference(recordRefWithLogEntry.getRecordRef()))
 			{
 				final Optional<LocationId> newValueLocationId = extractValueNewAsLocationId(recordRefWithLogEntry);
-				if (!newValueLocationId.isPresent())
+				if (newValueLocationId.isEmpty())
 				{
 					useValueOldOfNextEntry = true;
 					continue;
@@ -202,7 +200,7 @@ public class RecordRefWithLogEntryProcessor
 				if (useValueOldOfNextEntry)
 				{
 					Optional<LocationId> oldValueLocationId = extractValueOldAsLocationId(recordRefWithLogEntry);
-					if (!oldValueLocationId.isPresent())
+					if (oldValueLocationId.isEmpty())
 					{
 						continue;
 					}

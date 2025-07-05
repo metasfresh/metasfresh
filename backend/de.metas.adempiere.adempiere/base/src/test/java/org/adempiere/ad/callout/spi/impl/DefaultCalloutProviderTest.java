@@ -136,7 +136,7 @@ public class DefaultCalloutProviderTest
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 6, calloutInstances.size());
 
-		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.getFirst(), Callout1.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(1), Callout1.class, AbstractMockedCallout.METHOD_method2);
 		assertLegacyCalloutInstance(calloutInstances.get(2), Callout1.class, AbstractMockedCallout.METHOD_method3);
 		//
@@ -184,7 +184,7 @@ public class DefaultCalloutProviderTest
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 3, calloutInstances.size());
 
-		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.getFirst(), Callout1.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(2), Callout4.class, AbstractMockedCallout.METHOD_method1);
 	}
@@ -204,7 +204,7 @@ public class DefaultCalloutProviderTest
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
 		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 2, calloutInstances.size());
 
-		assertLegacyCalloutInstance(calloutInstances.get(0), Callout1.class, AbstractMockedCallout.METHOD_method1);
+		assertLegacyCalloutInstance(calloutInstances.getFirst(), Callout1.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, AbstractMockedCallout.METHOD_method1);
 	}
 

@@ -123,14 +123,14 @@ public class AlbertaProductServiceTest
 		assertThat(compositeProductInfo.getStatus()).isEqualTo(albertaArticle.getArticleStatus());
 
 		//therapy
-		assertThat(compositeProductInfo.getTherapyIds().get(0)).isEqualTo(albertaTherapy.getTherapy());
+		assertThat(compositeProductInfo.getTherapyIds().getFirst()).isEqualTo(albertaTherapy.getTherapy());
 
 		//billable therapy
-		assertThat(compositeProductInfo.getBillableTherapyIds().get(0)).isEqualTo(billableTherapy.getTherapy());
+		assertThat(compositeProductInfo.getBillableTherapyIds().getFirst()).isEqualTo(billableTherapy.getTherapy());
 
 		//packaging units
-		assertThat(compositeProductInfo.getAlbertaPackagingUnitList().get(0).getQuantity()).isEqualTo(albertaPackagingUnit.getQty());
-		assertThat(compositeProductInfo.getAlbertaPackagingUnitList().get(0).getUnit()).isEqualTo(albertaPackagingUnit.getArticleUnit());
+		assertThat(compositeProductInfo.getAlbertaPackagingUnitList().getFirst().getQuantity()).isEqualTo(albertaPackagingUnit.getQty());
+		assertThat(compositeProductInfo.getAlbertaPackagingUnitList().getFirst().getUnit()).isEqualTo(albertaPackagingUnit.getArticleUnit());
 
 		//price
 		assertThat(compositeProductInfo.getPharmacyPrice()).isEqualTo(productPrice.getPriceStd());

@@ -66,12 +66,13 @@ public final class JSONDocumentLayoutElementGroup
 	@Getter
 	private final JSONLayoutType type;
 
-	@Schema(description = "Number of equal-width-columns into which the included elementsLines shall be displayed:\n"
-			+ "Notes:\n"
-			+ "* one element line per cell"
-			+ "* an empty element line shall be rendered as empty cell"
-			+ "* if you have e.g. columnCount=3 and four element lines, then the rightmost two cells of the last line shall be empty"
-			+ "* if this property is missing, then <code>1</code> should be assumed")
+	@Schema(description = """
+			Number of equal-width-columns into which the included elementsLines shall be displayed:
+			Notes:
+			* one element line per cell\
+			* an empty element line shall be rendered as empty cell\
+			* if you have e.g. columnCount=3 and four element lines, then the rightmost two cells of the last line shall be empty\
+			* if this property is missing, then <code>1</code> should be assumed""")
 	@JsonProperty("columnCount")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Getter
@@ -82,10 +83,11 @@ public final class JSONDocumentLayoutElementGroup
 	@Getter
 	private final String internalName;
 
-	@Schema(description = "Container for elementy that are supposed to be displayed next to each other\n"
-			+ "Notes:"
-			+ "* individual element lines might be empty for layout purposes; see <code>columnCount</code>\n"
-			+ "* in most of the cases, each elementLine has one element")
+	@Schema(description = """
+			Container for elementy that are supposed to be displayed next to each other
+			Notes:\
+			* individual element lines might be empty for layout purposes; see <code>columnCount</code>
+			* in most of the cases, each elementLine has one element""")
 	@JsonProperty("elementsLine")
 	@JsonInclude(JsonInclude.Include.ALWAYS)
 	@Getter

@@ -118,7 +118,7 @@ public class CleverReachClient implements PlatformClient
 
 	private void updateGroup(@NonNull final Campaign campaign)
 	{
-		final String url = String.format("/groups.json/%s", campaign.getRemoteId());
+		final String url = "/groups.json/%s".formatted(campaign.getRemoteId());
 		getLowLevelClient().put(
 				UpdateGroupRequest.ofName(campaign.getName()),
 				SINGLE_GROUP_TYPE,
@@ -131,7 +131,7 @@ public class CleverReachClient implements PlatformClient
 				campaign.getRemoteId(),
 				"The given campaign to be deleted has a remoteId; campaign={}", campaign);
 
-		final String url = String.format("/groups.json/%s", remoteId);
+		final String url = "/groups.json/%s".formatted(remoteId);
 		getLowLevelClient().delete(url);
 
 		return LocalToRemoteSyncResult.deleted(campaign);
@@ -139,7 +139,7 @@ public class CleverReachClient implements PlatformClient
 
 	public Campaign retrieveCampaign(@NonNull final String groupId)
 	{
-		final String url = String.format("/groups.json/%s", groupId);
+		final String url = "/groups.json/%s".formatted(groupId);
 		final Group group = getLowLevelClient().get(SINGLE_GROUP_TYPE, url);
 		return group.toCampaign();
 	}
@@ -268,7 +268,7 @@ public class CleverReachClient implements PlatformClient
 				.collect(ImmutableList.toImmutableList());
 
 		final String groupRemoteId = assumeNotEmpty(campaign.getRemoteId(), "Then given campaign needs to have a RemoteId; campagin={}", campaign);
-		final String insertUrl = String.format("/groups.json/%s/receivers/upsert", groupRemoteId);
+		final String insertUrl = "/groups.json/%s/receivers/upsert".formatted(groupRemoteId);
 
 		final List<Object> results = getLowLevelClient()
 				.post(receiversUpserts,
@@ -291,9 +291,8 @@ public class CleverReachClient implements PlatformClient
 					email2contactPersonsWithoutErrorResponse.remove(info.getEmail());
 				});
 			}
-			else if (resultObj instanceof Map)
+			else if (resultObj instanceof Map<?, ?> resultMap)
 			{
-				final Map<?, ?> resultMap = (Map<?, ?>)resultObj;
 				if (resultMap.containsKey("id"))
 				{
 					final String resultRemoteId = String.valueOf(resultMap.get("id"));
@@ -318,9 +317,9 @@ public class CleverReachClient implements PlatformClient
 
 	private static boolean isNotBlankString(@Nullable final Object resultObj)
 	{
-		if (resultObj instanceof String)
+		if (resultObj instanceof String string)
 		{
-			return Check.isNotBlank((String)resultObj);
+			return Check.isNotBlank(string);
 		}
 		else
 		{

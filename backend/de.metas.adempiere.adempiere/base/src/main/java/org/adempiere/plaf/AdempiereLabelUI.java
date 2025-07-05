@@ -35,20 +35,11 @@ package org.adempiere.plaf;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
-import java.awt.event.ActionEvent;
-
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.KeyStroke;
-import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.plaf.ComponentInputMapUIResource;
 import javax.swing.plaf.metal.MetalLabelUI;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * 	Adempiere Label UI
@@ -153,16 +144,15 @@ public class AdempiereLabelUI extends MetalLabelUI
 			if (labelFor != null && labelFor.isEnabled ())
 			{
 				Component owner = label.getLabelFor ();
-				if (owner instanceof Container
-					&& ((Container)owner).isFocusCycleRoot ())
+				if (owner instanceof Container container1
+					&& container1.isFocusCycleRoot ())
 				{
 					owner.requestFocus ();
 				}
 				else
 				{
-				 	if (owner instanceof Container) 
+				 	if (owner instanceof Container container) 
 				 	{
-				 	    Container container = (Container)owner;
 				 	    if (container.isFocusCycleRoot()) 
 				 	    {
 				 	    	FocusTraversalPolicy policy = container.getFocusTraversalPolicy();

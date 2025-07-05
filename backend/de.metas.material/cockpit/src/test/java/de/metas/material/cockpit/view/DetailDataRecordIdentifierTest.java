@@ -94,7 +94,7 @@ public class DetailDataRecordIdentifierTest
 				.list();
 
 		assertThat(retrievedDetailRecords).hasSize(1);
-		assertThatModel(retrievedDetailRecords.get(0)).hasSameIdAs(cockpitRecord_Detail);
+		assertThatModel(retrievedDetailRecords.getFirst()).hasSameIdAs(cockpitRecord_Detail);
 	}
 
 }

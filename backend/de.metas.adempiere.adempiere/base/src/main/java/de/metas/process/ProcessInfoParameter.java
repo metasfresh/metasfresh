@@ -8,6 +8,7 @@ import lombok.NonNull;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -29,6 +30,7 @@ public final class ProcessInfoParameter implements Serializable
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 4536416337960754407L;
 
 	public static ProcessInfoParameter of(final String parameterName, final int parameterValue)
@@ -225,13 +227,13 @@ public final class ProcessInfoParameter implements Serializable
 		{
 			return defaultValueWhenNull;
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			return ((Number)value).intValue();
+			return number.intValue();
 		}
-		else if (value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware aware)
 		{
-			return ((RepoIdAware)value).getRepoId();
+			return aware.getRepoId();
 		}
 		else
 		{
@@ -323,13 +325,13 @@ public final class ProcessInfoParameter implements Serializable
 		{
 			return null;
 		}
-		else if (value instanceof BigDecimal)
+		else if (value instanceof BigDecimal decimal)
 		{
-			return (BigDecimal)value;
+			return decimal;
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer integer)
 		{
-			return BigDecimal.valueOf((Integer)value);
+			return BigDecimal.valueOf(integer);
 		}
 		else
 		{

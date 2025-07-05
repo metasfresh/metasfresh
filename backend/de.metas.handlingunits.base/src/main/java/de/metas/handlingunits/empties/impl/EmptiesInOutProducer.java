@@ -147,7 +147,7 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		//
 		// If the empties doc type was not found (should not happen) fallback to the default one
 		{
-			final I_C_DocType defaultDocType = docTypes.get(0);
+			final I_C_DocType defaultDocType = docTypes.getFirst();
 			logger.warn("No empties document type found for docBaseType={}, docSubType={}, adClientId={}, adOrgId={}. Using fallback docType={}", docBaseType, docSubType, adClientId, adOrgId, defaultDocType);
 			return defaultDocType;
 		}

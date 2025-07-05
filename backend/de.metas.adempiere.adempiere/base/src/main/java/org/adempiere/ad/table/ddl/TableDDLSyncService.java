@@ -212,7 +212,7 @@ public class TableDDLSyncService
 		}
 		else if (columns.size() == 1)
 		{
-			return Optional.of(columns.get(0));
+			return Optional.of(columns.getFirst());
 		}
 		else
 		{

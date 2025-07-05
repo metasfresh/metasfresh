@@ -127,9 +127,10 @@ public class ProductBOMDescriptionBuilderTest
 				.build(bomProductId);
 
 		assertThat(productDescription).isEqualTo(
-				"ComponentName1\r\n"
-						+ "ComponentName2 5 mm\r\n"
-						+ "ComponentName3");
+				"""
+				ComponentName1
+				ComponentName2 5 mm
+				ComponentName3""");
 	}
 
 	private static class BOMBuilder

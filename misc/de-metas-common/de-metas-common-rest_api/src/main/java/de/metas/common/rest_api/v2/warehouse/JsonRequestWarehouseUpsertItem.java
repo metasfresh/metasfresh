@@ -24,37 +24,33 @@ package de.metas.common.rest_api.v2.warehouse;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.WAREHOUSE_IDENTIFIER_DOC;
 
 @Value
 @Builder(toBuilder = true)
-@ApiModel(description = "Contains an external id and the actual warehouse to insert or update. The response will contain the given external id.")
+@Schema(description = "Contains an external id and the actual warehouse to insert or update. The response will contain the given external id.")
 public class JsonRequestWarehouseUpsertItem
 {
-	@ApiModelProperty(position = 10, value = WAREHOUSE_IDENTIFIER_DOC)
+	@Schema(description = WAREHOUSE_IDENTIFIER_DOC)
 	@NonNull
 	String warehouseIdentifier;
 
-	@ApiModelProperty(position = 20, //
-			value = "The version of the warehouse." + EXTERNAL_VERSION_DOC)
+	@Schema(description = "The version of the warehouse." + EXTERNAL_VERSION_DOC)
 	@Nullable
 	String externalVersion;
 
-	@ApiModelProperty(position = 30, //
-			value = "URL of the resource in the target external system.")
+	@Schema(description = "URL of the resource in the target external system.")
 	@Nullable
 	String externalReferenceUrl;
 
-	@ApiModelProperty(position = 40)
+	@Schema(description = "Warehouse data to request")
 	@NonNull
 	JsonRequestWarehouse requestWarehouse;
 

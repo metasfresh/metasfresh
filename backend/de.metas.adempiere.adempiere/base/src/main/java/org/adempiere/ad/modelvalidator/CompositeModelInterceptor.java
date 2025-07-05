@@ -22,14 +22,12 @@ package org.adempiere.ad.modelvalidator;
  * #L%
  */
 
-
-import java.util.concurrent.CopyOnWriteArrayList;
-
+import de.metas.security.IUserLoginListener;
+import de.metas.util.Check;
 import org.adempiere.ad.session.MFSession;
 import org.compiere.model.I_AD_Client;
 
-import de.metas.security.IUserLoginListener;
-import de.metas.util.Check;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CompositeModelInterceptor implements IModelInterceptor, IUserLoginListener
 {
@@ -42,9 +40,9 @@ public class CompositeModelInterceptor implements IModelInterceptor, IUserLoginL
 		Check.assumeNotNull(interceptor, "interceptor not null");
 		interceptors.addIfAbsent(interceptor);
 
-		if (interceptor instanceof IUserLoginListener)
+		if (interceptor instanceof IUserLoginListener listener)
 		{
-			userLoginListeners.addIfAbsent((IUserLoginListener)interceptor);
+			userLoginListeners.addIfAbsent(listener);
 		}
 	}
 

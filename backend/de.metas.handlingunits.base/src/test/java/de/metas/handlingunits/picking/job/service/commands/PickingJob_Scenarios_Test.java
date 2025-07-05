@@ -107,7 +107,7 @@ class PickingJob_Scenarios_Test
 
 				assertThat(pickedTo.getActualPickedHUs()).hasSize(1);
 				{
-					final PickingJobStepPickedToHU pickedToHU = pickedTo.getActualPickedHUs().get(0);
+					final PickingJobStepPickedToHU pickedToHU = pickedTo.getActualPickedHUs().getFirst();
 					assertThat(pickedToHU.getActualPickedHU().getId()).isEqualTo(pickFromHUId);
 					HUStorageExpectation.newExpectation().product(productId).qty(pickedTo.getQtyPicked()).assertExpected(pickFromHUId);
 

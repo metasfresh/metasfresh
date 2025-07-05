@@ -23,7 +23,7 @@
 package de.metas.common.rest_api.v2.warehouse;
 
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -34,33 +34,34 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADV
 @Getter
 @ToString
 @EqualsAndHashCode
+@Schema(description = "Warehouse request data")
 public class JsonRequestWarehouse
 {
-	@ApiModelProperty(position = 10, value = "Corresponding to `M_Warehouse.Value`")
+	@Schema(description = "Corresponding to `M_Warehouse.Value`")
 	private String code;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean codeSet;
 
-	@ApiModelProperty(position = 20, value = "Corresponding to `M_Warehouse.Name`")
+	@Schema(description = "Corresponding to `M_Warehouse.Name`")
 	private String name;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean nameSet;
 
-	@ApiModelProperty(position = 30, value = LOCATION_IDENTIFIER_DOC)
+	@Schema(description = LOCATION_IDENTIFIER_DOC)
 	private String bpartnerLocationIdentifier;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean bpartnerLocationIdentifierSet;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to `M_Warehouse.isActive`")
+	@Schema(description = "Corresponding to `M_Warehouse.isActive`")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 50, value = READ_ONLY_SYNC_ADVISE_DOC)
+	@Schema(description = READ_ONLY_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
 	public void setCode(final String code)

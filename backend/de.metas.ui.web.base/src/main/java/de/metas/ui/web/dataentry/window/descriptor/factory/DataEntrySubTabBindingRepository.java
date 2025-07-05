@@ -121,7 +121,7 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 				.build();
 
 		final Optional<DataEntryRecord> dataEntryRecord = dataEntryRecordRepository.getBy(dataEntryRecordQuery);
-		if (!dataEntryRecord.isPresent())
+		if (dataEntryRecord.isEmpty())
 		{
 			return Optional.empty();
 		}
@@ -222,7 +222,7 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 			@NonNull final Document document,
 			@NonNull final Optional<DataEntryRecord> dataEntryRecord)
 	{
-		if (!dataEntryRecord.isPresent())
+		if (dataEntryRecord.isEmpty())
 		{
 			return;
 		}

@@ -96,7 +96,7 @@ public class WebProjectDeploy extends JavaProcess
 		//	Stage
 		MCStage[] stages = MCStage.getStages(m_project);
 		for (int i = 0; i < stages.length; i++)
-			m_map.put(new Integer(stages[i].getCM_CStage_ID()), stages[i]);
+			m_map.put(Integer.valueOf(stages[i].getCM_CStage_ID()), stages[i]);
 		
 		//	Copy Stage Tree
 		final MTree treeS = MTree.builder()
@@ -114,7 +114,7 @@ public class WebProjectDeploy extends JavaProcess
 		for (int i = 0; i < containers.length; i++)
 		{
 			MContainer container = containers[i];
-			if (!m_idList.contains(new Integer(container.getCM_Container_ID())))
+			if (!m_idList.contains(Integer.valueOf(container.getCM_Container_ID())))
 			{
 				String name = container.getName();
 				if (container.delete(true))
@@ -164,14 +164,14 @@ public class WebProjectDeploy extends JavaProcess
 	private void copyStage (MTreeNode node, String path)
 	{
 		org.compiere.cm.CacheHandler thisHandler = new org.compiere.cm.CacheHandler(org.compiere.cm.CacheHandler.convertJNPURLToCacheURL(getCtx().getProperty("java.naming.provider.url")), log, getCtx(), get_TrxName());
-		Integer ID = new Integer(node.getNode_ID());
+		Integer ID = Integer.valueOf(node.getNode_ID());
 		MCStage stage = m_map.get(ID);
 		//	
 		int size = node.getChildCount();
 		for (int i = 0; i < size; i++)
 		{
 			MTreeNode child = (MTreeNode)node.getChildAt(i);
-			ID = new Integer(child.getNode_ID());
+			ID = Integer.valueOf(child.getNode_ID());
 			stage = m_map.get(ID);
 			if (stage == null)
 			{

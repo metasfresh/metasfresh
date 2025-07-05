@@ -358,7 +358,7 @@ final class AllocationLineCandidateSaver
 		}
 
 		//
-		final I_C_AllocationLine al1 = lines.get(0);
+		final I_C_AllocationLine al1 = lines.getFirst();
 		final I_C_AllocationLine al2 = lines.get(1);
 
 		al1.setCounter_AllocationLine_ID(al2.getC_AllocationLine_ID());

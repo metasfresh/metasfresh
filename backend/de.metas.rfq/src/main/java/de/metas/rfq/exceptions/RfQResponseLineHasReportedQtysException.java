@@ -2,6 +2,8 @@ package de.metas.rfq.exceptions;
 
 import de.metas.rfq.model.I_C_RfQResponseLine;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.rfq
@@ -26,6 +28,7 @@ import de.metas.rfq.model.I_C_RfQResponseLine;
 
 public class RfQResponseLineHasReportedQtysException extends RfQException
 {
+	@Serial
 	private static final long serialVersionUID = 3033906984241852780L;
 
 	public RfQResponseLineHasReportedQtysException(final I_C_RfQResponseLine rfqResponseLine)

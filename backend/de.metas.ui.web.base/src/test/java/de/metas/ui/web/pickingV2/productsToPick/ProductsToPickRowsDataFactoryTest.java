@@ -181,7 +181,7 @@ public class ProductsToPickRowsDataFactoryTest
 			rows.forEach(row -> System.out.println("hu=" + row.getPickFromHUId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQtyEffective() + " -- " + row));
 			assertThat(rows).hasSize(4);
 
-			final ProductsToPickRow row1 = rows.get(0);
+			final ProductsToPickRow row1 = rows.getFirst();
 			assertThat(row1.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
 			assertThat(row1.getPickFromHUId()).isEqualTo(huId1);
 			assertThat(row1.getQtyEffective()).isEqualTo(Quantity.of(10, uomKg));
@@ -242,7 +242,7 @@ public class ProductsToPickRowsDataFactoryTest
 			rows.forEach(row -> System.out.println("hu=" + row.getPickFromHUId() + ", exp=" + row.getExpiringDate() + ", qty=" + row.getQtyEffective() + " -- " + row));
 			assertThat(rows).hasSize(4);
 
-			final ProductsToPickRow row1 = rows.get(0);
+			final ProductsToPickRow row1 = rows.getFirst();
 			assertThat(row1.getType()).isEqualTo(ProductsToPickRowType.PICK_FROM_HU);
 			assertThat(row1.getPickFromHUId()).isEqualTo(huId2);
 			assertThat(row1.getQtyEffective()).isEqualTo(Quantity.of(11, uomKg));

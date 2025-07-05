@@ -33,6 +33,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.io.Serial;
 
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.swing.CDialog;
@@ -54,6 +55,7 @@ public class RichTextEditorDialog extends CDialog
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -7306050007969338986L;
 	
 	private Component field = null;
@@ -119,9 +121,9 @@ public class RichTextEditorDialog extends CDialog
 	{
 		String text = m_text;
 		// us315: check if is plain rext
-		if (field instanceof CTextPane)
+		if (field instanceof CTextPane pane)
 		{
-			if ("text/plain".equals(((CTextPane)field).getContentType()))
+			if ("text/plain".equals(pane.getContentType()))
 			{
 				text = MADBoilerPlate.getPlainText(m_text);
 				log.info("Converted html to plain text: "+text);

@@ -479,13 +479,12 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		Check.assumeNotNull(value, "value not null");
 
 		final BigDecimal valueBD;
-		if (value instanceof BigDecimal)
+		if (value instanceof BigDecimal decimal)
 		{
-			valueBD = (BigDecimal)value;
+			valueBD = decimal;
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer i)
 		{
-			final int i = (Integer)value;
 			valueBD = BigDecimal.valueOf(i);
 		}
 		else if (value instanceof String)
@@ -499,9 +498,9 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 				throw new InvalidAttributeValueException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + BigDecimal.class, e);
 			}
 		}
-		else if (value instanceof KeyNamePair)
+		else if (value instanceof KeyNamePair pair)
 		{
-			final int key = ((KeyNamePair)value).getKey();
+			final int key = pair.getKey();
 			return BigDecimal.valueOf(key);
 		}
 		else if (value instanceof Map)
@@ -564,13 +563,13 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	private NamePair valueToAttributeValue(@NonNull final Object value)
 	{
 		final Object valueNormalized;
-		if (value instanceof NamePair)
+		if (value instanceof NamePair pair)
 		{
-			valueNormalized = ((NamePair)value).getID();
+			valueNormalized = pair.getID();
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			final int valueInt = ((Number)value).intValue();
+			final int valueInt = number.intValue();
 
 			// Case: while propagating attributes up/down it might me that we get 0 instead of NULL
 			// that's why we discard that value here
@@ -775,9 +774,9 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		if (_attributeValueCallout == null)
 		{
 			final IAttributeValueGenerator attributeValueGenerator = getAttributeValueGeneratorOrNull();
-			if (attributeValueGenerator instanceof IAttributeValueCallout)
+			if (attributeValueGenerator instanceof IAttributeValueCallout callout)
 			{
-				_attributeValueCallout = (IAttributeValueCallout)attributeValueGenerator;
+				_attributeValueCallout = callout;
 			}
 			else
 			{

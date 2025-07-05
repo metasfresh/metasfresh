@@ -85,7 +85,7 @@ public class DDOrderMainDataHandler
 		final Optional<I_MD_Cockpit_DDOrder_Detail> existingDDOrderDetail = ddOrderDetailRequestHandler
 				.retrieveDDOrderDetail(ddOrderDetailIdentifier);
 
-		if (!existingDDOrderDetail.isPresent())
+		if (existingDDOrderDetail.isEmpty())
 		{
 			return;
 		}

@@ -177,7 +177,7 @@ public class ProductPriceQuery
 
 		if (matchingProductPrices.size() == 1)
 		{
-			return matchingProductPrices.get(0);
+			return matchingProductPrices.getFirst();
 		}
 
 		final Function<T, Integer> orderByNumberOfMatchedAttributes = productPrice -> {

@@ -65,7 +65,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		if (!streamEligibleSelectedRows().findAny().isPresent())
+		if (streamEligibleSelectedRows().findAny().isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU);
 		}

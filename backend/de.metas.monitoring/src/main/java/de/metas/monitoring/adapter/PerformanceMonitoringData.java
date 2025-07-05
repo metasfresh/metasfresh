@@ -44,7 +44,7 @@ public class PerformanceMonitoringData
 				return metadata.getFunctionNameFQ();
 			}
 		}
-		return !calledBy.isEmpty() ? calledBy.get(0).getFunctionNameFQ() : "";
+		return !calledBy.isEmpty() ? calledBy.getFirst().getFunctionNameFQ() : "";
 	}
 
 	@Nullable
@@ -56,13 +56,13 @@ public class PerformanceMonitoringData
 		}
 		else
 		{
-			return calledBy.get(calledBy.size() - 1).getFunctionNameFQ();
+			return calledBy.getLast().getFunctionNameFQ();
 		}
 	}
 
 	public String getInitiatorWindow()
 	{
-		final String windowName = !calledBy.isEmpty() ? calledBy.get(0).getWindowNameAndId() : "";
+		final String windowName = !calledBy.isEmpty() ? calledBy.getFirst().getWindowNameAndId() : "";
 		return windowName != null ? windowName : "NONE";
 	}
 
@@ -70,7 +70,7 @@ public class PerformanceMonitoringData
 
 	public PerformanceMonitoringService.Type getEffectiveType(final PerformanceMonitoringService.Metadata metadata)
 	{
-		return !calledBy.isEmpty() ? calledBy.get(0).getType() : metadata.getType();
+		return !calledBy.isEmpty() ? calledBy.getFirst().getType() : metadata.getType();
 	}
 
 	public int getDepth() {return calledBy.size();}
@@ -88,7 +88,7 @@ public class PerformanceMonitoringData
 		return () -> {
 			while (calledBy.size() > sizeBeforeAdd)
 			{
-				calledBy.remove(calledBy.size() - 1);
+				calledBy.removeLast();
 			}
 		};
 

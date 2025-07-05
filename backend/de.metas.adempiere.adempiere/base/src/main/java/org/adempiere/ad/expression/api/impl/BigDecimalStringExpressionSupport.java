@@ -1,13 +1,13 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.impl.BigDecimalStringExpressionSupport.BigDecimalStringExpression;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /*
  * #%L
@@ -96,13 +96,13 @@ public final class BigDecimalStringExpressionSupport extends StringExpressionSup
 			{
 				return null;
 			}
-			else if (valueObj instanceof BigDecimal)
+			else if (valueObj instanceof BigDecimal decimal)
 			{
-				return (BigDecimal)valueObj;
+				return decimal;
 			}
-			else if (valueObj instanceof Integer)
+			else if (valueObj instanceof Integer integer)
 			{
-				return BigDecimal.valueOf((Integer)valueObj);
+				return BigDecimal.valueOf(integer);
 			}
 			else
 			{

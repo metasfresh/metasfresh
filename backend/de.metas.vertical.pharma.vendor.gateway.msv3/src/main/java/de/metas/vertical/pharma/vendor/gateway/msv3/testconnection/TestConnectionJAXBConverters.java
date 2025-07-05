@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.testconnection;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;

@@ -121,7 +121,7 @@ public class AlbertaOrderServiceTest
 
 		final I_C_OLCand_AlbertaTherapyType albertaTherapyType1 = queryBL.createQueryBuilder(I_C_OLCand_AlbertaTherapyType.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OLCand_AlbertaTherapyType.COLUMNNAME_TherapyType, therapyTypes.get(0))
+				.addEqualsFilter(I_C_OLCand_AlbertaTherapyType.COLUMNNAME_TherapyType, therapyTypes.getFirst())
 				.create()
 				.firstOnlyOptional(I_C_OLCand_AlbertaTherapyType.class)
 				.orElse(null);

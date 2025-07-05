@@ -174,8 +174,7 @@ public class PickingBOMService
 	{
 		return bomVersionsIds.stream()
 				.map(bomsRepo::getLatestBOMByVersion)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

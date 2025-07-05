@@ -26,6 +26,8 @@ import de.metas.util.Check;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -39,6 +41,7 @@ public final class MutableBigDecimal extends Number implements IMutable<BigDecim
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -171154938877066205L;
 
 	private BigDecimal value;

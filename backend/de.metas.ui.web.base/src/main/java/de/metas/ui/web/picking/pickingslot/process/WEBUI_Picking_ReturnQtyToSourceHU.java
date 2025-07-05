@@ -116,12 +116,12 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 		if (PARAM_M_Product_ID.equals(parameter.getColumnName()))
 		{
 			final List<ProductId> productIds = getProductIds();
-			return !productIds.isEmpty() ? productIds.get(0) : null;
+			return !productIds.isEmpty() ? productIds.getFirst() : null;
 		}
 		if (PARAM_QtyCUsPerTU.equals(parameter.getColumnName()))
 		{
 			final List<ProductId> productIds = getProductIds();
-			final ProductId productId = !productIds.isEmpty() ? productIds.get(0) : null;
+			final ProductId productId = !productIds.isEmpty() ? productIds.getFirst() : null;
 			if (productId != null)
 			{
 				return getHUStorageQty(productId).toBigDecimal();

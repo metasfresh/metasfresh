@@ -62,7 +62,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 
 	public static IInvoiceRow castOrNull(final IAllocableDocRow row)
 	{
-		return row instanceof IInvoiceRow ? (IInvoiceRow)row : null;
+		return row instanceof IInvoiceRow iir ? iir : null;
 	}
 
 	private final OrgId orgId;

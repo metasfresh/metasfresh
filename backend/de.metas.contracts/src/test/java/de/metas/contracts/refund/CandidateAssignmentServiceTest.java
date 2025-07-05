@@ -179,7 +179,7 @@ public class CandidateAssignmentServiceTest
 		final List<UnassignedPairOfCandidates> unAssignedPairsOfCandidates = result.getUnassignedPairs();
 
 		assertThat(unAssignedPairsOfCandidates).hasSize(1);
-		final UnassignedPairOfCandidates unAssignedPairOfCandidates = unAssignedPairsOfCandidates.get(0);
+		final UnassignedPairOfCandidates unAssignedPairOfCandidates = unAssignedPairsOfCandidates.getFirst();
 
 		final AssignableInvoiceCandidate unassignedAssignableInvoiceCandidate = unAssignedPairOfCandidates.getAssignableInvoiceCandidate();
 		assertThat(unassignedAssignableInvoiceCandidate.isAssigned()).isFalse();
@@ -209,7 +209,7 @@ public class CandidateAssignmentServiceTest
 
 		final AssignmentToRefundCandidate assignmentToRefundCandidate = assignedCandidate
 				.getAssignmentsToRefundCandidates()
-				.get(0);
+				.getFirst();
 		assertThat(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate()).isNotNull();
 		assertThat(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo("2");
 
@@ -484,7 +484,7 @@ public class CandidateAssignmentServiceTest
 
 		// the candidate with seven was also affected
 		assertThat(result.getAdditionalChangedCandidates()).hasSize(1);
-		assertThat(result.getAdditionalChangedCandidates().get(0).getId()).isEqualTo(preparedAssignableCandidates.get(SEVEN).getId());
+		assertThat(result.getAdditionalChangedCandidates().getFirst().getId()).isEqualTo(preparedAssignableCandidates.get(SEVEN).getId());
 
 		final AssignableInvoiceCandidate reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository.getById(preparedAssignableCandidates.get(TEN).getId());
 		assertThat(reloadedAssignableCandidateWithTen.getAssignmentsToRefundCandidates()).isEmpty();
@@ -539,7 +539,7 @@ public class CandidateAssignmentServiceTest
 		assertThat(configWithMinQty0.getMinQty()).isEqualByComparingTo(ZERO);
 		assertThat(configWithMinQty0.getPercent()).isEqualTo(Percent.of(TEN));
 
-		final RefundConfig configWithMinQty15 = refundConfigs.get(0);
+		final RefundConfig configWithMinQty15 = refundConfigs.getFirst();
 		assertThat(configWithMinQty15.getMinQty()).isEqualByComparingTo(FIFTEEN);
 		assertThat(configWithMinQty15.getPercent()).isEqualTo(Percent.of(TWENTY));
 
@@ -562,8 +562,8 @@ public class CandidateAssignmentServiceTest
 
 		final ImmutableList<RefundInvoiceCandidate> distinctRefundCandidates = CollectionUtils.extractDistinctElements(assignmentsToRefundCandidates, AssignmentToRefundCandidate::getRefundInvoiceCandidate);
 		assertThat(distinctRefundCandidates).hasSize(1);
-		assertThat(distinctRefundCandidates.get(0).getAssignedQuantity()).isEqualTo(Quantity.of(SIXTEEN, uom)); // 13 plus 3
-		assertThat(distinctRefundCandidates.get(0).getMoney()).isEqualTo(Money.of(FOUR, currencyId)); // 20% of (10+10)
+		assertThat(distinctRefundCandidates.getFirst().getAssignedQuantity()).isEqualTo(Quantity.of(SIXTEEN, uom)); // 13 plus 3
+		assertThat(distinctRefundCandidates.getFirst().getMoney()).isEqualTo(Money.of(FOUR, currencyId)); // 20% of (10+10)
 
 		assertThat(assignmentsToRefundCandidates).hasSize(2);
 		assertThat(assignmentsToRefundCandidates)

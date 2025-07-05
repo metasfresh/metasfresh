@@ -1,5 +1,7 @@
 package de.metas.bpartner.service;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,6 +27,7 @@ package de.metas.bpartner.service;
 
 public final class ProductHasNoVendorException extends Exception
 {
+	@Serial
 	private static final long serialVersionUID = -7583112372829053131L;
 
 	public ProductHasNoVendorException(final String message, final Throwable cause)

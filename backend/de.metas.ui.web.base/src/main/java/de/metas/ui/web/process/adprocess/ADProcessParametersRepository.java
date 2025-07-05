@@ -172,24 +172,22 @@ import java.util.Map;
 		final String info;
 		final Object parameterTo;
 		final String infoTo;
-		if (fieldValue instanceof LookupValue)
+		if (fieldValue instanceof LookupValue lookupValue)
 		{
-			final LookupValue lookupValue = (LookupValue)fieldValue;
 			parameter = lookupValue.getId();
 			info = lookupValue.getDisplayName();
 			parameterTo = null;
 			infoTo = null;
 		}
-		else if (fieldValue instanceof RepoIdAware)
+		else if (fieldValue instanceof RepoIdAware aware)
 		{
-			parameter = ((RepoIdAware)fieldValue).getRepoId();
+			parameter = aware.getRepoId();
 			info = parameter.toString();
 			parameterTo = null;
 			infoTo = null;
 		}
-		else if (fieldValue instanceof DateRangeValue)
+		else if (fieldValue instanceof DateRangeValue dateRange)
 		{
-			final DateRangeValue dateRange = (DateRangeValue)fieldValue;
 			parameter = dateRange.getFrom();
 			info = parameter == null ? null : parameter.toString();
 			parameterTo = dateRange.getTo();

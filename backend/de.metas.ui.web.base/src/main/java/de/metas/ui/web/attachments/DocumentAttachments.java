@@ -146,7 +146,7 @@ final class DocumentAttachments
 	{
 		final Optional<IDocumentAttachmentEntry> newestAttachment = getNewestAttachment();
 		final Optional<IDocumentAttachmentEntry> newestArchive = this.getNewestArchive();
-		if (!newestAttachment.isPresent() && !newestArchive.isPresent())
+		if (newestAttachment.isEmpty() && newestArchive.isEmpty())
 		{
 			throw new EntityNotFoundException(NEWEST_DOCUMENT_ID.toJson());
 		}
@@ -256,7 +256,7 @@ final class DocumentAttachments
 			throw new IllegalArgumentException("Invalid attachment ID");
 		}
 
-		final String idPrefix = idParts.get(0);
+		final String idPrefix = idParts.getFirst();
 		final int entryId = Integer.parseInt(idParts.get(1));
 
 		return ImmutablePair.of(idPrefix, entryId);

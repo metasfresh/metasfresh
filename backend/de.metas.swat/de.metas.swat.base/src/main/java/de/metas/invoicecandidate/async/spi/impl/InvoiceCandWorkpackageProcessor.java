@@ -134,7 +134,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	@Override
 	public String toString()
 	{
-		return String.format("InvoiceCandWorkpackageProcessor [result=%s, queueDAO=%s, invoiceCandBL=%s, invoiceCandDAO=%s, workPackageBL=%s]",
+		return "InvoiceCandWorkpackageProcessor [result=%s, queueDAO=%s, invoiceCandBL=%s, invoiceCandDAO=%s, workPackageBL=%s]".formatted(
 				_result, queueDAO, invoiceCandBL, invoiceCandDAO, workPackageBL);
 	}
 

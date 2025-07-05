@@ -74,7 +74,7 @@ public class DocumentZoomIntoService
 				logger.warn("More then one child descriptors matched our root descriptor. Picking the fist one. \nRoot descriptor: {} \nChild descriptors: {}", rootEntityDescriptor, childEntityDescriptors);
 			}
 			//
-			final DocumentEntityDescriptor childEntityDescriptor = childEntityDescriptors.get(0);
+			final DocumentEntityDescriptor childEntityDescriptor = childEntityDescriptors.getFirst();
 
 			// Find the root DocumentId
 			final DocumentId rowId = DocumentId.of(zoomIntoInfo.getRecordId());

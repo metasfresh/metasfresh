@@ -22,6 +22,33 @@ package de.metas.printing.client.endpoint;
  * #L%
  */
 
+import com.google.common.io.BaseEncoding;
+import com.google.common.io.ByteStreams;
+import de.metas.printing.client.Context;
+import de.metas.printing.client.IPrintConnectionEndpoint;
+import de.metas.printing.client.encoder.IBeanEnconder;
+import de.metas.printing.client.util.MapFormat;
+import de.metas.printing.client.util.Util;
+import de.metas.printing.esb.api.LoginRequest;
+import de.metas.printing.esb.api.LoginResponse;
+import de.metas.printing.esb.api.PRTRestServiceConstants;
+import de.metas.printing.esb.api.PrintJobInstructionsConfirm;
+import de.metas.printing.esb.api.PrintJobInstructionsStatusEnum;
+import de.metas.printing.esb.api.PrintPackage;
+import de.metas.printing.esb.api.PrintPackageInfo;
+import de.metas.printing.esb.api.PrinterHWList;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.util.Timeout;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -37,29 +64,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-
-import com.google.common.io.BaseEncoding;
-import com.google.common.io.ByteStreams;
-
-import de.metas.printing.client.Context;
-import de.metas.printing.client.IPrintConnectionEndpoint;
-import de.metas.printing.client.encoder.IBeanEnconder;
-import de.metas.printing.client.util.MapFormat;
-import de.metas.printing.client.util.Util;
-import de.metas.printing.esb.api.LoginRequest;
-import de.metas.printing.esb.api.LoginResponse;
-import de.metas.printing.esb.api.PRTRestServiceConstants;
-import de.metas.printing.esb.api.PrintJobInstructionsConfirm;
-import de.metas.printing.esb.api.PrintJobInstructionsStatusEnum;
-import de.metas.printing.esb.api.PrintPackage;
-import de.metas.printing.esb.api.PrintPackageInfo;
-import de.metas.printing.esb.api.PrinterHWList;
 
 /**
  * Endpoint that queries the printing system via http.
@@ -87,7 +91,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	private final String serverUrl;
 	private final IBeanEnconder beanEncoder;
 
-	private final HttpClient httpclient;
+	private final CloseableHttpClient httpclient;
 
 	private final String dataEncoding;
 
@@ -111,8 +115,12 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final int socketTimeout = Context.getContext().getPropertyAsInt(CTX_SocketTimeoutMillis, DEFAULT_SocketTimeoutMillis);
 		log.log(Level.FINEST, "socketTimeout: {}", socketTimeout);
 
-		httpclient = new HttpClient();
-		httpclient.getParams().setSoTimeout(socketTimeout);
+		RequestConfig requestConfig = RequestConfig.custom()
+			.setResponseTimeout(Timeout.ofMilliseconds(socketTimeout))
+			.build();
+		httpclient = HttpClients.custom()
+			.setDefaultRequestConfig(requestConfig)
+			.build();
 	}
 
 	private String getDataEncoding()
@@ -155,14 +163,14 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		return _sessionId;
 	}
 
-	private int executeHttpPost(final PostMethod httpPost) throws HttpException, IOException
+	private int executeHttpPost(final HttpPost httpPost) throws HttpException, IOException
 	{
-		final int result = httpclient.executeMethod(httpPost);
+		CloseableHttpResponse response = httpclient.execute(httpPost);
+		int result = response.getCode();
 		log.log(Level.FINEST, "Result code: {}", result);
 
-		// final DefaultMethodRetryHandler retryHandler = new DefaultMethodRetryHandler();
-		// retryHandler.setRetryCount(3);
-		// httpPost.setMethodRetryHandler(retryHandler);
+		// Note: No DefaultMethodRetryHandler in HttpClient 5
+		// We could implement custom retry logic if needed
 
 		return result;
 	}
@@ -173,11 +181,11 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final byte[] data = beanEncoder.encode(printerHWList);
 
 		final URL url = getURL(PRTRestServiceConstants.PATH_AddPrinterHW);
-		final PostMethod httpPost = new PostMethod(url.toString());
+		final HttpPost httpPost = new HttpPost(url.toString());
 		addApiTokenIfAvailable(httpPost);
 
-		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
-		httpPost.setRequestEntity(entity);
+		final HttpEntity entity = new ByteArrayEntity(data, ContentType.parse(beanEncoder.getContentType()));
+		httpPost.setEntity(entity);
 
 		int result = -1;
 		try
@@ -205,15 +213,20 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 		final URL url = getURL(PRTRestServiceConstants.PATH_GetNextPrintPackage, params);
 
-		final PostMethod httpPost = new PostMethod(url.toString());
+		final HttpPost httpPost = new HttpPost(url.toString());
 		addApiTokenIfAvailable(httpPost);
 
 		int result = -1;
 		InputStream in = null;
 		try
 		{
-			result = executeHttpPost(httpPost);
-			in = httpPost.getResponseBodyAsStream();
+			CloseableHttpResponse response = httpclient.execute(httpPost);
+			result = response.getCode();
+			log.log(Level.FINEST, "Result code: {}", result);
+
+			HttpEntity entity = response.getEntity();
+			in = entity != null ? entity.getContent() : null;
+
 			if (result != 200)
 			{
 				final String errorMsg = in == null ? "code " + result : Util.toString(in);
@@ -239,7 +252,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		}
 		catch (final Exception e)
 		{
-			throw e instanceof PrintConnectionEndpointException ? (PrintConnectionEndpointException)e : new PrintConnectionEndpointException("Cannot POST to " + url, e);
+			throw e instanceof PrintConnectionEndpointException pcee ? pcee : new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 		finally
 		{
@@ -258,24 +271,26 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 		final URL url = getURL(PRTRestServiceConstants.PATH_GetPrintPackageData, params);
 
-		final PostMethod httpPost = new PostMethod(url.toString());
+		final HttpPost httpPost = new HttpPost(url.toString());
 		addApiTokenIfAvailable(httpPost);
 
 		int result = -1;
 		try
 		{
-			result = executeHttpPost(httpPost);
+			CloseableHttpResponse response = httpclient.execute(httpPost);
+			result = response.getCode();
+			log.log(Level.FINEST, "Result code: {}", result);
 
 			if (result != 200)
 			{
-				final String errorMsg = httpPost.getResponseBodyAsString();
+				final String errorMsg = EntityUtils.toString(response.getEntity());
 				throw new PrintConnectionEndpointException("Error " + result + " while posting on " + url + ": " + errorMsg);
 			}
 
 			final File file = mkFile(printPackage);
 
 			final FileOutputStream fileOutputStream = new FileOutputStream(file);
-			final InputStream dataBase64Stream = httpPost.getResponseBodyAsStream();
+			final InputStream dataBase64Stream = response.getEntity().getContent();
 
 			ByteStreams.copy(dataBase64Stream, fileOutputStream);
 			dataBase64Stream.close();
@@ -299,7 +314,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		}
 		catch (final Exception e)
 		{
-			throw e instanceof PrintConnectionEndpointException ? (PrintConnectionEndpointException)e : new PrintConnectionEndpointException("Cannot POST to " + url, e);
+			throw e instanceof PrintConnectionEndpointException pcee ? pcee : new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 	}
 
@@ -317,26 +332,28 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 		final URL url = getURL(PRTRestServiceConstants.PATH_SendPrintPackageResponse, params);
 
-		final PostMethod httpPost = new PostMethod(url.toString());
+		final HttpPost httpPost = new HttpPost(url.toString());
 		addApiTokenIfAvailable(httpPost);
 
-		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
-		httpPost.setRequestEntity(entity);
+		final HttpEntity entity = new ByteArrayEntity(data, ContentType.parse(beanEncoder.getContentType()));
+		httpPost.setEntity(entity);
 
 		int result = -1;
 		try
 		{
-			result = executeHttpPost(httpPost);
+			CloseableHttpResponse response1 = httpclient.execute(httpPost);
+			result = response1.getCode();
+			log.log(Level.FINEST, "Result code: {}", result);
 
 			if (result != 200)
 			{
-				final String errorMsg = httpPost.getResponseBodyAsString();
+				final String errorMsg = EntityUtils.toString(response1.getEntity());
 				throw new PrintConnectionEndpointException("Error " + result + " while posting on " + url + ": " + errorMsg);
 			}
 		}
 		catch (final Exception e)
 		{
-			throw e instanceof PrintConnectionEndpointException ? (PrintConnectionEndpointException)e : new PrintConnectionEndpointException("Cannot POST to " + url, e);
+			throw e instanceof PrintConnectionEndpointException pcee ? pcee : new PrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 		if (PrintJobInstructionsStatusEnum.Gedruckt.equals(response.getStatus()))
 		{
@@ -501,18 +518,23 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 		final URL url = getURL(PRTRestServiceConstants.PATH_Login, params);
 
-		final PostMethod httpPost = new PostMethod(url.toString());
+		final HttpPost httpPost = new HttpPost(url.toString());
 		addApiTokenIfAvailable(httpPost);
 
-		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
-		httpPost.setRequestEntity(entity);
+		final HttpEntity entity = new ByteArrayEntity(data, ContentType.parse(beanEncoder.getContentType()));
+		httpPost.setEntity(entity);
 
 		int result = -1;
 		InputStream in = null;
 		try
 		{
-			result = executeHttpPost(httpPost);
-			in = httpPost.getResponseBodyAsStream();
+			CloseableHttpResponse response = httpclient.execute(httpPost);
+			result = response.getCode();
+			log.log(Level.FINEST, "Result code: {}", result);
+
+			HttpEntity responseEntity = response.getEntity();
+			in = responseEntity != null ? responseEntity.getContent() : null;
+
 			if (result != 200)
 			{
 				final String errorMsg = in == null ? "code " + result : Util.toString(in);
@@ -525,7 +547,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		catch (final Exception e)
 		{
 			log.info("Exception " + e);
-			throw e instanceof LoginFailedPrintConnectionEndpointException ? (LoginFailedPrintConnectionEndpointException)e
+			throw e instanceof LoginFailedPrintConnectionEndpointException lfpcee ? lfpcee
 					: new LoginFailedPrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 		finally
@@ -535,13 +557,13 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		}
 	}
 
-	private void addApiTokenIfAvailable(final PostMethod httpPost)
+	private void addApiTokenIfAvailable(final HttpPost httpPost)
 	{
 		final String apiToken = getContext().getProperty(Context.CTX_Login_ApiToken);
 
 		if (apiToken != null && apiToken.trim().length() > 0)
 		{
-			httpPost.setRequestHeader("Authorization", apiToken.trim());
+			httpPost.setHeader("Authorization", apiToken.trim());
 		}
 	}
 }

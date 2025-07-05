@@ -143,7 +143,7 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		// then
 		Assertions.assertThat(splitTUs).hasSize(1); // in this test, we static imported XMLAssert
 
-		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.get(0));
+		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.getFirst());
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isOne();
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
@@ -306,7 +306,7 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		// then
 		Assertions.assertThat(splitTUs).hasSize(1); // in this test, we static imported XMLAssert
 
-		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.get(0));
+		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.getFirst());
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isOne();
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
@@ -387,7 +387,7 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		// then
 		Assertions.assertThat(splitTUs).hasSize(1); // in this test, we static imported XMLAssert
 
-		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.get(0));
+		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.getFirst());
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isOne();
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");

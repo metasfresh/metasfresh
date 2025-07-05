@@ -323,9 +323,9 @@ public class TableElement extends PrintElement
 		{
 			int col = dataCol;
 			// Print below existing column
-			if (m_additionalLines.containsKey(new Integer(dataCol)))
+			if (m_additionalLines.containsKey(Integer.valueOf(dataCol)))
 			{
-				col = m_additionalLines.get(new Integer(dataCol)).intValue();
+				col = m_additionalLines.get(Integer.valueOf(dataCol)).intValue();
 				log.trace("DataColumn=" + dataCol + ", BelowColumn=" + col);
 			}
 			float colWidth = 0;
@@ -599,7 +599,7 @@ public class TableElement extends PrintElement
 			// Print below existing column
 			if (col != dataCol)
 			{
-				m_columnWidths.add(new Float(0.0)); // for the data column
+				m_columnWidths.add(Float.valueOf("0.0")); // for the data column
 				Float origWidth = m_columnWidths.get(col);
 				if (origWidth == null)
 				{
@@ -608,7 +608,7 @@ public class TableElement extends PrintElement
 				}
 				else
 				{
-					if (origWidth.compareTo(new Float(colWidth)) >= 0)
+					if (origWidth.compareTo(Float.valueOf(colWidth)) >= 0)
 					{
 						log.trace("Same Width - Col=" + col + " - OrigWidth="
 								+ origWidth + " - Width=" + colWidth
@@ -616,7 +616,7 @@ public class TableElement extends PrintElement
 					}
 					else
 					{
-						m_columnWidths.set(col, new Float(colWidth));
+						m_columnWidths.set(col, Float.valueOf(colWidth));
 						p_width += (colWidth - origWidth.floatValue());
 						log.trace("New Width - Col=" + col + " - OrigWidth="
 								+ origWidth + " - Width=" + colWidth
@@ -627,7 +627,7 @@ public class TableElement extends PrintElement
 			// Add new Column
 			else
 			{
-				m_columnWidths.add(new Float(colWidth));
+				m_columnWidths.add(Float.valueOf(colWidth));
 				p_width += colWidth;
 				log.trace("Width - Col=" + dataCol + " - Width=" + colWidth
 						+ " - Total=" + p_width);
@@ -647,7 +647,7 @@ public class TableElement extends PrintElement
 				}
 			} // for all columns
 			rowHeight += m_tFormat.getLineStroke().floatValue() + (2 * V_GAP);
-			m_rowHeights.add(new Float(rowHeight));
+			m_rowHeights.add(Float.valueOf(rowHeight));
 			p_height += rowHeight;
 		} // for all rows
 			// HeaderRow
@@ -674,8 +674,8 @@ public class TableElement extends PrintElement
 		{
 			log.trace("Page Y=1 - PageHeight=" + m_firstPage.height
 					+ " - TableHeight=" + p_height);
-			m_firstRowOnPage.add(new Integer(0)); // Y
-			m_pageHeight.add(new Float(p_height)); // Y index only
+			m_firstRowOnPage.add(Integer.valueOf(0)); // Y
+			m_pageHeight.add(Float.valueOf(p_height)); // Y index only
 		}
 		// multiple pages on Y | Axis
 		else
@@ -714,10 +714,10 @@ public class TableElement extends PrintElement
 				{
 					availableHeight = firstPage ? m_firstPage.height
 							: m_nextPages.height;
-					m_firstRowOnPage.add(new Integer(dataRow + addlRows)); // Y
+					m_firstRowOnPage.add(Integer.valueOf(dataRow + addlRows)); // Y
 					if (!firstPage)
 					{
-						m_pageHeight.add(new Float(usedHeight)); // Y index only
+						m_pageHeight.add(Float.valueOf(usedHeight)); // Y index only
 						log.trace("Page Y=" + m_pageHeight.size()
 								+ " - PageHeight=" + usedHeight);
 					}
@@ -742,7 +742,7 @@ public class TableElement extends PrintElement
 						+ " - Available=" + availableHeight + ", Used="
 						+ usedHeight);
 			} // for all rows
-			m_pageHeight.add(new Float(usedHeight)); // Y index only
+			m_pageHeight.add(Float.valueOf(usedHeight)); // Y index only
 			log.trace("Page Y=" + m_pageHeight.size() + " - PageHeight="
 					+ usedHeight);
 		} // multiple Y | pages
@@ -752,7 +752,7 @@ public class TableElement extends PrintElement
 		{
 			log.trace("Page X=1 - PageWidth=" + m_firstPage.width
 					+ " - TableWidth=" + p_width);
-			m_firstColumnOnPage.add(new Integer(0)); // X
+			m_firstColumnOnPage.add(Integer.valueOf(0)); // X
 			//
 			distributeColumns(m_firstPage.width - (int)p_width, 0,
 					m_columnWidths.size());
@@ -773,7 +773,7 @@ public class TableElement extends PrintElement
 						distributeColumns(availableWidth, lastStart, col);
 					}
 					//
-					m_firstColumnOnPage.add(new Integer(col)); // X
+					m_firstColumnOnPage.add(Integer.valueOf(col)); // X
 					log.trace("Page X=" + m_firstColumnOnPage.size()
 							+ " - Col=" + col);
 					lastStart = col;
@@ -843,13 +843,13 @@ public class TableElement extends PrintElement
 							/ totalWidth;
 					if (remainingWidth < additionalPart)
 					{
-						m_columnWidths.set(col, new Float(columnWidth
+						m_columnWidths.set(col, Float.valueOf(columnWidth
 								+ remainingWidth));
 						remainingWidth = 0;
 					}
 					else
 					{
-						m_columnWidths.set(col, new Float(columnWidth
+						m_columnWidths.set(col, Float.valueOf(columnWidth
 								+ additionalPart));
 						remainingWidth -= additionalPart;
 					}
@@ -864,7 +864,7 @@ public class TableElement extends PrintElement
 			int columnWidth = m_columnWidths.get(c).intValue();
 			if (columnWidth > 0)
 			{
-				m_columnWidths.set(c, new Float(columnWidth + remainingWidth));
+				m_columnWidths.set(c, Float.valueOf(columnWidth + remainingWidth));
 				log.trace("Final col=" + c + " - From " + columnWidth + " to "
 						+ m_columnWidths.get(c));
 				remainingWidth = 0;
@@ -1227,7 +1227,7 @@ public class TableElement extends PrintElement
 		Object code = pp.getID();
 		if (pp instanceof KeyNamePair)
 		{
-			code = new Integer(((KeyNamePair)pp).getKey());
+			code = Integer.valueOf(((KeyNamePair)pp).getKey());
 		}
 		//
 		MQuery query = new MQuery(tableName);
@@ -1925,8 +1925,8 @@ public class TableElement extends PrintElement
 			else
 			{
 				// next line is a funcion column -> underline this
-				boolean nextIsFunction = m_functionRows.contains(new Integer(row + 1));
-				if (nextIsFunction && m_functionRows.contains(new Integer(row)))
+				boolean nextIsFunction = m_functionRows.contains(Integer.valueOf(row + 1));
+				if (nextIsFunction && m_functionRows.contains(Integer.valueOf(row)))
 				 {
 					nextIsFunction = false;     // this is a function line too
 				}

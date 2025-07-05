@@ -51,8 +51,10 @@ public class JasperJdbcConnectionTest
 		// simple generic test
 		test_injectSecurityWhereClauses(
 
-				"SELECT * from test"
-						+ "\nWHERE OrgFilter /*JasperJdbcConnection.securityWhereClause*/;",
+				"""
+SELECT * from test
+WHERE OrgFilter /*JasperJdbcConnection.securityWhereClause*/;\
+""",
 
 				"SELECT * from test",
 
@@ -65,8 +67,10 @@ public class JasperJdbcConnectionTest
 		// realistic test with no WHERE and no ORDER BY
 		test_injectSecurityWhereClauses(
 
-				"SELECT * FROM report.saldobilanz_Report (?,?,?,?)"
-						+ "\nWHERE AD_Org_ID IN (0,1000004) /*JasperJdbcConnection.securityWhereClause*/;",
+				"""
+SELECT * FROM report.saldobilanz_Report (?,?,?,?)
+WHERE AD_Org_ID IN (0,1000004) /*JasperJdbcConnection.securityWhereClause*/;\
+""",
 
 				"SELECT * FROM report.saldobilanz_Report (?,?,?,?);",
 
@@ -79,9 +83,11 @@ public class JasperJdbcConnectionTest
 		// realistic test with ORDER BY
 		test_injectSecurityWhereClauses(
 
-				"SELECT * FROM report.saldobilanz_Report (?,?,?,?)  " +
-						"\nWHERE AD_Org_ID IN (0, 1000000) /*JasperJdbcConnection.securityWhereClause*/" +
-						"\nORDER BY AD_Org_ID;",
+				"""
+SELECT * FROM report.saldobilanz_Report (?,?,?,?) \s
+WHERE AD_Org_ID IN (0, 1000000) /*JasperJdbcConnection.securityWhereClause*/
+ORDER BY AD_Org_ID;\
+""",
 
 				"SELECT * FROM report.saldobilanz_Report (?,?,?,?)  ORDER BY AD_Org_ID;",
 
@@ -93,9 +99,11 @@ public class JasperJdbcConnectionTest
 	{
 		// realistic test with WHERE and ORDER BY. ";" used
 		test_injectSecurityWhereClauses(
-				"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere " +
-						"\nAND AD_Org_ID IN (0, 1000000) /*JasperJdbcConnection.securityWhereClause*/" +
-						"\nORDER BY AD_Org_ID;",
+				"""
+				SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere\s
+				AND AD_Org_ID IN (0, 1000000) /*JasperJdbcConnection.securityWhereClause*/
+				ORDER BY AD_Org_ID;\
+				""",
 
 				"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere ORDER BY AD_Org_ID;",
 
@@ -107,9 +115,11 @@ public class JasperJdbcConnectionTest
 	{
 		// realistic test with WHERE and ORDER BY. ";" not used
 		test_injectSecurityWhereClauses(
-				"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere " +
-						"\nAND AD_Org_ID IN (0, 1000000) /*JasperJdbcConnection.securityWhereClause*/" +
-						"\nORDER BY AD_Org_ID;",
+				"""
+				SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere\s
+				AND AD_Org_ID IN (0, 1000000) /*JasperJdbcConnection.securityWhereClause*/
+				ORDER BY AD_Org_ID;\
+				""",
 
 				"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere ORDER BY AD_Org_ID",
 

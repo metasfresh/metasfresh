@@ -2,6 +2,8 @@ package de.metas.rfq.exceptions;
 
 import de.metas.rfq.model.I_C_RfQResponse;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.rfq
@@ -26,6 +28,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 
 public class RfQDocumentNotClosedException extends RfQException
 {
+	@Serial
 	private static final long serialVersionUID = -5926936096253274298L;
 
 	private static final String MSG = "RfQDocumentNotClosedException";

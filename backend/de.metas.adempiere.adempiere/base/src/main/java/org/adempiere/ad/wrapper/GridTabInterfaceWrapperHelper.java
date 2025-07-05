@@ -1,8 +1,6 @@
 package org.adempiere.ad.wrapper;
 
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.logging.LogManager;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -14,7 +12,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -249,9 +248,8 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 			return null;
 		}
 
-		if (model instanceof GridTab)
+		if (model instanceof GridTab gridTab)
 		{
-			final GridTab gridTab = (GridTab)model;
 			return GridTabWrapper.getPO(Env.getCtx(), gridTab);
 		}
 

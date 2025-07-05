@@ -303,9 +303,9 @@ public class POTrlRepository
 		//
 		final CacheMgt cacheMgt = CacheMgt.get();
 		final Object keyColumnValue = trlRecord.get_Value(keyColumnName);
-		if (keyColumnValue instanceof Integer)
+		if (keyColumnValue instanceof Integer integer)
 		{
-			cacheMgt.reset(baseTableName, (int)keyColumnValue);
+			cacheMgt.reset(baseTableName, integer);
 		}
 		else
 		{
@@ -319,17 +319,17 @@ public class POTrlRepository
 		{
 			return "NULL";
 		}
-		else if (value instanceof String)
+		else if (value instanceof String string)
 		{
-			return DB.TO_STRING((String)value);
+			return DB.TO_STRING(string);
 		}
-		else if (value instanceof Boolean)
+		else if (value instanceof Boolean boolean1)
 		{
-			return DB.TO_BOOLEAN((Boolean)value);
+			return DB.TO_BOOLEAN(boolean1);
 		}
-		else if (value instanceof Timestamp)
+		else if (value instanceof Timestamp timestamp)
 		{
-			return DB.TO_DATE((Timestamp)value);
+			return DB.TO_DATE(timestamp);
 		}
 		else if (value instanceof Integer)
 		{

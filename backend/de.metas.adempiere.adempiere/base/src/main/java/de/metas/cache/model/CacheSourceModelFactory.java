@@ -31,9 +31,9 @@ public class CacheSourceModelFactory
 	@Nullable
 	private static PO unwrapPOOrNull(@NonNull final Object obj)
 	{
-		if (obj instanceof PO)
+		if (obj instanceof PO pO)
 		{
-			return (PO)obj;
+			return pO;
 		}
 
 		return POWrapper.getStrictPO(obj);

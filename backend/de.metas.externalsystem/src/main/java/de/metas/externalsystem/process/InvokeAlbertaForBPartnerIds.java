@@ -82,7 +82,7 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 			final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getActiveByType(ExternalSystemType.Alberta);
 
 			return configs.size() == 1
-					? configs.get(0).getChildConfig().getId().getRepoId()
+					? configs.getFirst().getChildConfig().getId().getRepoId()
 					: IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;

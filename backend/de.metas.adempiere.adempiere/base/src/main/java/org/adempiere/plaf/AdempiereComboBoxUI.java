@@ -35,24 +35,17 @@ package org.adempiere.plaf;
  * #L%
  */
 
-import java.awt.event.MouseListener;
+import com.jgoodies.looks.plastic.PlasticComboBoxUI;
+import org.compiere.swing.CComboBox;
 
 import javax.accessibility.Accessible;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.plaf.metal.MetalComboBoxButton;
-
-import org.compiere.swing.CComboBox;
-
-import com.jgoodies.looks.plastic.PlasticComboBoxUI;
+import java.awt.event.MouseListener;
 
 /**
  * Compiere ComboBox UI. The ComboBox is opaque - with opaque arrow button and textfield background
@@ -118,9 +111,8 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 		// NOTE: we do this only for CComboBox and not for all JComboBox-es 
 		// because the auto-complete feature works with those ComboBoxes where the items are string or item's toString() returns the string representation.
 		// Most of our CComboBoxes are about Value/KeyNamePairs, so we are fine.
-		if (UIManager.getBoolean(KEY_EnableAutoCompletion) && (c instanceof CComboBox))
+		if (UIManager.getBoolean(KEY_EnableAutoCompletion) && (c instanceof CComboBox<?> comboBox))
 		{
-			final CComboBox<?> comboBox = (CComboBox<?>)c;
 			comboBox.enableAutoCompletion();
 		}
 
@@ -179,9 +171,9 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	public static final ComboPopup getComboPopup(final JComboBox<?> comboBox)
 	{
 		final ComboBoxUI comboBoxUI = comboBox.getUI();
-		if (comboBoxUI instanceof AdempiereComboBoxUI)
+		if (comboBoxUI instanceof AdempiereComboBoxUI uI)
 		{
-			return ((AdempiereComboBoxUI)comboBoxUI).getComboPopup();
+			return uI.getComboPopup();
 		}
 		
 		//
@@ -194,9 +186,9 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 		//
 		// see javax.swing.plaf.basic.BasicComboBoxUI.getAccessibleChild(JComponent, int)
 		final Accessible a = comboBoxUI.getAccessibleChild(comboBox, 0);
-		if (a instanceof ComboPopup)
+		if (a instanceof ComboPopup comboPopup)
 		{
-			return (ComboPopup)a;
+			return comboPopup;
 		}
 		else
 		{

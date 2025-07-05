@@ -1,5 +1,11 @@
 package de.metas.ui.web.window.descriptor;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -18,18 +24,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -59,7 +60,7 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 	private static final Logger logger = LogManager.getLogger(FullTextSearchLookupDescriptor.class);
 
 	// services
-	Client elasticsearchClient;
+	ElasticsearchClient elasticsearchClient;
 
 	String modelTableName;
 	String esIndexName;
@@ -71,7 +72,7 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 
 	@Builder
 	private FullTextSearchLookupDescriptor(
-			@NonNull final Client elasticsearchClient,
+			@NonNull final ElasticsearchClient elasticsearchClient,
 			@NonNull final String modelTableName,
 			@NonNull final String esIndexName,
 			@NonNull final Set<String> esSearchFieldNames,
@@ -128,43 +129,64 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 			return databaseLookup.findEntities(evalCtx);
 		}
 
-		final QueryBuilder query = createElasticsearchQuery(evalCtx);
-		logger.trace("ES query: {}", query);
+		try
+		{
+			final Query query = createElasticsearchQuery(evalCtx);
+			logger.trace("ES query: {}", query);
 
-		final int maxSize = Math.min(evalCtx.getLimit(100), 100);
-		final SearchResponse searchResponse = elasticsearchClient.prepareSearch(esIndexName)
-				.setQuery(query)
-				.setExplain(logger.isTraceEnabled())
-				.setSize(maxSize)
-				.addStoredField(esKeyColumnName) // not sure it's right
-				.get();
-		logger.trace("ES response: {}", searchResponse);
+			final int maxSize = Math.min(evalCtx.getLimit(100), 100);
 
-		final List<Integer> recordIds = Stream.of(searchResponse.getHits().getHits())
-				.map(this::extractId)
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
-		logger.trace("Record IDs: {}", recordIds);
+			final SearchRequest searchRequest = SearchRequest.of(s -> s
+					.index(esIndexName)
+					.query(query)
+					.size(maxSize)
+					.source(src -> src.filter(f -> f.includes(esKeyColumnName)))
+			);
 
-		final LookupValuesList lookupValues = databaseLookup.findByIdsOrdered(recordIds);
-		logger.trace("Lookup values: {}", lookupValues);
+			final SearchResponse<Object> searchResponse = elasticsearchClient.search(searchRequest, Object.class);
+			logger.trace("ES response: {}", searchResponse);
 
-		return lookupValues.pageByOffsetAndLimit(0, Integer.MAX_VALUE);
+			final List<Integer> recordIds = searchResponse.hits().hits().stream()
+					.map(this::extractId)
+					.distinct()
+					.collect(ImmutableList.toImmutableList());
+			logger.trace("Record IDs: {}", recordIds);
+
+			final LookupValuesList lookupValues = databaseLookup.findByIdsOrdered(recordIds);
+			logger.trace("Lookup values: {}", lookupValues);
+
+			return lookupValues.pageByOffsetAndLimit(0, Integer.MAX_VALUE);
+		}
+		catch (IOException e)
+		{
+			logger.error("Error executing Elasticsearch query", e);
+			// Fallback to database lookup in case of ES error
+			return databaseLookup.findEntities(evalCtx);
+		}
 	}
 
-	private int extractId(@NonNull final SearchHit hit)
+	private int extractId(@NonNull final Hit<Object> hit)
 	{
-		final Object value = hit
-				.getFields()
-				.get(esKeyColumnName)
-				.getValue();
-		return NumberUtils.asInt(value, -1);
+		if (hit.source() instanceof java.util.Map)
+		{
+			@SuppressWarnings("unchecked")
+			final java.util.Map<String, Object> source = (java.util.Map<String, Object>) hit.source();
+			final Object value = source.get(esKeyColumnName);
+			return NumberUtils.asInt(value, -1);
+		}
+
+		// Fallback: try to get from document ID if source is not available
+		final String id = hit.id();
+		return NumberUtils.asInt(id, -1);
 	}
 
-	private QueryBuilder createElasticsearchQuery(final LookupDataSourceContext evalCtx)
+	private Query createElasticsearchQuery(final LookupDataSourceContext evalCtx)
 	{
 		final String text = evalCtx.getFilter();
-		return QueryBuilders.multiMatchQuery(text, esSearchFieldNames);
+		return MultiMatchQuery.of(m -> m
+				.query(text)
+				.fields(List.of(esSearchFieldNames))
+		)._toQuery();
 	}
 
 	@Override

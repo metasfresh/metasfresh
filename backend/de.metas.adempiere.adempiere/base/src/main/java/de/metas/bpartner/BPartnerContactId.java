@@ -156,7 +156,7 @@ public class BPartnerContactId implements RepoIdAware
 		{
 			final List<String> parts = Splitter.on("-").splitToList(idStr);
 			return of(
-					BPartnerId.ofRepoId(Integer.parseInt(parts.get(0))),
+					BPartnerId.ofRepoId(Integer.parseInt(parts.getFirst())),
 					UserId.ofRepoId(Integer.parseInt(parts.get(1))));
 		}
 		catch (Exception ex)

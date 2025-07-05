@@ -24,6 +24,7 @@ package de.metas.contracts.model;
 
 
 import java.io.File;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.LocalDate;
@@ -44,6 +45,7 @@ public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements IDo
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -6423880921308525801L;
 
 	/** Process Message */

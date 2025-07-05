@@ -31,6 +31,7 @@ import de.metas.fulltextsearch.indexer.queue.ModelToIndexEventType;
 import de.metas.fulltextsearch.indexer.queue.ModelsToIndexQueueService;
 import de.metas.logging.LogManager;
 import de.metas.util.NumberUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -40,13 +41,12 @@ import org.adempiere.ad.table.api.TableName;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
-import org.elasticsearch.common.util.set.Sets;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -96,8 +96,12 @@ public class EnqueueSourceModelInterceptor extends AbstractModelInterceptor
 
 		if (!Objects.equals(sourceTablesAlreadyRegistered.getTableNames(), sourceTablesToRegisterTarget.getTableNames()))
 		{
-			final Set<TableName> sourceTableNamesToUnregister = Sets.difference(sourceTablesAlreadyRegistered.getTableNames(), sourceTablesToRegisterTarget.getTableNames());
-			final Set<TableName> sourceTableNamesToRegister = Sets.difference(sourceTablesToRegisterTarget.getTableNames(), sourceTablesAlreadyRegistered.getTableNames());
+			// Calculate difference manually since Sets.difference is not available
+			final Set<TableName> sourceTableNamesToUnregister = new HashSet<>(sourceTablesAlreadyRegistered.getTableNames());
+			sourceTableNamesToUnregister.removeAll(sourceTablesToRegisterTarget.getTableNames());
+			
+			final Set<TableName> sourceTableNamesToRegister = new HashSet<>(sourceTablesToRegisterTarget.getTableNames());
+			sourceTableNamesToRegister.removeAll(sourceTablesAlreadyRegistered.getTableNames());
 
 			if (!sourceTableNamesToUnregister.isEmpty())
 			{

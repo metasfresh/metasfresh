@@ -36,6 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,6 +97,7 @@ import de.metas.util.collections.IdentityHashSet;
  */
 public class UIDefaultsEditorDialog extends JDialog
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -132,6 +134,7 @@ public class UIDefaultsEditorDialog extends JDialog
 		final JPopupMenu tablePopup = new JPopupMenu();
 		tablePopup.add(new AbstractAction("Show similar")
 		{
+			@Serial
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -142,6 +145,7 @@ public class UIDefaultsEditorDialog extends JDialog
 		});
 		tablePopup.add(new AbstractAction("Show same")
 		{
+			@Serial
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -248,6 +252,7 @@ public class UIDefaultsEditorDialog extends JDialog
 	 */
 	static class UIDefaultsTableModel extends AbstractTableModel
 	{
+		@Serial
 		private static final long serialVersionUID = 1L;
 
 		private final LookAndFeel lookAndFeel;
@@ -455,9 +460,9 @@ public class UIDefaultsEditorDialog extends JDialog
 		{
 			final java.awt.Color color;
 			final String text;
-			if (value instanceof java.awt.Color)
+			if (value instanceof java.awt.Color color1)
 			{
-				color = (java.awt.Color)value;
+				color = color1;
 				text = String.valueOf(color);
 			}
 			else
@@ -497,9 +502,9 @@ public class UIDefaultsEditorDialog extends JDialog
 		public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column)
 		{
 			final java.awt.Font font;
-			if (value instanceof java.awt.Font)
+			if (value instanceof java.awt.Font font1)
 			{
-				font = (java.awt.Font)value;
+				font = font1;
 			}
 			else
 			{
@@ -548,9 +553,9 @@ public class UIDefaultsEditorDialog extends JDialog
 				tooltip = null;
 				border = null;
 			}
-			else if (value instanceof Border)
+			else if (value instanceof Border border1)
 			{
-				border = (Border)value;
+				border = border1;
 				text = border.toString();
 				tooltip = ObjectUtils.toString(border);
 			}
@@ -637,9 +642,9 @@ public class UIDefaultsEditorDialog extends JDialog
 				icon = null;
 				text = "null icon";
 			}
-			else if (value instanceof Icon)
+			else if (value instanceof Icon icon1)
 			{
-				icon = (Icon)value;
+				icon = icon1;
 				text = "Icon: " + icon;
 			}
 			else if (notSupportedValues.contains(value))
@@ -730,29 +735,24 @@ public class UIDefaultsEditorDialog extends JDialog
 				return;
 			}
 
-			if (value instanceof Color)
+			if (value instanceof Color color)
 			{
-				final Color color = (Color)value;
 				editColor(table, rowIndexView, color);
 			}
-			else if (value instanceof Font)
+			else if (value instanceof Font font)
 			{
-				final Font font = (Font)value;
 				editFont(table, rowIndexView, font);
 			}
-			else if (value instanceof VEditorDialogButtonAlign)
+			else if (value instanceof VEditorDialogButtonAlign buttonAlign)
 			{
-				final VEditorDialogButtonAlign buttonAlign = (VEditorDialogButtonAlign)value;
 				editVEditorDialogButtonAlign(table, rowIndexView, buttonAlign);
 			}
-			else if (value instanceof Integer)
+			else if (value instanceof Integer valueInt)
 			{
-				final Integer valueInt = (Integer)value;
 				editInteger(table, rowIndexView, valueInt);
 			}
-			else if (value instanceof Boolean)
+			else if (value instanceof Boolean valueBoolean)
 			{
-				final Boolean valueBoolean = (Boolean)value;
 				editBoolean(table, rowIndexView, valueBoolean);
 			}
 		}

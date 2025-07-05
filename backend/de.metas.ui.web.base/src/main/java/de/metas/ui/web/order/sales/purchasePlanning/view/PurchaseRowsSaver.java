@@ -177,7 +177,7 @@ class PurchaseRowsSaver
 		// Distribute qtyToPurchase to updatable purchase candidates (FIFO order)
 		while (qtyToPurchaseRemainingOfGroup.signum() > 0 && !candidatesToUpdate.isEmpty())
 		{
-			final PurchaseCandidate candidate = candidatesToUpdate.remove(0);
+			final PurchaseCandidate candidate = candidatesToUpdate.removeFirst();
 
 			final Quantity qtyToPurchaseTarget = getQtyToPurchaseTarget(candidate);
 			final Quantity qtyToPurchase = qtyToPurchaseTarget.min(qtyToPurchaseRemainingOfGroup);
@@ -196,7 +196,7 @@ class PurchaseRowsSaver
 		{
 			while (!candidatesToUpdate.isEmpty())
 			{
-				final PurchaseCandidate candidate = candidatesToUpdate.remove(0);
+				final PurchaseCandidate candidate = candidatesToUpdate.removeFirst();
 				candidate.setQtyToPurchase(candidate.getQtyToPurchase().toZero());
 
 				candidatesChanged.add(candidate);
@@ -206,7 +206,7 @@ class PurchaseRowsSaver
 		// If there is remaining qty to purchase then add it to last changed purchase candidate line
 		else if (!candidatesToUpdate.isEmpty())
 		{
-			final PurchaseCandidate lastCandidate = candidatesToUpdate.get(candidatesToUpdate.size() - 1);
+			final PurchaseCandidate lastCandidate = candidatesToUpdate.getLast();
 			lastCandidate.setQtyToPurchase(lastCandidate.getQtyToPurchase().add(qtyToPurchaseRemainingOfGroup));
 			lastCandidate.setPurchaseDatePromised(purchaseDatePromised);
 
@@ -222,7 +222,7 @@ class PurchaseRowsSaver
 			}
 			else
 			{
-				groupReference = candidatesGroup.getDemandGroupReferences().get(0);
+				groupReference = candidatesGroup.getDemandGroupReferences().getFirst();
 			}
 
 			final PurchaseCandidate newCandidate = PurchaseCandidate

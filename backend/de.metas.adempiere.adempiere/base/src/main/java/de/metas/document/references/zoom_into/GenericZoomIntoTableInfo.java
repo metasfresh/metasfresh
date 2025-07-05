@@ -100,7 +100,7 @@ public class GenericZoomIntoTableInfo
 		}
 		else if (defaultSOWindow != null)
 		{
-			final GenericZoomIntoTableWindow firstOtherWindow = !otherWindows.isEmpty() ? otherWindows.get(0) : null;
+			final GenericZoomIntoTableWindow firstOtherWindow = !otherWindows.isEmpty() ? otherWindows.getFirst() : null;
 			if (firstOtherWindow != null && firstOtherWindow.hasHigherPriorityThen(defaultSOWindow))
 			{
 				this.defaultWindow = firstOtherWindow;
@@ -113,7 +113,7 @@ public class GenericZoomIntoTableInfo
 		}
 		else if (!otherWindows.isEmpty())
 		{
-			this.defaultWindow = otherWindows.remove(0);
+			this.defaultWindow = otherWindows.removeFirst();
 		}
 		else
 		{

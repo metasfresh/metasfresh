@@ -26,6 +26,7 @@ import org.compiere.model.MUOM;
 import org.compiere.util.DB;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -346,7 +347,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (QtyEntered != null && getC_UOM_ID() != 0)
 		{
 			int precision = MUOM.getPrecision(getCtx(), getC_UOM_ID());
-			QtyEntered = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			QtyEntered = QtyEntered.setScale(precision, RoundingMode.HALF_UP);
 		}
 		super.setQtyEntered(QtyEntered);
 	}    // setQtyEntered

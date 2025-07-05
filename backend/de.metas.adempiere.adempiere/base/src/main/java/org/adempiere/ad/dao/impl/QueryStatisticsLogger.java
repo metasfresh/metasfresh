@@ -354,7 +354,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	private static String format(final double duration, final TimeUnit fromUnit, final TimeUnit toUnit)
 	{
 		final double durationConv = convert(duration, fromUnit, toUnit);
-		return String.format("%.4g %s", durationConv, abbreviate(toUnit));
+		return "%.4g %s".formatted(durationConv, abbreviate(toUnit));
 	}
 
 	@Override

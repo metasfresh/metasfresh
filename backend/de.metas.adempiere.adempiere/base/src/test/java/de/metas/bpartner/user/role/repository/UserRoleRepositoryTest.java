@@ -73,7 +73,7 @@ public class UserRoleRepositoryTest
 		assertThat(roles).isNotNull();
 		assertThat(roles.size()).isEqualTo(1);
 
-		final UserRole role = roles.get(0);
+		final UserRole role = roles.getFirst();
 		assertThat(role.getName()).isEqualTo(roleRecord.getName());
 		assertThat(role.isUniquePerBpartner()).isFalse();
 

@@ -133,7 +133,7 @@ class DDOrderMovePlanCreateCommandTest
 
 		final ImmutableList<DDOrderMovePlanLine> lines = plan.getLines();
 		assertThat(lines).hasSize(1);
-		final DDOrderMovePlanLine line = lines.get(0);
+		final DDOrderMovePlanLine line = lines.getFirst();
 		assertThat(line.getQtyToPick()).isEqualTo(Quantity.of(30 + 30 + 999, uomKg));
 
 		final ImmutableList<DDOrderMovePlanStep> steps = line.getSteps();
@@ -146,7 +146,7 @@ class DDOrderMovePlanCreateCommandTest
 				.pickFromLocatorId(wh1_loc1)
 				.dropToLocatorId(wh2_loc1);
 
-		assertThat(steps.get(0))
+		assertThat(steps.getFirst())
 				.usingRecursiveComparison()
 				.isEqualTo(expectedLineBuilder
 						.pickFromHU(handlingUnitsDAO.getById(huId1))

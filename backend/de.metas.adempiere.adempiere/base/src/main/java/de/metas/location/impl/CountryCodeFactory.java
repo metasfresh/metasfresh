@@ -40,7 +40,7 @@ public class CountryCodeFactory implements ICountryCodeFactory
 
 		for (final String countryCodeAlpha2 : Locale.getISOCountries())
 		{
-			final Locale locale = new Locale("", countryCodeAlpha2);
+			final Locale locale = Locale.of("", countryCodeAlpha2);
 			final String countryCodeAlpha3 = locale.getISO3Country();
 			final CountryCode countryCode = CountryCode.builder()
 					.alpha2(countryCodeAlpha2)

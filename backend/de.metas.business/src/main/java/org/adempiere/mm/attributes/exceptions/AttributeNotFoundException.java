@@ -28,6 +28,8 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.i18n.ITranslatableString;
+
+import java.io.Serial;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 
@@ -36,6 +38,7 @@ public class AttributeNotFoundException extends AdempiereException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -7800379395702483714L;
 
 	private final I_M_Attribute attribute;
@@ -46,9 +49,9 @@ public class AttributeNotFoundException extends AdempiereException
 		super(buildMsg(attribute, attributeSetObj));
 
 		this.attribute = attribute;
-		if (attributeSetObj instanceof IAttributeSet)
+		if (attributeSetObj instanceof IAttributeSet set)
 		{
-			attributeSet = (IAttributeSet)attributeSetObj;
+			attributeSet = set;
 		}
 		else
 		{
@@ -60,9 +63,9 @@ public class AttributeNotFoundException extends AdempiereException
 	{
 		super(buildMsg(attributeValueKey, attributeSetObj));
 		attribute = null;
-		if (attributeSetObj instanceof IAttributeSet)
+		if (attributeSetObj instanceof IAttributeSet set)
 		{
-			attributeSet = (IAttributeSet)attributeSetObj;
+			attributeSet = set;
 		}
 		else
 		{

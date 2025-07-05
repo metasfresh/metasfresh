@@ -22,13 +22,12 @@ package de.metas.cache.interceptor;
  * #L%
  */
 
-import java.lang.annotation.Annotation;
-
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.logging.LogManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.logging.LogManager;
+import java.lang.annotation.Annotation;
 
 /**
  * Handles {@link CacheTrx} annotation.
@@ -87,9 +86,9 @@ class CacheTrxParamDescriptor implements ICachedMethodPartDescriptor
 				errorException = ex;
 			}
 		}
-		else if (trxNameObj instanceof String)
+		else if (trxNameObj instanceof String string)
 		{
-			trxName = (String)trxNameObj;
+			trxName = string;
 		}
 		else
 		{

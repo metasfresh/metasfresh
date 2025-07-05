@@ -29,8 +29,11 @@ import org.jdesktop.swingx.table.TableColumnExt;
 
 import javax.swing.table.TableColumn;
 
+import java.io.Serial;
+
 class AnnotatedColumnControlButton extends ColumnControlButton
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String PROPERTY_DisableColumnControl = AnnotatedColumnControlButton.class.getName() + ".DisableColumnControl";

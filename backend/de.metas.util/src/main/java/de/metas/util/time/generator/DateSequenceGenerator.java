@@ -119,7 +119,7 @@ public class DateSequenceGenerator
 		//
 		// NOTE: maybe in future we can make this configurable.
 		// The reason why we have it now here is because we want to support shifters which are shifting dates to next business day, but we want to skip the days in between.
-		if (!result.isEmpty() && result.last().isAfter(dateToExplode))
+		if (!result.isEmpty() && result.getLast().isAfter(dateToExplode))
 		{
 			return;
 		}

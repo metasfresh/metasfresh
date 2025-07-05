@@ -441,7 +441,7 @@ public class C_Order
 
 		final Optional<I_C_Payment> paymentOptional = paymentDAO.getByExternalOrderId(ExternalId.of(order.getExternalId()), OrgId.ofRepoId(order.getAD_Org_ID()));
 
-		if (!paymentOptional.isPresent())
+		if (paymentOptional.isEmpty())
 		{
 			return;
 		}

@@ -90,7 +90,7 @@ public class IdsToFilter
 		}
 		else if (multipleValues.size() == 1)
 		{
-			final Object singleValue = multipleValues.get(0);
+			final Object singleValue = multipleValues.getFirst();
 			return ofSingleValue(singleValue);
 		}
 		else
@@ -173,9 +173,9 @@ public class IdsToFilter
 		{
 			return defaultValue;
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			return ((Number)value).intValue();
+			return number.intValue();
 		}
 		else
 		{

@@ -172,10 +172,9 @@ public class PdfCollator
 
 	public byte[] toByteArray()
 	{
-		if (out instanceof ByteArrayOutputStream)
+		if (out instanceof ByteArrayOutputStream baos)
 		{
 			close();
-			final ByteArrayOutputStream baos = (ByteArrayOutputStream)out;
 			return baos.toByteArray();
 		}
 		else

@@ -22,10 +22,12 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
 
-import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.RuntimeCamelException;
+import org.glassfish.jaxb.core.marshaller.NoEscapeHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -35,8 +37,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -104,8 +104,7 @@ public class XMLUtil
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 			marshaller.setProperty(Marshaller.JAXB_ENCODING, XML_PROPERTY_FILE_ENCODING_VALUE);
 
-			final CharacterEscapeHandler escapeHandler = NoEscapeHandler.INSTANCE;
-			marshaller.setProperty("com.sun.xml.bind.characterEscapeHandler", escapeHandler);
+			marshaller.setProperty("org.glassfish.jaxb.characterEscapeHandler", NoEscapeHandler.theInstance);
 
 			final StringWriter sw = new StringWriter();
 

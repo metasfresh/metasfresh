@@ -22,27 +22,24 @@ package org.compiere.swing.table;
  * #L%
  */
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 
-import java.awt.Color;
+import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
+import java.awt.*;
+import java.io.Serial;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import javax.swing.ListSelectionModel;
-import javax.swing.event.TableModelEvent;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
 
 /**
  * {@link TableModel} implementation which introspects the a model class, checking the {@link ColumnInfo} annotated methods.
@@ -53,6 +50,7 @@ import de.metas.util.Check;
  */
 public class AnnotatedTableModel<ModelType> extends AbstractTableModel
 {
+	@Serial
 	private static final long serialVersionUID = 8820863581724987690L;
 
 	private final TableModelMetaInfo<ModelType> metaInfo;

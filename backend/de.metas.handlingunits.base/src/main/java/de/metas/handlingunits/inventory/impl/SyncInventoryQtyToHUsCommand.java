@@ -344,9 +344,9 @@ public class SyncInventoryQtyToHUsCommand
 	private static HuId extractSingleCreatedHUId(
 			@NonNull final IAllocationDestination huDestination)
 	{
-		if (huDestination instanceof IHUProducerAllocationDestination)
+		if (huDestination instanceof IHUProducerAllocationDestination destination)
 		{
-			final List<I_M_HU> createdHUs = ((IHUProducerAllocationDestination)huDestination).getCreatedHUs();
+			final List<I_M_HU> createdHUs = destination.getCreatedHUs();
 			if (createdHUs.isEmpty())
 			{
 				throw new HUException("No HU was created by " + huDestination);
@@ -357,7 +357,7 @@ public class SyncInventoryQtyToHUsCommand
 			}
 			else
 			{
-				return HuId.ofRepoId(createdHUs.get(0).getM_HU_ID());
+				return HuId.ofRepoId(createdHUs.getFirst().getM_HU_ID());
 			}
 		}
 		else

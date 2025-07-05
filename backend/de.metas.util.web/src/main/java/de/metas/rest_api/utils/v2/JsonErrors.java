@@ -141,17 +141,17 @@ public class JsonErrors
 		{
 			return "<null>";
 		}
-		else if (value instanceof ITranslatableString)
+		else if (value instanceof ITranslatableString string)
 		{
-			return ((ITranslatableString)value).translate(adLanguage);
+			return string.translate(adLanguage);
 		}
-		else if (value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware aware)
 		{
-			return String.valueOf(((RepoIdAware)value).getRepoId());
+			return String.valueOf(aware.getRepoId());
 		}
-		else if (value instanceof ReferenceListAwareEnum)
+		else if (value instanceof ReferenceListAwareEnum enum1)
 		{
-			return ((ReferenceListAwareEnum)value).getCode();
+			return enum1.getCode();
 		}
 		else
 		{

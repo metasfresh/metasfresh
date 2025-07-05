@@ -132,7 +132,10 @@ public class HUPackageBL implements IHUPackageBL
 		if (!huShipperTransportationBL.isEligibleForAddingToShipperTransportation(hu))
 		{
 			Check.errorIf(true, HUException.class,
-					"Internal error: The HU used to search the M_Package is not eligible for shipper transportation." + "\n @M_InOut_ID@: {}", hu);
+					"""
+					Internal error: The HU used to search the M_Package is not eligible for shipper transportation.
+					 @M_InOut_ID@: {}\
+					""", hu);
 		}
 
 		final List<I_M_Package> mpackages = huPackageDAO.retrievePackages(hu, trxName);

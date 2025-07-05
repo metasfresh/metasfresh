@@ -1,16 +1,15 @@
 package de.metas.document.sequence.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.document.sequence.spi.IDocumentNoListener;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -60,7 +59,7 @@ public class DocumentNoBL implements IDocumentNoBL
 		}
 
 		final Optional<IDocumentNoAware> documentNoAware = asDocumentNoAware(model);
-		if (!documentNoAware.isPresent())
+		if (documentNoAware.isEmpty())
 		{
 			return;
 		}

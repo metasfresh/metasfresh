@@ -85,7 +85,7 @@ public class AllocableStorage
 
 		if (qtyToAllocateRemaining.signum() != 0)
 		{
-			final VHUAllocableStorage lastVHUStorage = vhuStorages.get(vhuStorages.size() - 1);
+			final VHUAllocableStorage lastVHUStorage = vhuStorages.getLast();
 			lastVHUStorage.forceAllocate(allocable, qtyToAllocateRemaining);
 		}
 	}

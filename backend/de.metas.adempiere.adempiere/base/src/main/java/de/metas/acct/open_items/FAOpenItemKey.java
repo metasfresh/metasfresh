@@ -127,7 +127,7 @@ public final class FAOpenItemKey
 			final List<String> parts = SPLITTER.splitToList(stringNorm);
 			return builder()
 					.stringRepresentation(stringNorm)
-					.accountConceptualName(!"-".equals(parts.get(0)) ? AccountConceptualName.ofString(parts.get(0)) : null)
+					.accountConceptualName(!"-".equals(parts.getFirst()) ? AccountConceptualName.ofString(parts.getFirst()) : null)
 					.tableName(parts.get(1))
 					.recordId(Math.max(NumberUtils.asInt(parts.get(2)), 0))
 					.lineId(parts.size() >= 4 ? Math.max(NumberUtils.asInt(parts.get(3)), 0) : 0)

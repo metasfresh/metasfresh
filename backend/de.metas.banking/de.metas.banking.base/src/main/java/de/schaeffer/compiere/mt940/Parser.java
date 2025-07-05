@@ -134,27 +134,27 @@ public class Parser {
 			} else if (line.startsWith(":86:")) {
 				List<BankstatementLine> lines = statement.getLines();
 				String[] feld = line.substring(4).split("\\?");
-				lines.get(lines.size()-1).setGeschaeftsvorfallCode(new BigInteger(feld[0]));
+				lines.getLast().setGeschaeftsvorfallCode(new BigInteger(feld[0]));
 				for (int i = 1; i < feld.length; i++) {
 					try {
 						if (feld[i].length() >= 2) {
 							if (Integer.valueOf(feld[i].substring(0, 2)) == 0) {
-								lines.get(lines.size() - 1).setBuchungstext(feld[i].substring(2));
+								lines.getLast().setBuchungstext(feld[i].substring(2));
 							} else if (Integer.valueOf(feld[i].substring(0, 2)) == 10) {
-								lines.get(lines.size() - 1).setPrimanotennummer(feld[i].substring(2));
+								lines.getLast().setPrimanotennummer(feld[i].substring(2));
 							} else if ((Integer.valueOf(feld[i].substring(0, 2)) >= 20 && Integer.valueOf(feld[i].substring(0, 2)) < 30) || (Integer.valueOf(feld[i].substring(0, 2)) >= 60 && Integer.valueOf(feld[i].substring(0, 2)) < 64)) {
-								if (lines.get(lines.size() - 1).getVerwendungszweck() == null) {
-									lines.get(lines.size() - 1).setVerwendungszweck("");
+								if (lines.getLast().getVerwendungszweck() == null) {
+									lines.getLast().setVerwendungszweck("");
 								}
-								lines.get(lines.size() - 1).setVerwendungszweck(lines.get(lines.size() - 1).getVerwendungszweck() + feld[i].substring(2) + " ");
+								lines.getLast().setVerwendungszweck(lines.getLast().getVerwendungszweck() + feld[i].substring(2) + " ");
 							} else if (Integer.valueOf(feld[i].substring(0, 2)) == 30) {
-								lines.get(lines.size() - 1).setPartnerBlz(feld[i].substring(2));
+								lines.getLast().setPartnerBlz(feld[i].substring(2));
 							} else if (Integer.valueOf(feld[i].substring(0, 2)) == 31) {
-								lines.get(lines.size() - 1).setPartnerKtoNr(feld[i].substring(2));
+								lines.getLast().setPartnerKtoNr(feld[i].substring(2));
 							} else if (Integer.valueOf(feld[i].substring(0, 2)) == 32 || Integer.valueOf(feld[i].substring(0, 2)) == 33) {
-								lines.get(lines.size() - 1).setPartnerName(feld[i].substring(2));
+								lines.getLast().setPartnerName(feld[i].substring(2));
 							} else if (Integer.valueOf(feld[i].substring(0, 2)) == 34) {
-								lines.get(lines.size() - 1).setTextschluessel(feld[i].substring(2));
+								lines.getLast().setTextschluessel(feld[i].substring(2));
 							}
 						}
 					} catch (Exception e) {

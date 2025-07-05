@@ -152,7 +152,7 @@ public final class M_HU
 		// Get VHU Storage
 		final List<I_M_HU_Item> vhuItems = handlingUnitsDAO.retrieveItems(vhu).stream().filter(item -> X_M_HU_Item.ITEMTYPE_Material.equals(handlingUnitsBL.getItemType(item))).collect(Collectors.toList());
 		Check.errorUnless(vhuItems.size() == 1, "VHUs shall have exactly 1 material item, but vhu={} has {} item(s): {}", vhu, vhuItems.size(), vhuItems);
-		final I_M_HU_Item vhuItem = vhuItems.get(0);
+		final I_M_HU_Item vhuItem = vhuItems.getFirst();
 		
 		final IHUStorage vhuStorage = huStorageFactory.getStorage(vhu);
 		final List<IHUProductStorage> productStorages = vhuStorage.getProductStorages();

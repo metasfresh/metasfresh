@@ -183,7 +183,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 					.setParameter("Name", name);
 		}
 
-		return schemas.get(0);
+		return schemas.getFirst();
 	}
 
 	@Override

@@ -258,7 +258,7 @@ public class AveragePOCostingMethodHandlerTest
 		}
 		else if (currentCosts.size() == 1)
 		{
-			return currentCosts.get(0);
+			return currentCosts.getFirst();
 		}
 		else
 		{

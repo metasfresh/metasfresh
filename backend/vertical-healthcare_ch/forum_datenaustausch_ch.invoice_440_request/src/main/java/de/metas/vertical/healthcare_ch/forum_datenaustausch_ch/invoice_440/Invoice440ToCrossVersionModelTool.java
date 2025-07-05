@@ -1103,33 +1103,33 @@ public class Invoice440ToCrossVersionModelTool
 	{
 		final XmlService xService;
 
-		if (service instanceof RecordTarmedType)
+		if (service instanceof RecordTarmedType type6)
 		{
-			xService = createXmlRecordTarmed((RecordTarmedType)service);
+			xService = createXmlRecordTarmed(type6);
 		}
-		else if (service instanceof RecordDRGType)
+		else if (service instanceof RecordDRGType type5)
 		{
-			xService = createXmlRecordDrg((RecordDRGType)service);
+			xService = createXmlRecordDrg(type5);
 		}
-		else if (service instanceof RecordLabType)
+		else if (service instanceof RecordLabType type4)
 		{
-			xService = createXmlRecordLab((RecordLabType)service);
+			xService = createXmlRecordLab(type4);
 		}
-		else if (service instanceof RecordMigelType)
+		else if (service instanceof RecordMigelType type3)
 		{
-			xService = createXmlRecordMigel((RecordMigelType)service);
+			xService = createXmlRecordMigel(type3);
 		}
-		else if (service instanceof RecordParamedType)
+		else if (service instanceof RecordParamedType type2)
 		{
-			xService = createXmlRecordParamed((RecordParamedType)service);
+			xService = createXmlRecordParamed(type2);
 		}
-		else if (service instanceof RecordDrugType)
+		else if (service instanceof RecordDrugType type1)
 		{
-			xService = createRecordXmlRecordDrug((RecordDrugType)service);
+			xService = createRecordXmlRecordDrug(type1);
 		}
-		else if (service instanceof RecordOtherType)
+		else if (service instanceof RecordOtherType type)
 		{
-			xService = createRecordXmlRecordOther((RecordOtherType)service);
+			xService = createRecordXmlRecordOther(type);
 		}
 		else
 		{

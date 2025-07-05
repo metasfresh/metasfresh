@@ -26,6 +26,7 @@ package org.compiere.swing.table;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -47,6 +48,7 @@ import de.metas.util.Services;
 
 class AnnotatedTableCellEditor extends AbstractCellEditor implements TableCellEditor
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public AnnotatedTableCellEditor(final TableColumnInfo columnInfo)
@@ -154,9 +156,9 @@ class AnnotatedTableCellEditor extends AbstractCellEditor implements TableCellEd
 		//
 		// Check and convert the value if needed
 		final Object valueModel;
-		if (valueEditor instanceof Number && modelValueClass == KeyNamePair.class)
+		if (valueEditor instanceof Number number && modelValueClass == KeyNamePair.class)
 		{
-			final int key = ((Number)valueEditor).intValue();
+			final int key = number.intValue();
 			final String name = m_editor.getDisplay();
 			valueModel = new KeyNamePair(key, name);
 		}
@@ -194,9 +196,9 @@ class AnnotatedTableCellEditor extends AbstractCellEditor implements TableCellEd
 	private Object convertToEditorValue(final Object valueModel)
 	{
 		final Object valueEditor;
-		if (valueModel instanceof KeyNamePair && editorValueClass == Integer.class)
+		if (valueModel instanceof KeyNamePair pair && editorValueClass == Integer.class)
 		{
-			valueEditor = ((KeyNamePair)valueModel).getKey();
+			valueEditor = pair.getKey();
 		}
 		else
 		{

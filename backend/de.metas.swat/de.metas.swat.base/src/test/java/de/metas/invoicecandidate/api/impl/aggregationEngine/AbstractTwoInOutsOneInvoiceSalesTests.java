@@ -57,12 +57,12 @@ public abstract class AbstractTwoInOutsOneInvoiceSalesTests extends AbstractTwoI
 		// config-guard
 		assertThat(config_IsSOTrx(), is(true));
 
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		//
 		// Assume that the invoice is OK
 		{
-			final IInvoiceHeader invoice1 = invoices.remove(0);
+			final IInvoiceHeader invoice1 = invoices.removeFirst();
 			assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
 			validateInvoiceHeader("Invoice", invoice1, ic);
 

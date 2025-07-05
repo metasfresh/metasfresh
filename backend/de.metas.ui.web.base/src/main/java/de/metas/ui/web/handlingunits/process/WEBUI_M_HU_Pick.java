@@ -91,7 +91,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		if (!WEBUI_PP_Order_ProcessHelper.isEligibleHU(firstRows.get(0)))
+		if (!WEBUI_PP_Order_ProcessHelper.isEligibleHU(firstRows.getFirst()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible HU rows found");
 		}
@@ -107,9 +107,8 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not needed in HUsToPick view");
 		}
-		else if (view instanceof PPOrderLinesView)
+		else if (view instanceof PPOrderLinesView ppOrderView)
 		{
-			final PPOrderLinesView ppOrderView = (PPOrderLinesView)view;
 			return ppOrderView.getDocBaseType().isManufacturingOrder()
 					? ProcessPreconditionsResolution.accept()
 					: ProcessPreconditionsResolution.rejectWithInternalReason("not needed for PPOrderLinesView view");

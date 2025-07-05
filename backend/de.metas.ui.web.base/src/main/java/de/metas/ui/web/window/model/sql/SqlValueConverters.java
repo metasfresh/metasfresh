@@ -106,9 +106,9 @@ public final class SqlValueConverters
 			{
 				return value;
 			}
-			else if (value instanceof Integer)
+			else if (value instanceof Integer integer)
 			{
-				return BigDecimal.valueOf((int)value);
+				return BigDecimal.valueOf(integer);
 			}
 			else
 			{

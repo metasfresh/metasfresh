@@ -79,7 +79,7 @@ public class HUEmptiesService implements IHUEmptiesService
 					+ "\n @DD_NetworkDistribution_ID@: " + emptiesDistributionNetwork.getName());
 		}
 
-		return lines.get(0).getTargetWarehouseId();
+		return lines.getFirst().getTargetWarehouseId();
 	}
 
 	@Override

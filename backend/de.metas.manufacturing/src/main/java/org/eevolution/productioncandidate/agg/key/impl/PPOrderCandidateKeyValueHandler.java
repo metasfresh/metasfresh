@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.agg.key.impl;
 
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
@@ -30,7 +31,6 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 

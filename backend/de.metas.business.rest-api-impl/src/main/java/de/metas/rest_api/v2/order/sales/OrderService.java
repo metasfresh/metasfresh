@@ -105,8 +105,7 @@ public class OrderService
 		}
 
 		final BankAccountId targetBankAccount = paymentService.determineInboundBankAccountId(orgId, currencyId, request.getTargetIBAN())
-				.orElseThrow(() -> new AdempiereException(String.format(
-						"Cannot find Bank Account for org-id: %s, currency: %s and iban: %s", orgId, currencyId, request.getTargetIBAN())));
+				.orElseThrow(() -> new AdempiereException("Cannot find Bank Account for org-id: %s, currency: %s and iban: %s".formatted(orgId, currencyId, request.getTargetIBAN())));
 
 		final ExternalIdentifier bPartnerExternalIdentifier = ExternalIdentifier.of(request.getBpartnerIdentifier());
 		final BPartnerId bPartnerId = jsonRetrieverService.resolveBPartnerExternalIdentifier(bPartnerExternalIdentifier, orgId)
@@ -134,11 +133,11 @@ public class OrderService
 			final Optional<OrderId> orderId = resolveOrderId(orderIdentifier, orgId);
 			orderId.ifPresent(paymentBuilder::orderId);
 
-			if (!orderId.isPresent() && IdentifierString.Type.EXTERNAL_ID.equals(orderIdentifier.getType()))
+			if (orderId.isEmpty() && IdentifierString.Type.EXTERNAL_ID.equals(orderIdentifier.getType()))
 			{
 				paymentBuilder.orderExternalId(orderIdentifier.asExternalId().getValue());
 			}
-			else if (!orderId.isPresent())
+			else if (orderId.isEmpty())
 			{
 				throw MissingResourceException.builder()
 						.resourceName("I_C_Order")

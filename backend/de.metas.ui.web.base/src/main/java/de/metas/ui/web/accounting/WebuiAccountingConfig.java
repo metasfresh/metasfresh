@@ -1,16 +1,5 @@
 package de.metas.ui.web.accounting;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.PostConstruct;
-
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -20,6 +9,15 @@ import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.accounting.process.WEBUI_Fact_Acct_Repost_SingleDocument;
 import de.metas.ui.web.accounting.process.WEBUI_Fact_Acct_Repost_ViewRows;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
