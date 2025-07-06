@@ -250,7 +250,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Gets HU Item Type.
 	 * <p>
-	 * <b>Important:</b> HU items that were created prior to https://github.com/metasfresh/metasfresh/issues/460 might have an empty
+	 * <b>Important:</b> HU items that were created prior to <a href="https://github.com/metasfresh/metasfresh/issues/460">#460</a> might have an empty
 	 * {@link I_M_HU_Item#COLUMN_ItemType}. So unless you know what you do, please use this method rather than {@link I_M_HU_Item#getItemType()}, because otherwise you might stumble over an old/pre-existing item and get wrong results.
 	 *
 	 * @see I_M_HU_PI_Item#getItemType()
@@ -573,16 +573,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	{
 		final int locatorRepoId = hu.getM_Locator_ID();
 		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
-	}
-
-	static I_M_Locator extractLocator(final I_M_HU hu)
-	{
-		final I_M_Locator locator = extractLocatorOrNull(hu);
-		if (locator == null)
-		{
-			throw new HUException("Warehouse Locator shall be set for: " + hu);
-		}
-		return locator;
 	}
 
 	@Nullable
