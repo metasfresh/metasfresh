@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { test } from '../../../../playwright.config';
 import { HUConsolidationJobScreen } from './HUConsolidationJobScreen';
 import { expect } from '@playwright/test';
@@ -37,7 +37,11 @@ export const PickingSlotScreen = {
     }),
 
     clickConsolidateHUButton: async ({ huId }) => await test.step(`${NAME} - Click Consolidate huId=${huId} button`, async () => {
-        await page.getByTestId(`consolidate-${huId}-button`).tap();
+        if (!huId) throw Error("huId not provided");
+        
+        const button = page.getByTestId(`consolidate-${huId}-button`);
+        await button.waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT })
+        await button.tap();
         await PickingSlotScreen.waitNotLoading();
     }),
 };

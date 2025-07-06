@@ -155,6 +155,7 @@ test('Simple HU consolidate HUs one by one test', async ({ page }) => {
     await ApplicationsListScreen.expectVisible();
 
     const { context } = await pickHUsToPickingSlot({ masterdata });
+    console.log('Context: ' + JSON.stringify(context, null, 2));
 
     await test.step("HU Consolidate & Ship", async () => {
         await ApplicationsListScreen.expectVisible();

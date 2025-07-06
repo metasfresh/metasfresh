@@ -1,8 +1,5 @@
-import { test } from "../../../playwright.config";
+import { test, testContext } from "../../../playwright.config";
 import { FRONTEND_BASE_URL, page } from "../common";
-
-let lastMasterdata = null;
-let lastContext = null;
 
 export const Backend = {
     createMasterdata: async ({
@@ -27,7 +24,7 @@ export const Backend = {
 
         console.log(`Created master data (${language}):\n` + JSON.stringify(responseBody, null, 2));
 
-        lastMasterdata = responseBody;
+        testContext.lastMasterdata = responseBody;
 
         return responseBody;
     }),
@@ -37,8 +34,8 @@ export const Backend = {
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting/expect`, {
             data: {
                 ...expectations,
-                masterdata: lastMasterdata,
-                context: lastContext,
+                masterdata: testContext.lastMasterdata,
+                context: testContext.lastExpectContext,
             },
             headers: {
                 'Content-Type': 'application/json',
@@ -47,12 +44,15 @@ export const Backend = {
 
         const responseBody = await response.json();
         if (responseBody?.context != null) {
-            lastContext = responseBody.context;
+            testContext.lastExpectContext = responseBody.context;
         }
 
         assertNoErrors({ responseBody });
 
-        return responseBody;
+        return {
+            ...responseBody,
+            context: stripTypePrefix(responseBody.context)
+        };
     }),
 
     getWFProcess: async ({ wfProcessId }) => {
@@ -119,3 +119,13 @@ const getAuthToken = () => {
     }
     return token;
 }
+
+const stripTypePrefix = (context) => {
+    if (!context) return {};
+    const result = {};
+    for (const key in context) {
+        const [, identifier] = key.split(':');
+        result[identifier] = context[key];
+    }
+    return result;
+};
