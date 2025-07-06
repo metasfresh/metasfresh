@@ -46,6 +46,12 @@ public class CustomHUQRCode implements IHUQRCode
 	}
 
 	@Override
+	public Optional<LocalDate> getProductionDate()
+	{
+		return Optional.ofNullable(parsedScannedCode.getProductionDate());
+	}
+
+	@Override
 	public Optional<String> getLotNumber()
 	{
 		return Optional.ofNullable(parsedScannedCode.getLotNo());

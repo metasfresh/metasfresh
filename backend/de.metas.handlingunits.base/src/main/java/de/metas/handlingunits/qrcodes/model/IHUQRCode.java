@@ -39,5 +39,7 @@ public interface IHUQRCode
 
 	Optional<LocalDate> getBestBeforeDate();
 
+	default Optional<LocalDate> getProductionDate() {return Optional.empty();}
+
 	Optional<String> getLotNumber();
 }

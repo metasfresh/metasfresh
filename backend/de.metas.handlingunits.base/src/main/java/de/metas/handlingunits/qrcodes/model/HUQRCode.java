@@ -161,6 +161,12 @@ public class HUQRCode implements IHUQRCode
 	}
 
 	@Override
+	public Optional<LocalDate> getProductionDate()
+	{
+		return getAttribute(AttributeConstants.ProductionDate).map(HUQRCodeAttribute::getValueAsLocalDate);
+	}
+
+	@Override
 	public Optional<String> getLotNumber()
 	{
 		return getAttribute(AttributeConstants.ATTR_LotNumber).map(HUQRCodeAttribute::getValue);

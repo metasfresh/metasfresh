@@ -206,7 +206,6 @@ test('Pick using custom QR code', async ({ page }) => {
             }
         });
 
-
-                await PickingJobScreen.complete();
+        await PickingJobScreen.complete();
     });
 });

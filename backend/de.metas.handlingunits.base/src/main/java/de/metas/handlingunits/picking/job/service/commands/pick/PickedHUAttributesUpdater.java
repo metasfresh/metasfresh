@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job.service.commands.pick;
 
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
-import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
@@ -12,6 +11,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
@@ -23,46 +23,47 @@ class PickedHUAttributesUpdater
 {
 	@NonNull private final IUOMConversionBL uomConversionBL;
 
-	public void updateWeight(
-			@NonNull final TUsList tuList,
-			@NonNull final ProductId productId,
-			@NonNull final Quantity catchWeight)
+	public void updateHUs(
+			@NonNull final LUTUResult result,
+			@NonNull final PickAttributes pickAttributes,
+			@NonNull final ProductId productId)
 	{
+		updateCatchWeight(result, pickAttributes, productId);
+		updatePickAttributes(result, pickAttributes);
+	}
+
+	private void updateCatchWeight(@NonNull final LUTUResult result, @NonNull final PickAttributes pickAttributes, @NonNull final ProductId productId)
+	{
+		final Quantity catchWeight = pickAttributes.getCatchWeight();
+		if (catchWeight == null) {return;}
+
 		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL, HUContextHolder.getCurrent(), productId, catchWeight);
-		weightUpdater.updatePackToHUs(tuList.toHURecords());
+		weightUpdater.updatePackToHUs(result.getAllTURecords());
 	}
 
-	public void updatePickAttributes(@NonNull final LUTUResult result, @NonNull final PickAttributes pickAttributes)
+	private void updatePickAttributes(@NonNull final LUTUResult result, final @NonNull PickAttributes pickAttributes)
 	{
-		if (!pickAttributes.hasAttributesToSetExcludingWeight())
-		{
-			return;
-		}
-
-		result.getLus().forEach(lu -> updatePickAttributes(lu, pickAttributes));
-		result.getTopLevelTUs().forEach(tu -> updatePickAttributes(tu, pickAttributes));
+		result.getLus().forEach(lu -> updateLUPickAttributes(lu, pickAttributes));
+		result.getTopLevelTUs().forEach(tu -> updateTUPickAttributes(tu, pickAttributes));
 	}
 
-	private void updatePickAttributes(@NonNull final LUTUResult.LU lu, @NonNull PickAttributes pickAttributes)
+	private void updateLUPickAttributes(@NonNull final LUTUResult.LU lu, @NonNull PickAttributes pickAttributes)
 	{
-		lu.getTus().forEach(tu -> updatePickAttributes(tu, pickAttributes));
+		lu.getTus().forEach(tu -> updateTUPickAttributes(tu, pickAttributes));
 
-		updatePickAttributes(lu.toHU(), pickAttributes, lu.isPreExistingLU());
+		updateHUPickAttributes(lu.toHU(), pickAttributes, lu.isPreExistingLU());
 	}
 
-	public void updatePickAttributes(@NonNull final LUTUResult.TU tu, @NonNull final PickAttributes pickAttributes)
+	private void updateTUPickAttributes(@NonNull final LUTUResult.TU tu, @NonNull final PickAttributes pickAttributes)
 	{
-		if (!pickAttributes.hasAttributesToSetExcludingWeight())
-		{
-			return;
-		}
-
-		updatePickAttributes(tu.toHU(), pickAttributes, false);
+		updateHUPickAttributes(tu.toHU(), pickAttributes, false);
 	}
 
-	private void updatePickAttributes(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes, final boolean updateFromChildren)
+	private void updateHUPickAttributes(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes, final boolean recomputeFromChildren)
 	{
-		if (!pickAttributes.hasAttributesToSetExcludingWeight())
+		if (!pickAttributes.isSetBestBeforeDate()
+				&& !pickAttributes.isSetProductionDate()
+				&& !pickAttributes.isSetLotNo())
 		{
 			return;
 		}
@@ -72,18 +73,29 @@ class PickedHUAttributesUpdater
 
 		if (pickAttributes.isSetBestBeforeDate())
 		{
-			if (updateFromChildren)
+			if (recomputeFromChildren)
 			{
-				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeBestBeforeDateFromChildren(huAttributes));
+				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
 			}
 			else
 			{
 				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, pickAttributes.getBestBeforeDate());
 			}
 		}
+		if (pickAttributes.isSetProductionDate())
+		{
+			if (recomputeFromChildren)
+			{
+				huAttributes.setValueNoPropagate(AttributeConstants.ProductionDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ProductionDate));
+			}
+			else
+			{
+				huAttributes.setValue(AttributeConstants.ProductionDate, pickAttributes.getProductionDate());
+			}
+		}
 		if (pickAttributes.isSetLotNo())
 		{
-			if (updateFromChildren)
+			if (recomputeFromChildren)
 			{
 				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
 			}
@@ -95,14 +107,14 @@ class PickedHUAttributesUpdater
 	}
 
 	@Nullable
-	private static LocalDate computeBestBeforeDateFromChildren(final IAttributeStorage huAttributes)
+	private static LocalDate computeDateValueFromChildren(@NonNull final IAttributeStorage huAttributes, @NonNull final AttributeCode attributeCode)
 	{
 		final HashSet<LocalDate> childValues = new HashSet<>();
 		for (final IAttributeStorage childAttributes : huAttributes.getChildAttributeStorages(true))
 		{
-			if (childAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+			if (childAttributes.hasAttribute(attributeCode))
 			{
-				childValues.add(childAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate));
+				childValues.add(childAttributes.getValueAsLocalDate(attributeCode));
 			}
 		}
 

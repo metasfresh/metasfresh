@@ -72,7 +72,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
@@ -279,7 +278,9 @@ public class PickingJobPickCommand
 		}
 
 		this._manualPickAttributes = PickAttributes.builder()
-				.catchWeightBD(catchWeightBD)
+				.catchWeight(catchWeightBD != null && line.getCatchUomId() != null
+						? Quantitys.of(catchWeightBD, line.getCatchUomId())
+						: null)
 				.isSetBestBeforeDate(isSetBestBeforeDate).bestBeforeDate(bestBeforeDate)
 				.isSetLotNo(isSetLotNo).lotNo(lotNo)
 				.build();
@@ -543,19 +544,7 @@ public class PickingJobPickCommand
 	@Nullable
 	private Quantity getCatchWeight()
 	{
-		final BigDecimal catchWeightBD = getPickAttributes().getCatchWeightBD();
-		if (catchWeightBD == null)
-		{
-			return null;
-		}
-
-		final UomId catchWeightUOMId = getLine().getCatchUomId();
-		if (catchWeightUOMId == null)
-		{
-			return null;
-		}
-
-		return Quantitys.of(catchWeightBD, catchWeightUOMId);
+		return getPickAttributes().getCatchWeight();
 	}
 
 	@NonNull
@@ -576,10 +565,10 @@ public class PickingJobPickCommand
 		if (pickFromHUQRCode != null)
 		{
 			isCatchWeightRequired = pickFromHUQRCode.isWeightRequired();
-			pickAttributes = pickAttributes.fallbackTo(PickAttributes.ofHUQRCode(pickFromHUQRCode));
+			pickAttributes = pickAttributes.fallbackTo(PickAttributes.ofHUQRCode(pickFromHUQRCode, getLine().getCatchUomId()));
 		}
 
-		if (isCatchWeightRequired && pickAttributes.getCatchWeightBD() == null)
+		if (isCatchWeightRequired && pickAttributes.getCatchWeight() == null)
 		{
 			throw new AdempiereException(ERR_LMQ_ManualCatchWeightMustBePresent)
 					.appendParametersToMessage()
@@ -708,6 +697,7 @@ public class PickingJobPickCommand
 
 		updatePickingTarget(packedHUs);
 		addToPickingSlotQueue(packedHUs);
+		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId);
 
 		if (packedHUs.isEmpty())
 		{
@@ -715,10 +705,7 @@ public class PickingJobPickCommand
 		}
 		else if (packedHUs.getQtyTUs().isOne())
 		{
-			updateHUWeightFromCatchWeight(packedHUs.getAllTUs(), productId);
 			final TU tu = packedHUs.getSingleTU();
-			pickedHUAttributesUpdater.updatePickAttributes(tu, getPickAttributes());
-
 			final Quantity qtyPicked = isPickWholeTU ? getStorageQty(tu, productId) : qtyToPickCUs;
 			addShipmentScheduleQtyPicked(tu, qtyPicked);
 
@@ -726,15 +713,11 @@ public class PickingJobPickCommand
 		}
 		else
 		{
-			updateHUWeightFromCatchWeight(packedHUs.getAllTUs(), productId);
-			pickedHUAttributesUpdater.updatePickAttributes(packedHUs, getPickAttributes());
-
 			final IHUStorageFactory huStorageFactory = HUContextHolder.getCurrent().getHUStorageFactory();
 			final I_C_UOM uom = qtyToPickCUs.getUOM();
 			final ImmutableList.Builder<PickingJobStepPickedToHU> result = ImmutableList.builder();
 			for (final TU tu : packedHUs.getAllTUs())
 			{
-
 				final Quantity qtyPicked = huStorageFactory.getStorage(tu.toHU()).getQuantity(productId, uom);
 				addShipmentScheduleQtyPicked(tu, qtyPicked);
 
@@ -743,17 +726,6 @@ public class PickingJobPickCommand
 
 			return result.build();
 		}
-	}
-
-	private void updateHUWeightFromCatchWeight(final TUsList tuList, final ProductId productId)
-	{
-		final Quantity catchWeight = getCatchWeight();
-		if (catchWeight == null)
-		{
-			return;
-		}
-
-		pickedHUAttributesUpdater.updateWeight(tuList, productId, catchWeight);
 	}
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)

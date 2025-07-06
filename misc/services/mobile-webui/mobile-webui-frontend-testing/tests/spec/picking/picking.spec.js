@@ -98,6 +98,10 @@ test('Simple picking test', async ({ page }) => {
             }
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU is not yet closed
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+        }
     });
 
     await PickingJobScreen.complete();
@@ -112,6 +116,9 @@ test('Simple picking test', async ({ page }) => {
             }
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU everything is shipped now
+        hus: {
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+        }
     });
 
 });
@@ -142,6 +149,11 @@ test('Pick - unpick', async ({ page }) => {
                         }
                     }
                 }
+            },
+            pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because the current LU target is not closed
+            hus: {
+                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
+                lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
             }
         });
     });
@@ -173,9 +185,14 @@ test('Pick - unpick', async ({ page }) => {
                         ]
                     }
                 }
-            }
+            },
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because nothing was actually picked
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
+            lu1: { huStatus: 'D', storages: { P1: '0 PCE' } },
+            // TODO find a way to test those 3 new TUs created when unpicking the LU
+        }
     });
 });
 
@@ -296,8 +313,27 @@ test('Ship on close LU', async ({ page }) => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
         await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhuId: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        }
+                    }
+                },
+            },
+            pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because the current target LU is not yet closed
+            hus: {
+                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
+                lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            }
+        });
+
         await PickingJobScreen.closeTargetLU();
     });
+
+    await PickingJobScreen.complete();
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
@@ -308,8 +344,9 @@ test('Ship on close LU', async ({ page }) => {
                 }
             },
         },
-        pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU was shipped
+        pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU was shipped after LU target was closed
+        hus: {
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+        }
     });
-
-    await PickingJobScreen.complete();
 });
