@@ -17,4 +17,7 @@ public class JsonCreateHURequest
 	@Nullable Identifier warehouse;
 	@Nullable BigDecimal qty;
 	@Nullable Identifier packingInstructions;
+	@Nullable BigDecimal weightNet;
+	@Nullable String lotNo;
+	@Nullable String bestBeforeDate;
 }

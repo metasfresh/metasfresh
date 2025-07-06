@@ -12,6 +12,9 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -31,12 +34,14 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class CreateHUCommand
 {
@@ -76,6 +81,7 @@ public class CreateHUCommand
 
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
+		updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
 		final HUQRCode huQRCode = huQRCodesService.getQRCodeByHuId(huId);
@@ -224,6 +230,38 @@ public class CreateHUCommand
 
 		final I_M_HU newLU = producer.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("No LU was created"));
 		return HuId.ofRepoId(newLU.getM_HU_ID());
+	}
+
+	private void updateAttributes(final HuId huId)
+	{
+		final BigDecimal weightNet = request.getWeightNet();
+		@Nullable final String lotNo = request.getLotNo();
+		final LocalDate bestBeforeDate = request.getBestBeforeDate() != null
+				? LocalDate.parse(request.getBestBeforeDate())
+				: null;
+		if (weightNet == null && lotNo == null && bestBeforeDate == null)
+		{
+			return;
+		}
+
+		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(huId);
+		huAttributes.setSaveOnChange(true);
+
+		if (weightNet != null)
+		{
+			final IWeightable weightable = Weightables.wrap(huAttributes);
+			weightable.setWeightNet(weightNet);
+		}
+
+		if (lotNo != null)
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNo);
+		}
+
+		if (bestBeforeDate != null)
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+		}
 	}
 
 }
