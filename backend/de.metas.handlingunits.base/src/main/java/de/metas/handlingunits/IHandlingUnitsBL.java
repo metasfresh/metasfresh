@@ -286,6 +286,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull I_M_HU hu);
 
+	IAttributeStorage getAttributeStorage(HuId huId);
+
 	IAttributeStorage getAttributeStorage(I_M_HU hu);
 
 	ImmutableAttributeSet getImmutableAttributeSet(@NonNull I_M_HU hu);

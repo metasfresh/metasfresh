@@ -1247,7 +1247,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public IAttributeStorage getAttributeStorage(final I_M_HU hu)
+	public IAttributeStorage getAttributeStorage(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = getById(huId);
+		return getAttributeStorage(hu);
+	}
+
+	@Override
+	public IAttributeStorage getAttributeStorage(@NonNull final I_M_HU hu)
 	{
 		return newHUAttributeStorageFactory().getAttributeStorage(hu);
 	}
