@@ -917,10 +917,10 @@ public class PickingJobPickCommand
 		for (int i = 0; i < tu.getQtyTU().toInt(); i++)
 		{
 			result.add(pickedHUTemplate
-							   .actualPickedHU(HUInfo.builder().id(tu.getId()).qrCode(huQRCodes.get(i)).build())
-							   .qtyPicked(qtyPickedPerTU.get(i))
+					.actualPickedHU(HUInfo.builder().id(tu.getId()).qrCode(huQRCodes.get(i)).build())
+					.qtyPicked(qtyPickedPerTU.get(i))
 					.createdAt(SystemTime.asInstant())
-							   .build());
+					.build());
 		}
 
 		return result.build();
@@ -1225,11 +1225,11 @@ public class PickingJobPickCommand
 	private void addToPickingSlotQueue(final LUTUResult packedHUs)
 	{
 		final PickingSlotId pickingSlotId = getPickingSlotId().orElse(null);
-		if(pickingSlotId == null)
+		if (pickingSlotId == null)
 		{
 			return;
 		}
-		
+
 		final CurrentPickingTarget currentPickingTarget = getPickingJob().getCurrentPickingTarget();
 		final LinkedHashSet<HuId> huIdsToAdd = new LinkedHashSet<>();
 
@@ -1265,12 +1265,11 @@ public class PickingJobPickCommand
 			pickingSlotService.addToPickingSlotQueue(pickingSlotId, huIdsToAdd);
 		}
 	}
-	
+
 	private Optional<PickingSlotId> getPickingSlotId()
 	{
 		return getPickingJob().getPickingSlotIdEffective(getLineId());
 	}
-
 
 	//
 	//
