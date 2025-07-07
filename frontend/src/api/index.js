@@ -32,7 +32,6 @@ import {
   getViewAttributeDropdown,
   getViewAttributeTypeahead,
 } from './view';
-import { getResetPasswordInfo, resetPasswordComplete } from './login';
 import {
   breadcrumbRequest,
   getNotificationsRequest,
@@ -61,7 +60,6 @@ export {
   getLayout,
   getNotificationsRequest,
   getNotificationsEndpointRequest,
-  getResetPasswordInfo,
   getRowsData,
   getTabLayoutRequest,
   getTabRequest,
@@ -83,6 +81,5 @@ export {
   queryPathsRequest,
   quickActionsRequest,
   rootRequest,
-  resetPasswordComplete,
   topActionsRequest,
 };
