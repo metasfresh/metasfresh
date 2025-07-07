@@ -15,7 +15,7 @@ CREATE OR REPLACE FUNCTION getInvoicePaymentAllocations_Report(
                 Bill_BPartner_Name     varchar,
                 GrandTotal             numeric,
                 InvoiceCurrency        varchar,
-                paymentrule            char,
+                paymentrule            varchar,
                 PaymentDate            timestamp with time zone,
                 PaymentDocumentNo      varchar,
                 Payment_BPartner_Value varchar,

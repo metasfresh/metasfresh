@@ -169,7 +169,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public boolean isMatured() 
+	public boolean isMatured()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMatured);
 	}
@@ -286,7 +286,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public BigDecimal getMaxManufacturedQtyPerOrderDispo() 
+	public BigDecimal getMaxManufacturedQtyPerOrderDispo()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxManufacturedQtyPerOrderDispo);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -295,14 +295,14 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	@Override
 	public void setMaxManufacturedQtyPerOrderDispo_UOM_ID (final int MaxManufacturedQtyPerOrderDispo_UOM_ID)
 	{
-		if (MaxManufacturedQtyPerOrderDispo_UOM_ID < 1) 
+		if (MaxManufacturedQtyPerOrderDispo_UOM_ID < 1)
 			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID, MaxManufacturedQtyPerOrderDispo_UOM_ID);
 	}
 
 	@Override
-	public int getMaxManufacturedQtyPerOrderDispo_UOM_ID() 
+	public int getMaxManufacturedQtyPerOrderDispo_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_MaxManufacturedQtyPerOrderDispo_UOM_ID);
 	}
@@ -322,14 +322,14 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	@Override
 	public void setM_Maturing_Configuration_ID (final int M_Maturing_Configuration_ID)
 	{
-		if (M_Maturing_Configuration_ID < 1) 
+		if (M_Maturing_Configuration_ID < 1)
 			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Maturing_Configuration_ID, M_Maturing_Configuration_ID);
 	}
 
 	@Override
-	public int getM_Maturing_Configuration_ID() 
+	public int getM_Maturing_Configuration_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_ID);
 	}
@@ -349,14 +349,14 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	@Override
 	public void setM_Maturing_Configuration_Line_ID (final int M_Maturing_Configuration_Line_ID)
 	{
-		if (M_Maturing_Configuration_Line_ID < 1) 
+		if (M_Maturing_Configuration_Line_ID < 1)
 			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Maturing_Configuration_Line_ID, M_Maturing_Configuration_Line_ID);
 	}
 
 	@Override
-	public int getM_Maturing_Configuration_Line_ID() 
+	public int getM_Maturing_Configuration_Line_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Maturing_Configuration_Line_ID);
 	}
@@ -485,13 +485,26 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
+	public void setQtyProcessed_OnDate (final @Nullable BigDecimal QtyProcessed_OnDate)
+	{
+		set_Value (COLUMNNAME_QtyProcessed_OnDate, QtyProcessed_OnDate);
+	}
+
+	@Override
+	public BigDecimal getQtyProcessed_OnDate()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setSeqNo (final int SeqNo)
 	{
 		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
 	@Override
-	public int getSeqNo() 
+	public int getSeqNo()
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}

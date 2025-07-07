@@ -105,6 +105,7 @@ import java.math.BigDecimal;
 			product.setPackageSize(from.getPackageSize());
 		}
 		product.setIsSold(from.isSold());
+		product.setIsPurchased(from.isPurchased());
 		product.setIsStocked(from.isStocked());
 		if (from.getUPC() != null)
 		{
@@ -131,6 +132,10 @@ import java.math.BigDecimal;
 		if (from.getWeight() != null)
 		{
 			product.setGrossWeight(from.getWeight());
+		}
+		if (UomId.ofRepoIdOrNull(from.getWeight_UOM_ID()) != null)
+		{
+			product.setGrossWeight_UOM_ID(from.getWeight_UOM_ID());
 		}
 		if (from.getNetWeight() != null)
 		{
@@ -199,9 +204,11 @@ import java.math.BigDecimal;
 		product.setImageURL(importRecord.getImageURL());
 		product.setDescriptionURL(importRecord.getDescriptionURL());
 		product.setIsSold(importRecord.isSold());
+		product.setIsPurchased(importRecord.isPurchased());
 		product.setIsStocked(importRecord.isStocked());
 		product.setWeight(importRecord.getNetWeight());
 		product.setGrossWeight(importRecord.getWeight());
+		product.setGrossWeight_UOM_ID(importRecord.getWeight_UOM_ID());
 		product.setM_CustomsTariff_ID(importRecord.getM_CustomsTariff_ID());
 		product.setRawMaterialOrigin_ID(importRecord.getRawMaterialOrigin_ID());
 		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
