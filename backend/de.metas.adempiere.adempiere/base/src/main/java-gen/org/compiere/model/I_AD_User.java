@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_User
  *  @author metasfresh (generated) 
@@ -340,6 +339,28 @@ public interface I_AD_User
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set CC User.
+	 * Select a user that will receive emails as CC  if the current user receives a mail. This is only applied to emails and not notifications.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCC_User_ID (int CC_User_ID);
+
+	/**
+	 * Get CC User.
+	 * Select a user that will receive emails as CC  if the current user receives a mail. This is only applied to emails and not notifications.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCC_User_ID();
+
+	String COLUMNNAME_CC_User_ID = "CC_User_ID";
+
+	/**
 	 * Set Default Flatrate Conditions.
 	 *
 	 * <br>Type: Search
@@ -359,26 +380,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_C_Flatrate_Conditions_Default_ID = new ModelColumn<>(I_AD_User.class, "C_Flatrate_Conditions_Default_ID", null);
 	String COLUMNNAME_C_Flatrate_Conditions_Default_ID = "C_Flatrate_Conditions_Default_ID";
-
-	/**
-	 * Set CC User.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCC_User_ID (int CC_User_ID);
-
-	/**
-	 * Get CC User.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getCC_User_ID();
-
-	String COLUMNNAME_CC_User_ID = "CC_User_ID";
 
 	/**
 	 * Set Greeting (ID).
@@ -1144,7 +1145,7 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean IsDunningDefault();
+	boolean isDunningDefault();
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsDunningDefault = new ModelColumn<>(I_AD_User.class, "IsDunningDefault", null);
 	String COLUMNNAME_IsDunningDefault = "IsDunningDefault";
@@ -1850,6 +1851,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Registry = new ModelColumn<>(I_AD_User.class, "Registry", null);
 	String COLUMNNAME_Registry = "Registry";
+
+	/**
+	 * Set 2FA Secret Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSecretKey_2FA (@Nullable java.lang.String SecretKey_2FA);
+
+	/**
+	 * Get 2FA Secret Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSecretKey_2FA();
+
+	ModelColumn<I_AD_User, Object> COLUMN_SecretKey_2FA = new ModelColumn<>(I_AD_User.class, "SecretKey_2FA", null);
+	String COLUMNNAME_SecretKey_2FA = "SecretKey_2FA";
 
 	/**
 	 * Set SeqNo.

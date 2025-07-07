@@ -3,8 +3,9 @@ import { Client } from '@stomp/stompjs';
 import { connectionError } from '../actions/AppActions';
 import { BAD_GATEWAY_ERROR, NO_CONNECTION_ERROR } from '../constants/Constants';
 import store from '../store/store';
-import { getUserSession } from '../api';
 import _ from 'lodash';
+import { getUserSession } from '../api/userSession';
+
 function socketFactory() {
   return new SockJS(config.WS_URL);
 }

@@ -1,14 +1,36 @@
+/*
+ * #%L
+ * me04
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 import React, { Component } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 import {
-  resetPasswordRequest,
+  getPasswordResetAvatarUrl,
   getResetPasswordInfo,
   resetPasswordComplete,
-  resetPasswordGetAvatar,
-} from '../../api';
+  resetPasswordRequest,
+} from '../../api/login';
 import history from '../../services/History';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
@@ -27,7 +49,7 @@ class PasswordRecovery extends Component {
 
   componentDidMount() {
     const { token } = this.props;
-    const resetPassword = token ? true : false;
+    const resetPassword = !!token;
 
     if (resetPassword) {
       this.getUserData().catch(({ data }) => {
@@ -40,12 +62,6 @@ class PasswordRecovery extends Component {
 
     this.focusField.focus();
   }
-
-  getAvatar = () => {
-    const { token } = this.props;
-
-    return resetPasswordGetAvatar(token);
-  };
 
   getUserData = () => {
     const { token } = this.props;
@@ -83,7 +99,7 @@ class PasswordRecovery extends Component {
 
     const { token, onResetOk } = this.props;
     const { form, resetEmailSent } = this.state;
-    const resetPassword = token ? true : false;
+    const resetPassword = !!token;
 
     if (resetEmailSent) {
       return;
@@ -111,7 +127,9 @@ class PasswordRecovery extends Component {
               password: form.password,
               token,
             })
-              .then((response) => onResetOk(response))
+              .then((response) => {
+                onResetOk(response);
+              })
               .catch((err) => {
                 this.setState({
                   err: err.data
@@ -252,17 +270,17 @@ class PasswordRecovery extends Component {
   renderContent = () => {
     const { token } = this.props;
     const { pending, resetEmailSent, form } = this.state;
-    const resetPassword = token ? true : false;
+    const resetPassword = !!token;
     const buttonMessage = resetPassword
       ? counterpart.translate('forgotPassword.changePassword.caption')
       : counterpart.translate('forgotPassword.sendResetCode.caption');
-    const avatarSrc = this.getAvatar();
+    const avatarSrc = getPasswordResetAvatarUrl(token);
 
     return (
       <div>
         {resetPassword && avatarSrc && (
           <div className="text-center">
-            <img src={avatarSrc} className="avatar mt-2 mb-2" />
+            <img src={avatarSrc} className="avatar mt-2 mb-2" alt="avatar" />
           </div>
         )}
         {form.fullname && (
@@ -293,16 +311,13 @@ class PasswordRecovery extends Component {
 
   render() {
     const { invalidToken } = this.state;
-    const elementContent = invalidToken
-      ? this.renderInvalid()
-      : this.renderContent();
 
     return (
       <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
         <div className="text-center">
-          <img src={logo} className="header-logo mt-2 mb-2" />
+          <img src={logo} className="header-logo mt-2 mb-2" alt="logo" />
         </div>
-        <div>{elementContent}</div>
+        <div>{invalidToken ? this.renderInvalid() : this.renderContent()}</div>
       </div>
     );
   }
