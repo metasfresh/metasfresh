@@ -134,6 +134,10 @@
 		<property name="com.jaspersoft.studio.field.name" value="projectno"/>
 		<property name="com.jaspersoft.studio.field.label" value="projectno"/>
 	</field>
+	<field name="doctype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="doctype"/>
+		<property name="com.jaspersoft.studio.field.label" value="doctype"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -540,7 +544,9 @@
 				<textFieldExpression><![CDATA[$F{vataxid}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="323" y="135" width="89" height="13" uuid="7dafff4d-72c3-45dc-892a-c05c19307c31"/>
+				<reportElement key="textField-5" x="323" y="135" width="89" height="13" uuid="7dafff4d-72c3-45dc-892a-c05c19307c31">
+					<printWhenExpression><![CDATA[!$F{doctype}.equals( "ON" )]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -553,7 +559,9 @@
 				<textFieldExpression><![CDATA[$R{OfferNo}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="323" y="148" width="89" height="13" uuid="ced1ff4a-c8bf-4f0a-b099-7f3a78ff97eb"/>
+				<reportElement key="textField-5" x="323" y="148" width="89" height="13" uuid="ced1ff4a-c8bf-4f0a-b099-7f3a78ff97eb">
+					<printWhenExpression><![CDATA[!$F{doctype}.equals( "ON" )]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -566,7 +574,9 @@
 				<textFieldExpression><![CDATA[$R{OfferDate}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="412" y="148" width="133" height="13" uuid="673d2be9-d231-4299-aeb1-3ce72b54418b"/>
+				<reportElement key="textField-3" x="412" y="148" width="133" height="13" uuid="673d2be9-d231-4299-aeb1-3ce72b54418b">
+					<printWhenExpression><![CDATA[!$F{doctype}.equals( "ON" )]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -579,7 +589,9 @@
 				<textFieldExpression><![CDATA[$F{offer_date}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="412" y="135" width="133" height="13" uuid="2ae62a60-e630-48f0-9595-78f625cd8b51"/>
+				<reportElement key="textField-3" x="412" y="135" width="133" height="13" uuid="2ae62a60-e630-48f0-9595-78f625cd8b51">
+					<printWhenExpression><![CDATA[!$F{doctype}.equals( "ON" )]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
