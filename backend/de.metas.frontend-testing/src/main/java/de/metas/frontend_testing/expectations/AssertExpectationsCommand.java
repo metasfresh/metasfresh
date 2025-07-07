@@ -41,6 +41,8 @@ public class AssertExpectationsCommand
 			masterdata.getHandlingUnits().forEach((identifierStr, handlingUnit) -> context.putIdentifier(Identifier.ofString(identifierStr), HuId.ofObject(handlingUnit.getHuId())));
 		}
 
+		context.putFromJson(expectations.getContext());
+
 		return context;
 	}
 

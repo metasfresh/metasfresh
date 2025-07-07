@@ -1,6 +1,5 @@
 package de.metas.handlingunits.trace;
 
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformServiceTests;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
@@ -8,15 +7,11 @@ import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
 import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
 import de.metas.organization.OrgId;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -85,9 +80,7 @@ public class HUTransformTracingTests
 	@Before
 	public void init()
 	{
-		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
-		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
+		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 
 		testsBase = new HUTransformTestsBase();
 
@@ -168,10 +161,10 @@ public class HUTransformTracingTests
 		// when comparing with "common", we needs to keep the ID out
 		final HUTraceEvent tuTraceEventToCompareWith = tuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
 		assertThat(tuTraceEventToCompareWith,
-				   is(common
-							  .qty(Quantity.of(new BigDecimal("-3"), uomRecord))
-							  .topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID()))
-							  .build()));
+				is(common
+						.qty(Quantity.of(new BigDecimal("-3"), uomRecord))
+						.topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID()))
+						.build()));
 
 		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID())).build();
 		final List<HUTraceEvent> cuTraceEvents = huTraceRepository.query(cuTraceQuery);
@@ -180,10 +173,10 @@ public class HUTransformTracingTests
 		// when comparing with "common", we needs to keep the ID out
 		final HUTraceEvent cuTraceEventToCompareWith = cuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
 		assertThat(cuTraceEventToCompareWith,
-				   is(common
-							  .qty(Quantity.of(new BigDecimal("3"), uomRecord))
-							  .topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
-							  .build()));
+				is(common
+						.qty(Quantity.of(new BigDecimal("3"), uomRecord))
+						.topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
+						.build()));
 	}
 
 	@Test
@@ -193,9 +186,6 @@ public class HUTransformTracingTests
 		assertThat(RetrieveDbRecordsUtil.queryAll().isEmpty(), is(true));
 	}
 
-	/**
-	 * Performs {@link HUTransformServiceTests#testAggregateCU_To_NewTUs_1Tomato()} and verifies the generated HU-trace records.
-	 */
 	@Test
 	public void testAggregateCU_To_NewTUs_1Tomato()
 	{

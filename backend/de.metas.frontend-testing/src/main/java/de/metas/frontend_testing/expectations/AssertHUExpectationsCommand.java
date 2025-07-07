@@ -11,7 +11,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import lombok.Builder;
@@ -48,22 +47,34 @@ class AssertHUExpectationsCommand
 
 	private void assertHU(@NonNull String huMatcherStr, @NonNull final JsonHUExpectation expectation)
 	{
-		final HuId huId = getHUIdByMatcherString(huMatcherStr);
+		softly(()-> {
+			softlyPutContext("huMatcherStr", huMatcherStr);
+			softlyPutContext("expectation", expectation);
+			
+			final HuId huId = getHUIdByMatcherString(huMatcherStr);
+			softlyPutContext("huId", context.describeId(huId));
 
-		if (expectation.getStorages() != null)
-		{
-			assertHUStorages(expectation.getStorages(), huId);
-		}
+			if (expectation.getHuStatus() != null)
+			{
+				final I_M_HU hu = services.getHUById(huId);
+				assertThat(hu.getHUStatus()).as("HUStatus").isEqualTo(expectation.getHuStatus());
+			}
 
-		if (expectation.getAttributes() != null)
-		{
-			assertAttributes(expectation.getAttributes(), huId);
-		}
+			if (expectation.getStorages() != null)
+			{
+				assertHUStorages(expectation.getStorages(), huId);
+			}
 
-		if (expectation.getCus() != null)
-		{
-			assertCUs(expectation.getCus(), huId);
-		}
+			if (expectation.getAttributes() != null)
+			{
+				assertAttributes(expectation.getAttributes(), huId);
+			}
+
+			if (expectation.getCus() != null)
+			{
+				assertCUs(expectation.getCus(), huId);
+			}
+		});
 	}
 
 	private void assertHUStorages(@NonNull final Map<String, String> expectations, @NonNull final HuId huId)
@@ -78,8 +89,7 @@ class AssertHUExpectationsCommand
 				.collect(GuavaCollectors.toHashMapByKey(IHUProductStorage::getProductId));
 
 		softly(() -> {
-			softlyPutContext("huId", context.describeId(huId));
-			softlyPutContext("expectations", expectations);
+			softlyPutContext("expectedStorages", expectations);
 			softlyPutContext("actualStorages", ImmutableList.copyOf(actualStorages.values()));
 
 			expectations.forEach((productIdentifierStr, expectedQtyStr) -> {
@@ -106,10 +116,7 @@ class AssertHUExpectationsCommand
 
 	private void assertHUStorage(@NonNull final QtyAndUOMString expectedQtyStr, @NonNull final IHUProductStorage actualStorage)
 	{
-		final Quantity expectedQty = expectedQtyStr.toQuantity();
-		softlyPutContext("expectedQty", expectedQty);
-
-		assertThat(actualStorage.getQty()).as("Qty").isEqualTo(expectedQty);
+		assertThat(actualStorage.getQty()).as("Qty").isEqualTo(expectedQtyStr.toQuantity());
 	}
 
 	private HuId getHUIdByMatcherString(@NonNull final String matcherStr)
@@ -144,9 +151,7 @@ class AssertHUExpectationsCommand
 		final ImmutableAttributeSet actualAttributes = services.getAttributes(hu);
 
 		softly(() -> {
-			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-			softlyPutContext("huId", context.describeId(huId));
-			softlyPutContext("expectations", expectations);
+			softlyPutContext("expectedAttributes", expectations);
 			softlyPutContext("actualAttributes", actualAttributes);
 
 			expectations.forEach((attributeCodeStr, expectedValueStr) -> {
@@ -222,19 +227,19 @@ class AssertHUExpectationsCommand
 		assertThat(cus).hasSameSize(expectations);
 
 		softly(() -> {
-			softlyPutContext("huId", context.describeId(huId));
-			softlyPutContext("expectations", expectations);
-			softlyPutContext("actual CUs", cus);
+			softlyPutContext("CUs: huId", context.describeId(huId));
+			softlyPutContext("CUs: expectations", expectations);
+			softlyPutContext("CUs: actual CUs", cus);
 
 			for (int i = 0; i < expectations.size(); i++)
 			{
-				softlyPutContext("index", i);
+				softlyPutContext("CUs: index", i);
 
 				final JsonHUExpectation.CU expectation = expectations.get(i);
-				softlyPutContext("expectation", expectation);
+				softlyPutContext("CUs: expectation", expectation);
 
 				final I_M_HU cu = cus.get(i);
-				softlyPutContext("actual CU", cu);
+				softlyPutContext("CUs: actual CU", cu);
 
 				assertCU(expectation, cu);
 			}
@@ -246,8 +251,7 @@ class AssertHUExpectationsCommand
 		if (expectation.getQty() != null)
 		{
 			final IHUProductStorage storage = services.getSingleProductStorage(cu);
-			final Quantity qtyExpected = expectation.getQty().toQuantity();
-			assertThat(storage.getQty()).as("Qty").isEqualTo(qtyExpected);
+			assertThat(storage.getQty()).as("Qty").isEqualTo(expectation.getQty().toQuantity());
 		}
 
 		if (expectation.getAttributes() != null)
