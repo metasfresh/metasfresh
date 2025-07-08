@@ -82,11 +82,12 @@ class LMQRCodeParser
 	private static LMQRCode fromGlobalQRCode_version1(final GlobalQRCode globalQRCode)
 	{
 		// NOTE to dev: keep in sync with huQRCodes.js, parseQRCodePayload_LeichMehl_v1
-		
+
 		try
 		{
 			final List<String> parts = SPLITTER.splitToList(globalQRCode.getPayloadAsJson());
 			return LMQRCode.builder()
+					.code(globalQRCode)
 					.weightInKg(new BigDecimal(parts.getFirst()))
 					.bestBeforeDate(parts.size() >= 2 ? LocalDate.parse(parts.get(1), BEST_BEFORE_DATE_FORMAT) : null)
 					.lotNumber(parts.size() >= 3 ? StringUtils.trimBlankToNull(parts.get(2)) : null)

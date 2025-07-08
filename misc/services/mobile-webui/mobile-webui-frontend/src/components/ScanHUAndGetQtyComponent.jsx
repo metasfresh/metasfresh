@@ -11,6 +11,7 @@ import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
+import { ATTR_isUnique } from '../utils/qrCode/common';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
@@ -151,7 +152,7 @@ const ScanHUAndGetQtyComponent = ({
       scannedBarcode,
     };
 
-    //console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
+    console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
 
     return resolvedBarcodeDataNew;
   };
@@ -175,7 +176,15 @@ const ScanHUAndGetQtyComponent = ({
 
   const onBarcodeScanned = (resolvedBarcodeDataNew) => {
     setResolvedBarcodeData(resolvedBarcodeDataNew);
-    const askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
+
+    let askForQty;
+    const qrCode = resolvedBarcodeDataNew?.qrCode;
+    if (qrCode && qrCode[ATTR_isUnique] === false) {
+      // user just scanned a non-unique QR code (e.g. EAN13, custom)
+      askForQty = false;
+    } else {
+      askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
+    }
 
     console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, askForQty });
 
@@ -186,7 +195,7 @@ const ScanHUAndGetQtyComponent = ({
         qty: 0,
         reason: null,
         scannedBarcode: resolvedBarcodeDataNew.scannedBarcode,
-        resolvedBarcodeData,
+        resolvedBarcodeData: resolvedBarcodeDataNew,
       })?.catch?.((error) => toastErrorFromObj(error));
     }
   };

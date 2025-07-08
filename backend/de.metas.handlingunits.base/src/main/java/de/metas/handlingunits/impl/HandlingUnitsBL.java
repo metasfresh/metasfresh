@@ -53,6 +53,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -276,7 +277,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					return null;
 				});
 
-		return destroyed.getValue();
+		return destroyed.getValueNotNull();
 	}
 
 	@Override
@@ -1118,10 +1119,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return handlingUnitsRepo.createHUQueryBuilder();
 	}
 
+	private IAttributeStorageFactory newHUAttributeStorageFactory()
+	{
+		return attributeStorageFactoryService.createHUAttributeStorageFactory(getStorageFactory(), HUAttributesDAO.instance);
+	}
+
 	@Override
 	public AttributesKey getAttributesKeyForInventory(@NonNull final I_M_HU hu)
 	{
-		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+		final IAttributeStorageFactory attributeStorageFactory = newHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 		return getAttributesKeyForInventory(attributeStorage);
 	}
@@ -1241,9 +1247,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public IAttributeStorage getAttributeStorage(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = getById(huId);
+		return getAttributeStorage(hu);
+	}
+
+	@Override
+	public IAttributeStorage getAttributeStorage(@NonNull final I_M_HU hu)
+	{
+		return newHUAttributeStorageFactory().getAttributeStorage(hu);
+	}
+
+	@Override
 	public ImmutableAttributeSet getImmutableAttributeSet(@NonNull final I_M_HU hu)
 	{
-		return attributeStorageFactoryService.createHUAttributeStorageFactory().getImmutableAttributeSet(hu);
+		return newHUAttributeStorageFactory().getImmutableAttributeSet(hu);
 	}
 
 	@Override

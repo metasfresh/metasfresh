@@ -128,6 +128,10 @@ public interface ILockCommand
 
 	boolean isFailIfNothingLocked();
 
+	ILockCommand retryOnFailure(int retryOnFailure);
+
+	int getRetryOnFailure();
+
 	ILockCommand setRecordByModel(final Object model);
 
 	ILockCommand setRecordByTableRecordId(final int tableId, final int recordId);

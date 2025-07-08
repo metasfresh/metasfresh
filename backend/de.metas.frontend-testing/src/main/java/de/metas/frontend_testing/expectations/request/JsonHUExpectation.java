@@ -13,6 +13,7 @@ import java.util.Map;
 @Jacksonized
 public class JsonHUExpectation
 {
+	@Nullable String huStatus;
 	@Nullable Map<String, String> storages;
 	@Nullable Map<String, String> attributes;
 	@Nullable List<CU> cus;

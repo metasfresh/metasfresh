@@ -9,6 +9,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -47,7 +48,10 @@ public class HUQRCode implements IHUQRCode
 
 	@Override
 	@Deprecated
-	public String toString() {return toGlobalQRCodeString();}
+	public String toString() {return getAsString();}
+
+	@Override
+	public String getAsString() {return toGlobalQRCodeString();}
 
 	@NonNull
 	public static HUQRCode fromGlobalQRCodeJsonString(@NonNull final String qrCodeString)
@@ -69,6 +73,14 @@ public class HUQRCode implements IHUQRCode
 		return HUQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);
 	}
 
+	public static Optional<HUQRCode> parse(@NonNull final ScannedCode code)
+	{
+		final GlobalQRCode globalQRCode = code.toGlobalQRCodeIfMatching().orNullIfError();
+		return globalQRCode != null && isHandled(globalQRCode)
+				? Optional.of(fromGlobalQRCode(globalQRCode))
+				: Optional.empty();
+	}
+
 	@JsonIgnore
 	public JsonDisplayableQRCode toRenderedJson()
 	{
@@ -84,6 +96,8 @@ public class HUQRCode implements IHUQRCode
 	{
 		return HUQRCodeJsonConverter.toGlobalQRCodeJsonString(this);
 	}
+
+	public ScannedCode toScannedCode() {return ScannedCode.ofString(toGlobalQRCodeString());}
 
 	public String toDisplayableQRCode()
 	{
@@ -135,13 +149,21 @@ public class HUQRCode implements IHUQRCode
 	@Override
 	public Optional<BigDecimal> getWeightInKg()
 	{
-		return getAttribute(Weightables.ATTR_WeightNet).map(HUQRCodeAttribute::getValueAsBigDecimal);
+		return getAttribute(Weightables.ATTR_WeightNet)
+				.map(HUQRCodeAttribute::getValueAsBigDecimal)
+				.filter(weight -> weight.signum() > 0);
 	}
 
 	@Override
 	public Optional<LocalDate> getBestBeforeDate()
 	{
 		return getAttribute(AttributeConstants.ATTR_BestBeforeDate).map(HUQRCodeAttribute::getValueAsLocalDate);
+	}
+
+	@Override
+	public Optional<LocalDate> getProductionDate()
+	{
+		return getAttribute(AttributeConstants.ProductionDate).map(HUQRCodeAttribute::getValueAsLocalDate);
 	}
 
 	@Override

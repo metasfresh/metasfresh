@@ -848,6 +848,29 @@ public interface I_I_Product
 	String COLUMNNAME_ISO_Code = "ISO_Code";
 
 	/**
+	 * Set Purchased.
+	 * Organization purchases this product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPurchased (boolean IsPurchased);
+
+	/**
+	 * Get Purchased.
+	 * Organization purchases this product
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPurchased();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsPurchased = new ModelColumn<>(I_I_Product.class, "IsPurchased", null);
+	String COLUMNNAME_IsPurchased = "IsPurchased";
+
+	/**
 	 * Set Scale Price.
 	 *
 	 * <br>Type: YesNo
@@ -2043,6 +2066,26 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_WeightUOM = new ModelColumn<>(I_I_Product.class, "WeightUOM", null);
 	String COLUMNNAME_WeightUOM = "WeightUOM";
+
+	/**
+	 * Set Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWeight_UOM_ID (int Weight_UOM_ID);
+
+	/**
+	 * Get Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWeight_UOM_ID();
+
+	String COLUMNNAME_Weight_UOM_ID = "Weight_UOM_ID";
 
 	/**
 	 * Set UOM Code.

@@ -13,6 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -166,4 +167,6 @@ public class X12DE355
 
 		return temporalUnit;
 	}
+
+	public static boolean equals(@Nullable final X12DE355 uom1, @Nullable final X12DE355 uom2) {return Objects.equals(uom1, uom2);}
 }
