@@ -20,4 +20,4 @@
  * #L%
  */
 
-select table_backup('AD_Column');
+select backup_table('AD_Column');
