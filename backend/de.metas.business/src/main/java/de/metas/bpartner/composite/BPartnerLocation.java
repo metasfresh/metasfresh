@@ -16,7 +16,6 @@ import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.table.RecordChangeLog;
@@ -71,6 +70,8 @@ public class BPartnerLocation
 	public static final String EPHEMERAL = "ephemeral";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
+	public static final String VAT_TAX_ID = "vatTaxId";
+
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -142,6 +143,8 @@ public class BPartnerLocation
 
 	@Nullable final String setupPlaceNo;
 
+	@Nullable private String vatTaxId;
+
 	final boolean remitTo;
 	final boolean handOverLocation;
 	final boolean replicationLookupDefault;
@@ -151,7 +154,6 @@ public class BPartnerLocation
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
 	@Getter(AccessLevel.NONE)
-	@EqualsAndHashCode.Exclude
 	private final HashSet<String> handles = new HashSet<>();
 
 	/**
@@ -186,6 +188,7 @@ public class BPartnerLocation
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
+			@Nullable final String vatTaxId,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
 			@Nullable final Boolean replicationLookupDefault,
@@ -229,6 +232,7 @@ public class BPartnerLocation
 		this.email = email;
 
 		this.setupPlaceNo = setupPlaceNo;
+		this.vatTaxId = vatTaxId;
 
 		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
 

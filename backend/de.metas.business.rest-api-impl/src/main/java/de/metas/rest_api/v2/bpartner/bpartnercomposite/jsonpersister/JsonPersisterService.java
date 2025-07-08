@@ -335,11 +335,11 @@ public class JsonPersisterService
 			bpartnerComposite.getContacts().add(contact);
 			syncOutcome = SyncOutcome.CREATED;
 		}
-		
+
 		contact.addHandle(contactIdentifier.getRawValue()); // always add the handle; we'll need it later, even if the contact existed and was not updated
-		
+
 		syncJsonToContact(jsonContact, contact);
-		
+
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContactByHandle(contactIdentifier.getRawValue());
@@ -1747,6 +1747,12 @@ public class JsonPersisterService
 		if (jsonBPartnerLocation.isPhoneSet())
 		{
 			location.setPhone(jsonBPartnerLocation.getPhone());
+		}
+
+		// VAT ID
+		if (jsonBPartnerLocation.isVatIdSet())
+		{
+			location.setVatTaxId(StringUtils.trim(jsonBPartnerLocation.getVatId()));
 		}
 
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);

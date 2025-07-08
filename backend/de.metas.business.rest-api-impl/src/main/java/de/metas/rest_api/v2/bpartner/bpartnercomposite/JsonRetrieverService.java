@@ -224,6 +224,8 @@ public class JsonRetrieverService
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
 			.put(BPartnerLocation.EPHEMERAL, JsonResponseLocation.EPHEMERAL)
 			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
+			.put(BPartnerLocation.VAT_TAX_ID, JsonResponseLocation.VAT_ID)
+
 			.build();
 
 	/**
@@ -527,6 +529,14 @@ public class JsonRetrieverService
 			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(location.getChangeLog(), LOCATION_FIELD_MAP);
 
 			final BPartnerLocationType locationType = location.getLocationType();
+
+			if (locationType == null)
+			{
+				throw new AdempiereException("locationType should not be missing! This is most probably a development error!")
+						.appendParametersToMessage()
+						.setParameter("BPartnerLocationId", location.getId());
+			}
+
 			return JsonResponseLocation.builder()
 					.active(location.isActive())
 					.name(location.getName())
@@ -556,7 +566,7 @@ public class JsonRetrieverService
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
-					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
+					.vatId(location.getVatTaxId())
 					.build();
 		}
 		catch (final RuntimeException rte)
