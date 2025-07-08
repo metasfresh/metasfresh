@@ -139,12 +139,12 @@ public class PPOrderSourceHUService
 		final DocStatus ppOrderDocStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
 		if (!ppOrderDocStatus.isCompleted())
 		{
-			return BooleanWithReason.falseBecause(MSG_ManufacturingOrderNotCompleted, ppOrder.getPP_Order_ID());
+			return BooleanWithReason.falseBecause(MSG_ManufacturingOrderNotCompleted, ppOrderId);
 		}
 
 		if (ppOrderIssueScheduleService.matchesByOrderId(ppOrderId))
 		{
-			return BooleanWithReason.falseBecause(MSG_ManufacturingJobAlreadyStarted, ppOrder.getPP_Order_ID());
+			return BooleanWithReason.falseBecause(MSG_ManufacturingJobAlreadyStarted, ppOrderId);
 		}
 
 		return BooleanWithReason.TRUE;
