@@ -32,6 +32,8 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -52,37 +54,30 @@ import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 
 @Service
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with PurchaseCandidateRequestedEvent
+@RequiredArgsConstructor
 public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<PurchaseCandidateRequestedEvent>
 {
 	public static final ThreadLocal<Boolean> INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD = ThreadLocal.withInitial(() -> false);
+	@NonNull private final ProductRepository productRepository;
+	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepository;
+	@NonNull private final PostMaterialEventService postMaterialEventService;
+	@NonNull private final VendorProductInfoService vendorProductInfosRepo;
+
 	private final IPurchaseCandidateBL purchaseCandidateBL = Services.get(IPurchaseCandidateBL.class);
-	private final ProductRepository productRepository;
-	private final PurchaseCandidateRepository purchaseCandidateRepository;
-	private final PostMaterialEventService postMaterialEventService;
-
-	private final VendorProductInfoService vendorProductInfosRepo;
-
-	public PurchaseCandidateRequestedHandler(
-			@NonNull final ProductRepository productRepository,
-			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
-			@NonNull final VendorProductInfoService vendorProductInfosRepo,
-			@NonNull final PostMaterialEventService postMaterialEventService)
-	{
-		this.productRepository = productRepository;
-		this.purchaseCandidateRepository = purchaseCandidateRepository;
-		this.postMaterialEventService = postMaterialEventService;
-		this.vendorProductInfosRepo = vendorProductInfosRepo;
-	}
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 	@Override
 	public Collection<Class<? extends PurchaseCandidateRequestedEvent>> getHandledEventType()
@@ -122,12 +117,14 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.userElementString7(event.getUserElementString7())
 				.build();
 
+		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(materialDescriptor.getDate());
 		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidate
 				.builder()
 				.groupReference(DemandGroupReference.EMPTY)
 				.vendorId(vendorProductInfos.getVendorId()) // mandatory
 				.vendorProductNo(vendorProductInfos.getVendorProductNo()) // mandatory
-				.purchaseDatePromised(TimeUtil.asZonedDateTime(materialDescriptor.getDate())) // dateRequired
+				.purchaseDatePromised(datePromised) // dateRequired
+				.purchaseDateOrdered(getPurchaseDateOrderedOrNull(datePromised, event.getProductPlanningId())) // dateRequired
 
 				.dimension(dimension)
 				.orgId(orgId)
@@ -148,6 +145,17 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate);
 	}
 
+	@Nullable
+	private ZonedDateTime getPurchaseDateOrderedOrNull(@NonNull final ZonedDateTime datePromised, @Nullable final ProductPlanningId productPlanningId)
+	{
+		if (productPlanningId == null)
+		{
+			return null;
+		}
+		final int leadTimeDays = productPlanningDAO.getById(productPlanningId).getLeadTimeDays();
+		return datePromised.minusDays(leadTimeDays);
+	}
+
 	private void saveCandidateAndPostCreatedEvent(
 			@NonNull final PurchaseCandidateRequestedEvent requestedEvent,
 			@NonNull final PurchaseCandidate newPurchaseCandidate)
@@ -159,8 +167,8 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			final PurchaseCandidateId newPurchaseCandidateId = purchaseCandidateRepository.save(newPurchaseCandidate);
 
 			final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = createCandidateCreatedEvent(requestedEvent,
-																											newPurchaseCandidate.getVendorId(),
-																											newPurchaseCandidateId);
+					newPurchaseCandidate.getVendorId(),
+					newPurchaseCandidateId);
 			postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateCreatedEvent);
 		}
 		finally

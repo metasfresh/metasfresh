@@ -12,6 +12,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.CandidatesGroup;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -26,6 +27,7 @@ import de.metas.material.event.pporder.PPOrderLineData;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
@@ -223,7 +225,7 @@ public class RequestMaterialOrderService
 				.build();
 	}
 
-	private void createAndFireDDOrderRequestedEvent(@NonNull final CandidatesGroup group, 
+	private void createAndFireDDOrderRequestedEvent(@NonNull final CandidatesGroup group,
 													@NonNull final EventDescriptor eventDescriptor)
 	{
 		final DDOrderCandidateRequestedEvent event = createDDOrderCandidateRequestedEvent(group, eventDescriptor);
@@ -284,10 +286,13 @@ public class RequestMaterialOrderService
 		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
-	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, 
+	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group,
 																				  @NonNull final EventDescriptor eventDescriptor)
 	{
 		final Candidate singleCandidate = group.getSingleCandidate();
+
+		final PurchaseDetail purchaseDetail = PurchaseDetail.castOrNull(singleCandidate.getBusinessCaseDetail());
+		final ProductPlanningId productPlanningId = purchaseDetail == null ? null : ProductPlanningId.ofRepoId(purchaseDetail.getProductPlanningRepoId());
 
 		final Dimension dimension = singleCandidate.getDimension();
 
@@ -313,6 +318,7 @@ public class RequestMaterialOrderService
 				.userElementString6(dimension.getUserElementString6())
 				.userElementString7(dimension.getUserElementString7())
 				.simulated(singleCandidate.isSimulated())
+				.productPlanningId(productPlanningId)
 				.build();
 	}
 
@@ -327,6 +333,8 @@ public class RequestMaterialOrderService
 																		 @NonNull final EventDescriptor eventDescriptor)
 	{
 		final Candidate singleCandidate = group.getSingleCandidate();
+		final PurchaseDetail purchaseDetail = PurchaseDetail.castOrNull(singleCandidate.getBusinessCaseDetail());
+		final ProductPlanningId productPlanningId = purchaseDetail == null ? null : ProductPlanningId.ofRepoId(purchaseDetail.getProductPlanningRepoId());
 
 		final Dimension dimension = singleCandidate.getDimension();
 
@@ -349,7 +357,7 @@ public class RequestMaterialOrderService
 				.userElementString5(dimension.getUserElementString5())
 				.userElementString6(dimension.getUserElementString6())
 				.userElementString7(dimension.getUserElementString7())
-
+				.productPlanningId(productPlanningId)
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.build();
 	}
