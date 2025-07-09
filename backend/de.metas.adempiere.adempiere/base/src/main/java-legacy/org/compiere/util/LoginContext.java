@@ -174,10 +174,12 @@ public class LoginContext
 
 	public void setIsPasswordAuthenticated() {setProperty(CTXNAME_IsPasswordAuth, true);}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isPasswordAuthenticated() {return getPropertyAsBoolean(CTXNAME_IsPasswordAuth);}
 
 	public void setIs2FAAuthenticated(boolean authenticated) {setProperty(CTXNAME_Is2FAAuth, authenticated);}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean is2FAAuthenticated() {return getPropertyAsBoolean(CTXNAME_Is2FAAuth);}
 
 	public void setUser(final UserId userId, final String username)
@@ -272,12 +274,6 @@ public class LoginContext
 	public OrgId getOrgId()
 	{
 		return OrgId.ofRepoId(getMandatoryPropertyAsInt(Env.CTXNAME_AD_Org_ID));
-	}
-
-	public void setWarehouse(final WarehouseId warehouseId, final String warehouseName)
-	{
-		setProperty(Env.CTXNAME_M_Warehouse_ID, WarehouseId.toRepoId(warehouseId));
-		Ini.setProperty(Ini.P_WAREHOUSE, warehouseName);
 	}
 
 	@Nullable

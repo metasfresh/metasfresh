@@ -22,7 +22,6 @@ public class JSONLoginStatus
 		REQUIRES_2FA,
 		REQUIRES_LOGIN_COMPLETE,
 		LOGGED_IN,
-		;
 	}
 
 	@NonNull Status status;

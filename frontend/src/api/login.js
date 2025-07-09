@@ -44,7 +44,6 @@ export function loginCompletionRequest(role) {
  * @method loginWithToken
  * @summary - Allows authenticating with a given token, returns a promise (Note: `  type: "token" ` - passed by default
  *            to trigger the token authentication routine.)
- * @param {string} tokenId
  */
 export function loginWithToken(token) {
   return axios.post(`${config.API_URL}/login/authenticate`, {
