@@ -1,5 +1,8 @@
 {
   "name": "metasfresh-webui-frontend",
+  "resolutions": {
+    "cheerio": "1.0.0-rc.12"
+  },
   "scripts": {
     "build-storybook": "build-storybook",
     "build-prod": "webpack --config webpack.prod.js",
@@ -14,6 +17,7 @@
   },
   "jest": {
     "setupFiles": [
+      "<rootDir>/test_setup/jestGlobals.js",
       "<rootDir>/test_setup/jestSetup.js"
     ],
     "setupFilesAfterEnv": [
