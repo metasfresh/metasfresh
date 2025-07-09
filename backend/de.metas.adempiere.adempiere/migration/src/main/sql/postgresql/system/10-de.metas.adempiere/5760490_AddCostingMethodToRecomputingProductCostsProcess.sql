@@ -1,10 +1,3 @@
--
--- Script: /tmp/webui_migration_scripts_2025-07-09_3873546656868943929/10000510_migration_2025-07-09_postgresql.sql
--- User: metasfresh
--- OS user: root
---
-
-
 -- Run mode: WEBUI
 
 -- Process: M_Inventory_RecomputeCosts(de.metas.inventory.process.M_Inventory_RecomputeCosts)
