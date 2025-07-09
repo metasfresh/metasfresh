@@ -97,14 +97,12 @@ public class PurchaseCandidateRepository
 {
 	// services
 	@NonNull private final PurchaseItemRepository purchaseItemRepository;
+	@NonNull private final ReferenceGenerator referenceGenerator;
+	@NonNull private final DimensionService dimensionService;
+	
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
-	@NonNull private final DimensionService dimensionService;
-
 	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
-	@NonNull private final ReferenceGenerator referenceGenerator;
-
 	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
