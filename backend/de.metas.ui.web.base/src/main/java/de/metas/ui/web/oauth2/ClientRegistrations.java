@@ -1,11 +1,11 @@
 package de.metas.ui.web.oauth2;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.util.Iterator;
 import java.util.List;
