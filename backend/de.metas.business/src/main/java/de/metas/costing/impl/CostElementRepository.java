@@ -215,6 +215,16 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
+	public List<CostElement> getActiveMaterialCostingElements()
+	{
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(Env.getCtx()));
+		return getIndexedCostElements()
+				.streamByClientId(clientId)
+				.filter(ce -> ce.isMaterial())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
 	public Set<CostElementId> getActiveCostElementIds()
 	{
 		return getIndexedCostElements()
