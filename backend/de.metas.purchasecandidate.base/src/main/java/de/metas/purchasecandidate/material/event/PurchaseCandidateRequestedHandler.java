@@ -123,8 +123,8 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.groupReference(DemandGroupReference.EMPTY)
 				.vendorId(vendorProductInfos.getVendorId()) // mandatory
 				.vendorProductNo(vendorProductInfos.getVendorProductNo()) // mandatory
-				.purchaseDatePromised(datePromised) // dateRequired
-				.purchaseDateOrdered(getPurchaseDateOrderedOrNull(datePromised, event.getProductPlanningId())) // dateRequired
+				.purchaseDatePromised(datePromised)
+				.purchaseDateOrdered(computePurchaseDateOrderedOrNull(datePromised, event.getProductPlanningId()))
 
 				.dimension(dimension)
 				.orgId(orgId)
@@ -146,7 +146,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	}
 
 	@Nullable
-	private ZonedDateTime getPurchaseDateOrderedOrNull(@NonNull final ZonedDateTime datePromised, @Nullable final ProductPlanningId productPlanningId)
+	private ZonedDateTime computePurchaseDateOrderedOrNull(@NonNull final ZonedDateTime datePromised, @Nullable final ProductPlanningId productPlanningId)
 	{
 		if (productPlanningId == null)
 		{
