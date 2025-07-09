@@ -6,6 +6,7 @@ import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
+import de.metas.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -63,6 +64,7 @@ public class LoginContext
 	private boolean webui = false;
 	private String webSessionId = null;
 
+	private static final String CTXNAME_LoginStatus = "#LoginStatus";
 	private static final String CTXNAME_IsPasswordAuth = "#IsPasswordAuth";
 	private static final String CTXNAME_Is2FAAuth = "#Is2FAAuth";
 
@@ -76,9 +78,26 @@ public class LoginContext
 		return getCtx();
 	}
 
+	public void setLoginStatus(@NonNull final LoginStatus loginStatus)
+	{
+		setProperty(CTXNAME_LoginStatus, loginStatus.name());
+	}
+
+	@NonNull
+	public LoginStatus getLoginStatus()
+	{
+		final String loginStatusStr = StringUtils.trimBlankToNull(getPropertyAsString(CTXNAME_LoginStatus));
+		return loginStatusStr != null ? LoginStatus.valueOf(loginStatusStr) : LoginStatus.NOT_LOGGED_IN;
+	}
+
 	public void setProperty(final String name, final String value)
 	{
 		Env.setContext(getCtx(), name, value);
+	}
+
+	public String getPropertyAsString(final String name)
+	{
+		return Env.getContext(getCtx(), name);
 	}
 
 	public void setProperty(final String name, final boolean valueBoolean)
@@ -185,7 +204,7 @@ public class LoginContext
 	}
 
 	public void setRole(
-			final RoleId roleId, 
+			final RoleId roleId,
 			final String roleName)
 	{
 		setProperty(Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(roleId));

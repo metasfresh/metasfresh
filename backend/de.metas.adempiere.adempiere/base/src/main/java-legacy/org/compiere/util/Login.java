@@ -1,5 +1,6 @@
 package org.compiere.util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -38,12 +39,14 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidationEngine;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -161,8 +164,8 @@ public class Login
 		// Authenticate by password
 		assertPasswordMatches(user, password, session);
 		getCtx().setIsPasswordAuthenticated();
-
 		getCtx().setUser(userId, username);
+		getCtx().setLoginStatus(LoginStatus.AUTHENTICATED);
 		loadUserLanguage(user);
 
 		if (is2FARequired(userId))
@@ -176,7 +179,7 @@ public class Login
 		{
 			return LoginAuthenticateResponse.builder()
 					.userId(userId)
-					.availableRoles(loadUserRoles(userId))
+					.availableRoles(getUserRolesFailIfEmpty(userId))
 					.build();
 		}
 	}
@@ -265,7 +268,18 @@ public class Login
 	}
 
 	@NonNull
-	private ArrayList<Role> loadUserRoles(final UserId userId)
+	private List<Role> getUserRolesFailIfEmpty(@NonNull final UserId userId)
+	{
+		final List<Role> roles = getUserRoles(userId);
+		if (roles.isEmpty())
+		{
+			throw new AdempiereException(MSG_NoRoles).markAsUserValidationError();
+		}
+		return roles;
+	}
+
+	@NotNull
+	private List<Role> getUserRoles(@NonNull final UserId userId)
 	{
 		final LoginContext ctx = getCtx();
 		final ArrayList<Role> roles = new ArrayList<>();
@@ -284,12 +298,17 @@ public class Login
 
 			roles.add(role);
 		}
-		//
-		if (roles.isEmpty())
-		{
-			throw new AdempiereException(MSG_NoRoles).markAsUserValidationError();
-		}
 		return roles;
+	}
+
+	public List<Role> getUserRoles()
+	{
+		final UserId userId = getCtx().getUserIdIfExists().orElse(null);
+		if (userId == null)
+		{
+			return ImmutableList.of();
+		}
+		return getUserRoles(userId);
 	}
 
 	private MFSession startSession()
@@ -337,7 +356,7 @@ public class Login
 
 		return LoginAuthenticateResponse.builder()
 				.userId(userId)
-				.availableRoles(loadUserRoles(userId))
+				.availableRoles(getUserRolesFailIfEmpty(userId))
 				.build();
 	}
 
@@ -450,12 +469,12 @@ public class Login
 
 	private boolean is2FARequired(@NonNull final UserId userId)
 	{
-		if (user2FAService == null)
-		{
-			return false;
-		}
+		return user2FAService != null && user2FAService.isEnabled(userId);
+	}
 
-		return user2FAService.isEnabled(userId);
+	public boolean is2FARequired()
+	{
+		return user2FAService != null && user2FAService.isEnabled(getCtx().getUserId());
 	}
 
 	/**

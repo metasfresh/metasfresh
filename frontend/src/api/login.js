@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getApiBaseUrl } from './util';
 
 export function loginRequest(username, password) {
   return axios.post(
@@ -52,6 +53,12 @@ export function loginWithToken(token) {
   });
 }
 
+export function getLoginStatus() {
+  return axios
+    .get(`${config.API_URL}/login/status`)
+    .then((response) => response.data);
+}
+
 export function logoutRequest() {
   return axios.get(`${config.API_URL}/login/logout`);
 }
@@ -82,4 +89,14 @@ export function resetPasswordComplete(token, form) {
 
 export function getPasswordResetAvatarUrl(token) {
   return `${config.API_URL}/login/resetPassword/${token}/avatar`;
+}
+
+export function getOAuth2Providers() {
+  return axios
+    .get(`${config.API_URL}/login/oauth2/providers`)
+    .then((response) => response.data); // unbox
+}
+
+export function getOAuth2ProviderUrl({ code }) {
+  return `${getApiBaseUrl()}/oauth2/authorization/${code}`;
 }

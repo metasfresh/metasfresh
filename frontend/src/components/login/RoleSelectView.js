@@ -25,35 +25,28 @@ import counterpart from 'counterpart';
 import RawList from '../widget/List/RawList';
 import PropTypes from 'prop-types';
 
-export const RoleSelectView = ({ roles, onSubmit }) => {
+export const RoleSelectView = ({ disabled, error, roles, onSubmit }) => {
   const roleRef = useRef(null);
-  const [pending, setPending] = useState(false);
   const [role, setRole] = useState(null);
   const [dropdownToggled, setDropdownToggled] = useState(false);
   const [dropdownFocused, setDropdownFocused] = useState(true);
-  const [error, setError] = useState('');
+
+  const isEnabled = !disabled;
 
   useEffect(() => {
     setRole(roles?.[0] ?? null);
   }, [roles]);
 
   const fireOnSubmit = (role) => {
+    if (!isEnabled) return;
     setRole(role);
-
-    setPending(true);
-    onSubmit({
-      role,
-      setError: (errorMsg) => {
-        setError(errorMsg);
-        setPending(false);
-      },
-    });
+    onSubmit({ role });
   };
 
   return (
     <div
       onKeyUp={(e) => {
-        if (!pending && e.key === 'Enter') {
+        if (isEnabled && e.key === 'Enter') {
           fireOnSubmit(role);
         }
       }}
@@ -68,7 +61,7 @@ export const RoleSelectView = ({ roles, onSubmit }) => {
         list={roles}
         onSelect={(option) => setRole(option)}
         selected={role}
-        disabled={pending}
+        disabled={!isEnabled}
         autofocus={true}
         doNotOpenOnFocus={true}
         mandatory={true}
@@ -83,7 +76,7 @@ export const RoleSelectView = ({ roles, onSubmit }) => {
         <button
           className="btn btn-sm btn-block btn-meta-success"
           onClick={() => fireOnSubmit(role)}
-          disabled={pending}
+          disabled={!isEnabled}
         >
           {counterpart.translate('login.send.caption')}
         </button>
@@ -93,6 +86,8 @@ export const RoleSelectView = ({ roles, onSubmit }) => {
 };
 
 RoleSelectView.propTypes = {
+  disabled: PropTypes.bool,
+  error: PropTypes.string,
   roles: PropTypes.array.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };

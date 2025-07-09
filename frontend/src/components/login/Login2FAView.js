@@ -25,38 +25,30 @@ import counterpart from 'counterpart';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 
-export const Login2FAView = ({ onSubmit }) => {
+export const Login2FAView = ({ disabled, error, clearError, onSubmit }) => {
   const inputRef = useRef(null);
-  const [pending, setPending] = useState(false);
   const [code, setCode] = useState('');
-  const [error, setError] = useState('');
 
-  const isSubmitEnabled = !pending && !!code;
+  const isEnabled = !disabled;
+  const isSubmitEnabled = isEnabled && !!code;
 
   useEffect(() => {
-    if (!pending) {
+    if (isEnabled) {
       inputRef.current.focus();
       inputRef.current.select();
     }
-  }, [pending]);
+  }, [isEnabled]);
 
   const fireOnSubmit = (code) => {
     if (!isSubmitEnabled) return;
 
-    setPending(true);
-    onSubmit({
-      code,
-      setError: (errorMsg) => {
-        setError(errorMsg);
-        setPending(false);
-      },
-    });
+    onSubmit({ code });
   };
 
   return (
     <div
       onKeyUp={(e) => {
-        if (!pending && e.key === 'Enter') {
+        if (isEnabled && e.key === 'Enter') {
           fireOnSubmit(code);
         }
       }}
@@ -73,7 +65,7 @@ export const Login2FAView = ({ onSubmit }) => {
           onChange={(e) => {
             const code = e.target.value;
             setCode(code);
-            setError('');
+            clearError();
 
             if (code && code.length === 6) {
               fireOnSubmit(code);
@@ -82,9 +74,9 @@ export const Login2FAView = ({ onSubmit }) => {
           name="code2FA"
           className={classnames('input-primary input-block', {
             'input-error': error,
-            'input-disabled': pending,
+            'input-disabled': !isEnabled,
           })}
-          disabled={pending}
+          disabled={!isEnabled}
         />
       </div>
       <div className="mt-2">
@@ -101,5 +93,8 @@ export const Login2FAView = ({ onSubmit }) => {
 };
 
 Login2FAView.propTypes = {
+  disabled: PropTypes.bool,
+  error: PropTypes.string,
+  clearError: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };

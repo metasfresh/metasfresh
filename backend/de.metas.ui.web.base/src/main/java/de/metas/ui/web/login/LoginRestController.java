@@ -21,10 +21,14 @@ import de.metas.ui.web.login.json.JSONLoginAuth2FARequest;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
 import de.metas.ui.web.login.json.JSONLoginRole;
+import de.metas.ui.web.login.json.JSONLoginStatus;
+import de.metas.ui.web.login.json.JSONOAuth2Provider;
+import de.metas.ui.web.login.json.JSONOAuth2Providers;
 import de.metas.ui.web.login.json.JSONResetPassword;
 import de.metas.ui.web.login.json.JSONResetPasswordCompleteRequest;
 import de.metas.ui.web.login.json.JSONResetPasswordRequest;
 import de.metas.ui.web.notification.UserNotificationsService;
+import de.metas.ui.web.oauth2.MetasfreshOAuthClientRegistrationRepository;
 import de.metas.ui.web.session.UserPreference;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.session.UserSessionRepository;
@@ -53,7 +57,9 @@ import org.compiere.util.Env;
 import org.compiere.util.Login;
 import org.compiere.util.LoginAuthenticateResponse;
 import org.compiere.util.LoginContext;
+import org.compiere.util.LoginStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -115,6 +121,8 @@ public class LoginRestController
 	private final UserAuthTokenService userAuthTokenService;
 	private final UserDashboardSessionContextHolder userDashboardContextHolder;
 	private final User2FAService user2FAService;
+	private final MetasfreshOAuthClientRegistrationRepository oauthClientRegistrationRepository;
+
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
 	private static final Comparator<JSONLoginRole> ROLES_ORDERING = Comparator.<JSONLoginRole, Integer>comparing(role -> RoleId.isRegular(role.getRoleId()) ? 0 : 100) // Regular roles first
@@ -167,7 +175,7 @@ public class LoginRestController
 		}
 	}
 
-	private JSONLoginAuthResponse authenticate(
+	public JSONLoginAuthResponse authenticate(
 			@NonNull final String username,
 			@Nullable final HashableString password,
 			@Nullable final JSONLoginRole roleToLogin)
@@ -377,10 +385,11 @@ public class LoginRestController
 		// TODO: optimize
 		loginService.setRoleAndGetClients(roleId);
 		loginService.setClientAndGetOrgs(clientId);
+		final LoginContext loginCtx = loginService.getCtx();
+		loginCtx.setLoginStatus(LoginStatus.LOGIN_COMPLETE);
 
 		//
 		// Load preferences and export them to context
-		final LoginContext loginCtx = loginService.getCtx();
 		final UserPreference userPreference = userSession.getUserPreference();
 		userPreference.loadPreference(loginCtx.getSessionContext());
 		userPreference.updateContext(loginCtx.getSessionContext());
@@ -418,7 +427,7 @@ public class LoginRestController
 		userSessionRepo.load(userSession);
 
 		//
-		// Mark session as logged in
+		// Mark the session as logged in
 		userSession.setLoggedIn(true);
 
 		//
@@ -448,6 +457,41 @@ public class LoginRestController
 				.map(JSONLookupValue::ofNamePair)
 				.collect(JSONLookupValuesList.collect())
 				.setDefaultId(userSession.getAD_Language());
+	}
+
+	@GetMapping("/status")
+	public JSONLoginStatus getStatus()
+	{
+		final Login loginService = getLoginService();
+		final LoginContext ctx = loginService.getCtx();
+		final LoginStatus loginStatus = ctx.getLoginStatus();
+		switch (loginStatus)
+		{
+			case NOT_LOGGED_IN:
+			{
+				return JSONLoginStatus.requiresAuthentication();
+			}
+			case AUTHENTICATED:
+			{
+				if (loginService.is2FARequired() && !ctx.is2FAAuthenticated())
+				{
+					return JSONLoginStatus.requires2FA();
+				}
+				else
+				{
+					final List<JSONLoginRole> availableRoles = createJSONLoginRoles(loginService, loginService.getUserRoles());
+					return JSONLoginStatus.requiresLoginComplete(availableRoles);
+				}
+			}
+			case LOGIN_COMPLETE:
+			{
+				return JSONLoginStatus.loggedIn();
+			}
+			default:
+			{
+				throw new AdempiereException("Unknown login status: " + loginStatus);
+			}
+		}
 	}
 
 	@GetMapping("/logout")
@@ -528,5 +572,21 @@ public class LoginRestController
 		final String username = usersService.extractUserLogin(user);
 		final HashableString password = usersService.extractUserPassword(user);
 		return authenticate(username, password, null);
+	}
+
+	@GetMapping("/oauth2/providers")
+	public JSONOAuth2Providers getOAuthProviders()
+	{
+		return oauthClientRegistrationRepository.stream()
+				.map(LoginRestController::toJSONOAuth2Provider)
+				.collect(JSONOAuth2Providers.collect());
+	}
+
+	private static JSONOAuth2Provider toJSONOAuth2Provider(final ClientRegistration clientRegistration)
+	{
+		return JSONOAuth2Provider.builder()
+				.code(clientRegistration.getRegistrationId())
+				.caption(clientRegistration.getClientName())
+				.build();
 	}
 }

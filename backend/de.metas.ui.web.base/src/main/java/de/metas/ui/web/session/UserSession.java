@@ -22,6 +22,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -29,9 +31,9 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.annotation.Nullable;
@@ -71,6 +73,7 @@ import java.util.function.Supplier;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Service
+@RequiredArgsConstructor
 public class UserSession
 {
 	/**
@@ -154,25 +157,21 @@ public class UserSession
 	/**
 	 * @return true if we are running in a webui thread (i.e. NOT a background daemon thread)
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean isWebuiThread()
 	{
 		return RequestContextHolder.getRequestAttributes() != null;
 	}
 
-	// services
-	static final Logger logger = LogManager.getLogger(UserSession.class);
-	private final transient ApplicationEventPublisher eventPublisher;
-
 	private static UserSession _staticUserSession = null;
 
-	@Autowired
-	private InternalUserSessionData _data; // session scoped
+	// services
+	@NonNull static final Logger logger = LogManager.getLogger(UserSession.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ApplicationEventPublisher eventPublisher;
 
-	@Autowired
-	public UserSession(final ApplicationEventPublisher eventPublisher)
-	{
-		this.eventPublisher = eventPublisher;
-	}
+	@NonNull private final InternalUserSessionData _data; // session scoped
 
 	private InternalUserSessionData getData()
 	{
@@ -182,7 +181,12 @@ public class UserSession
 
 	public WebuiSessionId getSessionId()
 	{
-		return getData().getSessionId();
+		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+		if (requestAttributes == null)
+		{
+			throw new AdempiereException("No request attributes found. Please make sure that the current thread is a webui thread.");
+		}
+		return WebuiSessionId.ofNullableString(requestAttributes.getSessionId());
 	}
 
 	/**
@@ -235,7 +239,7 @@ public class UserSession
 
 	public void assertLoggedIn()
 	{
-		if (!getData().isLoggedIn())
+		if (!isLoggedIn())
 		{
 			throw new NotLoggedInException();
 		}
@@ -251,7 +255,7 @@ public class UserSession
 			throw new NotLoggedInAsSysAdminException();
 		}
 	}
-	
+
 	public boolean isLoggedInAsSysAdmin()
 	{
 		final InternalUserSessionData data = getData();
@@ -260,7 +264,7 @@ public class UserSession
 
 	public void assertNotLoggedIn()
 	{
-		if (getData().isLoggedIn())
+		if (isLoggedIn())
 		{
 			throw new AlreadyLoggedInException();
 		}
@@ -299,6 +303,11 @@ public class UserSession
 	public OrgId getOrgId()
 	{
 		return getData().getOrgId();
+	}
+
+	public String getOrgName()
+	{
+		return getData().getOrgName();
 	}
 
 	public String getAD_Language()
@@ -439,7 +448,7 @@ public class UserSession
 		return oldDefaultBoilerPlate;
 	}
 
-	public ConditionsId setNewDefaultFlatrateConditionsIdAndReturnOld (final @Nullable ConditionsId defaultFlatrateConditionsId)
+	public ConditionsId setNewDefaultFlatrateConditionsIdAndReturnOld(final @Nullable ConditionsId defaultFlatrateConditionsId)
 	{
 		final InternalUserSessionData data = getData();
 		final ConditionsId oldDefaultFlatrateConditionsId = data.getDefaultFlatrateConditionsId();
@@ -506,7 +515,7 @@ public class UserSession
 	public Supplier<Duration> getDefaultLookupSearchStartDelay()
 	{
 		return () -> {
-			final int defaultLookupSearchStartDelayMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DefaultLookupSearchStartDelayMillis, 0);
+			final int defaultLookupSearchStartDelayMillis = sysConfigBL.getIntValue(SYSCONFIG_DefaultLookupSearchStartDelayMillis, 0);
 			return defaultLookupSearchStartDelayMillis > 0 ? Duration.ofMillis(defaultLookupSearchStartDelayMillis) : Duration.ZERO;
 		};
 	}
@@ -518,14 +527,14 @@ public class UserSession
 
 	public boolean isAlwaysShowNewBPartner()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_isAlwaysDisplayNewBPartner, false, getClientId().getRepoId(), getOrgId().getRepoId());
+		return sysConfigBL.getBooleanValue(SYSCONFIG_isAlwaysDisplayNewBPartner, false, getClientId().getRepoId(), getOrgId().getRepoId());
 	}
 
 	@NonNull
 	public ZoneId getTimeZone()
 	{
 		final OrgId orgId = getOrgId();
-		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+		final OrgInfo orgInfo = orgDAO.getOrgInfoById(orgId);
 		if (orgInfo.getTimeZone() != null)
 		{
 			return orgInfo.getTimeZone();

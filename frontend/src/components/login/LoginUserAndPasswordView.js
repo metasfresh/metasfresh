@@ -24,44 +24,39 @@ import React, { useEffect, useRef, useState } from 'react';
 import counterpart from 'counterpart';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
+import OAuth2LoginButtons from './OAuth2LoginButtons';
 
 export const LoginUserAndPasswordView = ({
+  disabled,
+  error,
+  clearError,
   onSubmit,
   onForgotPasswordClicked,
 }) => {
   const usernameRef = useRef(null);
 
-  const [pending, setPending] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
 
-  const isSubmitEnabled = !pending && !!username && !!password;
+  const isEnabled = !disabled;
+  const isSubmitEnabled = isEnabled && !!username && !!password;
 
   useEffect(() => {
-    if (!pending) {
+    if (isEnabled) {
       usernameRef.current.focus();
     }
-  }, [pending]);
+  }, [isEnabled]);
 
   const fireOnSubmit = () => {
     if (!isSubmitEnabled) return;
 
-    setPending(true);
-    onSubmit({
-      username,
-      password,
-      setError: (errorMsg) => {
-        setError(errorMsg);
-        setPending(false);
-      },
-    });
+    onSubmit({ username, password });
   };
 
   return (
     <div
       onKeyUp={(e) => {
-        if (!pending && e.key === 'Enter') {
+        if (isSubmitEnabled && e.key === 'Enter') {
           fireOnSubmit();
         }
       }}
@@ -77,15 +72,15 @@ export const LoginUserAndPasswordView = ({
           value={username}
           onChange={(e) => {
             e.preventDefault();
-            setError('');
+            clearError();
             setUsername(e.target.value);
           }}
           name="username"
           className={classnames('input-primary input-block', {
             'input-error': error,
-            'input-disabled': pending,
+            'input-disabled': !isEnabled,
           })}
-          disabled={pending}
+          disabled={!isEnabled}
         />
       </div>
       <div>
@@ -98,21 +93,21 @@ export const LoginUserAndPasswordView = ({
           value={password}
           onChange={(e) => {
             e.preventDefault();
-            setError('');
+            clearError();
             setPassword(e.target.value);
           }}
           className={classnames('input-primary input-block', {
             'input-error': error,
-            'input-disabled': pending,
+            'input-disabled': !isEnabled,
           })}
-          disabled={pending}
+          disabled={!isEnabled}
         />
       </div>
       <div className="mt-2">
         <button
           className="btn btn-sm btn-block btn-meta-success"
           onClick={fireOnSubmit}
-          disabled={pending}
+          disabled={!isSubmitEnabled}
         >
           {counterpart.translate('login.callToAction')}
         </button>
@@ -122,12 +117,17 @@ export const LoginUserAndPasswordView = ({
           {counterpart.translate('login.forgotPassword.caption')}
         </a>
       </div>
+      <div className="mt-2 text-center">
+        <OAuth2LoginButtons disabled={!isEnabled} />
+      </div>
     </div>
   );
 };
 
 LoginUserAndPasswordView.propTypes = {
-  pending: PropTypes.bool,
+  disabled: PropTypes.bool,
+  error: PropTypes.string,
+  clearError: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   onForgotPasswordClicked: PropTypes.func.isRequired,
 };

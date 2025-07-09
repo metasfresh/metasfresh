@@ -23,9 +23,9 @@
 import counterpart from 'counterpart';
 import Moment from 'moment';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { connect, useDispatch } from 'react-redux';
+import { useHistory, withRouter } from 'react-router-dom';
 
 import { connectionError, loginSuccess } from '../../actions/AppActions';
 
@@ -34,6 +34,7 @@ import PasswordRecovery from './PasswordRecovery';
 import { BAD_GATEWAY_ERROR } from '../../constants/Constants';
 import {
   checkLoginRequest,
+  getLoginStatus,
   login2FA,
   loginCompletionRequest,
   loginRequest,
@@ -47,20 +48,52 @@ const VIEW_USER_AND_PASSWORD = 'userAndPassword';
 const VIEW_2FA = '2fa';
 const VIEW_SELECT_ROLE = 'selectRole';
 
-class LoginForm extends Component {
-  constructor(props) {
-    super(props);
+const LoginForm = ({ token, path, auth }) => {
+  const [currentView, setCurrentView] = useState(VIEW_USER_AND_PASSWORD);
+  const [pending, setPending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isHandleResetSubmit, setIsHandleResetSubmit] = useState(false);
+  const [roles, setRoles] = useState([]);
 
-    this.state = {
-      currentView: VIEW_USER_AND_PASSWORD,
-      err: '',
-      handleResetSubmit: false,
-    };
-  }
+  const history = useHistory();
+  const dispatch = useDispatch();
 
-  handleSuccess = () => {
-    const { auth, history, dispatch } = this.props;
+  const isEnabled = !pending;
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const oauthStatus = urlParams.get('authStatus');
+  const oauthError = urlParams.get('authError');
+  const authErrorMessage = urlParams.get('authErrorMessage');
+  useEffect(() => {
+    if (oauthError) {
+      setErrorMessage(authErrorMessage ?? 'Authentication error'); // TODO trl
+    } else if (oauthStatus === 'success') {
+      setPending(true);
+      getLoginStatus()
+        .then((response) => {
+          console.log('getLoginStatus', { response });
+          if (response.availableRoles != null) {
+            setRoles(response.availableRoles);
+          }
+
+          if (response.status === 'REQUIRES_AUTHENTICATION') {
+            setCurrentView(VIEW_USER_AND_PASSWORD);
+          } else if (response.status === 'REQUIRES_2FA') {
+            setCurrentView(VIEW_2FA);
+          } else if (response.status === 'REQUIRES_LOGIN_COMPLETE') {
+            setCurrentView(VIEW_SELECT_ROLE);
+          } else if (response.status === 'LOGGED_IN') {
+            handleLoginComplete();
+          }
+        })
+        .finally(() => setPending(false));
+      // TODO check login
+    }
+  }, [oauthStatus, oauthError, authErrorMessage]);
+
+  const clearError = () => setErrorMessage('');
+
+  const handleLoginComplete = () => {
     getUserLang().then((response) => {
       //GET language shall always return a result
       Moment.locale(response.data['key']);
@@ -80,13 +113,9 @@ class LoginForm extends Component {
   };
 
   /**
-   * @method checkIfAlreadyLogged
    * @summary Used to verify if a user is already logged in. i.e user is authenticated in another tab and we are on the loging form screen.
-   * @param {*} axiosError
    */
-  checkIfAlreadyLogged(axiosError) {
-    const { history } = this.props;
-
+  const checkIfAlreadyLogged = (axiosError) => {
     console.log('Checking if already logged in...', { axiosError });
     return checkLoginRequest().then((response) => {
       const isLoggedIn = !!response.data;
@@ -99,133 +128,130 @@ class LoginForm extends Component {
         return Promise.reject(axiosError);
       }
     });
-  }
-
-  handleResetOk = (response) => {
-    this.setState(
-      {
-        handleResetSubmit: true,
-        pending: true,
-      },
-      () => {
-        this.afterLoginRequest({
-          promise: new Promise((resolve) => resolve(response)),
-          setError: this.setLoginError,
-        });
-      }
-    );
   };
 
-  setLoginError = (message) => {
+  const handleResetOk = (response) => {
+    setIsHandleResetSubmit(true);
+    setPending(true);
+
+    handleLogin({
+      promise: new Promise((resolve) => resolve(response)),
+      setError: setLoginError,
+    });
+  };
+
+  const setLoginError = (message) => {
     const messageEffective =
-      message || counterpart.translate('login.error.fallback');
+      message ?? counterpart.translate('login.error.fallback');
 
     console.log('setLoginError', { message, messageEffective });
 
-    this.setState({
-      err: messageEffective,
-      pending: false,
-    });
+    setErrorMessage(messageEffective);
+    setPending(false);
   };
 
-  show2FAView = () => {
-    this.setState({ currentView: VIEW_2FA });
+  const show2FAView = () => {
+    setCurrentView(VIEW_2FA);
   };
 
-  showRoleSelectView = (roles) => {
-    this.setState({
-      currentView: VIEW_SELECT_ROLE,
-      dropdownFocused: true, // directly focus the role dropdown
-      roles,
-    });
+  const showRoleSelectView = (roles) => {
+    setCurrentView(VIEW_SELECT_ROLE);
+    setRoles(roles);
   };
 
-  afterLoginRequest = ({ promise, setError }) => {
-    return promise
+  const handleLogin = ({ authenticateFunc }) => {
+    setPending(true);
+    return authenticateFunc()
       .then((response) => {
         const errorType = response.status === 502 ? BAD_GATEWAY_ERROR : '';
-        this.props.dispatch(connectionError({ errorType }));
+        dispatch(connectionError({ errorType }));
 
         if (response.status !== 200) {
-          setError(response?.data?.message);
+          setErrorMessage(response?.data?.message);
         } else if (response.data.loginComplete) {
-          return this.handleSuccess();
+          return handleLoginComplete();
         } else if (response.data.requires2FA) {
-          this.show2FAView();
+          show2FAView();
         } else {
-          this.showRoleSelectView(response.data.roles);
+          showRoleSelectView(response.data.roles);
         }
       })
-      .catch((axiosError) => this.checkIfAlreadyLogged(axiosError))
-      .catch((axiosError) => setError(axiosError?.response?.data?.message));
+      .catch((axiosError) => checkIfAlreadyLogged(axiosError))
+      .catch((axiosError) =>
+        setErrorMessage(axiosError?.response?.data?.message)
+      )
+      .finally(() => setPending(false));
   };
 
-  handleUserAndPasswordLogin = ({ username, password, setError }) => {
-    const promise = loginRequest(username, password);
-    return this.afterLoginRequest({ promise, setError });
+  const handleUserAndPasswordLogin = ({ username, password }) => {
+    return handleLogin({
+      authenticateFunc: () => loginRequest(username, password),
+    });
   };
 
-  handle2FA = ({ code, setError }) => {
-    const promise = login2FA(code);
-    return this.afterLoginRequest({ promise, setError });
+  const handle2FA = ({ code }) => {
+    return handleLogin({ authenticateFunc: () => login2FA(code) });
   };
 
-  handleRoleSelected = ({ role, setError }) => {
-    const { auth } = this.props;
-
+  const handleRoleSelected = ({ role }) => {
+    setPending(true);
     return loginCompletionRequest(role)
       .then(() => {
         auth.login();
-        this.handleSuccess();
+        handleLoginComplete();
       })
       .catch((err) => {
-        setError(
-          err.response
-            ? err.response.data.message
-            : counterpart.translate('login.error.fallback')
+        setErrorMessage(
+          err?.response?.data?.message ??
+            counterpart.translate('login.error.fallback')
         );
-      });
+      })
+      .finally(() => setPending(false));
   };
 
-  handleForgotPassword = () => {
-    const { history } = this.props;
+  const handleForgotPassword = () => {
     history.push('/forgottenPassword');
   };
 
-  render() {
-    const { token, path } = this.props;
-    const { currentView, handleResetSubmit } = this.state;
-    const { roles } = this.state;
-
-    if (path && !handleResetSubmit) {
-      return (
-        <PasswordRecovery
-          path={path}
-          token={token}
-          onResetOk={this.handleResetOk}
-        />
-      );
-    }
-
+  if (path && !isHandleResetSubmit) {
     return (
-      <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
-        <div className="text-center">
-          <img src={logo} className="login-logo mt-2 mb-2" alt="logo" />
-        </div>
-        {currentView === VIEW_USER_AND_PASSWORD && (
-          <LoginUserAndPasswordView
-            onSubmit={this.handleUserAndPasswordLogin}
-            onForgotPasswordClicked={this.handleForgotPassword}
-          />
-        )}
-        {currentView === VIEW_2FA && <Login2FAView onSubmit={this.handle2FA} />}
-        {currentView === VIEW_SELECT_ROLE && (
-          <RoleSelectView roles={roles} onSubmit={this.handleRoleSelected} />
-        )}
-      </div>
+      <PasswordRecovery path={path} token={token} onResetOk={handleResetOk} />
     );
   }
-}
+
+  return (
+    <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
+      <div className="text-center">
+        <img src={logo} className="login-logo mt-2 mb-2" alt="logo" />
+      </div>
+      {currentView === VIEW_USER_AND_PASSWORD && (
+        <LoginUserAndPasswordView
+          disabled={!isEnabled}
+          error={errorMessage}
+          clearError={clearError}
+          onSubmit={handleUserAndPasswordLogin}
+          onForgotPasswordClicked={handleForgotPassword}
+        />
+      )}
+      {currentView === VIEW_2FA && (
+        <Login2FAView
+          disabled={!isEnabled}
+          error={errorMessage}
+          clearError={clearError}
+          onSubmit={handle2FA}
+        />
+      )}
+      {currentView === VIEW_SELECT_ROLE && (
+        <RoleSelectView
+          disabled={!isEnabled}
+          error={errorMessage}
+          roles={roles}
+          onSubmit={handleRoleSelected}
+        />
+      )}
+    </div>
+  );
+};
 
 LoginForm.propTypes = {
   path: PropTypes.string,
