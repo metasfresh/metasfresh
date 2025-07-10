@@ -28,6 +28,7 @@ import de.metas.ui.web.login.json.JSONResetPassword;
 import de.metas.ui.web.login.json.JSONResetPasswordCompleteRequest;
 import de.metas.ui.web.login.json.JSONResetPasswordRequest;
 import de.metas.ui.web.notification.UserNotificationsService;
+import de.metas.ui.web.oauth2.MetasfreshClientRegistration;
 import de.metas.ui.web.oauth2.MetasfreshOAuthClientRegistrationRepository;
 import de.metas.ui.web.session.UserPreference;
 import de.metas.ui.web.session.UserSession;
@@ -59,7 +60,6 @@ import org.compiere.util.LoginAuthenticateResponse;
 import org.compiere.util.LoginContext;
 import org.compiere.util.LoginStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -582,11 +582,12 @@ public class LoginRestController
 				.collect(JSONOAuth2Providers.collect());
 	}
 
-	private static JSONOAuth2Provider toJSONOAuth2Provider(final ClientRegistration clientRegistration)
+	private static JSONOAuth2Provider toJSONOAuth2Provider(final MetasfreshClientRegistration clientRegistration)
 	{
 		return JSONOAuth2Provider.builder()
 				.code(clientRegistration.getRegistrationId())
 				.caption(clientRegistration.getClientName())
+				.logoUrl(clientRegistration.getLogoUri())
 				.build();
 	}
 }

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_OAuth2_Client extends org.compiere.model.PO implements I_OAuth2_Client, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 38248542L;
+	private static final long serialVersionUID = 1925523060L;
 
     /** Standard Constructor */
     public X_OAuth2_Client (final Properties ctx, final int OAuth2_Client_ID, @Nullable final String trxName)
@@ -143,6 +143,18 @@ public class X_OAuth2_Client extends org.compiere.model.PO implements I_OAuth2_C
 	public java.lang.String getOAuth2_JWKS_URI() 
 	{
 		return get_ValueAsString(COLUMNNAME_OAuth2_JWKS_URI);
+	}
+
+	@Override
+	public void setOAuth2_Logo_URI (final @Nullable java.lang.String OAuth2_Logo_URI)
+	{
+		set_Value (COLUMNNAME_OAuth2_Logo_URI, OAuth2_Logo_URI);
+	}
+
+	@Override
+	public java.lang.String getOAuth2_Logo_URI() 
+	{
+		return get_ValueAsString(COLUMNNAME_OAuth2_Logo_URI);
 	}
 
 	@Override

@@ -290,6 +290,27 @@ public interface I_OAuth2_Client
 	String COLUMNNAME_OAuth2_JWKS_URI = "OAuth2_JWKS_URI";
 
 	/**
+	 * Set Logo URI.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOAuth2_Logo_URI (@Nullable java.lang.String OAuth2_Logo_URI);
+
+	/**
+	 * Get Logo URI.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOAuth2_Logo_URI();
+
+	ModelColumn<I_OAuth2_Client, Object> COLUMN_OAuth2_Logo_URI = new ModelColumn<>(I_OAuth2_Client.class, "OAuth2_Logo_URI", null);
+	String COLUMNNAME_OAuth2_Logo_URI = "OAuth2_Logo_URI";
+
+	/**
 	 * Set Token URI.
 	 *
 	 * <br>Type: String

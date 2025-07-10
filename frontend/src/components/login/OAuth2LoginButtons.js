@@ -20,6 +20,7 @@ const OAuth2LoginButtons = ({ disabled, showLoadingView } = {}) => {
           key={provider.code}
           providerCode={provider.code}
           providerName={provider.caption}
+          logoUrl={provider.logoUrl}
           disabled={disabled}
           onOAuthLoginRequest={({ providerCode }) => {
             showLoadingView();
@@ -46,13 +47,16 @@ export default OAuth2LoginButtons;
 const OAuth2LoginButton = ({
   providerCode,
   providerName,
+  logoUrl,
   disabled,
   onOAuthLoginRequest,
 }) => {
   const caption = trl(`login.oauth2.loginWithCaption`, { name: providerName });
 
   let imageSrc = EMPTY_PNG;
-  if (providerCode === 'google') {
+  if (logoUrl) {
+    imageSrc = logoUrl;
+  } else if (providerCode === 'google') {
     imageSrc = googleLogo;
   }
 
@@ -72,6 +76,7 @@ const OAuth2LoginButton = ({
 OAuth2LoginButton.propTypes = {
   providerCode: PropTypes.string.isRequired,
   providerName: PropTypes.string.isRequired,
+  logoUrl: PropTypes.string,
   disabled: PropTypes.bool,
   onOAuthLoginRequest: PropTypes.func.isRequired,
 };
