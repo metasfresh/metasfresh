@@ -60,7 +60,7 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 	@Param(parameterName = I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID, mandatory = true)
 	private AcctSchemaId p_C_AcctSchema_ID;
 
-	@Param(parameterName = I_C_AcctSchema.COLUMNNAME_CostingMethod, mandatory = true)
+	@Param(parameterName = I_C_AcctSchema.COLUMNNAME_CostingMethod, mandatory = false)
 	private CostingMethod p_costingMethod;
 
 	@Override
@@ -134,7 +134,7 @@ public class M_Inventory_RecomputeCosts extends JavaProcess implements IProcessP
 			return costElementRepository.getMaterialCostingElementsForCostingMethod(p_costingMethod);
 		}
 
-		return costElementRepository.getActiveMaterialCostingElements();
+		return costElementRepository.getActiveMaterialCostingElements(getClientID());
 	}
 
 	private AcctSchemaId getAccountingSchemaId() {return p_C_AcctSchema_ID;}
