@@ -6,20 +6,19 @@ import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
-import de.metas.ui.web.session.json.WebuiSessionId;
 import de.metas.user.UserId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.SessionScope;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Optional;
@@ -58,9 +57,11 @@ import java.util.Properties;
 @Primary
 @SessionScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @lombok.Data
-/* package */ class InternalUserSessionData implements Serializable
+		/* package */ class InternalUserSessionData implements Serializable
 {
-	private static final long serialVersionUID = 4046535476486036184L;
+	@Serial private static final long serialVersionUID = 4046535476486036184L;
+
+	private static final Logger logger = UserSession.logger;
 
 	// ---------------------------------------------------------------------------------------------
 	// NOTE: make sure none of those fields are "final" because this will prevent deserialization
@@ -69,7 +70,6 @@ import java.util.Properties;
 	//
 	// Actual session data
 	private volatile boolean initialized = false;
-	private WebuiSessionId sessionId;
 	private UserPreference userPreference;
 	private boolean loggedIn;
 	private Locale locale = null;
@@ -105,9 +105,6 @@ import java.util.Properties;
 	//
 	public InternalUserSessionData()
 	{
-		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		sessionId = WebuiSessionId.ofNullableString(requestAttributes.getSessionId());
-
 		userPreference = new UserPreference();
 		loggedIn = false;
 
@@ -116,7 +113,7 @@ import java.util.Properties;
 		Env.setContext(ctx, WebRestApiContextProvider.CTXNAME_IsServerContext, false);
 		Env.setContext(ctx, WebRestApiContextProvider.CTXNAME_IsWebUI, true);
 
-		UserSession.logger.trace("User session created: {}", this);
+		logger.trace("User session created: {}", this);
 	}
 
 	void initializeIfNeeded()
@@ -159,13 +156,10 @@ import java.util.Properties;
 	private static Language findInitialLanguage()
 	{
 		final Locale locale = LocaleContextHolder.getLocale();
-		if (locale != null)
+		final Language language = Language.findLanguageByLocale(locale);
+		if (language != null)
 		{
-			final Language language = Language.findLanguageByLocale(locale);
-			if (language != null)
-			{
-				return language;
-			}
+			return language;
 		}
 
 		return Language.getBaseLanguage();
@@ -176,7 +170,6 @@ import java.util.Properties;
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("sessionId", sessionId)
 				.add("loggedIn", loggedIn)
 				.add("locale", locale)
 				.add("userPreferences", userPreference)
@@ -184,6 +177,7 @@ import java.util.Properties;
 				.toString();
 	}
 
+	@Serial
 	private void writeObject(final java.io.ObjectOutputStream out) throws IOException
 	{
 		out.defaultWriteObject();
@@ -191,6 +185,7 @@ import java.util.Properties;
 		UserSession.logger.trace("User session serialized: {}", this);
 	}
 
+	@Serial
 	private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
 	{
 		in.defaultReadObject();
@@ -211,6 +206,11 @@ import java.util.Properties;
 	public OrgId getOrgId()
 	{
 		return Env.getOrgId(getCtx());
+	}
+
+	public String getOrgName()
+	{
+		return Env.getContext(getCtx(), Env.CTXNAME_AD_Org_Name);
 	}
 
 	public UserId getLoggedUserId()
