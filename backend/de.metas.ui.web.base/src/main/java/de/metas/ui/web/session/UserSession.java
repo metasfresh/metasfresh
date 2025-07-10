@@ -289,7 +289,11 @@ public class UserSession
 		// Fire event
 		if (!Objects.equals(adLanguageOld, adLanguageNew))
 		{
-			eventPublisher.publishEvent(new LanguagedChangedEvent(adLanguageNew, getLoggedUserId()));
+			final UserId loggedUserId = getLoggedUserIdIfExists().orElse(null);
+			if(loggedUserId != null)
+			{
+				eventPublisher.publishEvent(new LanguagedChangedEvent(adLanguageNew, loggedUserId));
+			}
 		}
 
 		return adLanguageOld;
