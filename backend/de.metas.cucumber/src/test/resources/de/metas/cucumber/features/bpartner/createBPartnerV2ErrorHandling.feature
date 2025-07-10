@@ -6,6 +6,9 @@ Feature: Error handling during: create or update BPartner v2
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And add HTTP header
+      | Key             | Value |
+      | Accept-Language | en_US |
 
 
   Scenario: Setting bPartner.name to null generates a validation error
