@@ -511,13 +511,6 @@ public class LoginRestController
 		usersService.createResetPasswordByEMailRequest(request.getEmail());
 	}
 
-	@GetMapping("/resetPassword/{token}")
-	@Deprecated
-	public JSONResetPassword getResetPasswordInfo(@PathVariable("token") final String token)
-	{
-		return resetPasswordInitByToken(token);
-	}
-
 	@PostMapping("/resetPassword/{token}/init")
 	public JSONResetPassword resetPasswordInitByToken(@PathVariable("token") final String token)
 	{

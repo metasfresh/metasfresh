@@ -30,7 +30,6 @@ import { useHistory } from 'react-router-dom';
 import { connectionError, loginSuccess } from '../../actions/AppActions';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
-import PasswordRecovery from './PasswordRecovery';
 import { BAD_GATEWAY_ERROR } from '../../constants/Constants';
 import {
   checkLoginRequest,
@@ -50,14 +49,13 @@ const VIEW_USER_AND_PASSWORD = 'userAndPassword';
 const VIEW_2FA = '2fa';
 const VIEW_SELECT_ROLE = 'selectRole';
 
-const LoginForm = ({ token, path, auth }) => {
+const LoginForm = ({ auth }) => {
   const history = useHistory();
   const dispatch = useDispatch();
 
   const [currentView, setCurrentView] = useState(VIEW_LOADING);
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isHandleResetSubmit, setIsHandleResetSubmit] = useState(false);
   const [roles, setRoles] = useState([]);
 
   const isEnabled = !pending;
@@ -99,26 +97,6 @@ const LoginForm = ({ token, path, auth }) => {
         return Promise.reject(axiosError);
       }
     });
-  };
-
-  const handleResetOk = (response) => {
-    setIsHandleResetSubmit(true);
-    setPending(true);
-
-    handleLogin({
-      promise: new Promise((resolve) => resolve(response)),
-      setError: setLoginError,
-    });
-  };
-
-  const setLoginError = (message) => {
-    const messageEffective =
-      message ?? counterpart.translate('login.error.fallback');
-
-    console.log('setLoginError', { message, messageEffective });
-
-    setErrorMessage(messageEffective);
-    setPending(false);
   };
 
   const showLoadingView = () => {
@@ -210,12 +188,6 @@ const LoginForm = ({ token, path, auth }) => {
   // ---------------------------------------------------------
   //
 
-  if (path && !isHandleResetSubmit) {
-    return (
-      <PasswordRecovery path={path} token={token} onResetOk={handleResetOk} />
-    );
-  }
-
   return (
     <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
       <div className="text-center">
@@ -255,7 +227,6 @@ const LoginForm = ({ token, path, auth }) => {
 LoginForm.propTypes = {
   auth: PropTypes.object,
   token: PropTypes.string,
-  path: PropTypes.string,
 };
 
 export default LoginForm;

@@ -20,9 +20,8 @@
  * #L%
  */
 
-import React, { Component } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import counterpart from 'counterpart';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 import {
@@ -31,142 +30,106 @@ import {
   resetPasswordComplete,
   resetPasswordRequest,
 } from '../../api/login';
-import history from '../../services/History';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import { useHistory } from 'react-router-dom';
 
-class PasswordRecovery extends Component {
-  constructor(props) {
-    super(props);
+const PasswordRecovery = () => {
+  const history = useHistory();
+  const focusFieldRef = useRef();
+  const [error, setError] = useState('');
+  const [pending, setPending] = useState(false);
+  const [isResetEmailSent, setIsResetEmailSent] = useState(false);
+  const [form, setForm] = useState({});
+  const [isInvalidToken, setIsInvalidToken] = useState(false);
 
-    this.state = {
-      err: '',
-      pending: false,
-      resetEmailSent: false,
-      form: {},
-      invalidToken: false,
-    };
-  }
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
 
-  componentDidMount() {
-    const { token } = this.props;
-    const resetPassword = !!token;
+  const isShowNewPasswordPanel = !!token;
 
-    if (resetPassword) {
-      this.getUserData().catch(({ data }) => {
-        this.setState({
-          err: data.message,
-          invalidToken: true,
+  useEffect(() => {
+    if (token) {
+      getResetPasswordInfo(token)
+        .then(({ data }) => {
+          setForm({
+            ...form,
+            email: data.email,
+            fullname: data.fullname,
+          });
+        })
+        .catch(({ data }) => {
+          setError(data.message);
+          setIsInvalidToken(true);
         });
-      });
     }
+  }, [token]);
 
-    this.focusField.focus();
-  }
+  useEffect(() => {
+    focusFieldRef?.current?.focus();
+  }, []);
 
-  getUserData = () => {
-    const { token } = this.props;
-    const { form } = this.state;
-
-    return getResetPasswordInfo(token).then(({ data }) => {
-      this.setState({
-        form: {
-          ...form,
-          email: data.email,
-          fullname: data.fullname,
-        },
-      });
-    });
-  };
-
-  redirectToLogin = () => {
+  const redirectToLogin = () => {
     history.push('/login');
   };
+  const redirectToHome = () => {
+    history.push('/');
+  };
 
-  handleChange = (e, name) => {
+  const handleFieldChange = (e, name) => {
     e.preventDefault();
 
-    this.setState({
-      err: '',
-      form: {
-        ...this.state.form,
-        [`${name}`]: e.target.value,
-      },
+    setError('');
+    setForm({
+      ...form,
+      [`${name}`]: e.target.value,
     });
   };
 
-  handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    const { token, onResetOk } = this.props;
-    const { form, resetEmailSent } = this.state;
-    const resetPassword = !!token;
-
-    if (resetEmailSent) {
-      return;
-    }
-
-    if (resetPassword) {
-      const { password, re_password } = this.state.form;
-
-      if (password !== re_password) {
-        this.setState({
-          err: counterpart.translate(
-            'forgotPassword.error.retypedNewPasswordNotMatch'
-          ),
-        });
-      } else {
-        // add email (so we need to save it when loading page)
-        this.setState(
-          {
-            pending: true,
-            err: '',
-          },
-          () => {
-            resetPasswordComplete(token, {
-              email: form.email,
-              password: form.password,
-              token,
-            })
-              .then((response) => {
-                onResetOk(response);
-              })
-              .catch((err) => {
-                this.setState({
-                  err: err.data
-                    ? err.data.message
-                    : counterpart.translate('login.error.fallback'),
-                  pending: false,
-                });
-              });
-          }
-        );
-      }
+    if (isShowNewPasswordPanel) {
+      handleSubmit_NewPasswordPanel();
     } else {
-      this.setState(
-        {
-          pending: true,
-          err: '',
-        },
-        () => {
-          resetPasswordRequest(form)
-            .then(() => {
-              this.setState({
-                resetEmailSent: true,
-                pending: false,
-              });
-            })
-            .catch((error) => {
-              this.setState({ err: error.data.message, pending: false });
-            });
-        }
-      );
+      handleSubmit_EnterEmailPanel();
     }
   };
 
-  renderForgottenPasswordForm = () => {
-    const { pending, err, resetEmailSent } = this.state;
+  const handleSubmit_EnterEmailPanel = () => {
+    if (isResetEmailSent) return;
 
-    if (resetEmailSent) {
+    setPending(true);
+    setError('');
+    resetPasswordRequest(form)
+      .then(() => setIsResetEmailSent(true))
+      .catch((error) => setError(error.data.message))
+      .finally(() => setPending(false));
+  };
+
+  const handleSubmit_NewPasswordPanel = () => {
+    const { email, password, re_password } = form;
+
+    if (password !== re_password) {
+      setError(
+        counterpart.translate('forgotPassword.error.retypedNewPasswordNotMatch')
+      );
+    } else {
+      setPending(true);
+      setError('');
+      resetPasswordComplete(token, { email, password, token })
+        .then(() => redirectToHome())
+        .catch((error) =>
+          setError(
+            error?.data?.message ??
+              counterpart.translate('login.error.fallback')
+          )
+        )
+        .finally(() => setPending(false));
+    }
+  };
+
+  const renderEnterEmailPanel = () => {
+    if (isResetEmailSent) {
       return (
         <div>
           <div className="form-control-label instruction-sent">
@@ -178,7 +141,7 @@ class PasswordRecovery extends Component {
 
     return (
       <div>
-        {err && <div className="input-error">{err}</div>}
+        {error && <div className="input-error">{error}</div>}
         <div>
           <div className="form-control-label">
             <small>
@@ -188,25 +151,23 @@ class PasswordRecovery extends Component {
           <input
             type="email"
             name="email"
-            onChange={(e) => this.handleChange(e, 'email')}
+            onChange={(e) => handleFieldChange(e, 'email')}
             className={classnames('input-primary input-block', {
-              'input-error': err,
+              'input-error': error,
               'input-disabled': pending,
             })}
             disabled={pending}
-            ref={(c) => (this.focusField = c)}
+            ref={focusFieldRef}
           />
         </div>
       </div>
     );
   };
 
-  renderResetPasswordForm = () => {
-    const { err, pending } = this.state;
-
+  const renderNewPasswordPanel = () => {
     return (
       <div>
-        {err && <div className="input-error">{err}</div>}
+        {error && <div className="input-error">{error}</div>}
         <div>
           <div className="form-control-label">
             <small>
@@ -215,14 +176,14 @@ class PasswordRecovery extends Component {
           </div>
           <input
             type="password"
-            onChange={(e) => this.handleChange(e, 'password')}
-            name="password"
+            onChange={(e) => handleFieldChange(e, 'password')}
+            name="newPassword"
             className={classnames('input-primary input-block', {
-              'input-error': err,
+              'input-error': error,
               'input-disabled': pending,
             })}
             disabled={pending}
-            ref={(c) => (this.focusField = c)}
+            ref={focusFieldRef}
           />
         </div>
         <div>
@@ -235,8 +196,8 @@ class PasswordRecovery extends Component {
           </div>
           <input
             type="password"
-            name="re_password"
-            onChange={(e) => this.handleChange(e, 're_password')}
+            name="newPassword2"
+            onChange={(e) => handleFieldChange(e, 're_password')}
             className={classnames('input-primary input-block', {
               'input-disabled': pending,
             })}
@@ -247,53 +208,48 @@ class PasswordRecovery extends Component {
     );
   };
 
-  renderInvalid = () => {
-    const { err } = this.state;
-    const buttonMessage = 'Return to login';
-
+  const renderInvalidPanel = () => {
     return (
       <div>
-        <div>{err && <div className="input-error">{err}</div>}</div>
+        <div>{error && <div className="input-error">{error}</div>}</div>
         <div className="mt-2">
           <button
             className="btn btn-sm btn-block btn-meta-success"
             type="button"
-            onClick={this.redirectToLogin}
+            onClick={redirectToLogin}
           >
-            {buttonMessage}
+            Return to login
           </button>
         </div>
       </div>
     );
   };
 
-  renderContent = () => {
-    const { token } = this.props;
-    const { pending, resetEmailSent, form } = this.state;
-    const resetPassword = !!token;
-    const buttonMessage = resetPassword
+  const renderContentPanel = () => {
+    const { fullname } = form;
+    const buttonMessage = isShowNewPasswordPanel
       ? counterpart.translate('forgotPassword.changePassword.caption')
       : counterpart.translate('forgotPassword.sendResetCode.caption');
     const avatarSrc = getPasswordResetAvatarUrl(token);
 
     return (
       <div>
-        {resetPassword && avatarSrc && (
+        {isShowNewPasswordPanel && avatarSrc && (
           <div className="text-center">
             <img src={avatarSrc} className="avatar mt-2 mb-2" alt="avatar" />
           </div>
         )}
-        {form.fullname && (
+        {fullname && (
           <div className="text-center">
-            <span className="user-data">{form.fullname}</span>
+            <span className="user-data">{fullname}</span>
           </div>
         )}
-        <form ref={(c) => (this.form = c)} onSubmit={this.handleSubmit}>
-          {!resetEmailSent && resetPassword
-            ? this.renderResetPasswordForm()
-            : this.renderForgottenPasswordForm()}
+        <form onSubmit={handleSubmit}>
+          {!isResetEmailSent && isShowNewPasswordPanel
+            ? renderNewPasswordPanel()
+            : renderEnterEmailPanel()}
 
-          {!resetEmailSent && (
+          {!isResetEmailSent && (
             <div className="mt-2">
               <button
                 className="btn btn-sm btn-block btn-meta-success"
@@ -309,24 +265,27 @@ class PasswordRecovery extends Component {
     );
   };
 
-  render() {
-    const { invalidToken } = this.state;
-
-    return (
-      <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
-        <div className="text-center">
-          <img src={logo} className="header-logo mt-2 mb-2" alt="logo" />
+  return (
+    <div className="fullscreen">
+      <div className="login-container">
+        <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
+          <div className="text-center">
+            <img src={logo} className="header-logo mt-2 mb-2" alt="logo" />
+          </div>
+          <div>
+            {isInvalidToken ? renderInvalidPanel() : renderContentPanel()}
+          </div>
         </div>
-        <div>{invalidToken ? this.renderInvalid() : this.renderContent()}</div>
       </div>
-    );
-  }
-}
-
-PasswordRecovery.propTypes = {
-  path: PropTypes.string.isRequired,
-  token: PropTypes.string,
-  onResetOk: PropTypes.func,
+    </div>
+  );
 };
 
 export default PasswordRecovery;
+
+//
+//
+// ------------------------------------------
+//
+//
+//

@@ -5,11 +5,11 @@ import queryString from 'query-string';
 import history from '../services/History';
 import PrivateRoute from './PrivateRoute';
 import TokenRoute from './TokenRoute';
-import LoginRoute from './LoginRoute';
-import ResetPasswordRoute from './ResetPasswordRoute';
 
 // import PluginContainer, { pluginWrapper } from './components/PluginContainer';
 import PaypalReservationConfirm from '../containers/PaypalReservationConfirm.js';
+import PasswordRecovery from '../components/login/PasswordRecovery';
+import Login from '../containers/Login';
 
 /**
  * this is the part of the application that activates the plugins from the plugins array found in - plugins.js
@@ -78,13 +78,10 @@ const pluginRoutes = getPluginsRoutes(plugins);
 const Routes = () => {
   return (
     <Switch>
-      <Route exact path="/login" component={LoginRoute} />
+      <Route exact path="/login" component={Login} />
       <Route path="/token/:tokenId" component={TokenRoute} />
-      <Route
-        path="/forgottenPassword"
-        render={(props) => <LoginRoute {...props} splatPath />}
-      />
-      <Route path="/resetPassword" component={ResetPasswordRoute} />
+      <Route path="/forgottenPassword" component={PasswordRecovery} />
+      <Route path="/resetPassword" component={PasswordRecovery} />
       <Route
         path="/paypal_confirm"
         component={({ location }) => {
