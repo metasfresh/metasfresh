@@ -219,7 +219,7 @@ public class CostElementRepository implements ICostElementRepository
 	{
 		return getIndexedCostElements()
 				.streamByClientId(clientId)
-				.filter(ce -> ce.isMaterial())
+				.filter(CostElement::isMaterial)
 				.collect(ImmutableList.toImmutableList());
 	}
 
