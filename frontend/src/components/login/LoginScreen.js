@@ -24,8 +24,8 @@ import counterpart from 'counterpart';
 import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { Redirect, useHistory } from 'react-router-dom';
 
 import { connectionError, loginSuccess } from '../../actions/AppActions';
 
@@ -43,15 +43,22 @@ import { Login2FAView } from './Login2FAView';
 import { RoleSelectView } from './RoleSelectView';
 import { getUserLang } from '../../api/userSession';
 import LoadingView from './LoadingView';
+import { useAuth } from '../../hooks/useAuth';
+import { isBrowserSupported } from '../../utils/browser';
+import ErrorScreen from '../app/ErrorScreen';
 
 const VIEW_LOADING = 'loading';
 const VIEW_USER_AND_PASSWORD = 'userAndPassword';
 const VIEW_2FA = '2fa';
 const VIEW_SELECT_ROLE = 'selectRole';
 
-const LoginForm = ({ auth }) => {
+const LoginScreen = () => {
+  const auth = useAuth();
   const history = useHistory();
   const dispatch = useDispatch();
+  const { connectionErrorType } = useSelector((state) => ({
+    connectionErrorType: state.appHandler?.connectionErrorType ?? '',
+  }));
 
   const [currentView, setCurrentView] = useState(VIEW_LOADING);
   const [pending, setPending] = useState(false);
@@ -175,6 +182,7 @@ const LoginForm = ({ auth }) => {
   //
   // ---------------------------------------------------------
   //
+
   useUpdateFromLoginStatus({
     onError: setErrorMessage,
     setPending,
@@ -188,48 +196,64 @@ const LoginForm = ({ auth }) => {
   // ---------------------------------------------------------
   //
 
+  if (auth.isLoggedIn) {
+    console.log('Already logged in, redirecting to /');
+    return <Redirect to="/" />;
+  }
+
   return (
-    <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
-      <div className="text-center">
-        <img src={logo} className="login-logo mt-2 mb-2" alt="logo" />
+    <div className="fullscreen">
+      <div className="login-container">
+        <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
+          <div className="text-center">
+            <img src={logo} className="login-logo mt-2 mb-2" alt="logo" />
+          </div>
+          {currentView === VIEW_LOADING && <LoadingView />}
+          {currentView === VIEW_USER_AND_PASSWORD && (
+            <LoginUserAndPasswordView
+              disabled={!isEnabled}
+              error={errorMessage}
+              clearError={clearError}
+              showLoadingView={showLoadingView}
+              onSubmit={handleUserAndPasswordLogin}
+              onForgotPasswordClicked={handleForgotPassword}
+            />
+          )}
+          {currentView === VIEW_2FA && (
+            <Login2FAView
+              disabled={!isEnabled}
+              error={errorMessage}
+              clearError={clearError}
+              onSubmit={handle2FA}
+            />
+          )}
+          {currentView === VIEW_SELECT_ROLE && (
+            <RoleSelectView
+              disabled={!isEnabled}
+              error={errorMessage}
+              roles={roles}
+              onSubmit={handleRoleSelected}
+            />
+          )}
+        </div>
+        {!isBrowserSupported() && (
+          <div className="browser-warning">
+            <p>Your browser might be not fully supported.</p>
+            <p>Please try Chrome in case of any errors.</p>
+          </div>
+        )}
       </div>
-      {currentView === VIEW_LOADING && <LoadingView />}
-      {currentView === VIEW_USER_AND_PASSWORD && (
-        <LoginUserAndPasswordView
-          disabled={!isEnabled}
-          error={errorMessage}
-          clearError={clearError}
-          showLoadingView={showLoadingView}
-          onSubmit={handleUserAndPasswordLogin}
-          onForgotPasswordClicked={handleForgotPassword}
-        />
-      )}
-      {currentView === VIEW_2FA && (
-        <Login2FAView
-          disabled={!isEnabled}
-          error={errorMessage}
-          clearError={clearError}
-          onSubmit={handle2FA}
-        />
-      )}
-      {currentView === VIEW_SELECT_ROLE && (
-        <RoleSelectView
-          disabled={!isEnabled}
-          error={errorMessage}
-          roles={roles}
-          onSubmit={handleRoleSelected}
-        />
-      )}
+      {connectionErrorType && <ErrorScreen errorType={connectionErrorType} />}
     </div>
   );
 };
 
-LoginForm.propTypes = {
+LoginScreen.propTypes = {
   auth: PropTypes.object,
   token: PropTypes.string,
 };
 
-export default LoginForm;
+export default LoginScreen;
 
 //
 //
