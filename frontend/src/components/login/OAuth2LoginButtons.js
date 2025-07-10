@@ -1,19 +1,30 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useOAuth2Providers } from '../../auth/useOAuth2Providers';
-import { getOAuth2ProviderUrl } from '../../api/login';
+import googleLogo from '../../assets/images/oauth2/google.svg';
+import { EMPTY_PNG } from '../../constants/Constants';
+import { trl } from '../../utils/locale';
 
-const OAuth2LoginButtons = ({ disabled } = {}) => {
-  const { providers } = useOAuth2Providers();
+const OAuth2LoginButtons = ({ disabled, showLoadingView } = {}) => {
+  const { providers, onOAuthLoginRequest } = useOAuth2Providers();
+
+  if (!providers?.length) return null;
 
   return (
-    <div>
+    <div className="OAuth2LoginButtons">
+      <div className="oauth-top-separator">
+        <span>{trl('login.oauth2.separatorText')}</span>
+      </div>
       {providers.map((provider) => (
         <OAuth2LoginButton
           key={provider.code}
-          code={provider.code}
-          caption={provider.caption}
+          providerCode={provider.code}
+          providerName={provider.caption}
           disabled={disabled}
+          onOAuthLoginRequest={({ providerCode }) => {
+            showLoadingView();
+            onOAuthLoginRequest({ providerCode });
+          }}
         />
       ))}
     </div>
@@ -21,6 +32,7 @@ const OAuth2LoginButtons = ({ disabled } = {}) => {
 };
 OAuth2LoginButtons.propTypes = {
   disabled: PropTypes.bool,
+  showLoadingView: PropTypes.func.isRequired,
 };
 
 export default OAuth2LoginButtons;
@@ -31,22 +43,35 @@ export default OAuth2LoginButtons;
 //
 //
 
-const OAuth2LoginButton = ({ code, caption, disabled }) => {
-  const oAuth2ProviderUrl = getOAuth2ProviderUrl({ code });
+const OAuth2LoginButton = ({
+  providerCode,
+  providerName,
+  disabled,
+  onOAuthLoginRequest,
+}) => {
+  const caption = trl(`login.oauth2.loginWithCaption`, { name: providerName });
+
+  let imageSrc = EMPTY_PNG;
+  if (providerCode === 'google') {
+    imageSrc = googleLogo;
+  }
 
   return (
     <button
+      className="btn btn-sm btn-block btn-meta-outline-secondary provider-button"
       disabled={disabled}
-      onClick={() => {
-        document.location.href = oAuth2ProviderUrl;
-      }}
+      onClick={() => onOAuthLoginRequest({ providerCode })}
     >
+      {imageSrc && (
+        <img className="provider-logo" src={imageSrc} alt={caption} />
+      )}
       {caption}
     </button>
   );
 };
 OAuth2LoginButton.propTypes = {
-  code: PropTypes.string.isRequired,
-  caption: PropTypes.string.isRequired,
+  providerCode: PropTypes.string.isRequired,
+  providerName: PropTypes.string.isRequired,
   disabled: PropTypes.bool,
+  onOAuthLoginRequest: PropTypes.func.isRequired,
 };

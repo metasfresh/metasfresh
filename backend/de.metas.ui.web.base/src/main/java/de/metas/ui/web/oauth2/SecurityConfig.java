@@ -24,6 +24,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -61,9 +62,8 @@ public class SecurityConfig
 				)
 				// Configure OAuth2 Login
 				.oauth2Login(oauth2Login -> oauth2Login
-								// .defaultSuccessUrl(frontendBaseUrl + "?authStatus=success", true)
-								.successHandler(oauth2AuthenticationSuccessHandler())
-						// .failureUrl(frontendBaseUrl + "?authError=oauth_login_failed")
+						.successHandler(oauth2AuthenticationSuccessHandler())
+						.failureHandler(oauth2AuthenticationFailureHandler())
 				)
 		//
 		// If you want to use Spring Security's session management alongside your custom one,
@@ -72,6 +72,14 @@ public class SecurityConfig
 		;
 
 		return http.build();
+	}
+
+	public AuthenticationFailureHandler oauth2AuthenticationFailureHandler()
+	{
+		return (request, response, exception) -> {
+			logger.warn("Authentication failure", exception);
+			response.sendRedirect(AuthResponse.builder().authError("unexpected_error").exception(exception).build().toRedirectUrl(webuiURLs));
+		};
 	}
 
 	@Bean

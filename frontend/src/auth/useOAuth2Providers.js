@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getOAuth2Providers } from '../api/login';
+import { getOAuth2Providers, getOAuth2ProviderUrl } from '../api/login';
 
 export const useOAuth2Providers = () => {
   const [providers, setProviders] = useState([]);
@@ -10,5 +10,15 @@ export const useOAuth2Providers = () => {
     });
   }, []);
 
-  return { providers };
+  return {
+    providers,
+    onOAuthLoginRequest: ({ providerCode }) => {
+      if (!providerCode) {
+        console.warn(`Invalid provider: ${providerCode}`);
+        return;
+      }
+
+      window.location.href = getOAuth2ProviderUrl({ providerCode });
+    },
+  };
 };

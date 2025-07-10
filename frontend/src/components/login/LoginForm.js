@@ -24,8 +24,8 @@ import counterpart from 'counterpart';
 import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
-import { connect, useDispatch } from 'react-redux';
-import { useHistory, withRouter } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
 import { connectionError, loginSuccess } from '../../actions/AppActions';
 
@@ -43,53 +43,24 @@ import { LoginUserAndPasswordView } from './LoginUserAndPasswordView';
 import { Login2FAView } from './Login2FAView';
 import { RoleSelectView } from './RoleSelectView';
 import { getUserLang } from '../../api/userSession';
+import LoadingView from './LoadingView';
 
+const VIEW_LOADING = 'loading';
 const VIEW_USER_AND_PASSWORD = 'userAndPassword';
 const VIEW_2FA = '2fa';
 const VIEW_SELECT_ROLE = 'selectRole';
 
 const LoginForm = ({ token, path, auth }) => {
-  const [currentView, setCurrentView] = useState(VIEW_USER_AND_PASSWORD);
+  const history = useHistory();
+  const dispatch = useDispatch();
+
+  const [currentView, setCurrentView] = useState(VIEW_LOADING);
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isHandleResetSubmit, setIsHandleResetSubmit] = useState(false);
   const [roles, setRoles] = useState([]);
 
-  const history = useHistory();
-  const dispatch = useDispatch();
-
   const isEnabled = !pending;
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const oauthStatus = urlParams.get('authStatus');
-  const oauthError = urlParams.get('authError');
-  const authErrorMessage = urlParams.get('authErrorMessage');
-  useEffect(() => {
-    if (oauthError) {
-      setErrorMessage(authErrorMessage ?? 'Authentication error'); // TODO trl
-    } else if (oauthStatus === 'success') {
-      setPending(true);
-      getLoginStatus()
-        .then((response) => {
-          console.log('getLoginStatus', { response });
-          if (response.availableRoles != null) {
-            setRoles(response.availableRoles);
-          }
-
-          if (response.status === 'REQUIRES_AUTHENTICATION') {
-            setCurrentView(VIEW_USER_AND_PASSWORD);
-          } else if (response.status === 'REQUIRES_2FA') {
-            setCurrentView(VIEW_2FA);
-          } else if (response.status === 'REQUIRES_LOGIN_COMPLETE') {
-            setCurrentView(VIEW_SELECT_ROLE);
-          } else if (response.status === 'LOGGED_IN') {
-            handleLoginComplete();
-          }
-        })
-        .finally(() => setPending(false));
-      // TODO check login
-    }
-  }, [oauthStatus, oauthError, authErrorMessage]);
 
   const clearError = () => setErrorMessage('');
 
@@ -150,13 +121,23 @@ const LoginForm = ({ token, path, auth }) => {
     setPending(false);
   };
 
+  const showLoadingView = () => {
+    setCurrentView(VIEW_LOADING);
+  };
+
+  const showUserAndPasswordView = () => {
+    setCurrentView(VIEW_USER_AND_PASSWORD);
+  };
+
   const show2FAView = () => {
     setCurrentView(VIEW_2FA);
   };
 
-  const showRoleSelectView = (roles) => {
+  const showRoleSelectView = ({ roles }) => {
+    if (roles != null) {
+      setRoles(roles);
+    }
     setCurrentView(VIEW_SELECT_ROLE);
-    setRoles(roles);
   };
 
   const handleLogin = ({ authenticateFunc }) => {
@@ -173,7 +154,7 @@ const LoginForm = ({ token, path, auth }) => {
         } else if (response.data.requires2FA) {
           show2FAView();
         } else {
-          showRoleSelectView(response.data.roles);
+          showRoleSelectView({ roles: response.data.roles });
         }
       })
       .catch((axiosError) => checkIfAlreadyLogged(axiosError))
@@ -213,6 +194,22 @@ const LoginForm = ({ token, path, auth }) => {
     history.push('/forgottenPassword');
   };
 
+  //
+  // ---------------------------------------------------------
+  //
+  useUpdateFromLoginStatus({
+    onError: setErrorMessage,
+    setPending,
+    showUserAndPasswordView,
+    showRoleSelectView,
+    show2FAView,
+    handleLoginComplete,
+  });
+
+  //
+  // ---------------------------------------------------------
+  //
+
   if (path && !isHandleResetSubmit) {
     return (
       <PasswordRecovery path={path} token={token} onResetOk={handleResetOk} />
@@ -224,11 +221,13 @@ const LoginForm = ({ token, path, auth }) => {
       <div className="text-center">
         <img src={logo} className="login-logo mt-2 mb-2" alt="logo" />
       </div>
+      {currentView === VIEW_LOADING && <LoadingView />}
       {currentView === VIEW_USER_AND_PASSWORD && (
         <LoginUserAndPasswordView
           disabled={!isEnabled}
           error={errorMessage}
           clearError={clearError}
+          showLoadingView={showLoadingView}
           onSubmit={handleUserAndPasswordLogin}
           onForgotPasswordClicked={handleForgotPassword}
         />
@@ -254,12 +253,52 @@ const LoginForm = ({ token, path, auth }) => {
 };
 
 LoginForm.propTypes = {
-  path: PropTypes.string,
-  token: PropTypes.string,
-  redirect: PropTypes.any,
   auth: PropTypes.object,
-  history: PropTypes.object.isRequired,
-  dispatch: PropTypes.func.isRequired,
+  token: PropTypes.string,
+  path: PropTypes.string,
 };
 
-export default connect()(withRouter(LoginForm));
+export default LoginForm;
+
+//
+//
+// -------------------------------
+//
+//
+
+export const useUpdateFromLoginStatus = ({
+  onError,
+  setPending,
+  showUserAndPasswordView,
+  showRoleSelectView,
+  show2FAView,
+  handleLoginComplete,
+}) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const oauthError = urlParams.get('authError');
+  const authErrorMessage = urlParams.get('authErrorMessage');
+
+  useEffect(() => {
+    if (oauthError) {
+      onError(authErrorMessage ?? 'Authentication error');
+    }
+  }, [oauthError, authErrorMessage]);
+
+  useEffect(() => {
+    setPending(true);
+    getLoginStatus()
+      .then((response) => {
+        console.log('getLoginStatus', { response });
+        if (response.status === 'REQUIRES_AUTHENTICATION') {
+          showUserAndPasswordView();
+        } else if (response.status === 'REQUIRES_2FA') {
+          show2FAView();
+        } else if (response.status === 'REQUIRES_LOGIN_COMPLETE') {
+          showRoleSelectView({ roles: response.availableRoles });
+        } else if (response.status === 'LOGGED_IN') {
+          handleLoginComplete();
+        }
+      })
+      .finally(() => setPending(false));
+  }, []);
+};

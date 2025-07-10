@@ -96,6 +96,8 @@ export function getOAuth2Providers() {
     .then((response) => response.data); // unbox
 }
 
-export function getOAuth2ProviderUrl({ code }) {
-  return `${getApiBaseUrl()}/oauth2/authorization/${code}`;
+export function getOAuth2ProviderUrl({ providerCode }) {
+  return `${getApiBaseUrl()}/oauth2/authorization/${encodeURIComponent(
+    providerCode
+  )}`;
 }

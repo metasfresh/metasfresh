@@ -1,0 +1,32 @@
+.OAuth2LoginButtons {
+  .oauth-top-separator {
+    display: flex;
+    margin-bottom: 10px;
+
+    &::before, &::after {
+      content: "";
+      border-bottom: 1px solid #c2c8d0;
+      flex-grow: 1;
+      flex-shrink: 0;
+      flex-basis: auto;
+      height: .5em;
+      margin: 0;
+    }
+
+    span {
+      text-align: center;
+      flex-grow: 0.2;
+      flex-shrink: 0;
+      flex-basis: auto;
+      margin: 0;
+    }
+  }
+
+  .provider-button {
+    .provider-logo {
+      width: 15px !important;
+      height: 15px !important;
+      margin-right: 5px;
+    }
+  }
+}

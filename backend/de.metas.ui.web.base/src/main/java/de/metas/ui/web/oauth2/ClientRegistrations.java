@@ -3,6 +3,7 @@ package de.metas.ui.web.oauth2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -10,6 +11,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 public class ClientRegistrations implements Iterable<ClientRegistration>
@@ -26,6 +28,11 @@ public class ClientRegistrations implements Iterable<ClientRegistration>
 	public static ClientRegistrations ofList(final List<ClientRegistration> list)
 	{
 		return !list.isEmpty() ? new ClientRegistrations(list) : EMPTY;
+	}
+
+	public static Collector<ClientRegistration, ?, ClientRegistrations> collect()
+	{
+		return GuavaCollectors.collectUsingListAccumulator(ClientRegistrations::ofList);
 	}
 
 	public boolean isEmpty() {return byRegistrationId.isEmpty();}

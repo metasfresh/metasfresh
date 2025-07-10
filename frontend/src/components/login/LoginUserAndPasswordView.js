@@ -30,6 +30,7 @@ export const LoginUserAndPasswordView = ({
   disabled,
   error,
   clearError,
+  showLoadingView,
   onSubmit,
   onForgotPasswordClicked,
 }) => {
@@ -107,7 +108,7 @@ export const LoginUserAndPasswordView = ({
         <button
           className="btn btn-sm btn-block btn-meta-success"
           onClick={fireOnSubmit}
-          disabled={!isSubmitEnabled}
+          disabled={!isEnabled} // we use isEnabled instead of isSubmitEnabled because chrome auto-completes username/password fields but is not sending those values until user clicks on page somewhere
         >
           {counterpart.translate('login.callToAction')}
         </button>
@@ -118,7 +119,10 @@ export const LoginUserAndPasswordView = ({
         </a>
       </div>
       <div className="mt-2 text-center">
-        <OAuth2LoginButtons disabled={!isEnabled} />
+        <OAuth2LoginButtons
+          disabled={!isEnabled}
+          showLoadingView={showLoadingView}
+        />
       </div>
     </div>
   );
@@ -128,6 +132,7 @@ LoginUserAndPasswordView.propTypes = {
   disabled: PropTypes.bool,
   error: PropTypes.string,
   clearError: PropTypes.func.isRequired,
+  showLoadingView: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   onForgotPasswordClicked: PropTypes.func.isRequired,
 };
