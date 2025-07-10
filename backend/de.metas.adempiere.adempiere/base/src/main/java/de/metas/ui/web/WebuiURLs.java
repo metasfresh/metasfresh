@@ -101,7 +101,23 @@ public class WebuiURLs
 			return null;
 		}
 
-		url = url + path;
+		if (url.endsWith("/") && path.startsWith("/"))
+		{
+			// If url ends with a slash and path starts with one,
+			// remove the slash from the path before joining.
+			url = url + path.substring(1);
+		}
+		else if (!url.endsWith("/") && !path.startsWith("/"))
+		{
+			// If neither the url ends with a slash nor the path starts with one,
+			// add a slash in between.
+			url = url + "/" + path;
+		}
+		else
+		{
+			// If only one of them has a slash, they can be safely concatenated.
+			url = url + path;
+		}
 
 		if (params != null && !params.isEmpty())
 		{
