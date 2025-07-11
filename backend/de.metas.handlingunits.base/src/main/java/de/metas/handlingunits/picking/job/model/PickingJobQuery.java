@@ -48,7 +48,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.compiere.util.Env.getZonedDateTime;
+import static de.metas.common.util.time.SystemTime.asZonedDateTime;
 
 @Value
 @Builder
@@ -61,6 +61,7 @@ public class PickingJobQuery
 	@Nullable WarehouseId warehouseId;
 	@Nullable DocumentNoFilter salesOrderDocumentNo;
 	@Nullable ResolvedScannedProductCodes scannedProductCodes;
+	ZonedDateTime currentTime = asZonedDateTime();
 
 	@NonNull
 	public Set<BPartnerId> getOnlyCustomerIdsEffective()
@@ -104,8 +105,8 @@ public class PickingJobQuery
 				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(this.getExcludeShipmentScheduleIds())
 				.scannedProductCodes(this.getScannedProductCodes())
-				.maximumFixedPreparationDate(getZonedDateTime())
-				.maximumFixedPreparationDate(getZonedDateTime())
+				.maximumFixedPreparationDate(currentTime)
+				.maximumFixedPreparationDate(currentTime)
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,
 						PackageableQuery.OrderBy.PreparationDate,

@@ -44,9 +44,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
-import static org.compiere.util.Env.getZonedDateTime;
+import static de.metas.common.util.time.SystemTime.asZonedDateTime;
 
 public class PickingJobCreateCommand
 {
@@ -185,14 +186,16 @@ public class PickingJobCreateCommand
 
 	private static PackageableQuery toPackageableQuery(@NonNull final PickingJobCreateRequest request)
 	{
+		final ZonedDateTime zonedDateTime = asZonedDateTime();
+
 		return PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
 				.salesOrderId(request.getSalesOrderId())
 				.deliveryBPLocationId(request.getDeliveryBPLocationId())
 				.warehouseTypeId(request.getWarehouseTypeId())
 				.onlyShipmentScheduleIds(request.getShipmentScheduleIds())
-				.maximumFixedPreparationDate(getZonedDateTime())
-				.maximumFixedPreparationDate(getZonedDateTime())
+				.maximumFixedPreparationDate(zonedDateTime)
+				.maximumFixedPromisedDate(zonedDateTime)
 				.build();
 	}
 
