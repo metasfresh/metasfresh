@@ -243,3 +243,6 @@ export const TBL_CONTEXT_Y_OFFSET = 65;
  * @type {integer} Used to indicate the popup pre-defined height
  */
 export const TBL_CONTEXT_POPUP_HEIGHT = '215px';
+
+export const EMPTY_PNG =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';

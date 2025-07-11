@@ -6,6 +6,7 @@ import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
+import de.metas.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -45,7 +46,6 @@ import java.util.Properties;
  * Login context for {@link Login}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @SuppressWarnings("SameParameterValue")
 @Getter
@@ -58,9 +58,15 @@ public class LoginContext
 	private String remoteAddr = null;
 	private String remoteHost = null;
 
-	/** true if logging from webui */
+	/**
+	 * true if logging from webui
+	 */
 	private boolean webui = false;
 	private String webSessionId = null;
+
+	private static final String CTXNAME_LoginStatus = "#LoginStatus";
+	private static final String CTXNAME_IsPasswordAuth = "#IsPasswordAuth";
+	private static final String CTXNAME_Is2FAAuth = "#Is2FAAuth";
 
 	public LoginContext(@NonNull final Properties ctx)
 	{
@@ -72,9 +78,26 @@ public class LoginContext
 		return getCtx();
 	}
 
+	public void setLoginStatus(@NonNull final LoginStatus loginStatus)
+	{
+		setProperty(CTXNAME_LoginStatus, loginStatus.name());
+	}
+
+	@NonNull
+	public LoginStatus getLoginStatus()
+	{
+		final String loginStatusStr = StringUtils.trimBlankToNull(getPropertyAsString(CTXNAME_LoginStatus));
+		return loginStatusStr != null ? LoginStatus.valueOf(loginStatusStr) : LoginStatus.NOT_LOGGED_IN;
+	}
+
 	public void setProperty(final String name, final String value)
 	{
 		Env.setContext(getCtx(), name, value);
+	}
+
+	public String getPropertyAsString(final String name)
+	{
+		return Env.getContext(getCtx(), name);
 	}
 
 	public void setProperty(final String name, final boolean valueBoolean)
@@ -96,7 +119,7 @@ public class LoginContext
 	private Optional<Integer> getOptionalPropertyAsInt(final String name)
 	{
 		final Properties ctx = getCtx();
-		if (Env.getContext(ctx, name).length() == 0)   	// could be number 0
+		if (Env.getContext(ctx, name).isEmpty())    // could be number 0
 		{
 			return Optional.empty();
 		}
@@ -149,6 +172,16 @@ public class LoginContext
 		setProperty(Env.CTXNAME_AD_Language, AD_Language);
 	}
 
+	public void setIsPasswordAuthenticated() {setProperty(CTXNAME_IsPasswordAuth, true);}
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public boolean isPasswordAuthenticated() {return getPropertyAsBoolean(CTXNAME_IsPasswordAuth);}
+
+	public void setIs2FAAuthenticated(boolean authenticated) {setProperty(CTXNAME_Is2FAAuth, authenticated);}
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public boolean is2FAAuthenticated() {return getPropertyAsBoolean(CTXNAME_Is2FAAuth);}
+
 	public void setUser(final UserId userId, final String username)
 	{
 		setProperty(Env.CTXNAME_AD_User_ID, UserId.toRepoId(userId));
@@ -173,7 +206,7 @@ public class LoginContext
 	}
 
 	public void setRole(
-			final RoleId roleId, 
+			final RoleId roleId,
 			final String roleName)
 	{
 		setProperty(Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(roleId));
@@ -241,12 +274,6 @@ public class LoginContext
 	public OrgId getOrgId()
 	{
 		return OrgId.ofRepoId(getMandatoryPropertyAsInt(Env.CTXNAME_AD_Org_ID));
-	}
-
-	public void setWarehouse(final WarehouseId warehouseId, final String warehouseName)
-	{
-		setProperty(Env.CTXNAME_M_Warehouse_ID, WarehouseId.toRepoId(warehouseId));
-		Ini.setProperty(Ini.P_WAREHOUSE, warehouseName);
 	}
 
 	@Nullable

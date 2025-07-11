@@ -138,4 +138,6 @@ public class HUTraceEventQuery
 	 */
 	@Nullable
 	HuId anyHuId;
+
+	String huValue;
 }

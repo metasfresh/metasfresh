@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.util.web
+ * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +20,18 @@
  * #L%
  */
 
-package de.metas.util.web.github;
+package de.metas.rest_api.v2.authentication.dto;
 
-import de.metas.util.web.request.EditableHttpServletRequest;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-public interface IAuthenticateGithubService
+@Value
+@Builder
+@Jacksonized
+public class JSONQrLoginAuthRequest
 {
-	void authenticateAndLocateAuthorization(EditableHttpServletRequest requestWrapper);
+	@NonNull
+	String qrCode;
 }
