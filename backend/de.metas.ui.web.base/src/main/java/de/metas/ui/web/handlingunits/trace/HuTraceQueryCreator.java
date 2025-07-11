@@ -74,6 +74,7 @@ final class HuTraceQueryCreator
 					.put(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, HuTraceQueryCreator::updateVhuSourceIdFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_VHUStatus, HuTraceQueryCreator::updateVhuStatusFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_EventTime, HuTraceQueryCreator::updateEventTimeFromParameter)
+					.put(I_M_HU_Trace.COLUMNNAME_M_HU_Value, HuTraceQueryCreator::updateHuValueFromParameter)
 					.build();
 
 	public static HUTraceEventQuery createTraceQueryFromDocumentFilter(@NonNull final DocumentFilter documentFilter)
@@ -295,6 +296,14 @@ final class HuTraceQueryCreator
 		}
 
 		return query.withHuTraceEventId(OptionalInt.of(extractInt(parameter)));
+	}
+
+	private static HUTraceEventQuery updateHuValueFromParameter(
+			@NonNull final HUTraceEventQuery query, @NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotEmpty("HuValue", query.getHuValue(), query);
+
+		return query.withHuValue(extractString(parameter));
 	}
 
 	private static HUTraceEventQuery updateOrgIdFromParameter(
