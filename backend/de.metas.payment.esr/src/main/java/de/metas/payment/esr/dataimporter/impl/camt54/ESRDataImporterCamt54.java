@@ -12,6 +12,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
 import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
+import de.metas.payment.camt054_001_08.BankToCustomerDebitCreditNotificationV08;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
@@ -81,7 +82,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	static final BigDecimal CTRL_QTY_AT_LEAST_ONE_NULL = BigDecimal.ONE.negate();
 
 	@VisibleForTesting
-	static final BigDecimal CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
+	static final BigDecimal  CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
 
 	protected static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
 	protected static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P = AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
@@ -125,9 +126,19 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		return Env.getADLanguageOrBaseLanguage(ctx);
 	}
 
-	private static boolean isVersion2Schema(@NonNull final String namespaceURI)
+		private static boolean isVersion2Schema(@NonNull final String namespaceURI)
 	{
 		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);
+	}
+
+	private static boolean isVersion6Schema(@NonNull final String namespaceURI)
+	{
+		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.04", namespaceURI);
+	}
+
+	private static boolean isVersion8Schema(@NonNull final String namespaceURI)
+	{
+		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.08", namespaceURI);
 	}
 
 	private static String getNameSpaceURI(@NonNull final XMLStreamReader reader) throws XMLStreamException
@@ -163,13 +174,24 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.04 and amt.054.001.05
 			final MultiVersionStreamReaderDelegate mxsr = new MultiVersionStreamReaderDelegate(xsr);
 
-			if (isVersion2Schema(getNameSpaceURI(mxsr)))
+			final String nameSpace = getNameSpaceURI(mxsr);
+
+            if (isVersion2Schema(nameSpace))
 			{
 				return importCamt54v02(mxsr);
 			}
-			else
+			else if (isVersion6Schema(nameSpace))
 			{
 				return importCamt54v06(mxsr);
+			}
+			else if (isVersion8Schema(nameSpace))
+			{
+				return importCamt54v08(mxsr);
+			}
+			else
+			{
+				throw new AdempiereException("Unsupported camt.54 version: " )
+						.setParameter("namespaceURI", getNameSpaceURI(mxsr));
 			}
 
 		}
@@ -208,6 +230,21 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		}
 
 		return ESRDataImporterCamt54v06.builder()
+				.bankAccountCurrencyCode(bankAccountCurrencyCode)
+				.adLanguage(adLanguage)
+				.build()
+				.createESRStatement(bkToCstmrDbtCdtNtfctn);
+	}
+
+	private ESRStatement importCamt54v08(final MultiVersionStreamReaderDelegate mxsr)
+	{
+		final BankToCustomerDebitCreditNotificationV08 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v08.loadXML(mxsr);
+		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
+		}
+
+		return ESRDataImporterCamt54v08.builder()
 				.bankAccountCurrencyCode(bankAccountCurrencyCode)
 				.adLanguage(adLanguage)
 				.build()
