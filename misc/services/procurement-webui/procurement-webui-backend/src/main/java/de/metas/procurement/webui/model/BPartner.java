@@ -1,7 +1,7 @@
 package de.metas.procurement.webui.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import com.google.common.base.MoreObjects;
 import lombok.NonNull;

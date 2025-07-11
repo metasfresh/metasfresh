@@ -264,7 +264,7 @@ public class HUTraceEventsService
 			@NonNull final I_M_HU hu)
 	{
 		final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
-		if (!productAndQty.isPresent())
+		if (productAndQty.isEmpty())
 		{
 			// skip such cases for now. To be handled in a followup
 			return;
@@ -357,7 +357,7 @@ public class HUTraceEventsService
 		for (final I_M_HU vhu : vhus)
 		{
 			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
-			if (!productAndQty.isPresent())
+			if (productAndQty.isEmpty())
 			{
 				// skip such cases for now. To be handled in a followup
 				continue;
@@ -458,7 +458,7 @@ public class HUTraceEventsService
 				}
 
 				final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
-				if (!productAndQty.isPresent())
+				if (productAndQty.isEmpty())
 				{
 					logger.debug("vhu of the current trxLine has no product and quantity; nothing to do with that trxLine; vhu={}; trxLine={}", vhu, trxLine);
 					continue;
@@ -607,7 +607,7 @@ public class HUTraceEventsService
 		{
 			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 
-			if (!productAndQty.isPresent())
+			if (productAndQty.isEmpty())
 			{
 				logger.debug("vhu has no product and quantity (yet), so skipping it; vhu={}", vhu);
 				continue;
@@ -685,7 +685,7 @@ public class HUTraceEventsService
 				for (final I_M_HU vhu : vhus)
 				{
 					final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
-					if (!productAndQty.isPresent())
+					if (productAndQty.isEmpty())
 					{
 						// skip such cases for now. To be handled in a followup
 						continue;
@@ -754,7 +754,7 @@ public class HUTraceEventsService
 				ppOrderId,
 				HuId.ofRepoId(hu.getM_HU_ID()));
 
-		if (!ppOrderQty.isPresent())
+		if (ppOrderQty.isEmpty())
 		{
 			createAndAddEvents(builder, ImmutableList.of(ppCostCollector));
 
@@ -765,7 +765,7 @@ public class HUTraceEventsService
 			final Quantity qtyToSet = Quantitys.of(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID()));
 
 			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
-			if (!productAndQty.isPresent())
+			if (productAndQty.isEmpty())
 			{
 				// skip such cases for now. To be handled in a followup
 				return;

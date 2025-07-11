@@ -22,13 +22,12 @@ package org.adempiere.server.rpl.api.impl;
  * #L%
  */
 
+import org.adempiere.server.rpl.exceptions.ReplicationException;
+import org.compiere.util.Env;
 
 import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.Properties;
-
-import org.adempiere.server.rpl.exceptions.ReplicationException;
-import org.compiere.util.Env;
 
 public class ReplicationHelper
 {
@@ -48,9 +47,8 @@ public class ReplicationHelper
 			final Object value,
 			final boolean overwrite)
 	{
-		if (value instanceof Integer)
+		if (value instanceof Integer valueInt)
 		{
-			final Integer valueInt = (Integer)value;
 			final Integer valueOldInt = Env.containsKey(ctx, name) ? Env.getContextAsInt(ctx, name) : null;
 			if (Objects.equals(valueInt, valueOldInt))
 			{
@@ -69,9 +67,8 @@ public class ReplicationHelper
 						.setParameter("ValueOld", valueOldInt);
 			}
 		}
-		else if (value instanceof Timestamp)
+		else if (value instanceof Timestamp valueTS)
 		{
-			final Timestamp valueTS = (Timestamp)value;
 			final Timestamp valueOldTS = Env.containsKey(ctx, name) ? Env.getContextAsDate(ctx, name) : null;
 			if (Objects.equals(valueTS, valueOldTS))
 			{

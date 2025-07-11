@@ -245,7 +245,11 @@ public class AddressBuilderTest
 
 			isLocalAddress = true;
 			assertEquals(
-					"LOCAL: " + "street 12\n121212\nLondon UK",
+					"""
+					LOCAL: \
+					street 12
+					121212
+					London UK""",
 					builder("de_CH")
 							.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 		}
@@ -263,7 +267,13 @@ public class AddressBuilderTest
 							.buildAddressString(location, false, bPartnerBlock, userBlock));
 
 			assertEquals(
-					"LOCAL: " + "\nBPartner1\nstreet\n12\nD-121212 Berlin\nDeutschland",
+					"""
+					LOCAL:\s
+					BPartner1
+					street
+					12
+					D-121212 Berlin
+					Deutschland""",
 					builder("de_CH")
 							.buildAddressString(location, true, bPartnerBlock, userBlock));
 		}
@@ -280,7 +290,14 @@ public class AddressBuilderTest
 							.buildAddressString(location, false, bPartnerBlock, userBlock));
 
 			assertEquals(
-					"LOCAL: " + "\nBPartner1\nContact1\nstreet\n12\nD-121212 Berlin\nDeutschland",
+					"""
+					LOCAL:\s
+					BPartner1
+					Contact1
+					street
+					12
+					D-121212 Berlin
+					Deutschland""",
 					builder("de_CH")
 							.buildAddressString(location, true, bPartnerBlock, userBlock));
 		}

@@ -101,9 +101,8 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Nullable
 	public I_M_HU getM_HU_OrNull(@Nullable final IAttributeSet attributeSet)
 	{
-		if (attributeSet instanceof IHUAware)
+		if (attributeSet instanceof IHUAware huAware)
 		{
-			final IHUAware huAware = (IHUAware)attributeSet;
 			return huAware.getM_HU();
 		}
 		else

@@ -64,18 +64,18 @@ public abstract class LookupValue
 		}
 		else if (numericKey)
 		{
-			if (idObj instanceof Number)
+			if (idObj instanceof Number number)
 			{
-				final int idInt = ((Number)idObj).intValue();
+				final int idInt = number.intValue();
 				if (idInt < 0)
 				{
 					return null;
 				}
 				return idInt;
 			}
-			else if (idObj instanceof RepoIdAware)
+			else if (idObj instanceof RepoIdAware aware)
 			{
-				return ((RepoIdAware)idObj).getRepoId();
+				return aware.getRepoId();
 			}
 			else
 			{
@@ -95,9 +95,9 @@ public abstract class LookupValue
 		}
 		else // string key
 		{
-			if (idObj instanceof ReferenceListAwareEnum)
+			if (idObj instanceof ReferenceListAwareEnum enum1)
 			{
-				return ((ReferenceListAwareEnum)idObj).getCode();
+				return enum1.getCode();
 			}
 			else
 			{
@@ -126,9 +126,9 @@ public abstract class LookupValue
 		{
 			return null;
 		}
-		if (id instanceof Integer)
+		if (id instanceof Integer integer)
 		{
-			return new IntegerLookupValue((int)id, TranslatableStrings.constant(displayName), null/* helpText */, null/* attributes */, null/* active */);
+			return new IntegerLookupValue(integer, TranslatableStrings.constant(displayName), null/* helpText */, null/* attributes */, null/* active */);
 		}
 		else
 		{
@@ -187,16 +187,14 @@ public abstract class LookupValue
 				break;
 		}
 
-		if (namePair instanceof ValueNamePair)
+		if (namePair instanceof ValueNamePair vnp)
 		{
-			final ValueNamePair vnp = (ValueNamePair)namePair;
 			final ValueNamePairValidationInformation validationInformation = vnp.getValidationInformation();
 
 			return StringLookupValue.of(vnp.getValue(), displayNameTrl, descriptionTrl, validationInformation);
 		}
-		else if (namePair instanceof KeyNamePair)
+		else if (namePair instanceof KeyNamePair knp)
 		{
-			final KeyNamePair knp = (KeyNamePair)namePair;
 			return IntegerLookupValue.of(knp.getKey(), displayNameTrl, descriptionTrl);
 		}
 		else
@@ -407,9 +405,9 @@ public abstract class LookupValue
 		{
 			return defaultValue;
 		}
-		else if (valueObj instanceof Number)
+		else if (valueObj instanceof Number number)
 		{
-			return ((Number)valueObj).intValue();
+			return number.intValue();
 		}
 		else
 		{

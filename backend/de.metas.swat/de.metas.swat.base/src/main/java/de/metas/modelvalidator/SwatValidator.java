@@ -354,9 +354,8 @@ public class SwatValidator implements ModelValidator
 			ds = cc.getDatabase().getDataSource(cc);
 		}
 
-		if (ds instanceof ComboPooledDataSource)
+		if (ds instanceof ComboPooledDataSource cpds)
 		{
-			ComboPooledDataSource cpds = (ComboPooledDataSource)ds;
 
 			if (unreturnedConnectionTimeout.getSeconds() > 0)
 			{

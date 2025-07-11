@@ -7,6 +7,7 @@ import de.metas.payment.sumup.SumUpTransactionStatusChangedEvent;
 import de.metas.payment.sumup.SumUpTransactionStatusChangedListener;
 import de.metas.payment.sumup.repository.BulkUpdateByQueryResult;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
@@ -14,7 +15,6 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 

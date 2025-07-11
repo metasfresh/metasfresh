@@ -387,7 +387,7 @@ public final class GuavaCollectors
 			{
 				throw exceptionSupplier.get();
 			}
-			return list.get(0);
+			return list.getFirst();
 		};
 
 		return Collector.of(supplier, accumulator, combiner, finisher);

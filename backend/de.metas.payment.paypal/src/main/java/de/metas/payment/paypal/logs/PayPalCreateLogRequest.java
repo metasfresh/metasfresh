@@ -85,9 +85,8 @@ public class PayPalCreateLogRequest
 
 		public PayPalCreateLogRequestBuilder response(@NonNull final Throwable ex)
 		{
-			if (ex instanceof HttpException)
+			if (ex instanceof HttpException httpException)
 			{
-				final HttpException httpException = (HttpException)ex;
 				responseStatusCode(httpException.statusCode());
 				responseHeaders(toMap(httpException.headers()));
 				responseBodyAsJson(httpException.getMessage());

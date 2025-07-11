@@ -236,13 +236,19 @@ import java.util.stream.Collectors;
 					.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_Material, piItem.getItemType()))
 					.collect(Collectors.toList());
 
-			Check.errorIf(materialPIItems.size() != 1, "There has to be exactly one M_HU_PI_Item for the TU's M_HU_PI and and C_BPartner;\n "
-					+ "M_HU_PI={};\n "
-					+ "C_BPartner={};\n "
-					+ "M_HU_PI_Item(s) found={}\n "
-					+ "this={}", tuPI, getBPartnerId(), materialPIItems, this);
+			Check.errorIf(materialPIItems.size() != 1, """
+					There has to be exactly one M_HU_PI_Item for the TU's M_HU_PI and and C_BPartner;
+					 \
+					M_HU_PI={};
+					 \
+					C_BPartner={};
+					 \
+					M_HU_PI_Item(s) found={}
+					 \
+					this={}\
+					""", tuPI, getBPartnerId(), materialPIItems, this);
 
-			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getBPartnerId(), request.getProductId(), request.getDate());
+			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.getFirst(), getBPartnerId(), request.getProductId(), request.getDate());
 
 			capacityToUse = capacityBL.getCapacity(itemProduct, request.getProductId(), request.getC_UOM());
 		}

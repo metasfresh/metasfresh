@@ -692,13 +692,13 @@ public class VOrderPlanning extends CPanel
 		if (row != -1 && m_keyColumnIndex != -1)
 		{
 			Object data = p_table.getModel().getValueAt(row, m_keyColumnIndex);
-			if (data instanceof IDColumn)
+			if (data instanceof IDColumn column)
 			{
-				data = ((IDColumn)data).getRecord_ID();
+				data = column.getRecord_ID();
 			}
-			if (data instanceof Integer)
+			if (data instanceof Integer integer)
 			{
-				return (Integer)data;
+				return integer;
 			}
 		}
 		return null;
@@ -776,7 +776,7 @@ public class VOrderPlanning extends CPanel
 						}
 						else if (c == Boolean.class)
 						{
-							data = new Boolean("Y".equals(rs.getString(colIndex)));
+							data = Boolean.valueOf("Y".equals(rs.getString(colIndex)));
 						}
 						else if (c == Timestamp.class)
 						{
@@ -788,11 +788,11 @@ public class VOrderPlanning extends CPanel
 						}
 						else if (c == Double.class)
 						{
-							data = new Double(rs.getDouble(colIndex));
+							data = Double.valueOf(rs.getDouble(colIndex));
 						}
 						else if (c == Integer.class)
 						{
-							data = new Integer(rs.getInt(colIndex));
+							data = Integer.valueOf(rs.getInt(colIndex));
 						}
 						else if (c == KeyNamePair.class)
 						{

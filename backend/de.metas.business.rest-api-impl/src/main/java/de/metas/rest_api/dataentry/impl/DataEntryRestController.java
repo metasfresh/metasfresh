@@ -1,18 +1,7 @@
 package de.metas.rest_api.dataentry.impl;
 
-import org.adempiere.ad.element.api.AdWindowId;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
-
 import de.metas.Profiles;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.layout.DataEntryLayout;
@@ -23,6 +12,15 @@ import de.metas.rest_api.dataentry.impl.dto.JsonDataEntryResponse;
 import de.metas.rest_api.utils.RestApiUtilsV1;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /*
  * #%L
@@ -70,7 +68,6 @@ public class DataEntryRestController
 
 	@GetMapping("/byId/{windowId}/{recordId}")
 	public ResponseEntity<JsonDataEntryResponse> getByRecordId(
-			// with swagger 2.9.2, parameters are always ordered alphabetically, see https://github.com/springfox/springfox/issues/2418
 			@PathVariable("windowId") final int windowId,
 			@PathVariable("recordId") final int recordId)
 	{
@@ -89,13 +86,13 @@ public class DataEntryRestController
 		final DataEntryLayout layout = layoutRepo.getByWindowId(windowId);
 		if (layout.isEmpty())
 		{
-			return JsonDataEntryResponse.notFound(String.format("No dataentry for windowId '%d'.", windowId.getRepoId()));
+			return JsonDataEntryResponse.notFound("No dataentry for windowId '%d'.".formatted(windowId.getRepoId()));
 		}
 
 		final DataEntryRecordsMap records = dataRecords.get(recordId, layout.getSubTabIds());
 		if (records.getSubTabIds().isEmpty())
 		{
-			return JsonDataEntryResponse.notFound(String.format("No dataentry for windowId '%d' and recordId '%s'.", windowId.getRepoId(), recordId));
+			return JsonDataEntryResponse.notFound("No dataentry for windowId '%d' and recordId '%s'.".formatted(windowId.getRepoId(), recordId));
 		}
 
 		final JsonDataEntry jsonDataEntry = JsonDataEntryFactory.builder()

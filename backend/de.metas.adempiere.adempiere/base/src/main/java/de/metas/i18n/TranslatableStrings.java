@@ -109,9 +109,9 @@ public class TranslatableStrings
 		{
 			return null;
 		}
-		else if (trlObj instanceof ITranslatableString)
+		else if (trlObj instanceof ITranslatableString string)
 		{
-			return (ITranslatableString)trlObj;
+			return string;
 		}
 		else
 		{
@@ -135,7 +135,7 @@ public class TranslatableStrings
 		}
 		else if (trls.size() == 1)
 		{
-			return trls.get(0);
+			return trls.getFirst();
 		}
 		else
 		{
@@ -189,13 +189,13 @@ public class TranslatableStrings
 		{
 			return true;
 		}
-		else if (trl instanceof ConstantTranslatableString)
+		else if (trl instanceof ConstantTranslatableString string1)
 		{
-			return ((ConstantTranslatableString)trl).isEmpty();
+			return string1.isEmpty();
 		}
-		else if (trl instanceof ImmutableTranslatableString)
+		else if (trl instanceof ImmutableTranslatableString string)
 		{
-			return ((ImmutableTranslatableString)trl).isEmpty();
+			return string.isEmpty();
 		}
 		else
 		{

@@ -157,13 +157,13 @@ class ShipmentCandidateAPIServiceTest
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
-		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(ExportError.getCode());
+		assertThat(exportAudits.getFirst().getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudits.getFirst().getExportStatus()).isEqualTo(ExportError.getCode());
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
 		assertThat(exportAuditItems).hasSize(1);
-		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
-		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(ExportError.getCode());
+		assertThat(exportAuditItems.getFirst().getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
+		assertThat(exportAuditItems.getFirst().getExportStatus()).isEqualTo(ExportError.getCode());
 	}
 
 	@Test
@@ -193,16 +193,16 @@ class ShipmentCandidateAPIServiceTest
 
 		assertThat(result.isHasMoreItems()).isFalse();
 		assertThat(result.getItems()).hasSize(1);
-		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+		assertThat(result.getItems().getFirst().getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
-		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAudits.getFirst().getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudits.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
 		assertThat(exportAuditItems).hasSize(1);
-		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
-		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAuditItems.getFirst().getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
+		assertThat(exportAuditItems.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 
 		return result;
 	}
@@ -212,7 +212,7 @@ class ShipmentCandidateAPIServiceTest
 	{
 		// given
 		final JsonResponseShipmentCandidates jsonResponseShipmentCandidates = exportShipmentCandidates_performTest();
-		final JsonMetasfreshId scheduleId = jsonResponseShipmentCandidates.getItems().get(0).getId();
+		final JsonMetasfreshId scheduleId = jsonResponseShipmentCandidates.getItems().getFirst().getId();
 
 		final JsonRequestCandidateResultsBuilder resultsBuilder = JsonRequestCandidateResults.builder();
 
@@ -229,14 +229,14 @@ class ShipmentCandidateAPIServiceTest
 		// then
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(jsonResponseShipmentCandidates.getTransactionKey());
-		assertThat(exportAudits.get(0).getForwardedData()).isEqualTo("forwardedData");
-		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(ExportedAndForwarded.getCode()); // since we gave a positive result, it's now also forwarded
+		assertThat(exportAudits.getFirst().getTransactionIdAPI()).isEqualTo(jsonResponseShipmentCandidates.getTransactionKey());
+		assertThat(exportAudits.getFirst().getForwardedData()).isEqualTo("forwardedData");
+		assertThat(exportAudits.getFirst().getExportStatus()).isEqualTo(ExportedAndForwarded.getCode()); // since we gave a positive result, it's now also forwarded
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
 		assertThat(exportAuditItems).hasSize(1);
-		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getValue());
-		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(ExportedAndForwarded.getCode());
+		assertThat(exportAuditItems.getFirst().getM_ShipmentSchedule_ID()).isEqualTo(scheduleId.getValue());
+		assertThat(exportAuditItems.getFirst().getExportStatus()).isEqualTo(ExportedAndForwarded.getCode());
 	}
 
 	@Test
@@ -275,11 +275,11 @@ class ShipmentCandidateAPIServiceTest
 
 		assertThat(result.isHasMoreItems()).isFalse();
 		assertThat(result.getItems()).hasSize(2);
-		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+		assertThat(result.getItems().getFirst().getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudit = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudit).hasSize(1);
-		assertThat(exportAudit.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudit.getFirst().getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
 
@@ -327,16 +327,16 @@ class ShipmentCandidateAPIServiceTest
 
 		// assertThat(result.isHasMoreItems()).isFalse();
 		assertThat(result.getItems()).hasSize(1);
-		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+		assertThat(result.getItems().getFirst().getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
-		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAudits.getFirst().getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudits.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
 		assertThat(exportAuditItems).hasSize(1);
-		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord1.getM_ShipmentSchedule_ID());
+		assertThat(exportAuditItems.getFirst().getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord1.getM_ShipmentSchedule_ID());
 	}
 
 	@Test
@@ -435,16 +435,16 @@ class ShipmentCandidateAPIServiceTest
 
 		// assertThat(result.isHasMoreItems()).isFalse();
 		assertThat(result.getItems()).hasSize(5);
-		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+		assertThat(result.getItems().getFirst().getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudits.getFirst().getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
 		assertThat(exportAuditItems).hasSize(5);
 
-		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAuditItems.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 		assertThat(exportAuditItems.get(1).getExportStatus()).isEqualTo(Exported.getCode());
 		assertThat(exportAuditItems.get(2).getExportStatus()).isEqualTo(Exported.getCode());
 		assertThat(exportAuditItems.get(3).getExportStatus()).isEqualTo(Exported.getCode());
@@ -533,16 +533,16 @@ class ShipmentCandidateAPIServiceTest
 
 		// assertThat(result.isHasMoreItems()).isFalse();
 		assertThat(result.getItems()).hasSize(6);
-		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+		assertThat(result.getItems().getFirst().getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudits.getFirst().getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
 		assertThat(exportAuditItems).hasSize(6);
 
-		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAuditItems.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 		assertThat(exportAuditItems.get(1).getExportStatus()).isEqualTo(Exported.getCode());
 		assertThat(exportAuditItems.get(2).getExportStatus()).isEqualTo(Exported.getCode());
 		assertThat(exportAuditItems.get(3).getExportStatus()).isEqualTo(Exported.getCode());
@@ -636,16 +636,16 @@ class ShipmentCandidateAPIServiceTest
 
 		// assertThat(result.isHasMoreItems()).isFalse();
 		assertThat(result.getItems()).hasSize(1);
-		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+		assertThat(result.getItems().getFirst().getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
-		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAudits.getFirst().getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudits.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
 		assertThat(exportAuditItems).hasSize(1);
-		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAuditItems.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 
 		refresh(shipmentScheduleRecord1_1);
 		assertThat(shipmentScheduleRecord1_1.getExportStatus()).isEqualTo(Pending.getCode());
@@ -663,7 +663,7 @@ class ShipmentCandidateAPIServiceTest
 		refresh(shipmentScheduleRecord2);
 		assertThat(shipmentScheduleRecord2.getExportStatus()).isEqualTo(Exported.getCode());
 
-		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord2.getM_ShipmentSchedule_ID());
+		assertThat(exportAuditItems.getFirst().getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord2.getM_ShipmentSchedule_ID());
 	}
 
 	/**
@@ -726,16 +726,16 @@ class ShipmentCandidateAPIServiceTest
 
 		// assertThat(result.isHasMoreItems()).isFalse();
 		assertThat(result.getItems()).hasSize(4);
-		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+		assertThat(result.getItems().getFirst().getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
 
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
-		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAudits.getFirst().getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudits.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
 		assertThat(exportAuditItems).hasSize(4);
-		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAuditItems.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 
 		refresh(shipmentScheduleRecord1_1);
 		assertThat(shipmentScheduleRecord1_1.getExportStatus()).isEqualTo(Exported.getCode());

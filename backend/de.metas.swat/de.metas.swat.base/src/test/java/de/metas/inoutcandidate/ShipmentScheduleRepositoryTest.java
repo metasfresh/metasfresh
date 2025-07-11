@@ -157,13 +157,13 @@ class ShipmentScheduleRepositoryTest
 
 		// then
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getShipBPartnerId().getRepoId()).isEqualTo(bpartnerOverride.getC_BPartner_ID());
-		assertThat(result.get(0).getShipLocationId().getBpartnerId().getRepoId()).isEqualTo(bPartnerLocationOverride.getC_BPartner_ID());
-		assertThat(result.get(0).getShipLocationId().getRepoId()).isEqualTo(bPartnerLocationOverride.getC_BPartner_Location_ID());
-		assertThat(result.get(0).getProductId().getRepoId()).isEqualTo(product.getM_Product_ID());
-		assertThat(result.get(0).getShipContactId()).isNull();
+		assertThat(result.getFirst().getShipBPartnerId().getRepoId()).isEqualTo(bpartnerOverride.getC_BPartner_ID());
+		assertThat(result.getFirst().getShipLocationId().getBpartnerId().getRepoId()).isEqualTo(bPartnerLocationOverride.getC_BPartner_ID());
+		assertThat(result.getFirst().getShipLocationId().getRepoId()).isEqualTo(bPartnerLocationOverride.getC_BPartner_Location_ID());
+		assertThat(result.getFirst().getProductId().getRepoId()).isEqualTo(product.getM_Product_ID());
+		assertThat(result.getFirst().getShipContactId()).isNull();
 
-		assertThat(result.get(0).getId().getRepoId()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
+		assertThat(result.getFirst().getId().getRepoId()).isEqualTo(shipmentScheduleRecord.getM_ShipmentSchedule_ID());
 	}
 
 	private I_M_ShipmentSchedule createShipmentScheduleRecord()

@@ -181,9 +181,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			candidateRepositoryWrite.getCurrentAtpAndUpdateQtyDetails(supplyCandidateWithId, parentOfSupplyCandidate, null);
 		}
 
-		if (ddOrderEvent instanceof DDOrderCreatedEvent)
+		if (ddOrderEvent instanceof DDOrderCreatedEvent event)
 		{
-			handleMainDataUpdates((DDOrderCreatedEvent)ddOrderEvent, ddOrderLine);
+			handleMainDataUpdates(event, ddOrderLine);
 		}
 
 	}

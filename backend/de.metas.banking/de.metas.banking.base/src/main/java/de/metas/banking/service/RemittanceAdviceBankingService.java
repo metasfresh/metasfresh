@@ -222,7 +222,7 @@ public class RemittanceAdviceBankingService
 
 		if (!serviceFeeInvoiceLines.isEmpty())
 		{
-			final I_C_InvoiceLine firstInvoiceLine = serviceFeeInvoiceLines.get(0);
+			final I_C_InvoiceLine firstInvoiceLine = serviceFeeInvoiceLines.getFirst();
 			serviceFeeTaxId = TaxId.ofRepoId(firstInvoiceLine.getC_Tax_ID());
 			serviceFeeProductId = ProductId.ofRepoIdOrNull(firstInvoiceLine.getM_Product_ID());
 

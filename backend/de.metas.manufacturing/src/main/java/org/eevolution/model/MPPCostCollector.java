@@ -73,6 +73,7 @@ import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 
 import java.io.File;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -91,6 +92,7 @@ import java.util.Properties;
  */
 public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 {
+	@Serial
 	private static final long serialVersionUID = 5529730708956719853L;
 
 	// Services

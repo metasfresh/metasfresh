@@ -57,11 +57,11 @@ public class NodeTests
 		final ImmutableList<Node<Integer>> nodeListOrderedByIndex = buildNodeStructure();
 
 		//When
-		final List<Node<Integer>> nodeList = nodeListOrderedByIndex.get(0).listAllNodesBelow();
+		final List<Node<Integer>> nodeList = nodeListOrderedByIndex.getFirst().listAllNodesBelow();
 
 		//Then
 		assertEquals(nodeList.size(), 8);
-		assertEquals(nodeList.get(0).getValue(), Integer.valueOf(1));
+		assertEquals(nodeList.getFirst().getValue(), Integer.valueOf(1));
 		assertEquals(nodeList.get(1).getValue(), Integer.valueOf(2));
 		assertEquals(nodeList.get(2).getValue(), Integer.valueOf(4));
 		assertEquals(nodeList.get(3).getValue(), Integer.valueOf(6));
@@ -98,7 +98,7 @@ public class NodeTests
 
 		//Then
 		assertEquals(upStream.size(), 3);
-		assertEquals(upStream.get(0).getValue(), Integer.valueOf(5));
+		assertEquals(upStream.getFirst().getValue(), Integer.valueOf(5));
 		assertEquals(upStream.get(1).getValue(), Integer.valueOf(3));
 		assertEquals(upStream.get(2).getValue(), Integer.valueOf(1));
 	}
@@ -109,7 +109,7 @@ public class NodeTests
 		//Given
 		final ImmutableList<Node<Integer>> nodeListOrderedByIndex = buildNodeStructure();
 
-		final Node<Integer> root = nodeListOrderedByIndex.get(0);
+		final Node<Integer> root = nodeListOrderedByIndex.getFirst();
 
 		//When
 		final Optional<Node<Integer>> node5 = root.getNode(5);

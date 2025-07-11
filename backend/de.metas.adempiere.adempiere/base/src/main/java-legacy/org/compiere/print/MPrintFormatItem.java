@@ -396,7 +396,7 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 	public String getColumnName()
 	{
 		if (m_columnName == null)	//	Get Column Name from AD_Column not index
-			m_columnName = getColumnName (new Integer(getAD_Column_ID()));
+			m_columnName = getColumnName (Integer.valueOf(getAD_Column_ID()));
 		return m_columnName;
 	}	//	getColumnName
 

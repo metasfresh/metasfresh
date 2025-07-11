@@ -26,15 +26,14 @@ import com.dpd.common.ws.authentication.v2_0.types.Authentication;
 import com.dpd.common.ws.authentication.v2_0.types.ObjectFactory;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
 import de.metas.shipper.gateway.dpd.DpdConstants;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.core.WebServiceMessageCallback;
 import org.springframework.ws.soap.SoapHeader;
 import org.springframework.ws.soap.SoapMessage;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 
 public class DpdSoapHeaderWithAuth implements WebServiceMessageCallback
 {
@@ -62,7 +61,7 @@ public class DpdSoapHeaderWithAuth implements WebServiceMessageCallback
 			final SoapHeader header = soapMessage.getSoapHeader();
 
 			final JAXBContext context = JAXBContext.newInstance(authentication.getClass());
-			final javax.xml.bind.Marshaller marshaller = context.createMarshaller();
+			final jakarta.xml.bind.Marshaller marshaller = context.createMarshaller();
 			marshaller.marshal(authentication, header.getResult());
 		}
 		catch (final JAXBException e)

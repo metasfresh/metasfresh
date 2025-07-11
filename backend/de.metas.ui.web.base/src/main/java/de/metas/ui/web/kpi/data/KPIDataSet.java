@@ -43,7 +43,7 @@ public class KPIDataSet
 		return new KPIDataSetBuilder().name(name);
 	}
 
-	private KPIDataSet(final KPIDataSetBuilder builder)
+	private KPIDataSet(@NonNull final KPIDataSetBuilder builder)
 	{
 		this.name = builder.name;
 		this.unit = builder.unit;

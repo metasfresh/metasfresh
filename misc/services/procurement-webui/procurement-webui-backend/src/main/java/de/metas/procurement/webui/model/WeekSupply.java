@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Lazy;
 import org.threeten.extra.YearWeek;
 
 import javax.annotation.Nullable;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 
 

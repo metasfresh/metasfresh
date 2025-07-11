@@ -272,8 +272,7 @@ public class ReferenceStringHelper
 				.getStrd()
 				.stream()
 				.map(strd -> Optional.ofNullable(strd.getCdtrRefInf())) // Safely map to CreditorReferenceInformation2
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.filter(ReferenceStringHelper::isSupportedESRType) // Validate the ESR type
 				.map(this::extractESRType)       // Extract ESRType
 				.filter(Objects::nonNull)
@@ -312,8 +311,7 @@ public class ReferenceStringHelper
 				.getStrd()
 				.stream()
 				.map(strd -> Optional.ofNullable(strd.getCdtrRefInf())) // Safely map to CreditorReferenceInformation2
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.filter(ReferenceStringHelper::isSupportedESRType) // Validate the ESR type
 				.map(this::extractESRType)       // Extract ESRType
 				.filter(Objects::nonNull)
@@ -352,7 +350,7 @@ public class ReferenceStringHelper
 				!(esrType == ESRType.TYPE_ESR || esrType == ESRType.TYPE_QRR || esrType == ESRType.TYPE_SCOR))
 		{
 			// Log the error with the invalid value
-			final String errorMsg = String.format("Invalid ESRType: '%s'. Accepted types are: ESR, QRR, SCOR.", rawCode);
+			final String errorMsg = "Invalid ESRType: '%s'. Accepted types are: ESR, QRR, SCOR.".formatted(rawCode);
 
 			// Optionally, throw an exception to halt processing
 			throw new AdempiereException(errorMsg);

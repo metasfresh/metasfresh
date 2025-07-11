@@ -104,7 +104,7 @@ public final class POZoomSource implements IZoomSource
 			return ImmutablePair.of(null, Boolean.FALSE);
 		}
 
-		return ImmutablePair.of(eligibleKeyColumnNames.get(0), Boolean.TRUE);
+		return ImmutablePair.of(eligibleKeyColumnNames.getFirst(), Boolean.TRUE);
 	}
 
 	@Override
@@ -189,13 +189,13 @@ public final class POZoomSource implements IZoomSource
 				continue;
 			}
 
-			if (val instanceof Integer)
+			if (val instanceof Integer integer)
 			{
-				Env.setContext(privateCtx, "#" + po.get_ColumnName(i), (Integer)val);
+				Env.setContext(privateCtx, "#" + po.get_ColumnName(i), integer);
 			}
-			else if (val instanceof String)
+			else if (val instanceof String string)
 			{
-				Env.setContext(privateCtx, "#" + po.get_ColumnName(i), (String)val);
+				Env.setContext(privateCtx, "#" + po.get_ColumnName(i), string);
 			}
 		}
 

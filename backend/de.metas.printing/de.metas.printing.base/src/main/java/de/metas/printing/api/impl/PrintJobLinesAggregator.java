@@ -312,7 +312,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		}
 
 		// get the last item and check if there is an existing print package info to reuse.
-		final Map<ArrayKey, I_C_Print_PackageInfo> currentPrintPackageInfos = printPackageInfos.get(printPackageInfos.size() - 1);
+		final Map<ArrayKey, I_C_Print_PackageInfo> currentPrintPackageInfos = printPackageInfos.getLast();
 
 		I_C_Print_PackageInfo printPackageInfo = currentPrintPackageInfos.get(groupKey);
 

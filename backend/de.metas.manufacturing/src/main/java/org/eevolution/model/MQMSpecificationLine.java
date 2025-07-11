@@ -37,6 +37,7 @@ package org.eevolution.model;
  * #L%
  */
 
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -52,6 +53,7 @@ public class MQMSpecificationLine extends  X_QM_SpecificationLine
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -2845872755879848869L;
 
 	/**
@@ -110,8 +112,8 @@ public class MQMSpecificationLine extends  X_QM_SpecificationLine
 			resultStr += "{" + value2 + "}";*/
 
 		boolean result = false;
-		if (valueObj instanceof Number)
-			result = compareNumber ((Number)valueObj, value1, getValue());
+		if (valueObj instanceof Number number)
+			result = compareNumber (number, value1, getValue());
 		else
 			result = compareString(valueObj, value1, getValue());
 		//
@@ -132,10 +134,10 @@ public class MQMSpecificationLine extends  X_QM_SpecificationLine
 		BigDecimal value2B = null;
 		try
 		{
-			if (valueObj instanceof BigDecimal)
-				valueObjB = (BigDecimal)valueObj;
-			else if (valueObj instanceof Integer)
-				valueObjB = new BigDecimal (((Integer)valueObj).intValue());
+			if (valueObj instanceof BigDecimal decimal)
+				valueObjB = decimal;
+			else if (valueObj instanceof Integer integer)
+				valueObjB = new BigDecimal (integer.intValue());
 			else
 				valueObjB = new BigDecimal (String.valueOf(valueObj));
 		}

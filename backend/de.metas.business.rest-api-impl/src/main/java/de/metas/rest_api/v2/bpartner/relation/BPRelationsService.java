@@ -129,7 +129,7 @@ public class BPRelationsService
 			@NonNull final List<JsonRequestBPRelationTarget> relatesTo)
 	{
 		final Optional<BPartnerComposite> bPartnerComposite = jsonServiceFactory.createRetriever().getBPartnerComposite(orgId, bpartnerIdentifier);
-		if (!bPartnerComposite.isPresent())
+		if (bPartnerComposite.isEmpty())
 		{
 			throw MissingResourceException.builder()
 					.resourceName("bpartner")
@@ -186,7 +186,7 @@ public class BPRelationsService
 		final BPartnerId bpartnerId = sourceBPartner.getBpartner().getId();
 		final ExternalIdentifier targetBpIdentifier = ExternalIdentifier.of(relatedBp.getTargetBpartnerIdentifier());
 		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonServiceFactory.createRetriever().getBPartnerComposite(sourceBPartner.getOrgId(), targetBpIdentifier);
-		if (!optionalBPartnerComposite.isPresent())
+		if (optionalBPartnerComposite.isEmpty())
 		{
 			throw MissingResourceException.builder()
 					.resourceName("targetBpartnerIdentifier")
@@ -230,7 +230,7 @@ public class BPRelationsService
 		if (Boolean.TRUE.equals(isBillTo))
 		{
 			location = bpartnerComposite.extractBillToLocation();
-			if (!location.isPresent())
+			if (location.isEmpty())
 			{
 				location = bpartnerComposite.extractLocation(l -> l.getLocationType().getIsBillToOr(false));
 			}
@@ -238,12 +238,12 @@ public class BPRelationsService
 		if (Boolean.TRUE.equals(isShipTo))
 		{
 			location = bpartnerComposite.extractShipToLocation();
-			if (!location.isPresent())
+			if (location.isEmpty())
 			{
 				location = bpartnerComposite.extractLocation(l -> l.getLocationType().getIsShipToOr(false));
 			}
 		}
-		if (!location.isPresent())
+		if (location.isEmpty())
 		{
 			location = bpartnerComposite.extractLocation(Objects::nonNull);
 		}

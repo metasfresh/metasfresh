@@ -24,6 +24,7 @@ package de.metas.handlingunits.attributes.impl;
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -144,7 +145,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 
 		//
 		// Bind data to be able to access them in our tests
-		final I_M_HU huPalet = huPalets.get(0);
+		final I_M_HU huPalet = huPalets.getFirst();
 		huPalet.setValue("Palet1");
 		InterfaceWrapperHelper.save(huPalet);
 		huPalet_Attrs = attributeStorageFactory.getAttributeStorage(huPalet);
@@ -152,7 +153,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final List<I_M_HU> huIncluded = handlingUnitsDAO.retrieveIncludedHUs(huPalet);
 
-		final I_M_HU huIFCO1 = huIncluded.get(0);
+		final I_M_HU huIFCO1 = huIncluded.getFirst();
 		huIFCO1.setValue("IFCO1");
 		InterfaceWrapperHelper.save(huIFCO1);
 		huIFCO1_Attrs = attributeStorageFactory.getAttributeStorage(huIFCO1);
@@ -270,7 +271,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 
 		final BigDecimal initialNetPallete = new BigDecimal(0 - PM_Palet_WeightTare_Total.intValueExact());
 		final BigDecimal initialNetIfco = initialNetPallete.add(PM_Palet_WeightTare)
-				.divide(COUNT_IFCOS_PER_PALET, BigDecimal.ROUND_HALF_UP);
+				.divide(COUNT_IFCOS_PER_PALET, RoundingMode.HALF_UP);
 		final BigDecimal initialGrossIfco = initialNetIfco.add(PM_IFCO_WeightTare);
 
 		//
@@ -286,7 +287,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 			huPalet_Attrs.setValue(attr_WeightGross, new BigDecimal("100"));
 
 			final BigDecimal netPalet100 = new BigDecimal(100 - PM_Palet_WeightTare_Total.intValueExact());
-			final BigDecimal netIfco100 = netPalet100.divide(COUNT_IFCOS_PER_PALET, BigDecimal.ROUND_HALF_UP);
+			final BigDecimal netIfco100 = netPalet100.divide(COUNT_IFCOS_PER_PALET, RoundingMode.HALF_UP);
 			final BigDecimal grossIfco100 = netIfco100.add(PM_IFCO_WeightTare);
 
 			assertWeights(huPalet_Attrs, 100, PM_Palet_WeightTare_Total, netPalet100);
@@ -302,7 +303,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 
 			final BigDecimal netPalet50 = new BigDecimal(50 - PM_Palet_WeightTare_Total.intValueExact());
 			final BigDecimal netIfco50 = netPalet50.add(PM_Palet_WeightTare)
-					.divide(COUNT_IFCOS_PER_PALET, BigDecimal.ROUND_HALF_UP);
+					.divide(COUNT_IFCOS_PER_PALET, RoundingMode.HALF_UP);
 			final BigDecimal grossIfco50 = netIfco50.add(PM_IFCO_WeightTare);
 
 			assertWeights(huPalet_Attrs, 50, PM_Palet_WeightTare_Total, 50 - PM_Palet_WeightTare_Total.intValueExact());

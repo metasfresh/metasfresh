@@ -33,9 +33,8 @@ public class ShipmentScheduleDeliveryDayBL implements IShipmentScheduleDeliveryD
 		{
 			return null;
 		}
-		else if (deliveryDayAllocable instanceof ShipmentScheduleDeliveryDayAllocable)
+		else if (deliveryDayAllocable instanceof ShipmentScheduleDeliveryDayAllocable shipmentScheduleDeliveryDayAllocable)
 		{
-			final ShipmentScheduleDeliveryDayAllocable shipmentScheduleDeliveryDayAllocable = (ShipmentScheduleDeliveryDayAllocable)deliveryDayAllocable;
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleDeliveryDayAllocable.getM_ShipmentSchedule();
 			return InterfaceWrapperHelper.create(shipmentSchedule, modelClass);
 		}

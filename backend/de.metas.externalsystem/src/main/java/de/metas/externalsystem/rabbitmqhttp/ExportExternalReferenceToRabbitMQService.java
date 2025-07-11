@@ -254,8 +254,7 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 							.externalReferenceType(externalReferenceType)
 							.build())
 					.map(externalReferenceRepository::getExternalReferenceByMFReference)
-					.filter(Optional::isPresent)
-					.map(Optional::get)
+					.flatMap(Optional::stream)
 					.map(ExportExternalReferenceToRabbitMQService::toJsonExternalReferenceLookupItem);
 		}
 	}

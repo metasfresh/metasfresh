@@ -146,7 +146,7 @@ public final class PackingItemParts implements Iterable<PackingItemPart>
 						.appendParametersToMessage()
 						.setParameter("Parts", this));
 
-		return toList().get(0).getQty().getUOM();
+		return toList().getFirst().getQty().getUOM();
 	}
 
 	@Override

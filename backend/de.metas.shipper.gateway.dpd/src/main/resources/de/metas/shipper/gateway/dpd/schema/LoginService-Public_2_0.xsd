@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?><xsd:schema jaxb:version="2.0" targetNamespace="http://dpd.com/common/service/types/LoginService/2.0" version="1.0" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:tns="http://dpd.com/common/service/types/LoginService/2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<?xml version='1.0' encoding='UTF-8'?><xsd:schema jaxb:version="3.0" targetNamespace="http://dpd.com/common/service/types/LoginService/2.0" version="1.0" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb" xmlns:tns="http://dpd.com/common/service/types/LoginService/2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
    <xsd:annotation>
       <xsd:appinfo>

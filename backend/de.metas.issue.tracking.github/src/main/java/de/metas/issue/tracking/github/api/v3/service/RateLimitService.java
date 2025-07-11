@@ -61,9 +61,9 @@ public class RateLimitService
 
 		if (!Check.isEmpty(rateLimitRemaining) && !Check.isEmpty(rateLimitReset))
 		{
-			final int remainingReq = NumberUtils.asInteger(rateLimitRemaining.get(0), 0);
+			final int remainingReq = NumberUtils.asInteger(rateLimitRemaining.getFirst(), 0);
 
-			final long utcSeconds = Long.parseLong(rateLimitReset.get(0));
+			final long utcSeconds = Long.parseLong(rateLimitReset.getFirst());
 
 			final LocalDateTime rateLimitResetTimestamp = LocalDateTime.ofEpochSecond(utcSeconds,0, ZoneOffset.UTC);
 

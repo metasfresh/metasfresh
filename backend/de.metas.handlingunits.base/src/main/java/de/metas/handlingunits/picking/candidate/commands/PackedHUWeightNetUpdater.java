@@ -107,7 +107,7 @@ public class PackedHUWeightNetUpdater
 					.setParameter("husToUpdate", husToUpdate);
 		}
 
-		final I_M_HU hu = husToUpdate.get(0);
+		final I_M_HU hu = husToUpdate.getFirst();
 
 		final CapturedHUInfo capturedHUInfo = getCapturedHUInfo(hu);
 
@@ -151,7 +151,7 @@ public class PackedHUWeightNetUpdater
 
 		if (hus.size() == 1)
 		{
-			final I_M_HU hu = hus.get(0);
+			final I_M_HU hu = hus.getFirst();
 			setWeightNet(hu, weightToTransfer);
 		}
 		else

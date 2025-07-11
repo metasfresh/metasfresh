@@ -1,9 +1,8 @@
 package org.compiere.acct;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.error.IssueCategory;
 import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 
 /**
  * Exception thrown when a document posting request orchestration fails.
@@ -23,16 +22,16 @@ public class PostingExecutionException extends AdempiereException
 		{
 			return null;
 		}
-		else if (throwable instanceof PostingExecutionException)
+		else if (throwable instanceof PostingExecutionException exception1)
 		{
-			return (PostingExecutionException)throwable;
+			return exception1;
 		}
 		else
 		{
 			final Throwable cause = extractCause(throwable);
-			if (cause instanceof PostingExecutionException)
+			if (cause instanceof PostingExecutionException exception)
 			{
-				return (PostingExecutionException)cause;
+				return exception;
 			}
 			else
 			{

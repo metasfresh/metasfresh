@@ -10,6 +10,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -24,7 +25,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Weighting_Run;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Optional;
 
 @Callout(value = I_PP_Order_Weighting_Run.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)

@@ -90,9 +90,9 @@ public class FactAcctListenersService implements IFactAcctListenersService
 		private final void fireDocValidate(final Object document, final int timing)
 		{
 			final Object model;
-			if (document instanceof IDocument)
+			if (document instanceof IDocument iDocument)
 			{
-				model = ((IDocument)document).getDocumentModel();
+				model = iDocument.getDocumentModel();
 			}
 			else
 			{

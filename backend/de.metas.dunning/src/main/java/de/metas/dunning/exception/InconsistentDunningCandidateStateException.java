@@ -26,6 +26,8 @@ package de.metas.dunning.exception;
 import de.metas.dunning.api.IDunningCandidateProducer;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 
+import java.io.Serial;
+
 /**
  * Exception thrown by {@link IDunningCandidateProducer} when an {@link I_C_Dunning_Candidate} has an inconsistent state.
  * 
@@ -37,6 +39,7 @@ public class InconsistentDunningCandidateStateException extends DunningException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -8214864239266928237L;
 
 	public InconsistentDunningCandidateStateException(final String message)

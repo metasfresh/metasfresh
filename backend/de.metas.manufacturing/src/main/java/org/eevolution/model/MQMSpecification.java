@@ -15,6 +15,7 @@
  *****************************************************************************/
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class MQMSpecification extends  X_QM_Specification
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 3672559433094289125L;
 
 	/**

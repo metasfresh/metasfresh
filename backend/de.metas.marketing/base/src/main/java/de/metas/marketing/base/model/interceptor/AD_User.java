@@ -86,7 +86,7 @@ public class AD_User
 
 		if (isNewsletter)
 		{
-			if (!defaultcampaignId.isPresent())
+			if (defaultcampaignId.isEmpty())
 			{
 				final String orgName = orgDAO.retrieveOrgName(userRecord.getAD_Org_ID());
 				throw new AdempiereException(MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org, orgName);
@@ -96,7 +96,7 @@ public class AD_User
 		}
 		else
 		{
-			if (!defaultcampaignId.isPresent())
+			if (defaultcampaignId.isEmpty())
 			{
 				return; // nothing to do
 			}

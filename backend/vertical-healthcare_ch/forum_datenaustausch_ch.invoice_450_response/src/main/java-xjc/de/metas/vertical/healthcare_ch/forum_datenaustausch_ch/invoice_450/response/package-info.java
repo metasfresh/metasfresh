@@ -5,5 +5,5 @@
 // Generated on: 2024.11.04 at 03:55:25 PM CET 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.forum-datenaustausch.ch/invoice", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://www.forum-datenaustausch.ch/invoice", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.response;

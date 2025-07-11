@@ -22,6 +22,7 @@ package de.metas.printing.esb.api;
  * #L%
  */
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class PrinterHWList implements Serializable
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -2897251108708482160L;
 
 	private List<PrinterHW> hwPrinters;

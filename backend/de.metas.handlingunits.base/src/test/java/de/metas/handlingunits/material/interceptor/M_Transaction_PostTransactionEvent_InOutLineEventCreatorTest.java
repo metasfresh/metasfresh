@@ -135,7 +135,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
-		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
+		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.getFirst();
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_SEVEN);
 	}
@@ -167,7 +167,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
-		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
+		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.getFirst();
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_SEVEN);
 	}
@@ -201,7 +201,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 
 		assertThat(events).hasSize(1);
 
-		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
+		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.getFirst();
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_SEVEN); // the HUs' qty takes precendence of the transaction's movementQty
 
@@ -275,7 +275,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
-		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
+		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.getFirst();
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_SEVEN);
 	}
@@ -304,7 +304,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
-		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
+		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.getFirst();
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(SEVEN);
 	}

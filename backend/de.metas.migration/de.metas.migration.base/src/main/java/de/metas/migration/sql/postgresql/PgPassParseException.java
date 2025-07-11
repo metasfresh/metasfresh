@@ -23,6 +23,7 @@ package de.metas.migration.sql.postgresql;
  */
 
 import java.io.File;
+import java.io.Serial;
 
 public class PgPassParseException extends RuntimeException
 {
@@ -30,6 +31,7 @@ public class PgPassParseException extends RuntimeException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 3185121240527253819L;
 
 	public static PgPassParseException convert(final Throwable exception)
@@ -38,9 +40,9 @@ public class PgPassParseException extends RuntimeException
 		{
 			throw new IllegalArgumentException("exception cannot be null");
 		}
-		else if (exception instanceof PgPassParseException)
+		else if (exception instanceof PgPassParseException parseException)
 		{
-			return (PgPassParseException)exception;
+			return parseException;
 		}
 		else
 		{

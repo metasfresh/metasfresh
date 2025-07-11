@@ -118,9 +118,9 @@ public class HUSplitBuilderCoreEngine
 
 	private IHUProducerAllocationDestination destinationCastOrNull()
 	{
-		if (destination instanceof IHUProducerAllocationDestination)
+		if (destination instanceof IHUProducerAllocationDestination allocationDestination)
 		{
-			return (IHUProducerAllocationDestination)destination;
+			return allocationDestination;
 		}
 		return null;
 	}

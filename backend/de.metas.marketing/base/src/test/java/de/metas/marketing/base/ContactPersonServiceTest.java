@@ -155,7 +155,7 @@ public class ContactPersonServiceTest
 			final List<I_MKTG_ContactPerson> resultContactPersons = retrieveContactPersons();
 
 			assertThat(resultContactPersons).hasSize(1);
-			final String resultAddress = resultContactPersons.get(0).getEMail();
+			final String resultAddress = resultContactPersons.getFirst().getEMail();
 
 			assertThat(resultAddress).isSameAs(newUserAddress);
 		}
@@ -181,8 +181,8 @@ public class ContactPersonServiceTest
 			final List<I_MKTG_ContactPerson> resultRecords = retrieveContactPersons();
 
 			assertThat(resultRecords).hasSize(1);
-			assertThat(resultRecords.get(0).getEMail()).isEqualTo(newUserAddress);
-			assertThat(resultRecords.get(0).getAD_Language()).isEqualTo(newLanguage.getAD_Language());
+			assertThat(resultRecords.getFirst().getEMail()).isEqualTo(newUserAddress);
+			assertThat(resultRecords.getFirst().getAD_Language()).isEqualTo(newLanguage.getAD_Language());
 		}
 
 		@Test
@@ -204,7 +204,7 @@ public class ContactPersonServiceTest
 			final List<I_MKTG_ContactPerson> resultContactPersons = retrieveContactPersons();
 
 			assertThat(resultContactPersons).hasSize(1);
-			final String resultAddress = resultContactPersons.get(0).getEMail();
+			final String resultAddress = resultContactPersons.getFirst().getEMail();
 			assertThat(resultAddress)
 					.isNotSameAs(newUserAddress)
 					.isSameAs(contactPersonAddress);
@@ -229,7 +229,7 @@ public class ContactPersonServiceTest
 			final List<I_MKTG_ContactPerson> resultContactPersons = retrieveContactPersons();
 
 			assertThat(resultContactPersons).hasSize(1);
-			final String resultAddress = resultContactPersons.get(0).getEMail();
+			final String resultAddress = resultContactPersons.getFirst().getEMail();
 
 			assertThat(resultAddress).isSameAs(newUserAddress);
 		}
@@ -251,7 +251,7 @@ public class ContactPersonServiceTest
 			final List<I_MKTG_ContactPerson> resultContactPersons = retrieveContactPersons();
 
 			assertThat(resultContactPersons).hasSize(1);
-			final String resultAddress = resultContactPersons.get(0).getEMail();
+			final String resultAddress = resultContactPersons.getFirst().getEMail();
 
 			assertThat(resultAddress).isSameAs(newUserAddress);
 		}
@@ -302,7 +302,7 @@ public class ContactPersonServiceTest
 
 			assertThat(resultUsers).hasSize(1);
 
-			final String resultEmailAddress = resultUsers.get(0).getEMail();
+			final String resultEmailAddress = resultUsers.getFirst().getEMail();
 
 			assertThat(resultEmailAddress).isSameAs(newContactPersonAddress);
 		}
@@ -326,7 +326,7 @@ public class ContactPersonServiceTest
 
 			assertThat(resultUsers).hasSize(1);
 
-			final String resultEmailAddress = resultUsers.get(0).getEMail();
+			final String resultEmailAddress = resultUsers.getFirst().getEMail();
 
 			assertThat(resultEmailAddress)
 					.isNotSameAs(newContactPersonAddress)
@@ -350,7 +350,7 @@ public class ContactPersonServiceTest
 
 			assertThat(resultUsers).hasSize(1);
 
-			final String resultEmailAddress = resultUsers.get(0).getEMail();
+			final String resultEmailAddress = resultUsers.getFirst().getEMail();
 
 			assertThat(resultEmailAddress).isSameAs(newContactPersonAddress);
 		}
@@ -372,7 +372,7 @@ public class ContactPersonServiceTest
 
 			assertThat(resultUsers).hasSize(1);
 
-			final String resultEmailAddress = resultUsers.get(0).getEMail();
+			final String resultEmailAddress = resultUsers.getFirst().getEMail();
 
 			assertThat(resultEmailAddress).isSameAs(newContactPersonAddress);
 		}
@@ -398,8 +398,8 @@ public class ContactPersonServiceTest
 			final List<I_AD_User> resultRecords = retrieveUsers();
 
 			assertThat(resultRecords).hasSize(1);
-			assertThat(resultRecords.get(0).getEMail()).isEqualTo(newContactPersonAddress);
-			assertThat(resultRecords.get(0).getAD_Language()).isEqualTo(newLanguage.getAD_Language());
+			assertThat(resultRecords.getFirst().getEMail()).isEqualTo(newContactPersonAddress);
+			assertThat(resultRecords.getFirst().getAD_Language()).isEqualTo(newLanguage.getAD_Language());
 		}
 	}
 

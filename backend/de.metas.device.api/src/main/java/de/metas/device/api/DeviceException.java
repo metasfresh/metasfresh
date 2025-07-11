@@ -1,5 +1,7 @@
 package de.metas.device.api;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.device.api
@@ -35,6 +37,7 @@ public class DeviceException extends RuntimeException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -4788618351964381176L;
 
 	public DeviceException(String message)

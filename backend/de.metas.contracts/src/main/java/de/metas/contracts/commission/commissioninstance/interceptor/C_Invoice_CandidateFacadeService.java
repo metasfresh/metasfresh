@@ -75,7 +75,7 @@ public class C_Invoice_CandidateFacadeService
 		else
 		{
 			final Optional<SalesInvoiceCandidate> salesInvoiceCandidate = salesInvoiceCandidateFactory.forRecord(icRecord);
-			if (!salesInvoiceCandidate.isPresent())
+			if (salesInvoiceCandidate.isEmpty())
 			{
 				logger.debug("The C_Invoice_Candidate is not commission-relevant; -> nothing to do");
 				return;

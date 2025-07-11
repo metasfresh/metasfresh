@@ -189,7 +189,7 @@ public class DistributionNetworkRepository
 			}
 			else
 			{
-				return emptiesDistributionNetworks.get(0);
+				return emptiesDistributionNetworks.getFirst();
 			}
 		}
 

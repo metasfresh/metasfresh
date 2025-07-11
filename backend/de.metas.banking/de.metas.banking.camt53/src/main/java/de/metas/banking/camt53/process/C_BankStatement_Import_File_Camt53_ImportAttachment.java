@@ -150,7 +150,7 @@ public class C_BankStatement_Import_File_Camt53_ImportAttachment extends JavaPro
 
 	private boolean isMissingAttachmentEntryForRecordId(@NonNull final BankStatementImportFileId bankStatementImportFileId)
 	{
-		return !getSingleAttachmentEntryId(bankStatementImportFileId).isPresent();
+		return getSingleAttachmentEntryId(bankStatementImportFileId).isEmpty();
 	}
 
 	@NonNull
@@ -170,7 +170,7 @@ public class C_BankStatement_Import_File_Camt53_ImportAttachment extends JavaPro
 					.markAsUserValidationError();
 		}
 
-		return Optional.of(attachments.get(0).getId());
+		return Optional.of(attachments.getFirst().getId());
 	}
 
 	@NonNull

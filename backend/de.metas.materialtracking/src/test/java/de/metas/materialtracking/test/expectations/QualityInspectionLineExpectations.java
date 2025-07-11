@@ -86,7 +86,7 @@ public class QualityInspectionLineExpectations
 			fail("More then one expection found for type " + type + ": " + expectationsFound);
 		}
 
-		return expectationsFound.get(0);
+		return expectationsFound.getFirst();
 	}
 
 	public void assertExpectedQualityInspectionLines(final List<IQualityInspectionLine> lines)

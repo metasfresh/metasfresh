@@ -69,7 +69,7 @@ class AlreadyShippedHUsInPreviousSystemRepository
 			}
 			else if (rows.size() == 1)
 			{
-				return Optional.of(fromRecord(rows.get(0)));
+				return Optional.of(fromRecord(rows.getFirst()));
 			}
 			else
 			{

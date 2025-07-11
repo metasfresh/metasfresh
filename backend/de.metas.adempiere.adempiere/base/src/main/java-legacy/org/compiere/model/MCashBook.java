@@ -60,7 +60,7 @@ public class MCashBook extends X_C_CashBook
 	 */
 	public static MCashBook get(Properties ctx, int C_CashBook_ID, String trxName)
 	{
-		Integer key = new Integer (C_CashBook_ID);
+		Integer key = Integer.valueOf(C_CashBook_ID);
 		MCashBook retValue = (MCashBook) s_cache.get (key);
 		if (retValue != null)
 			return retValue;
@@ -103,7 +103,7 @@ public class MCashBook extends X_C_CashBook
 			if (rs.next ())
 			{
 				retValue = new MCashBook (ctx, rs, null);
-				Integer key = new Integer (retValue.getC_CashBook_ID());
+				Integer key = Integer.valueOf(retValue.getC_CashBook_ID());
 				s_cache.put (key, retValue);
 			}
 			rs.close ();

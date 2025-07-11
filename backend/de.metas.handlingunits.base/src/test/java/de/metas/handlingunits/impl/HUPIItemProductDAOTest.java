@@ -91,8 +91,8 @@ public class HUPIItemProductDAOTest
 		final List<I_M_HU_PI_Item_Product> itemProductsOrdered = new ArrayList<>(itemProducts);
 		Collections.sort(itemProductsOrdered, orderBy);
 
-		assertEqualsByDescription("Invalid item at index=1", itemProducts.get(1), itemProductsOrdered.get(0));
-		assertEqualsByDescription("Invalid item at index=2", itemProducts.get(0), itemProductsOrdered.get(1));
+		assertEqualsByDescription("Invalid item at index=1", itemProducts.get(1), itemProductsOrdered.getFirst());
+		assertEqualsByDescription("Invalid item at index=2", itemProducts.getFirst(), itemProductsOrdered.get(1));
 	}
 
 	@Test

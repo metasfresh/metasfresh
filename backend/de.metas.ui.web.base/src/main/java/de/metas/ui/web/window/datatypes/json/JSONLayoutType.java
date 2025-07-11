@@ -28,11 +28,12 @@ import java.util.Map;
  * #L%
  */
 
-@Schema(enumAsRef = true, description = "JSONLayoutType: \n" +
-		"* `primary` - Primary layout: it will render the label and beneath the field\n" +
-		"* `primaryLongLabels` - Same as <code>primary</code> but will advice the frontend to render long labels. At the moment it's used for filter checkboxes\n" +
-		"* `secondary` - It will render the label and the field on same line\n" +
-		"")
+@Schema(enumAsRef = true, description = """
+		JSONLayoutType:\s
+		* `primary` - Primary layout: it will render the label and beneath the field
+		* `primaryLongLabels` - Same as <code>primary</code> but will advice the frontend to render long labels. At the moment it's used for filter checkboxes
+		* `secondary` - It will render the label and the field on same line
+		""")
 public enum JSONLayoutType
 {
 	primary,

@@ -60,8 +60,8 @@ public class InvoiceJsonConverterServiceTest
 		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(ImmutableList.of(jic1, jic2));
 
 		assertThat(headerAndLineIds).hasSize(2);
-		assertThat(headerAndLineIds.get(0).getExternalHeaderId()).isEqualTo(JsonExternalIds.toExternalId(EXTERNAL_HEADER_ID1));
-		assertThat(headerAndLineIds.get(0).getExternalLineIds()).isEmpty();
+		assertThat(headerAndLineIds.getFirst().getExternalHeaderId()).isEqualTo(JsonExternalIds.toExternalId(EXTERNAL_HEADER_ID1));
+		assertThat(headerAndLineIds.getFirst().getExternalLineIds()).isEmpty();
 
 		assertThat(headerAndLineIds.get(1).getExternalHeaderId()).isEqualTo(JsonExternalIds.toExternalId(EXTERNAL_HEADER_ID2));
 		assertThat(headerAndLineIds.get(1).getExternalLineIds()).containsExactly(JsonExternalIds.toExternalId(EXTERNAL_LINE_ID1), JsonExternalIds.toExternalId(EXTERNAL_LINE_ID2));

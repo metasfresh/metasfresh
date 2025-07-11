@@ -1,19 +1,14 @@
 package org.adempiere.plaf;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /*
  * #%L
@@ -101,7 +96,7 @@ public class AdempiereSplitPaneUI extends BasicSplitPaneUI
 	protected void updateApplyTabbedPaneTopGap()
 	{
 		final Object applyTabbedPaneTopGapObj = splitPane.getClientProperty(CLIENT_PROPERTY_ApplyTabbedPaneTopGap);
-		setApplyTabbedPaneTopGap(applyTabbedPaneTopGapObj != null && applyTabbedPaneTopGapObj instanceof Boolean && ((Boolean)applyTabbedPaneTopGapObj).booleanValue());
+		setApplyTabbedPaneTopGap(applyTabbedPaneTopGapObj != null && applyTabbedPaneTopGapObj instanceof Boolean b && b.booleanValue());
 	}
 
 	private void setApplyTabbedPaneTopGap(final boolean applyTabbedPaneTopGap)
@@ -239,9 +234,9 @@ public class AdempiereSplitPaneUI extends BasicSplitPaneUI
 		public Insets getBorderInsets(final Component c)
 		{
 			final Insets insets = new Insets(0, 0, 0, 0);
-			if (c instanceof BasicSplitPaneDivider)
+			if (c instanceof BasicSplitPaneDivider paneDivider)
 			{
-				final BasicSplitPaneUI bspui = ((BasicSplitPaneDivider)c).getBasicSplitPaneUI();
+				final BasicSplitPaneUI bspui = paneDivider.getBasicSplitPaneUI();
 				if (bspui != null)
 				{
 					final JSplitPane splitPane = bspui.getSplitPane();

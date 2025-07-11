@@ -90,10 +90,10 @@ public class ExternalProjectRepositoryTest
 		final ImmutableList<ExternalProjectReference> records = externalProjectRepository.getByExternalSystem(MOCK_EXTERNAL_SYSTEM);
 
 		assertEquals(records.size(), 1);
-		assertEquals(records.get(0).getOrgId(), MOCK_ORG_ID);
-		assertEquals(records.get(0).getProjectId(), MOCK_PROJECT_ID);
-		assertEquals(records.get(0).getProjectOwner(), MOCK_EXTERNAL_PROJECT_OWNER);
-		assertEquals(records.get(0).getExternalProjectReference(), MOCK_EXTERNAL_REFERENCE);
-		assertEquals(records.get(0).getExternalProjectType(), MOCK_EXTERNAL_PROJECT_TYPE);
+		assertEquals(records.getFirst().getOrgId(), MOCK_ORG_ID);
+		assertEquals(records.getFirst().getProjectId(), MOCK_PROJECT_ID);
+		assertEquals(records.getFirst().getProjectOwner(), MOCK_EXTERNAL_PROJECT_OWNER);
+		assertEquals(records.getFirst().getExternalProjectReference(), MOCK_EXTERNAL_REFERENCE);
+		assertEquals(records.getFirst().getExternalProjectType(), MOCK_EXTERNAL_PROJECT_TYPE);
 	}
 }

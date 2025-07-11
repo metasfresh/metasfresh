@@ -3,6 +3,8 @@ package de.metas.rfq.exceptions;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.rfq.IRfqBL;
+
+import java.io.Serial;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.model.I_C_RfQResponse;
@@ -40,6 +42,7 @@ import de.metas.util.Services;
  */
 public class RfQException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = -8279948147175847410L;
 
 	public RfQException(final String message, final Throwable cause)

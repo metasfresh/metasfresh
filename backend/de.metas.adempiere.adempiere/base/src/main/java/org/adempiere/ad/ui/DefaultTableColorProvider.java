@@ -22,13 +22,12 @@ package org.adempiere.ad.ui;
  * #L%
  */
 
-
-import java.awt.Color;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.util.Env;
+
+import java.awt.*;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 public class DefaultTableColorProvider extends TableColorProviderAdapter
 {
@@ -88,11 +87,11 @@ public class DefaultTableColorProvider extends TableColorProviderAdapter
 
 		try
 		{
-			if (data instanceof Timestamp)
+			if (data instanceof Timestamp timestamp)
 			{
 				if (colorDataCompare == null || !(colorDataCompare instanceof Timestamp))
 					colorDataCompare = new Timestamp(System.currentTimeMillis());
-				cmp = ((Timestamp)colorDataCompare).compareTo((Timestamp)data);
+				cmp = ((Timestamp)colorDataCompare).compareTo(timestamp);
 			}
 			else
 			{

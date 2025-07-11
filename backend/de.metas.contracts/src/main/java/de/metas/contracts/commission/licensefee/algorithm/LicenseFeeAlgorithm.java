@@ -66,7 +66,7 @@ public class LicenseFeeAlgorithm implements CommissionAlgorithm
 
 		Check.assume(licenseFeeCommissionConfigs.size() == 1, "There is always only one LicenseFeeConfig involved!");
 
-		final LicenseFeeConfig licenseFeeConfig = licenseFeeCommissionConfigs.get(0);
+		final LicenseFeeConfig licenseFeeConfig = licenseFeeCommissionConfigs.getFirst();
 		final CommissionTrigger commissionTrigger = request.getTrigger();
 
 		if (licenseFeeConfig.getContractFor(commissionTrigger.getSalesRepId()) == null)
@@ -104,7 +104,7 @@ public class LicenseFeeAlgorithm implements CommissionAlgorithm
 
 		Check.assume(licenseFeeCommissionShares.size() == 1, "There is always only one license fee CommissionShare involved!");
 
-		createAndAddFacts(licenseFeeCommissionShares.get(0), change.getNewCommissionTriggerData());
+		createAndAddFacts(licenseFeeCommissionShares.getFirst(), change.getNewCommissionTriggerData());
 	}
 
 	private void createAndAddFacts(

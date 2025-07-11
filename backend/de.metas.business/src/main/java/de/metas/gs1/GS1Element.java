@@ -28,13 +28,13 @@ public class GS1Element
 
 	public LocalDate getValueAsLocalDate()
 	{
-		if (value instanceof LocalDateTime)
+		if (value instanceof LocalDateTime time)
 		{
-			return ((LocalDateTime)value).toLocalDate();
+			return time.toLocalDate();
 		}
-		else if (value instanceof LocalDate)
+		else if (value instanceof LocalDate date)
 		{
-			return (LocalDate)value;
+			return date;
 		}
 		else
 		{

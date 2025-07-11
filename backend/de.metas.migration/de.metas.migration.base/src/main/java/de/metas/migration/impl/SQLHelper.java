@@ -178,33 +178,33 @@ public class SQLHelper
 		{
 			pstmt.setObject(index, null);
 		}
-		else if (param instanceof String)
+		else if (param instanceof String string)
 		{
-			pstmt.setString(index, (String)param);
+			pstmt.setString(index, string);
 		}
-		else if (param instanceof Integer)
+		else if (param instanceof Integer integer)
 		{
-			pstmt.setInt(index, ((Integer)param).intValue());
+			pstmt.setInt(index, integer.intValue());
 		}
-		else if (param instanceof Long)
+		else if (param instanceof Long long1)
 		{
-			pstmt.setLong(index, ((Long)param).longValue());
+			pstmt.setLong(index, long1.longValue());
 		}
-		else if (param instanceof BigDecimal)
+		else if (param instanceof BigDecimal decimal)
 		{
-			pstmt.setBigDecimal(index, (BigDecimal)param);
+			pstmt.setBigDecimal(index, decimal);
 		}
-		else if (param instanceof Timestamp)
+		else if (param instanceof Timestamp timestamp)
 		{
-			pstmt.setTimestamp(index, (Timestamp)param);
+			pstmt.setTimestamp(index, timestamp);
 		}
-		else if (param instanceof java.util.Date)
+		else if (param instanceof java.util.Date date)
 		{
-			pstmt.setTimestamp(index, new Timestamp(((java.util.Date)param).getTime()));
+			pstmt.setTimestamp(index, new Timestamp(date.getTime()));
 		}
-		else if (param instanceof Boolean)
+		else if (param instanceof Boolean boolean1)
 		{
-			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
+			pstmt.setString(index, boolean1.booleanValue() ? "Y" : "N");
 		}
 		else
 		{

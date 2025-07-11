@@ -6,6 +6,8 @@ import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.util.Check;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when {@link HULoader} fails to fully load the requested qty to it's {@link IAllocationDestination}.
  *
@@ -17,6 +19,7 @@ public class HULoadException extends HUException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 6554990044648764732L;
 
 	private final IAllocationRequest request;

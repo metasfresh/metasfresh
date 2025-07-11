@@ -193,7 +193,7 @@ public class LocatorAndProductStrategyTest
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0))
+		assertThat(result.getFirst())
 				.usingRecursiveComparison()
 				.isEqualTo(HuForInventoryLine.builder()
 						.orgId(OrgId.ANY)

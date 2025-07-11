@@ -82,7 +82,7 @@ public class InvoiceExportService
 			try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_Invoice.Table_Name, invoiceIdToExport))
 			{
 				final Optional<InvoiceToExport> invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
-				if (!invoiceToExport.isPresent())
+				if (invoiceToExport.isEmpty())
 				{
 					loggable.addLog("InvoiceExportService - invoiceToExportFactory did not create an exportable representation for the invoice with InvoiceId={}; skipping.", invoiceIdToExport);
 					continue;

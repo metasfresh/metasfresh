@@ -32,11 +32,13 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 
 final class AnnotatedTableCellRenderer extends DefaultTableCellRenderer
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	// services
@@ -136,9 +138,8 @@ final class AnnotatedTableCellRenderer extends DefaultTableCellRenderer
 		//
 		// Check if the model suggests any special color to be used
 		final TableModel tableModel = table.getModel();
-		if (tableModel instanceof AnnotatedTableModel<?>)
+		if (tableModel instanceof AnnotatedTableModel<?> annotatedTableModel)
 		{
-			final AnnotatedTableModel<?> annotatedTableModel = (AnnotatedTableModel<?>)tableModel;
 			final int modelRowIndex= table.convertRowIndexToModel(rowIndexView);
 			final int modelColumnIndex = table.convertColumnIndexToModel(columnIndexView);
 			final Color modelForegroundColor = annotatedTableModel.getCellForegroundColor(modelRowIndex, modelColumnIndex);

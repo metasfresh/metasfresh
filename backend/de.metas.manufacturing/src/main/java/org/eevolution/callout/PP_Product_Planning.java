@@ -54,7 +54,7 @@ public class PP_Product_Planning
 				return;
 			}
 
-			final MaturingConfigLine line = configLines.get(0);
+			final MaturingConfigLine line = configLines.getFirst();
 			productPlanningRecord.setM_Maturing_Configuration_ID(MaturingConfigId.toRepoId(line.getMaturingConfigId()));
 			productPlanningRecord.setM_Maturing_Configuration_Line_ID(MaturingConfigLineId.toRepoId(line.getId()));
 		}

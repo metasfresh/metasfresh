@@ -204,11 +204,11 @@ class SqlViewDataRepository implements IViewDataRepository
 			else if (documents.size() > 1)
 			{
 				logger.warn("More than one document found for rowId={} in {}. Returning only the first one from: {}", rowId, this, documents);
-				return documents.get(0);
+				return documents.getFirst();
 			}
 			else
 			{
-				return documents.get(0);
+				return documents.getFirst();
 			}
 		}
 		catch (final SQLException | DBException e)
@@ -359,28 +359,24 @@ class SqlViewDataRepository implements IViewDataRepository
 		{
 			return null;
 		}
-		else if (rowIdObj instanceof DocumentId)
+		else if (rowIdObj instanceof DocumentId id)
 		{
-			return (DocumentId)rowIdObj;
+			return id;
 		}
-		else if (rowIdObj instanceof Integer)
+		else if (rowIdObj instanceof Integer integer)
 		{
-			return DocumentId.of((Integer)rowIdObj);
+			return DocumentId.of(integer);
 		}
 		else if (rowIdObj instanceof String)
 		{
 			return DocumentId.of(rowIdObj.toString());
 		}
-		else if (rowIdObj instanceof LookupValue)
+		else if (rowIdObj instanceof LookupValue lookupValue)
 		{
-			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
-			final LookupValue lookupValue = (LookupValue)rowIdObj;
 			return DocumentId.of(lookupValue.getIdAsString());
 		}
-		else if (rowIdObj instanceof JSONLookupValue)
+		else if (rowIdObj instanceof JSONLookupValue jsonLookupValue)
 		{
-			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
-			final JSONLookupValue jsonLookupValue = (JSONLookupValue)rowIdObj;
 			return DocumentId.of(jsonLookupValue.getKey());
 		}
 		else
@@ -429,13 +425,13 @@ class SqlViewDataRepository implements IViewDataRepository
 		{
 			return rowIdPartObj.toString();
 		}
-		else if (rowIdPartObj instanceof LookupValue)
+		else if (rowIdPartObj instanceof LookupValue value1)
 		{
-			return ((LookupValue)rowIdPartObj).getIdAsString();
+			return value1.getIdAsString();
 		}
-		else if (rowIdPartObj instanceof JSONLookupValue)
+		else if (rowIdPartObj instanceof JSONLookupValue value)
 		{
-			return ((JSONLookupValue)rowIdPartObj).getKey();
+			return value.getKey();
 		}
 		else
 		{

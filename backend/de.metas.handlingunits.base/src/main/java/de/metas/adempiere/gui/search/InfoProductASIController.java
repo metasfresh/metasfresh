@@ -193,7 +193,7 @@ public class InfoProductASIController extends InfoColumnControllerAdapter implem
 		@Override
 		public String toString()
 		{
-			return String.format("OrderLineProductASIGridRowBuilder [asiId=%s, isValid()=%s, isCreateNewRecord()=%s]", asiId, isValid(), isCreateNewRecord());
+			return "OrderLineProductASIGridRowBuilder [asiId=%s, isValid()=%s, isCreateNewRecord()=%s]".formatted(asiId, isValid(), isCreateNewRecord());
 		}
 	}
 

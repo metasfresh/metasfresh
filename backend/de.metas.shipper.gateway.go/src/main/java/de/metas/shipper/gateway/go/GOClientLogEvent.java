@@ -1,13 +1,11 @@
 package de.metas.shipper.gateway.go;
 
-import javax.xml.bind.JAXBElement;
-
+import jakarta.xml.bind.JAXBElement;
+import lombok.Builder;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.oxm.Marshaller;
 import org.springframework.xml.transform.StringResult;
-
-import lombok.Builder;
-import lombok.Value;
 
 /*
  * #%L

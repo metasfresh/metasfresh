@@ -68,7 +68,7 @@ public class AlbertaPrescriptionRequestDAO
 		final BPartnerId patientBPartnerId = BPartnerId.ofRepoId(prescriptionRequest.getC_BPartner_Patient_ID());
 		final Optional<AlbertaPatient> albertaPatient = albertaPatientRepository.getByBPartnerId(patientBPartnerId);
 
-		if (!albertaPatient.isPresent())
+		if (albertaPatient.isEmpty())
 		{
 			return null;
 		}

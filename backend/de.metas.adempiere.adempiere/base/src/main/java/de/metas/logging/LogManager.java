@@ -192,9 +192,9 @@ public final class LogManager
 		// return false;
 		// }
 
-		if (logger instanceof ch.qos.logback.classic.Logger)
+		if (logger instanceof ch.qos.logback.classic.Logger logger1)
 		{
-			((ch.qos.logback.classic.Logger)logger).setLevel(level);
+			logger1.setLevel(level);
 			return true;
 		}
 
@@ -231,9 +231,9 @@ public final class LogManager
 		{
 			return null;
 		}
-		else if (logger instanceof ch.qos.logback.classic.Logger)
+		else if (logger instanceof ch.qos.logback.classic.Logger logger1)
 		{
-			return ((ch.qos.logback.classic.Logger)logger).getEffectiveLevel();
+			return logger1.getEffectiveLevel();
 		}
 		else
 		{
@@ -513,9 +513,8 @@ public final class LogManager
 	{
 		final Consumer<Logger> dumpLevel = (currentLogger) -> {
 			final String currentLoggerInfo;
-			if (currentLogger instanceof ch.qos.logback.classic.Logger)
+			if (currentLogger instanceof ch.qos.logback.classic.Logger logbackLogger)
 			{
-				final ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger)currentLogger;
 				currentLoggerInfo = "effectiveLevel=" + logbackLogger.getEffectiveLevel() + ", level=" + logbackLogger.getLevel();
 			}
 			else

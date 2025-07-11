@@ -105,7 +105,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(newLocationId);
 		assertThat(invoice.getBillTo().getContactId().getRepoId()).isEqualTo(newUserId);
 	}
@@ -135,7 +135,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(oldLocationId);
 		assertThat(invoice.getBillTo().getContactId().getRepoId()).isEqualTo(newUserId);
 	}
@@ -166,7 +166,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(oldLocationId);
 		assertThat(BPartnerContactId.toRepoId(invoice.getBillTo().getContactId())).isEqualTo(oldUserId);
 	}
@@ -198,7 +198,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(oldLocationId);
 		assertThat(BPartnerContactId.toRepoId(invoice.getBillTo().getContactId())).isEqualTo(oldUserId);
 	}
@@ -226,7 +226,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(newLocationId);
 		assertThat(invoice.getBillTo().getContactId().getRepoId()).isEqualTo(newUserId);
 	}
@@ -257,7 +257,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(oldLocationId);
 		assertThat(BPartnerContactId.toRepoId(invoice.getBillTo().getContactId())).isEqualTo(oldUserId);
 	}
@@ -293,7 +293,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 		assertThat(invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getBillTo().getBpartnerLocationId().getRepoId()).isEqualTo(overrideLocationId);
 		assertThat(invoice.getBillTo().getContactId().getRepoId()).isEqualTo(overrideUserId);
 	}

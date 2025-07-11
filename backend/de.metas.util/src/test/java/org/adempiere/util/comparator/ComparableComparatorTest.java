@@ -43,7 +43,7 @@ public class ComparableComparatorTest
 
 		Collections.sort(list, cmp);
 
-		Assert.assertEquals("Invalid element at index 0 for : " + list, null, list.get(0));
+		Assert.assertEquals("Invalid element at index 0 for : " + list, null, list.getFirst());
 		Assert.assertEquals("Invalid element at index 1 for : " + list, "string1", list.get(1));
 	}
 	

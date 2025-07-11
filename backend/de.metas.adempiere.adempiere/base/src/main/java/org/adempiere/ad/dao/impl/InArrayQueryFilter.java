@@ -223,7 +223,7 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 		}
 		else if (values.size() == 1)
 		{
-			final Object value = values.get(0);
+			final Object value = values.getFirst();
 			if (value == null)
 			{
 				sqlWhereClause = columnName + " IS NULL";

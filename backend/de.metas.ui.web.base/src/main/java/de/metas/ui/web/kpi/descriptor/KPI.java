@@ -133,7 +133,7 @@ public class KPI
 		}
 		else if (groupByFieldsList.size() == 1)
 		{
-			return groupByFieldsList.get(0);
+			return groupByFieldsList.getFirst();
 		}
 		else
 		{

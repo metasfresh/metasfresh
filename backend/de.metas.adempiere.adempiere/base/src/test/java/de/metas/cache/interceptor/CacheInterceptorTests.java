@@ -267,8 +267,9 @@ public class CacheInterceptorTests
 
 		final Date date2 = new Date(ts);
 		final String randomString2 = service.methodWithDate(date2);
-		Assert.assertEquals("Shall return same values because the same parameter value is provided."
-				+ "\n In case it fails, it means that the internal cache key was changed.",
+		Assert.assertEquals("""
+				Shall return same values because the same parameter value is provided.
+				 In case it fails, it means that the internal cache key was changed.""",
 				randomString1, randomString2);
 	}
 

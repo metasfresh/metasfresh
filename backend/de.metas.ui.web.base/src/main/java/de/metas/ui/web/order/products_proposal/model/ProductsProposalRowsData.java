@@ -294,8 +294,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 
 	private synchronized void addRow(final ProductsProposalRow row)
 	{
-		rowIdsOrderedAndFiltered.add(0, row.getId()); // add first
-		rowIdsOrdered.add(0, row.getId()); // add first
+		rowIdsOrderedAndFiltered.addFirst(row.getId()); // add first
+		rowIdsOrdered.addFirst(row.getId()); // add first
 
 		rowsById.put(row.getId(), row);
 	}

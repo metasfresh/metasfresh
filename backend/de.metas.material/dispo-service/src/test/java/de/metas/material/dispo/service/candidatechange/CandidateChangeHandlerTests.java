@@ -208,7 +208,7 @@ public class CandidateChangeHandlerTests
 		createAndAddDemandWithQtyAndDemandDetail(qty, 20);
 		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
-		assertThat(DispoTestUtils.filter(CandidateType.STOCK).get(0).getQty()).isEqualByComparingTo("-23");
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK).getFirst().getQty()).isEqualByComparingTo("-23");
 
 		createAndAddSupplyWithQtyAndDemandDetail(qty, 30);
 		{
@@ -216,10 +216,10 @@ public class CandidateChangeHandlerTests
 			// we need one demand, one supply and *two* different stocks, since demand and supply are not related
 			assertThat(records).hasSize(4);
 
-			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-			final I_MD_Candidate firstStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
+			final I_MD_Candidate firstStockRecord = DispoTestUtils.filter(CandidateType.STOCK).getFirst();
 
-			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).getFirst();
 			final I_MD_Candidate secondStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(1);
 
 			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, demandRecord.getSeqNo());
@@ -242,7 +242,7 @@ public class CandidateChangeHandlerTests
 		createAndAddDemandWithQtyAndDemandDetail(qty, 20);
 
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
-		assertThat(DispoTestUtils.filter(CandidateType.STOCK).get(0).getQty()).isEqualByComparingTo("-23");
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK).getFirst().getQty()).isEqualByComparingTo("-23");
 
 		createAndAddSupplyWithQtyAndDemandDetail(qty, 20);
 
@@ -250,9 +250,9 @@ public class CandidateChangeHandlerTests
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records).hasSize(4);
 
-		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-		final I_MD_Candidate firstStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
-		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
+		final I_MD_Candidate firstStockRecord = DispoTestUtils.filter(CandidateType.STOCK).getFirst();
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).getFirst();
 		final I_MD_Candidate secondStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(1);
 
 		assertThatModel(firstStockRecord).as("firstStockRecord is the child of demandRecord")
@@ -279,13 +279,13 @@ public class CandidateChangeHandlerTests
 
 		createAndAddSupplyWithQtyAndDemandDetail(qty, 20);
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(1);
-		assertThat(DispoTestUtils.filter(CandidateType.STOCK).get(0).getQty()).isEqualByComparingTo("23");
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK).getFirst().getQty()).isEqualByComparingTo("23");
 
 		{
 			assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one supply, one stock
 
-			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
-			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).getFirst();
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).getFirst();
 
 			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, stockRecord.getMD_Candidate_ID());
 
@@ -300,13 +300,13 @@ public class CandidateChangeHandlerTests
 			final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
 			assertThat(allStockCandidates).hasSize(2);
 
-			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
-			final I_MD_Candidate firstStockRecord = allStockCandidates.get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).getFirst();
+			final I_MD_Candidate firstStockRecord = allStockCandidates.getFirst();
 			assertThatModel(supplyRecord.getMD_Candidate_Parent())
 					.as("the supply-record is the first stock-record's child")
 					.hasSameIdAs(firstStockRecord);
 
-			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).getFirst();
 			final I_MD_Candidate secondStockRecord = allStockCandidates.get(1);
 			assertThatModel(secondStockRecord.getMD_Candidate_Parent())
 					.as("the second stock-record is the demand-record's child")
@@ -335,7 +335,7 @@ public class CandidateChangeHandlerTests
 
 		final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
 		assertThat(allStockCandidates).hasSize(3);
-		final I_MD_Candidate initialStockRecord = allStockCandidates.get(0);
+		final I_MD_Candidate initialStockRecord = allStockCandidates.getFirst();
 		final I_MD_Candidate firstStockRecord = allStockCandidates.get(1);
 		final I_MD_Candidate secondStockRecord = allStockCandidates.get(2);
 
@@ -362,7 +362,7 @@ public class CandidateChangeHandlerTests
 		final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
 		assertThat(allStockCandidates).hasSize(2);
 
-		final I_MD_Candidate firstStockRecord = allStockCandidates.get(0);
+		final I_MD_Candidate firstStockRecord = allStockCandidates.getFirst();
 		final I_MD_Candidate secondStockRecord = allStockCandidates.get(1);
 
 		final List<I_MD_Candidate> allDemandRecords = DispoTestUtils.filter(CandidateType.DEMAND);
@@ -389,7 +389,7 @@ public class CandidateChangeHandlerTests
 
 		final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
 		assertThat(allStockCandidates).hasSize(4);
-		final I_MD_Candidate firstInitialStockRecord = allStockCandidates.get(0);
+		final I_MD_Candidate firstInitialStockRecord = allStockCandidates.getFirst();
 		final I_MD_Candidate secondInitialStockRecord = allStockCandidates.get(1);
 		final I_MD_Candidate firstStockRecord = allStockCandidates.get(2);
 		final I_MD_Candidate secondStockRecord = allStockCandidates.get(3);
@@ -420,18 +420,18 @@ public class CandidateChangeHandlerTests
 		{ // guards prior to the actual test
 			final List<I_MD_Candidate> allSupplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
 			assertThat(allSupplyCandidates).hasSize(1);
-			assertThat(allSupplyCandidates.get(0).getMD_Candidate_ID()).isEqualTo(supplyCandidate.getId().getRepoId());
-			assertThat(allSupplyCandidates.get(0).getQty()).isEqualByComparingTo("35");
+			assertThat(allSupplyCandidates.getFirst().getMD_Candidate_ID()).isEqualTo(supplyCandidate.getId().getRepoId());
+			assertThat(allSupplyCandidates.getFirst().getQty()).isEqualByComparingTo("35");
 
 			final List<I_MD_Candidate> allDemandCandidates = DispoTestUtils.filter(CandidateType.DEMAND);
 			assertThat(allDemandCandidates).hasSize(2);
-			assertThat(allDemandCandidates.get(0).getQty()).isEqualByComparingTo("13");
+			assertThat(allDemandCandidates.getFirst().getQty()).isEqualByComparingTo("13");
 			assertThat(allDemandCandidates.get(1).getQty()).isEqualByComparingTo("17");
 
 			final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 			assertThat(allStockCandidates).hasSize(3);
-			assertThat(allStockCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
-			assertThat(allStockCandidates.get(0).getQty()).isEqualByComparingTo("-13");
+			assertThat(allStockCandidates.getFirst().getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
+			assertThat(allStockCandidates.getFirst().getQty()).isEqualByComparingTo("-13");
 			assertThat(allStockCandidates.get(1).getDateProjected()).isEqualTo(asTimestamp(NOW));
 			assertThat(allStockCandidates.get(1).getQty()).isEqualByComparingTo("-30"); // -13-17
 			assertThat(allStockCandidates.get(2).getDateProjected()).isEqualTo(asTimestamp(AFTER_NOW));
@@ -455,14 +455,14 @@ public class CandidateChangeHandlerTests
 			// validate the changed *SUPPLY* candidate
 			final List<I_MD_Candidate> allSupplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
 			assertThat(allSupplyCandidates).hasSize(1);
-			assertThat(allSupplyCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_NOW)); // was moved to the date of the (earliest) transaction
-			assertThat(allSupplyCandidates.get(0).getQty()).isEqualByComparingTo("35");
+			assertThat(allSupplyCandidates.getFirst().getDateProjected()).isEqualTo(asTimestamp(BEFORE_NOW)); // was moved to the date of the (earliest) transaction
+			assertThat(allSupplyCandidates.getFirst().getQty()).isEqualByComparingTo("35");
 
 			// validate the changed *STOCK* candidate
 			final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 			assertThat(allStockCandidates).hasSize(3);
-			assertThat(allStockCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
-			assertThat(allStockCandidates.get(0).getQty()).isEqualByComparingTo("-13"); // -13
+			assertThat(allStockCandidates.getFirst().getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
+			assertThat(allStockCandidates.getFirst().getQty()).isEqualByComparingTo("-13"); // -13
 			assertThat(allStockCandidates.get(1).getDateProjected()).isEqualTo(asTimestamp(BEFORE_NOW));
 			assertThat(allStockCandidates.get(1).getQty()).isEqualByComparingTo("22");  // -13+35
 			assertThat(allStockCandidates.get(2).getDateProjected()).isEqualTo(asTimestamp(NOW));
@@ -480,18 +480,18 @@ public class CandidateChangeHandlerTests
 		{ // guards prior to the actual test
 			final List<I_MD_Candidate> allDemandCandidates = DispoTestUtils.filter(CandidateType.DEMAND);
 			assertThat(allDemandCandidates).hasSize(1);
-			assertThat(allDemandCandidates.get(0).getMD_Candidate_ID()).isEqualTo(supplyCandidate.getId().getRepoId());
-			assertThat(allDemandCandidates.get(0).getQty()).isEqualByComparingTo("35");
+			assertThat(allDemandCandidates.getFirst().getMD_Candidate_ID()).isEqualTo(supplyCandidate.getId().getRepoId());
+			assertThat(allDemandCandidates.getFirst().getQty()).isEqualByComparingTo("35");
 
 			final List<I_MD_Candidate> allSupplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
 			assertThat(allSupplyCandidates).hasSize(2);
-			assertThat(allSupplyCandidates.get(0).getQty()).isEqualByComparingTo("13");
+			assertThat(allSupplyCandidates.getFirst().getQty()).isEqualByComparingTo("13");
 			assertThat(allSupplyCandidates.get(1).getQty()).isEqualByComparingTo("17");
 
 			final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 			assertThat(allStockCandidates).hasSize(3);
-			assertThat(allStockCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
-			assertThat(allStockCandidates.get(0).getQty()).isEqualByComparingTo("13");
+			assertThat(allStockCandidates.getFirst().getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
+			assertThat(allStockCandidates.getFirst().getQty()).isEqualByComparingTo("13");
 			assertThat(allStockCandidates.get(1).getDateProjected()).isEqualTo(asTimestamp(NOW));
 			assertThat(allStockCandidates.get(1).getQty()).isEqualByComparingTo("30"); // 13+17
 			assertThat(allStockCandidates.get(2).getDateProjected()).isEqualTo(asTimestamp(AFTER_NOW));
@@ -516,14 +516,14 @@ public class CandidateChangeHandlerTests
 			// final List<I_MD_Candidate> allSupplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
 			final List<I_MD_Candidate> allDemandCandidates = DispoTestUtils.filter(CandidateType.DEMAND);
 			assertThat(allDemandCandidates).hasSize(1);
-			assertThat(allDemandCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_NOW)); // was moved to the date of the (earliest) transaction
-			assertThat(allDemandCandidates.get(0).getQty()).isEqualByComparingTo("35");
+			assertThat(allDemandCandidates.getFirst().getDateProjected()).isEqualTo(asTimestamp(BEFORE_NOW)); // was moved to the date of the (earliest) transaction
+			assertThat(allDemandCandidates.getFirst().getQty()).isEqualByComparingTo("35");
 
 			// validate the changed *STOCK* candidate
 			final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.sortByDateProjected(DispoTestUtils.filter(CandidateType.STOCK));
 			assertThat(allStockCandidates).hasSize(3);
-			assertThat(allStockCandidates.get(0).getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
-			assertThat(allStockCandidates.get(0).getQty()).isEqualByComparingTo("13"); // 13
+			assertThat(allStockCandidates.getFirst().getDateProjected()).isEqualTo(asTimestamp(BEFORE_BEFORE_NOW));
+			assertThat(allStockCandidates.getFirst().getQty()).isEqualByComparingTo("13"); // 13
 			assertThat(allStockCandidates.get(1).getDateProjected()).isEqualTo(asTimestamp(BEFORE_NOW));
 			assertThat(allStockCandidates.get(1).getQty()).isEqualByComparingTo("-22");  // 13-35
 			assertThat(allStockCandidates.get(2).getDateProjected()).isEqualTo(asTimestamp(NOW));

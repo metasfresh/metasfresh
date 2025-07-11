@@ -85,7 +85,7 @@ public class M_ProductPrice_ActivationBasedOnProductDiscontinuedFlag_Process ext
 			final Optional<LocalDate> discontinuedFrom = Optional.ofNullable(product.getDiscontinuedFrom())
 					.map(discontinuedFromTimestamp -> TimeUtil.asLocalDate(discontinuedFromTimestamp, zoneId));
 
-			if (!discontinuedFrom.isPresent())
+			if (discontinuedFrom.isEmpty())
 			{
 				throw new AdempiereException(ERROR_MISSING_DISCONTINUED_FROM)
 						.appendParametersToMessage()

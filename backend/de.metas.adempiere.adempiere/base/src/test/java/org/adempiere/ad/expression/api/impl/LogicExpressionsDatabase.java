@@ -32,8 +32,9 @@ public class LogicExpressionsDatabase
 			"(@ComponentType@='VA'&@BOMType@='C'|@ComponentType@='OP')&@BOMType@='C'",
 			"(@ElementType@=X1|@ElementType@=CO)&@$Element_X1@=Y",
 			"(@ElementType@=X2|@ElementType@=CO)&@$Element_X2@=Y",
-			"(@IsGroupCompensationLine/N@=Y & @GroupCompensationType/-@=D & @GroupCompensationAmtType/-@=P)"
-					+ "\n| @IsPriceEditable@!Y",
+			"""
+			(@IsGroupCompensationLine/N@=Y & @GroupCompensationType/-@=D & @GroupCompensationAmtType/-@=P)
+			| @IsPriceEditable@!Y""",
 			"(@OrderType@='OB' | @OrderType@='SO' | @OrderType@='WP') & @IsComment@=N",
 			"(@OrderType@='OB' | @OrderType@='SO' | @Processed@='Y') & @IsComment@=N",
 			"(@OrderType@='SO' | @Processed@=Y) & @IsComment@=N",
@@ -393,8 +394,9 @@ public class LogicExpressionsDatabase
 			"@ErrorMsg@!''",
 			"@ESR_Document_Status@!'T'",
 			"@ESR_IsManual_ReferenceNo@='N'",
-			"@ESR_Payment_Action@ = F | @ESR_Payment_Action@ = C  | @C_Payment_ID@ < 1 | @Processed@ = Y"
-					+ "\n| (@ESR_Payment_Action@ = A & @ESR_Invoice_Openamt@ = 0) ",
+			"""
+			@ESR_Payment_Action@ = F | @ESR_Payment_Action@ = C  | @C_Payment_ID@ < 1 | @Processed@ = Y
+			| (@ESR_Payment_Action@ = A & @ESR_Invoice_Openamt@ = 0) """,
 			"@EventType@='DE'",
 			"@EventType@=DE",
 			"@ExtensionType/None@='EA' | @ExtensionType/None@='EO'",

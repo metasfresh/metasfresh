@@ -112,7 +112,7 @@ public class CalloutTimeExpense extends CalloutEngine
 						priceActual = rs.getBigDecimal("PriceLimit");
 					}
 					// Currency
-					Integer ii = new Integer(rs.getInt("C_Currency_ID"));
+					Integer ii = Integer.valueOf(rs.getInt("C_Currency_ID"));
 					if (!rs.wasNull())
 					{
 						mTab.setValue("C_Currency_ID", ii);
@@ -163,7 +163,7 @@ public class CalloutTimeExpense extends CalloutEngine
 							priceActual = rs.getBigDecimal("PriceLimit");
 						}
 						// Currency
-						Integer ii = new Integer(rs.getInt("C_Currency_ID"));
+						Integer ii = Integer.valueOf(rs.getInt("C_Currency_ID"));
 						if (!rs.wasNull())
 						{
 							mTab.setValue("C_Currency_ID", ii);

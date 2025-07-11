@@ -87,7 +87,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on TARGET TUs
 		//
-		final I_M_HU splitTU1 = splitTUs.get(0);
+		final I_M_HU splitTU1 = splitTUs.getFirst();
 		final I_M_HU splitTU2 = splitTUs.get(1);
 
 		final IAttributeStorage attributeStorageTU1 = attributeStorageFactory.getAttributeStorage(splitTU1);
@@ -129,7 +129,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on TARGET LU
 		//
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		Assertions.assertTrue(splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 2,
@@ -171,7 +171,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on TARGET LU
 		//
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		Assertions.assertTrue(splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 3,
@@ -213,7 +213,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on TARGET TU
 		//
-		final I_M_HU splitTU = splitTUs.get(0);
+		final I_M_HU splitTU = splitTUs.getFirst();
 		Assertions.assertTrue(splitTU.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(splitTU);
@@ -255,7 +255,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on TARGET LU
 		//
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		Assertions.assertTrue(splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 1,
@@ -301,7 +301,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on TARGET LU
 		//
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		Assertions.assertTrue(splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 1,
@@ -351,14 +351,14 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on TARGET LUs
 		//
-		final I_M_HU splitLU1 = splitLUs.get(0);
+		final I_M_HU splitLU1 = splitLUs.getFirst();
 		Assertions.assertTrue(splitLU1.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU1, huItemIFCO_10, 1,
 				newHUWeightsExpectation("33.765", "7.765", "26", "0"),
 				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
 
-		final I_M_HU splitLU2 = splitLUs.get(0);
+		final I_M_HU splitLU2 = splitLUs.getFirst();
 		Assertions.assertTrue(splitLU2.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU2, huItemIFCO_10, 1,
@@ -398,7 +398,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on TARGET TUs
 		//
-		final I_M_HU splitTU1 = splitTUs.get(0);
+		final I_M_HU splitTU1 = splitTUs.getFirst();
 		Assertions.assertTrue(splitTU1.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		final IAttributeStorage attributeStorageTU1 = attributeStorageFactory.getAttributeStorage(splitTU1);
@@ -451,7 +451,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		//
 		// Assert data integrity on TARGET LUs
 		//
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		Assertions.assertTrue(splitLU.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_5, 7,
@@ -472,7 +472,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("505", "430", "75", "0"));
@@ -491,7 +491,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsTarget.size(), "Invalid amount of TUs were split");
-		final I_M_HU paloxeTarget = tradingUnitsTarget.get(0);
+		final I_M_HU paloxeTarget = tradingUnitsTarget.getFirst();
 
 		//
 		// Assert data integrity on SOURCE Paloxe
@@ -518,7 +518,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("500", "425", "75", "0"));
@@ -537,7 +537,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsTarget.size(), "Invalid amount of TUs were split");
-		final I_M_HU paloxeTarget = tradingUnitsTarget.get(0);
+		final I_M_HU paloxeTarget = tradingUnitsTarget.getFirst();
 
 		//
 		// Assert data integrity on SOURCE Paloxe
@@ -564,7 +564,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("505", "430", "75", "0"));
@@ -609,7 +609,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("500", "425", "75", "0"));
@@ -653,7 +653,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("505", "430", "75", "0"));
@@ -672,7 +672,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsTarget.size(), "Invalid amount of TUs were split");
-		final I_M_HU paloxeTarget = tradingUnitsTarget.get(0);
+		final I_M_HU paloxeTarget = tradingUnitsTarget.getFirst();
 
 		//
 		// Assert data integrity on SOURCE Paloxe
@@ -701,7 +701,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("500", "425", "75", "0"));
@@ -720,7 +720,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsTarget.size(), "Invalid amount of TUs were split");
-		final I_M_HU paloxeTarget = tradingUnitsTarget.get(0);
+		final I_M_HU paloxeTarget = tradingUnitsTarget.getFirst();
 
 		//
 		// Assert data integrity on SOURCE Paloxe
@@ -749,7 +749,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("505", "430", "75", "0"));
@@ -799,7 +799,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("500", "425", "75", "0"));
@@ -849,7 +849,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("505", "430", "75", "0"));
@@ -898,7 +898,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("500", "425", "75", "0"));
@@ -947,7 +947,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("505", "430", "75", "0"));
@@ -1014,7 +1014,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		assertEquals(1, tradingUnitsSource.size(), "Invalid amount of TUs were created");
-		final I_M_HU paloxeSource = tradingUnitsSource.get(0);
+		final I_M_HU paloxeSource = tradingUnitsSource.getFirst();
 
 		final IAttributeStorage attributeStoragePaloxeSource = attributeStorageFactory.getAttributeStorage(paloxeSource);
 		assertSingleHandlingUnitWeights(attributeStoragePaloxeSource, newHUWeightsExpectation("500", "425", "75", "0"));
@@ -1091,7 +1091,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				ImmutableList.of(cuToSplit),
 				newHUWeightsExpectation("12.5", "12.5", "0", "0"));
 		assertTradingUnitsWeightExpectations(
-				ImmutableList.of(newCUs.get(0)),
+				ImmutableList.of(newCUs.getFirst()),
 				newHUWeightsExpectation("12.5", "12.5", "0", "0"));
 	}
 
@@ -1118,7 +1118,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				ImmutableList.of(cuToSplit),
 				newHUWeightsExpectation("2", "2", "0", "0"));
 		assertTradingUnitsWeightExpectations(
-				ImmutableList.of(newCUs.get(0)),
+				ImmutableList.of(newCUs.getFirst()),
 				newHUWeightsExpectation("5", "5", "0", "0"));
 	}
 }

@@ -224,7 +224,7 @@ public final class MLookup extends Lookup implements Serializable
 	/**
 	 * Indicator for Null
 	 */
-	private static Integer MINUS_ONE = new Integer(-1);
+	private static Integer MINUS_ONE = Integer.valueOf(-1);
 
 	private Properties ctx;
 	private final int adColumnId;

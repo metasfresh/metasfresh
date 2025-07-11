@@ -764,7 +764,7 @@ public class DocumentCollection
 		public Object getFieldValue(final String fieldName)
 		{
 			final Object value = document.getFieldView(fieldName).getValue();
-			return value instanceof LookupValue ? ((LookupValue)value).getId() : value;
+			return value instanceof LookupValue lv ? lv.getId() : value;
 		}
 
 		/**

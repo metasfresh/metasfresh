@@ -177,7 +177,7 @@ public class PartitionConfig
 	public boolean isMissing(final TableRecordIdDescriptor descriptor)
 	{
 		final Optional<PartitionerConfigLine> existingLine = getLine(descriptor.getOriginTableName());
-		if (!existingLine.isPresent())
+		if (existingLine.isEmpty())
 		{
 			return true; // not even the line exists, so it's missing
 		}

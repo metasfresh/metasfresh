@@ -84,6 +84,6 @@ public class FlatrateDAOTest extends ContractsTestBase
 				ITrx.TRXNAME_ThreadInherited);
 
 		assertThat(result.size(), is(1));
-		assertThat(result.get(0), is(ft));
+		assertThat(result.getFirst(), is(ft));
 	}
 }

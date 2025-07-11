@@ -29,6 +29,6 @@ public final class SicsWeighCmdS extends AbstractSicsWeighCmd
 	@Override
 	public String toString()
 	{
-		return String.format("SicsCmdS []");
+		return "SicsCmdS []".formatted();
 	}
 }

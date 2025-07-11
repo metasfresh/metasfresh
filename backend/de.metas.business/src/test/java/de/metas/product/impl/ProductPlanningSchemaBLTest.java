@@ -79,7 +79,7 @@ public class ProductPlanningSchemaBLTest
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isOne();
 
-		final ProductPlanning productPlanning = defaultProductPlanningsForAllProducts.get(0);
+		final ProductPlanning productPlanning = defaultProductPlanningsForAllProducts.getFirst();
 
 		assertThat(productPlanning.getDistributionNetworkId()).isEqualTo(distributionNetworkId);
 		assertThat(productPlanning.getProductId()).isEqualTo(productId1);
@@ -263,7 +263,7 @@ public class ProductPlanningSchemaBLTest
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isOne();
 
-		final ProductPlanning productPlanning = defaultProductPlanningsForAllProducts.get(0);
+		final ProductPlanning productPlanning = defaultProductPlanningsForAllProducts.getFirst();
 
 		assertThat(productPlanning.getDistributionNetworkId()).isEqualTo(distributionNetworkId);
 		assertThat(productPlanning.getProductId()).isEqualTo(productId1);
@@ -294,7 +294,7 @@ public class ProductPlanningSchemaBLTest
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isOne();
 
-		final ProductPlanning productPlanning = defaultProductPlanningsForAllProducts.get(0);
+		final ProductPlanning productPlanning = defaultProductPlanningsForAllProducts.getFirst();
 		assertThat(distributionNetworkId2).isEqualTo(productPlanning.getDistributionNetworkId());
 		assertThat(productId1).isEqualTo(productPlanning.getProductId());
 		assertThat(schema1.getId()).isEqualTo(productPlanning.getProductPlanningSchemaId());

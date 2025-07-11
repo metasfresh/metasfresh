@@ -154,9 +154,9 @@ public abstract class DocumentId implements Serializable
 		{
 			return null;
 		}
-		if (idObj instanceof String)
+		if (idObj instanceof String string)
 		{
-			return ofStringOrEmpty((String)idObj);
+			return ofStringOrEmpty(string);
 		}
 		return ofObject(idObj);
 	}
@@ -167,19 +167,16 @@ public abstract class DocumentId implements Serializable
 		{
 			throw new NullPointerException("Null id");
 		}
-		else if (idObj instanceof Integer)
+		else if (idObj instanceof Integer idInt)
 		{
-			final int idInt = (int)idObj;
 			return of(idInt);
 		}
-		else if (idObj instanceof String)
+		else if (idObj instanceof String idStr)
 		{
-			final String idStr = (String)idObj;
 			return of(idStr);
 		}
-		else if (idObj instanceof LookupValue)
+		else if (idObj instanceof LookupValue lookupValue)
 		{
-			final LookupValue lookupValue = (LookupValue)idObj;
 			return ofObject(lookupValue.getId());
 		}
 		else
@@ -205,7 +202,7 @@ public abstract class DocumentId implements Serializable
 
 		if (composedKeyParts.size() == 1)
 		{
-			final Object idObj = composedKeyParts.get(0);
+			final Object idObj = composedKeyParts.getFirst();
 			return ofObject(idObj);
 		}
 		else
@@ -225,9 +222,9 @@ public abstract class DocumentId implements Serializable
 		{
 			return null;
 		}
-		else if (idPartObj instanceof LookupValue)
+		else if (idPartObj instanceof LookupValue value)
 		{
-			return ((LookupValue)idPartObj).getId();
+			return value.getId();
 		}
 		else
 		{

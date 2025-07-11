@@ -66,7 +66,7 @@ public class DeviceRequestConfigureDevice implements IDeviceRequest<IDeviceRespo
 	@Override
 	public String toString()
 	{
-		return String.format("DeviceRequestConfigureDevice [parameters=%s]", parameters);
+		return "DeviceRequestConfigureDevice [parameters=%s]".formatted(parameters);
 	}
 
 }

@@ -140,7 +140,7 @@ public final class MenuTree
 			return null;
 		}
 
-		return nodes.get(0);
+		return nodes.getFirst();
 	}
 
 	public MenuNode getFirstNodeByElementId(final MenuNodeType type, final DocumentId elementId)
@@ -163,7 +163,7 @@ public final class MenuTree
 			return Optional.empty();
 		}
 
-		final MenuNode newRecordNode = nodes.get(0);
+		final MenuNode newRecordNode = nodes.getFirst();
 		return Optional.of(newRecordNode);
 	}
 
@@ -218,7 +218,7 @@ public final class MenuTree
 		MenuNode n = node;
 		while (n != null)
 		{
-			path.add(0, n);
+			path.addFirst(n);
 			n = n.getParent();
 		}
 

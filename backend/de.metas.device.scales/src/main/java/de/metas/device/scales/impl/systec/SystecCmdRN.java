@@ -29,6 +29,6 @@ public final class SystecCmdRN extends AbstractSystecCmd
 	@Override
 	public String toString()
 	{
-		return String.format("SystecCmdRN []");
+		return "SystecCmdRN []".formatted();
 	}
 }

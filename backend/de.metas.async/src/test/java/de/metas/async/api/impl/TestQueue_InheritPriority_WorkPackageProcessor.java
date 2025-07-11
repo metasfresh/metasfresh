@@ -63,8 +63,8 @@ public class TestQueue_InheritPriority_WorkPackageProcessor implements IWorkpack
 		// guard assertions, just to make illustrate that we deal with the package 'wp1' from test_retrieveAllElements()
 		final List<I_C_Queue_Element> elements = Services.get(IQueueDAO.class).retrieveQueueElements(workpackage, false);
 		assertThat(elements.size(), is(1));
-		assertThat(elements.get(0).getAD_Table_ID(), is(12345));
-		assertThat(elements.get(0).getRecord_ID(), is(456));
+		assertThat(elements.getFirst().getAD_Table_ID(), is(12345));
+		assertThat(elements.getFirst().getRecord_ID(), is(456));
 
 		final IWorkPackageQueue queueForEnqueuing = Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(

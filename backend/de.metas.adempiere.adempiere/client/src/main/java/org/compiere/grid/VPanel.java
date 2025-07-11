@@ -24,6 +24,7 @@ package org.compiere.grid;
 
 
 import java.awt.BorderLayout;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +57,7 @@ import com.google.common.base.MoreObjects;
  */
 public final class VPanel extends CTabbedPane
 {
+	@Serial
 	private static final long serialVersionUID = 4901538622101315028L;
 
 	/**

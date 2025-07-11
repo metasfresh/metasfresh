@@ -398,13 +398,13 @@ class SwingClientUIAsyncInvoker implements IClientUIAsyncInvoker
 			{
 				comp = null;
 			}
-			else if (rootPaneContainer instanceof Window)
+			else if (rootPaneContainer instanceof Window window1)
 			{
-				return (Window)rootPaneContainer;
+				return window1;
 			}
-			else if (rootPaneContainer instanceof Component)
+			else if (rootPaneContainer instanceof Component component)
 			{
-				comp = (Component)rootPaneContainer;
+				comp = component;
 			}
 			else
 			{

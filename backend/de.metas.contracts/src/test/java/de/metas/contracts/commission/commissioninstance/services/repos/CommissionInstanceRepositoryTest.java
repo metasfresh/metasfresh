@@ -435,7 +435,7 @@ class CommissionInstanceRepositoryTest
 						tuple(result.getRepoId(), 10, C_BPartner_SalesRep_1_ID.getRepoId(), commissionProductId.getRepoId(), new BigDecimal("1"), new BigDecimal("1.1"), new BigDecimal("1.2")),
 						tuple(result.getRepoId(), 20, C_BPartner_SalesRep_2_ID.getRepoId(), commissionProductId.getRepoId(), new BigDecimal("2"), new BigDecimal("2.1"), new BigDecimal("2.2")));
 
-		final I_C_Commission_Share shareRecord1 = shareRecords.get(0);
+		final I_C_Commission_Share shareRecord1 = shareRecords.getFirst();
 		assertThat(shareRecord1.getLevelHierarchy()).isEqualTo(10); // guard
 		final List<I_C_Commission_Fact> factRecords1 = POJOLookupMap.get().getRecords(I_C_Commission_Fact.class, r -> r.getC_Commission_Share_ID() == shareRecord1.getC_Commission_Share_ID());
 		assertThat(factRecords1).hasSize(4)

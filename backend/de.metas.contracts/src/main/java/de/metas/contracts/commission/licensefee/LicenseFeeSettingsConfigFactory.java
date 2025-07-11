@@ -194,7 +194,7 @@ public class LicenseFeeSettingsConfigFactory implements ICommissionConfigFactory
 
 		final Optional<LicenseFeeSettingsLine> licenseFeeSettingsLine = licenseFeeSettings.getLineForBPGroupId(salesRepBPGroupId);
 
-		if (!licenseFeeSettingsLine.isPresent())
+		if (licenseFeeSettingsLine.isEmpty())
 		{
 			return Optional.empty();
 		}
@@ -219,6 +219,6 @@ public class LicenseFeeSettingsConfigFactory implements ICommissionConfigFactory
 		// dev-note: see de.metas.contracts.interceptor.C_Flatrate_Term#ensureOneContract(I_C_Flatrate_Term term)
 		Check.assume(licenseFeeCommissionContract.size() == 1, "One salesRep should have only one license commission contract for the same time period of time");
 
-		return licenseFeeCommissionContract.get(0);
+		return licenseFeeCommissionContract.getFirst();
 	}
 }

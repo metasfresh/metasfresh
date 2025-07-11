@@ -144,7 +144,7 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 
 	private static BPartnerId extractBPartnerId(@NonNull final List<I_EDI_DesadvLine> desadvLines)
 	{
-		final I_EDI_Desadv ediDesadvRecord = desadvLines.get(0).getEDI_Desadv();
+		final I_EDI_Desadv ediDesadvRecord = desadvLines.getFirst().getEDI_Desadv();
 
 		final int bpartnerRepoId = CoalesceUtil.firstGreaterThanZero(
 				ediDesadvRecord.getDropShip_BPartner_ID(),

@@ -10,6 +10,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.sender.WebsocketSender;
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Objects;
 
 /*

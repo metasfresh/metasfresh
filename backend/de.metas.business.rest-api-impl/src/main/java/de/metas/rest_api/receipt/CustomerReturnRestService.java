@@ -335,7 +335,7 @@ public class CustomerReturnRestService
 		}
 
 		//at this point we are sure there is a shipment line id present on all the retrieved `pickedLines`
-		final InOutLineId shipmentLineId = InOutLineId.ofRepoId(pickedLines.get(0).getM_InOutLine_ID());
+		final InOutLineId shipmentLineId = InOutLineId.ofRepoId(pickedLines.getFirst().getM_InOutLine_ID());
 
 		return inOutDAO.getLineByIdInTrx(shipmentLineId);
 	}
