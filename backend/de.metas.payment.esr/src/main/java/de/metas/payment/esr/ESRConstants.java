@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
@@ -102,6 +103,10 @@ public final class ESRConstants
 	public static final String ESR_ASYNC_BATCH_NAME = "ESR Import";
 
 	public static final String ESR_ASYNC_BATCH_DESC = "ESR Import process";
+
+	public static final AdMessageKey MSG_AMBIGOUS_REFERENCE = AdMessageKey.of("ESR_CAMT54_Ambigous_Reference");
+
+	public static final AdMessageKey MSG_MISSING_ESR_REFERENCE = AdMessageKey.of("ESR_CAMT54_Missing_ESR_Reference");
 
 	private ESRConstants()
 	{

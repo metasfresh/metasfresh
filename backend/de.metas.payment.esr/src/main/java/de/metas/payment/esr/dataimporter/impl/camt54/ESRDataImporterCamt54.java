@@ -136,6 +136,11 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.06", namespaceURI);
 	}
 
+	private static boolean isVersion8Schema(@NonNull final String namespaceURI)
+	{
+		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.08", namespaceURI);
+	}
+
 	private static String getNameSpaceURI(@NonNull final XMLStreamReader reader) throws XMLStreamException
 	{
 		while (reader.hasNext())
@@ -169,17 +174,24 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.04 and amt.054.001.05
 			final MultiVersionStreamReaderDelegate mxsr = new MultiVersionStreamReaderDelegate(xsr);
 
-			if (isVersion2Schema(getNameSpaceURI(mxsr)))
+			final String nameSpace = getNameSpaceURI(mxsr);
+
+            if (isVersion2Schema(nameSpace))
 			{
 				return importCamt54v02(mxsr);
 			}
-			else if (isVersion6Schema(getNameSpaceURI(mxsr)))
+			else if (isVersion6Schema(nameSpace))
 			{
 				return importCamt54v06(mxsr);
 			}
-			else
+			else if (isVersion8Schema(nameSpace))
 			{
 				return importCamt54v08(mxsr);
+			}
+			else
+			{
+				throw new AdempiereException("Unsupported camt.54 version: " )
+						.setParameter("namespaceURI", getNameSpaceURI(mxsr));
 			}
 
 		}

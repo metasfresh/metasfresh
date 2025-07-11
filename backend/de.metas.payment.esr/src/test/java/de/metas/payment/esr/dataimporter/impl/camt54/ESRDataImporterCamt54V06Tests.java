@@ -3,6 +3,7 @@ package de.metas.payment.esr.dataimporter.impl.camt54;
 import de.metas.payment.camt054_001_06.BatchInformation2;
 import de.metas.payment.camt054_001_06.EntryDetails7;
 import de.metas.payment.camt054_001_06.ReportEntry8;
+import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRType;
@@ -222,7 +223,7 @@ public class ESRDataImporterCamt54V06Tests
 				.hasSize(1) // guard
 				.allSatisfy(t -> {
 					assertThat(t.getErrorMsgs()).hasSize(1);
-					assertThat(t.getErrorMsgs().get(0)).isEqualTo(ReferenceStringHelper.MSG_AMBIGOUS_REFERENCE.toAD_Message());
+					assertThat(t.getErrorMsgs().get(0)).isEqualTo(ESRConstants.MSG_AMBIGOUS_REFERENCE.toAD_Message());
 				});
 
 		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1000");
@@ -244,7 +245,7 @@ public class ESRDataImporterCamt54V06Tests
 				.hasSize(1) // guard
 				.allSatisfy(t -> {
 					assertThat(t.getErrorMsgs()).hasSize(1);
-					assertThat(t.getErrorMsgs().get(0)).isEqualTo(ReferenceStringHelper.MSG_MISSING_ESR_REFERENCE.toAD_Message());
+					assertThat(t.getErrorMsgs().get(0)).isEqualTo(ESRConstants.MSG_MISSING_ESR_REFERENCE.toAD_Message());
 				});
 
 		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1000");

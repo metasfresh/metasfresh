@@ -181,9 +181,9 @@ public class ESRDataImporterCamt54v08
 		{
 			final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
 
-			new ReferenceStringHelper().extractAndSetEsrReference(txDtl, trxBuilder);
+			new ReferenceStringHelperv08().extractAndSetEsrReference(txDtl, trxBuilder);
 
-			new ReferenceStringHelper().extractAndSetType(txDtl, trxBuilder);
+			new ReferenceStringHelperv08().extractAndSetType(txDtl, trxBuilder);
 
 			verifyTransactionCurrency(txDtl, trxBuilder);
 
