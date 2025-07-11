@@ -46,6 +46,8 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import static org.compiere.util.Env.getZonedDateTime;
+
 public class PickingJobCreateCommand
 {
 	private static final AdMessageKey MSG_NotAllItemsAreAvailableToBePicked = AdMessageKey.of("PickingJobCreateCommand.notAllItemsAreAvailableToBePicked");
@@ -189,6 +191,8 @@ public class PickingJobCreateCommand
 				.deliveryBPLocationId(request.getDeliveryBPLocationId())
 				.warehouseTypeId(request.getWarehouseTypeId())
 				.onlyShipmentScheduleIds(request.getShipmentScheduleIds())
+				.maximumFixedPreparationDate(getZonedDateTime())
+				.maximumFixedPreparationDate(getZonedDateTime())
 				.build();
 	}
 

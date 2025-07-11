@@ -126,8 +126,8 @@ FROM (SELECT
            FROM M_ShipmentSchedule_Lock l
            WHERE l.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID)               AS LockedBy_User_ID,
           o.datepromised,
-          o.IsPromisedFixedDate,
-          o.IsProvisioningFixedDate,
+          o.IsFixedDatePromised,
+          o.IsFixedPreparationDate,
 
           --
           -- Standard columns

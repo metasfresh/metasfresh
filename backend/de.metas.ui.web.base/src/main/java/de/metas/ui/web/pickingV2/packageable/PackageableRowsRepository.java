@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import static org.compiere.util.Env.getZonedDateTime;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -78,7 +80,7 @@ final class PackageableRowsRepository
 
 	public PackageableRowsRepository(
 			@NonNull final MoneyService moneyService,
-			@NonNull LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.moneyService = moneyService;
 
@@ -119,6 +121,8 @@ final class PackageableRowsRepository
 				.warehouseId(filterVO.getWarehouseId())
 				.warehouseTypeId(filterVO.getWarehouseTypeId())
 				.preparationDate(filterVO.getPreparationDate())
+				.maximumFixedPreparationDate(getZonedDateTime())
+				.maximumFixedPreparationDate(getZonedDateTime())
 				.shipperId(filterVO.getShipperId());
 
 		if (filterVO.getCustomerId() != null)

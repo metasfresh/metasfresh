@@ -44,8 +44,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
-import static org.compiere.util.Env.getZonedDateTime;
-
 @Value
 @Builder
 public class PackageableQuery
@@ -60,8 +58,8 @@ public class PackageableQuery
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
 	@Nullable LocalDate preparationDate;
-	@Builder.Default @NonNull ZonedDateTime maximumFixedPreparationDate = getZonedDateTime();
-	@Builder.Default @NonNull ZonedDateTime maximumFixedPromisedDate = getZonedDateTime();
+	@Nullable ZonedDateTime maximumFixedPreparationDate;
+	@Nullable ZonedDateTime maximumFixedPromisedDate;
 	@Nullable ShipperId shipperId;
 
 	/**

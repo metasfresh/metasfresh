@@ -49,6 +49,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -139,19 +140,27 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Filter: IsFixedPreparationDate
-		queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-				.setJoinOr()
-				.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getMaximumFixedPreparationDate().toInstant())
-				.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedPreparationDate, false)
-		);
+		final ZonedDateTime maximumFixedPreparationDate = query.getMaximumFixedPreparationDate();
+		if (maximumFixedPreparationDate != null)
+		{
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+					.setJoinOr()
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, maximumFixedPreparationDate.toInstant())
+					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedPreparationDate, false)
+			);
+		}
 
 		//
 		// Filter: IsFixedDatePromised
-		queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-				.setJoinOr()
-				.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getMaximumFixedPromisedDate().toInstant())
-				.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
-		);
+		final ZonedDateTime maximumFixedPromisedDate = query.getMaximumFixedPromisedDate();
+		if (maximumFixedPromisedDate != null)
+		{
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+					.setJoinOr()
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, maximumFixedPromisedDate.toInstant())
+					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
+			);
+		}
 
 		if (query.getShipperId() != null)
 		{

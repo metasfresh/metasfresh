@@ -48,6 +48,8 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.compiere.util.Env.getZonedDateTime;
+
 @Value
 @Builder
 public class PickingJobQuery
@@ -102,6 +104,8 @@ public class PickingJobQuery
 				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(this.getExcludeShipmentScheduleIds())
 				.scannedProductCodes(this.getScannedProductCodes())
+				.maximumFixedPreparationDate(getZonedDateTime())
+				.maximumFixedPreparationDate(getZonedDateTime())
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,
 						PackageableQuery.OrderBy.PreparationDate,
@@ -153,7 +157,7 @@ public class PickingJobQuery
 		@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
 		@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
 
-		public static Facets of(@NonNull PickingJobFacets.PickingJobFacet facet)
+		public static Facets of(@NonNull final PickingJobFacets.PickingJobFacet facet)
 		{
 			final PickingJobFacetGroup group = facet.getGroup();
 			switch (group)
