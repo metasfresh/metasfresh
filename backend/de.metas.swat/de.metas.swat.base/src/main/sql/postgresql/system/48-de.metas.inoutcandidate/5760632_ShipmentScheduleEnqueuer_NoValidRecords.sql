@@ -2,7 +2,7 @@
 
 -- Value: de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords
 -- 2025-07-10T17:36:24.001Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545570,0,TO_TIMESTAMP('2025-07-10 17:36:23.870000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Für die Auswahl kann keine Lieferung erstellt werden. Prüfen Sie, ob Einschränkungen bezüglich des zugesagten Termins oder des Bereitstellungsdatums bestehen.','E',TO_TIMESTAMP('2025-07-10 17:36:23.870000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545570,0,TO_TIMESTAMP('2025-07-10 17:36:23.870000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Für die Auswahl kann keine Lieferung erstellt werden. Bitte prüfen, ob Einschränkungen bezüglich des zugesagten Termins oder des Bereitstellungsdatums bestehen.','E',TO_TIMESTAMP('2025-07-10 17:36:23.870000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords')
 ;
 
 -- 2025-07-10T17:36:24.004Z
