@@ -380,6 +380,7 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
@@ -394,7 +395,6 @@ final class BPartnerCompositesLoader
 				.billToDefault(bpartnerLocationRecord.isBillToDefault())
 				.shipTo(bpartnerLocationRecord.isShipTo())
 				.shipToDefault(bpartnerLocationRecord.isShipToDefault())
-				.visitorsAddress(bpartnerLocationRecord.isVisitorsAddress())
 				.build();
 	}
 

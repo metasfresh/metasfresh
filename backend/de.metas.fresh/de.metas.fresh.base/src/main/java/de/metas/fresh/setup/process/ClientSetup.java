@@ -1,8 +1,25 @@
 package de.metas.fresh.setup.process;
 
-import java.util.OptionalInt;
-import java.util.Properties;
-
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.cache.interceptor.CacheInterceptor;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.location.ILocationBL;
+import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -24,26 +41,8 @@ import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.banking.api.IBPBankAccountDAO;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.cache.interceptor.CacheInterceptor;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.location.ILocationBL;
-import de.metas.money.CurrencyId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
-import de.metas.organization.OrgInfoUpdateRequest;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.OptionalInt;
+import java.util.Properties;
 
 /*
  * #%L
@@ -434,6 +433,11 @@ class ClientSetup
 
 	public final String getCompanyTaxID()
 	{
+		if (Check.isNotBlank(orgBPartnerLocation.getVATaxID()))
+		{
+			return orgBPartnerLocation.getVATaxID();
+		}
+
 		return orgBPartner.getVATaxID();
 	}
 
