@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 320014220L;
+	private static final long serialVersionUID = -412496844L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1355,6 +1355,30 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setIsFixedDatePromised (final boolean IsFixedDatePromised)
+	{
+		set_Value (COLUMNNAME_IsFixedDatePromised, IsFixedDatePromised);
+	}
+
+	@Override
+	public boolean isFixedDatePromised() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedDatePromised);
+	}
+
+	@Override
+	public void setIsFixedPreparationDate (final boolean IsFixedPreparationDate)
+	{
+		set_Value (COLUMNNAME_IsFixedPreparationDate, IsFixedPreparationDate);
+	}
+
+	@Override
+	public boolean isFixedPreparationDate() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedPreparationDate);
+	}
+
+	@Override
 	public void setIsInvoiced (final boolean IsInvoiced)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsInvoiced, IsInvoiced);
@@ -1376,30 +1400,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isPrinted() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPrinted);
-	}
-
-	@Override
-	public void setIsPromisedFixedDate (final boolean IsPromisedFixedDate)
-	{
-		set_Value (COLUMNNAME_IsPromisedFixedDate, IsPromisedFixedDate);
-	}
-
-	@Override
-	public boolean isPromisedFixedDate() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPromisedFixedDate);
-	}
-
-	@Override
-	public void setIsProvisioningFixedDate (final boolean IsProvisioningFixedDate)
-	{
-		set_Value (COLUMNNAME_IsProvisioningFixedDate, IsProvisioningFixedDate);
-	}
-
-	@Override
-	public boolean isProvisioningFixedDate() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsProvisioningFixedDate);
 	}
 
 	@Override

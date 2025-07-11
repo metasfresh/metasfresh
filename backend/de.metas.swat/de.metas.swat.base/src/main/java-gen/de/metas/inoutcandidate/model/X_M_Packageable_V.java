@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2104925108L;
+	private static final long serialVersionUID = -1759313928L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (final Properties ctx, final int M_Packageable_V_ID, @Nullable final String trxName)
@@ -474,27 +474,27 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setIsPromisedFixedDate (final boolean IsPromisedFixedDate)
+	public void setIsFixedDatePromised (final boolean IsFixedDatePromised)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsPromisedFixedDate, IsPromisedFixedDate);
+		set_ValueNoCheck (COLUMNNAME_IsFixedDatePromised, IsFixedDatePromised);
 	}
 
 	@Override
-	public boolean isPromisedFixedDate() 
+	public boolean isFixedDatePromised() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPromisedFixedDate);
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedDatePromised);
 	}
 
 	@Override
-	public void setIsProvisioningFixedDate (final boolean IsProvisioningFixedDate)
+	public void setIsFixedPreparationDate (final boolean IsFixedPreparationDate)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsProvisioningFixedDate, IsProvisioningFixedDate);
+		set_ValueNoCheck (COLUMNNAME_IsFixedPreparationDate, IsFixedPreparationDate);
 	}
 
 	@Override
-	public boolean isProvisioningFixedDate() 
+	public boolean isFixedPreparationDate() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsProvisioningFixedDate);
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedPreparationDate);
 	}
 
 	@Override

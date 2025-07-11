@@ -138,26 +138,20 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: IsProvisioningFixedDate
-		if (query.getMaximumPreparationDate() != null)
-		{
-			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-					.setJoinOr()
-					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getMaximumPreparationDate().toInstant())
-					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsPromisedFixedDate, false)
-			);
-		}
+		// Filter: IsFixedPreparationDate
+		queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+				.setJoinOr()
+				.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getMaximumFixedPreparationDate().toInstant())
+				.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedPreparationDate, false)
+		);
 
 		//
-		// Filter: IsProvisioningFixedDate
-		if (query.getMaximumPromisedDate() != null)
-		{
-			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-					.setJoinOr()
-					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getMaximumPromisedDate().toInstant())
-					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsProvisioningFixedDate, false)
-			);
-		}
+		// Filter: IsFixedDatePromised
+		queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+				.setJoinOr()
+				.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getMaximumFixedPromisedDate().toInstant())
+				.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
+		);
 
 		if (query.getShipperId() != null)
 		{

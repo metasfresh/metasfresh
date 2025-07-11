@@ -59,7 +59,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-
+	private static final Instant NOW_INSTANT = Env.getZonedDateTime().toInstant();
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Param(parameterName = "QuantityType", mandatory = true)
@@ -134,17 +134,16 @@ public class M_ShipmentSchedule_EnqueueSelection
 		// Filter only those which are not yet processed
 		filters.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Processed, false);
 
-		final Instant nowInstant = Env.getZonedDateTime().toInstant();
 		final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 						.setJoinOr()
-						.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
-						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsProvisioningFixedDate, false)
+						.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, NOW_INSTANT)
+						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedPreparationDate, false)
 				)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 						.setJoinOr()
-						.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
-						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsPromisedFixedDate, false)
+						.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, NOW_INSTANT)
+						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
 				)
 				.create();
 

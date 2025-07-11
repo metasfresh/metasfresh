@@ -305,7 +305,7 @@ public interface I_M_Packageable_V
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -315,7 +315,7 @@ public interface I_M_Packageable_V
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -574,7 +574,7 @@ public interface I_M_Packageable_V
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsPromisedFixedDate (boolean IsPromisedFixedDate);
+	void setIsFixedDatePromised (boolean IsFixedDatePromised);
 
 	/**
 	 * Get Ship After Date.
@@ -584,10 +584,10 @@ public interface I_M_Packageable_V
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isPromisedFixedDate();
+	boolean isFixedDatePromised();
 
-	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsPromisedFixedDate = new ModelColumn<>(I_M_Packageable_V.class, "IsPromisedFixedDate", null);
-	String COLUMNNAME_IsPromisedFixedDate = "IsPromisedFixedDate";
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsFixedDatePromised = new ModelColumn<>(I_M_Packageable_V.class, "IsFixedDatePromised", null);
+	String COLUMNNAME_IsFixedDatePromised = "IsFixedDatePromised";
 
 	/**
 	 * Set Picking After Date.
@@ -597,7 +597,7 @@ public interface I_M_Packageable_V
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsProvisioningFixedDate (boolean IsProvisioningFixedDate);
+	void setIsFixedPreparationDate (boolean IsFixedPreparationDate);
 
 	/**
 	 * Get Picking After Date.
@@ -607,10 +607,10 @@ public interface I_M_Packageable_V
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isProvisioningFixedDate();
+	boolean isFixedPreparationDate();
 
-	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsProvisioningFixedDate = new ModelColumn<>(I_M_Packageable_V.class, "IsProvisioningFixedDate", null);
-	String COLUMNNAME_IsProvisioningFixedDate = "IsProvisioningFixedDate";
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_IsFixedPreparationDate = new ModelColumn<>(I_M_Packageable_V.class, "IsFixedPreparationDate", null);
+	String COLUMNNAME_IsFixedPreparationDate = "IsFixedPreparationDate";
 
 	/**
 	 * Set Line Net Amount.

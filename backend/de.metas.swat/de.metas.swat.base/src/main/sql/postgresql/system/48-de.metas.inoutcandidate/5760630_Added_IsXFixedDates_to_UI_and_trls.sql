@@ -1,7 +1,7 @@
 -- Run mode: SWING_CLIENT
 
 -- Field: Auftrag(143,D) -> Auftrag(186,D) -> Versand ab zugesagtem Termin
--- Column: C_Order.IsPromisedFixedDate
+-- Column: C_Order.IsFixedDatePromised
 -- 2025-07-10T12:01:40.665Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,590501,749966,0,186,0,TO_TIMESTAMP('2025-07-10 12:01:40.384000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Stellt sicher, dass der Versand nicht vor dem zugesagten Termin erfolgt. Wird verwendet, wenn der Kunde eine genaue Einhaltung des Lieferzeitpunkts verlangt.',0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Versand ab zugesagtem Termin',0,0,780,0,1,1,TO_TIMESTAMP('2025-07-10 12:01:40.384000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
@@ -23,7 +23,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=749966
 ;
 
 -- Field: Auftrag(143,D) -> Auftrag(186,D) -> Kommissionierung nicht vor Bereitstellungsdatum
--- Column: C_Order.IsProvisioningFixedDate
+-- Column: C_Order.IsFixedPreparationDate
 -- 2025-07-10T12:01:57.084Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,590502,749967,0,186,0,TO_TIMESTAMP('2025-07-10 12:01:56.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Verhindert die Kommissionierung vor dem Bereitstellungsdatum. Wird verwendet, wenn Materialien nicht vor dem geplanten Zeitpunkt bereitgestellt werden dürfen.',0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Kommissionierung nicht vor Bereitstellungsdatum',0,0,790,0,1,1,TO_TIMESTAMP('2025-07-10 12:01:56.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
@@ -45,30 +45,30 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=749967
 ;
 
 -- UI Element: Auftrag(143,D) -> Auftrag(186,D) -> main view -> 20 -> Dates.Versand ab zugesagtem Termin
--- Column: C_Order.IsPromisedFixedDate
+-- Column: C_Order.IsFixedDatePromised
 -- 2025-07-10T12:31:12.375Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,749966,0,186,540920,635164,'F',TO_TIMESTAMP('2025-07-10 12:31:12.212000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Stellt sicher, dass der Versand nicht vor dem zugesagten Termin erfolgt. Wird verwendet, wenn der Kunde eine genaue Einhaltung des Lieferzeitpunkts verlangt.','Y','N','N','Y','N','N','N',0,'Versand ab zugesagtem Termin',20,0,0,TO_TIMESTAMP('2025-07-10 12:31:12.212000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- UI Element: Auftrag(143,D) -> Auftrag(186,D) -> main view -> 20 -> Dates.Kommissionierung nicht vor Bereitstellungsdatum
--- Column: C_Order.IsProvisioningFixedDate
+-- Column: C_Order.IsFixedPreparationDate
 -- 2025-07-10T12:32:08.744Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,749967,0,186,540920,635165,'F',TO_TIMESTAMP('2025-07-10 12:32:08.611000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Verhindert die Kommissionierung vor dem Bereitstellungsdatum. Wird verwendet, wenn Materialien nicht vor dem geplanten Zeitpunkt bereitgestellt werden dürfen.','Y','N','N','Y','N','N','N',0,'Kommissionierung nicht vor Bereitstellungsdatum',45,0,0,TO_TIMESTAMP('2025-07-10 12:32:08.611000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Field: Auftrag(143,D) -> Auftrag(186,D) -> Versand ab zugesagtem Termin
--- Column: C_Order.IsPromisedFixedDate
+-- Column: C_Order.IsFixedDatePromised
 -- 2025-07-10T12:34:29.785Z
 UPDATE AD_Field SET IsSameLine='Y',Updated=TO_TIMESTAMP('2025-07-10 12:34:29.785000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=749966
 ;
 
 -- Field: Auftrag(143,D) -> Auftrag(186,D) -> Kommissionierung nicht vor Bereitstellungsdatum
--- Column: C_Order.IsProvisioningFixedDate
+-- Column: C_Order.IsFixedPreparationDate
 -- 2025-07-10T12:34:33.358Z
 UPDATE AD_Field SET IsSameLine='Y',Updated=TO_TIMESTAMP('2025-07-10 12:34:33.358000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=749967
 ;
 
--- Element: IsPromisedFixedDate
+-- Element: IsFixedDatePromised
 -- 2025-07-10T13:42:48.044Z
 UPDATE AD_Element_Trl SET Name='Versand ab Termin', PrintName='Versand ab Termin',Updated=TO_TIMESTAMP('2025-07-10 13:42:48.044000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583783 AND AD_Language='de_CH'
 ;
@@ -81,7 +81,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583783,'de_CH')
 ;
 
--- Element: IsPromisedFixedDate
+-- Element: IsFixedDatePromised
 -- 2025-07-10T13:42:50.371Z
 UPDATE AD_Element_Trl SET Name='Versand ab Termin', PrintName='Versand ab Termin',Updated=TO_TIMESTAMP('2025-07-10 13:42:50.371000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583783 AND AD_Language='fr_CH'
 ;
@@ -94,7 +94,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583783,'fr_CH')
 ;
 
--- Element: IsPromisedFixedDate
+-- Element: IsFixedDatePromised
 -- 2025-07-10T13:42:56.890Z
 UPDATE AD_Element_Trl SET Name='Versand ab Termin', PrintName='Versand ab Termin',Updated=TO_TIMESTAMP('2025-07-10 13:42:56.890000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583783 AND AD_Language='de_DE'
 ;
@@ -111,7 +111,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583783,'de_DE')
 ;
 
--- Element: IsPromisedFixedDate
+-- Element: IsFixedDatePromised
 -- 2025-07-10T13:44:03.823Z
 UPDATE AD_Element_Trl SET Name='Ship After Date', PrintName='Ship After Date',Updated=TO_TIMESTAMP('2025-07-10 13:44:03.823000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583783 AND AD_Language='en_US'
 ;
@@ -124,7 +124,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583783,'en_US')
 ;
 
--- Element: IsProvisioningFixedDate
+-- Element: IsFixedPreparationDate
 -- 2025-07-10T13:45:32.723Z
 UPDATE AD_Element_Trl SET Name='Picking After Date', PrintName='Picking After Date',Updated=TO_TIMESTAMP('2025-07-10 13:45:32.723000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583784 AND AD_Language='en_US'
 ;
@@ -137,7 +137,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583784,'en_US')
 ;
 
--- Element: IsProvisioningFixedDate
+-- Element: IsFixedPreparationDate
 -- 2025-07-10T13:45:35.090Z
 UPDATE AD_Element_Trl SET Name='Kommissionierung ab Datum', PrintName='Kommissionierung ab Datum',Updated=TO_TIMESTAMP('2025-07-10 13:45:35.089000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583784 AND AD_Language='de_CH'
 ;
@@ -150,7 +150,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583784,'de_CH')
 ;
 
--- Element: IsProvisioningFixedDate
+-- Element: IsFixedPreparationDate
 -- 2025-07-10T13:45:37.390Z
 UPDATE AD_Element_Trl SET Name='Kommissionierung ab Datum', PrintName='Kommissionierung ab Datum',Updated=TO_TIMESTAMP('2025-07-10 13:45:37.390000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583784 AND AD_Language='fr_CH'
 ;
@@ -163,7 +163,7 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583784,'fr_CH')
 ;
 
--- Element: IsProvisioningFixedDate
+-- Element: IsFixedPreparationDate
 -- 2025-07-10T13:45:40.334Z
 UPDATE AD_Element_Trl SET Name='Kommissionierung ab Datum', PrintName='Kommissionierung ab Datum',Updated=TO_TIMESTAMP('2025-07-10 13:45:40.334000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583784 AND AD_Language='de_DE'
 ;

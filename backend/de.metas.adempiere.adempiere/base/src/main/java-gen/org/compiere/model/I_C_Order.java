@@ -963,7 +963,7 @@ public interface I_C_Order
 	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1893,6 +1893,52 @@ public interface I_C_Order
 	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
+	 * Set Ship After Date.
+	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedDatePromised (boolean IsFixedDatePromised);
+
+	/**
+	 * Get Ship After Date.
+	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedDatePromised();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsFixedDatePromised = new ModelColumn<>(I_C_Order.class, "IsFixedDatePromised", null);
+	String COLUMNNAME_IsFixedDatePromised = "IsFixedDatePromised";
+
+	/**
+	 * Set Picking After Date.
+	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedPreparationDate (boolean IsFixedPreparationDate);
+
+	/**
+	 * Get Picking After Date.
+	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedPreparationDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsFixedPreparationDate = new ModelColumn<>(I_C_Order.class, "IsFixedPreparationDate", null);
+	String COLUMNNAME_IsFixedPreparationDate = "IsFixedPreparationDate";
+
+	/**
 	 * Set Invoiced.
 	 * Is this invoiced?
 	 *
@@ -1937,52 +1983,6 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsPrinted = new ModelColumn<>(I_C_Order.class, "IsPrinted", null);
 	String COLUMNNAME_IsPrinted = "IsPrinted";
-
-	/**
-	 * Set Ship On or After Promised Date.
-	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsPromisedFixedDate (boolean IsPromisedFixedDate);
-
-	/**
-	 * Get Ship On or After Promised Date.
-	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isPromisedFixedDate();
-
-	ModelColumn<I_C_Order, Object> COLUMN_IsPromisedFixedDate = new ModelColumn<>(I_C_Order.class, "IsPromisedFixedDate", null);
-	String COLUMNNAME_IsPromisedFixedDate = "IsPromisedFixedDate";
-
-	/**
-	 * Set Picking Not Before Provisioning Date.
-	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsProvisioningFixedDate (boolean IsProvisioningFixedDate);
-
-	/**
-	 * Get Picking Not Before Provisioning Date.
-	 * Prevents picking before the provisioning date. Use when materials must not be staged or picked earlier than planned.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isProvisioningFixedDate();
-
-	ModelColumn<I_C_Order, Object> COLUMN_IsProvisioningFixedDate = new ModelColumn<>(I_C_Order.class, "IsProvisioningFixedDate", null);
-	String COLUMNNAME_IsProvisioningFixedDate = "IsProvisioningFixedDate";
 
 	/**
 	 * Set Sales partner required.
