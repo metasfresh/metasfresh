@@ -133,7 +133,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 
 	private static boolean isVersion6Schema(@NonNull final String namespaceURI)
 	{
-		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.06", namespaceURI);
+		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.04", namespaceURI);
 	}
 
 	private static boolean isVersion8Schema(@NonNull final String namespaceURI)
