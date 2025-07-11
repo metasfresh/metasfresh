@@ -127,4 +127,6 @@ public class HUTraceEventQuery
 	Optional<DocTypeId> docTypeId = Optional.empty();
 
 	int huTrxLineId;
+
+	String huValue;
 }

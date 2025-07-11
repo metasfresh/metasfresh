@@ -524,4 +524,29 @@ public interface I_M_HU_Trace
 
 	ModelColumn<I_M_HU_Trace, Object> COLUMN_VHUStatus = new ModelColumn<>(I_M_HU_Trace.class, "VHUStatus", null);
 	String COLUMNNAME_VHUStatus = "VHUStatus";
+
+	/**
+	 * Set Handling Unit.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setM_HU_Value (@Nullable String M_HU_Value);
+
+	/**
+	 * Get Handling Unit.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable String getM_HU_Value();
+
+	ModelColumn<I_M_HU_Trace, Object> COLUMN_M_HU_Value = new ModelColumn<>(I_M_HU_Trace.class, "M_HU_Value", null);
+	String COLUMNNAME_M_HU_Value = "M_HU_Value";
 }

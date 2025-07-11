@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import de.metas.handlingunits.model.I_M_HU;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.model.util.ModelByIdComparator;
@@ -287,7 +288,8 @@ public class RetrieveDbRecordsUtil
 	@VisibleForTesting
 	static IQueryBuilder<I_M_HU_Trace> createQueryBuilderOrNull(@NonNull final HUTraceEventQuery query)
 	{
-		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Trace.class)
 				.addOnlyActiveRecordsFilter();
 
 		boolean queryIsEmpty = updateQueryBuilderForQueryEventTime(queryBuilder, query);
@@ -377,6 +379,17 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trx_Line_ID, query.getHuTrxLineId());
 			queryIsEmpty = false;
 		}
+
+		if (!Check.isEmpty(query.getHuValue()))
+		{
+			final IQuery<I_M_HU> huValueQuery = queryBL.createQueryBuilder(I_M_HU.class)
+					.addStringLikeFilter(I_M_HU.COLUMNNAME_Value, query.getHuValue(), true)
+					.create();
+
+			queryBuilder.addInSubQueryFilter(I_M_HU_Trace.COLUMNNAME_M_HU_ID, I_M_HU.COLUMNNAME_M_HU_ID, huValueQuery);
+			queryIsEmpty = false;
+		}
+
 
 		if (queryIsEmpty)
 		{
