@@ -1,18 +1,11 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.payment.camt054_001_06.EntryTransaction8;
 import de.metas.payment.camt054_001_06.StructuredRemittanceInformation13;
-import de.metas.payment.camt054_001_08.CreditorReferenceInformation2;
-import de.metas.payment.camt054_001_08.EntryTransaction10;
-import de.metas.payment.camt054_001_08.StructuredRemittanceInformation16;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.ESRType;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.util.Env;
 
@@ -54,9 +47,6 @@ public class ReferenceStringHelperv06
 
 	/**
 	 * extractAndSetEsrReference for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param txDtls
-	 * @param trxBuilder
 	 */
 	public void extractAndSetEsrReference(
 			@NonNull final EntryTransaction8 txDtls,
@@ -97,8 +87,6 @@ public class ReferenceStringHelperv06
 	 * that has <code>CdtrRefInf/Tp/CdOrPrtry == "ISR Reference"</code>.
 	 * extractEsrReference for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
 	 *
-	 * @param txDtls
-	 * @return
 	 * @task https://github.com/metasfresh/metasfresh/issues/2107
 	 */
 	private Optional<String> extractEsrReference(@NonNull final EntryTransaction8 txDtls)
@@ -134,23 +122,8 @@ public class ReferenceStringHelperv06
 	}
 
 	/**
-	 * extractReferenceFallback for version 6 <code>BankToCustomerDebitCreditNotificationV08</code>
-	 */
-	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction10 txDtls)
-	{
-		// get the esr reference string out of the XML tree
-		return txDtls.getRmtInf().getStrd().stream()
-				.map(StructuredRemittanceInformation16::getCdtrRefInf)
-				.filter(Objects::nonNull)
-				.map(CreditorReferenceInformation2::getRef)
-				.findFirst();
-	}
-
-	/**
 	 * extractReferenceFallback for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
 	 *
-	 * @param txDtls
-	 * @return
 	 * @task https://github.com/metasfresh/metasfresh/issues/2107
 	 */
 	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction8 txDtls)

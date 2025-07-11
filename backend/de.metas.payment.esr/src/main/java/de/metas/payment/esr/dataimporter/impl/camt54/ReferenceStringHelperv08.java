@@ -1,8 +1,6 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
 import de.metas.i18n.TranslatableStrings;
-import de.metas.payment.camt054_001_06.EntryTransaction8;
-import de.metas.payment.camt054_001_06.StructuredRemittanceInformation13;
 import de.metas.payment.camt054_001_08.CreditorReferenceInformation2;
 import de.metas.payment.camt054_001_08.EntryTransaction10;
 import de.metas.payment.camt054_001_08.StructuredRemittanceInformation16;
@@ -51,8 +49,6 @@ public class ReferenceStringHelperv08
 	/**
 	 * extractAndSetEsrReference for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 *
-	 * @param txDtls
-	 * @param trxBuilder
 	 */
 	public void extractAndSetEsrReference(
 			@NonNull final EntryTransaction10 txDtls,
@@ -123,29 +119,6 @@ public class ReferenceStringHelperv08
 	}
 
 	/**
-	 * Gets <code>TxDtls/RmtInf/Strd/CdtrRefInf/Ref</code><br>
-	 * from a <code>CdtrRefInf</code> element<br>
-	 * that has <code>CdtrRefInf/Tp/CdOrPrtry == "ISR Reference"</code>.
-	 * extractEsrReference for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param txDtls
-	 * @return
-	 * @task https://github.com/metasfresh/metasfresh/issues/2107
-	 */
-	private Optional<String> extractEsrReference(@NonNull final EntryTransaction8 txDtls)
-	{
-		// get the esr reference string out of the XML tree
-		// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
-		return txDtls.getRmtInf().getStrd().stream()
-				.map(StructuredRemittanceInformation13::getCdtrRefInf)
-
-				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
-				.filter(ReferenceStringHelperv08::isSupportedESRType)
-				.map(de.metas.payment.camt054_001_06.CreditorReferenceInformation2::getRef)
-				.findFirst();
-	}
-
-	/**
 	 * extractReferenceFallback for version 6 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 */
 	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction10 txDtls)
@@ -155,23 +128,6 @@ public class ReferenceStringHelperv08
 				.map(StructuredRemittanceInformation16::getCdtrRefInf)
 				.filter(Objects::nonNull)
 				.map(CreditorReferenceInformation2::getRef)
-				.findFirst();
-	}
-
-	/**
-	 * extractReferenceFallback for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param txDtls
-	 * @return
-	 * @task https://github.com/metasfresh/metasfresh/issues/2107
-	 */
-	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction8 txDtls)
-	{
-		// get the esr reference string out of the XML tree
-		return txDtls.getRmtInf().getStrd().stream()
-				.map(StructuredRemittanceInformation13::getCdtrRefInf)
-				.filter(Objects::nonNull)
-				.map(de.metas.payment.camt054_001_06.CreditorReferenceInformation2::getRef)
 				.findFirst();
 	}
 
@@ -187,26 +143,6 @@ public class ReferenceStringHelperv08
 				.map(ESRType::ofNullableCode)
 				.findFirst();
 
-	}
-
-	private Optional<ESRType> extractType(@NonNull final EntryTransaction8 txDtls)
-	{
-		return txDtls.getRmtInf().getStrd().stream()
-				.map(StructuredRemittanceInformation13::getCdtrRefInf)
-				.filter(ReferenceStringHelperv08::isSupportedESRType)
-				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
-				.map(ESRType::ofNullableCode)
-				.findFirst();
-
-	}
-
-	private static boolean isSupportedESRType(de.metas.payment.camt054_001_06.CreditorReferenceInformation2 cdtrRefInf)
-	{
-		return cdtrRefInf != null
-				&& cdtrRefInf.getTp() != null
-				&& cdtrRefInf.getTp().getCdOrPrtry() != null
-				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
-				|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
 	}
 
 	private static boolean isSupportedESRType(de.metas.payment.camt054_001_08.CreditorReferenceInformation2 cdtrRefInf)

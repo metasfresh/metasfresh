@@ -137,8 +137,7 @@ public class ESRDataImporterCamt54v08
 		BigDecimal newCtrlQty = ctrlQty;
 		for (final EntryDetails9 ntryDtl : ntry.getNtryDtls())
 		{
-            assert ctrlQty != null;
-            if (ctrlQty.compareTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL) == 0
+            if (ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL.compareTo(ctrlQty) == 0
 					|| ntryDtl.getBtch() == null || ntryDtl.getBtch().getNbOfTxs() == null)
 			{
 				// the current ntryDtl has no control qty, or an earlier one already didn't have a control qty
@@ -147,7 +146,7 @@ public class ESRDataImporterCamt54v08
 			else
 			{
 				final BigDecimal augend = new BigDecimal(ntryDtl.getBtch().getNbOfTxs());
-				if (ctrlQty.compareTo(ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET) == 0)
+				if (ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET.compareTo(ctrlQty) == 0)
 				{
 					// not yet set
 					newCtrlQty = augend;

@@ -1,6 +1,7 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
 import de.metas.i18n.TranslatableStrings;
+import de.metas.payment.camt054_001_02.CreditorReferenceInformation2;
 import de.metas.payment.camt054_001_02.EntryTransaction2;
 import de.metas.payment.camt054_001_02.StructuredRemittanceInformation7;
 import de.metas.payment.esr.ESRConstants;
@@ -9,6 +10,7 @@ import de.metas.payment.esr.dataimporter.ESRType;
 import lombok.NonNull;
 import org.compiere.util.Env;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -46,9 +48,6 @@ public class ReferenceStringHelperv02
 
 	/**
 	 * extractAndSetEsrReference for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
-	 *
-	 * @param txDtls
-	 * @param trxBuilder
 	 */
 	public void extractAndSetEsrReference(
 			@NonNull final EntryTransaction2 txDtls,
@@ -88,21 +87,19 @@ public class ReferenceStringHelperv02
 	 * that has <code>CdtrRefInf/Tp/CdOrPrtry == "ISR Reference"</code>.
 	 * extractEsrReference for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
 	 *
-	 * @param txDtls
-	 * @return
 	 * @task https://github.com/metasfresh/metasfresh/issues/2107
 	 */
 	private Optional<String> extractEsrReference(@NonNull final EntryTransaction2 txDtls)
 	{
 		// get the esr reference string out of the XML tree
-		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
-				.map(strd -> strd.getCdtrRefInf())
+		// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
+		return txDtls.getRmtInf().getStrd().stream()
+				.map(StructuredRemittanceInformation7::getCdtrRefInf)
 
 				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
-				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
-				.map(cdtrRefInf -> cdtrRefInf.getRef())
+				.filter(ReferenceStringHelperv02::isSupportedESRType)
+				.map(CreditorReferenceInformation2::getRef)
 				.findFirst();
-		return esrReferenceNumberString;
 	}
 
 	/*
@@ -145,19 +142,15 @@ public class ReferenceStringHelperv02
 
 	/**
 	 * extractReferenceFallback for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
-	 *
-	 * @param txDtls
-	 * @return
 	 * @task https://github.com/metasfresh/metasfresh/issues/2107
 	 */
 	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction2 txDtls)
 	{
 		// get the esr reference string out of the XML tree
-		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
-				.map(strd -> strd.getCdtrRefInf())
-				.filter(cdtrRefInf -> cdtrRefInf != null)
-				.map(cdtrRefInf -> cdtrRefInf.getRef())
+		return txDtls.getRmtInf().getStrd().stream()
+				.map(StructuredRemittanceInformation7::getCdtrRefInf)
+				.filter(Objects::nonNull)
+				.map(CreditorReferenceInformation2::getRef)
 				.findFirst();
-		return esrReferenceNumberString;
 	}
 }

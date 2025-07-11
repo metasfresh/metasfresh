@@ -26,7 +26,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXB;
@@ -153,7 +152,7 @@ public class ESRDataImporterCamt54v02
 		BigDecimal newCtrlQty = ctrlQty;
 		for (final EntryDetails1 ntryDtl : ntry.getNtryDtls())
 		{
-			if (ctrlQty.compareTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL) == 0
+			if (ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL.compareTo(ctrlQty) == 0
 					|| ntryDtl.getBtch() == null || ntryDtl.getBtch().getNbOfTxs() == null)
 			{
 				// the current ntryDtl has no control qty, or an earlier one already didn't have a control qty
@@ -162,7 +161,7 @@ public class ESRDataImporterCamt54v02
 			else
 			{
 				final BigDecimal augend = new BigDecimal(ntryDtl.getBtch().getNbOfTxs());
-				if (ctrlQty.compareTo(ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET) == 0)
+				if (ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET.compareTo(ctrlQty) == 0)
 				{
 					// not yet set
 					newCtrlQty = augend;
