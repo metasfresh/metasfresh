@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1272209807L;
+	private static final long serialVersionUID = 320014220L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -352,7 +352,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
 	}
-
 	@Override
 	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
 	{
@@ -1380,6 +1379,30 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setIsPromisedFixedDate (final boolean IsPromisedFixedDate)
+	{
+		set_Value (COLUMNNAME_IsPromisedFixedDate, IsPromisedFixedDate);
+	}
+
+	@Override
+	public boolean isPromisedFixedDate() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPromisedFixedDate);
+	}
+
+	@Override
+	public void setIsProvisioningFixedDate (final boolean IsProvisioningFixedDate)
+	{
+		set_Value (COLUMNNAME_IsProvisioningFixedDate, IsProvisioningFixedDate);
+	}
+
+	@Override
+	public boolean isProvisioningFixedDate() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsProvisioningFixedDate);
+	}
+
+	@Override
 	public void setIsSalesPartnerRequired (final boolean IsSalesPartnerRequired)
 	{
 		set_Value (COLUMNNAME_IsSalesPartnerRequired, IsSalesPartnerRequired);
@@ -2127,6 +2150,30 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getUser2_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User2_ID);
+	}
+
+	@Override
+	public void setValidUntil (final @Nullable java.sql.Timestamp ValidUntil)
+	{
+		set_Value (COLUMNNAME_ValidUntil, ValidUntil);
+	}
+
+	@Override
+	public java.sql.Timestamp getValidUntil() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ValidUntil);
+	}
+
+	@Override
+	public void setVersionNo (final @Nullable java.lang.String VersionNo)
+	{
+		set_Value (COLUMNNAME_VersionNo, VersionNo);
+	}
+
+	@Override
+	public java.lang.String getVersionNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_VersionNo);
 	}
 
 	@Override

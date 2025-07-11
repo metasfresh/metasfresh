@@ -38,9 +38,11 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 @Value
@@ -57,6 +59,8 @@ public class PackageableQuery
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
 	@Nullable LocalDate preparationDate;
+	@Builder.Default @Nullable ZonedDateTime maximumPreparationDate = Env.getZonedDateTime();
+	@Builder.Default @Nullable ZonedDateTime maximumPromisedDate = Env.getZonedDateTime();
 	@Nullable ShipperId shipperId;
 
 	/**

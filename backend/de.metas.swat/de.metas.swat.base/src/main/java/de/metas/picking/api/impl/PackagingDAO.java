@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -133,7 +134,29 @@ public class PackagingDAO implements IPackagingDAO
 		// Filter: PreparationDate
 		if (query.getPreparationDate() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+		}
+
+		//
+		// Filter: IsProvisioningFixedDate
+		if (query.getMaximumPreparationDate() != null)
+		{
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+					.setJoinOr()
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getMaximumPreparationDate().toInstant())
+					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsPromisedFixedDate, false)
+			);
+		}
+
+		//
+		// Filter: IsProvisioningFixedDate
+		if (query.getMaximumPromisedDate() != null)
+		{
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+					.setJoinOr()
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, query.getMaximumPromisedDate().toInstant())
+					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsProvisioningFixedDate, false)
+			);
 		}
 
 		if (query.getShipperId() != null)
@@ -205,17 +228,17 @@ public class PackagingDAO implements IPackagingDAO
 		{
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_HandOver_Location_ID, query.getHandoverLocationIds());
 		}
-		
+
 		//
-		if(query.getScannedProductCodes() != null)
+		if (query.getScannedProductCodes() != null)
 		{
 			final ICompositeQueryFilter<I_M_Packageable_V> productCodesFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
-			for(final ResolvedScannedProductCode scannedProductCode : query.getScannedProductCodes())
+			for (final ResolvedScannedProductCode scannedProductCode : query.getScannedProductCodes())
 			{
 				final ICompositeQueryFilter<I_M_Packageable_V> currentProductCodeFilter = productCodesFilter.addCompositeQueryFilter()
 						.setJoinAnd()
 						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, scannedProductCode.getProductId());
-				if(scannedProductCode.getBpartnerId() != null)
+				if (scannedProductCode.getBpartnerId() != null)
 				{
 					currentProductCodeFilter.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, scannedProductCode.getBpartnerId());
 				}
