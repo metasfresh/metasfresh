@@ -12,6 +12,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
 import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
+import de.metas.payment.camt054_001_08.BankToCustomerDebitCreditNotificationV08;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
@@ -125,9 +126,14 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		return Env.getADLanguageOrBaseLanguage(ctx);
 	}
 
-	private static boolean isVersion2Schema(@NonNull final String namespaceURI)
+		private static boolean isVersion2Schema(@NonNull final String namespaceURI)
 	{
 		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);
+	}
+
+	private static boolean isVersion6Schema(@NonNull final String namespaceURI)
+	{
+		return Objects.equals("urn:iso:std:iso:20022:tech:xsd:camt.054.001.06", namespaceURI);
 	}
 
 	private static String getNameSpaceURI(@NonNull final XMLStreamReader reader) throws XMLStreamException
@@ -167,9 +173,13 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			{
 				return importCamt54v02(mxsr);
 			}
-			else
+			else if (isVersion6Schema(getNameSpaceURI(mxsr)))
 			{
 				return importCamt54v06(mxsr);
+			}
+			else
+			{
+				return importCamt54v08(mxsr);
 			}
 
 		}
@@ -208,6 +218,21 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		}
 
 		return ESRDataImporterCamt54v06.builder()
+				.bankAccountCurrencyCode(bankAccountCurrencyCode)
+				.adLanguage(adLanguage)
+				.build()
+				.createESRStatement(bkToCstmrDbtCdtNtfctn);
+	}
+
+	private ESRStatement importCamt54v08(final MultiVersionStreamReaderDelegate mxsr)
+	{
+		final BankToCustomerDebitCreditNotificationV08 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v08.loadXML(mxsr);
+		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
+		}
+
+		return ESRDataImporterCamt54v08.builder()
 				.bankAccountCurrencyCode(bankAccountCurrencyCode)
 				.adLanguage(adLanguage)
 				.build()

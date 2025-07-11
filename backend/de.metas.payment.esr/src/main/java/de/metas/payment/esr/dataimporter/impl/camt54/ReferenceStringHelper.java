@@ -1,7 +1,11 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
+import java.util.Objects;
 import java.util.Optional;
 
+import de.metas.payment.camt054_001_08.CreditorReferenceInformation2;
+import de.metas.payment.camt054_001_08.EntryTransaction10;
+import de.metas.payment.camt054_001_08.StructuredRemittanceInformation16;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -54,6 +58,38 @@ public class ReferenceStringHelper
 
 	@VisibleForTesting
 	static final AdMessageKey MSG_MISSING_ESR_REFERENCE = AdMessageKey.of("ESR_CAMT54_Missing_ESR_Reference");
+
+
+	/**
+	 * extractAndSetEsrReference for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
+	 * @param txDtls
+	 * @param trxBuilder
+	 */
+	public void extractAndSetEsrReference(
+			@NonNull final EntryTransaction10 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final Optional<String> esrReferenceNumberString = extractEsrReference(txDtls);
+		if (esrReferenceNumberString.isPresent())
+		{
+			trxBuilder.esrReferenceNumber(esrReferenceNumberString.get());
+		}
+		else
+		{
+			final Optional<String> fallback = extractReferenceFallback(txDtls);
+			if (fallback.isPresent())
+			{
+				trxBuilder.esrReferenceNumber(fallback.get());
+				trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_AMBIGOUS_REFERENCE));
+			}
+			else
+			{
+				trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_MISSING_ESR_REFERENCE));
+			}
+		}
+	}
 
 
 	/**
@@ -150,7 +186,42 @@ public class ReferenceStringHelper
 			trxBuilder.type(ESRType.TYPE_ESR);
 		}
 	}
-	
+
+	/*
+	 * extractAndSetType for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	public void extractAndSetType(
+			@NonNull final EntryTransaction10 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		final Optional<ESRType> type = extractType(txDtls);
+		if (type.isPresent())
+		{
+			trxBuilder.type(type.get());
+		}
+		else
+		{
+			// fallback to esr type
+			trxBuilder.type(ESRType.TYPE_ESR);
+		}
+	}
+
+	/*
+	 * extractEsrReference for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	private Optional<String> extractEsrReference(@NonNull final EntryTransaction10 txDtls)
+	{
+		// get the esr reference string out of the XML tree
+        // it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
+        return txDtls.getRmtInf().getStrd().stream()
+                .map(StructuredRemittanceInformation16::getCdtrRefInf)
+
+                // it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
+                .filter(ReferenceStringHelper::isSupportedESRType)
+                .map(CreditorReferenceInformation2::getRef)
+                .findFirst();
+	}
+
 
 	/**
 	 * Gets <code>TxDtls/RmtInf/Strd/CdtrRefInf/Ref</code><br>
@@ -201,6 +272,18 @@ public class ReferenceStringHelper
 		return esrReferenceNumberString;
 	}
 
+	/**
+	 * extractReferenceFallback for version 6 <code>BankToCustomerDebitCreditNotificationV08</code>
+     */
+	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction10 txDtls)
+	{
+		// get the esr reference string out of the XML tree
+        return txDtls.getRmtInf().getStrd().stream()
+                .map(StructuredRemittanceInformation16::getCdtrRefInf)
+                .filter(Objects::nonNull)
+                .map(CreditorReferenceInformation2::getRef)
+                .findFirst();
+	}
 
 	/**
 	 * extractReferenceFallback for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
@@ -219,6 +302,20 @@ public class ReferenceStringHelper
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
 		return esrReferenceNumberString;
+	}
+
+	/**
+	 * extractType for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	private Optional<ESRType> extractType(@NonNull final EntryTransaction10 txDtls)
+	{
+		return txDtls.getRmtInf().getStrd().stream()
+				.map(StructuredRemittanceInformation16::getCdtrRefInf)
+				.filter(ReferenceStringHelper::isSupportedESRType)
+				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
+				.map(ESRType::ofNullableCode)
+				.findFirst();
+
 	}
 
 	private Optional<ESRType> extractType(@NonNull final EntryTransaction8 txDtls)
@@ -261,7 +358,16 @@ public class ReferenceStringHelper
 				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
 						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
 	}
-	
+
+	private static boolean isSupportedESRType(de.metas.payment.camt054_001_08.CreditorReferenceInformation2 cdtrRefInf)
+	{
+		return cdtrRefInf != null
+				&& cdtrRefInf.getTp() != null
+				&& cdtrRefInf.getTp().getCdOrPrtry() != null
+				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
+				|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
+	}
+
 	/**
 	 * extractReferenceFallback for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
 	 * 
