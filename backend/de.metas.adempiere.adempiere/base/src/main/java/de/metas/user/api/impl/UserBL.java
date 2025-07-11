@@ -110,6 +110,9 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
+	public void save(@NonNull final I_AD_User user) {userDAO.save(user);}
+
+	@Override
 	public String extractUserLogin(final I_AD_User user)
 	{
 		final String login = StringUtils.trimBlankToNull(user.getLogin());

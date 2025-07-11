@@ -3,12 +3,14 @@ var WebpackDevServer = require('webpack-dev-server');
 var config = require('./webpack.config');
 const path = require('path');
 
-var listenHost = process.env.DOCKER ? '0.0.0.0' : 'localhost';
+// var listenHost = process.env.DOCKER ? '0.0.0.0' : 'localhost';
+var listenHost = '0.0.0.0';
 
 const devServer = new WebpackDevServer(
   {
     host: listenHost,
     port: 3000,
+    allowedHosts: 'all', // 👈 allows any external host (like myapp3000.loca.lt)
     static: {
       directory: path.join(__dirname, ''),
       publicPath: config.output.publicPath,

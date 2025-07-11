@@ -25,8 +25,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Properties;
-import java.util.function.Supplier;
 
 /*
  * #%L
@@ -74,36 +74,101 @@ public class UserAuthTokenService
 		return userAuthTokenRepo.getByToken(token);
 	}
 
-	public void run(final Supplier<String> authTokenStringSupplier, @NonNull final UserAuthTokenRunnable runnable)
+	public void run(
+			@NonNull final UserAuthTokenSupplier authTokenStringSupplier,
+			@NonNull final UserAuthTokenRunnable runnable)
 	{
-		call(authTokenStringSupplier, () -> {
-			runnable.run();
-			return null;
-		});
+		call(authTokenStringSupplier, AuthResolution.AUTHENTICATION_REQUIRED, asCallable(runnable));
 	}
 
-	public <R> R call(final Supplier<String> authTokenStringSupplier, @NonNull final UserAuthTokenCallable<R> callable)
+	public void run(
+			@NonNull final UserAuthTokenSupplier authTokenStringSupplier,
+			@NonNull final AuthResolution authResolution,
+			@NonNull final UserAuthTokenRunnable runnable)
 	{
-		final UserAuthToken token;
-		String authTokenString = null;
-		try
-		{
-			authTokenString = authTokenStringSupplier.get();
-			token = userAuthTokenRepo.getByToken(authTokenString);
-		}
-		catch (final Exception ex)
-		{
-			throw new UserNotAuthorizedException(authTokenString, ex);
-		}
+		call(authTokenStringSupplier, authResolution, asCallable(runnable));
+	}
 
-		final Properties ctx = createContext(token);
-		try (final IAutoCloseable ignored = Env.switchContext(ctx))
+	@NonNull
+	private static UserAuthTokenCallable<Object> asCallable(@NonNull final UserAuthTokenRunnable runnable)
+	{
+		return () -> {
+			runnable.run();
+			return null;
+		};
+	}
+
+	public <R> R call(
+			@NonNull final UserAuthTokenSupplier authTokenStringSupplier,
+			@NonNull final UserAuthTokenCallable<R> callable)
+	{
+		return call(authTokenStringSupplier, AuthResolution.AUTHENTICATION_REQUIRED, callable);
+	}
+
+	public <R> R call(
+			@NonNull final UserAuthTokenSupplier authTokenStringSupplier,
+			@NonNull final AuthResolution authResolution,
+			@NonNull final UserAuthTokenCallable<R> callable)
+	{
+		final UserAuthToken token = authenticate(authTokenStringSupplier, authResolution);
+
+		try (final IAutoCloseable ignored = createContextAndSwitchIfToken(token))
 		{
 			return callable.call();
 		}
 		catch (final Exception ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	@Nullable
+	private UserAuthToken authenticate(@NonNull final UserAuthTokenSupplier authTokenStringSupplier, @NonNull final AuthResolution authResolution)
+	{
+		if (authResolution.isDoNotAuthenticate())
+		{
+			return null;
+		}
+
+		try
+		{
+			final String authTokenString = StringUtils.trimBlankToNull(authTokenStringSupplier.getAuthToken());
+			if (authTokenString == null)
+			{
+				if (authResolution.isAuthenticateIfTokenAvailable())
+				{
+					return null;
+				}
+				else
+				{
+					throw new UserNotAuthorizedException("No token provided. If you are calling from an REST API, please provide then token in `" + UserAuthTokenFilter.HEADER_Authorization + "` HTTP header" + " or `" + UserAuthTokenFilter.QUERY_PARAM_API_KEY + "` query parameter");
+				}
+			}
+			else
+			{
+				return userAuthTokenRepo.getByToken(authTokenString);
+			}
+		}
+		catch (final UserNotAuthorizedException ex)
+		{
+			throw ex;
+		}
+		catch (final Exception ex)
+		{
+			throw new UserNotAuthorizedException(ex);
+		}
+	}
+
+	private IAutoCloseable createContextAndSwitchIfToken(@Nullable final UserAuthToken token)
+	{
+		if (token == null)
+		{
+			return IAutoCloseable.NOP;
+		}
+		else
+		{
+			final Properties ctx = createContext(token);
+			return Env.switchContext(ctx);
 		}
 	}
 

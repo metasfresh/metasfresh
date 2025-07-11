@@ -5,11 +5,12 @@ import queryString from 'query-string';
 import history from '../services/History';
 import PrivateRoute from './PrivateRoute';
 import TokenRoute from './TokenRoute';
-import LoginRoute from './LoginRoute';
-import ResetPasswordRoute from './ResetPasswordRoute';
 
 // import PluginContainer, { pluginWrapper } from './components/PluginContainer';
 import PaypalReservationConfirm from '../containers/PaypalReservationConfirm.js';
+import PasswordResetCompleteScreen from '../components/login/password_reset/PasswordResetCompleteScreen';
+import LoginScreen from '../components/login/LoginScreen';
+import PasswordResetRequestScreen from '../components/login/password_reset/PasswordResetRequestScreen';
 
 /**
  * this is the part of the application that activates the plugins from the plugins array found in - plugins.js
@@ -78,13 +79,10 @@ const pluginRoutes = getPluginsRoutes(plugins);
 const Routes = () => {
   return (
     <Switch>
-      <Route exact path="/login" component={LoginRoute} />
+      <Route exact path="/login" component={LoginScreen} />
       <Route path="/token/:tokenId" component={TokenRoute} />
-      <Route
-        path="/forgottenPassword"
-        render={(props) => <LoginRoute {...props} splatPath />}
-      />
-      <Route path="/resetPassword" component={ResetPasswordRoute} />
+      <Route path="/forgottenPassword" component={PasswordResetRequestScreen} />
+      <Route path="/resetPassword" component={PasswordResetCompleteScreen} />
       <Route
         path="/paypal_confirm"
         component={({ location }) => {

@@ -3,6 +3,7 @@ package de.metas.handlingunits.trace.repository;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
@@ -382,6 +383,15 @@ public class RetrieveDbRecordsUtil
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, query.getAnyHuId());
 			
 			queryBuilder.addFilter(anyHuFilter);
+			queryIsEmpty = false;
+		}
+		if (!Check.isEmpty(query.getHuValue()))
+		{
+			final IQuery<I_M_HU> huValueQuery = queryBL.createQueryBuilder(I_M_HU.class)
+					.addStringLikeFilter(I_M_HU.COLUMNNAME_Value, query.getHuValue(), true)
+					.create();
+
+			queryBuilder.addInSubQueryFilter(I_M_HU_Trace.COLUMNNAME_M_HU_ID, I_M_HU.COLUMNNAME_M_HU_ID, huValueQuery);
 			queryIsEmpty = false;
 		}
 		if (queryIsEmpty)

@@ -42,10 +42,12 @@ import java.util.Map;
 public class I18NRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/i18n";
+
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final UserSession userSession;
 
 	private static final String AD_MESSAGE_PREFIX = "webui.";
+
 	public I18NRestController(
 			@NonNull final UserSession userSession)
 	{
