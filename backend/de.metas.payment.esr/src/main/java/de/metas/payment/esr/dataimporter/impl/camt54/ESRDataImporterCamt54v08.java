@@ -56,8 +56,8 @@ import java.util.List;
  * Important logical differences are in methods:
  * <ul>
  * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v08.loadXML()/code>
- * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v08.verifyTransactionCurrency(EntryTransaction8, ESRTransactionBuilder)/code>
- * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v08.extractAmountAndType(ReportEntry8, EntryTransaction8, ESRTransactionBuilder)</code>
+ * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v08.verifyTransactionCurrency(EntryTransaction10, ESRTransactionBuilder)/code>
+ * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v08.extractAmountAndType(ReportEntry10, EntryTransaction10, ESRTransactionBuilder)</code>
  * </ul>
  * For the rest, the difference is the object generated from xsd
  *

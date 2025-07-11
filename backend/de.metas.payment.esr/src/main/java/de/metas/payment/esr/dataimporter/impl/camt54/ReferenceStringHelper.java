@@ -59,6 +59,7 @@ public class ReferenceStringHelper
 	@VisibleForTesting
 	static final AdMessageKey MSG_MISSING_ESR_REFERENCE = AdMessageKey.of("ESR_CAMT54_Missing_ESR_Reference");
 
+	final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
 	 * extractAndSetEsrReference for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
@@ -69,8 +70,6 @@ public class ReferenceStringHelper
 			@NonNull final EntryTransaction10 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 		final Optional<String> esrReferenceNumberString = extractEsrReference(txDtls);
 		if (esrReferenceNumberString.isPresent())
 		{
@@ -101,8 +100,6 @@ public class ReferenceStringHelper
 			@NonNull final EntryTransaction8 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 		final Optional<String> esrReferenceNumberString = extractEsrReference(txDtls);
 		if (esrReferenceNumberString.isPresent())
 		{
@@ -132,8 +129,6 @@ public class ReferenceStringHelper
 			@NonNull final EntryTransaction2 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 		final Optional<String> esrReferenceNumberString = extractEsrReference(txDtls);
 		if (esrReferenceNumberString.isPresent())
 		{
