@@ -1,5 +1,8 @@
 package de.metas.bpartner.impexp;
 
+import de.metas.banking.api.BankRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.impexp.ImportRecordsAsyncExecutor;
@@ -53,6 +56,10 @@ public class BPartnerImportProcess_SimpleCase_Test
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
 		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
+		SpringContextHolder.registerJUnitBean(new BankRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(new BPartnerCreditLimitRepository());
+		SpringContextHolder.registerJUnitBean(new BPartnerPrintFormatRepository());
 	}
 
 	@Test
