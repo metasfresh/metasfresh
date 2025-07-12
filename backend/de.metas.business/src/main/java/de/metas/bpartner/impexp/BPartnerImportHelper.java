@@ -56,23 +56,20 @@ import lombok.NonNull;
 		final BPartnersCache cache = context.getBpartnersCache();
 
 		final BPartner bpartner;
-		final boolean insertMode;
 		if (!context.isCurrentBPartnerIdSet())	// Insert new BPartner
 		{
-			insertMode = true;
 			final I_C_BPartner bpartnerRecord = createNewBPartnerNoSave(context.getCurrentImportRecord());
 			bpartner = cache.newBPartner(bpartnerRecord);
 		}
 		else
 		// Update existing BPartner
 		{
-			insertMode = false;
 			bpartner = context.getCurrentBPartner();
 			updateExistingBPartnerNoSave(bpartner.getRecord(), context.getCurrentImportRecord());
 		}
 
 		//
-		updateBPartnerOnInsertOrUpdate(bpartner.getRecord(), context.getCurrentImportRecord(), insertMode);
+		updateBPartnerOnInsertOrUpdate(bpartner.getRecord(), context.getCurrentImportRecord());
 
 		//
 		// Update after INSERT/UPDATE
@@ -85,7 +82,7 @@ import lombok.NonNull;
 	}
 
 	// TODO: figure it out why this code is not part of the updateExistingBPartner
-	private static void updateBPartnerOnInsertOrUpdate(final I_C_BPartner bpartnerRecord, final I_I_BPartner importRecord, final boolean insertMode)
+	private static void updateBPartnerOnInsertOrUpdate(final I_C_BPartner bpartnerRecord, final I_I_BPartner importRecord)
 	{
 		//
 		// CompanyName
@@ -96,7 +93,7 @@ import lombok.NonNull;
 			bpartnerRecord.setCompanyName(companyName.trim());
 			bpartnerRecord.setName(companyName.trim());
 		}
-		else if (insertMode)
+		else
 		{
 			bpartnerRecord.setIsCompany(false);
 			bpartnerRecord.setCompanyName(null);

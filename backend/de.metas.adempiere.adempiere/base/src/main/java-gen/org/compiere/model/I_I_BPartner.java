@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for I_BPartner
  *  @author metasfresh (generated) 
@@ -1085,7 +1084,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_C_Region_ID = "C_Region_ID";
 
 	/**
-	 * Set Eigene-Kd. Nr. .
+	 * Set Customer No At Vendor.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1094,7 +1093,7 @@ public interface I_I_BPartner
 	void setCustomerNoAtVendor (@Nullable java.lang.String CustomerNoAtVendor);
 
 	/**
-	 * Get Eigene-Kd. Nr. .
+	 * Get Customer No At Vendor.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1720,6 +1719,27 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_IsSEPASigned = new ModelColumn<>(I_I_BPartner.class, "IsSEPASigned", null);
 	String COLUMNNAME_IsSEPASigned = "IsSEPASigned";
+
+	/**
+	 * Set Set Print Format location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSetPrintFormat_C_BPartner_Location (boolean IsSetPrintFormat_C_BPartner_Location);
+
+	/**
+	 * Get Set Print Format location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSetPrintFormat_C_BPartner_Location();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_IsSetPrintFormat_C_BPartner_Location = new ModelColumn<>(I_I_BPartner.class, "IsSetPrintFormat_C_BPartner_Location", null);
+	String COLUMNNAME_IsSetPrintFormat_C_BPartner_Location = "IsSetPrintFormat_C_BPartner_Location";
 
 	/**
 	 * Set Ship Address.
@@ -2358,6 +2378,50 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_PricingSystem_Value = new ModelColumn<>(I_I_BPartner.class, "PricingSystem_Value", null);
 	String COLUMNNAME_PricingSystem_Value = "PricingSystem_Value";
+
+	/**
+	 * Set Print Format - Document Base Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrintFormat_DocBaseType (@Nullable java.lang.String PrintFormat_DocBaseType);
+
+	/**
+	 * Get Print Format - Document Base Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPrintFormat_DocBaseType();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_PrintFormat_DocBaseType = new ModelColumn<>(I_I_BPartner.class, "PrintFormat_DocBaseType", null);
+	String COLUMNNAME_PrintFormat_DocBaseType = "PrintFormat_DocBaseType";
+
+	/**
+	 * Set Print Format - Copies.
+	 * Overwrites the number of copies set in the document type. (Value 0 is ignored)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPrintFormat_DocumentCopies_Override (int PrintFormat_DocumentCopies_Override);
+
+	/**
+	 * Get Print Format - Copies.
+	 * Overwrites the number of copies set in the document type. (Value 0 is ignored)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPrintFormat_DocumentCopies_Override();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_PrintFormat_DocumentCopies_Override = new ModelColumn<>(I_I_BPartner.class, "PrintFormat_DocumentCopies_Override", null);
+	String COLUMNNAME_PrintFormat_DocumentCopies_Override = "PrintFormat_DocumentCopies_Override";
 
 	/**
 	 * Set PrintForma_Name.
