@@ -76,7 +76,7 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 		SpringContextHolder.registerJUnitBean(new BPartnerCreditLimitRepository());
 		SpringContextHolder.registerJUnitBean(new BPartnerPrintFormatRepository());
 
-				Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	@Test
