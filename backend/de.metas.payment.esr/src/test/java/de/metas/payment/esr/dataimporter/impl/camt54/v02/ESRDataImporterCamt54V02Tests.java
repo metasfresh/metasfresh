@@ -1,4 +1,4 @@
-package de.metas.payment.esr.dataimporter.impl.camt54;
+package de.metas.payment.esr.dataimporter.impl.camt54.v02;
 
 import de.metas.payment.camt054_001_02.BatchInformation2;
 import de.metas.payment.camt054_001_02.EntryDetails1;
@@ -7,6 +7,7 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRType;
+import de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -133,15 +134,15 @@ public class ESRDataImporterCamt54V02Tests
 		{
 			final ReportEntry2 ntry = new ReportEntry2();
 			ntry.getNtryDtls().add(emptyNtryDetails);
-			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry);
-			assertThat(result).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRConstants.CTRL_QTY_NOT_YET_SET, ntry);
+			assertThat(result).isEqualByComparingTo(ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL);
 		}
 
 		// only the "filled" one..
 		{
 			final ReportEntry2 ntry = new ReportEntry2();
 			ntry.getNtryDtls().add(filledNtryDetails1);
-			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry);
+			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRConstants.CTRL_QTY_NOT_YET_SET, ntry);
 			assertThat(result).isEqualByComparingTo("2");
 		}
 
@@ -150,7 +151,7 @@ public class ESRDataImporterCamt54V02Tests
 			final ReportEntry2 ntry = new ReportEntry2();
 			ntry.getNtryDtls().add(emptyNtryDetails);
 			ntry.getNtryDtls().add(filledNtryDetails1);
-			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry);
+			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRConstants.CTRL_QTY_NOT_YET_SET, ntry);
 			assertThat(result).isEqualByComparingTo("2");
 		}
 
@@ -158,13 +159,13 @@ public class ESRDataImporterCamt54V02Tests
 		{
 			final ReportEntry2 ntry1 = new ReportEntry2();
 			ntry1.getNtryDtls().add(emptyNtryDetails);
-			final BigDecimal resultFrom1stCall = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry1);
-			assertThat(resultFrom1stCall).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+			final BigDecimal resultFrom1stCall = importer.iterateEntryDetails(stmtBuilder, ESRConstants.CTRL_QTY_NOT_YET_SET, ntry1);
+			assertThat(resultFrom1stCall).isEqualByComparingTo(ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL);
 
 			final ReportEntry2 ntry2 = new ReportEntry2();
 			ntry2.getNtryDtls().add(filledNtryDetails1);
 			final BigDecimal resultFrom2ndCall = importer.iterateEntryDetails(stmtBuilder, resultFrom1stCall, ntry2);
-			assertThat(resultFrom2ndCall).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+			assertThat(resultFrom2ndCall).isEqualByComparingTo(ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL);
 		}
 
 		// first filled, then empty (one ntry)
@@ -172,28 +173,28 @@ public class ESRDataImporterCamt54V02Tests
 			final ReportEntry2 ntry = new ReportEntry2();
 			ntry.getNtryDtls().add(filledNtryDetails1);
 			ntry.getNtryDtls().add(emptyNtryDetails);
-			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry);
-			assertThat(result).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRConstants.CTRL_QTY_NOT_YET_SET, ntry);
+			assertThat(result).isEqualByComparingTo(ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL);
 		}
 
 		// first filled, then empty (two ntrys)
 		{
 			final ReportEntry2 ntry1 = new ReportEntry2();
 			ntry1.getNtryDtls().add(filledNtryDetails1);
-			final BigDecimal resultFrom1stCall = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry1);
+			final BigDecimal resultFrom1stCall = importer.iterateEntryDetails(stmtBuilder, ESRConstants.CTRL_QTY_NOT_YET_SET, ntry1);
 			assertThat(resultFrom1stCall).isEqualByComparingTo("2");
 
 			final ReportEntry2 ntry2 = new ReportEntry2();
 			ntry2.getNtryDtls().add(emptyNtryDetails);
 			final BigDecimal resultFrom2ndCall = importer.iterateEntryDetails(stmtBuilder, resultFrom1stCall, ntry2);
-			assertThat(resultFrom2ndCall).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+			assertThat(resultFrom2ndCall).isEqualByComparingTo(ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL);
 		}
 
 		// filled, filled, then empty (three ntrys)
 		{
 			final ReportEntry2 ntry1 = new ReportEntry2();
 			ntry1.getNtryDtls().add(filledNtryDetails1);
-			final BigDecimal resultFrom1stCall = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry1);
+			final BigDecimal resultFrom1stCall = importer.iterateEntryDetails(stmtBuilder, ESRConstants.CTRL_QTY_NOT_YET_SET, ntry1);
 			assertThat(resultFrom1stCall).isEqualByComparingTo("2");
 
 			final ReportEntry2 ntry2 = new ReportEntry2();
@@ -204,7 +205,7 @@ public class ESRDataImporterCamt54V02Tests
 			final ReportEntry2 ntry3 = new ReportEntry2();
 			ntry3.getNtryDtls().add(emptyNtryDetails);
 			final BigDecimal resultFrom3rdCall = importer.iterateEntryDetails(stmtBuilder, resultFrom2ndCall, ntry3);
-			assertThat(resultFrom3rdCall).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+			assertThat(resultFrom3rdCall).isEqualByComparingTo(ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL);
 		}
 	}
 
@@ -300,6 +301,6 @@ public class ESRDataImporterCamt54V02Tests
 
 		assertThatThrownBy(() -> new ESRDataImporterCamt54(newInstance(I_ESR_ImportFile.class), inputStream).importData())
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
+				.hasMessage(ESRConstants.MSG_MULTIPLE_TRANSACTIONS_TYPES.toAD_Message());
 	}
 }

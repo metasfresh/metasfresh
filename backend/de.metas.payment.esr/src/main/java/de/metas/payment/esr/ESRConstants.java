@@ -22,6 +22,7 @@ package de.metas.payment.esr;
  * #L%
  */
 
+import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.service.ISysConfigBL;
@@ -100,6 +101,17 @@ public final class ESRConstants
 	public static final AdMessageKey MSG_AMBIGOUS_REFERENCE = AdMessageKey.of("ESR_CAMT54_Ambigous_Reference");
 
 	public static final AdMessageKey MSG_MISSING_ESR_REFERENCE = AdMessageKey.of("ESR_CAMT54_Missing_ESR_Reference");
+
+	public static final BigDecimal CTRL_QTY_AT_LEAST_ONE_NULL = BigDecimal.ONE.negate();
+
+	public static final BigDecimal  CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
+
+	public static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
+
+	public static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P = AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
+
+	public static final AdMessageKey MSG_MULTIPLE_TRANSACTIONS_TYPES = AdMessageKey.of("ESR_CAMT54_MultipleTransactionsTypes");
+
 
 	private ESRConstants()
 	{

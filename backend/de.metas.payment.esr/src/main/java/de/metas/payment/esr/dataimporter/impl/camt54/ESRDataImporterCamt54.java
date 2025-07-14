@@ -1,13 +1,11 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
 import ch.qos.logback.classic.Level;
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
@@ -15,6 +13,9 @@ import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
 import de.metas.payment.camt054_001_08.BankToCustomerDebitCreditNotificationV08;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
+import de.metas.payment.esr.dataimporter.impl.camt54.v02.ESRDataImporterCamt54v02;
+import de.metas.payment.esr.dataimporter.impl.camt54.v06.ESRDataImporterCamt54v06;
+import de.metas.payment.esr.dataimporter.impl.camt54.v08.ESRDataImporterCamt54v08;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -31,7 +32,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -77,16 +77,6 @@ import java.util.Properties;
 public class ESRDataImporterCamt54 implements IESRDataImporter
 {
 	private static final Logger logger = LogManager.getLogger(ESRDataImporterCamt54.class);
-
-	@VisibleForTesting
-	static final BigDecimal CTRL_QTY_AT_LEAST_ONE_NULL = BigDecimal.ONE.negate();
-
-	@VisibleForTesting
-	static final BigDecimal  CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
-
-	protected static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
-	protected static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P = AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
-	protected static final AdMessageKey MSG_MULTIPLE_TRANSACTIONS_TYPES = AdMessageKey.of("ESR_CAMT54_MultipleTransactionsTypes");
 
 	@NonNull private final InputStream input;
 	@Nullable private final CurrencyCode bankAccountCurrencyCode;

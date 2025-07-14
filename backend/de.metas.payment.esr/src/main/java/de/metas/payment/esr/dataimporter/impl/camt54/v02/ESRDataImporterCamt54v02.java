@@ -1,4 +1,4 @@
-package de.metas.payment.esr.dataimporter.impl.camt54;
+package de.metas.payment.esr.dataimporter.impl.camt54.v02;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.currency.CurrencyCode;
@@ -22,6 +22,7 @@ import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.ESRType;
+import de.metas.payment.esr.dataimporter.impl.camt54.MultiVersionStreamReaderDelegate;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -92,8 +93,10 @@ public class ESRDataImporterCamt54v02
 {
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	@Nullable private final CurrencyCode bankAccountCurrencyCode;
-	@NonNull private final String adLanguage;
+	@Nullable
+	private final CurrencyCode bankAccountCurrencyCode;
+	@NonNull
+	private final String adLanguage;
 
 	@Builder
 	private ESRDataImporterCamt54v02(
@@ -102,6 +105,56 @@ public class ESRDataImporterCamt54v02
 	{
 		this.bankAccountCurrencyCode = bankAccountCurrencyCode;
 		this.adLanguage = adLanguage;
+	}
+
+	public static BankToCustomerDebitCreditNotificationV02 loadXML(@NonNull final MultiVersionStreamReaderDelegate xsr)
+	{
+		final Document document;
+		try
+		{
+			// https://stackoverflow.com/questions/20410202/jaxb-unmarshalling-not-working-expected-elements-are-none
+			// use ObjectFactory for creating the context because otherwise unmarshalling will not work
+			final JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
+			final Unmarshaller unmarshaller = context.createUnmarshaller();
+
+			@SuppressWarnings("unchecked")
+			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(xsr);
+			document = e.getValue();
+
+		}
+		catch (final JAXBException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+
+		return document.getBkToCstmrDbtCdtNtfctn();
+	}
+
+	/**
+	 * Marshals the given {@code} into an XML string and return that as the "key".
+	 * mkTrxKey for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
+	 */
+	private static String mkTrxKey(@NonNull final EntryTransaction2 txDtl)
+	{
+		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
+		JAXB.marshal(txDtl, transactionKey);
+		try
+		{
+			return transactionKey.toString("UTF-8");
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			// won't happen because UTF-8 is supported
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	/**
+	 * asTimestamp for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 */
+	private static Timestamp asTimestamp(@NonNull final DateAndDateTimeChoice valDt)
+	{
+		return new Timestamp(valDt.getDt().toGregorianCalendar().getTimeInMillis());
 	}
 
 	/**
@@ -113,7 +166,7 @@ public class ESRDataImporterCamt54v02
 
 		BigDecimal ctrAmount = BigDecimal.ZERO;
 
-		BigDecimal ctrlQty = ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET;
+		BigDecimal ctrlQty = ESRConstants.CTRL_QTY_NOT_YET_SET;
 
 		for (final AccountNotification2 ntfctn : bkToCstmrDbtCdtNtfctn.getNtfctn())
 		{
@@ -129,7 +182,7 @@ public class ESRDataImporterCamt54v02
 		} // ntfctn
 
 		// only use the control qty if all ntry had one set. If one was null, then forward null
-		final BigDecimal ctrlQtyForStatement = ctrlQty.compareTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL) == 0 ? null : ctrlQty;
+		final BigDecimal ctrlQtyForStatement = ctrlQty.compareTo(ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL) == 0 ? null : ctrlQty;
 
 		return stmtBuilder
 				.ctrlAmount(ctrAmount)
@@ -152,16 +205,16 @@ public class ESRDataImporterCamt54v02
 		BigDecimal newCtrlQty = ctrlQty;
 		for (final EntryDetails1 ntryDtl : ntry.getNtryDtls())
 		{
-			if (ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL.compareTo(ctrlQty) == 0
+			if (ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL.compareTo(ctrlQty) == 0
 					|| ntryDtl.getBtch() == null || ntryDtl.getBtch().getNbOfTxs() == null)
 			{
 				// the current ntryDtl has no control qty, or an earlier one already didn't have a control qty
-				newCtrlQty = ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL;
+				newCtrlQty = ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL;
 			}
 			else
 			{
 				final BigDecimal augend = new BigDecimal(ntryDtl.getBtch().getNbOfTxs());
-				if (ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET.compareTo(ctrlQty) == 0)
+				if (ESRConstants.CTRL_QTY_NOT_YET_SET.compareTo(ctrlQty) == 0)
 				{
 					// not yet set
 					newCtrlQty = augend;
@@ -218,7 +271,7 @@ public class ESRDataImporterCamt54v02
 
 		if (countQRR != 0 && countQRR != transactions.size())
 		{
-			throw new AdempiereException(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES);
+			throw new AdempiereException(ESRConstants.MSG_MULTIPLE_TRANSACTIONS_TYPES);
 		}
 
 		return transactions;
@@ -258,7 +311,7 @@ public class ESRDataImporterCamt54v02
 		{
 			// we get charged; currently not supported
 			trxBuilder.trxType(ESRConstants.ESRTRXTYPE_UNKNOWN)
-					.errorMsg(getErrorMsg(ESRDataImporterCamt54.MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, ntry.getCdtDbtInd()));
+					.errorMsg(getErrorMsg(ESRConstants.MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, ntry.getCdtDbtInd()));
 		}
 	}
 
@@ -314,62 +367,13 @@ public class ESRDataImporterCamt54v02
 		final String bankAccountCurrencyCode3L = bankAccountCurrencyCode.toThreeLetterCode();
 		if (!bankAccountCurrencyCode3L.equalsIgnoreCase(amt.getCcy()))
 		{
-			trxBuilder.errorMsg(getErrorMsg(ESRDataImporterCamt54.MSG_BANK_ACCOUNT_MISMATCH_2P, bankAccountCurrencyCode3L, amt.getCcy()));
+			trxBuilder.errorMsg(getErrorMsg(ESRConstants.MSG_BANK_ACCOUNT_MISMATCH_2P, bankAccountCurrencyCode3L, amt.getCcy()));
 		}
-	}
-
-	public static BankToCustomerDebitCreditNotificationV02 loadXML(@NonNull final MultiVersionStreamReaderDelegate xsr)
-	{
-		final Document document;
-		try
-		{
-			// https://stackoverflow.com/questions/20410202/jaxb-unmarshalling-not-working-expected-elements-are-none
-			// use ObjectFactory for creating the context because otherwise unmarshalling will not work
-			final JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
-			final Unmarshaller unmarshaller = context.createUnmarshaller();
-
-			@SuppressWarnings("unchecked") final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(xsr);
-			document = e.getValue();
-
-		}
-		catch (final JAXBException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-
-		return document.getBkToCstmrDbtCdtNtfctn();
 	}
 
 	private String getErrorMsg(@NonNull final AdMessageKey adMessage, @Nullable final Object... params)
 	{
 		return msgBL.getTranslatableMsgText(adMessage, params).translate(adLanguage);
-	}
-
-	/**
-	 * Marshals the given {@code} into an XML string and return that as the "key".
-	 * mkTrxKey for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
-	 */
-	private static String mkTrxKey(@NonNull final EntryTransaction2 txDtl)
-	{
-		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
-		JAXB.marshal(txDtl, transactionKey);
-		try
-		{
-			return transactionKey.toString("UTF-8");
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			// won't happen because UTF-8 is supported
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-	}
-
-	/**
-	 * asTimestamp for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 */
-	private static Timestamp asTimestamp(@NonNull final DateAndDateTimeChoice valDt)
-	{
-		return new Timestamp(valDt.getDt().toGregorianCalendar().getTimeInMillis());
 	}
 
 }

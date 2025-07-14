@@ -1,25 +1,25 @@
-package de.metas.payment.esr.dataimporter.impl.camt54;
+package de.metas.payment.esr.dataimporter.impl.camt54.v08;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.payment.camt054_001_06.AccountNotification12;
-import de.metas.payment.camt054_001_06.ActiveOrHistoricCurrencyAndAmount;
-import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
-import de.metas.payment.camt054_001_06.CreditDebitCode;
-import de.metas.payment.camt054_001_06.DateAndDateTimeChoice;
-import de.metas.payment.camt054_001_06.Document;
-import de.metas.payment.camt054_001_06.EntryDetails7;
-import de.metas.payment.camt054_001_06.EntryTransaction8;
-import de.metas.payment.camt054_001_06.ReportEntry8;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.payment.camt054_001_08.AccountNotification17;
+import de.metas.payment.camt054_001_08.ActiveOrHistoricCurrencyAndAmount;
+import de.metas.payment.camt054_001_08.BankToCustomerDebitCreditNotificationV08;
+import de.metas.payment.camt054_001_08.CreditDebitCode;
+import de.metas.payment.camt054_001_08.DateAndDateTime2Choice;
+import de.metas.payment.camt054_001_08.Document;
+import de.metas.payment.camt054_001_08.EntryDetails9;
+import de.metas.payment.camt054_001_08.EntryTransaction10;
+import de.metas.payment.camt054_001_08.ReportEntry10;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.ESRType;
-import de.metas.util.Services;
+import de.metas.payment.esr.dataimporter.impl.camt54.MultiVersionStreamReaderDelegate;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -61,21 +61,20 @@ import java.util.List;
 
 /**
  * Creates an {@link ESRStatement} from camt.54-XML data.
- * This implementation assumes the incoming XML to comply with the version <b><code>camt.054.001.06</code></b>.
- * However, XML which have versions <code>camt.054.001.04</code> and <code>camt.054.001.05</code> will also work (gh #1093).
+ * This implementation assumes the incoming XML to comply with the version <b><code>camt.054.001.08</code></b>.
  *
  * <p>
- * Lots of methods are duplicated from <code>ESRDataImporterCamt54v02</code>
+ * Lots of methods are duplicated from <code>ESRDataImporterCamt54v06</code>
  * Important logical differences are in methods:
  * <ul>
- * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v06.loadXML()/code>
- * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v06.verifyTransactionCurrency(EntryTransaction8, ESRTransactionBuilder)/code>
- * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v06.extractAmountAndType(ReportEntry8, EntryTransaction8, ESRTransactionBuilder)</code>
+ * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v08.loadXML()/code>
+ * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v08.verifyTransactionCurrency(EntryTransaction10, ESRTransactionBuilder)/code>
+ * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v08.extractAmountAndType(ReportEntry10, EntryTransaction10, ESRTransactionBuilder)</code>
  * </ul>
  * For the rest, the difference is the object generated from xsd
  *
  * <p>
- * The XSD file for the xml which this implementation imports is available at <a href="https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.06.zip">BankToCustomerDebitCreditNotificationV04</a>.<br>
+ * The XSD file for the xml which this implementation imports is available at <a href="https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.08.zip">BankToCustomerDebitCreditNotificationV04</a>.<br>
  * Note that
  * <ul>
  * <li>the latest version of the camt.54 XSD can be found <a href="https://www.iso20022.org/payments_messages.page">here</a> and</li>
@@ -86,15 +85,15 @@ import java.util.List;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-public class ESRDataImporterCamt54v06
+public class ESRDataImporterCamt54v08
 {
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-	@Nullable private final CurrencyCode bankAccountCurrencyCode;
-	@NonNull private final String adLanguage;
+	@Nullable
+	private final CurrencyCode bankAccountCurrencyCode;
+	@NonNull
+	private final String adLanguage;
 
 	@Builder
-	private ESRDataImporterCamt54v06(
+	private ESRDataImporterCamt54v08(
 			@Nullable final CurrencyCode bankAccountCurrencyCode,
 			@NonNull final String adLanguage)
 	{
@@ -102,20 +101,69 @@ public class ESRDataImporterCamt54v06
 		this.adLanguage = adLanguage;
 	}
 
+	public static BankToCustomerDebitCreditNotificationV08 loadXML(@NonNull final MultiVersionStreamReaderDelegate xsr)
+	{
+
+		try
+		{
+			final JAXBContext context = JAXBContext.newInstance(Document.class);
+			final Unmarshaller unmarshaller = context.createUnmarshaller();
+
+			// https://github.com/metasfresh/metasfresh/issues/1903
+			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.02 , camt.054.001.04 and amt.054.001.05
+			@SuppressWarnings("unchecked")
+			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(xsr);
+			final Document document = e.getValue();
+			return document.getBkToCstmrDbtCdtNtfctn();
+		}
+		catch (final JAXBException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+
+	}
+
 	/**
-	 * create ESRStatement using <code>BankToCustomerDebitCreditNotificationV06</code>
+	 * Marshals the given {@code} into an XML string and return that as the "key".
+	 * mkTrxKey for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 */
-	public ESRStatement createESRStatement(@NonNull final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn)
+	private static String mkTrxKey(@NonNull final EntryTransaction10 txDtl)
+	{
+		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
+		JAXB.marshal(txDtl, transactionKey);
+		try
+		{
+			return transactionKey.toString("UTF-8");
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			// won't happen because UTF-8 is supported
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	/**
+	 * asTimestamp for version 8<code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	private static Timestamp asTimestamp(@NonNull final DateAndDateTime2Choice valDt)
+	{
+		return new Timestamp(valDt.getDt().toGregorianCalendar().getTimeInMillis());
+	}
+
+	/**
+	 * create ESRStatement using <code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	public ESRStatement createESRStatement(@NonNull final BankToCustomerDebitCreditNotificationV08 bkToCstmrDbtCdtNtfctn)
 	{
 		final ESRStatementBuilder stmtBuilder = ESRStatement.builder();
 
 		BigDecimal ctrAmount = BigDecimal.ZERO;
 
-		BigDecimal ctrlQty = ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET;
+		BigDecimal ctrlQty = ESRConstants.CTRL_QTY_NOT_YET_SET;
 
-		for (final AccountNotification12 ntfctn : bkToCstmrDbtCdtNtfctn.getNtfctn())
+		for (final AccountNotification17 ntfctn : bkToCstmrDbtCdtNtfctn.getNtfctn())
 		{
-			for (final ReportEntry8 ntry : ntfctn.getNtry()) // gh #1947: there can be many ntry records
+			for (final ReportEntry10 ntry : ntfctn.getNtry()) // gh #1947: there can be many ntry records
 			{
 				final BigDecimal ntryAmt = ntry.getAmt().getValue()
 						.multiply(getCrdDbtMultiplier(ntry.getCdtDbtInd()))
@@ -127,7 +175,7 @@ public class ESRDataImporterCamt54v06
 		} // ntfctn
 
 		// only use the control qty if all ntry had one set. If one was null, then forward null
-		final BigDecimal ctrlQtyForStatement = ctrlQty.compareTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL) == 0 ? null : ctrlQty;
+		final BigDecimal ctrlQtyForStatement = ctrlQty.compareTo(ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL) == 0 ? null : ctrlQty;
 
 		return stmtBuilder
 				.ctrlAmount(ctrAmount)
@@ -136,7 +184,7 @@ public class ESRDataImporterCamt54v06
 	}
 
 	/**
-	 * iterateEntryDetails for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 * iterateEntryDetails for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 *
 	 * @param stmtBuilder builder to which the individual {@link ESRTransaction}s are added.
 	 * @return the given {@code ctrlQty}, plus the <code>NbOfTxs</code> of the given {@code ntry}'s {@code ntryDtl}s (if any).
@@ -145,21 +193,21 @@ public class ESRDataImporterCamt54v06
 	BigDecimal iterateEntryDetails(
 			@NonNull final ESRStatementBuilder stmtBuilder,
 			@Nullable final BigDecimal ctrlQty,
-			@NonNull final ReportEntry8 ntry)
+			@NonNull final ReportEntry10 ntry)
 	{
 		BigDecimal newCtrlQty = ctrlQty;
-		for (final EntryDetails7 ntryDtl : ntry.getNtryDtls())
+		for (final EntryDetails9 ntryDtl : ntry.getNtryDtls())
 		{
-			if (ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL.compareTo(ctrlQty) == 0
+			if (ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL.compareTo(ctrlQty) == 0
 					|| ntryDtl.getBtch() == null || ntryDtl.getBtch().getNbOfTxs() == null)
 			{
 				// the current ntryDtl has no control qty, or an earlier one already didn't have a control qty
-				newCtrlQty = ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL;
+				newCtrlQty = ESRConstants.CTRL_QTY_AT_LEAST_ONE_NULL;
 			}
 			else
 			{
 				final BigDecimal augend = new BigDecimal(ntryDtl.getBtch().getNbOfTxs());
-				if (ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET.compareTo(ctrlQty) == 0)
+				if (ESRConstants.CTRL_QTY_NOT_YET_SET.compareTo(ctrlQty) == 0)
 				{
 					// not yet set
 					newCtrlQty = augend;
@@ -179,23 +227,23 @@ public class ESRDataImporterCamt54v06
 	}
 
 	/**
-	 * iterateTransactionDetails for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 * iterateTransactionDetails for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 */
 	private List<ESRTransaction> iterateTransactionDetails(
-			@NonNull final ReportEntry8 ntry,
-			@NonNull final EntryDetails7 ntryDtl)
+			@NonNull final ReportEntry10 ntry,
+			@NonNull final EntryDetails9 ntryDtl)
 	{
 		final List<ESRTransaction> transactions = new ArrayList<>();
 
 		int countQRR = 0;
 
-		for (final EntryTransaction8 txDtl : ntryDtl.getTxDtls())
+		for (final EntryTransaction10 txDtl : ntryDtl.getTxDtls())
 		{
 			final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
 
-			new ReferenceStringHelperv06().extractAndSetEsrReference(txDtl, trxBuilder);
+			new ReferenceStringHelperv08().extractAndSetEsrReference(txDtl, trxBuilder);
 
-			new ReferenceStringHelperv06().extractAndSetType(txDtl, trxBuilder);
+			new ReferenceStringHelperv08().extractAndSetType(txDtl, trxBuilder);
 
 			verifyTransactionCurrency(txDtl, trxBuilder);
 
@@ -217,17 +265,17 @@ public class ESRDataImporterCamt54v06
 
 		if (countQRR != 0 && countQRR != transactions.size())
 		{
-			throw new AdempiereException(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES);
+			throw new AdempiereException(ESRConstants.MSG_MULTIPLE_TRANSACTIONS_TYPES);
 		}
 		return transactions;
 	}
 
 	/**
-	 * extractAmountAndType for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 * extractAmountAndType for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 */
 	private void extractAmountAndType(
-			@NonNull final ReportEntry8 ntry,
-			@NonNull final EntryTransaction8 txDtls,
+			@NonNull final ReportEntry10 ntry,
+			@NonNull final EntryTransaction10 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
 		// credit-or-debit indicator
@@ -254,12 +302,12 @@ public class ESRDataImporterCamt54v06
 		{
 			// we get charged; currently not supported
 			trxBuilder.trxType(ESRConstants.ESRTRXTYPE_UNKNOWN)
-					.errorMsg(getErrorMsg(ESRDataImporterCamt54.MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, ntry.getCdtDbtInd()));
+					.errorMsg(getErrorMsg(ESRConstants.MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, ntry.getCdtDbtInd()));
 		}
 	}
 
 	/**
-	 * getCrdDbtMultiplier for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 * getCrdDbtMultiplier for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 */
 	private BigDecimal getCrdDbtMultiplier(@NonNull final CreditDebitCode creditDebitCode)
 	{
@@ -271,9 +319,9 @@ public class ESRDataImporterCamt54v06
 	}
 
 	/**
-	 * getRvslMultiplier for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 * getRvslMultiplier for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 */
-	private BigDecimal getRvslMultiplier(@NonNull final ReportEntry8 ntry)
+	private BigDecimal getRvslMultiplier(@NonNull final ReportEntry10 ntry)
 	{
 		if (isReversal(ntry))
 		{
@@ -283,19 +331,19 @@ public class ESRDataImporterCamt54v06
 	}
 
 	/**
-	 * isReversal for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 * isReversal for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 */
-	private boolean isReversal(@NonNull final ReportEntry8 ntry)
+	private boolean isReversal(@NonNull final ReportEntry10 ntry)
 	{
 		return ntry.isRvslInd() != null && ntry.isRvslInd();
 	}
 
 	/**
 	 * Verifies that the currency is consistent.
-	 * iterateTransactionDetails for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 * iterateTransactionDetails for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
 	 */
 	private void verifyTransactionCurrency(
-			@NonNull final EntryTransaction8 txDtls,
+			@NonNull final EntryTransaction10 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
 		if (bankAccountCurrencyCode == null)
@@ -309,62 +357,12 @@ public class ESRDataImporterCamt54v06
 		final String bankAccountCurrencyCode3L = bankAccountCurrencyCode.toThreeLetterCode();
 		if (!bankAccountCurrencyCode3L.equalsIgnoreCase(transactionDetailAmt.getCcy()))
 		{
-			trxBuilder.errorMsg(getErrorMsg(ESRDataImporterCamt54.MSG_BANK_ACCOUNT_MISMATCH_2P, bankAccountCurrencyCode3L, transactionDetailAmt.getCcy()));
+			trxBuilder.errorMsg(getErrorMsg(ESRConstants.MSG_BANK_ACCOUNT_MISMATCH_2P, bankAccountCurrencyCode3L, transactionDetailAmt.getCcy()));
 		}
-	}
-
-	public static BankToCustomerDebitCreditNotificationV06 loadXML(@NonNull final MultiVersionStreamReaderDelegate xsr)
-	{
-		final Document document;
-		try
-		{
-			final JAXBContext context = JAXBContext.newInstance(Document.class);
-			final Unmarshaller unmarshaller = context.createUnmarshaller();
-
-			// https://github.com/metasfresh/metasfresh/issues/1903
-			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.02 , camt.054.001.04 and amt.054.001.05
-			@SuppressWarnings("unchecked")
-			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(xsr);
-			document = e.getValue();
-
-		}
-		catch (final JAXBException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-
-		return document.getBkToCstmrDbtCdtNtfctn();
 	}
 
 	private String getErrorMsg(@NonNull final AdMessageKey adMessage, @Nullable final Object... params)
 	{
-		return msgBL.getTranslatableMsgText(adMessage, params).translate(adLanguage);
-	}
-
-	/**
-	 * Marshals the given {@code} into an XML string and return that as the "key".
-	 * mkTrxKey for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 */
-	private static String mkTrxKey(@NonNull final EntryTransaction8 txDtl)
-	{
-		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
-		JAXB.marshal(txDtl, transactionKey);
-		try
-		{
-			return transactionKey.toString("UTF-8");
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			// won't happen because UTF-8 is supported
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-	}
-
-	/**
-	 * asTimestamp for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 */
-	private static Timestamp asTimestamp(@NonNull final DateAndDateTimeChoice valDt)
-	{
-		return new Timestamp(valDt.getDt().toGregorianCalendar().getTimeInMillis());
+		return TranslatableStrings.adMessage(adMessage, params).translate(adLanguage);
 	}
 }
