@@ -1,0 +1,372 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08 camt.054.001.08.xsd">
+    <BkToCstmrDbtCdtNtfctn>
+        <GrpHdr>
+            <MsgId>MSG-C054-230306111816-01</MsgId>
+            <CreDtTm>2023-03-06T11:18:16.785+01:00</CreDtTm>
+            <MsgRcpt>
+                <Nm>Test Marco</Nm>
+            </MsgRcpt>
+            <AddtlInf>PRODUCTIVE</AddtlInf>
+        </GrpHdr>
+        <Ntfctn>
+            <Id>NTF-C054-230306111816-01</Id>
+            <ElctrncSeqNb>1</ElctrncSeqNb>
+            <CreDtTm>2023-03-06T11:18:16.799+01:00</CreDtTm>
+            <Acct>
+                <Id>
+                    <IBAN>CH0309000000250090342</IBAN>
+                </Id>
+                <Ccy>CHF</Ccy>
+                <Svcr>
+                    <FinInstnId>
+                        <Nm>Raiffeisenbank Reinach BL</Nm>
+                    </FinInstnId>
+                </Svcr>
+            </Acct>
+            <Ntry>
+                <NtryRef>CH9300762011623852957</NtryRef>
+                <Amt Ccy="CHF">80</Amt>
+                <CdtDbtInd>CRDT</CdtDbtInd>
+                <RvslInd>false</RvslInd>
+                <Sts>
+                    <Cd>BOOK</Cd>
+                </Sts>
+                <BookgDt>
+                    <Dt>2022-10-25</Dt>
+                </BookgDt>
+                <ValDt>
+                    <Dt>2022-10-25</Dt>
+                </ValDt>
+                <AcctSvcrRef>14627723891</AcctSvcrRef>
+                <BkTxCd>
+                    <Domn>
+                        <Cd>PMNT</Cd>
+                        <Fmly>
+                            <Cd>RCDT</Cd>
+                            <SubFmlyCd>VCOM</SubFmlyCd>
+                        </Fmly>
+                    </Domn>
+                    <Prtry>
+                        <Cd>1004</Cd>
+                    </Prtry>
+                </BkTxCd>
+                <Chrgs>
+                    <TtlChrgsAndTaxAmt Ccy="CHF">0</TtlChrgsAndTaxAmt>
+                </Chrgs>
+                <NtryDtls>
+                    <TxDtls>
+                        <Refs>
+                            <AcctSvcrRef>14627723891</AcctSvcrRef>
+                            <EndToEndId>NOTPROVIDED</EndToEndId>
+                            <Prtry>
+                                <Tp>01</Tp>
+                                <Ref>9999 9999</Ref>
+                            </Prtry>
+                        </Refs>
+                        <Amt Ccy="CHF">80</Amt>
+                        <CdtDbtInd>CRDT</CdtDbtInd>
+                        <BkTxCd>
+                            <Domn>
+                                <Cd>PMNT</Cd>
+                                <Fmly>
+                                    <Cd>RCDT</Cd>
+                                    <SubFmlyCd>VCOM</SubFmlyCd>
+                                </Fmly>
+                            </Domn>
+                            <Prtry>
+                                <Cd>1004</Cd>
+                            </Prtry>
+                        </BkTxCd>
+                        <Chrgs>
+                            <TtlChrgsAndTaxAmt Ccy="CHF">0</TtlChrgsAndTaxAmt>
+                        </Chrgs>
+                        <RltdPties>
+                            <Dbtr>
+                                <Pty>
+                                    <Nm>Test123 Test456</Nm>
+                                    <PstlAdr>
+                                        <StrtNm>Street</StrtNm>
+                                        <BldgNb>25</BldgNb>
+                                        <PstCd>4147</PstCd>
+                                        <TwnNm>Aesch BL</TwnNm>
+                                        <Ctry>CH</Ctry>
+                                    </PstlAdr>
+                                </Pty>
+                            </Dbtr>
+                            <DbtrAcct>
+                                <Id>
+                                    <IBAN>CH5604835012345678009</IBAN>
+                                </Id>
+                            </DbtrAcct>
+                            <UltmtDbtr>
+                                <Pty>
+                                    <Nm>Test123 Test456</Nm>
+                                    <PstlAdr>
+                                        <StrtNm>Street</StrtNm>
+                                        <BldgNb>25</BldgNb>
+                                        <PstCd>4147</PstCd>
+                                        <TwnNm>Aesch BL</TwnNm>
+                                        <Ctry>CH</Ctry>
+                                    </PstlAdr>
+                                </Pty>
+                            </UltmtDbtr>
+                        </RltdPties>
+                        <RmtInf>
+                            <Strd>
+                                <CdtrRefInf>
+                                    <Tp>
+                                        <CdOrPrtry>
+                                            <Prtry>QRR</Prtry>
+                                        </CdOrPrtry>
+                                    </Tp>
+                                    <Ref>100760109103380989047265478</Ref>
+                                </CdtrRefInf>
+                            </Strd>
+                        </RmtInf>
+                        <RltdDts>
+                            <AccptncDtTm>2022-10-25T00:00:00.000+02:00</AccptncDtTm>
+                        </RltdDts>
+                    </TxDtls>
+                </NtryDtls>
+            </Ntry>
+            <Ntry>
+                <NtryRef>CH2289144526468533349</NtryRef>
+                <Amt Ccy="CHF">300</Amt>
+                <CdtDbtInd>CRDT</CdtDbtInd>
+                <RvslInd>false</RvslInd>
+                <Sts>
+                    <Cd>BOOK</Cd>
+                </Sts>
+                <BookgDt>
+                    <Dt>2022-10-27</Dt>
+                </BookgDt>
+                <ValDt>
+                    <Dt>2022-10-27</Dt>
+                </ValDt>
+                <AcctSvcrRef>14634504226</AcctSvcrRef>
+                <BkTxCd>
+                    <Domn>
+                        <Cd>PMNT</Cd>
+                        <Fmly>
+                            <Cd>RCDT</Cd>
+                            <SubFmlyCd>VCOM</SubFmlyCd>
+                        </Fmly>
+                    </Domn>
+                    <Prtry>
+                        <Cd>1004</Cd>
+                    </Prtry>
+                </BkTxCd>
+                <Chrgs>
+                    <TtlChrgsAndTaxAmt Ccy="CHF">0</TtlChrgsAndTaxAmt>
+                </Chrgs>
+                <NtryDtls>
+                    <Btch>
+                        <NbOfTxs>3</NbOfTxs>
+                    </Btch>
+                    <TxDtls>
+                        <Refs>
+                            <AcctSvcrRef>14634504226</AcctSvcrRef>
+                            <EndToEndId>NOTPROVIDED</EndToEndId>
+                            <Prtry>
+                                <Tp>01</Tp>
+                                <Ref>9999 9999</Ref>
+                            </Prtry>
+                        </Refs>
+                        <Amt Ccy="CHF">100</Amt>
+                        <CdtDbtInd>CRDT</CdtDbtInd>
+                        <BkTxCd>
+                            <Domn>
+                                <Cd>PMNT</Cd>
+                                <Fmly>
+                                    <Cd>RCDT</Cd>
+                                    <SubFmlyCd>VCOM</SubFmlyCd>
+                                </Fmly>
+                            </Domn>
+                            <Prtry>
+                                <Cd>1004</Cd>
+                            </Prtry>
+                        </BkTxCd>
+                        <Chrgs>
+                            <TtlChrgsAndTaxAmt Ccy="CHF">0</TtlChrgsAndTaxAmt>
+                        </Chrgs>
+                        <RltdPties>
+                            <Dbtr>
+                                <Pty>
+                                    <Nm>Test T. und E.</Nm>
+                                    <PstlAdr>
+                                        <StrtNm>Street</StrtNm>
+                                        <BldgNb>49</BldgNb>
+                                        <PstCd>4193</PstCd>
+                                        <TwnNm>Reinach BL</TwnNm>
+                                        <Ctry>CH</Ctry>
+                                    </PstlAdr>
+                                </Pty>
+                            </Dbtr>
+                            <DbtrAcct>
+                                <Id>
+                                    <IBAN>CH2289144526468533349</IBAN>
+                                </Id>
+                            </DbtrAcct>
+                            <UltmtDbtr>
+                                <Pty>
+                                    <Nm>Theo Test1</Nm>
+                                    <PstlAdr>
+                                        <StrtNm>Street 49</StrtNm>
+                                        <PstCd>4193</PstCd>
+                                        <TwnNm>Reinach BL</TwnNm>
+                                        <Ctry>CH</Ctry>
+                                    </PstlAdr>
+                                </Pty>
+                            </UltmtDbtr>
+                        </RltdPties>
+                        <RmtInf>
+                            <Strd>
+                                <CdtrRefInf>
+                                    <Tp>
+                                        <CdOrPrtry>
+                                            <Prtry>QRR</Prtry>
+                                        </CdOrPrtry>
+                                    </Tp>
+                                    <Ref>100760109103120132047008122</Ref>
+                                </CdtrRefInf>
+                            </Strd>
+                        </RmtInf>
+                        <RltdDts>
+                            <AccptncDtTm>2022-10-27T00:00:00.000+02:00</AccptncDtTm>
+                        </RltdDts>
+                    </TxDtls>
+                    <TxDtls>
+                        <Refs>
+                            <AcctSvcrRef>14634504226</AcctSvcrRef>
+                            <EndToEndId>NOTPROVIDED</EndToEndId>
+                            <Prtry>
+                                <Tp>01</Tp>
+                                <Ref>9999 9999</Ref>
+                            </Prtry>
+                        </Refs>
+                        <Amt Ccy="CHF">100</Amt>
+                        <CdtDbtInd>CRDT</CdtDbtInd>
+                        <BkTxCd>
+                            <Domn>
+                                <Cd>PMNT</Cd>
+                                <Fmly>
+                                    <Cd>RCDT</Cd>
+                                    <SubFmlyCd>VCOM</SubFmlyCd>
+                                </Fmly>
+                            </Domn>
+                            <Prtry>
+                                <Cd>1004</Cd>
+                            </Prtry>
+                        </BkTxCd>
+                        <Chrgs>
+                            <TtlChrgsAndTaxAmt Ccy="CHF">0</TtlChrgsAndTaxAmt>
+                        </Chrgs>
+                        <RltdPties>
+                            <Dbtr>
+                                <Pty>
+                                    <Nm>JESSICA Test3</Nm>
+                                    <PstlAdr>
+                                        <AdrLine>Street 23 CH 4153 REINACH BL</AdrLine>
+                                    </PstlAdr>
+                                </Pty>
+                            </Dbtr>
+                            <DbtrAcct>
+                                <Id>
+                                    <IBAN>CH9689144224871459721</IBAN>
+                                </Id>
+                            </DbtrAcct>
+                        </RltdPties>
+                        <RmtInf>
+                            <Strd>
+                                <CdtrRefInf>
+                                    <Tp>
+                                        <CdOrPrtry>
+                                            <Prtry>QRR</Prtry>
+                                        </CdOrPrtry>
+                                    </Tp>
+                                    <Ref>100760109103340242047010050</Ref>
+                                </CdtrRefInf>
+                            </Strd>
+                        </RmtInf>
+                        <RltdDts>
+                            <AccptncDtTm>2022-10-27T00:00:00.000+02:00</AccptncDtTm>
+                        </RltdDts>
+                    </TxDtls>
+                    <TxDtls>
+                        <Refs>
+                            <AcctSvcrRef>14634504226</AcctSvcrRef>
+                            <EndToEndId>NOTPROVIDED</EndToEndId>
+                            <Prtry>
+                                <Tp>01</Tp>
+                                <Ref>9999 9999</Ref>
+                            </Prtry>
+                        </Refs>
+                        <Amt Ccy="CHF">100</Amt>
+                        <CdtDbtInd>CRDT</CdtDbtInd>
+                        <BkTxCd>
+                            <Domn>
+                                <Cd>PMNT</Cd>
+                                <Fmly>
+                                    <Cd>RCDT</Cd>
+                                    <SubFmlyCd>VCOM</SubFmlyCd>
+                                </Fmly>
+                            </Domn>
+                            <Prtry>
+                                <Cd>1004</Cd>
+                            </Prtry>
+                        </BkTxCd>
+                        <Chrgs>
+                            <TtlChrgsAndTaxAmt Ccy="CHF">0</TtlChrgsAndTaxAmt>
+                        </Chrgs>
+                        <RltdPties>
+                            <Dbtr>
+                                <Pty>
+                                    <Nm>WTest M. T. und WTest N.</Nm>
+                                    <PstlAdr>
+                                        <StrtNm>Street</StrtNm>
+                                        <BldgNb>76</BldgNb>
+                                        <PstCd>4193</PstCd>
+                                        <TwnNm>Reinach BL</TwnNm>
+                                        <Ctry>CH</Ctry>
+                                    </PstlAdr>
+                                </Pty>
+                            </Dbtr>
+                            <DbtrAcct>
+                                <Id>
+                                    <IBAN>CH9789144366286357277</IBAN>
+                                </Id>
+                            </DbtrAcct>
+                            <UltmtDbtr>
+                                <Pty>
+                                    <Nm>Jean + John Weber</Nm>
+                                    <PstlAdr>
+                                        <StrtNm>Street 76</StrtNm>
+                                        <PstCd>4193</PstCd>
+                                        <TwnNm>Reinach BL</TwnNm>
+                                        <Ctry>CH</Ctry>
+                                    </PstlAdr>
+                                </Pty>
+                            </UltmtDbtr>
+                        </RltdPties>
+                        <RmtInf>
+                            <Strd>
+                                <CdtrRefInf>
+                                    <Tp>
+                                        <CdOrPrtry>
+                                            <Prtry>QRR</Prtry>
+                                        </CdOrPrtry>
+                                    </Tp>
+                                    <Ref>100760109102821782047005722</Ref>
+                                </CdtrRefInf>
+                            </Strd>
+                        </RmtInf>
+                        <RltdDts>
+                            <AccptncDtTm>2022-10-27T00:00:00.000+02:00</AccptncDtTm>
+                        </RltdDts>
+                    </TxDtls>
+                </NtryDtls>
+            </Ntry>
+
+        </Ntfctn>
+    </BkToCstmrDbtCdtNtfctn>
+</Document>
