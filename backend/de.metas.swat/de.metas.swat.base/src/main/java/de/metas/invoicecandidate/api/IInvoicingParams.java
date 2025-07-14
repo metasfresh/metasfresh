@@ -148,6 +148,7 @@ public interface IInvoicingParams
 		result.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
 		result.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
+		result.put(InvoicingParams.PARA_IsCompleteInvoices, isCompleteInvoices());
 
 		return result.build();
 	}
