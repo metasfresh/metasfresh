@@ -4,7 +4,16 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.payment.camt054_001_08.*;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.payment.camt054_001_08.AccountNotification17;
+import de.metas.payment.camt054_001_08.ActiveOrHistoricCurrencyAndAmount;
+import de.metas.payment.camt054_001_08.BankToCustomerDebitCreditNotificationV08;
+import de.metas.payment.camt054_001_08.CreditDebitCode;
+import de.metas.payment.camt054_001_08.DateAndDateTime2Choice;
+import de.metas.payment.camt054_001_08.Document;
+import de.metas.payment.camt054_001_08.EntryDetails9;
+import de.metas.payment.camt054_001_08.EntryTransaction10;
+import de.metas.payment.camt054_001_08.ReportEntry10;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
@@ -17,7 +26,11 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.*;
+import javax.xml.bind.JAXB;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -77,8 +90,10 @@ public class ESRDataImporterCamt54v08
 {
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	@Nullable private final CurrencyCode bankAccountCurrencyCode;
-	@NonNull private final String adLanguage;
+	@Nullable
+	private final CurrencyCode bankAccountCurrencyCode;
+	@NonNull
+	private final String adLanguage;
 
 	@Builder
 	private ESRDataImporterCamt54v08(
@@ -87,6 +102,55 @@ public class ESRDataImporterCamt54v08
 	{
 		this.bankAccountCurrencyCode = bankAccountCurrencyCode;
 		this.adLanguage = adLanguage;
+	}
+
+	public static BankToCustomerDebitCreditNotificationV08 loadXML(@NonNull final MultiVersionStreamReaderDelegate xsr)
+	{
+
+		try
+		{
+			final JAXBContext context = JAXBContext.newInstance(Document.class);
+			final Unmarshaller unmarshaller = context.createUnmarshaller();
+
+			// https://github.com/metasfresh/metasfresh/issues/1903
+			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.02 , camt.054.001.04 and amt.054.001.05
+			@SuppressWarnings("unchecked")
+			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(xsr);
+			final Document document = e.getValue();
+			return document.getBkToCstmrDbtCdtNtfctn();
+		}
+		catch (final JAXBException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+
+	}
+
+	/**
+	 * Marshals the given {@code} into an XML string and return that as the "key".
+	 * mkTrxKey for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	private static String mkTrxKey(@NonNull final EntryTransaction10 txDtl)
+	{
+		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
+		JAXB.marshal(txDtl, transactionKey);
+		try
+		{
+			return transactionKey.toString("UTF-8");
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			// won't happen because UTF-8 is supported
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	/**
+	 * asTimestamp for version 8<code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	private static Timestamp asTimestamp(@NonNull final DateAndDateTime2Choice valDt)
+	{
+		return new Timestamp(valDt.getDt().toGregorianCalendar().getTimeInMillis());
 	}
 
 	/**
@@ -137,7 +201,7 @@ public class ESRDataImporterCamt54v08
 		BigDecimal newCtrlQty = ctrlQty;
 		for (final EntryDetails9 ntryDtl : ntry.getNtryDtls())
 		{
-            if (ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL.compareTo(ctrlQty) == 0
+			if (ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL.compareTo(ctrlQty) == 0
 					|| ntryDtl.getBtch() == null || ntryDtl.getBtch().getNbOfTxs() == null)
 			{
 				// the current ntryDtl has no control qty, or an earlier one already didn't have a control qty
@@ -208,7 +272,6 @@ public class ESRDataImporterCamt54v08
 		}
 		return transactions;
 	}
-
 
 	/**
 	 * extractAmountAndType for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
@@ -301,58 +364,8 @@ public class ESRDataImporterCamt54v08
 		}
 	}
 
-	public static BankToCustomerDebitCreditNotificationV08 loadXML(@NonNull final MultiVersionStreamReaderDelegate xsr)
-	{
-		final Document document;
-		try
-		{
-			final JAXBContext context = JAXBContext.newInstance(Document.class);
-			final Unmarshaller unmarshaller = context.createUnmarshaller();
-
-			// https://github.com/metasfresh/metasfresh/issues/1903
-			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.02 , camt.054.001.04 and amt.054.001.05
-			@SuppressWarnings("unchecked")
-			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(xsr);
-			document = e.getValue();
-
-		}
-		catch (final JAXBException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-
-		return document.getBkToCstmrDbtCdtNtfctn();
-	}
-
 	private String getErrorMsg(@NonNull final AdMessageKey adMessage, @Nullable final Object... params)
 	{
-		return msgBL.getTranslatableMsgText(adMessage, params).translate(adLanguage);
-	}
-
-	/**
-	 * Marshals the given {@code} into an XML string and return that as the "key".
-	 * mkTrxKey for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
-	 */
-	private static String mkTrxKey(@NonNull final EntryTransaction10 txDtl)
-	{
-		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
-		JAXB.marshal(txDtl, transactionKey);
-		try
-		{
-			return transactionKey.toString("UTF-8");
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			// won't happen because UTF-8 is supported
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-	}
-
-	/**
-	 * asTimestamp for version 8<code>BankToCustomerDebitCreditNotificationV08</code>
-	 */
-	private static Timestamp asTimestamp(@NonNull final DateAndDateTime2Choice valDt)
-	{
-		return new Timestamp(valDt.getDt().toGregorianCalendar().getTimeInMillis());
+		return TranslatableStrings.adMessage(adMessage, params).translate(adLanguage);
 	}
 }

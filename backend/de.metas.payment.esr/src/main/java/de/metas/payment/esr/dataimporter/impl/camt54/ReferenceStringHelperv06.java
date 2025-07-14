@@ -45,6 +45,15 @@ import java.util.Optional;
 public class ReferenceStringHelperv06
 {
 
+	private static boolean isSupportedESRType(de.metas.payment.camt054_001_06.CreditorReferenceInformation2 cdtrRefInf)
+	{
+		return cdtrRefInf != null
+				&& cdtrRefInf.getTp() != null
+				&& cdtrRefInf.getTp().getCdOrPrtry() != null
+				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
+				|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
+	}
+
 	/**
 	 * extractAndSetEsrReference for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
 	 */
@@ -63,20 +72,11 @@ public class ReferenceStringHelperv06
 			if (fallback.isPresent())
 			{
 				trxBuilder.esrReferenceNumber(fallback.get());
-				trxBuilder.errorMsg(TranslatableStrings
-											.builder()
-											.appendADMessage(ESRConstants.MSG_AMBIGOUS_REFERENCE)
-											.build()
-											.translate(Env.getAD_Language())
-				);
+				trxBuilder.errorMsg(TranslatableStrings.adMessage(ESRConstants.MSG_AMBIGOUS_REFERENCE).translate((Env.getAD_Language())));
 			}
 			else
 			{
-				trxBuilder.errorMsg(TranslatableStrings
-											.builder()
-											.appendADMessage(ESRConstants.MSG_MISSING_ESR_REFERENCE)
-											.build()
-											.translate(Env.getAD_Language()));
+				trxBuilder.errorMsg(TranslatableStrings.adMessage(ESRConstants.MSG_MISSING_ESR_REFERENCE).translate((Env.getAD_Language())));
 			}
 		}
 	}
@@ -145,14 +145,5 @@ public class ReferenceStringHelperv06
 				.map(ESRType::ofNullableCode)
 				.findFirst();
 
-	}
-
-	private static boolean isSupportedESRType(de.metas.payment.camt054_001_06.CreditorReferenceInformation2 cdtrRefInf)
-	{
-		return cdtrRefInf != null
-				&& cdtrRefInf.getTp() != null
-				&& cdtrRefInf.getTp().getCdOrPrtry() != null
-				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
-				|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
 	}
 }

@@ -46,6 +46,15 @@ import java.util.Optional;
 public class ReferenceStringHelperv02
 {
 
+	private static boolean isSupportedESRType(de.metas.payment.camt054_001_02.CreditorReferenceInformation2 cdtrRefInf)
+	{
+		return cdtrRefInf != null
+				&& cdtrRefInf.getTp() != null
+				&& cdtrRefInf.getTp().getCdOrPrtry() != null
+				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
+				|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
+	}
+
 	/**
 	 * extractAndSetEsrReference for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
 	 */
@@ -64,19 +73,11 @@ public class ReferenceStringHelperv02
 			if (fallback.isPresent())
 			{
 				trxBuilder.esrReferenceNumber(fallback.get());
-				trxBuilder.errorMsg(TranslatableStrings
-											.builder()
-											.appendADMessage(ESRConstants.MSG_AMBIGOUS_REFERENCE)
-											.build()
-											.translate(Env.getAD_Language()));
+				trxBuilder.errorMsg(TranslatableStrings.adMessage(ESRConstants.MSG_AMBIGOUS_REFERENCE).translate((Env.getAD_Language())));
 			}
 			else
 			{
-				trxBuilder.errorMsg(TranslatableStrings
-											.builder()
-											.appendADMessage(ESRConstants.MSG_MISSING_ESR_REFERENCE)
-											.build()
-											.translate(Env.getAD_Language()));
+				trxBuilder.errorMsg(TranslatableStrings.adMessage(ESRConstants.MSG_MISSING_ESR_REFERENCE).translate((Env.getAD_Language())));
 			}
 		}
 	}
@@ -131,17 +132,9 @@ public class ReferenceStringHelperv02
 				.findFirst();
 	}
 
-	private static boolean isSupportedESRType(de.metas.payment.camt054_001_02.CreditorReferenceInformation2 cdtrRefInf)
-	{
-		return cdtrRefInf != null
-				&& cdtrRefInf.getTp() != null
-				&& cdtrRefInf.getTp().getCdOrPrtry() != null
-				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
-				|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
-	}
-
 	/**
 	 * extractReferenceFallback for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/2107
 	 */
 	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction2 txDtls)

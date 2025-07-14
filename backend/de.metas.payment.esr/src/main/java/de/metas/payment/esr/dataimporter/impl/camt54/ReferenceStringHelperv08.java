@@ -48,7 +48,6 @@ public class ReferenceStringHelperv08
 
 	/**
 	 * extractAndSetEsrReference for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
-	 *
 	 */
 	public void extractAndSetEsrReference(
 			@NonNull final EntryTransaction10 txDtls,
@@ -65,20 +64,11 @@ public class ReferenceStringHelperv08
 			if (fallback.isPresent())
 			{
 				trxBuilder.esrReferenceNumber(fallback.get());
-				trxBuilder.errorMsg(TranslatableStrings
-											.builder()
-											.appendADMessage(ESRConstants.MSG_AMBIGOUS_REFERENCE)
-											.build()
-											.translate(Env.getAD_Language())
-				);
+				trxBuilder.errorMsg(TranslatableStrings.adMessage(ESRConstants.MSG_AMBIGOUS_REFERENCE).translate((Env.getAD_Language())));
 			}
 			else
 			{
-				trxBuilder.errorMsg(TranslatableStrings
-											.builder()
-											.appendADMessage(ESRConstants.MSG_MISSING_ESR_REFERENCE)
-											.build()
-											.translate(Env.getAD_Language()));
+				trxBuilder.errorMsg(TranslatableStrings.adMessage(ESRConstants.MSG_MISSING_ESR_REFERENCE).translate((Env.getAD_Language())));
 			}
 		}
 	}
