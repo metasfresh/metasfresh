@@ -104,6 +104,12 @@ public class InvoicingParams implements IInvoicingParams
 		return false;
 	}
 
+	@Override
+	public boolean isCompleteInvoices()
+	{
+		return params.getParameterAsBool(PARA_IsCompleteInvoices);
+	}
+	
 	/**
 	 * Always returns {@code false}.
 	 */
