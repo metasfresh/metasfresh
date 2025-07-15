@@ -459,6 +459,10 @@
   padding-top: 10px;
 }
 
+.table-padding-bottom {
+  height: $table-padding-bottom-height;
+}
+
 .row-bordered-bottom td {
   border-bottom: 1px solid;
 }

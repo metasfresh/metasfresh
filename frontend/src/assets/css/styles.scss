@@ -602,7 +602,7 @@ body {
 @media only screen and (min-width: $breakpoint-md) {
   .desktop {
     .document-list-header {
-      min-height: 68px;
+      min-height: $document-list-header-min-height;
     }
   }
 }
