@@ -316,7 +316,6 @@ public class ESRDataImporterCamt54v06
 
 	public static BankToCustomerDebitCreditNotificationV06 loadXML(@NonNull final MultiVersionStreamReaderDelegate xsr)
 	{
-		final Document document;
 		try
 		{
 			final JAXBContext context = JAXBContext.newInstance(Document.class);
@@ -326,15 +325,13 @@ public class ESRDataImporterCamt54v06
 			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.02 , camt.054.001.04 and amt.054.001.05
 			@SuppressWarnings("unchecked")
 			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(xsr);
-			document = e.getValue();
-
+			final Document document = e.getValue();
+			return document.getBkToCstmrDbtCdtNtfctn();
 		}
 		catch (final JAXBException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-
-		return document.getBkToCstmrDbtCdtNtfctn();
 	}
 
 	private String getErrorMsg(@NonNull final AdMessageKey adMessage, @Nullable final Object... params)
