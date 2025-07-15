@@ -179,7 +179,7 @@
     &:focus {
       outline-color: $brand-font-color;
       outline-width: 1px;
-      outline-offset: 0px;
+      outline-offset: 0;
       outline-style: inset;
     }
 
@@ -334,7 +334,7 @@
 }
 
 .table-read-only *:focus {
-  outline-width: 0px;
+  outline-width: 0;
 }
 
 .table-filter-line {
