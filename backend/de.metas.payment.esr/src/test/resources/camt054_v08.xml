@@ -115,9 +115,12 @@
                             <Strd>
                                 <CdtrRefInf>
                                     <Tp>
-                                        <CdOrPrtry>
-                                            <Prtry>QRR</Prtry>
-                                        </CdOrPrtry>
+                                        <!--
+                                        comment out the marker that tells us we are dealing with an ESR Reference
+                                            <CdOrPrtry>
+                                                <Prtry>QRR</Prtry>
+                                            </CdOrPrtry>
+                                        -->
                                     </Tp>
                                     <Ref>100760109103380989047265478</Ref>
                                 </CdtrRefInf>
