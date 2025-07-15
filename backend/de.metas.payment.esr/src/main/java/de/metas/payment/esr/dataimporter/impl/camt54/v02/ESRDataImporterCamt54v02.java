@@ -93,10 +93,8 @@ public class ESRDataImporterCamt54v02
 {
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	@Nullable
-	private final CurrencyCode bankAccountCurrencyCode;
-	@NonNull
-	private final String adLanguage;
+	@Nullable private final CurrencyCode bankAccountCurrencyCode;
+	@NonNull private final String adLanguage;
 
 	@Builder
 	private ESRDataImporterCamt54v02(
@@ -109,7 +107,6 @@ public class ESRDataImporterCamt54v02
 
 	public static BankToCustomerDebitCreditNotificationV02 loadXML(@NonNull final MultiVersionStreamReaderDelegate xsr)
 	{
-		final Document document;
 		try
 		{
 			// https://stackoverflow.com/questions/20410202/jaxb-unmarshalling-not-working-expected-elements-are-none
@@ -119,15 +116,14 @@ public class ESRDataImporterCamt54v02
 
 			@SuppressWarnings("unchecked")
 			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(xsr);
-			document = e.getValue();
+			final Document document = e.getValue();
+			return document.getBkToCstmrDbtCdtNtfctn();
 
 		}
 		catch (final JAXBException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-
-		return document.getBkToCstmrDbtCdtNtfctn();
 	}
 
 	/**
