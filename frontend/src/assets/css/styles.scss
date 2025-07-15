@@ -34,6 +34,7 @@
 @import './UserDropdown.scss';
 @import './spinner.scss';
 @import './screen-freeze.scss';
+@import './sidelist.scss';
 
 @import './intro.scss';
 
@@ -207,87 +208,6 @@ body {
   width: 100%;
   height: 100%;
   z-index: $z-index-backdrop;
-}
-
-.order-list-panel {
-  position: fixed;
-  display: none;
-  top: 96px;
-  height: calc(100% - 96px);
-  width: 472px;
-  background-color: #fff;
-  border-left: 1px solid $brand-border-color;
-  z-index: $z-index-header-menu;
-  right: 0;
-  bottom: 0;
-  overflow-y: scroll;
-  overflow-x: hidden;
-}
-
-@media (max-width: $breakpoint) {
-  .order-list-panel {
-    width: 100%;
-    height: calc(100% - 80px);
-  }
-}
-
-.order-list-panel-open {
-  display: block;
-}
-
-.order-list-panel-header {
-  padding-left: 10px;
-}
-
-.order-list-panel-icon {
-  margin: 12px 5px;
-}
-
-.order-list-panel-body {
-  font-size: 12px;
-}
-
-.order-list-panel-body .subheader-item,
-.order-list-panel-body .subheader-caption {
-  font-size: 14px;
-}
-
-.order-list-nav {
-  position: fixed;
-  z-index: $z-index-header-menu;
-  width: 472px;
-  background: #fff;
-  top: 55px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  border-bottom: 1px solid $brand-light-color;
-}
-
-.order-list-btn {
-  flex: 1;
-  text-align: center;
-  font-size: 1rem;
-  padding: .5rem 0;
-  cursor: pointer;
-}
-
-.order-list-btn.active,
-.order-list-btn.active:hover {
-  color: #fff;
-  background-color: $brand-light-color;
-}
-
-.order-list-btn:hover {
-  background-color: $brand-super-light-color;
-}
-
-.order-list-btn:not(:last-child) {
-  border-right: 1px solid $brand-light-color;
-}
-
-.order-list-loader {
-  margin: 1rem;
 }
 
 .sm {
