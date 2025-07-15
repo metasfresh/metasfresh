@@ -1,10 +1,5 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.compiere.util.Env;
-
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
@@ -14,6 +9,10 @@ import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.util.Env;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -74,6 +73,7 @@ final class InvoiceJsonConverters
 		invoicingParams.setPOReference(request.getPoReference());
 		invoicingParams.setSupplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds());
 		invoicingParams.setUpdateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice());
+		invoicingParams.setCompleteInvoices(request.getCompleteInvoices());
 		return invoicingParams;
 	}
 

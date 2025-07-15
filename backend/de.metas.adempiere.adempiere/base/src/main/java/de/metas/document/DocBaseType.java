@@ -2,10 +2,14 @@ package de.metas.document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
@@ -84,11 +88,19 @@ public enum DocBaseType implements ReferenceListAwareEnum
 
 	public boolean isSOTrx()
 	{
-		return SalesOrder.equals(this)
-				|| Shipment.equals(this)
-				|| SalesInvoice.equals(this)
-				|| SalesCreditMemo.equals(this)
-				|| ARReceipt.equals(this);
+		return isSalesOrder()
+				|| isShipment()
+				|| isSalesInvoice()
+				|| isSalesCreditMemo()
+				|| isARReceipt();
+	}
+
+	public String getTableName()
+	{
+		if(isShipment() || isReceipt() || isARReceipt()) return I_M_InOut.Table_Name;
+		else if(isSalesOrder() || isPurchaseOrder()) return I_C_Order.Table_Name;
+		else if(isSalesInvoice() || isPurchaseInvoice() || isPurchaseCreditMemo()) return I_C_Invoice.Table_Name;
+		else throw new AdempiereException("No known tableName found for DocBaseType " + code);
 	}
 
 	public boolean isSalesOrder() {return SalesOrder.equals(this);}
@@ -106,6 +118,8 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	public boolean isDunningDoc(){return DunningDoc.equals((this));}
 
 	public boolean isShipment(){ return Shipment.equals(this); }
+
+	public boolean isARReceipt(){ return ARReceipt.equals(this); }
 
 	public boolean isReceipt(){ return MaterialReceipt.equals(this); }
 

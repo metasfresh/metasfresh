@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for I_BPartner
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 700975569L;
+	private static final long serialVersionUID = -542810341L;
 
     /** Standard Constructor */
     public X_I_BPartner (final Properties ctx, final int I_BPartner_ID, @Nullable final String trxName)
@@ -1079,6 +1079,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public void setIsSetPrintFormat_C_BPartner_Location (final boolean IsSetPrintFormat_C_BPartner_Location)
+	{
+		set_Value (COLUMNNAME_IsSetPrintFormat_C_BPartner_Location, IsSetPrintFormat_C_BPartner_Location);
+	}
+
+	@Override
+	public boolean isSetPrintFormat_C_BPartner_Location() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSetPrintFormat_C_BPartner_Location);
+	}
+
+	@Override
 	public void setIsShipTo (final boolean IsShipTo)
 	{
 		set_Value (COLUMNNAME_IsShipTo, IsShipTo);
@@ -1510,6 +1522,117 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPricingSystem_Value() 
 	{
 		return get_ValueAsString(COLUMNNAME_PricingSystem_Value);
+	}
+
+	/** 
+	 * PrintFormat_DocBaseType AD_Reference_ID=183
+	 * Reference name: C_DocType DocBaseType
+	 */
+	public static final int PRINTFORMAT_DOCBASETYPE_AD_Reference_ID=183;
+	/** GLJournal = GLJ */
+	public static final String PRINTFORMAT_DOCBASETYPE_GLJournal = "GLJ";
+	/** GLDocument = GLD */
+	public static final String PRINTFORMAT_DOCBASETYPE_GLDocument = "GLD";
+	/** APInvoice = API */
+	public static final String PRINTFORMAT_DOCBASETYPE_APInvoice = "API";
+	/** APPayment = APP */
+	public static final String PRINTFORMAT_DOCBASETYPE_APPayment = "APP";
+	/** ARInvoice = ARI */
+	public static final String PRINTFORMAT_DOCBASETYPE_ARInvoice = "ARI";
+	/** ARReceipt = ARR */
+	public static final String PRINTFORMAT_DOCBASETYPE_ARReceipt = "ARR";
+	/** SalesOrder = SOO */
+	public static final String PRINTFORMAT_DOCBASETYPE_SalesOrder = "SOO";
+	/** ARProFormaInvoice = ARF */
+	public static final String PRINTFORMAT_DOCBASETYPE_ARProFormaInvoice = "ARF";
+	/** MaterialDelivery = MMS */
+	public static final String PRINTFORMAT_DOCBASETYPE_MaterialDelivery = "MMS";
+	/** MaterialReceipt = MMR */
+	public static final String PRINTFORMAT_DOCBASETYPE_MaterialReceipt = "MMR";
+	/** MaterialMovement = MMM */
+	public static final String PRINTFORMAT_DOCBASETYPE_MaterialMovement = "MMM";
+	/** PurchaseOrder = POO */
+	public static final String PRINTFORMAT_DOCBASETYPE_PurchaseOrder = "POO";
+	/** PurchaseRequisition = POR */
+	public static final String PRINTFORMAT_DOCBASETYPE_PurchaseRequisition = "POR";
+	/** MaterialPhysicalInventory = MMI */
+	public static final String PRINTFORMAT_DOCBASETYPE_MaterialPhysicalInventory = "MMI";
+	/** APCreditMemo = APC */
+	public static final String PRINTFORMAT_DOCBASETYPE_APCreditMemo = "APC";
+	/** ARCreditMemo = ARC */
+	public static final String PRINTFORMAT_DOCBASETYPE_ARCreditMemo = "ARC";
+	/** BankStatement = CMB */
+	public static final String PRINTFORMAT_DOCBASETYPE_BankStatement = "CMB";
+	/** CashJournal = CMC */
+	public static final String PRINTFORMAT_DOCBASETYPE_CashJournal = "CMC";
+	/** PaymentAllocation = CMA */
+	public static final String PRINTFORMAT_DOCBASETYPE_PaymentAllocation = "CMA";
+	/** MatchInvoice = MXI */
+	public static final String PRINTFORMAT_DOCBASETYPE_MatchInvoice = "MXI";
+	/** MatchPO = MXP */
+	public static final String PRINTFORMAT_DOCBASETYPE_MatchPO = "MXP";
+	/** ProjectIssue = PJI */
+	public static final String PRINTFORMAT_DOCBASETYPE_ProjectIssue = "PJI";
+	/** MaintenanceOrder = MOF */
+	public static final String PRINTFORMAT_DOCBASETYPE_MaintenanceOrder = "MOF";
+	/** ManufacturingOrder = MOP */
+	public static final String PRINTFORMAT_DOCBASETYPE_ManufacturingOrder = "MOP";
+	/** QualityOrder = MQO */
+	public static final String PRINTFORMAT_DOCBASETYPE_QualityOrder = "MQO";
+	/** Payroll = HRP */
+	public static final String PRINTFORMAT_DOCBASETYPE_Payroll = "HRP";
+	/** DistributionOrder = DOO */
+	public static final String PRINTFORMAT_DOCBASETYPE_DistributionOrder = "DOO";
+	/** ManufacturingCostCollector = MCC */
+	public static final String PRINTFORMAT_DOCBASETYPE_ManufacturingCostCollector = "MCC";
+	/** Gehaltsrechnung (Angestellter) = AEI */
+	public static final String PRINTFORMAT_DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
+	/** Interne Rechnung (Lieferant) = AVI */
+	public static final String PRINTFORMAT_DOCBASETYPE_InterneRechnungLieferant = "AVI";
+	/** Speditionsauftrag/Ladeliste = MST */
+	public static final String PRINTFORMAT_DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** CustomerContract = CON */
+	public static final String PRINTFORMAT_DOCBASETYPE_CustomerContract = "CON";
+	/** DunningDoc = DUN */
+	public static final String PRINTFORMAT_DOCBASETYPE_DunningDoc = "DUN";
+	/** Shipment Declaration = SDD */
+	public static final String PRINTFORMAT_DOCBASETYPE_ShipmentDeclaration = "SDD";
+	/** Shipment Declaration Correction = SDC */
+	public static final String PRINTFORMAT_DOCBASETYPE_ShipmentDeclarationCorrection = "SDC";
+	/** Customs Invoice = CUI */
+	public static final String PRINTFORMAT_DOCBASETYPE_CustomsInvoice = "CUI";
+	/** ServiceRepairOrder = MRO */
+	public static final String PRINTFORMAT_DOCBASETYPE_ServiceRepairOrder = "MRO";
+	/** Remittance Advice = RMA */
+	public static final String PRINTFORMAT_DOCBASETYPE_RemittanceAdvice = "RMA";
+	/** BOM & Formula = BOM */
+	public static final String PRINTFORMAT_DOCBASETYPE_BOMFormula = "BOM";
+	/** Cost Revaluation = CRD */
+	public static final String PRINTFORMAT_DOCBASETYPE_CostRevaluation = "CRD";
+	/** AnalysisReport = QMA */
+	public static final String PRINTFORMAT_DOCBASETYPE_AnalysisReport = "QMA";
+	@Override
+	public void setPrintFormat_DocBaseType (final @Nullable java.lang.String PrintFormat_DocBaseType)
+	{
+		set_Value (COLUMNNAME_PrintFormat_DocBaseType, PrintFormat_DocBaseType);
+	}
+
+	@Override
+	public java.lang.String getPrintFormat_DocBaseType() 
+	{
+		return get_ValueAsString(COLUMNNAME_PrintFormat_DocBaseType);
+	}
+
+	@Override
+	public void setPrintFormat_DocumentCopies_Override (final int PrintFormat_DocumentCopies_Override)
+	{
+		set_Value (COLUMNNAME_PrintFormat_DocumentCopies_Override, PrintFormat_DocumentCopies_Override);
+	}
+
+	@Override
+	public int getPrintFormat_DocumentCopies_Override() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PrintFormat_DocumentCopies_Override);
 	}
 
 	@Override
