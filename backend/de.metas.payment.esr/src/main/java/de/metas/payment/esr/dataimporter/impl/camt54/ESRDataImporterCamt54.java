@@ -1,12 +1,10 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
-import ch.qos.logback.classic.Level;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
 import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
@@ -17,13 +15,11 @@ import de.metas.payment.esr.dataimporter.impl.camt54.v02.ESRDataImporterCamt54v0
 import de.metas.payment.esr.dataimporter.impl.camt54.v06.ESRDataImporterCamt54v06;
 import de.metas.payment.esr.dataimporter.impl.camt54.v08.ESRDataImporterCamt54v08;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLInputFactory;
@@ -76,8 +72,6 @@ import java.util.Properties;
  */
 public class ESRDataImporterCamt54 implements IESRDataImporter
 {
-	private static final Logger logger = LogManager.getLogger(ESRDataImporterCamt54.class);
-
 	@NonNull private final InputStream input;
 	@Nullable private final CurrencyCode bankAccountCurrencyCode;
 	@NonNull private final String adLanguage;
@@ -199,10 +193,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	private ESRStatement importCamt54v02(final MultiVersionStreamReaderDelegate mxsr)
 	{
 		final BankToCustomerDebitCreditNotificationV02 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v02.loadXML(mxsr);
-		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
-		}
 
 		return ESRDataImporterCamt54v02.builder()
 				.bankAccountCurrencyCode(bankAccountCurrencyCode)
@@ -214,10 +204,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	private ESRStatement importCamt54v06(final MultiVersionStreamReaderDelegate mxsr)
 	{
 		final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v06.loadXML(mxsr);
-		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
-		}
 
 		return ESRDataImporterCamt54v06.builder()
 				.bankAccountCurrencyCode(bankAccountCurrencyCode)
@@ -229,10 +215,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	private ESRStatement importCamt54v08(final MultiVersionStreamReaderDelegate mxsr)
 	{
 		final BankToCustomerDebitCreditNotificationV08 bkToCstmrDbtCdtNtfctn = ESRDataImporterCamt54v08.loadXML(mxsr);
-		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
-		}
 
 		return ESRDataImporterCamt54v08.builder()
 				.bankAccountCurrencyCode(bankAccountCurrencyCode)
