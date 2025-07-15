@@ -432,7 +432,6 @@
 }
 
 .table-padding-bottom {
-  height: $table-padding-bottom-height;
 }
 
 .row-bordered-bottom td {
@@ -753,18 +752,23 @@ $indent-collapsible-offset-lg: 24px;
  * NOTE: we make sticky headers only for main view because for modal views or included tabs we need more changes => condider it missing feature for now 
  */
 .main-view {
-  .document-list-table {
-    max-height: calc(100vh - 210px); /* having a fixed width is an important requirement for sticky headers */
-    overflow-y: auto;
+  .table-padding-top {
+    .document-list-table {
+      max-height: calc(100vh - 210px); /* having a fixed width is an important requirement for sticky headers */
+      overflow-y: auto;
 
-    .table {
-      thead {
-        th {
-          position: sticky;
-          top: 0;
-          z-index: 2; /* Ensures header stays above rows */
+      .table {
+        thead {
+          th {
+            position: sticky;
+            top: 0;
+            z-index: 2; /* Ensures header stays above rows */
+          }
         }
       }
     }
+  }
+  .table-padding-bottom {
+    height: 65px;
   }
 }
