@@ -33,7 +33,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class OrderLineBLTest
 {
@@ -83,6 +83,7 @@ public class OrderLineBLTest
 		order.setC_Currency_ID(currency.getRepoId());
 		order.setC_BPartner_ID(10);
 		order.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 11, 21)));
+		order.setDateOrdered(TimeUtil.asTimestamp(LocalDate.of(2019, 11, 21)));
 		InterfaceWrapperHelper.save(order);
 
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(ctx, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
@@ -122,6 +123,8 @@ public class OrderLineBLTest
 		orderline.setPrice_UOM_ID(priceUom.getC_UOM_ID());
 
 		orderline.setC_UOM_ID(uom.getC_UOM_ID());
+		orderline.setDatePromised(order.getDatePromised());
+		orderline.setDateOrdered(order.getDateOrdered());
 
 		return orderline;
 	}
