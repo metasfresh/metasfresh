@@ -73,6 +73,7 @@ final class HuTraceQueryCreator
 					.put(I_M_HU_Trace.COLUMNNAME_VHUStatus, HuTraceQueryCreator::updateVhuStatusFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_EventTime, HuTraceQueryCreator::updateEventTimeFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_LotNumber, HuTraceQueryCreator::updateLotNumberFromParameter)
+					.put(I_M_HU_Trace.COLUMNNAME_M_HU_Value, HuTraceQueryCreator::updateHuValueFromParameter)
 					.build();
 
 	public static HUTraceEventQuery createTraceQueryFromDocumentFilter(@NonNull final DocumentFilter documentFilter)

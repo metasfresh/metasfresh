@@ -396,8 +396,7 @@ public class RetrieveDbRecordsUtil
 		static IQueryBuilder<I_M_HU_Trace> createQueryBuilderOrNull(@NonNull final HUTraceEventQuery query)
 		{
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
-			final IQueryBuilder<I_M_HU_Trace> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Trace.class)
-					.addOnlyActiveRecordsFilter();
+			final IQueryBuilder<I_M_HU_Trace> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Trace.class);
 
 			boolean queryIsEmpty = updateQueryBuilderForQueryEventTime(queryBuilder, query);
 
