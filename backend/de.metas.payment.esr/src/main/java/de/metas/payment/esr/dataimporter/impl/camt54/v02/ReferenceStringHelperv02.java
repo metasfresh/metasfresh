@@ -7,7 +7,6 @@ import de.metas.payment.camt054_001_02.StructuredRemittanceInformation7;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.ESRType;
-import de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54;
 import lombok.NonNull;
 import org.compiere.util.Env;
 
@@ -39,9 +38,6 @@ import java.util.Optional;
 /**
  * This little helper class has the job of getting the (ESR) reference and passing it to an {@link ESRTransactionBuilder}.
  * There is also some fallback and error messages to be done in case of some not-so-happy scenarios.
- * <p>
- * Note: codebeat keeps complaining about how spagetti {@link ESRDataImporterCamt54} is, so from time to time I extract something :-D.
- *
  * @author metas-dev <dev@metasfresh.com>
  */
 public class ReferenceStringHelperv02
