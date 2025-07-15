@@ -6,13 +6,13 @@ import classnames from 'classnames';
 import { updateUri } from '../utils';
 import { setBreadcrumbByWindowId } from '../actions/MenuActions';
 import Container from '../components/Container';
-import DocumentList from './DocumentList';
+import DocumentListContainer from './DocumentListContainer';
 import Overlay from '../components/app/Overlay';
 
 const EMPTY_ARRAY = [];
 const EMPTY_OBJECT = {};
 
-class DocList extends PureComponent {
+class DocumentListContainerWrapper extends PureComponent {
   state = {};
 
   static getDerivedStateFromProps(props, state) {
@@ -78,11 +78,11 @@ class DocList extends PureComponent {
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
         <div
-          className={classnames('document-lists-wrapper', {
+          className={classnames('document-lists-wrapper', 'main-view', {
             'modal-overlay': rawModal.visible,
           })}
         >
-          <DocumentList
+          <DocumentListContainer
             type="grid"
             updateUri={this.updateUriCallback}
             windowId={windowId}
@@ -106,7 +106,7 @@ class DocList extends PureComponent {
             includedView.viewId &&
             !rawModal.visible &&
             !modal.visible && (
-              <DocumentList
+              <DocumentListContainer
                 type="includedView"
                 windowId={includedView.windowId}
                 defaultViewId={includedView.viewId}
@@ -133,7 +133,7 @@ class DocList extends PureComponent {
   }
 }
 
-DocList.propTypes = {
+DocumentListContainerWrapper.propTypes = {
   includedView: PropTypes.object,
   modal: PropTypes.object.isRequired,
   overlay: PropTypes.object,
@@ -157,4 +157,6 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, { setBreadcrumbByWindowId })(DocList);
+export default connect(mapStateToProps, { setBreadcrumbByWindowId })(
+  DocumentListContainerWrapper
+);
