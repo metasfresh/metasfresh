@@ -756,3 +756,25 @@ $indent-collapsible-offset-lg: 24px;
   float: left;
   width: 10%;
 }
+
+
+/**********************************************************************
+ * Main View -> Documents List: make headers sticky
+ * NOTE: we make sticky headers only for main view because for modal views or included tabs we need more changes => condider it missing feature for now 
+ */
+.main-view {
+  .document-list-table {
+    max-height: calc(100vh - 210px); /* having a fixed width is an important requirement for sticky headers */
+    overflow-y: auto;
+
+    .table {
+      thead {
+        th {
+          position: sticky;
+          top: 0;
+          z-index: 2; /* Ensures header stays above rows */
+        }
+      }
+    }
+  }
+}

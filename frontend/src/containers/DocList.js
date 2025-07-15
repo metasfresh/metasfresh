@@ -78,7 +78,7 @@ class DocList extends PureComponent {
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
         <div
-          className={classnames('document-lists-wrapper', {
+          className={classnames('document-lists-wrapper', 'main-view', {
             'modal-overlay': rawModal.visible,
           })}
         >
