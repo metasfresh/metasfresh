@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-leichundmehl
+ * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,21 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
+package de.metas.camel.externalsystems.shopware6.stock;
 
-import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
+import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.common.externalsystem.JsonAvailableForSales;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-import java.io.IOException;
-import java.io.Writer;
-
-public class NoEscapeHandler implements CharacterEscapeHandler
+@Value
+@Builder
+public class ExportStockRouteContext
 {
-	private NoEscapeHandler()
-	{
-		super();
-	}
+	@NonNull
+	ShopwareClient shopwareClient;
 
-	public static final NoEscapeHandler INSTANCE = new NoEscapeHandler();
-
-	public void escape(final char[] buf, final int start, final int len, final boolean isAttValue, final Writer out) throws IOException
-	{
-		for (int i = start; i < start + len; i++)
-		{
-			out.write(buf[i]);
-		}
-		return;
-	}
+	@NonNull
+	JsonAvailableForSales jsonAvailableForSales;
 }
-

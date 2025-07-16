@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-leichundmehl
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -134,12 +134,12 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
 
 		prepareRouteForTesting(mockRetrievePPOrderProcessor,
-							   mockRetrieveProductInfoProcessor,
-							   mockCustomQueryProcessor,
-							   mockTCPProcessor,
-							   mockFileProcessor,
-							   mockLogMessageRequestProcessor,
-							   mockJsonAttachmentRequestProcessor);
+				mockRetrieveProductInfoProcessor,
+				mockCustomQueryProcessor,
+				mockTCPProcessor,
+				mockFileProcessor,
+				mockLogMessageRequestProcessor,
+				mockJsonAttachmentRequestProcessor);
 
 		context.start();
 
@@ -168,8 +168,9 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		assertThat(mockCustomQueryProcessor.called).isEqualTo(0);
 		assertThat(mockLogMessageRequestProcessor.called).isEqualTo(1);
 		assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
 
+		MockEndpoint.assertIsSatisfied(context);
+		
 		//validate DispatchMessageRequest
 		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
 		final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
@@ -213,12 +214,12 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
 
 		prepareRouteForTesting(mockRetrievePPOrderProcessor,
-							   mockRetrieveProductInfoProcessor,
-							   mockCustomQueryProcessor,
-							   mockTCPProcessor,
-							   mockFileProcessor,
-							   mockLogMessageRequestProcessor,
-							   mockJsonAttachmentRequestProcessor);
+				mockRetrieveProductInfoProcessor,
+				mockCustomQueryProcessor,
+				mockTCPProcessor,
+				mockFileProcessor,
+				mockLogMessageRequestProcessor,
+				mockJsonAttachmentRequestProcessor);
 
 		context.start();
 
@@ -243,7 +244,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		assertThat(mockCustomQueryProcessor.called).isEqualTo(0);
 		assertThat(mockLogMessageRequestProcessor.called).isEqualTo(0);
 		assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(0);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 
 		//validate DispatchMessageRequest
 		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
@@ -268,12 +269,12 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
 
 		prepareRouteForTesting(mockRetrievePPOrderProcessor,
-							   mockRetrieveProductInfoProcessor,
-							   mockCustomQueryProcessor,
-							   mockTCPProcessor,
-							   mockFileProcessor,
-							   mockLogMessageRequestProcessor,
-							   mockJsonAttachmentRequestProcessor);
+				mockRetrieveProductInfoProcessor,
+				mockCustomQueryProcessor,
+				mockTCPProcessor,
+				mockFileProcessor,
+				mockLogMessageRequestProcessor,
+				mockJsonAttachmentRequestProcessor);
 
 		context.start();
 
@@ -306,7 +307,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		assertThat(mockCustomQueryProcessor.called).isEqualTo(1);
 		assertThat(mockLogMessageRequestProcessor.called).isEqualTo(1);
 		assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 
 		//validate DispatchMessageRequest
 		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_REQUEST_CUSTOM_QUERY_PROCESS);
@@ -351,12 +352,12 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor = new MockJsonAttachmentRequestProcessor();
 
 		prepareRouteForTesting(mockRetrievePPOrderProcessor,
-							   mockRetrieveProductInfoProcessor,
-							   mockCustomQueryProcessor,
-							   mockTCPProcessor,
-							   mockFileProcessor,
-							   mockLogMessageRequestProcessor,
-							   mockJsonAttachmentRequestProcessor);
+				mockRetrieveProductInfoProcessor,
+				mockCustomQueryProcessor,
+				mockTCPProcessor,
+				mockFileProcessor,
+				mockLogMessageRequestProcessor,
+				mockJsonAttachmentRequestProcessor);
 
 		context.start();
 
@@ -384,7 +385,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		softly.assertThat(mockLogMessageRequestProcessor.called).as("mockLogMessageRequestProcessor").isEqualTo(1);
 		softly.assertThat(mockJsonAttachmentRequestProcessor.called).as("mockJsonAttachmentRequestProcessor").isEqualTo(1);
 		softly.assertAll();
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 
 		//validate DispatchMessageRequest
 		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST_STORE_PLU_FILE_TO_DISK);
@@ -404,42 +405,42 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 			@NonNull final MockJsonAttachmentRequestProcessor mockJsonAttachmentRequestProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, EXPORT_PPORDER_ROUTE_ID,
-							  advice -> {
-								  advice.interceptSendToEndpoint("direct:" + MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_RETRIEVE_PP_ORDER_ENDPOINT)
-										  .process(mockRetrievePPOrderProcessor);
+				advice -> {
+					advice.interceptSendToEndpoint("direct:" + MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_RETRIEVE_PP_ORDER_ENDPOINT)
+							.process(mockRetrievePPOrderProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_RETRIEVE_PRODUCT_INFO_ENDPOINT)
-										  .process(mockRetrieveProductInfoProcessor);
+					advice.interceptSendToEndpoint("direct:" + MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_RETRIEVE_PRODUCT_INFO_ENDPOINT)
+							.process(mockRetrieveProductInfoProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + MF_AD_Process_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_INVOKE_PROCESS_ENDPOINT)
-										  .process(mockCustomQueryProcessor);
+					advice.interceptSendToEndpoint("direct:" + MF_AD_Process_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_INVOKE_PROCESS_ENDPOINT)
+							.process(mockCustomQueryProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + SEND_TO_TCP_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_TCP_ENDPOINT)
-										  .process(mockTCPProcessor);
+					advice.interceptSendToEndpoint("direct:" + SEND_TO_TCP_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_TCP_ENDPOINT)
+							.process(mockTCPProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + SEND_TO_FILE_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_FILE_ENDPOINT)
-										  .process(mockFileProcessor);
+					advice.interceptSendToEndpoint("direct:" + SEND_TO_FILE_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_FILE_ENDPOINT)
+							.process(mockFileProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + MF_LOG_MESSAGE_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_LOG_MESSAGE_ENDPOINT)
-										  .process(mockLogMessageRequestProcessor);
+					advice.interceptSendToEndpoint("direct:" + MF_LOG_MESSAGE_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_LOG_MESSAGE_ENDPOINT)
+							.process(mockLogMessageRequestProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_ATTACHMENT_ENDPOINT)
-										  .process(mockJsonAttachmentRequestProcessor);
-							  });
+					advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_ATTACHMENT_ENDPOINT)
+							.process(mockJsonAttachmentRequestProcessor);
+				});
 	}
 
 	private static class MockRetrievePPOrderProcessor implements Processor

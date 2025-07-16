@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -138,7 +138,7 @@ public class BPartnerAttachmentsRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + BPartnerAttachmentsRouteBuilder.ATTACH_FILE_TO_BPARTNER_ROUTE_ID, requestBodyAsString);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockRetrieveExternalSysInfoEP.called).isEqualTo(1);
 		assertThat(mockAttachFileEP.called).isEqualTo(1);
 	}
