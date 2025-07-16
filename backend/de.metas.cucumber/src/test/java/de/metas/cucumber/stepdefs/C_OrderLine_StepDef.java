@@ -278,10 +278,10 @@ public class C_OrderLine_StepDef
 
 					final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 
-					final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_M_Product_ID);
 					final Integer expectedProductId = productTable.getOptional(productIdentifier)
 							.map(I_M_Product::getM_Product_ID)
-							.orElseGet(() -> Integer.parseInt(productIdentifier));
+							.orElseGet(productIdentifier::getAsInt);
 
 					final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 
@@ -504,9 +504,11 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
 		}
 
-		taxCategoryIdentifier.flatMap(taxCategoryTable::getOptional)
+		final Integer taxCategoryId = taxCategoryIdentifier.flatMap(taxCategoryTable::getOptional)
 				.map(I_C_TaxCategory::getC_TaxCategory_ID)
-				.ifPresent(taxCategoryId -> assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId));
+				.orElseGet(() -> taxCategoryIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
+
+		assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
 
 		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
 		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered);

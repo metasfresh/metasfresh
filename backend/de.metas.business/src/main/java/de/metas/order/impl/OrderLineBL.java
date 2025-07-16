@@ -89,7 +89,6 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -969,7 +968,7 @@ public class OrderLineBL implements IOrderLineBL
 
 			final OrgId orgId = OrgId.ofRepoId(olRecord.getAD_Org_ID());
 			final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
-			final ZonedDateTime orderDate = Objects.requireNonNull(asZonedDateTime(olRecord.getDateOrdered(), orgZoneId));
+			final ZonedDateTime orderDate = asZonedDateTimeNonNull(olRecord.getDateOrdered(), orgZoneId);
 
 			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
