@@ -6,15 +6,12 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.common.JsonWorkPackageStatus;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
-import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
-import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
@@ -24,8 +21,6 @@ import de.metas.rest_api.invoicecandidates.response.JsonInvoiceStatus;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v1.invoice.impl.InvoiceService;
 import de.metas.util.Services;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
-import de.metas.util.web.exception.InvalidEntityException;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
@@ -66,42 +61,34 @@ public class CheckInvoiceCandidatesStatusService
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	private final InvoiceService invoicePDFService;
+	private final InvoiceJsonConverters invoiceJsonConverters;
 
-	public CheckInvoiceCandidatesStatusService(@NonNull final InvoiceService invoicePDFService)
+	public CheckInvoiceCandidatesStatusService(
+			@NonNull final InvoiceService invoicePDFService,
+			@NonNull final InvoiceJsonConverters invoiceJsonConverters)
 	{
 
 		this.invoicePDFService = invoicePDFService;
+		this.invoiceJsonConverters = invoiceJsonConverters;
 	}
 
+	@NonNull
 	public JsonCheckInvoiceCandidatesStatusResponse getStatusForInvoiceCandidates(
 			@NonNull final JsonCheckInvoiceCandidatesStatusRequest request)
 	{
-		if (request.getInvoiceCandidates().isEmpty())
-		{
-			throw new InvalidEntityException(TranslatableStrings.constant("The request's invoiceCandidates array may not be empty"));
-		}
-		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
+		final InvoiceCandidateMultiQuery multiQuery = invoiceJsonConverters.fromJson(request.getInvoiceCandidates());
 
-		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
-		for (final ExternalHeaderIdWithExternalLineIds externalId : headerAndLineIds)
-		{
-			final InvoiceCandidateQuery query = InvoiceCandidateQuery.builder()
-					.externalIds(externalId)
-					.build();
-			multiQuery.query(query);
-		}
 		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO
-				.getByQuery(multiQuery.build());
+				.getByQuery(multiQuery);
 
 		final List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidates = retrieveStatus(invoiceCandidateRecords);
 
-		final JsonCheckInvoiceCandidatesStatusResponse result = JsonCheckInvoiceCandidatesStatusResponse.builder()
+		return JsonCheckInvoiceCandidatesStatusResponse.builder()
 				.invoiceCandidates(invoiceCandidates)
 				.build();
-
-		return result;
 	}
 
+	@NonNull
 	private List<JsonCheckInvoiceCandidatesStatusResponseItem> retrieveStatus(final List<I_C_Invoice_Candidate> invoiceCandidateRecords)
 	{
 		final List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidatesStatus = new ArrayList<>();

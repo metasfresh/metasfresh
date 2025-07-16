@@ -1,29 +1,24 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
-import de.metas.i18n.TranslatableStrings;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
-import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
-import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem.JsonCloseInvoiceCandidatesResponseItemBuilder;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Services;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -50,35 +45,28 @@ import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 public class CloseInvoiceCandidatesService
 {
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+	private final InvoiceJsonConverters invoiceJsonConverters;
+
+	public CloseInvoiceCandidatesService(@NonNull final InvoiceJsonConverters invoiceJsonConverters)
+	{
+		this.invoiceJsonConverters = invoiceJsonConverters;
+	}
 
 	public JsonCloseInvoiceCandidatesResponse closeInvoiceCandidates(final JsonCloseInvoiceCandidatesRequest request)
 	{
+		final InvoiceCandidateMultiQuery multiQuery = invoiceJsonConverters.fromJson(request.getInvoiceCandidates());
 
-			if (request.getInvoiceCandidates().isEmpty())
-			{
-				throw new InvalidEntityException(TranslatableStrings.constant("The request's invoiceCandidates array may not be empty"));
-			}
-			final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
+		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO
+				.getByQuery(multiQuery);
 
-			final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
-			for (final ExternalHeaderIdWithExternalLineIds externalId : headerAndLineIds)
-			{
-				final InvoiceCandidateQuery query = InvoiceCandidateQuery.builder()
-						.externalIds(externalId)
-						.build();
-				multiQuery.query(query);
-			}
-			final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO
-					.getByQuery(multiQuery.build());
+		final List<JsonCloseInvoiceCandidatesResponseItem> invoiceCandidates = closeInvoiceCandidateRecords(invoiceCandidateRecords);
 
-			final List<JsonCloseInvoiceCandidatesResponseItem> invoiceCandidates = closeInvoiceCandidateRecords(invoiceCandidateRecords);
-
-			final JsonCloseInvoiceCandidatesResponse result = JsonCloseInvoiceCandidatesResponse.builder()
-					.invoiceCandidates(invoiceCandidates)
-					.build();
-
-			return result;
+		return JsonCloseInvoiceCandidatesResponse.builder()
+				.invoiceCandidates(invoiceCandidates)
+				.build();
 
 	}
 
@@ -86,9 +74,9 @@ public class CloseInvoiceCandidatesService
 	{
 		final List<JsonCloseInvoiceCandidatesResponseItem> responseItems = new ArrayList<>();
 
-		for(I_C_Invoice_Candidate invoiceCandidateRecord : invoiceCandidateRecords)
+		for (final I_C_Invoice_Candidate invoiceCandidateRecord : invoiceCandidateRecords)
 		{
-			Services.get(ITrxManager.class).runInNewTrx(() -> responseItems.add(closeInvoiceCandidateRecord(invoiceCandidateRecord)));
+			trxManager.runInNewTrx(() -> responseItems.add(closeInvoiceCandidateRecord(invoiceCandidateRecord)));
 		}
 
 		return responseItems;

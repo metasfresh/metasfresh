@@ -1,21 +1,21 @@
 package de.metas.invoicecandidate.api;
 
-import static de.metas.util.Check.isEmpty;
-
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import de.metas.lang.SOTrx;
-import de.metas.util.time.InstantInterval;
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.time.InstantInterval;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
+
+import static de.metas.util.Check.isEmpty;
 
 /**
  * All properties of this filter are {@code AND}ed.
@@ -34,6 +34,9 @@ public class InvoiceCandidateQuery
 	String headerAggregationKey;
 	BPartnerId salesRepBPartnerId;
 	InstantInterval dateOrderedInterval;
+	DocTypeId orderDocTypeId;
+	String orderDocumentNo;
+	List<String> orderLines;
 
 	SOTrx soTrx;
 
@@ -52,6 +55,9 @@ public class InvoiceCandidateQuery
 			@Nullable final LocalDate dateToInvoice,
 			@Nullable final BPartnerId salesRepBPartnerId,
 			@Nullable final InstantInterval dateOrderedInterval,
+			@Nullable final DocTypeId orderDocTypeId,
+			@Nullable final String orderDocumentNo,
+			@Nullable final List<String> orderLines,
 			@Nullable final String headerAggregationKey,
 			@Nullable final InvoiceCandidateId excludeC_Invoice_Candidate_ID,
 			@Nullable final InvoiceCandidateId maxManualC_Invoice_Candidate_ID,
@@ -66,6 +72,9 @@ public class InvoiceCandidateQuery
 		this.dateToInvoice = dateToInvoice;
 		this.salesRepBPartnerId = salesRepBPartnerId;
 		this.dateOrderedInterval = dateOrderedInterval;
+		this.orderDocTypeId = orderDocTypeId;
+		this.orderDocumentNo = orderDocumentNo;
+		this.orderLines = orderLines;
 		this.headerAggregationKey = headerAggregationKey;
 		this.excludeC_Invoice_Candidate_ID = excludeC_Invoice_Candidate_ID;
 		this.maxManualC_Invoice_Candidate_ID = maxManualC_Invoice_Candidate_ID;
@@ -87,11 +96,14 @@ public class InvoiceCandidateQuery
 				&& dateToInvoice == null
 				&& salesRepBPartnerId == null
 				&& dateOrderedInterval == null
-				&& isEmpty(headerAggregationKey, true))
+				&& isEmpty(headerAggregationKey, true)
+				&& orderDocumentNo == null
+				&& orderDocTypeId == null)
 		{
 			throw new AdempiereException("Invalid invoiceCandidateQuery. "
 					+ "To restrict the number of results, at least one of the following properties has to be specified: "
-					+ "invoiceCandidateId or externalIds or billBPartnerId or dateToInvoice or headerAggregationKey or salesRepBPartnerId or dateOrderedInterval")
+					+ "invoiceCandidateId or externalIds or billBPartnerId or dateToInvoice or headerAggregationKey or " 
+					+ "salesRepBPartnerId or dateOrderedInterval or orderDocumentNo or orderDocTypeId")
 							.appendParametersToMessage()
 							.setParameter("invoiceCandidateQuery", this);
 		}
@@ -99,7 +111,7 @@ public class InvoiceCandidateQuery
 
 	public InvoiceCandidateQuery copy()
 	{
-		final InvoiceCandidateQuery newQuery = InvoiceCandidateQuery.builder()
+		return InvoiceCandidateQuery.builder()
 				.orgId(orgId)
 				.billBPartnerId(billBPartnerId)
 				.dateToInvoice(dateToInvoice)
@@ -112,7 +124,6 @@ public class InvoiceCandidateQuery
 				.processed(processed)
 				.error(error)
 				.build();
-		return newQuery;
 	}
 
 	public OrgId getOrgIdNotNull()

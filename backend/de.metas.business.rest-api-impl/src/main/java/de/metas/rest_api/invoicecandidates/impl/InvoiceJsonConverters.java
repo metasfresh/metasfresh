@@ -1,18 +1,34 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
+import de.metas.common.rest_api.v2.JsonDocTypeInfo;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+import de.metas.document.DocTypeId;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.order.impl.DocTypeService;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgQuery;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.web.exception.InvalidEntityException;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -35,35 +51,53 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@UtilityClass
-final class InvoiceJsonConverters
+@Service
+public class InvoiceJsonConverters
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final DocTypeService docTypeService;
+
+	public InvoiceJsonConverters(@NonNull final DocTypeService docTypeService)
+	{
+		this.docTypeService = docTypeService;
+	}
+
+	@NonNull
+	public final InvoiceCandidateMultiQuery fromJson(
+			@NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)
+	{
+		validateCandidates(invoiceCandidates);
+
+		final InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
+
+		invoiceCandidates.forEach(invoiceCandidate -> {
+			final OrgId orgId = getOrgId(invoiceCandidate);
+
+			multiQuery.query(InvoiceCandidateQuery.builder()
+					.orgId(orgId)
+					.externalIds(getExternalHeaderIdWithExternalLineIds(invoiceCandidate))
+					.orderDocTypeId(getOrderDocTypeId(invoiceCandidate.getOrderDocumentType(), orgId))
+					.orderDocumentNo(invoiceCandidate.getOrderDocumentNo())
+					.orderLines(invoiceCandidate.getOrderLines())
+					.build());
+		});
+
+		return multiQuery.build();
+	}
+
+	@NonNull
 	public static JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
-		final JsonEnqueueForInvoicingResponse invoiceCandidateResult = JsonEnqueueForInvoicingResponse.builder()
+		return JsonEnqueueForInvoicingResponse.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
 				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing())
 				.build();
-		return invoiceCandidateResult;
 	}
 
-	public static List<ExternalHeaderIdWithExternalLineIds> fromJson(@NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)
-	{
-		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = new ArrayList<>();
-		for (final JsonInvoiceCandidateReference cand : invoiceCandidates)
-		{
-			final ExternalHeaderIdWithExternalLineIds headerAndLineId = ExternalHeaderIdWithExternalLineIds.builder()
-					.externalHeaderId(JsonExternalIds.toExternalId(cand.getExternalHeaderId()))
-					.externalLineIds(JsonExternalIds.toExternalIds(cand.getExternalLineIds()))
-					.build();
-			headerAndLineIds.add(headerAndLineId);
-		}
-		return headerAndLineIds;
-	}
-
+	@NonNull
 	public static PlainInvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
@@ -77,4 +111,118 @@ final class InvoiceJsonConverters
 		return invoicingParams;
 	}
 
+	@NonNull
+	private static ExternalHeaderIdWithExternalLineIds getExternalHeaderIdWithExternalLineIds(@NonNull final JsonInvoiceCandidateReference invoiceCandidate)
+	{
+		return ExternalHeaderIdWithExternalLineIds.builder()
+				.externalHeaderId(JsonExternalIds.toExternalId(invoiceCandidate.getExternalHeaderId()))
+				.externalLineIds(JsonExternalIds.toExternalIds(invoiceCandidate.getExternalLineIds()))
+				.build();
+	}
+
+	private static void validateCandidates(@NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)
+	{
+		if (invoiceCandidates.isEmpty())
+		{
+			throw new InvalidEntityException(TranslatableStrings.constant("The request's invoiceCandidates array may not be empty"));
+		}
+
+		invoiceCandidates.forEach(invoiceCandidate -> {
+			validateReferencePresence(invoiceCandidate);
+			validateExternalLineIdsConsistency(invoiceCandidate);
+			validateOrderLinesConsistency(invoiceCandidate);
+			validateReferenceTypeExclusivity(invoiceCandidate);
+		});
+	}
+
+	private static void validateReferencePresence(@NonNull final JsonInvoiceCandidateReference invoiceCandidate)
+	{
+		final boolean hasAnyReference =
+				invoiceCandidate.getExternalHeaderId() != null
+						|| invoiceCandidate.getOrderDocumentNo() != null
+						|| invoiceCandidate.getOrgCode() != null
+						|| invoiceCandidate.getOrderDocumentType() != null;
+
+		if (!hasAnyReference)
+		{
+			throw new InvalidEntityException(TranslatableStrings.constant(
+					"Must have at least one of externalHeaderId, orderDocumentNo, orgCode, or orderDocumentType."));
+		}
+	}
+
+	private static void validateExternalLineIdsConsistency(@NonNull final JsonInvoiceCandidateReference invoiceCandidate)
+	{
+		if (!Check.isEmpty(invoiceCandidate.getExternalLineIds()) && invoiceCandidate.getExternalHeaderId() == null)
+		{
+			throw new InvalidEntityException(TranslatableStrings.constant(
+					"externalLineIds were provided, but externalHeaderId is missing."));
+		}
+	}
+
+	private static void validateOrderLinesConsistency(@NonNull final JsonInvoiceCandidateReference invoiceCandidate)
+	{
+		if (!Check.isEmpty(invoiceCandidate.getOrderLines()) && invoiceCandidate.getOrderDocumentNo() == null)
+		{
+			throw new InvalidEntityException(TranslatableStrings.constant(
+					"orderLines were provided, but orderDocumentNo is missing. Order lines require an order document number."));
+		}
+	}
+
+	private static void validateReferenceTypeExclusivity(@NonNull final JsonInvoiceCandidateReference invoiceCandidate)
+	{
+		if (invoiceCandidate.getExternalHeaderId() != null && invoiceCandidate.getOrderDocumentNo() != null)
+		{
+			throw new InvalidEntityException(TranslatableStrings.constant(
+					"Both externalHeaderId and orderDocumentNo are provided. Only one reference type should be used."));
+		}
+	}
+
+	@Nullable
+	private OrgId getOrgId(@NonNull final JsonInvoiceCandidateReference invoiceCandidate)
+	{
+		final String orgCode = invoiceCandidate.getOrgCode();
+		if (Check.isNotBlank(orgCode))
+		{
+			return orgDAO.retrieveOrgIdBy(OrgQuery.ofValue(orgCode))
+					.orElseThrow(() -> MissingResourceException.builder()
+							.resourceName("organisation")
+							.resourceIdentifier("(val-)" + orgCode)
+							.build());
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	@Nullable
+	private DocTypeId getOrderDocTypeId(
+			@Nullable final JsonDocTypeInfo orderDocumentType,
+			@Nullable final OrgId orgId)
+	{
+		if (orderDocumentType == null)
+		{
+			return null;
+		}
+
+		final DocBaseType docBaseType = Optional.of(orderDocumentType)
+				.map(JsonDocTypeInfo::getDocBaseType)
+				.map(DocBaseType::ofCode)
+				.orElse(null);
+
+		final DocSubType subType = Optional.of(orderDocumentType)
+				.map(JsonDocTypeInfo::getDocSubType)
+				.map(DocSubType::ofNullableCode)
+				.orElse(DocSubType.ANY);
+
+		final OrgId orgIdEffective = Optional.ofNullable(orgId)
+				.orElseGet(Env::getOrgId);
+
+		return Optional.ofNullable(docBaseType)
+				.map(baseType -> docTypeService.getDocTypeId(docBaseType, subType, orgIdEffective))
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("DocType")
+						.parentResource(orderDocumentType)
+						.build());
+	}
 }
