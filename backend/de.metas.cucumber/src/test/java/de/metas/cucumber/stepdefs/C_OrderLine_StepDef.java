@@ -272,6 +272,7 @@ public class C_OrderLine_StepDef
 	public void validate_created_order_lines(@NonNull final DataTable table)
 	{
 		DataTableRows.of(table)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.forEach(row -> {
 					final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
 
@@ -300,6 +301,7 @@ public class C_OrderLine_StepDef
 	public void validate_C_OrderLine(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.forEach(row -> {
 					final I_C_OrderLine orderLine = orderLineTable.get(row.getAsIdentifier());
 					assertThat(orderLine).isNotNull();
