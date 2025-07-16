@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -21,23 +22,22 @@ public class ValueAndName
 
 	public static ValueAndName ofValueAndName(@NonNull final String value, @NonNull final String name) {return builder().value(value).name(name).build();}
 
-	@Nullable
+	@NonNull
 	public static Optional<ValueAndName> ofNullableValueAndName(@Nullable final String value, @Nullable final String name)
 	{
 		if (value == null && name == null)
 		{
 			return Optional.empty();
 		}
-		final ValueAndNameBuilder builder = builder();
-		if (value != null)
+		if (value != null && name != null)
 		{
-			builder.value(value);
+			return Optional.of(ofValueAndName(value, name));
 		}
-		if (name != null)
-		{
-			builder.name(name);
-		}
-		return Optional.of(builder.build());
+		final String firstNonNullValue = CoalesceUtil.coalesceNotNull(value, name);
+		return Optional.of(builder()
+				.value(firstNonNullValue)
+				.name(firstNonNullValue)
+				.build());
 	}
 
 	public static ValueAndName unique() {return unique(null);}
