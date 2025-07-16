@@ -14,10 +14,10 @@ Feature: Packing material invoice candidates: receipts
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And metasfresh contains M_Products:
-      | Identifier      | Name                     |
-      | purchaseProduct | purchaseProduct_04082022 |
-      | packingProduct  | IFCO 6410                |
-      | loadingProduct  | EUR-Tauschpalette Holz   |
+      | Identifier      |
+      | purchaseProduct |
+      | packingProduct  |
+      | loadingProduct  |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value               |
       | ps_1       | pricing_system_name | pricing_system_name |
@@ -39,9 +39,9 @@ Feature: Packing material invoice candidates: receipts
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | bpartner_1               | Y                   | Y                   |
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name              |
-      | huPackingTU           | huPackingTU_S0160 |
-      | huPackingLU           | huPackingLU_S0160 |
+      | M_HU_PI_ID.Identifier |
+      | huPackingTU           |
+      | huPackingLU           |
     And metasfresh contains M_HU_PI_Version:
       | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                   | HU_UnitType | IsCurrent |
       | packingVersionTU              | huPackingTU           | packingVersionTU_S0160 | TU          | Y         |

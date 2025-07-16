@@ -94,7 +94,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
 import static de.metas.util.Check.assume;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
@@ -545,15 +544,14 @@ public class OrderLineBL implements IOrderLineBL
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		return order.isSOTrx()
-				? coalesceSuppliersNotNull(() -> getPriceDateFromDatePromised(orderLine, order, timeZone),
-				() -> asZonedDateTimeNonNull(orderLine.getDateOrdered(), timeZone))
+				? getPriceDateFromDatePromised(orderLine, order, timeZone)
 				: asZonedDateTimeNonNull(orderLine.getDateOrdered(), timeZone);
 	}
 
-	@Nullable
+	@NonNull
 	private static ZonedDateTime getPriceDateFromDatePromised(final org.compiere.model.I_C_OrderLine orderLine, final I_C_Order order, final ZoneId timeZone)
 	{
-		return coalesceSuppliers(() -> asZonedDateTime(orderLine.getDatePromised(), timeZone), // because orderLine.getDatePromised() is nullable
+		return coalesceSuppliersNotNull(() -> asZonedDateTime(orderLine.getDatePromised(), timeZone), // because orderLine.getDatePromised() is nullable
 				() -> asZonedDateTimeNonNull(order.getDatePromised(), timeZone));
 	}
 

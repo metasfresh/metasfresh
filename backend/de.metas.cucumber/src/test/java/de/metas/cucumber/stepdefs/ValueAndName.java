@@ -6,6 +6,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -20,11 +21,30 @@ public class ValueAndName
 
 	public static ValueAndName ofValueAndName(@NonNull final String value, @NonNull final String name) {return builder().value(value).name(name).build();}
 
+	@Nullable
+	public static Optional<ValueAndName> ofNullableValueAndName(@Nullable final String value, @Nullable final String name)
+	{
+		if (value == null && name == null)
+		{
+			return Optional.empty();
+		}
+		final ValueAndNameBuilder builder = builder();
+		if (value != null)
+		{
+			builder.value(value);
+		}
+		if (name != null)
+		{
+			builder.name(name);
+		}
+		return Optional.of(builder.build());
+	}
+
 	public static ValueAndName unique() {return unique(null);}
 
 	public static ValueAndName unique(@Nullable final String prefix)
 	{
-		String prefixNorm = prefix != null ? prefix + "_" : "";
+		final String prefixNorm = prefix != null ? prefix + "_" : "";
 		final String name = prefixNorm + Instant.now().toString();
 		return ofName(name);
 	}
