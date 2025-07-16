@@ -54,13 +54,14 @@ import java.util.concurrent.TimeUnit;
  * Frame used to display notifications in the bottom right corner.
  *
  * @author tsa
- *
  */
 class SwingEventNotifierFrame extends JFrame
 {
 	private static final long serialVersionUID = 1L;
 
-	/** Default {@link NotificationItem#getSummary()} to be used when no {@link Event#getSummary()} was provided */
+	/**
+	 * Default {@link NotificationItem#getSummary()} to be used when no {@link Event#getSummary()} was provided
+	 */
 	private static final String MSG_Notification_Summary_Default = "EVENT_Notification_Summary_Default";
 
 	// services
@@ -68,11 +69,15 @@ class SwingEventNotifierFrame extends JFrame
 
 	private final Set<Topic> topicsSubscribed = new HashSet<>();
 
-	/** Currently displayed notifications */
+	/**
+	 * Currently displayed notifications
+	 */
 	private final LinkedHashMap<NotificationItem, NotificationItemPanel> notification2panel = new LinkedHashMap<>();
 	private final int maxNotifications;
 	private final int autoFadeAwayTimeMillis;
-	/** Defines the gap (in pixels) between last notification and screen bottom (see FRESH-441) */
+	/**
+	 * Defines the gap (in pixels) between last notification and screen bottom (see FRESH-441)
+	 */
 	private final int frameBottomGap;
 
 	private boolean disposed = false;
@@ -82,7 +87,9 @@ class SwingEventNotifierFrame extends JFrame
 	 */
 	private final INotificationItemPanelCallback notificationItemPanelCallback = item -> executeInEDTAfter(0, () -> fadeAwayAndDisposeNotificationItemNow(item));
 
-	/** Listen on {@link IEventBus} and fetched notifications to be displayed */
+	/**
+	 * Listen on {@link IEventBus} and fetched notifications to be displayed
+	 */
 	private IEventListener eventListener = (eventBus, event) -> SwingEventNotifierFrame.this.onEvent(event);
 
 	/**
@@ -138,7 +145,7 @@ class SwingEventNotifierFrame extends JFrame
 
 		//
 		// Schedule and UI update of this frame
-		executeInEDTAfter(0, () -> updateUI());
+		executeInEDTAfter(0, this::updateUI);
 	}
 
 	public Set<String> getSubscribedTopicNames()
@@ -176,7 +183,7 @@ class SwingEventNotifierFrame extends JFrame
 		return Env.getCtx();
 	}
 
-	private final void assertEventDispatchThread()
+	private void assertEventDispatchThread()
 	{
 		Check.assume(SwingUtilities.isEventDispatchThread(), "current thread is the EventDispatchThread");
 	}
@@ -185,9 +192,8 @@ class SwingEventNotifierFrame extends JFrame
 	 * Execute given command, asynchronously, in swing EventDispatchThread.
 	 *
 	 * @param delayMillis after how many milliseconds to execute it; If less or equals with zero, it will be scheduled to be executed right now.
-	 * @param command
 	 */
-	private final void executeInEDTAfter(final long delayMillis, final Runnable command)
+	private void executeInEDTAfter(final long delayMillis, final Runnable command)
 	{
 		if (isDisposed())
 		{
@@ -205,10 +211,8 @@ class SwingEventNotifierFrame extends JFrame
 
 	/**
 	 * Create and add
-	 *
-	 * @param item
 	 */
-	private synchronized final void addNotificationItemNow(final NotificationItem item)
+	private synchronized void addNotificationItemNow(final NotificationItem item)
 	{
 		assertEventDispatchThread();
 
@@ -292,7 +296,7 @@ class SwingEventNotifierFrame extends JFrame
 			final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());// height of the task bar
 			this.setLocation(
 					screenSize.width - getWidth(),
-					screenSize.height - screenInsets.bottom - getHeight() - (frameBottomGap > 0 ? frameBottomGap : 0));
+					screenSize.height - screenInsets.bottom - getHeight() - (Math.max(frameBottomGap, 0)));
 		}
 
 		setVisible(visibleNew);
@@ -305,10 +309,8 @@ class SwingEventNotifierFrame extends JFrame
 
 	/**
 	 * Called when a new event is received from bus
-	 *
-	 * @param event
 	 */
-	private final void onEvent(final Event event)
+	private void onEvent(final Event event)
 	{
 		if (!isEligibleToBeDisplayed(event))
 		{
@@ -324,15 +326,10 @@ class SwingEventNotifierFrame extends JFrame
 	private boolean isEligibleToBeDisplayed(final Event event)
 	{
 		final int loginUserId = Env.getAD_User_ID(getCtx());
-		if (!event.hasRecipient(loginUserId))
-		{
-			return false;
-		}
-
-		return true;
+		return event.hasRecipient(loginUserId);
 	}
 
-	private final NotificationItem toNotificationItem(final Event event)
+	private NotificationItem toNotificationItem(final Event event)
 	{
 		//
 		// Build summary text
