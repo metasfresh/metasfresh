@@ -50,7 +50,7 @@ Feature: Order price based on date
       | pp_SO1     | plv_SO1                | product      | 20.0     | PCE               |
       | pp_SO2     | plv_SO2                | product      | 24.0     | PCE               |
 
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
       | supplier   | Y        | N          | ps1                |
       | buyer      | N        | Y          | ps1                |
