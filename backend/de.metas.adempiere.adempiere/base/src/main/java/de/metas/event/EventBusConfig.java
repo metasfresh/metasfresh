@@ -127,7 +127,8 @@ public final class EventBusConfig
 		}
 
 		final String nameForAllTopics = "de.metas.event.asyncEventBus";
-		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix(nameForAllTopics, ClientAndOrgId.SYSTEM);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final Map<String, String> valuesForPrefix = sysConfigBL.getValuesForPrefix(nameForAllTopics, ClientAndOrgId.SYSTEM);
 
 		final String keyForTopic = nameForAllTopics + ".topic_" + topic.getName();
 		final String valueForTopic = valuesForPrefix.get(keyForTopic);
@@ -146,10 +147,4 @@ public final class EventBusConfig
 	{
 		alwaysConsiderAsyncTopics.add(topic);
 	}
-
-	public static boolean isMonitorIncomingEvents()
-	{
-		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.MonitorIncomingEvents", false);
-	}
-
 }

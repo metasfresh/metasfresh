@@ -51,7 +51,7 @@ public abstract class RabbitMQReceiveFromEndpointTemplate
 			return;
 		}
 
-		final boolean monitorIncomingEvents = EventBusConfig.isMonitorIncomingEvents();
+		final boolean monitorIncomingEvents = eventBusMonitoringService.isMonitorIncomingEvents();
 		final boolean localEventBusAsync = localEventBus.isAsync();
 		final Topic localEventBusTopic = localEventBus.getTopic();
 		try
