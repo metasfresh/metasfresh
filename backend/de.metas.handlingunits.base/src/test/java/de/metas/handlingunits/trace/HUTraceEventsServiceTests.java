@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -163,8 +164,9 @@ public class HUTraceEventsServiceTests
 			huAssignment22.setRecord_ID(ref2.getRecord_ID());
 			save(huAssignment22);
 
-			// create a 5th assignment that references user2 but has the same HU-ID *and* updated time! as huAssignment22
-			de.metas.common.util.time.SystemTime.setTimeSource(() -> huAssignment22.getUpdated().getTime());
+			// create a 5th assignment that references user2 but has the same HU-ID as huAssignment22. The updated time might not be the same.
+			final Instant shortlyAfterAssignment22 = huAssignment22.getUpdated().toInstant().plusMillis(1);
+			de.metas.common.util.time.SystemTime.setTimeSource(() -> shortlyAfterAssignment22.toEpochMilli());
 			final I_M_HU_Assignment huAssignment22double = newInstance(I_M_HU_Assignment.class);
 			huAssignment22double.setM_HU_ID(luHu22.getM_HU_ID());
 			huAssignment22double.setVHU_ID(vhu22.getM_HU_ID());
