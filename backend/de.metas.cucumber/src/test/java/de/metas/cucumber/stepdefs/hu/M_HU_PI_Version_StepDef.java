@@ -115,6 +115,7 @@ public class M_HU_PI_Version_StepDef
 	public void load_M_HU_PI_Version(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_HU_PI_Version_ID)
 				.forEach(row -> {
 					final StepDefDataIdentifier huPIVersionIdentifier = row.getAsIdentifier();
 					final int huPIVersionId = row.getAsInt(COLUMNNAME_M_HU_PI_Version_ID);
