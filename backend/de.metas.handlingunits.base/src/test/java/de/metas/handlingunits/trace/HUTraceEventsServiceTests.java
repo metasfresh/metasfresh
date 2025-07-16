@@ -193,6 +193,7 @@ public class HUTraceEventsServiceTests
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.orgId(OrgId.ofRepoId(10))
+				.eventTime(SystemTime.asInstant()) // in the actual code it should be the designated event time from the referenced document
 				.inOutId(12).type(HUTraceType.MATERIAL_SHIPMENT); // note: inOutId and type don't really matter for this test
 
 		huTraceEventsService.createAndAddEvents(builder, ImmutableList.of(user1, user2));
