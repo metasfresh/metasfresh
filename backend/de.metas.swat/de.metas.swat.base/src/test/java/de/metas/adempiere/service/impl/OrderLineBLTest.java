@@ -123,6 +123,7 @@ public class OrderLineBLTest
 		orderline.setPrice_UOM_ID(priceUom.getC_UOM_ID());
 
 		orderline.setC_UOM_ID(uom.getC_UOM_ID());
+		//Normally done in org.compiere.model.MOrder#afterSave
 		orderline.setDatePromised(order.getDatePromised());
 		orderline.setDateOrdered(order.getDateOrdered());
 
