@@ -29,6 +29,7 @@ import de.metas.event.EventEnqueuer;
 import de.metas.event.Topic;
 import de.metas.event.remote.rabbitmq.RabbitMQDestinationResolver;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -42,33 +43,26 @@ import static de.metas.event.remote.rabbitmq.queues.default_queue.DefaultReceive
 import static de.metas.event.remote.rabbitmq.queues.default_queue.DefaultReceiveFromRabbitMQEndpoint.HEADER_TopicType;
 
 @Component
+@RequiredArgsConstructor
 public class RabbitMQEnqueuer implements EventEnqueuer
 {
-	private static final Logger logger = EventBusConfig.getLogger(RabbitMQEnqueuer.class);
-
-	private final AmqpTemplate amqpTemplate;
-	private final RabbitMQDestinationResolver rabbitMQDestinationResolver;
-
-	public RabbitMQEnqueuer(
-			@NonNull final AmqpTemplate amqpTemplate,
-			@NonNull final RabbitMQDestinationResolver rabbitMQDestinationResolver)
-	{
-		this.amqpTemplate = amqpTemplate;
-		this.rabbitMQDestinationResolver = rabbitMQDestinationResolver;
-	}
+	@NonNull private static final Logger logger = EventBusConfig.getLogger(RabbitMQEnqueuer.class);
+	@NonNull private final AmqpTemplate amqpTemplate;
+	@NonNull private final RabbitMQDestinationResolver rabbitMQDestinationResolver;
 
 	@Override
 	public void enqueueDistributedEvent(final Event event, final Topic topic)
 	{
-		final String amqpExchangeName = rabbitMQDestinationResolver.getAMQPExchangeNameByTopicName(topic.getName());
-		final String routingKey = amqpExchangeName; // this corresponds to the way we bound our queues to the exchanges in RabbitMQEventBusConfiguration
+		final String topicName = topic.getName();
+		final String amqpExchangeName = rabbitMQDestinationResolver.getAMQPExchangeNameByTopicName(topicName);
+		final String routingKey = amqpExchangeName; // this corresponds to the way we bound our queues to the exchanges in IEventBusQueueConfiguration implementations
 		amqpTemplate.convertAndSend(
 				amqpExchangeName,
 				routingKey,
 				event,
 				getMessagePostProcessor(topic));
 
-		logger.debug("Send event; topicName={}; event={}; type={}; timestamp={}, ThreadId={}", topic.getName(), event, topic.getType(), SystemTime.asTimestamp(), Thread.currentThread().getId());
+		logger.debug("Send event; topicName={}; event={}; type={}; timestamp={}, ThreadId={}", topicName, event, topic.getType(), SystemTime.asTimestamp(), Thread.currentThread().getId());
 	}
 
 	@Override
@@ -77,8 +71,8 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 		final String queueName = rabbitMQDestinationResolver.getAMQPQueueNameByTopicName(topic.getName());
 
 		amqpTemplate.convertAndSend(queueName,
-									event,
-									getMessagePostProcessor(topic));
+				event,
+				getMessagePostProcessor(topic));
 
 		logger.debug("Send event; topicName={}; event={}; type={}", topic.getName(), event, topic.getType());
 	}

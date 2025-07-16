@@ -23,87 +23,130 @@
 package de.metas.event.remote.rabbitmq;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.event.remote.IEventBusQueueConfiguration;
 import de.metas.event.remote.rabbitmq.queues.default_queue.DefaultQueueConfiguration;
+import de.metas.logging.LogManager;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.springframework.amqp.core.AnonymousQueue;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class RabbitMQDestinationResolver
 {
-	@NonNull private final CopyOnWriteArrayList<IEventBusQueueConfiguration> eventBusQueueConfigurationList;
+	@NonNull private static final Logger logger = LogManager.getLogger(RabbitMQDestinationResolver.class);
+
+	@NonNull private QueueConfigurationsMap queueConfigs;
 
 	public RabbitMQDestinationResolver(@NonNull final List<IEventBusQueueConfiguration> eventBusQueueConfigurationList)
 	{
-		validateSingleQueueForTopic(eventBusQueueConfigurationList);
-		this.eventBusQueueConfigurationList = new CopyOnWriteArrayList<>(eventBusQueueConfigurationList);
+		this.queueConfigs = new QueueConfigurationsMap(eventBusQueueConfigurationList);
+		logger.info("Registered event bus queue configurations: {}", queueConfigs);
 	}
 
-	private static void validateSingleQueueForTopic(@NonNull final List<IEventBusQueueConfiguration> eventBusQueueConfigurationList)
-	{
-		final HashSet<String> collectedTopicNames = new HashSet<>();
-
-		eventBusQueueConfigurationList.stream()
-				.map(IEventBusQueueConfiguration::getTopicName)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.forEach(topicName -> {
-					if (collectedTopicNames.contains(topicName))
-					{
-						throw new AdempiereException("Given Topic was assigned to multiple queues!")
-								.setParameter("TopicName", topicName);
-					}
-
-					collectedTopicNames.add(topicName);
-				});
-	}
-
-	/**
-	 *
-	 */
 	@VisibleForTesting
-	public void registerQueue(@NonNull final IEventBusQueueConfiguration anonymousQueueConfiguration)
+	public void registerQueue(@NonNull final IEventBusQueueConfiguration queueConfig)
 	{
-		this.eventBusQueueConfigurationList.add(anonymousQueueConfiguration);
+		queueConfigs = queueConfigs.withQueueAdded(queueConfig);
+		logger.info("Registered queue {}. Currently registered queues are: {}", queueConfig, queueConfigs);
 	}
 
 	@VisibleForTesting
 	public void deregisterQueue(@NonNull final String topicName)
 	{
-		eventBusQueueConfigurationList.stream()
-				.filter(configuration -> configuration.getTopicName().isPresent())
-				.filter(configuration -> configuration.getTopicName().get().equals(topicName))
-				.findFirst()
-				.ifPresent(eventBusQueueConfigurationList::remove);
+		queueConfigs = queueConfigs.withQueueRemovedByTopicName(topicName);
+		logger.info("Unregistered queue by topic {}. Currently registered queues are: {}", topicName, queueConfigs);
 	}
 
 	@NonNull
 	public String getAMQPQueueNameByTopicName(@NonNull final String topicName)
 	{
-		return eventBusQueueConfigurationList.stream()
-				.filter(queueConfig -> queueConfig.getTopicName().isPresent())
-				.filter(queueConfig -> queueConfig.getTopicName().get().equals(topicName))
-				.map(IEventBusQueueConfiguration::getQueueName)
-				.findFirst()
-				.orElseGet(() -> SpringContextHolder.instance.getBean(AnonymousQueue.class, DefaultQueueConfiguration.QUEUE_BEAN_NAME).getName());
+		return queueConfigs.getByTopicNameOrDefault(topicName).getQueueName();
 	}
 
 	@NonNull
 	public String getAMQPExchangeNameByTopicName(@NonNull final String topicName)
 	{
-		return eventBusQueueConfigurationList.stream()
-				.filter(queueConfig -> queueConfig.getTopicName().isPresent())
-				.filter(queueConfig -> queueConfig.getTopicName().get().equals(topicName))
-				.map(IEventBusQueueConfiguration::getExchangeName)
-				.findFirst()
-				.orElseGet(() -> SpringContextHolder.instance.getBean(DefaultQueueConfiguration.class).getExchangeName());
+		return queueConfigs.getByTopicNameOrDefault(topicName).getExchangeName();
+	}
+
+	//
+	//
+	// -------------------------------------------------------------------------
+	//
+	//
+
+	@ToString(of = { "byTopicName", "defaultQueueConfiguration" })
+	private static class QueueConfigurationsMap
+	{
+		private final ImmutableList<IEventBusQueueConfiguration> list;
+		private final ImmutableMap<String, IEventBusQueueConfiguration> byTopicName;
+		private final IEventBusQueueConfiguration defaultQueueConfiguration;
+
+		QueueConfigurationsMap(final List<IEventBusQueueConfiguration> list)
+		{
+			final ImmutableMap.Builder<String, IEventBusQueueConfiguration> byTopicName = ImmutableMap.builder();
+			final ArrayList<DefaultQueueConfiguration> defaultQueueConfigurations = new ArrayList<>();
+			for (final IEventBusQueueConfiguration queueConfig : list)
+			{
+				queueConfig.getTopicName().ifPresent(topicName -> byTopicName.put(topicName, queueConfig));
+
+				if (queueConfig instanceof DefaultQueueConfiguration)
+				{
+					defaultQueueConfigurations.add((DefaultQueueConfiguration)queueConfig);
+				}
+			}
+
+			if (defaultQueueConfigurations.size() != 1)
+			{
+				throw new AdempiereException("There shall be exactly one default queue configuration but found " + defaultQueueConfigurations)
+						.setParameter("all configurations", list)
+						.appendParametersToMessage();
+			}
+
+			this.list = ImmutableList.copyOf(list);
+			this.byTopicName = byTopicName.build();
+			this.defaultQueueConfiguration = CollectionUtils.singleElement(defaultQueueConfigurations);
+		}
+
+		@Nullable
+		public IEventBusQueueConfiguration getByTopicNameOrNull(@NonNull final String topicName)
+		{
+			return byTopicName.get(topicName);
+		}
+
+		@NonNull
+		public IEventBusQueueConfiguration getByTopicNameOrDefault(@NonNull final String topicName)
+		{
+			return byTopicName.getOrDefault(topicName, defaultQueueConfiguration);
+		}
+
+		public QueueConfigurationsMap withQueueAdded(@NonNull final IEventBusQueueConfiguration queueConfig)
+		{
+			final ArrayList<IEventBusQueueConfiguration> newList = new ArrayList<>(list);
+			newList.add(queueConfig);
+			return new QueueConfigurationsMap(newList);
+		}
+
+		public QueueConfigurationsMap withQueueRemovedByTopicName(@NonNull final String topicName)
+		{
+			final IEventBusQueueConfiguration queueConfig = getByTopicNameOrNull(topicName);
+			return queueConfig != null ? withQueueRemoved(queueConfig) : this;
+		}
+
+		public QueueConfigurationsMap withQueueRemoved(@NonNull final IEventBusQueueConfiguration queueConfig)
+		{
+			final ArrayList<IEventBusQueueConfiguration> newList = new ArrayList<>(list);
+			newList.remove(queueConfig);
+			return new QueueConfigurationsMap(newList);
+		}
 	}
 }
