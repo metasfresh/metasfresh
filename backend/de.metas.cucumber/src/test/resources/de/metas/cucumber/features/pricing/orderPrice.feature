@@ -62,8 +62,8 @@ Feature: Order price based on date
   @from:cucumber
   Scenario: When creating a purchase order, the DateOrdered is used to identify the correct price of the product, not the DatePromised.
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference | DocBaseType | M_PricingSystem_ID | C_BPartner_Location_ID | DeliveryRule | DeliveryViaRule |
-      | order_PO   | N       | supplier      | 2022-03-10  | 2022-04-10   | po_ref      | POO         | ps1                | supplierLocation       | F            | S               |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | DocBaseType |
+      | order_PO   | N       | supplier      | 2022-03-10  | 2022-04-10   | POO         |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
       | orderLine_PO | order_PO   | product      | 10         |
@@ -77,8 +77,8 @@ Feature: Order price based on date
   @from:cucumber
   Scenario: When creating a sales order, the DatePromised is used to identify the correct price of the product, not the DateOrdered.
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | M_PricingSystem_ID | C_BPartner_Location_ID | DeliveryRule | DeliveryViaRule |
-      | order_PO   | Y       | buyer         | 2022-03-10  | 2022-04-10   | ps1                | buyerLocation          | F            | S               |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised |
+      | order_PO   | Y       | buyer         | 2022-03-10  | 2022-04-10   |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
       | orderLine_PO | order_PO   | product      | 10         |
