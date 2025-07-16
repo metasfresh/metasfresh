@@ -28,6 +28,7 @@ import java.time.Month;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.record.warning.RecordWarningRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
@@ -55,7 +56,8 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 		StartupListener.class,
 		ShutdownListener.class,
 		DunningDocDocumentHandlerProvider.class,
-		RecordWarningRepository.class
+		RecordWarningRepository.class,
+		DocumentPostingUserNotificationService.class,
 })
 public class DefaultDunningProducerTest extends DunningTestBase
 {
