@@ -656,7 +656,8 @@ public class HUTraceEventsService
 				{
 					builder.topLevelHuId(HuId.ofRepoId(huAssignment.getM_HU_ID()));
 				}
-				builder.orgId(OrgId.ofRepoIdOrNull(huAssignment.getAD_Org_ID()));
+				builder.orgId(OrgId.ofRepoIdOrNull(huAssignment.getAD_Org_ID()))
+						.eventTime(huAssignment.getUpdated().toInstant());
 
 				final List<I_M_HU> vhus;
 				if (huAssignment.getVHU_ID() > 0)

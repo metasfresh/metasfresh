@@ -54,7 +54,7 @@ public class HUTraceRepository
 	{
 		final HUTraceEventQuery query = huTraceEvent.asQueryBuilder().build();
 
-		final List<HUTraceEvent> existingDbRecords = RetrieveDbRecordsUtil.query(query);
+		final List<HUTraceEvent> existingDbRecords = RetrieveDbRecordsUtil.query(query.withEventTime(null));
 		final boolean inserted = existingDbRecords.isEmpty();
 
 		if (inserted)
