@@ -34,8 +34,8 @@ Feature: Order price based on date
       | ps1        |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded |
-      | pl_PO      | ps1                | DE                    | EUR           | false | false         |
-      | pl_SO      | ps1                | DE                    | EUR           | true  | false         |
+      | pl_PO      | ps1                | DE           | EUR           | false | false         |
+      | pl_SO      | ps1                | DE           | EUR           | true  | false         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | ValidFrom  |
       | plv_PO2    | pl_PO          | 2022-04-01 |
@@ -55,9 +55,9 @@ Feature: Order price based on date
       | supplier   | Y        | N          | ps1                |
       | buyer      | N        | Y          | ps1                |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier       | GLN           | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | supplierLocation | 1607202511111 | supplier      | Y               | Y               |
-      | buyerLocation    | 1607202511112 | buyer         | Y               | Y               |
+      | Identifier       | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | supplierLocation | supplier      | Y               | Y               |
+      | buyerLocation    | buyer         | Y               | Y               |
 
   @from:cucumber
   Scenario: When creating a purchase order, the DateOrdered is used to identify the correct price of the product, not the DatePromised.
