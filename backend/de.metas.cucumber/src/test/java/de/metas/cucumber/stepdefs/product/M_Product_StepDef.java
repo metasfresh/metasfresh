@@ -419,7 +419,9 @@ public class M_Product_StepDef
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(productRecord::setGTIN);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
+		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 
 		saveRecord(productRecord);
+		productTable.putOrReplace(row.getAsIdentifier(), productRecord);
 	}
 }

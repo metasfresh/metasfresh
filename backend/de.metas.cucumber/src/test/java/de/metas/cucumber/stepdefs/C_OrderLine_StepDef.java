@@ -274,9 +274,7 @@ public class C_OrderLine_StepDef
 		DataTableRows.of(table)
 				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.forEach(row -> {
-					final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
-
-					final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+					final I_C_Order orderRecord = orderTable.get(row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID));
 
 					final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_M_Product_ID);
 					final Integer expectedProductId = productTable.getOptional(productIdentifier)
@@ -447,7 +445,7 @@ public class C_OrderLine_StepDef
 
 		final Integer expectedProductId = productIdentifier.flatMap(productTable::getOptional)
 				.map(I_M_Product::getM_Product_ID)
-				.orElse(null);
+				.orElse(productIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
 
 		final String uomBPartner355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
 
@@ -504,11 +502,13 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
 		}
 
-		final Integer taxCategoryId = taxCategoryIdentifier.flatMap(taxCategoryTable::getOptional)
-				.map(I_C_TaxCategory::getC_TaxCategory_ID)
-				.orElseGet(() -> taxCategoryIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
-
-		assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
+		if (taxCategoryIdentifier.isPresent())
+		{
+			final Integer taxCategoryId = taxCategoryIdentifier.flatMap(taxCategoryTable::getOptional)
+					.map(I_C_TaxCategory::getC_TaxCategory_ID)
+					.orElseGet(() -> taxCategoryIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
+			assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
+		}
 
 		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
 		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered);
