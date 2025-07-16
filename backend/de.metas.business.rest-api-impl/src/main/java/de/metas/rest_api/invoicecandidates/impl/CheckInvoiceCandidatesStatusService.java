@@ -22,6 +22,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v1.invoice.impl.InvoiceService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.TimeUtil;
@@ -54,23 +55,17 @@ import java.util.List;
  * #L%
  */
 @Service
+@RequiredArgsConstructor
 public class CheckInvoiceCandidatesStatusService
 {
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
+	@NonNull
 	private final InvoiceService invoicePDFService;
+	@NonNull
 	private final InvoiceJsonConverters invoiceJsonConverters;
-
-	public CheckInvoiceCandidatesStatusService(
-			@NonNull final InvoiceService invoicePDFService,
-			@NonNull final InvoiceJsonConverters invoiceJsonConverters)
-	{
-
-		this.invoicePDFService = invoicePDFService;
-		this.invoiceJsonConverters = invoiceJsonConverters;
-	}
 
 	@NonNull
 	public JsonCheckInvoiceCandidatesStatusResponse getStatusForInvoiceCandidates(

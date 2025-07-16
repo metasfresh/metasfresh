@@ -39,7 +39,7 @@ import java.util.List;
 @Value
 public class JsonInvoiceCandidateReference
 {
-	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.String", example = "ExternalHeaderId_1",//
+	@ApiModelProperty(position = 10, allowEmptyValue = true, dataType = "java.lang.String", example = "ExternalHeaderId_1",//
 			value = "Used to select which invoice candidates should be enqueued.")
 	JsonExternalId externalHeaderId;
 
@@ -50,24 +50,24 @@ public class JsonInvoiceCandidateReference
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonExternalId> externalLineIds;
 
-	@ApiModelProperty(position = 30, dataType = "java.lang.String", example = "001",//
+	@ApiModelProperty(position = 30, allowEmptyValue = true, dataType = "java.lang.String", example = "001",//
 			value = "The `AD_Org.Value` of the `C_Invoice_Candidate`'s AD_Org_ID")
 	String orgCode;
 
-	@ApiModelProperty(position = 40,  //
-			value = "Can be set if the orders' document type is already known")
+	@ApiModelProperty(position = 40, allowEmptyValue = true, //
+			value = "Can be set if the orders' document type is already known. When specified, orgCode of the document type also has to be specified")
 	JsonDocTypeInfo orderDocumentType;
 
-	@ApiModelProperty(position = 50, dataType = "java.lang.String", example = "8393",//
+	@ApiModelProperty(position = 50, allowEmptyValue = true, dataType = "java.lang.String", example = "8393",//
 			value = "Used to select which invoice candidates should be enqueued, based on the referenced order's document no.")
 	String orderDocumentNo;
 
-	@ApiModelProperty(position = 60, allowEmptyValue = true, dataType = "java.lang.String", example = "[\"10\", \"20\"]", //
+	@ApiModelProperty(position = 60, allowEmptyValue = true, dataType = "java.lang.Integer", example = "[\"10\", \"20\"]", //
 			value = "Optional, used to select invoice candidates which reference order lines that have these `C_OrderLine.Line`s " 
 					+ "and are part of the order with the`orderDocumentNo` from above.\n"
 					+ "If not specified, then all invoice candidates that reference the order with the specified `orderDocumentNo` are matched")
 	@JsonInclude(Include.NON_EMPTY)
-	List<String> orderLines;
+	List<Integer> orderLines;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -77,13 +77,13 @@ public class JsonInvoiceCandidateReference
 			@JsonProperty("orderDocumentNo") @Nullable final String orderDocumentNo,
 			@JsonProperty("orgCode") @Nullable final String orgCode,
 			@JsonProperty("orderDocumentType") @Nullable final JsonDocTypeInfo orderDocumentType,
-			@JsonProperty("orderLines") @Singular @Nullable final List<String> orderLines)
+			@JsonProperty("orderLines") @Singular @Nullable final List<Integer> orderLines)
 	{
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineIds = externalLineIds == null ? ImmutableList.of() : ImmutableList.copyOf(externalLineIds);
 		this.orderDocumentNo = orderDocumentNo;
 		this.orgCode = orgCode;
 		this.orderDocumentType = orderDocumentType;
-		this.orderLines = orderLines;
+		this.orderLines = orderLines == null ? ImmutableList.of() : ImmutableList.copyOf(orderLines);
 	}
 }

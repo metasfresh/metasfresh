@@ -200,6 +200,9 @@ public class C_OrderLine_StepDef
 					tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
 							.ifPresent(orderLine::setDescription);
 
+					tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
+							.ifPresent(orderLine::setExternalId);
+
 					saveRecord(orderLine);
 
 					orderLineTable.putOrReplace(tableRow.getAsIdentifier(), orderLine);

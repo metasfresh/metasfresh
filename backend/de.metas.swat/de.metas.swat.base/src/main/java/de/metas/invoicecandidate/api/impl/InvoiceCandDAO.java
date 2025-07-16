@@ -2003,35 +2003,33 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		final DocTypeId orderDocTypeId = query.getOrderDocTypeId();
-		if (orderDocTypeId != null)
-		{
-			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)
-					.addOnlyActiveRecordsFilter()
-					.addCoalesceEqualsFilter(orderDocTypeId, I_C_Order.COLUMNNAME_C_DocType_ID, I_C_Order.COLUMNNAME_C_DocTypeTarget_ID)
-					.create();
-
-			filter.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, orderQuery);
-		}
-
 		final String orderDocumentNo = query.getOrderDocumentNo();
-		if (Check.isNotBlank(orderDocumentNo))
+		if (Check.isNotBlank(orderDocumentNo) || orderDocTypeId != null)
 		{
-			final IQuery<I_C_Order> orderQuery = queryBL.createQueryBuilder(I_C_Order.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, orderDocumentNo)
-					.create();
+			final IQueryBuilder<I_C_Order> orderQueryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
+					.addOnlyActiveRecordsFilter();
 
-			final List<String> orderLines = query.getOrderLines();
+			if (orderDocTypeId != null)
+			{
+				orderQueryBuilder.addCoalesceEqualsFilter(orderDocTypeId, I_C_Order.COLUMNNAME_C_DocType_ID, I_C_Order.COLUMNNAME_C_DocTypeTarget_ID);
+			}
+
+			if (Check.isNotBlank(orderDocumentNo))
+			{
+				orderQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, orderDocumentNo);
+			}
+
+			final Set<Integer> orderLines = query.getOrderLines();
 			if (Check.isEmpty(orderLines))
 			{
-				filter.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, orderQuery);
+				filter.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, orderQueryBuilder.create());
 			}
 			else
 			{
 				final IQuery<I_C_OrderLine> orderLineQuery = queryBL.createQueryBuilder(I_C_OrderLine.class)
 						.addOnlyActiveRecordsFilter()
 						.addInArrayOrAllFilter(I_C_OrderLine.COLUMNNAME_Line, orderLines)
-						.addInSubQueryFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, orderQuery)
+						.addInSubQueryFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, orderQueryBuilder.create())
 						.create();
 
 				filter.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineQuery);

@@ -9,6 +9,7 @@ import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingReques
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /*
@@ -34,17 +35,14 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
+@RequiredArgsConstructor
 public class EnqueueForInvoicingService
 {
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
+	@NonNull
 	private final InvoiceJsonConverters jsonConverters;
-
-	public EnqueueForInvoicingService(@NonNull final InvoiceJsonConverters jsonConverters)
-	{
-		this.jsonConverters = jsonConverters;
-	}
 
 	public JsonEnqueueForInvoicingResponse enqueueForInvoicing(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{

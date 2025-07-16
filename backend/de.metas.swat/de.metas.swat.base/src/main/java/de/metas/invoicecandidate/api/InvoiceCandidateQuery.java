@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -14,6 +15,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static de.metas.util.Check.isEmpty;
 
@@ -23,27 +25,43 @@ import static de.metas.util.Check.isEmpty;
 @Value
 public class InvoiceCandidateQuery
 {
+	@Nullable
 	OrgId orgId;
 
 	// It's mandatory to have at least one of the following query properties set.
 	// Because we assume that any of these properties alone can ensure a to select only a limited number of invoice candidates.
+	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
+	@Nullable
 	ExternalHeaderIdWithExternalLineIds externalIds;
+	@Nullable
 	BPartnerId billBPartnerId;
+	@Nullable
 	LocalDate dateToInvoice;
+	@Nullable
 	String headerAggregationKey;
+	@Nullable
 	BPartnerId salesRepBPartnerId;
+	@Nullable
 	InstantInterval dateOrderedInterval;
+	@Nullable
 	DocTypeId orderDocTypeId;
+	@Nullable
 	String orderDocumentNo;
-	List<String> orderLines;
+	@Nullable
+	Set<Integer> orderLines;
 
+	@Nullable
 	SOTrx soTrx;
 
 	// Any of the following properties may or may not be part of a valid query.
+	@Nullable
 	InvoiceCandidateId excludeC_Invoice_Candidate_ID;
+	@Nullable
 	InvoiceCandidateId maxManualC_Invoice_Candidate_ID;
+	@Nullable
 	Boolean processed;
+	@Nullable
 	Boolean error;
 
 	@Builder
@@ -57,7 +75,7 @@ public class InvoiceCandidateQuery
 			@Nullable final InstantInterval dateOrderedInterval,
 			@Nullable final DocTypeId orderDocTypeId,
 			@Nullable final String orderDocumentNo,
-			@Nullable final List<String> orderLines,
+			@Nullable final List<Integer> orderLines,
 			@Nullable final String headerAggregationKey,
 			@Nullable final InvoiceCandidateId excludeC_Invoice_Candidate_ID,
 			@Nullable final InvoiceCandidateId maxManualC_Invoice_Candidate_ID,
@@ -74,7 +92,7 @@ public class InvoiceCandidateQuery
 		this.dateOrderedInterval = dateOrderedInterval;
 		this.orderDocTypeId = orderDocTypeId;
 		this.orderDocumentNo = orderDocumentNo;
-		this.orderLines = orderLines;
+		this.orderLines = orderLines == null ? ImmutableSet.of() : ImmutableSet.copyOf(orderLines);
 		this.headerAggregationKey = headerAggregationKey;
 		this.excludeC_Invoice_Candidate_ID = excludeC_Invoice_Candidate_ID;
 		this.maxManualC_Invoice_Candidate_ID = maxManualC_Invoice_Candidate_ID;
@@ -107,23 +125,6 @@ public class InvoiceCandidateQuery
 							.appendParametersToMessage()
 							.setParameter("invoiceCandidateQuery", this);
 		}
-	}
-
-	public InvoiceCandidateQuery copy()
-	{
-		return InvoiceCandidateQuery.builder()
-				.orgId(orgId)
-				.billBPartnerId(billBPartnerId)
-				.dateToInvoice(dateToInvoice)
-				.salesRepBPartnerId(salesRepBPartnerId)
-				.dateOrderedInterval(dateOrderedInterval)
-				.headerAggregationKey(headerAggregationKey)
-				.excludeC_Invoice_Candidate_ID(excludeC_Invoice_Candidate_ID)
-				.maxManualC_Invoice_Candidate_ID(maxManualC_Invoice_Candidate_ID)
-				.soTrx(soTrx)
-				.processed(processed)
-				.error(error)
-				.build();
 	}
 
 	public OrgId getOrgIdNotNull()

@@ -13,6 +13,7 @@ import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -42,25 +43,21 @@ import java.util.List;
  * #L%
  */
 @Service
+@RequiredArgsConstructor
 public class CloseInvoiceCandidatesService
 {
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
+	@NonNull
 	private final InvoiceJsonConverters invoiceJsonConverters;
-
-	public CloseInvoiceCandidatesService(@NonNull final InvoiceJsonConverters invoiceJsonConverters)
-	{
-		this.invoiceJsonConverters = invoiceJsonConverters;
-	}
 
 	public JsonCloseInvoiceCandidatesResponse closeInvoiceCandidates(final JsonCloseInvoiceCandidatesRequest request)
 	{
 		final InvoiceCandidateMultiQuery multiQuery = invoiceJsonConverters.fromJson(request.getInvoiceCandidates());
 
-		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO
-				.getByQuery(multiQuery);
+		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO.getByQuery(multiQuery);
 
 		final List<JsonCloseInvoiceCandidatesResponseItem> invoiceCandidates = closeInvoiceCandidateRecords(invoiceCandidateRecords);
 
