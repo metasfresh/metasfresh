@@ -107,7 +107,6 @@ public class HUTraceEvent
 				.huTraceEventId(huTraceEventId)
 				.orgId(orgId)
 				.type(type)
-				.eventTime(eventTime)
 				.vhuId(vhuId)
 				.productId(productId)
 				.qty(qty)
