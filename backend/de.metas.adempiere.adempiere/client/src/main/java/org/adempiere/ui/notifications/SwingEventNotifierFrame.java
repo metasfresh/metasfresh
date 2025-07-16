@@ -22,31 +22,6 @@ package org.adempiere.ui.notifications;
  * #L%
  */
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-
-import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.plaf.SwingEventNotifierUI;
-import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -58,6 +33,22 @@ import de.metas.notification.UserNotificationUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
+import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.plaf.SwingEventNotifierUI;
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Frame used to display notifications in the bottom right corner.
@@ -148,10 +139,6 @@ class SwingEventNotifierFrame extends JFrame
 		//
 		// Schedule and UI update of this frame
 		executeInEDTAfter(0, () -> updateUI());
-
-		//
-		// Check remote endpoint connection status and send notifications in case it's down.
-		Services.get(IEventBusFactory.class).checkRemoteEndpointStatus();
 	}
 
 	public Set<String> getSubscribedTopicNames()

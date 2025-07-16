@@ -1,19 +1,5 @@
 package de.metas.ui.web.accounting.process;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.service.ClientId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.util.DB;
-
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.BooleanWithReason;
@@ -29,6 +15,19 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Services;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.util.DB;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /*
  * #%L
@@ -89,8 +88,9 @@ public class WEBUI_Fact_Acct_Repost_SingleDocument extends JavaProcess implement
 	{
 		final DocumentToRepost documentToRepost = getDocumentToRepost();
 		FactAcctRepostCommand.builder()
-				.forcePosting(forcePosting)
 				.documentToRepost(documentToRepost)
+				.forcePosting(forcePosting)
+				.onErrorNotifyUserId(getUserId())
 				.build()
 				.execute();
 

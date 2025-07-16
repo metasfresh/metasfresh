@@ -10,7 +10,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.impl.EventMDC;
-import de.metas.event.remote.RabbitMQEventBusConfiguration;
+import de.metas.event.remote.rabbitmq.queues.cache_invalidation.CacheInvalidationQueueConfiguration;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -55,7 +55,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 	private static final Logger logger = LogManager.getLogger(CacheInvalidationRemoteHandler.class);
 
-	private static final Topic TOPIC_CacheInvalidation = RabbitMQEventBusConfiguration.CacheInvalidationQueueConfiguration.EVENTBUS_TOPIC;
+	private static final Topic TOPIC_CacheInvalidation = CacheInvalidationQueueConfiguration.EVENTBUS_TOPIC;
 
 	private static final String EVENT_PROPERTY = CacheInvalidateRequest.class.getSimpleName();
 

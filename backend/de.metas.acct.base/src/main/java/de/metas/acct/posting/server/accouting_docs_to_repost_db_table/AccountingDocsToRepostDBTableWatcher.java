@@ -1,18 +1,18 @@
 package de.metas.acct.posting.server.accouting_docs_to_repost_db_table;
 
-import java.time.Duration;
-import java.util.List;
-
-import org.adempiere.service.ISysConfigBL;
-import org.slf4j.Logger;
-
 import com.google.common.base.Stopwatch;
-
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.DocumentPostMultiRequest;
+import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IPostingService;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.slf4j.Logger;
+
+import java.time.Duration;
+import java.util.List;
 
 /*
  * #%L
@@ -24,37 +24,39 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public final class AccoutingDocsToRepostDBTableWatcher implements Runnable
+public final class AccountingDocsToRepostDBTableWatcher implements Runnable
 {
-	private static final Logger logger = LogManager.getLogger(AccoutingDocsToRepostDBTableWatcher.class);
+	private static final Logger logger = LogManager.getLogger(AccountingDocsToRepostDBTableWatcher.class);
 	private final ISysConfigBL sysConfigBL;
 	private final IPostingService postingService;
-	private final AccoutingDocsToRepostDBTableRepository accoutingDocsToRepostDBTableRepository;
+	private final AccountingDocsToRepostDBTableRepository accountingDocsToRepostDBTableRepository;
 
-	private static final int RETRIEVE_CHUNK_SIZE = 100;
+	private static final String SYSCONFIG_RetrieveChunkSize = "de.metas.acct.accounting_docs_to_repost.retrieveChunkSize";
+	private static final int DEFAULT_RetrieveChunkSize = 100;
+	
 	private static final String SYSCONFIG_PollIntervalInSeconds = "de.metas.acct.accounting_docs_to_repost.pollIntervalInSeconds";
 	private static final Duration DEFAULT_PollInterval = Duration.ofSeconds(10);
 
 	@Builder
-	private AccoutingDocsToRepostDBTableWatcher(
+	private AccountingDocsToRepostDBTableWatcher(
 			@NonNull final ISysConfigBL sysConfigBL,
 			@NonNull final IPostingService postingService)
 	{
 		this.sysConfigBL = sysConfigBL;
 		this.postingService = postingService;
-		this.accoutingDocsToRepostDBTableRepository = new AccoutingDocsToRepostDBTableRepository();
+		this.accountingDocsToRepostDBTableRepository = new AccountingDocsToRepostDBTableRepository();
 	}
 
 	@Override
@@ -66,6 +68,7 @@ public final class AccoutingDocsToRepostDBTableWatcher implements Runnable
 			logger.debug("Sleeping {}", pollInterval);
 			try
 			{
+				//noinspection BusyWait
 				Thread.sleep(getPollInterval().toMillis());
 			}
 			catch (InterruptedException e)
@@ -87,10 +90,11 @@ public final class AccoutingDocsToRepostDBTableWatcher implements Runnable
 
 	private void enqueueAllForReposting()
 	{
-		boolean tryAgain = false;
+		boolean tryAgain;
 		do
 		{
-			final List<AccountingDocToRepost> docsToRepost = accoutingDocsToRepostDBTableRepository.retrieve(RETRIEVE_CHUNK_SIZE);
+			final int chunkSize = getRetrieveChunkSize();
+			final List<AccountingDocToRepost> docsToRepost = accountingDocsToRepostDBTableRepository.retrieve(chunkSize);
 			if (docsToRepost.isEmpty())
 			{
 				return;
@@ -99,11 +103,20 @@ public final class AccoutingDocsToRepostDBTableWatcher implements Runnable
 			logger.info("Enqueueing for reposting {} documents: {}", docsToRepost.size(), docsToRepost);
 			final Stopwatch stopwatch = Stopwatch.createStarted();
 
-			for (final AccountingDocToRepost docToRepost : docsToRepost)
+			try
 			{
-				enqueueForReposting(docToRepost);
+				postingService.schedule(toDocumentPostMultiRequest(docsToRepost));
 			}
-			tryAgain = docsToRepost.size() >= 100;
+			catch (Exception ex)
+			{
+				logger.warn("Failed enqueueing {}", docsToRepost, ex);
+			}
+			finally
+			{
+				accountingDocsToRepostDBTableRepository.delete(docsToRepost);
+			}
+
+			tryAgain = docsToRepost.size() >= chunkSize;
 
 			stopwatch.stop();
 			logger.info("Done enqueueing {} documents in {} (tryAgain={})", docsToRepost.size(), stopwatch, tryAgain);
@@ -111,27 +124,23 @@ public final class AccoutingDocsToRepostDBTableWatcher implements Runnable
 		while (tryAgain);
 	}
 
-	private void enqueueForReposting(@NonNull final AccountingDocToRepost docToRepost)
+	private static DocumentPostMultiRequest toDocumentPostMultiRequest(final List<AccountingDocToRepost> docsToRepost)
 	{
-		try
-		{
-			postingService.newPostingRequest()
-					.setClientId(docToRepost.getClientId())
-					.setDocumentRef(docToRepost.getRecordRef())
-					.setForce(docToRepost.isForce())
-					.setFailOnError(false) // don't fail because we don't want to fail this thread
-					.onErrorNotifyUser(docToRepost.getOnErrorNotifyUserId())
-					.setPostImmediate(PostImmediate.No) // no, just enqueue it
-					.postIt();
-		}
-		catch (Exception ex)
-		{
-			logger.warn("Failed enqueueing {}", docToRepost, ex);
-		}
-		finally
-		{
-			accoutingDocsToRepostDBTableRepository.delete(docToRepost);
-		}
+		return DocumentPostMultiRequest.ofNonEmptyCollection(
+				docsToRepost.stream()
+						.map(AccountingDocsToRepostDBTableWatcher::toDocumentPostRequest)
+						.collect(ImmutableSet.toImmutableSet())
+		);
+	}
+
+	private static DocumentPostRequest toDocumentPostRequest(@NonNull final AccountingDocToRepost docToRepost)
+	{
+		return DocumentPostRequest.builder()
+				.record(docToRepost.getRecordRef())
+				.clientId(docToRepost.getClientId())
+				.force(docToRepost.isForce())
+				.onErrorNotifyUserId(docToRepost.getOnErrorNotifyUserId())
+				.build();
 	}
 
 	private Duration getPollInterval()
@@ -140,5 +149,11 @@ public final class AccoutingDocsToRepostDBTableWatcher implements Runnable
 		return pollIntervalInSeconds > 0
 				? Duration.ofSeconds(pollIntervalInSeconds)
 				: DEFAULT_PollInterval;
+	}
+
+	private int getRetrieveChunkSize()
+	{
+		final int retrieveChunkSize = sysConfigBL.getIntValue(SYSCONFIG_RetrieveChunkSize, -1);
+		return retrieveChunkSize > 0 ? retrieveChunkSize : DEFAULT_RetrieveChunkSize;
 	}
 }

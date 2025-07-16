@@ -27,7 +27,7 @@ import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventEnqueuer;
 import de.metas.event.Topic;
-import de.metas.event.remote.RabbitMQDestinationResolver;
+import de.metas.event.remote.rabbitmq.RabbitMQDestinationResolver;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -37,9 +37,9 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 import static de.metas.event.EventBusConfig.getSenderId;
-import static de.metas.event.remote.RabbitMQEventBusRemoteEndpoint.HEADER_SenderId;
-import static de.metas.event.remote.RabbitMQEventBusRemoteEndpoint.HEADER_TopicName;
-import static de.metas.event.remote.RabbitMQEventBusRemoteEndpoint.HEADER_TopicType;
+import static de.metas.event.remote.rabbitmq.queues.default_queue.DefaultReceiveFromRabbitMQEndpoint.HEADER_SenderId;
+import static de.metas.event.remote.rabbitmq.queues.default_queue.DefaultReceiveFromRabbitMQEndpoint.HEADER_TopicName;
+import static de.metas.event.remote.rabbitmq.queues.default_queue.DefaultReceiveFromRabbitMQEndpoint.HEADER_TopicType;
 
 @Component
 public class RabbitMQEnqueuer implements EventEnqueuer

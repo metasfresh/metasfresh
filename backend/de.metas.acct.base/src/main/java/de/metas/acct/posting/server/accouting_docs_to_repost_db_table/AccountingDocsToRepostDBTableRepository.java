@@ -1,19 +1,20 @@
 package de.metas.acct.posting.server.accouting_docs_to_repost_db_table;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /*
  * #%L
@@ -25,19 +26,19 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-final class AccoutingDocsToRepostDBTableRepository
+final class AccountingDocsToRepostDBTableRepository
 {
 	private static final String Table_Name = "\"de_metas_acct\".accounting_docs_to_repost";
 
@@ -46,8 +47,8 @@ final class AccoutingDocsToRepostDBTableRepository
 		Check.assumeGreaterThanZero(limit, "limit");
 
 		return DB.retrieveRowsOutOfTrx(
-				"SELECT * FROM " + Table_Name + " ORDER BY seqno LIMIT ?",
-				Arrays.asList(limit),
+				"SELECT * FROM " + Table_Name + " ORDER BY SeqNo LIMIT ?",
+				Collections.singletonList(limit),
 				this::retrieveRow);
 	}
 
@@ -64,11 +65,17 @@ final class AccoutingDocsToRepostDBTableRepository
 				.build();
 	}
 
-	public void delete(@NonNull final AccountingDocToRepost docToRepost)
+	public void delete(@NonNull final Collection<AccountingDocToRepost> docsToRepost)
 	{
+		if (docsToRepost.isEmpty()) {return;}
+
+		final ImmutableSet<Integer> seqNos = docsToRepost.stream()
+				.map(AccountingDocToRepost::getSeqNo)
+				.collect(ImmutableSet.toImmutableSet());
+		
 		DB.executeUpdateAndThrowExceptionOnFail(
-				"DELETE FROM " + Table_Name + " WHERE SeqNo=?",
-				new Object[] { docToRepost.getSeqNo() },
+				"DELETE FROM " + Table_Name + " WHERE " + DB.buildSqlList("SeqNo", seqNos),
+				null,
 				ITrx.TRXNAME_None);
 	}
 }

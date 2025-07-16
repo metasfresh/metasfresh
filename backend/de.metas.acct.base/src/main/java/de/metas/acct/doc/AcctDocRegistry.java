@@ -18,10 +18,9 @@ import java.util.Set;
 @Service
 public class AcctDocRegistry
 {
-	private static final Logger logger = LogManager.getLogger(AcctDocRegistry.class);
-
-	private final AggregatedAcctDocProvider docProviders;
-	private final AcctDocRequiredServicesFacade acctDocRequiredServices;
+	@NonNull private static final Logger logger = LogManager.getLogger(AcctDocRegistry.class);
+	@NonNull private final AggregatedAcctDocProvider docProviders;
+	@NonNull private final AcctDocRequiredServicesFacade acctDocRequiredServices;
 
 	public AcctDocRegistry(
 			@NonNull final List<IAcctDocProvider> acctDocProviders,
@@ -49,10 +48,13 @@ public class AcctDocRegistry
 		return docProviders.getDocTableNames();
 	}
 
-	public boolean isAccountingTable(final String docTableName)
-	{
-		return docProviders.isAccountingTable(docTableName);
-	}
+	//
+	//
+	//
+	// ------------------------------------------------------------------------
+	//
+	//
+	//
 
 	@ToString
 	private static class AggregatedAcctDocProvider implements IAcctDocProvider
@@ -76,11 +78,6 @@ public class AcctDocRegistry
 		public Set<String> getDocTableNames()
 		{
 			return providersByDocTableName.keySet();
-		}
-
-		public boolean isAccountingTable(final String docTableName)
-		{
-			return getDocTableNames().contains(docTableName);
 		}
 
 		@Override

@@ -20,9 +20,11 @@
  * #L%
  */
 
-package de.metas.event.remote;
+package de.metas.event.remote.rabbitmq;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.event.remote.IEventBusQueueConfiguration;
+import de.metas.event.remote.rabbitmq.queues.default_queue.DefaultQueueConfiguration;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -32,19 +34,36 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class RabbitMQDestinationResolver
 {
-	@NonNull
-	private final List<IEventBusQueueConfiguration> eventBusQueueConfigurationList;
+	@NonNull private final CopyOnWriteArrayList<IEventBusQueueConfiguration> eventBusQueueConfigurationList;
 
 	public RabbitMQDestinationResolver(@NonNull final List<IEventBusQueueConfiguration> eventBusQueueConfigurationList)
 	{
 		validateSingleQueueForTopic(eventBusQueueConfigurationList);
+		this.eventBusQueueConfigurationList = new CopyOnWriteArrayList<>(eventBusQueueConfigurationList);
+	}
 
-		this.eventBusQueueConfigurationList = eventBusQueueConfigurationList;
+	private static void validateSingleQueueForTopic(@NonNull final List<IEventBusQueueConfiguration> eventBusQueueConfigurationList)
+	{
+		final HashSet<String> collectedTopicNames = new HashSet<>();
+
+		eventBusQueueConfigurationList.stream()
+				.map(IEventBusQueueConfiguration::getTopicName)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.forEach(topicName -> {
+					if (collectedTopicNames.contains(topicName))
+					{
+						throw new AdempiereException("Given Topic was assigned to multiple queues!")
+								.setParameter("TopicName", topicName);
+					}
+
+					collectedTopicNames.add(topicName);
+				});
 	}
 
 	/**
@@ -74,7 +93,7 @@ public class RabbitMQDestinationResolver
 				.filter(queueConfig -> queueConfig.getTopicName().get().equals(topicName))
 				.map(IEventBusQueueConfiguration::getQueueName)
 				.findFirst()
-				.orElseGet(() -> SpringContextHolder.instance.getBean(AnonymousQueue.class, RabbitMQEventBusConfiguration.DefaultQueueConfiguration.QUEUE_BEAN_NAME).getName());
+				.orElseGet(() -> SpringContextHolder.instance.getBean(AnonymousQueue.class, DefaultQueueConfiguration.QUEUE_BEAN_NAME).getName());
 	}
 
 	@NonNull
@@ -85,25 +104,6 @@ public class RabbitMQDestinationResolver
 				.filter(queueConfig -> queueConfig.getTopicName().get().equals(topicName))
 				.map(IEventBusQueueConfiguration::getExchangeName)
 				.findFirst()
-				.orElseGet(() -> SpringContextHolder.instance.getBean(RabbitMQEventBusConfiguration.DefaultQueueConfiguration.class).getExchangeName());
-	}
-
-	private static void validateSingleQueueForTopic(@NonNull final List<IEventBusQueueConfiguration> anonymousQueueConfigurationList)
-	{
-		final Set<String> collectedTopicNames = new HashSet<>();
-
-		anonymousQueueConfigurationList.stream()
-				.map(IEventBusQueueConfiguration::getTopicName)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.forEach(topicName -> {
-					if (collectedTopicNames.contains(topicName))
-					{
-						throw new AdempiereException("Given Topic was assigned to multiple queues!")
-								.setParameter("TopicName", topicName);
-					}
-
-					collectedTopicNames.add(topicName);
-				});
+				.orElseGet(() -> SpringContextHolder.instance.getBean(DefaultQueueConfiguration.class).getExchangeName());
 	}
 }
