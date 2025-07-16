@@ -48,6 +48,11 @@ public class AcctDocRegistry
 		return docProviders.getDocTableNames();
 	}
 
+	public boolean isAccountingTable(final String docTableName)
+	{
+		return docProviders.isAccountingTable(docTableName);
+	}
+
 	//
 	//
 	//
@@ -72,6 +77,11 @@ public class AcctDocRegistry
 				}
 			}
 			this.providersByDocTableName = mapBuilder.build();
+		}
+
+		public boolean isAccountingTable(final String docTableName)
+		{
+			return getDocTableNames().contains(docTableName);
 		}
 
 		@Override
