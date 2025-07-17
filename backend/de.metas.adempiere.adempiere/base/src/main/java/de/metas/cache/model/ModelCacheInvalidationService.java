@@ -3,6 +3,8 @@ package de.metas.cache.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -68,7 +70,7 @@ public class ModelCacheInvalidationService
 	public static ModelCacheInvalidationService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new ModelCacheInvalidationService(Optional.empty());
+		return new ModelCacheInvalidationService(PlainEventBusFactory.newInstance(), Optional.empty());
 	}
 
 	private static final Logger logger = LogManager.getLogger(ModelCacheInvalidationService.class);
@@ -78,7 +80,9 @@ public class ModelCacheInvalidationService
 
 	private final ImmutableList<IModelCacheInvalidateRequestFactoryGroup> factoryGroups;
 
-	public ModelCacheInvalidationService(final Optional<List<IModelCacheInvalidateRequestFactoryGroup>> factoryGroups)
+	public ModelCacheInvalidationService(
+			@SuppressWarnings("unused") @NonNull final IEventBusFactory eventBusFactory, // indirectly needed by CacheMgt -> CacheInvalidationRemoteHandler
+			@NonNull final Optional<List<IModelCacheInvalidateRequestFactoryGroup>> factoryGroups)
 	{
 		this.factoryGroups = factoryGroups.map(ImmutableList::copyOf).orElseGet(ImmutableList::of);
 
