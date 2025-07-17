@@ -54,24 +54,39 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 	public static final CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
 
 	private static final Logger logger = LogManager.getLogger(CacheInvalidationRemoteHandler.class);
+	private final CacheInvalidateMultiRequestSerializer jsonSerializer = new CacheInvalidateMultiRequestSerializer();
+	private IEventBusFactory _eventBusFactory; // lazy
 
 	private static final Topic TOPIC_CacheInvalidation = CacheInvalidationQueueConfiguration.EVENTBUS_TOPIC;
-
 	private static final String EVENT_PROPERTY = CacheInvalidateRequest.class.getSimpleName();
 
-	private final AtomicBoolean _initalized = new AtomicBoolean(false);
+	private final AtomicBoolean _initialized = new AtomicBoolean(false);
 	private ImmutableTableNamesGroupsIndex _tableNamesToBroadcastIndex = ImmutableTableNamesGroupsIndex.EMPTY;
-
-	private final CacheInvalidateMultiRequestSerializer jsonSerializer = new CacheInvalidateMultiRequestSerializer();
 
 	private CacheInvalidationRemoteHandler()
 	{
 	}
 
-	public void enable()
+	public void setEventBusFactory(@NonNull final IEventBusFactory eventBusFactory)
+	{
+		this._eventBusFactory = eventBusFactory;
+	}
+
+	@NonNull
+	private IEventBusFactory getEventBusFactory()
+	{
+		IEventBusFactory eventBusFactory = instance._eventBusFactory;
+		if (eventBusFactory == null)
+		{
+			eventBusFactory = this._eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
+		}
+		return eventBusFactory;
+	}
+
+	private void enable()
 	{
 		// Do nothing if already registered.
-		if (_initalized.getAndSet(true))
+		if (_initialized.getAndSet(true))
 		{
 			return;
 		}
@@ -80,14 +95,13 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		{
 			// Globally register this listener.
 			// We register it globally because we want to survive.
-			final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
-			eventBusFactory.registerGlobalEventListener(TOPIC_CacheInvalidation, instance);
+			getEventBusFactory().registerGlobalEventListener(TOPIC_CacheInvalidation, instance);
 		}
 	}
 
 	private boolean isEnabled()
 	{
-		return _initalized.get();
+		return _initialized.get();
 	}
 
 	/**
@@ -148,8 +162,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
 			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
-			final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
-			eventBusFactory
+			getEventBusFactory()
 					.getEventBus(TOPIC_CacheInvalidation)
 					.enqueueEvent(event);
 		}

@@ -81,12 +81,13 @@ public class ModelCacheInvalidationService
 	private final ImmutableList<IModelCacheInvalidateRequestFactoryGroup> factoryGroups;
 
 	public ModelCacheInvalidationService(
-			@SuppressWarnings("unused") @NonNull final IEventBusFactory eventBusFactory, // indirectly needed by CacheMgt -> CacheInvalidationRemoteHandler
+			@NonNull final IEventBusFactory eventBusFactory,
 			@NonNull final Optional<List<IModelCacheInvalidateRequestFactoryGroup>> factoryGroups)
 	{
 		this.factoryGroups = factoryGroups.map(ImmutableList::copyOf).orElseGet(ImmutableList::of);
 
 		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.setEventBusFactory(eventBusFactory); // if not setting this, enableRemoteCacheInvalidationForTableNamesGroup might fail
 		this.factoryGroups.forEach(factoryGroup -> cacheMgt.enableRemoteCacheInvalidationForTableNamesGroup(factoryGroup.getTableNamesToEnableRemoveCacheInvalidation()));
 
 		logger.info("Registered {}", this.factoryGroups); // calling it last to make sure cache was warmed up, so we have more info to show
