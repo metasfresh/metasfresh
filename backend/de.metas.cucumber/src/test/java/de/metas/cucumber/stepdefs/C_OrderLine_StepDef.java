@@ -443,9 +443,10 @@ public class C_OrderLine_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final Optional<StepDefDataIdentifier> taxCategoryIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_TaxCategory_ID);
 
-		final Integer expectedProductId = productIdentifier.flatMap(productTable::getOptional)
+		final Integer expectedProductId = productIdentifier
+				.flatMap(productTable::getOptional)
 				.map(I_M_Product::getM_Product_ID)
-				.orElse(productIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
+				.orElseGet(() -> productIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
 
 		final String uomBPartner355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
 
