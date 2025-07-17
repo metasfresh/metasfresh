@@ -25,44 +25,28 @@ import static de.metas.util.Check.isEmpty;
 @Value
 public class InvoiceCandidateQuery
 {
-	@Nullable
-	OrgId orgId;
+	@Nullable OrgId orgId;
 
 	// It's mandatory to have at least one of the following query properties set.
 	// Because we assume that any of these properties alone can ensure a to select only a limited number of invoice candidates.
-	@Nullable
-	InvoiceCandidateId invoiceCandidateId;
-	@Nullable
-	ExternalHeaderIdWithExternalLineIds externalIds;
-	@Nullable
-	BPartnerId billBPartnerId;
-	@Nullable
-	LocalDate dateToInvoice;
-	@Nullable
-	String headerAggregationKey;
-	@Nullable
-	BPartnerId salesRepBPartnerId;
-	@Nullable
-	InstantInterval dateOrderedInterval;
-	@Nullable
-	DocTypeId orderDocTypeId;
-	@Nullable
-	String orderDocumentNo;
-	@Nullable
-	Set<Integer> orderLines;
+	@Nullable InvoiceCandidateId invoiceCandidateId;
+	@Nullable ExternalHeaderIdWithExternalLineIds externalIds;
+	@Nullable BPartnerId billBPartnerId;
+	@Nullable LocalDate dateToInvoice;
+	@Nullable String headerAggregationKey;
+	@Nullable BPartnerId salesRepBPartnerId;
+	@Nullable InstantInterval dateOrderedInterval;
+	@Nullable DocTypeId orderDocTypeId;
+	@Nullable String orderDocumentNo;
+	@Nullable Set<Integer> orderLines;
 
-	@Nullable
-	SOTrx soTrx;
+	@Nullable SOTrx soTrx;
 
 	// Any of the following properties may or may not be part of a valid query.
-	@Nullable
-	InvoiceCandidateId excludeC_Invoice_Candidate_ID;
-	@Nullable
-	InvoiceCandidateId maxManualC_Invoice_Candidate_ID;
-	@Nullable
-	Boolean processed;
-	@Nullable
-	Boolean error;
+	@Nullable InvoiceCandidateId excludeC_Invoice_Candidate_ID;
+	@Nullable InvoiceCandidateId maxManualC_Invoice_Candidate_ID;
+	@Nullable Boolean processed;
+	@Nullable Boolean error;
 
 	@Builder
 	private InvoiceCandidateQuery(

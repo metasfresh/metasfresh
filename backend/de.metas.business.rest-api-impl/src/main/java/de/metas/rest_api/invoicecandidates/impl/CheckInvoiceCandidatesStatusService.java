@@ -62,10 +62,8 @@ public class CheckInvoiceCandidatesStatusService
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
-	@NonNull
-	private final InvoiceService invoicePDFService;
-	@NonNull
-	private final InvoiceJsonConverters invoiceJsonConverters;
+	@NonNull private final InvoiceService invoicePDFService;
+	@NonNull private final InvoiceJsonConverters invoiceJsonConverters;
 
 	@NonNull
 	public JsonCheckInvoiceCandidatesStatusResponse getStatusForInvoiceCandidates(

@@ -115,10 +115,7 @@ public class InvoiceJsonConverterServiceTest
 	void fromJson_withOrgCode_shouldResolveOrgIdAndCreateQuery()
 	{
 		// given
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
-		org.setValue(ORG_CODE);
-		org.setAD_Org_ID(OrgId.toRepoId(ORG_ID));
-		InterfaceWrapperHelper.saveRecord(org);
+		createAdOrg();
 		final JsonInvoiceCandidateReference candidate = JsonInvoiceCandidateReference.builder()
 				.orgCode(ORG_CODE)
 				.externalHeaderId(EXTERNAL_HEADER_ID1)
@@ -173,11 +170,7 @@ public class InvoiceJsonConverterServiceTest
 				.docSubType("ON")
 				.build();
 
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
-		org.setValue(ORG_CODE);
-		org.setAD_Org_ID(OrgId.toRepoId(ORG_ID));
-		InterfaceWrapperHelper.saveRecord(org);
-		
+		createAdOrg();
 		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docTypeRecord.setDocBaseType(docTypeInfo.getDocBaseType());
 		docTypeRecord.setDocSubType(docTypeInfo.getDocSubType());
@@ -206,11 +199,7 @@ public class InvoiceJsonConverterServiceTest
 	void fromJson_withOrderLines_shouldCreateQueryWithOrderLines()
 	{
 		// given
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
-		org.setValue(ORG_CODE);
-		org.setAD_Org_ID(OrgId.toRepoId(ORG_ID));
-		InterfaceWrapperHelper.saveRecord(org);
-		
+		createAdOrg();
 		final JsonDocTypeInfo docTypeInfo = JsonDocTypeInfo.builder()
 				.docBaseType("SOO")
 				.docSubType("ON")
@@ -310,5 +299,13 @@ public class InvoiceJsonConverterServiceTest
 		assertThatThrownBy(() -> invoiceJsonConverters.fromJson(ImmutableList.of(candidate)))
 				.isInstanceOf(InvalidEntityException.class)
 				.hasMessageContaining("When specifying Order Document Type, the org code also has to be specified");
+	}
+
+	private static void createAdOrg()
+	{
+		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+		org.setValue(ORG_CODE);
+		org.setAD_Org_ID(OrgId.toRepoId(ORG_ID));
+		InterfaceWrapperHelper.saveRecord(org);
 	}
 }

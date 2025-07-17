@@ -57,8 +57,7 @@ import java.util.Optional;
 public class InvoiceJsonConverters
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	@NonNull
-	private final DocTypeService docTypeService;
+	@NonNull private final DocTypeService docTypeService;
 
 	@NonNull
 	public final InvoiceCandidateMultiQuery fromJson(
