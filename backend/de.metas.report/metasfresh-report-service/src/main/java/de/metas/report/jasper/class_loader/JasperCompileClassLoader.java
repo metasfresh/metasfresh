@@ -31,6 +31,7 @@ import de.metas.logging.LogManager;
 import de.metas.report.jasper.JasperEngine;
 import de.metas.util.FileUtil;
 import de.metas.util.StringUtils;
+import jakarta.xml.bind.DatatypeConverter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -41,7 +42,6 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

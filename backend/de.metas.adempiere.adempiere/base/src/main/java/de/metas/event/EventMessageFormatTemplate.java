@@ -1,14 +1,13 @@
 package de.metas.event;
 
-import java.util.Map;
-
+import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.text.MapFormat;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.StringUtils;
+import java.util.Map;
 
 /*
  * #%L
@@ -79,16 +78,15 @@ public abstract class EventMessageFormatTemplate extends MapFormat
 			return null;
 		}
 
-		if (obj instanceof ITableRecordReference)
+		if (obj instanceof ITableRecordReference reference)
 		{
-			return (ITableRecordReference)obj;
+			return reference;
 		}
 
 		// Extract the TableRecordReference from Map.
 		// Usually that's the case when the parameters were deserialized and the the TableRecordRefererence was deserialized as Map.
-		if(obj instanceof Map)
+		if(obj instanceof Map<?, ?> map)
 		{
-			final Map<?, ?> map = (Map<?, ?>)obj;
 			return TableRecordReference.ofMapOrNull(map);
 		}
 

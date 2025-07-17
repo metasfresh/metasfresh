@@ -51,9 +51,8 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 	public static MetasfreshIssueAppender get()
 	{
 		final ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
-		if (loggerFactory instanceof LoggerContext)
+		if (loggerFactory instanceof LoggerContext loggerContext)
 		{
-			final LoggerContext loggerContext = (LoggerContext)loggerFactory;
 			final Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
 			return (MetasfreshIssueAppender)rootLogger.getAppender(NAME);
 		}
@@ -277,9 +276,9 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 		}
 
 		final IThrowableProxy throwableProxy = event.getThrowableProxy();
-		if (throwableProxy instanceof ThrowableProxy)
+		if (throwableProxy instanceof ThrowableProxy proxy)
 		{
-			return ((ThrowableProxy)throwableProxy).getThrowable();
+			return proxy.getThrowable();
 		}
 
 		return null;

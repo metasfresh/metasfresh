@@ -2,7 +2,7 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.resp
 
 import java.io.InputStream;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;

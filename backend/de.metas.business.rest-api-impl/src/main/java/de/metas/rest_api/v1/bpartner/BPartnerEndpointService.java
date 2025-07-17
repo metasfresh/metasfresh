@@ -91,7 +91,7 @@ public class BPartnerEndpointService
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
-		if (!optBpartnerComposite.isPresent())
+		if (optBpartnerComposite.isEmpty())
 		{
 			return Optional.empty();
 		}
@@ -133,7 +133,7 @@ public class BPartnerEndpointService
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
-		if (!optBPartnerComposite.isPresent())
+		if (optBPartnerComposite.isEmpty())
 		{
 			return Optional.empty();
 		}
@@ -195,7 +195,7 @@ public class BPartnerEndpointService
 		final NextPageQuery nextPageQuery = NextPageQuery.onlyContactsOrNull(nextPageId);
 
 		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery);
-		if (!optionalPage.isPresent())
+		if (optionalPage.isEmpty())
 		{
 			return Optional.empty();
 		}

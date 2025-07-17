@@ -19,8 +19,8 @@ public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegmen
 {
 	public static ImmutableShipmentScheduleSegment copyOf(@NonNull final IShipmentScheduleSegment from)
 	{
-		return from instanceof ImmutableShipmentScheduleSegment
-				? (ImmutableShipmentScheduleSegment)from
+		return from instanceof ImmutableShipmentScheduleSegment isss
+				? isss
 				: new ImmutableShipmentScheduleSegment(from);
 	}
 

@@ -191,11 +191,11 @@ class HUTest
 		assertThat(result.getWeightNet()).isEqualByComparingTo(Quantity.of("8", weightUOMRecord));
 		assertThat(result.getReferencingModels()).containsExactly(ref1);
 
-		assertThat(result.getChildHUs().get(0).getId()).isEqualTo(HuId.ofRepoId(1));
-		assertThat(result.getChildHUs().get(0).getProductQtysInStockUOM().get(productId)).isEqualByComparingTo(Quantity.of("1", stockUOMRecord));
-		assertThat(result.getChildHUs().get(0).getWeightNet()).isNotNull();
-		assertThat(result.getChildHUs().get(0).getWeightNet()).isEqualByComparingTo(Quantity.of("3", weightUOMRecord));
-		assertThat(result.getChildHUs().get(0).getReferencingModels()).containsExactly(ref1);
+		assertThat(result.getChildHUs().getFirst().getId()).isEqualTo(HuId.ofRepoId(1));
+		assertThat(result.getChildHUs().getFirst().getProductQtysInStockUOM().get(productId)).isEqualByComparingTo(Quantity.of("1", stockUOMRecord));
+		assertThat(result.getChildHUs().getFirst().getWeightNet()).isNotNull();
+		assertThat(result.getChildHUs().getFirst().getWeightNet()).isEqualByComparingTo(Quantity.of("3", weightUOMRecord));
+		assertThat(result.getChildHUs().getFirst().getReferencingModels()).containsExactly(ref1);
 
 		assertThat(result.getChildHUs().get(1).getId()).isEqualTo(HuId.ofRepoId(3));
 		assertThat(result.getChildHUs().get(1).getProductQtysInStockUOM().get(productId)).isEqualByComparingTo(Quantity.of("100", stockUOMRecord));
@@ -230,11 +230,11 @@ class HUTest
 		assertThat(result.getWeightNet()).isEqualByComparingTo(Quantity.of("9", weightUOMRecord));
 		assertThat(result.getReferencingModels()).containsExactly(ref2);
 
-		assertThat(result.getChildHUs().get(0).getId()).isEqualTo(HuId.ofRepoId(2));
-		assertThat(result.getChildHUs().get(0).getProductQtysInStockUOM().get(productId)).isEqualByComparingTo(Quantity.of("10", stockUOMRecord));
-		assertThat(result.getChildHUs().get(0).getWeightNet()).isNotNull();
-		assertThat(result.getChildHUs().get(0).getWeightNet()).isEqualByComparingTo(Quantity.of("4", weightUOMRecord));
-		assertThat(result.getChildHUs().get(0).getReferencingModels()).containsExactly(ref2);
+		assertThat(result.getChildHUs().getFirst().getId()).isEqualTo(HuId.ofRepoId(2));
+		assertThat(result.getChildHUs().getFirst().getProductQtysInStockUOM().get(productId)).isEqualByComparingTo(Quantity.of("10", stockUOMRecord));
+		assertThat(result.getChildHUs().getFirst().getWeightNet()).isNotNull();
+		assertThat(result.getChildHUs().getFirst().getWeightNet()).isEqualByComparingTo(Quantity.of("4", weightUOMRecord));
+		assertThat(result.getChildHUs().getFirst().getReferencingModels()).containsExactly(ref2);
 
 		assertThat(result.getChildHUs().get(1).getId()).isEqualTo(HuId.ofRepoId(3));
 		assertThat(result.getChildHUs().get(1).getProductQtysInStockUOM().get(productId)).isEqualByComparingTo(Quantity.of("100", stockUOMRecord));

@@ -74,7 +74,7 @@ public class HUAssignmentDAOTest
 
 		final List<HuAssignment> results = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(inoutLine);
 		assertThat(results).hasSize(1);
-		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(vhu.getM_HU_ID());
+		assertThat(results.getFirst().getLowestLevelHU().getM_HU_ID()).isEqualTo(vhu.getM_HU_ID());
 	}
 
 	@Test
@@ -95,13 +95,13 @@ public class HUAssignmentDAOTest
 	public void retrieveHUAssignmentsForModel_2()
 	{
 		final List<I_M_HU_Assignment> huAssignments = createTopLevelAndTUAssignenments();
-		final I_M_HU tu = huAssignments.get(0).getM_TU_HU();
+		final I_M_HU tu = huAssignments.getFirst().getM_TU_HU();
 
 		// invoke the method under test
 		final List<HuAssignment> results = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(inoutLine);
 
 		assertThat(results).hasSize(1);
-		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(tu.getM_HU_ID());
+		assertThat(results.getFirst().getLowestLevelHU().getM_HU_ID()).isEqualTo(tu.getM_HU_ID());
 	}
 
 	/** @return assignments in the order expected by {@link HUAssignmentDAO#retrieveOrderedHUAssignmentRecords(Object)}. */
@@ -149,7 +149,7 @@ public class HUAssignmentDAOTest
 
 		final List<HuAssignment> results = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(inoutLine);
 		assertThat(results).hasSize(1);
-		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(tu.getM_HU_ID());
+		assertThat(results.getFirst().getLowestLevelHU().getM_HU_ID()).isEqualTo(tu.getM_HU_ID());
 	}
 
 	/**
@@ -198,6 +198,6 @@ public class HUAssignmentDAOTest
 		final List<HuAssignment> results = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(inoutLine);
 		assertThat(results).hasSize(2);
 		assertThat(results.get(1).getLowestLevelHU().getM_HU_ID()).isEqualTo(vhu1.getM_HU_ID());
-		assertThat(results.get(0).getLowestLevelHU().getM_HU_ID()).isEqualTo(vhu2.getM_HU_ID());
+		assertThat(results.getFirst().getLowestLevelHU().getM_HU_ID()).isEqualTo(vhu2.getM_HU_ID());
 	}
 }

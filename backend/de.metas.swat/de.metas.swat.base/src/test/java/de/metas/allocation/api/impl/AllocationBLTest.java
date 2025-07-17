@@ -157,9 +157,9 @@ public class AllocationBLTest
 		final List<I_C_AllocationLine> lines = allocationDAO.retrieveLines(alloc);
 		assertThat(lines).hasSize(1);
 
-		assertThat(lines.get(0).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
-		assertThat(lines.get(0).getC_Payment_ID()).isEqualTo(payment1.getC_Payment_ID());
-		assertThat(lines.get(0).getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
+		assertThat(lines.getFirst().getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.getFirst().getC_Payment_ID()).isEqualTo(payment1.getC_Payment_ID());
+		assertThat(lines.getFirst().getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
 
 		assertThat(invoiceDAO.retrieveOpenAmt(invoice))
 				.isEqualByComparingTo(invoice.getGrandTotal().subtract(payment1.getPayAmt()));
@@ -242,9 +242,9 @@ public class AllocationBLTest
 		final List<I_C_AllocationLine> lines = allocationDAO.retrieveLines(alloc);
 		assertThat(lines).hasSize(3);
 
-		assertThat(lines.get(0).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
-		assertThat(lines.get(0).getC_Payment_ID()).isEqualTo(payment1.getC_Payment_ID());
-		assertThat(lines.get(0).getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
+		assertThat(lines.getFirst().getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.getFirst().getC_Payment_ID()).isEqualTo(payment1.getC_Payment_ID());
+		assertThat(lines.getFirst().getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
 
 		assertThat(lines.get(1).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
 		assertThat(lines.get(1).getC_Payment_ID()).isEqualTo(payment2.getC_Payment_ID());
@@ -334,9 +334,9 @@ public class AllocationBLTest
 		final List<I_C_AllocationLine> lines = allocationDAO.retrieveLines(alloc);
 		assertThat(lines).hasSize(3);
 
-		assertThat(lines.get(0).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
-		assertThat(lines.get(0).getC_Payment_ID()).isEqualTo(payment1.getC_Payment_ID());
-		assertThat(lines.get(0).getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
+		assertThat(lines.getFirst().getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.getFirst().getC_Payment_ID()).isEqualTo(payment1.getC_Payment_ID());
+		assertThat(lines.getFirst().getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
 
 		assertThat(lines.get(1).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
 		assertThat(lines.get(1).getC_Payment_ID()).isEqualTo(payment2.getC_Payment_ID());

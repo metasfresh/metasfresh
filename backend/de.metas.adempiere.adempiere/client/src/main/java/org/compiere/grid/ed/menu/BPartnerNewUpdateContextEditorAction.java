@@ -108,8 +108,8 @@ abstract class BPartnerNewUpdateContextEditorAction extends AbstractContextMenuA
 		if (!createNew)
 		{
 			final Object value = editor.getValue();
-			if (value instanceof Integer)
-				BPartner_ID = ((Integer)value).intValue();
+			if (value instanceof Integer integer)
+				BPartner_ID = integer.intValue();
 			else if (value != null)
 				BPartner_ID = Integer.parseInt(value.toString());
 		}
@@ -122,7 +122,7 @@ abstract class BPartnerNewUpdateContextEditorAction extends AbstractContextMenuA
 				&& result == BPartner_ID) // the same
 			return;
 		// Maybe new BPartner - put in cache
-		lookup.getDirect(IValidationContext.NULL, new Integer(result), false, true);
+		lookup.getDirect(IValidationContext.NULL, Integer.valueOf(result), false, true);
 
 		// actionCombo (new Integer(result)); // data binding
 		gridField.getGridTab().setValue(gridField, result);

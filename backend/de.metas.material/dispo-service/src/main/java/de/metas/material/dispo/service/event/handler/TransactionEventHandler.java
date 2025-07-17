@@ -131,14 +131,14 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		else if (event.getPpOrderId() > 0)
 		{
 			final List<Candidate> candidateForPPorder = createCandidatesForPPOrder(event);
-			firePickRequiredEventIfFeasible(candidateForPPorder.get(0), event);
+			firePickRequiredEventIfFeasible(candidateForPPorder.getFirst(), event);
 
 			candidates.addAll(candidateForPPorder);
 		}
 		else if (event.getDdOrderLineId() > 0)
 		{
 			final List<Candidate> candidateForDDorder = createCandidateForDDOrder(event);
-			firePickRequiredEventIfFeasible(candidateForDDorder.get(0), event);
+			firePickRequiredEventIfFeasible(candidateForDDorder.getFirst(), event);
 
 			candidates.addAll(candidateForDDorder);
 		}

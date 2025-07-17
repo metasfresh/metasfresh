@@ -115,21 +115,20 @@ public class JsonPaymentService
 		validatePaymentId(externalId, orgId);
 
 		final Optional<BPartnerId> orgBPartnerIdOptional = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartnerId(orgId);
-		if (!orgBPartnerIdOptional.isPresent())
+		if (orgBPartnerIdOptional.isEmpty())
 		{
 			return ResponseEntity.unprocessableEntity().body("Cannot find the org-bpartner linked to orgId=" + orgId + "; orgCode=" + jsonInboundPaymentInfo.getOrgCode());
 		}
 
 		final Optional<BankAccountId> bankAccountIdOptional = bankAccountDAO.retrieveByBPartnerAndCurrencyAndIBAN(orgBPartnerIdOptional.get(), currencyId, jsonInboundPaymentInfo.getTargetIBAN());
-		if (!bankAccountIdOptional.isPresent())
+		if (bankAccountIdOptional.isEmpty())
 		{
-			return ResponseEntity.unprocessableEntity().body(String.format(
-					"Cannot find Bank Account for org-bpartner-id: %s, currency: %s and account: %s",
+			return ResponseEntity.unprocessableEntity().body("Cannot find Bank Account for org-bpartner-id: %s, currency: %s and account: %s".formatted(
 					orgBPartnerIdOptional.get().getRepoId(), jsonInboundPaymentInfo.getCurrencyCode(), jsonInboundPaymentInfo.getTargetIBAN()));
 		}
 
 		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonInboundPaymentInfo.getBpartnerIdentifier()), orgId);
-		if (!bPartnerIdOptional.isPresent())
+		if (bPartnerIdOptional.isEmpty())
 		{
 			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonInboundPaymentInfo.getBpartnerIdentifier());
 		}

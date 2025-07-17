@@ -88,7 +88,7 @@ public class DefaultRfQResponseRankingStrategy implements IRfQResponseRankingStr
 		// One response only => pick it as a winner
 		if (rfqResponses.size() == 1)
 		{
-			final I_C_RfQResponse winner = rfqResponses.get(0);
+			final I_C_RfQResponse winner = rfqResponses.getFirst();
 			winner.setIsSelectedWinner(true);
 			InterfaceWrapperHelper.save(winner);
 			return;

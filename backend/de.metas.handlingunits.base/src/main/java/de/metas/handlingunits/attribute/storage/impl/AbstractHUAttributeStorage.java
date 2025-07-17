@@ -77,9 +77,9 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		{
 			return null;
 		}
-		if (storage instanceof AbstractHUAttributeStorage)
+		if (storage instanceof AbstractHUAttributeStorage attributeStorage)
 		{
-			return (AbstractHUAttributeStorage)storage;
+			return attributeStorage;
 		}
 		return null;
 	}
@@ -107,9 +107,8 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		// There is no need to actually load the attributes, because when they will be loaded they will be correctly configured.
 		for (final IAttributeValue attributeValue : getAttributeValuesCurrent())
 		{
-			if (attributeValue instanceof HUAttributeValue)
+			if (attributeValue instanceof HUAttributeValue huAttributeValue)
 			{
-				final HUAttributeValue huAttributeValue = (HUAttributeValue)attributeValue;
 				huAttributeValue.setSaveOnChange(saveOnChange);
 				// NOTE: setSaveOnChange will also save the value right away if it was just activated
 			}
@@ -374,9 +373,8 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		// Set HU related fields
 		//
 		// NOTE: we assume given "attributeValue" was created by "toAttributeValue"
-		if (fromAttributeValue instanceof HUAttributeValue)
+		if (fromAttributeValue instanceof HUAttributeValue attributeValueImpl)
 		{
-			final HUAttributeValue attributeValueImpl = (HUAttributeValue)fromAttributeValue;
 
 			final I_M_HU_PI_Attribute piAttribute = attributeValueImpl.getM_HU_PI_Attribute();
 			huTrxAttribute.setPiAttributeId(piAttribute != null ? HuPackingInstructionsAttributeId.ofRepoId(piAttribute.getM_HU_PI_Attribute_ID()) : null);

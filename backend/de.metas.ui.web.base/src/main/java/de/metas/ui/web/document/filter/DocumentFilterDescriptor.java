@@ -338,7 +338,7 @@ public final class DocumentFilterDescriptor
 
 			if (parameters.size() == 1)
 			{
-				return parameters.get(0).getDisplayName();
+				return parameters.getFirst().getDisplayName();
 			}
 
 			return null;

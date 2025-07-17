@@ -64,7 +64,7 @@ public class PP_Product_BOM
 	{
 		final Optional<I_PP_Product_BOM> previousBOMVersion = productBOMDAO.getPreviousVersion(productBOMRecord, DocStatus.Completed);
 
-		if (!previousBOMVersion.isPresent())
+		if (previousBOMVersion.isEmpty())
 		{
 			return;
 		}

@@ -91,7 +91,7 @@ public class RefundInvoiceCandidateRepositoryTest
 		// invoke the method under test
 		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(query);
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0)).isEqualTo(refundCandidate);
+		assertThat(result.getFirst()).isEqualTo(refundCandidate);
 	}
 
 	@Test
@@ -112,7 +112,7 @@ public class RefundInvoiceCandidateRepositoryTest
 		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(query);
 
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0)).isEqualTo(refundCandidate);
+		assertThat(result.getFirst()).isEqualTo(refundCandidate);
 	}
 
 	@Test

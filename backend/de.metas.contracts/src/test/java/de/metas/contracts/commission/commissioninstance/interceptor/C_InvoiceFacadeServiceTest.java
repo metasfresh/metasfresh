@@ -236,7 +236,7 @@ class C_InvoiceFacadeServiceTest
 				.extracting(I_C_Commission_Share.COLUMNNAME_C_Commission_Instance_ID,
 							I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
 							I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
-				.contains(tuple(commissionInstances.get(0).getC_Commission_Instance_ID(),
+				.contains(tuple(commissionInstances.getFirst().getC_Commission_Instance_ID(),
 								commissionProductId.getRepoId(),
 								salesRepPartnerId.getRepoId()));
 
@@ -284,10 +284,10 @@ class C_InvoiceFacadeServiceTest
 							I_C_Commission_Share.COLUMNNAME_Commission_Product_ID,
 							I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
 				.contains(
-						tuple(commissionInstances.get(0).getC_Commission_Instance_ID(),
+						tuple(commissionInstances.getFirst().getC_Commission_Instance_ID(),
 							  commissionProductId.getRepoId(),
 							  salesRepPartnerId.getRepoId()),
-						tuple(commissionInstances.get(0).getC_Commission_Instance_ID(),
+						tuple(commissionInstances.getFirst().getC_Commission_Instance_ID(),
 							  commissionProduct2Id.getRepoId(),
 							  salesRepPartnerId.getRepoId()));
 	}

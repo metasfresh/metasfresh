@@ -24,6 +24,8 @@
 package org.adempiere.banking.model;
 
 import javax.annotation.Nullable;
+
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -34,6 +36,7 @@ import java.util.Properties;
 public class X_C_BankStatement_Import_File_Log extends org.compiere.model.PO implements I_C_BankStatement_Import_File_Log, org.compiere.model.I_Persistent 
 {
 
+	@Serial
 	private static final long serialVersionUID = -943655227L;
 
     /** Standard Constructor */

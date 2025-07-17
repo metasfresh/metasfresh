@@ -1,5 +1,6 @@
 package de.metas.ui.web.session;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Properties;
 
@@ -56,6 +57,7 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 			return getActualContext();
 		}
 
+		@Serial
 		private static final long serialVersionUID = 0;
 	};
 

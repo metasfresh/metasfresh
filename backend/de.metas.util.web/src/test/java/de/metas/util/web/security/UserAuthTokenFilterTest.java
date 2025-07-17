@@ -26,11 +26,11 @@ import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
 import de.metas.security.UserAuthTokenRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.assertj.core.api.OptionalAssert;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -73,7 +73,7 @@ public class PMM_PurchaseCandidate_DatePromised_FacetCollector extends SingleFac
 
 		//
 		// Add Before Today facet
-		facets.add(0, Facet.<I_PMM_PurchaseCandidate> builder()
+		facets.addFirst(Facet.<I_PMM_PurchaseCandidate> builder()
 				.setFacetCategory(getFacetCategory())
 				.setDisplayName(" < " + dateFormat.format(today))
 				.setFilter(TypedSqlQueryFilter.of(I_PMM_PurchaseCandidate.COLUMNNAME_DatePromised + "<" + DB.TO_DATE(today)))

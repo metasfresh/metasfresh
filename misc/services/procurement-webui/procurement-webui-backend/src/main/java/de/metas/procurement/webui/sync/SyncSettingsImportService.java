@@ -5,7 +5,7 @@ import de.metas.procurement.webui.service.ISettingsService;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 /*
  * #%L

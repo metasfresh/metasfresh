@@ -340,12 +340,12 @@ public class PPOrderRequestedEventHandlerTests
 		assertThat(orderBOMLines).hasSize(2);
 
 		assertThat(filter(ppOrder, BOMComponentType.Component)).hasSize(1);
-		final I_PP_Order_BOMLine componentLine = filter(ppOrder, BOMComponentType.Component).get(0);
+		final I_PP_Order_BOMLine componentLine = filter(ppOrder, BOMComponentType.Component).getFirst();
 		assertThat(componentLine.getDescription()).isEqualTo("supposed to become the component line");
 		assertThat(componentLine.getM_Product_ID()).isEqualTo(bomComponentProduct.getM_Product_ID());
 
 		assertThat(filter(ppOrder, BOMComponentType.CoProduct)).hasSize(1);
-		final I_PP_Order_BOMLine coProductLine = filter(ppOrder, BOMComponentType.CoProduct).get(0);
+		final I_PP_Order_BOMLine coProductLine = filter(ppOrder, BOMComponentType.CoProduct).getFirst();
 		assertThat(coProductLine.getDescription()).isEqualTo("supposed to become the co-product line");
 		assertThat(coProductLine.getM_Product_ID()).isEqualTo(bomCoProduct.getM_Product_ID());
 	}

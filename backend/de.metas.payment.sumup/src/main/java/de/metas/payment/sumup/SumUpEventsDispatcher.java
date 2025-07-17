@@ -6,13 +6,13 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.util.Services;
 import de.metas.util.lang.BooleanThreadLocal;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;

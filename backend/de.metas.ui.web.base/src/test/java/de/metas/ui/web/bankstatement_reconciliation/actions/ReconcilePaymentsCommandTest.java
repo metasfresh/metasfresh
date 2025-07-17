@@ -231,7 +231,7 @@ public class ReconcilePaymentsCommandTest
 				.statementAmt(statementAmt)
 				.build());
 
-		return rowsRepo.getBankStatementLineRowsByIds(ImmutableSet.of(bankStatementLineId)).get(0);
+		return rowsRepo.getBankStatementLineRowsByIds(ImmutableSet.of(bankStatementLineId)).getFirst();
 	}
 
 	@Builder(builderMethodName = "paymentRow", builderClassName = "PaymentRowBuilder")
@@ -266,12 +266,12 @@ public class ReconcilePaymentsCommandTest
 
 		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
 
-		return rowsRepo.getPaymentToReconcileRowsByIds(ImmutableSet.of(paymentId)).get(0);
+		return rowsRepo.getPaymentToReconcileRowsByIds(ImmutableSet.of(paymentId)).getFirst();
 	}
 
 	private PaymentToReconcileRow retrievePaymentRow(@NonNull final PaymentToReconcileRow paymentRow)
 	{
-		return rowsRepo.getPaymentToReconcileRowsByIds(ImmutableSet.of(paymentRow.getPaymentId())).get(0);
+		return rowsRepo.getPaymentToReconcileRowsByIds(ImmutableSet.of(paymentRow.getPaymentId())).getFirst();
 	}
 
 	private void assertMultiplePayments(final BankStatementLineId bankStatementLineId)

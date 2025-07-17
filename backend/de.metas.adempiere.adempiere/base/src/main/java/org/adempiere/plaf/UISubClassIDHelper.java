@@ -22,16 +22,12 @@ package org.adempiere.plaf;
  * #L%
  */
 
-
-import java.awt.Color;
-
-import javax.swing.JComponent;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.util.Check;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
 
 /**
  * Helper class to handle components which have UISubClassID support (i.e. implement {@link IUISubClassIDAware}).
@@ -43,9 +39,8 @@ public final class UISubClassIDHelper
 {
 	public static UISubClassIDHelper ofComponent(final JComponent comp)
 	{
-		if (comp instanceof IUISubClassIDAware)
+		if (comp instanceof IUISubClassIDAware uiSubClassIDAware)
 		{
-			final IUISubClassIDAware uiSubClassIDAware = (IUISubClassIDAware)comp;
 			final String uiSubClassID = uiSubClassIDAware.getUISubClassID();
 			return ofUISubClassID(uiSubClassID);
 		}
@@ -134,17 +129,17 @@ public final class UISubClassIDHelper
 	public boolean getBoolean(final String name, final boolean defaultValue)
 	{
 		Object value = UIManager.getDefaults().get(buildUIDefaultsKey(name));
-		if (value instanceof Boolean)
+		if (value instanceof Boolean boolean1)
 		{
-			return (boolean)value;
+			return boolean1;
 		}
 
 		if (uiSubClassID != null)
 		{
 			value = UIManager.getDefaults().get(name);
-			if (value instanceof Boolean)
+			if (value instanceof Boolean boolean1)
 			{
-				return (boolean)value;
+				return boolean1;
 			}
 		}
 
@@ -174,9 +169,9 @@ public final class UISubClassIDHelper
 			final Object value = keyValueList[i + 1];
 
 			final Object key;
-			if (keyOrig instanceof String)
+			if (keyOrig instanceof String string)
 			{
-				key = buildUIDefaultsKey(uiSubClassID, (String)keyOrig);
+				key = buildUIDefaultsKey(uiSubClassID, string);
 			}
 			else
 			{

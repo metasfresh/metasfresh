@@ -25,6 +25,7 @@ package org.adempiere.ui.sideactions.swing;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.Serial;
 
 import javax.swing.JCheckBox;
 
@@ -47,6 +48,7 @@ class CheckableSideActionComponent extends JCheckBox
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 1583557541057868151L;
 	private final ISideAction action;
 

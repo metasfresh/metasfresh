@@ -23,6 +23,7 @@ package org.adempiere.util.comparator;
  */
 
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Comparator;
 
@@ -37,6 +38,7 @@ public final class NullComparator implements Comparator<Object>, Serializable
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 8769676939269341332L;
 
 	@SuppressWarnings("rawtypes")

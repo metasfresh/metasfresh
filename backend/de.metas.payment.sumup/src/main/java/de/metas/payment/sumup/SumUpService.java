@@ -304,7 +304,7 @@ public class SumUpService
 		}
 		else
 		{
-			return trxs.get(0).getExternalId();
+			return trxs.getFirst().getExternalId();
 		}
 	}
 

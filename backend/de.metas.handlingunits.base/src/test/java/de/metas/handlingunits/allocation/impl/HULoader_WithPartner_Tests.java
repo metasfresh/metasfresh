@@ -133,11 +133,11 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: loaded Qty to our HU is 19
-		assertStorageLevel(hus.get(0), 19);
+		assertStorageLevel(hus.getFirst(), 19);
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner01, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)));
+		Assert.assertEquals("Invalid BPartner in " + hus.getFirst(), bpartner01, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.getFirst()));
 	}
 
 	/**
@@ -167,14 +167,14 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: loaded Qty to our HU is 19
-		assertStorageLevel(hus.get(0), 5);
+		assertStorageLevel(hus.getFirst(), 5);
 		assertStorageLevel(hus.get(1), 5);
 		assertStorageLevel(hus.get(2), 5);
 		assertStorageLevel(hus.get(3), 4);
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)));
+		Assert.assertEquals("Invalid BPartner in " + hus.getFirst(), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.getFirst()));
 		Assert.assertEquals("Invalid BPartner in " + hus.get(1), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(1)));
 		Assert.assertEquals("Invalid BPartner in " + hus.get(2), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(2)));
 		Assert.assertEquals("Invalid BPartner in " + hus.get(3), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(3)));
@@ -204,14 +204,14 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: loaded Qty to our HU is 19
-		assertStorageLevel(hus.get(0), 5);
+		assertStorageLevel(hus.getFirst(), 5);
 		assertStorageLevel(hus.get(1), 5);
 		assertStorageLevel(hus.get(2), 5);
 		assertStorageLevel(hus.get(3), 4);
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)));
+		Assert.assertEquals("Invalid BPartner in " + hus.getFirst(), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.getFirst()));
 		Assert.assertEquals("Invalid BPartner in " + hus.get(1), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(1)));
 		Assert.assertEquals("Invalid BPartner in " + hus.get(2), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(2)));
 		Assert.assertEquals("Invalid BPartner in " + hus.get(3), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(3)));

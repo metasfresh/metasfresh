@@ -692,9 +692,9 @@ public final class Check
 		{
 			return true;
 		}
-		if (a instanceof BigDecimal && b instanceof BigDecimal)
+		if (a instanceof BigDecimal decimal && b instanceof BigDecimal decimal1)
 		{
-			return ((BigDecimal)a).compareTo((BigDecimal)b) == 0;
+			return decimal.compareTo(decimal1) == 0;
 		}
 
 		if (a == null || !a.getClass().isArray())
@@ -702,10 +702,8 @@ public final class Check
 			return false;
 		}
 
-		if (a instanceof Object[] && b instanceof Object[])
+		if (a instanceof Object[] as && b instanceof Object[] bs)
 		{
-			final Object[] as = (Object[])a;
-			final Object[] bs = (Object[])b;
 			if (as.length != bs.length)
 			{
 				return false;
@@ -719,10 +717,8 @@ public final class Check
 			}
 			return true;
 		}
-		if (a instanceof int[] && b instanceof int[])
+		if (a instanceof int[] as && b instanceof int[] bs)
 		{
-			final int[] as = (int[])a;
-			final int[] bs = (int[])b;
 			if (as.length != bs.length)
 			{
 				return false;
@@ -736,10 +732,8 @@ public final class Check
 			}
 			return true;
 		}
-		if (a instanceof byte[] && b instanceof byte[])
+		if (a instanceof byte[] as && b instanceof byte[] bs)
 		{
-			final byte[] as = (byte[])a;
-			final byte[] bs = (byte[])b;
 			if (as.length != bs.length)
 			{
 				return false;
@@ -753,10 +747,8 @@ public final class Check
 			}
 			return true;
 		}
-		if (a instanceof char[] && b instanceof char[])
+		if (a instanceof char[] as && b instanceof char[] bs)
 		{
-			final char[] as = (char[])a;
-			final char[] bs = (char[])b;
 			if (as.length != bs.length)
 			{
 				return false;
@@ -770,10 +762,8 @@ public final class Check
 			}
 			return true;
 		}
-		if (a instanceof long[] && b instanceof long[])
+		if (a instanceof long[] as && b instanceof long[] bs)
 		{
-			final long[] as = (long[])a;
-			final long[] bs = (long[])b;
 			if (as.length != bs.length)
 			{
 				return false;
@@ -787,10 +777,8 @@ public final class Check
 			}
 			return true;
 		}
-		if (a instanceof short[] && b instanceof short[])
+		if (a instanceof short[] as && b instanceof short[] bs)
 		{
-			final short[] as = (short[])a;
-			final short[] bs = (short[])b;
 			if (as.length != bs.length)
 			{
 				return false;
@@ -804,10 +792,8 @@ public final class Check
 			}
 			return true;
 		}
-		if (a instanceof double[] && b instanceof double[])
+		if (a instanceof double[] as && b instanceof double[] bs)
 		{
-			final double[] as = (double[])a;
-			final double[] bs = (double[])b;
 			if (as.length != bs.length)
 			{
 				return false;
@@ -821,10 +807,8 @@ public final class Check
 			}
 			return true;
 		}
-		if (a instanceof float[] && b instanceof float[])
+		if (a instanceof float[] as && b instanceof float[] bs)
 		{
-			final float[] as = (float[])a;
-			final float[] bs = (float[])b;
 			if (as.length != bs.length)
 			{
 				return false;
@@ -838,10 +822,8 @@ public final class Check
 			}
 			return true;
 		}
-		if (a instanceof boolean[] && b instanceof boolean[])
+		if (a instanceof boolean[] as && b instanceof boolean[] bs)
 		{
-			final boolean[] as = (boolean[])a;
-			final boolean[] bs = (boolean[])b;
 			if (as.length != bs.length)
 			{
 				return false;

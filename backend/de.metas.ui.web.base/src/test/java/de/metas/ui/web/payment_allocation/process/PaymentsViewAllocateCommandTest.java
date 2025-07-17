@@ -541,7 +541,7 @@ public class PaymentsViewAllocateCommandTest
 
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(1);
-			assertThat(result.getCandidates().get(0))
+			assertThat(result.getCandidates().getFirst())
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
@@ -577,7 +577,7 @@ public class PaymentsViewAllocateCommandTest
 
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(1);
-			assertThat(result.getCandidates().get(0))
+			assertThat(result.getCandidates().getFirst())
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
@@ -619,7 +619,7 @@ public class PaymentsViewAllocateCommandTest
 
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(1);
-			assertThat(result.getCandidates().get(0))
+			assertThat(result.getCandidates().getFirst())
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
@@ -663,7 +663,7 @@ public class PaymentsViewAllocateCommandTest
 
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(2);
-			assertThat(result.getCandidates().get(0))
+			assertThat(result.getCandidates().getFirst())
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
@@ -717,7 +717,7 @@ public class PaymentsViewAllocateCommandTest
 
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(2);
-			assertThat(result.getCandidates().get(0))
+			assertThat(result.getCandidates().getFirst())
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
@@ -770,7 +770,7 @@ public class PaymentsViewAllocateCommandTest
 
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(1);
-			assertThat(result.getCandidates().get(0))
+			assertThat(result.getCandidates().getFirst())
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()

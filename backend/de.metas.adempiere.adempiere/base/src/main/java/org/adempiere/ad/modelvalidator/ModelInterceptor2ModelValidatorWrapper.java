@@ -1,13 +1,12 @@
 package org.adempiere.ad.modelvalidator;
 
+import de.metas.security.IUserLoginListener;
+import lombok.NonNull;
 import org.adempiere.ad.session.MFSession;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-
-import de.metas.security.IUserLoginListener;
-import lombok.NonNull;
 
 /**
  * Wraps an {@link IModelInterceptor} and make it behave like an {@link ModelValidator}
@@ -19,9 +18,9 @@ public final class ModelInterceptor2ModelValidatorWrapper implements ModelValida
 {
 	public static final ModelValidator wrapIfNeeded(final IModelInterceptor interceptor)
 	{
-		if (interceptor instanceof ModelValidator)
+		if (interceptor instanceof ModelValidator validator)
 		{
-			return (ModelValidator)interceptor;
+			return validator;
 		}
 		else
 		{
@@ -37,9 +36,9 @@ public final class ModelInterceptor2ModelValidatorWrapper implements ModelValida
 	{
 		this.interceptor = interceptor;
 		
-		if (interceptor instanceof IUserLoginListener)
+		if (interceptor instanceof IUserLoginListener listener)
 		{
-			this.userLoginListener = (IUserLoginListener)interceptor;
+			this.userLoginListener = listener;
 		}
 		else
 		{
@@ -67,14 +66,12 @@ public final class ModelInterceptor2ModelValidatorWrapper implements ModelValida
 			return true;
 		}
 
-		if (obj instanceof ModelInterceptor2ModelValidatorWrapper)
+		if (obj instanceof ModelInterceptor2ModelValidatorWrapper wrapper)
 		{
-			final ModelInterceptor2ModelValidatorWrapper wrapper = (ModelInterceptor2ModelValidatorWrapper)obj;
 			return interceptor.equals(wrapper.interceptor);
 		}
-		else if (obj instanceof IModelInterceptor)
+		else if (obj instanceof IModelInterceptor interceptor2)
 		{
-			final IModelInterceptor interceptor2 = (IModelInterceptor)obj;
 			return interceptor.equals(interceptor2);
 		}
 

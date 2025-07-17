@@ -1,25 +1,15 @@
 package org.adempiere.serverRoot.servlet;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-
-import javax.imageio.ImageIO;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.adempiere.serverRoot.util.WebEnv;
+import com.google.common.base.Optional;
+import de.metas.Profiles;
+import de.metas.cache.CCache;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.adempiere.serverRoot.util.WebUtil;
 import org.adempiere.service.IClientDAO;
 import org.compiere.Adempiere;
@@ -31,12 +21,17 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.context.annotation.Profile;
 
-import com.google.common.base.Optional;
-
-import de.metas.Profiles;
-import de.metas.cache.CCache;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Callable;
 
 /**
  * Servlet used to server images directly from our database

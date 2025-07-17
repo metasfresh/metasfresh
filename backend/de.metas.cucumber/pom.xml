@@ -39,7 +39,8 @@
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
         <cucumber.version>7.5.0</cucumber.version>
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <testcontainers.version>1.19.3</testcontainers.version>
+        <spring-test.version>6.2.7</spring-test.version>
     </properties>
 
     <dependencies>
@@ -103,11 +104,7 @@
             <version>${amqp-client.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+
 
         <!--
         Not using junit5 (jupiter) right now, because it seems to be half baked.
@@ -169,6 +166,12 @@
             <groupId>de.metas.banking</groupId>
             <artifactId>de.metas.banking.camt53</artifactId>
             <version>${metasfresh.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring-test.version}</version>
             <scope>test</scope>
         </dependency>
 

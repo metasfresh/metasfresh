@@ -42,7 +42,7 @@ public class MGroup extends X_R_Group
 	 */
 	public static MGroup get (Properties ctx, int R_Group_ID)
 	{
-		Integer key = new Integer (R_Group_ID);
+		Integer key = Integer.valueOf(R_Group_ID);
 		MGroup retValue = (MGroup) s_cache.get (key);
 		if (retValue != null)
 			return retValue;

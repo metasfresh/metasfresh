@@ -116,7 +116,7 @@ public final class WindowUIElementsGenerator
 			throw new AdempiereException("@NotFound@ @AD_Tab_ID@");
 		}
 
-		final I_AD_Tab masterTab = adTabs.get(0);
+		final I_AD_Tab masterTab = adTabs.getFirst();
 		migratePrimaryTab(masterTab);
 
 		final List<I_AD_Tab> detailTabs = getDirectChildTabs(adTabs, masterTab);

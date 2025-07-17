@@ -375,7 +375,7 @@ public final class ParsedSql
 				return "";
 			}
 
-			return tableNameAndAliases.get(0).getAliasOrTableName();
+			return tableNameAndAliases.getFirst().getAliasOrTableName();
 		}
 
 		public String getFirstTableNameOrEmpty()
@@ -385,7 +385,7 @@ public final class ParsedSql
 				return "";
 			}
 
-			return tableNameAndAliases.get(0).getTableName();
+			return tableNameAndAliases.getFirst().getTableName();
 		}
 	}
 }

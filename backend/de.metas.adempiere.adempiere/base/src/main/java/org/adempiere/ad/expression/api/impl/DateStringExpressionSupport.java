@@ -1,11 +1,7 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.ExpressionContext;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStringExpression;
@@ -15,8 +11,11 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import lombok.NonNull;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
 
 /*
  * #%L
@@ -92,9 +91,9 @@ public class DateStringExpressionSupport extends StringExpressionSupportTemplate
 			{
 				return null;
 			}
-			else if (valueObj instanceof Date)
+			else if (valueObj instanceof Date date)
 			{
-				return (Date)valueObj;
+				return date;
 			}
 			else if (TimeUtil.isDateOrTimeObject(valueObj))
 			{

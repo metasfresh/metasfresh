@@ -5,5 +5,5 @@
 // Generated on: 2024.11.04 at 04:00:25 PM CET 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://dpd.com/common/service/types/LoginService/2.0")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://dpd.com/common/service/types/LoginService/2.0")
 package com.dpd.common.ws.loginservice.v2_0.types;

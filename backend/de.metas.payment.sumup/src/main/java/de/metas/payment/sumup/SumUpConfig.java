@@ -65,7 +65,7 @@ public class SumUpConfig
 					.collect(Collectors.toList());
 			if (activeCardReaders.size() == 1)
 			{
-				defaultCardReaderExternalId = activeCardReaders.get(0).getExternalId();
+				defaultCardReaderExternalId = activeCardReaders.getFirst().getExternalId();
 			}
 		}
 

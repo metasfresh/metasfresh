@@ -173,9 +173,8 @@ public class ASIRestController
 		final IView view = viewsRepository.getView(viewId);
 		final IViewRow row = view.getById(rowId);
 
-		if (row instanceof WebuiASIEditingInfoAware)
+		if (row instanceof WebuiASIEditingInfoAware infoAware)
 		{
-			final WebuiASIEditingInfoAware infoAware = (WebuiASIEditingInfoAware)row;
 			return infoAware.getWebuiASIEditingInfo(attributeSetInstanceId);
 		}
 		else

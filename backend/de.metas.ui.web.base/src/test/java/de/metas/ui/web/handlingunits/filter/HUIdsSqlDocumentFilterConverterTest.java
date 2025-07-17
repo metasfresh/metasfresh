@@ -170,8 +170,9 @@ public class HUIdsSqlDocumentFilterConverterTest
 
 			assertThatGetSqlOf(data, noiseFilter("SomeColumn=1234"))
 					.isEqualTo(FilterSql.builder()
-							.whereClause(SqlAndParams.of("/* huIds */ ((NOT (M_HU_ID=?)))"
-									+ "\n AND /* NOISE_FILTER_ID */ (SomeColumn=1234)", 1))
+							.whereClause(SqlAndParams.of("""
+									/* huIds */ ((NOT (M_HU_ID=?)))
+									 AND /* NOISE_FILTER_ID */ (SomeColumn=1234)""", 1))
 							.alwaysIncludeSql(null)
 							.build());
 		}
@@ -234,8 +235,9 @@ public class HUIdsSqlDocumentFilterConverterTest
 
 				assertThatGetSqlOf(data, noiseFilter("SomeColumn=1234"))
 						.isEqualTo(FilterSql.builder()
-								.whereClause(SqlAndParams.of("/* huIds */ ((M_HU_ID=?))"
-										+ "\n AND /* NOISE_FILTER_ID */ (SomeColumn=1234)", 1))
+								.whereClause(SqlAndParams.of("""
+										/* huIds */ ((M_HU_ID=?))
+										 AND /* NOISE_FILTER_ID */ (SomeColumn=1234)""", 1))
 								.alwaysIncludeSql(FilterSql.RecordsToAlwaysIncludeSql.ofColumnNameAndRecordIds("M_HU_ID", 1))
 								.build());
 			}
@@ -275,8 +277,9 @@ public class HUIdsSqlDocumentFilterConverterTest
 
 				assertThatGetSqlOf(data, noiseFilter("SomeColumn=1234"))
 						.isEqualTo(FilterSql.builder()
-								.whereClause(SqlAndParams.of("/* huIds */ ((M_HU_ID=?))"
-										+ "\n AND /* NOISE_FILTER_ID */ (SomeColumn=1234)", 1))
+								.whereClause(SqlAndParams.of("""
+										/* huIds */ ((M_HU_ID=?))
+										 AND /* NOISE_FILTER_ID */ (SomeColumn=1234)""", 1))
 								.alwaysIncludeSql(FilterSql.RecordsToAlwaysIncludeSql.ofColumnNameAndRecordIds("M_HU_ID", 1))
 								.build());
 			}
@@ -297,8 +300,9 @@ public class HUIdsSqlDocumentFilterConverterTest
 
 				assertThatGetSqlOf(data, noiseFilter("SomeColumn=1234"))
 						.isEqualTo(FilterSql.builder()
-								.whereClause(SqlAndParams.of("/* huIds */ ((M_HU_ID=?))"
-										+ "\n AND /* NOISE_FILTER_ID */ (SomeColumn=1234)", 1))
+								.whereClause(SqlAndParams.of("""
+										/* huIds */ ((M_HU_ID=?))
+										 AND /* NOISE_FILTER_ID */ (SomeColumn=1234)""", 1))
 								.build());
 			}
 
@@ -316,8 +320,9 @@ public class HUIdsSqlDocumentFilterConverterTest
 
 				assertThatGetSqlOf(data, noiseFilter("SomeColumn=1234"))
 						.isEqualTo(FilterSql.builder()
-								.whereClause(SqlAndParams.of("/* huIds */ ((M_HU_ID IN (?,?)))"
-										+ "\n AND /* NOISE_FILTER_ID */ (SomeColumn=1234)", 1, 2))
+								.whereClause(SqlAndParams.of("""
+										/* huIds */ ((M_HU_ID IN (?,?)))
+										 AND /* NOISE_FILTER_ID */ (SomeColumn=1234)""", 1, 2))
 								.alwaysIncludeSql(FilterSql.RecordsToAlwaysIncludeSql.ofColumnNameAndRecordIds("M_HU_ID", 2))
 								.build());
 			}
@@ -337,8 +342,9 @@ public class HUIdsSqlDocumentFilterConverterTest
 
 				assertThatGetSqlOf(data, noiseFilter("SomeColumn=1234"))
 						.isEqualTo(FilterSql.builder()
-								.whereClause(SqlAndParams.of("/* huIds */ ((M_HU_ID=?))"
-										+ "\n AND /* NOISE_FILTER_ID */ (SomeColumn=1234)", 2))
+								.whereClause(SqlAndParams.of("""
+										/* huIds */ ((M_HU_ID=?))
+										 AND /* NOISE_FILTER_ID */ (SomeColumn=1234)""", 2))
 								.alwaysIncludeSql(FilterSql.RecordsToAlwaysIncludeSql.ofColumnNameAndRecordIds("M_HU_ID", 2))
 								.build());
 			}

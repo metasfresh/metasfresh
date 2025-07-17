@@ -1,10 +1,6 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability.v1;
 
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXBElement;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.AvailabilityType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.RequirementType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityClientJAXBConverters;
@@ -34,7 +30,10 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitSubs
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitsanfrageEinzelneAntwort;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitsantwortArtikel;
+import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L

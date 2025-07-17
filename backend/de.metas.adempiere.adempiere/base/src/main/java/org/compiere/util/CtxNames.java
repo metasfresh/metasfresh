@@ -192,9 +192,9 @@ public class CtxNames
 	private static String extractDefaultValue(final ArrayList<String> modifiers)
 	{
 		final String defaultValue;
-		if (!modifiers.isEmpty() && !isModifier(modifiers.get(modifiers.size() - 1)))
+		if (!modifiers.isEmpty() && !isModifier(modifiers.getLast()))
 		{
-			defaultValue = modifiers.remove(modifiers.size() - 1);
+			defaultValue = modifiers.removeLast();
 		}
 		else
 		{

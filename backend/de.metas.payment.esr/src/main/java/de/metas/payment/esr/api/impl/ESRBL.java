@@ -140,7 +140,7 @@ public class ESRBL implements IESRBL
 		final List<I_C_BP_BankAccount> bankAccounts = esrBankAccountDAO.fetchOrgEsrAccounts(org);
 
 		Check.assume(!bankAccounts.isEmpty(), "No ESR bank account found.");
-		return bankAccounts.get(0);
+		return bankAccounts.getFirst();
 	}
 
 	/**

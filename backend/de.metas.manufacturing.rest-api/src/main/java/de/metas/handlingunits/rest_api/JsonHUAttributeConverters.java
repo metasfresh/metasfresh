@@ -23,22 +23,22 @@ public class JsonHUAttributeConverters
 		{
 			return "";
 		}
-		else if (value instanceof java.sql.Timestamp)
+		else if (value instanceof Timestamp timestamp)
 		{
-			final LocalDateTime dateTime = ((Timestamp)value).toLocalDateTime();
+			final LocalDateTime dateTime = timestamp.toLocalDateTime();
 			return toDisplayValue_fromLocalDateTime(dateTime, adLanguage);
 		}
-		else if (value instanceof LocalDateTime)
+		else if (value instanceof LocalDateTime time)
 		{
-			return toDisplayValue_fromLocalDateTime((LocalDateTime)value, adLanguage);
+			return toDisplayValue_fromLocalDateTime(time, adLanguage);
 		}
-		else if (value instanceof LocalDate)
+		else if (value instanceof LocalDate date)
 		{
-			return toDisplayValue_fromLocalDate((LocalDate)value, adLanguage);
+			return toDisplayValue_fromLocalDate(date, adLanguage);
 		}
-		else if (value instanceof BigDecimal)
+		else if (value instanceof BigDecimal decimal)
 		{
-			return TranslatableStrings.number((BigDecimal)value, DisplayType.Number).translate(adLanguage);
+			return TranslatableStrings.number(decimal, DisplayType.Number).translate(adLanguage);
 		}
 		else
 		{

@@ -190,7 +190,7 @@ public class SumUpConfigRepository
 					.collect(Collectors.toList());
 			if (activeCardReaders.size() == 1)
 			{
-				defaultCardReaderExternalId = activeCardReaders.get(0).getExternalId();
+				defaultCardReaderExternalId = activeCardReaders.getFirst().getExternalId();
 			}
 		}
 
@@ -245,7 +245,7 @@ public class SumUpConfigRepository
 			final List<SumUpConfig> activeConfigs = list.stream()
 					.filter(SumUpConfig::isActive)
 					.collect(ImmutableList.toImmutableList());
-			this.defaultConfig = activeConfigs.size() == 1 ? activeConfigs.get(0) : null;
+			this.defaultConfig = activeConfigs.size() == 1 ? activeConfigs.getFirst() : null;
 		}
 
 		public SumUpConfig getById(final @NonNull SumUpConfigId id)

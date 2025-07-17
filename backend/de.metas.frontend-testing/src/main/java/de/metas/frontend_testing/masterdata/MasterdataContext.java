@@ -100,7 +100,7 @@ public class MasterdataContext
 		}
 		else
 		{
-			return result.get(0);
+			return result.getFirst();
 		}
 	}
 
@@ -110,7 +110,7 @@ public class MasterdataContext
 
 		if (result.size() == 1)
 		{
-			return Optional.of(result.get(0));
+			return Optional.of(result.getFirst());
 		}
 		else
 		{

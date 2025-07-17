@@ -27,9 +27,11 @@ import org.compiere.util.DisplayType;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.io.Serial;
 
 class SelectionColumnCellRenderer extends DefaultTableCellRenderer
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public SelectionColumnCellRenderer()

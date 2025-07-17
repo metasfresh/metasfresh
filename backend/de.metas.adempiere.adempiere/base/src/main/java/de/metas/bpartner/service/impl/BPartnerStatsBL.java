@@ -1,18 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
-import org.compiere.model.X_C_BPartner_Stats;
-import org.compiere.util.Env;
-
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -21,6 +8,19 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
+import org.compiere.model.X_C_BPartner_Stats;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -124,7 +124,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 			return new BigDecimal(0.90);
 		}
 
-		return creditWatchPercent.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
+		return creditWatchPercent.divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
 	}
 
 	@Override

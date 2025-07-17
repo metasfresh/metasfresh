@@ -146,7 +146,7 @@ public class InventoryBL implements IInventoryBL
 
 		GuavaCollectors.groupByAndStream(inventoryLines.stream(), I_M_InventoryLine::getM_Locator_ID)
 				.forEach(
-						inventoryLinesPerLocator -> linesToLocators.put(inventoryLinesPerLocator.get(0).getM_Locator_ID(),
+						inventoryLinesPerLocator -> linesToLocators.put(inventoryLinesPerLocator.getFirst().getM_Locator_ID(),
 								inventoryLinesPerLocator));
 
 		final List<Integer> locatorIds = linesToLocators

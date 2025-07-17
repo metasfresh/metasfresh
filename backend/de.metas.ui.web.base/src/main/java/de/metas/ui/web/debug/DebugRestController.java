@@ -256,9 +256,8 @@ public class DebugRestController
 			final Map<String, Object> info = new HashMap<>();
 			info.put("name", currentLogger.getName());
 			info.put("id", System.identityHashCode(currentLogger));
-			if (currentLogger instanceof ch.qos.logback.classic.Logger)
+			if (currentLogger instanceof ch.qos.logback.classic.Logger logbackLogger)
 			{
-				final ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger)currentLogger;
 				final Level level = logbackLogger.getLevel();
 				final Level effectiveLevel = logbackLogger.getEffectiveLevel();
 				info.put("level", level == null ? null : level.toString());

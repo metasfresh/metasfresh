@@ -25,6 +25,8 @@ package de.metas.pricing.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * @author al
  */
@@ -33,6 +35,7 @@ public class ProductPriceNotFoundException extends AdempiereException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 8138125492429167219L;
 
 	public ProductPriceNotFoundException(final String message)

@@ -87,7 +87,7 @@ public class TotalQtyCUBreakdownCalculatorTest
 		// Remove all LUs and test
 		final List<LUQtys> luQtys = calculator.subtractAllLUs();
 		Assert.assertEquals("Invalid number of LUs: " + luQtys, 3 + 1, luQtys.size());
-		Assert.assertEquals(expectation_fullLU, luQtys.get(0));
+		Assert.assertEquals(expectation_fullLU, luQtys.getFirst());
 		Assert.assertEquals(expectation_fullLU, luQtys.get(1));
 		Assert.assertEquals(expectation_fullLU, luQtys.get(2));
 		Assert.assertEquals(expectation_partialLU, luQtys.get(3));
@@ -128,7 +128,7 @@ public class TotalQtyCUBreakdownCalculatorTest
 		// Remove all LUs and test
 		final List<LUQtys> luQtys = calculator.subtractAllLUs();
 		Assert.assertEquals("Invalid number of LUs: " + luQtys, 1, luQtys.size());
-		Assert.assertEquals(expectation_partialLU, luQtys.get(0));
+		Assert.assertEquals(expectation_partialLU, luQtys.getFirst());
 		Assert.assertEquals("Invalid hasAvailableQty", false, calculator.hasAvailableQty());
 	}
 

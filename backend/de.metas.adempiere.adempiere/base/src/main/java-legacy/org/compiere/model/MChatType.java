@@ -42,7 +42,7 @@ public class MChatType extends X_CM_ChatType
 	 */
 	public static MChatType get (Properties ctx, int CM_ChatType_ID)
 	{
-		Integer key = new Integer (CM_ChatType_ID);
+		Integer key = Integer.valueOf(CM_ChatType_ID);
 		MChatType retValue = (MChatType)s_cache.get (key);
 		if (retValue != null)
 			return retValue;

@@ -83,5 +83,5 @@ public class EMailRequest
 		}
 	}
 
-	public EMailAddress getTo() {return toList.get(0);}
+	public EMailAddress getTo() {return toList.getFirst();}
 }

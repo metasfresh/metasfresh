@@ -373,7 +373,7 @@ import java.util.Set;
 
 			return Quantity.zero(CoalesceUtil.coalesce(getC_UOMOrNull(), uomWEach));
 		}
-		return getQtyForProductStorages(productStorages.get(0).getC_UOM());
+		return getQtyForProductStorages(productStorages.getFirst().getC_UOM());
 	}
 
 	private final IHUProductStorage createProductStorage(final I_M_HU_Storage storage)
@@ -413,8 +413,8 @@ import java.util.Set;
 	{
 		final List<IHUProductStorage> productStorages = getProductStorages();
 		return productStorages.size() == 1
-				&& ProductId.equals(productStorages.get(0).getProductId(), productId)
-				&& productStorages.get(0).getQty(qty.getUOM()).compareTo(qty) == 0;
+				&& ProductId.equals(productStorages.getFirst().getProductId(), productId)
+				&& productStorages.getFirst().getQty(qty.getUOM()).compareTo(qty) == 0;
 	}
 
 	@Override
@@ -426,7 +426,7 @@ import java.util.Set;
 
 	private static boolean isSingleProductStorageMatching(@NonNull final List<IHUProductStorage> productStorages, @NotNull final ProductId productId)
 	{
-		return productStorages.size() == 1 && ProductId.equals(productStorages.get(0).getProductId(), productId);
+		return productStorages.size() == 1 && ProductId.equals(productStorages.getFirst().getProductId(), productId);
 	}
 
 	@Override

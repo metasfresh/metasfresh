@@ -227,7 +227,7 @@ public class HUReservationServiceTest
 		final List<IHUProductStorage> productStorages = storage.getProductStorages();
 		assertThat(productStorages).hasSize(1);
 
-		final Quantity luQuantity = productStorages.get(0).getQty(cuUOM);
+		final Quantity luQuantity = productStorages.getFirst().getQty(cuUOM);
 		return luQuantity.toBigDecimal();
 	}
 }

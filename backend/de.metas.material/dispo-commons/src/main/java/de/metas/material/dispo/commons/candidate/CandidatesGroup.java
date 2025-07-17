@@ -57,13 +57,13 @@ public class CandidatesGroup implements Iterable<Candidate>
 	public ClientAndOrgId getClientAndOrgId()
 	{
 		assertNotEmpty();
-		return list.get(0).getClientAndOrgId();
+		return list.getFirst().getClientAndOrgId();
 	}
 
 	public MaterialDispoGroupId getEffectiveGroupId()
 	{
 		assertNotEmpty();
-		return list.get(0).getEffectiveGroupId();
+		return list.getFirst().getEffectiveGroupId();
 	}
 
 	public CandidateBusinessCase getBusinessCase()

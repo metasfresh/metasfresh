@@ -92,7 +92,7 @@ public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocation
 
 		//
 		// Alter weight on the first Paloxe -> make it 500 instead of 505 (under-delivery of 5)
-		final I_M_HU paloxe1 = paloxes.get(0);
+		final I_M_HU paloxe1 = paloxes.getFirst();
 		final IAttributeStorage attributeStorage1 = attributeStorageFactory.getAttributeStorage(paloxe1);
 		attributeStorage1.setValue(attr_WeightGross, BigDecimal.valueOf(500));
 
@@ -117,7 +117,7 @@ public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocation
 
 		//
 		// Alter weight on the first Paloxe -> make it 510 instead of 505 (over-delivery of 5)
-		final I_M_HU paloxe1 = paloxes.get(0);
+		final I_M_HU paloxe1 = paloxes.getFirst();
 		final IAttributeStorage attributeStorage1 = attributeStorageFactory.getAttributeStorage(paloxe1);
 		attributeStorage1.setValue(attr_WeightGross, BigDecimal.valueOf(510));
 
@@ -141,7 +141,7 @@ public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocation
 				createReceiptSchedule(BigDecimal.valueOf(4300))
 				);
 
-		final I_C_UOM cuUOM = load(receiptSchedules.get(0).getC_UOM_ID(), I_C_UOM.class);
+		final I_C_UOM cuUOM = load(receiptSchedules.getFirst().getC_UOM_ID(), I_C_UOM.class);
 
 		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContext)
 				.setQtyToAllocateTarget(new Quantity(BigDecimal.valueOf(4300), cuUOM)) // i.e. 10xPaloxe
@@ -157,7 +157,7 @@ public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocation
 
 		//
 		// Alter weight on the first Paloxe -> make it 510 instead of 505 (over-delivery of 5)
-		final I_M_HU paloxe1 = paloxes.get(0);
+		final I_M_HU paloxe1 = paloxes.getFirst();
 		final IAttributeStorage paloxe1_attributes = attributeStorageFactory.getAttributeStorage(paloxe1);
 		paloxe1_attributes.setValue(attr_WeightGross, BigDecimal.valueOf(510));
 
@@ -178,7 +178,7 @@ public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocation
 				.newTUExpectation()
 					.gross("510").net("435").tare("75").tareAdjust("0")
 					.newHUReceiptScheduleAllocExpectations()
-						.receiptSchedule(receiptSchedules.get(0))
+						.receiptSchedule(receiptSchedules.getFirst())
 						.huQtyAllocated("232.674") // = 230 + (5 * 230/430)
 						.endExpectation()
 					.newHUReceiptScheduleAllocExpectations()

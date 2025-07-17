@@ -156,8 +156,8 @@ public class StockChangedEventHandlerTest
 		assertThat(candidate.getClientAndOrgId().getClientId().getRepoId()).isEqualTo(10);
 		assertThat(candidate.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
-		assertThat(candidate.getTransactionDetails().get(0).getStockId()).isEqualTo(30);
-		assertThat(candidate.getTransactionDetails().get(0).getResetStockPInstanceId().getRepoId()).isEqualTo(40);
-		assertThat(candidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(50);
+		assertThat(candidate.getTransactionDetails().getFirst().getStockId()).isEqualTo(30);
+		assertThat(candidate.getTransactionDetails().getFirst().getResetStockPInstanceId().getRepoId()).isEqualTo(40);
+		assertThat(candidate.getTransactionDetails().getFirst().getTransactionId()).isEqualTo(50);
 	}
 }

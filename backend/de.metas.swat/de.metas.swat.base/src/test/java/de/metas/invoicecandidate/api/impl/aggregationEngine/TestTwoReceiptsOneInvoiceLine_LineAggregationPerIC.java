@@ -195,7 +195,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 
 		// iol11: set Attribute1=Value1
 		{
-			Assert.assertSame(iol11, inoutLines.get(0));
+			Assert.assertSame(iol11, inoutLines.getFirst());
 
 			//@formatter:off
 			iol11_attributeExpectations = InvoiceLineAttributeExpectations.newExpectation()

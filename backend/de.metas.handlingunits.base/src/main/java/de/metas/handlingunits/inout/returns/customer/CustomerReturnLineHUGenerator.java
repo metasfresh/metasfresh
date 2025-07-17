@@ -171,7 +171,7 @@ class CustomerReturnLineHUGenerator
 		final List<I_M_InOutLine> inOutLines = getInOutLines();
 		if (inOutLines.size() == 1)
 		{
-			return inOutLines.get(0);
+			return inOutLines.getFirst();
 		}
 		else
 		{

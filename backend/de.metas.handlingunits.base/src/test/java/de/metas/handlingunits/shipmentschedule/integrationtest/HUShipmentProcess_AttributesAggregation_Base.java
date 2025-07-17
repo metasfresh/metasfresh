@@ -86,7 +86,7 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 	{
 		//
 		// Get shipment schedules
-		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.get(0);
+		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.getFirst();
 
 		//
 		// Create initial LUs

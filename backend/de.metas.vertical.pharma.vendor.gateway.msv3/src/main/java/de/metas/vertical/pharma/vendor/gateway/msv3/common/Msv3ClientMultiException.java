@@ -1,5 +1,6 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.common;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.Map;
 
@@ -61,6 +62,7 @@ public class Msv3ClientMultiException extends AdempiereException implements Avai
 		return new Msv3ClientMultiException(allItemsWithSameThrowable, msv3ClientException);
 	}
 
+	@Serial
 	private static final long serialVersionUID = -8058915938494697758L;
 
 	@Getter

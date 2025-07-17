@@ -236,7 +236,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		}
 		else if (rows.size() == 1)
 		{
-			return rows.get(0);
+			return rows.getFirst();
 		}
 		else
 		{
@@ -267,7 +267,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		}
 		else if (rows.size() == 1)
 		{
-			return LookupValuesList.fromNullable(rows.get(0));
+			return LookupValuesList.fromNullable(rows.getFirst());
 		}
 		else
 		{

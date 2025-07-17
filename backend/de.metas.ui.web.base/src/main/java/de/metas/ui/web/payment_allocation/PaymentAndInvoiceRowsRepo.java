@@ -301,7 +301,7 @@ public class PaymentAndInvoiceRowsRepo
 		}
 		else if (invoiceRows.size() == 1)
 		{
-			return Optional.of(invoiceRows.get(0));
+			return Optional.of(invoiceRows.getFirst());
 		}
 		else
 		{
@@ -340,7 +340,7 @@ public class PaymentAndInvoiceRowsRepo
 		}
 		else if (paymentRows.size() == 1)
 		{
-			return Optional.of(paymentRows.get(0));
+			return Optional.of(paymentRows.getFirst());
 		}
 		else
 		{

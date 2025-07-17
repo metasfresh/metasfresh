@@ -87,7 +87,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 	@SuppressWarnings("unused")
 	private void test_2StepShipment_WithDifferentInvoicesOverall(final String invoiceRuleOverride)
 	{
-		final I_C_Invoice_Candidate ic = test_2StepShipment_CommonSetup_Step01(false, null).get(0); // isSOTrx, priceEntered_Override
+		final I_C_Invoice_Candidate ic = test_2StepShipment_CommonSetup_Step01(false, null).getFirst(); // isSOTrx, priceEntered_Override
 
 		//
 		// Partially invoice both at the same time
@@ -224,7 +224,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
 			Assert.assertEquals("We are expecting only one invoice: " + invoices, 1, invoices.size());
 
-			final IInvoiceHeader invoice = invoices.get(0);
+			final IInvoiceHeader invoice = invoices.getFirst();
 			Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.VendorInvoice, invoice.getDocBaseType());
 			Assert.assertEquals("Invalid M_InOut_ID", inOut1.getM_InOut_ID(), invoice.getM_InOut_ID());
 			validateInvoiceHeader("Invoice", invoice, ic);
@@ -293,7 +293,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			// System.out.println(invoices);
 			Assert.assertEquals("We are expecting only one invoice: " + invoices, 1, invoices.size());
 
-			final IInvoiceHeader invoice = invoices.get(0);
+			final IInvoiceHeader invoice = invoices.getFirst();
 			Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.VendorInvoice, invoice.getDocBaseType());
 			// Assert.assertEquals("Invalid M_InOut_ID", inOut2.getM_InOut_ID(), invoice.getM_InOut_ID());
 			validateInvoiceHeader("Invoice", invoice, ic);
@@ -301,7 +301,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 			Assert.assertEquals("We are expecting only one invoice line: " + invoiceLines, 1, invoiceLines.size());
 
-			final IInvoiceLineRW invoiceLine = invoiceLines.get(0);
+			final IInvoiceLineRW invoiceLine = invoiceLines.getFirst();
 			Assert.assertEquals("Invalid PriceActual", 1, invoiceLine.getPriceActual().toBigDecimal().intValue());
 			assertThat("Invalid QtysToInvoice", invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2_8.getStockQty().toBigDecimal()));
 			assertThat("Invalid NetLineAmt", invoiceLine.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2_8.getUOMQtyNotNull().toBigDecimal()) /* price=1 */);

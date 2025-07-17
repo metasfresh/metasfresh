@@ -102,7 +102,7 @@ public class Allocation
 		}
 
 		//	Async BPartner Test
-		Integer key = new Integer(m_C_BPartner_ID);
+		Integer key = Integer.valueOf(m_C_BPartner_ID);
 		if (!m_bpartnerCheck.contains(key))
 		{
 			new Thread()
@@ -215,7 +215,7 @@ public class Allocation
 			while (rs.next())
 			{
 				Vector<Object> line = new Vector<>();
-				line.add(new Boolean(false));       //  0-Selection
+				line.add(Boolean.valueOf(false));       //  0-Selection
 				line.add(rs.getTimestamp(1));       //  1-TrxDate
 				KeyNamePair pp = new KeyNamePair(rs.getInt(3), rs.getString(2));
 				line.add(pp);                       //  2-DocumentNo
@@ -353,7 +353,7 @@ public class Allocation
 			while (rs.next())
 			{
 				Vector<Object> line = new Vector<>();
-				line.add(new Boolean(false));       //  0-Selection
+				line.add(Boolean.valueOf(false));       //  0-Selection
 				line.add(rs.getTimestamp(1));       //  1-TrxDate
 				KeyNamePair pp = new KeyNamePair(rs.getInt(3), rs.getString(2));
 				line.add(pp);                       //  2-Value
@@ -739,7 +739,7 @@ public class Allocation
 				KeyNamePair pp = (KeyNamePair)payment.getValueAt(i, 2);   //  Value
 				//  Payment variables
 				int C_Payment_ID = pp.getKey();
-				paymentList.add(new Integer(C_Payment_ID));
+				paymentList.add(Integer.valueOf(C_Payment_ID));
 				//
 				BigDecimal PaymentAmt = (BigDecimal)payment.getValueAt(i, i_payment);  //  Applied Payment
 				amountList.add(PaymentAmt);

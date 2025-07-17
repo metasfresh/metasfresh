@@ -593,7 +593,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 		if (result.size() == 1)
 		{
-			return result.get(0);
+			return result.getFirst();
 		}
 
 		if (!throwExIfMoreThenOneFound)
@@ -623,7 +623,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		{
 			return null;
 		}
-		return result.get(0);
+		return result.getFirst();
 	}
 
 	public <T> boolean match(Class<T> clazz, IQueryFilter<T> filter)
@@ -832,9 +832,8 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		{
 			throw new IllegalArgumentException("ModelValidator registration is not supported. Please use " + IModelInterceptor.class);
 		}
-		else if (interceptorObj instanceof IModelInterceptor)
+		else if (interceptorObj instanceof IModelInterceptor interceptor)
 		{
-			final IModelInterceptor interceptor = (IModelInterceptor)interceptorObj;
 			addModelInterceptor(interceptor);
 		}
 		else

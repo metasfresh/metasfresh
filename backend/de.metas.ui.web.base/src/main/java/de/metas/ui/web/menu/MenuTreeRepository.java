@@ -220,9 +220,8 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 			{
 				return true;
 			}
-			if (obj instanceof MenuTreeKey)
+			if (obj instanceof MenuTreeKey other)
 			{
-				final MenuTreeKey other = (MenuTreeKey)obj;
 				return Objects.equals(userRolePermissionsKey, other.userRolePermissionsKey)
 						&& Objects.equals(adLanguage, other.adLanguage);
 			}

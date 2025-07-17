@@ -84,7 +84,7 @@ public class MCharge extends X_C_Charge
 	 */
 	public static MCharge get (Properties ctx, int C_Charge_ID)
 	{
-		Integer key = new Integer (C_Charge_ID);
+		Integer key = Integer.valueOf(C_Charge_ID);
 		MCharge retValue = s_cache.get (key);
 		if (retValue != null)
 			return retValue;

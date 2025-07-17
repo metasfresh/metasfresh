@@ -52,9 +52,8 @@ public final class CleanWhitespaceQueryFilterModifier implements IQueryFilterMod
 	public String getValueSql(Object value, List<Object> params)
 	{
 		final String valueSql;
-		if (value instanceof ModelColumnNameValue<?>)
+		if (value instanceof ModelColumnNameValue<?> modelValue)
 		{
-			final ModelColumnNameValue<?> modelValue = (ModelColumnNameValue<?>)value;
 			valueSql = modelValue.getColumnName();
 		}
 		else

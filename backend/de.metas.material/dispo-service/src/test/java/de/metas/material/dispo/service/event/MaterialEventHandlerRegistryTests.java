@@ -257,18 +257,18 @@ public class MaterialEventHandlerRegistryTests
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(8);
 
 		// demand created before we processed the ddOrderAdvisedEvent
-		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, toWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, toWarehouseId).getFirst();
 		final I_MD_Candidate toWarehouseDemandStock = DispoTestUtils.retrieveStockCandidate(toWarehouseDemand);
 
 		// supply created "unspecific" before we processed the ddOrderAdvisedEvent, and then enriched with the ddOrderAdvisedEvent's data
-		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, toWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, toWarehouseId).getFirst();
 		final I_MD_Candidate toWarehouseSupplyStock = DispoTestUtils.retrieveStockCandidate(toWarehouseSupply);
 
 		// demand  created when we processed the ddOrderAdvisedEvent
-		final I_MD_Candidate fromWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, fromWarehouseId).get(0);
+		final I_MD_Candidate fromWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, fromWarehouseId).getFirst();
 		final I_MD_Candidate fromWarehouseDemandStock = DispoTestUtils.retrieveStockCandidate(fromWarehouseDemand);
 
-		final I_MD_Candidate fromWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, fromWarehouseId).get(0);
+		final I_MD_Candidate fromWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, fromWarehouseId).getFirst();
 		final I_MD_Candidate fromWarehouseSupplyStock = DispoTestUtils.retrieveStockCandidate(fromWarehouseSupply);
 
 		assertThat(DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords()))

@@ -357,8 +357,8 @@ public class PrinterBLTest extends AbstractPrintingTest
 		// test
 		final List<I_AD_PrinterTray_Matching> trayMatchings = Services.get(IPrintingDAO.class).retrievePrinterTrayMatchings(printerMatching);
 		assertThat("After the HW printer change, there should be still one tray matching", trayMatchings.size(), equalTo(1));
-		assertThat(trayMatchings.get(0).getAD_PrinterHW_MediaTray(), equalTo(printerTrayHW2));
-		assertThat(trayMatchings.get(0), equalTo(printerTrayMatching));
+		assertThat(trayMatchings.getFirst().getAD_PrinterHW_MediaTray(), equalTo(printerTrayHW2));
+		assertThat(trayMatchings.getFirst(), equalTo(printerTrayMatching));
 	}
 
 	/**
@@ -505,6 +505,6 @@ public class PrinterBLTest extends AbstractPrintingTest
 		// test
 		final List<I_AD_PrinterTray_Matching> trayMatchings = Services.get(IPrintingDAO.class).retrievePrinterTrayMatchings(printerMatching);
 		assertThat("After the HW printer change, there should be one tray matching", trayMatchings.size(), equalTo(1));
-		assertThat(trayMatchings.get(0).getAD_PrinterHW_MediaTray(), equalTo(printerTrayHW2));
+		assertThat(trayMatchings.getFirst().getAD_PrinterHW_MediaTray(), equalTo(printerTrayHW2));
 	}
 }

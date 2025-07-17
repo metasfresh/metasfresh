@@ -8,6 +8,10 @@ import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Trace;
@@ -26,10 +30,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Nullable;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -87,7 +87,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	private static final ImmutableSet<Class<?>> EXCEPTIONS_ExcludeFromLogging = ImmutableSet.of(NotLoggedInException.class);
 
 	private static final ImmutableMap<Class<?>, HttpStatus> EXCEPTION_HTTPSTATUS = ImmutableMap.<Class<?>, HttpStatus>builder()
-			.put(org.elasticsearch.client.transport.NoNodeAvailableException.class, HttpStatus.SERVICE_UNAVAILABLE)
+			.put(co.elastic.clients.transport.TransportException.class, HttpStatus.SERVICE_UNAVAILABLE)
 			.build();
 
 	private JSONOptions newJSONOptions()
@@ -244,9 +244,9 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 
 		//
 		// Set "exceptionAttributes" attribute
-		if (rootError instanceof AdempiereException)
+		if (rootError instanceof AdempiereException exception)
 		{
-			final Map<String, Object> exceptionAttributes = ((AdempiereException)rootError).getParameters();
+			final Map<String, Object> exceptionAttributes = exception.getParameters();
 			if (exceptionAttributes != null && !exceptionAttributes.isEmpty())
 			{
 				final JSONOptions jsonOpts = newJSONOptions();

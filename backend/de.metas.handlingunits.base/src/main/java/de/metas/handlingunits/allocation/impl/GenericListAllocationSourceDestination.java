@@ -172,7 +172,7 @@ public class GenericListAllocationSourceDestination implements IAllocationSource
 		// => force allocation on last source (that our source for remaining)
 		if (request.isForceQtyAllocation() && !forceQtyAllocationOnFirstTry)
 		{
-			final IAllocationSource source = sources.get(sources.size() - 1);
+			final IAllocationSource source = sources.getLast();
 			final IAllocationRequest requestActual = AllocationUtils.createQtyRequestForRemaining(request, resultFinal);
 			// Ask the source to unload
 			final IAllocationResult result = source.unload(requestActual);

@@ -2,15 +2,16 @@ package de.metas.inbound.mail;
 
 import de.metas.logging.LogManager;
 import de.metas.util.FileUtil;
-import groovy.transform.ToString;
+import jakarta.mail.BodyPart;
+import jakarta.mail.FolderClosedException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Part;
+import jakarta.mail.internet.ContentType;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
-import javax.mail.BodyPart;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.internet.ContentType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -50,9 +51,9 @@ final class MailContentCollector
 
 	public static MailContent toMailContent(final Object contentObj)
 	{
-		if (contentObj instanceof MailContent)
+		if (contentObj instanceof MailContent content)
 		{
-			return (MailContent)contentObj;
+			return content;
 		}
 		else
 		{
@@ -93,24 +94,20 @@ final class MailContentCollector
 		{
 			// nothing
 		}
-		else if (contentObj instanceof String)
+		else if (contentObj instanceof String content)
 		{
-			final String content = (String)contentObj;
 			collectText(content, contentType);
 		}
-		else if (contentObj instanceof Multipart)
+		else if (contentObj instanceof Multipart content)
 		{
-			final Multipart content = (Multipart)contentObj;
 			collectMultipart(content);
 		}
-		else if (contentObj instanceof Part)
+		else if (contentObj instanceof Part content)
 		{
-			final Part content = (Part)contentObj;
 			collectPart(content);
 		}
-		else if (contentObj instanceof MailContent)
+		else if (contentObj instanceof MailContent content)
 		{
-			final MailContent content = (MailContent)contentObj;
 			collectMailContent(content);
 		}
 		else
@@ -151,9 +148,9 @@ final class MailContentCollector
 			else if (Part.INLINE.equalsIgnoreCase(disposition))
 			{
 				final Object contentObj = part.getContent();
-				if (contentObj instanceof InputStream)
+				if (contentObj instanceof InputStream stream)
 				{
-					collectAttachment(part.getFileName(), contentType, (InputStream)contentObj);
+					collectAttachment(part.getFileName(), contentType, stream);
 				}
 				else
 				{
@@ -166,7 +163,7 @@ final class MailContentCollector
 				collectObject(contentObj, contentType);
 			}
 		}
-		catch (final javax.mail.FolderClosedException ex)
+		catch (final FolderClosedException ex)
 		{
 			throw new AdempiereException(ex.getLocalizedMessage(), ex)
 					.appendParametersToMessage()

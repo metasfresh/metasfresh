@@ -26,6 +26,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.io.Serial;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
@@ -67,6 +68,7 @@ import net.miginfocom.swing.MigLayout;
  */
 class SwingEventNotifierFrame extends JFrame
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/** Default {@link NotificationItem#getSummary()} to be used when no {@link Event#getSummary()} was provided */

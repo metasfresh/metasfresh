@@ -189,7 +189,7 @@ public class PhonecallScheduleServiceTest
 		final List<PhonecallSchedule> schedules = getAllPhonecallSchedules();
 		assertThat(schedules).hasSize(1);
 
-		final PhonecallSchedule schedule = schedules.get(0);
+		final PhonecallSchedule schedule = schedules.getFirst();
 		assertThat(schedule.getDescription()).isEqualTo("schema line description");
 	}
 }

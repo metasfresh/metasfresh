@@ -22,8 +22,7 @@
 
 package de.metas.common.product.v2.request;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -33,28 +32,28 @@ import java.time.Instant;
 @Getter
 @ToString
 @EqualsAndHashCode
-@ApiModel(description = "Contains the actual product tax category to insert or update.")
+@Schema(description = "Contains the actual product tax category to insert or update.")
 public class JsonRequestProductTaxCategoryUpsert
 {
-	@ApiModelProperty
+	@Schema
 	private String taxCategory;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean taxCategorySet;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	private String countryCode;
 
-	@ApiModelProperty
+	@Schema
 	private Instant validFrom;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean validFromSet;
 
-	@ApiModelProperty
+	@Schema
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 	
 	public void setTaxCategory(final String taxCategory)

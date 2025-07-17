@@ -114,7 +114,7 @@ public final class AdMessagesTreeLoader
 			}
 		}
 
-		final String keyPart = keyParts.get(keyParts.size() - 1);
+		final String keyPart = keyParts.getLast();
 		currentNode.put(keyPart, value);
 	}
 }

@@ -96,10 +96,10 @@ public class BusinessRuleLogger
 	{
 		final Object[] argsNorm;
 		final AdIssueId errorId;
-		if (args != null && args.length > 0 && args[args.length - 1] instanceof Throwable)
+		if (args != null && args.length > 0 && args[args.length - 1] instanceof Throwable throwable)
 		{
 			// Remove exception from args array
-			final AdempiereException exception = AdempiereException.wrapIfNeeded((Throwable)args[args.length - 1]);
+			final AdempiereException exception = AdempiereException.wrapIfNeeded(throwable);
 			errorId = errorManager.createIssue(exception);
 			argsNorm = new Object[args.length - 1];
 			System.arraycopy(args, 0, argsNorm, 0, argsNorm.length);

@@ -1,16 +1,14 @@
 package org.adempiere.ad.callout.spi;
 
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.spi.impl.NullCalloutProvider;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Immutable composite of {@link ICalloutProvider}s.
@@ -37,9 +35,9 @@ public final class CompositeCalloutProvider implements ICalloutProvider
 			return NullCalloutProvider.isNull(provider2) ? NullCalloutProvider.instance : provider2;
 		}
 
-		if (provider1 instanceof CompositeCalloutProvider)
+		if (provider1 instanceof CompositeCalloutProvider provider)
 		{
-			return ((CompositeCalloutProvider)provider1).compose(provider2);
+			return provider.compose(provider2);
 		}
 		
 		if(NullCalloutProvider.isNull(provider2))

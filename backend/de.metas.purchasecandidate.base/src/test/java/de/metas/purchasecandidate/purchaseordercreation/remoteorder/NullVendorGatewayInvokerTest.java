@@ -80,9 +80,9 @@ public class NullVendorGatewayInvokerTest
 		final List<PurchaseItem> purchaseItems = NullVendorGatewayInvoker.INSTANCE.placeRemotePurchaseOrder(ImmutableList.of(purchaseCandidate));
 
 		assertThat(purchaseItems).hasSize(1);
-		assertThat(purchaseItems.get(0)).isInstanceOf(PurchaseOrderItem.class);
+		assertThat(purchaseItems.getFirst()).isInstanceOf(PurchaseOrderItem.class);
 
-		final PurchaseOrderItem purchaseOrderItem = (PurchaseOrderItem)purchaseItems.get(0);
+		final PurchaseOrderItem purchaseOrderItem = (PurchaseOrderItem)purchaseItems.getFirst();
 		assertThat(purchaseOrderItem.getRemotePurchaseOrderId()).isEqualTo(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 	}
 

@@ -160,10 +160,8 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 		if (Operator.STRING_LIKE == operator || Operator.STRING_LIKE_IGNORECASE == operator)
 		{
-			if (operand1ValuePrepared instanceof String && operand2ValuePrepared instanceof String)
+			if (operand1ValuePrepared instanceof String operand1String && operand2ValuePrepared instanceof String operand2String)
 			{
-				final String operand1String = (String)operand1ValuePrepared;
-				final String operand2String = (String)operand2ValuePrepared;
 
 				final String operand2Regexp = operand2String
 						.replace('_', '.')
@@ -270,13 +268,13 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		{
 			return null;
 		}
-		else if (value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware aware)
 		{
-			return ((RepoIdAware)value).getRepoId();
+			return aware.getRepoId();
 		}
-		else if (value instanceof ReferenceListAwareEnum)
+		else if (value instanceof ReferenceListAwareEnum enum1)
 		{
-			return ((ReferenceListAwareEnum)value).getCode();
+			return enum1.getCode();
 		}
 		else if (TimeUtil.isDateOrTimeObject(value))
 		{

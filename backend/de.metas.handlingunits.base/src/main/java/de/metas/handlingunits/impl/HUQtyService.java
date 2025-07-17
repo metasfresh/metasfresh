@@ -195,7 +195,7 @@ public class HUQtyService
 		}
 		else if (huProductStorages.size() == 1)
 		{
-			return huProductStorages.get(0);
+			return huProductStorages.getFirst();
 		}
 		else
 		{

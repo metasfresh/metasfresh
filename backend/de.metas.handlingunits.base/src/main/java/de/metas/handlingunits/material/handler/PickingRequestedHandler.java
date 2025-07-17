@@ -127,7 +127,7 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 				(Supplier<Object>)() -> loadOutOfTrx(bpLocationId, I_C_BPartner_Location.class).getC_BPartner_ID(),
 				shipmentSchedule);
 
-		final I_M_PickingSlot firstPickingSlot = pickingSlots.get(0);
+		final I_M_PickingSlot firstPickingSlot = pickingSlots.getFirst();
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog(
 				"Retrieved an available picking slot, because none was set in the event; pickingSlot={}",

@@ -131,7 +131,7 @@ public class SubscriptionCommandTest
 		final List<I_C_SubscriptionProgress> allAfterPauseRemoval = retrieveAllforTerm();
 		assertThat(allAfterPauseRemoval).hasSize(3);
 
-		assertThat(allAfterPauseRemoval.get(0).getSeqNo()).isEqualTo(1);
+		assertThat(allAfterPauseRemoval.getFirst().getSeqNo()).isEqualTo(1);
 		assertThat(allAfterPauseRemoval.get(1).getSeqNo()).isEqualTo(2);
 		assertThat(allAfterPauseRemoval.get(2).getSeqNo()).isEqualTo(3);
 
@@ -185,7 +185,7 @@ public class SubscriptionCommandTest
 		final int numberOfDeliveryRecords = 3;
 		assertThat(all).hasSize(numberOfPauseRecords + numberOfDeliveryRecords);
 
-		assertThat(all.get(0).getC_SubscriptionProgress_ID()).isEqualTo(first.getC_SubscriptionProgress_ID());
+		assertThat(all.getFirst().getC_SubscriptionProgress_ID()).isEqualTo(first.getC_SubscriptionProgress_ID());
 		assertThat(all.get(4).getC_SubscriptionProgress_ID()).isEqualTo(last.getC_SubscriptionProgress_ID());
 
 		final I_C_SubscriptionProgress createdPauseStart = all.get(1);
@@ -228,7 +228,7 @@ public class SubscriptionCommandTest
 		final List<I_C_SubscriptionProgress> all = retrieveAllforTerm();
 		assertThat(all).hasSize(5);
 
-		assertThat(all.get(0)).satisfies(firstResult -> {
+		assertThat(all.getFirst()).satisfies(firstResult -> {
 			assertThat(firstResult.getC_SubscriptionProgress_ID()).isEqualTo(first.getC_SubscriptionProgress_ID());
 			assertThat(firstResult.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
 			assertThat(firstResult.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_Delivery);

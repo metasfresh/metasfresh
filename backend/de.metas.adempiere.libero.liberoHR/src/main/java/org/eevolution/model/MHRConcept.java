@@ -15,6 +15,7 @@
  *****************************************************************************/
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ public class MHRConcept extends X_HR_Concept
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 8736925494645172953L;
 
 	/** Cache */

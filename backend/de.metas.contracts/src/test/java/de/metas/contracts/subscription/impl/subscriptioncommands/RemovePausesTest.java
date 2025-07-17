@@ -147,7 +147,7 @@ public class RemovePausesTest
 	{
 		assertThat(pausedRecords).hasSize(3);
 
-		assertThat(pausedRecords.get(0)).satisfies(record -> {
+		assertThat(pausedRecords.getFirst()).satisfies(record -> {
 			assertThat(record.getEventType()).isEqualTo(X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause);
 			assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
 		});

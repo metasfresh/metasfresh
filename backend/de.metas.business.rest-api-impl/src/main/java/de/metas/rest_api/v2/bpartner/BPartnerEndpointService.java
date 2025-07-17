@@ -175,7 +175,7 @@ public class BPartnerEndpointService
 		final NextPageQuery nextPageQuery = NextPageQuery.onlyContactsOrNull(nextPageId);
 
 		final Optional<QueryResultPage<JsonResponseComposite>> optionalPage = jsonRetriever.getJsonBPartnerComposites(nextPageQuery, sinceQuery);
-		if (!optionalPage.isPresent())
+		if (optionalPage.isEmpty())
 		{
 			return Optional.empty();
 		}

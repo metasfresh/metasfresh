@@ -251,7 +251,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		}
 		else if (quotationGroupProductLines.size() == 1)
 		{
-			return quotationGroupProductLines.get(0);
+			return quotationGroupProductLines.getFirst();
 		}
 		else
 		{

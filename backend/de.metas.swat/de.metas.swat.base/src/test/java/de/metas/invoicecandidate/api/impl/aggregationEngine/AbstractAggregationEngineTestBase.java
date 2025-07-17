@@ -131,7 +131,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 			throw new IllegalStateException("Only one invoice line was expected for " + ic + ": " + result);
 		}
 
-		return result.get(0);
+		return result.getFirst();
 	}
 
 	protected List<I_C_Invoice_Candidate> test_2StepShipment_CommonSetup_Step01(
@@ -243,7 +243,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		{
 			return null;
 		}
-		return result.get(0);
+		return result.getFirst();
 	}
 
 	protected final List<IInvoiceHeader> invokeAggregationEngine(@NonNull final AggregationEngine engine)

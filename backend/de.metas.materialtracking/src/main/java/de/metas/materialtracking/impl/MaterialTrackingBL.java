@@ -137,7 +137,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 				final I_M_Material_Tracking_Ref refToUnlink;
 				if (existingRefs.size() == 1 && request.getPreviousMaterialTrackingId() == null)
 				{
-					refToUnlink = existingRefs.get(0);
+					refToUnlink = existingRefs.getFirst();
 				}
 				else
 				{

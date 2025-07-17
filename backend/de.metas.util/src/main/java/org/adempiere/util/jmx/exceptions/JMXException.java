@@ -25,6 +25,8 @@ package org.adempiere.util.jmx.exceptions;
 
 import org.adempiere.util.jmx.JMXRegistry;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when {@link JMXRegistry} some operations failed.
  * 
@@ -37,6 +39,7 @@ public class JMXException extends RuntimeException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 4923428909229731116L;
 
 	public JMXException(String message, Throwable cause)

@@ -513,7 +513,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			eventDate = mkNextDate(trans, eventDate);
 		}
 
-		return deliveries.get(0);
+		return deliveries.getFirst();
 	}
 
 	private Timestamp getEventDate(@NonNull final I_C_Flatrate_Term term)
@@ -782,7 +782,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(
-				deliveries.get(0).getC_Flatrate_Term().getC_OrderLine_Term(),
+				deliveries.getFirst().getC_Flatrate_Term().getC_OrderLine_Term(),
 				I_C_OrderLine.class);
 
 		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(ol).getBPartnerLocationAndCaptureId();
@@ -1018,7 +1018,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTermsForOrderIdLatestFirst(orderId);
-		return orderTerms.isEmpty() ? null : orderTerms.get(0);
+		return orderTerms.isEmpty() ? null : orderTerms.getFirst();
 	}
 
 	@Override

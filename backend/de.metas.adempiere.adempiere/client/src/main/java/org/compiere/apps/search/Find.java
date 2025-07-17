@@ -25,6 +25,7 @@ package org.compiere.apps.search;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.Serial;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
@@ -49,6 +50,7 @@ public final class Find extends CDialog
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 4199738941808772082L;
 
 	public static final FindPanelBuilder builder()

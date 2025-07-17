@@ -288,7 +288,7 @@ public class ViewLayout implements ETagAware
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public ViewLayout withAllowNewRecordIfPresent(final Optional<String> allowNewCaption)
 	{
-		if (!allowNewCaption.isPresent())
+		if (allowNewCaption.isEmpty())
 		{
 			return this;
 		}
@@ -530,9 +530,10 @@ public class ViewLayout implements ETagAware
 				final DocumentLayoutElementDescriptor element = elementsByFieldName.get(fieldName);
 				if (element == null)
 				{
-					logger.warn("Field {} was not found. Will be ignored."
-									+ "\n Available field names are: {}."
-									+ "\n If this is a standard view, pls check if the field added to window {}.",
+					logger.warn("""
+									Field {} was not found. Will be ignored.
+									 Available field names are: {}.
+									 If this is a standard view, pls check if the field added to window {}.""",
 							fieldName,
 							elementsByFieldName.keySet(),
 							getWindowIdEffective());

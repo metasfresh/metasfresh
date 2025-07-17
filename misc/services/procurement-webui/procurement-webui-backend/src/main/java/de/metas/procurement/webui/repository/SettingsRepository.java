@@ -1,6 +1,6 @@
 package de.metas.procurement.webui.repository;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.springframework.stereotype.Repository;
 

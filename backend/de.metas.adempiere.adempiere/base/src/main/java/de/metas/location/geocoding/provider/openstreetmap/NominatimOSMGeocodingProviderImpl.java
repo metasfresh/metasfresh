@@ -26,13 +26,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
 import de.metas.location.geocoding.GeocodingProvider;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -109,7 +109,7 @@ public class NominatimOSMGeocodingProviderImpl implements GeocodingProvider
 		{
 			return Optional.empty();
 		}
-		return Optional.of(coords.get(0));
+		return Optional.of(coords.getFirst());
 	}
 
 	@SuppressWarnings("WeakerAccess")

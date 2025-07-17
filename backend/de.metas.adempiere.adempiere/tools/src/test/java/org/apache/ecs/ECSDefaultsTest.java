@@ -22,20 +22,20 @@ package org.apache.ecs;
  * #L%
  */
 
+import org.junit.jupiter.api.Test;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static shadow.org.assertj.core.api.Assertions.assertThat;
 
 public class ECSDefaultsTest
 {
 	/**
 	 * Make sure {@link ECSDefaults#resource} is loaded
-	 * 
-	 * @task http://dewiki908/mediawiki/index.php/06794_Chat_Button_crashes_Window
+	 * </b>
+	 * task <a href="http://dewiki908/mediawiki/index.php/06794_Chat_Button_crashes_Window">06794_Chat_Button_crashes_Window</a>
 	 */
 	@Test
 	public void testResourceAvailable()
 	{
-		Assert.assertNotNull("ECSDefaults.resource shall be not null", ECSDefaults.resource);
+		assertThat( ECSDefaults.resource).as("ECSDefaults.resource shall be not null").isNotNull();
 	}
 }

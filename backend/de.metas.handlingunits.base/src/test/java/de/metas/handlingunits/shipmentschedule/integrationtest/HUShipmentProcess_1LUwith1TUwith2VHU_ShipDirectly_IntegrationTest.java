@@ -80,7 +80,7 @@ public class HUShipmentProcess_1LUwith1TUwith2VHU_ShipDirectly_IntegrationTest e
 	{
 		//
 		// Get shipment schedules
-		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.get(0);
+		final I_M_ShipmentSchedule shipmentSchedule1 = shipmentSchedules.getFirst();
 		final I_M_ShipmentSchedule shipmentSchedule2 = shipmentSchedules.get(1);
 
 		//
@@ -186,14 +186,14 @@ public class HUShipmentProcess_1LUwith1TUwith2VHU_ShipDirectly_IntegrationTest e
 		//
 		// Get generated shipment
 		Assertions.assertEquals(1, generatedShipments.size(), "Invalid generated shipments count");
-		final I_M_InOut shipment = generatedShipments.get(0);
+		final I_M_InOut shipment = generatedShipments.getFirst();
 
 		//
 		// Retrieve generated shipment lines
 		// We expect to have 2 shipment lines, not because we have 2 shipment schedules, but because we have 2 order lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
 		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(2);
-		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
+		final I_M_InOutLine shipmentLine1 = shipmentLines.getFirst();
 		assertThat(shipmentLine1.getLine()).isEqualTo(10);
 		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
 		assertThat(shipmentLine2.getLine()).isEqualTo(20);
@@ -219,7 +219,7 @@ public class HUShipmentProcess_1LUwith1TUwith2VHU_ShipDirectly_IntegrationTest e
 		//
 		// Get LUs Package
 		Assertions.assertEquals(1, mpackagesForAggregatedHUs.size(), "Invalid generated LU packages count");
-		final I_M_Package mpackage_TU = mpackagesForAggregatedHUs.get(0);
+		final I_M_Package mpackage_TU = mpackagesForAggregatedHUs.getFirst();
 
 		//
 		// Get generated shipment

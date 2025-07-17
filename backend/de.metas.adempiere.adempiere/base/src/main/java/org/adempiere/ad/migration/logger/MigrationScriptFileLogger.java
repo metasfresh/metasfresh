@@ -21,7 +21,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -196,7 +195,7 @@ class MigrationScriptFileLogger
 
 	private static Path getDefaultMigrationScriptDirectory()
 	{
-		return Paths.get(Ini.getMetasfreshHome(), "migration_scripts");
+		return Path.of(Ini.getMetasfreshHome(), "migration_scripts");
 	}
 
 	public static void setMigrationScriptDirectory(@NonNull final Path path)

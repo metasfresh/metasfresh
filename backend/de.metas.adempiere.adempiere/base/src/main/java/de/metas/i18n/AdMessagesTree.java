@@ -25,7 +25,7 @@ public class AdMessagesTree
 		}
 		else if (trees.size() == 1)
 		{
-			return trees.get(0);
+			return trees.getFirst();
 		}
 		else
 		{

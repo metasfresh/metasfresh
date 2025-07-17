@@ -320,7 +320,7 @@ public class C_POSOrder_CreateInvoiceAndShipment extends WorkpackageProcessorAda
 		{
 			throw new AdempiereException("More than one invoice was generated for " + posOrder);
 		}
-		return invoices.get(0);
+		return invoices.getFirst();
 	}
 
 	private I_C_Payment createPaymentReceipt(@NonNull final POSPayment posPayment, @NonNull POSOrder posOrder)

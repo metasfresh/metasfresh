@@ -22,17 +22,16 @@ package org.compiere.apps.search.impl;
  * #L%
  */
 
+import org.compiere.apps.search.IGridTabRowBuilder;
+import org.compiere.apps.search.IInfoWindowGridRowBuilders;
+import org.compiere.apps.search.NullGridTabRowBuilder;
+import org.compiere.util.Env;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import org.compiere.apps.search.IGridTabRowBuilder;
-import org.compiere.apps.search.IInfoWindowGridRowBuilders;
-import org.compiere.apps.search.NullGridTabRowBuilder;
-import org.compiere.util.Env;
 
 /**
  * Default implementation of {@link IInfoWindowGridRowBuilders}
@@ -127,6 +126,6 @@ public class InfoWindowGridRowBuilders implements IInfoWindowGridRowBuilders
 	@Override
 	public String toString()
 	{
-		return String.format("InfoWindowGridRowBuilders [builders=%s]", builders);
+		return "InfoWindowGridRowBuilders [builders=%s]".formatted(builders);
 	}
 }

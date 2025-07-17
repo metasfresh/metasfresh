@@ -54,7 +54,7 @@ public class AbstractTrxManagerTest
 
 		final List<ITrx> removedTransactions = trxManager.getRemovedTransactions();
 		assertThat(removedTransactions).hasSize(1);
-		final MockedTrx trx = (MockedTrx)removedTransactions.get(0);
+		final MockedTrx trx = (MockedTrx)removedTransactions.getFirst();
 		assertThat(trx.isRollbackCalled()).isTrue();
 		assertThat(trx.isCloseCalled()).isTrue();
 		assertThat(trx.getCreatedSavepoints()).isEmpty();
@@ -71,7 +71,7 @@ public class AbstractTrxManagerTest
 
 		final List<ITrx> removedTransactions = trxManager.getRemovedTransactions();
 		assertThat(removedTransactions).hasSize(1);
-		final MockedTrx trx = (MockedTrx)removedTransactions.get(0);
+		final MockedTrx trx = (MockedTrx)removedTransactions.getFirst();
 		assertThat(trx.isRollbackCalled()).isFalse();
 		assertThat(trx.isCommitCalled()).isTrue();
 		assertThat(trx.isCloseCalled()).isTrue();
@@ -90,7 +90,7 @@ public class AbstractTrxManagerTest
 
 		final List<ITrx> removedTransactions = trxManager.getRemovedTransactions();
 		assertThat(removedTransactions).hasSize(1);
-		final MockedTrx removedTrx = (MockedTrx)removedTransactions.get(0);
+		final MockedTrx removedTrx = (MockedTrx)removedTransactions.getFirst();
 		assertThat(removedTrx.getTrxName()).isEqualTo(trx.getTrxName());
 
 		assertThat(removedTrx.isRollbackCalled()).isFalse();
@@ -113,7 +113,7 @@ public class AbstractTrxManagerTest
 		final List<ITrx> removedTransactions = trxManager.getRemovedTransactions();
 
 		assertThat(removedTransactions).hasSize(1);
-		final MockedTrx removedTrx = (MockedTrx)removedTransactions.get(0);
+		final MockedTrx removedTrx = (MockedTrx)removedTransactions.getFirst();
 
 		assertThat(removedTrx.isCommitCalled()).isFalse();
 		assertThat(removedTrx.isRollbackCalled()).isTrue();
@@ -188,7 +188,7 @@ public class AbstractTrxManagerTest
 		final List<ITrx> removedTransactions = trxManager.getRemovedTransactions();
 
 		assertThat(removedTransactions).hasSize(1);
-		final MockedTrx removedTrx = (MockedTrx)removedTransactions.get(0);
+		final MockedTrx removedTrx = (MockedTrx)removedTransactions.getFirst();
 
 		assertThat(removedTrx.isCommitCalled()).isFalse();
 		assertThat(removedTrx.isRollbackCalled()).isTrue();
@@ -219,7 +219,7 @@ public class AbstractTrxManagerTest
 		final List<ITrx> removedTransactions = trxManager.getRemovedTransactions();
 
 		assertThat(removedTransactions).hasSize(1);
-		final MockedTrx removedTrx = (MockedTrx)removedTransactions.get(0);
+		final MockedTrx removedTrx = (MockedTrx)removedTransactions.getFirst();
 
 		assertThat(removedTrx.isCloseCalled()).isTrue();
 		assertThat(removedTrx.isCommitCalled()).isFalse();

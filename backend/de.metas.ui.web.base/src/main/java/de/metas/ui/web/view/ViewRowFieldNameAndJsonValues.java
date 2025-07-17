@@ -81,13 +81,13 @@ public final class ViewRowFieldNameAndJsonValues
 		{
 			return null;
 		}
-		else if (valueObj instanceof ITranslatableString)
+		else if (valueObj instanceof ITranslatableString string)
 		{
-			return ((ITranslatableString)valueObj).translate(jsonOpts.getAdLanguage());
+			return string.translate(jsonOpts.getAdLanguage());
 		}
-		else if (valueObj instanceof Comparable)
+		else if (valueObj instanceof Comparable<?> comparable)
 		{
-			return (Comparable<?>)valueObj;
+			return comparable;
 		}
 		else
 		{
@@ -105,9 +105,9 @@ public final class ViewRowFieldNameAndJsonValues
 		{
 			return null;
 		}
-		else if (valueObj instanceof ITranslatableString)
+		else if (valueObj instanceof ITranslatableString string)
 		{
-			return ((ITranslatableString)valueObj).translate(jsonOpts.getAdLanguage());
+			return string.translate(jsonOpts.getAdLanguage());
 		}
 		else
 		{
@@ -123,17 +123,17 @@ public final class ViewRowFieldNameAndJsonValues
 		{
 			return defaultValueIfNotFoundOrError;
 		}
-		else if (valueObj instanceof Number)
+		else if (valueObj instanceof Number number)
 		{
-			return ((Number)valueObj).intValue();
+			return number.intValue();
 		}
-		else if (valueObj instanceof LookupValue)
+		else if (valueObj instanceof LookupValue value1)
 		{
-			return ((LookupValue)valueObj).getIdAsInt();
+			return value1.getIdAsInt();
 		}
-		else if (valueObj instanceof JSONLookupValue)
+		else if (valueObj instanceof JSONLookupValue value)
 		{
-			return ((JSONLookupValue)valueObj).getKeyAsInt();
+			return value.getKeyAsInt();
 		}
 		else
 		{

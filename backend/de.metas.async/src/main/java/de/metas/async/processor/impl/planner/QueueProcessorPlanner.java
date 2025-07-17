@@ -267,8 +267,7 @@ public abstract class QueueProcessorPlanner implements Runnable
 				.stream()
 				.map(IQueueProcessor::getQueue)
 				.map(queue -> queue.createQuery(ctx, numberOfWorkPackagesPerProcessor))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.map(lockManager::addNotLockedClause)
 				.collect(ImmutableList.toImmutableList());
 

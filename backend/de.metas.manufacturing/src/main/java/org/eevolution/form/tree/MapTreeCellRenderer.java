@@ -39,6 +39,7 @@ package org.eevolution.form.tree;
  */
 
 import java.awt.Component;
+import java.io.Serial;
 import java.util.HashMap;
 
 import javax.swing.ImageIcon;
@@ -54,6 +55,7 @@ public abstract class MapTreeCellRenderer extends DefaultTreeCellRenderer
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -7069615879267443644L;
 	private HashMap<Object, Object> map;
 

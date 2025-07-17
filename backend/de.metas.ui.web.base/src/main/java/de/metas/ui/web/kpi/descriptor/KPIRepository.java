@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.kpi.descriptor;
 
+import co.elastic.clients.elasticsearch._types.SearchType;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -55,7 +56,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
 import org.compiere.util.DisplayType;
-import org.elasticsearch.action.search.SearchType;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -238,7 +238,7 @@ public class KPIRepository
 	{
 		return ElasticsearchDatasourceDescriptor.builder()
 				.esSearchIndex(kpiDef.getES_Index())
-				.esSearchTypes(SearchType.DEFAULT)
+				.esSearchTypes(SearchType.DfsQueryThenFetch)
 				.esQuery(kpiDef.getES_Query())
 				.fields(loadingCtx
 						.getFields(KPIId.ofRepoId(kpiDef.getWEBUI_KPI_ID()))

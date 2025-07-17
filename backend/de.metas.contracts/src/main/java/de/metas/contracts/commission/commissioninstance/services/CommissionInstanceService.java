@@ -77,7 +77,7 @@ public class CommissionInstanceService
 			@NonNull final CommissionTriggerDocument commissionTriggerDocument)
 	{
 		final Optional<CreateCommissionSharesRequest> request = commissionInstanceRequestFactory.createRequestFor(commissionTriggerDocument);
-		if (!request.isPresent())
+		if (request.isEmpty())
 		{
 			return;
 		}

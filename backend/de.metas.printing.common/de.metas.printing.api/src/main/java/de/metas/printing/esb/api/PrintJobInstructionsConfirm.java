@@ -23,6 +23,7 @@ package de.metas.printing.esb.api;
  */
 
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class PrintJobInstructionsConfirm implements Serializable
@@ -30,6 +31,7 @@ public class PrintJobInstructionsConfirm implements Serializable
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -9040749090880603823L;
 
 	private String printJobInstructionsID;

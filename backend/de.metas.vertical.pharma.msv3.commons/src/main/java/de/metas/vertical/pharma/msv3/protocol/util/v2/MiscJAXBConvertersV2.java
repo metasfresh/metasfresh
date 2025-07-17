@@ -38,9 +38,8 @@ public class MiscJAXBConvertersV2
 
 	public static FaultInfo extractFaultInfoOrNull(final Object value)
 	{
-		if (value instanceof Msv3FaultInfo)
+		if (value instanceof Msv3FaultInfo msv3FaultInfo)
 		{
-			final Msv3FaultInfo msv3FaultInfo = (Msv3FaultInfo)value;
 			return fromJAXB(msv3FaultInfo);
 		}
 		else

@@ -26,6 +26,8 @@ import de.metas.util.Check;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -137,5 +139,6 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 		return "ExtendedMemorizingSupplier[" + delegate + "]";
 	}
 
+	@Serial
 	private static final long serialVersionUID = 0;
 }

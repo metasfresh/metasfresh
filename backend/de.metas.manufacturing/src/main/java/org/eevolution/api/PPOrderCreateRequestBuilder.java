@@ -139,7 +139,7 @@ public class PPOrderCreateRequestBuilder
 				return null;
 			}
 
-			final T initialValue = values.get(0);
+			final T initialValue = values.getFirst();
 			for (final T value : values)
 			{
 				if (!Objects.equals(initialValue, value))
