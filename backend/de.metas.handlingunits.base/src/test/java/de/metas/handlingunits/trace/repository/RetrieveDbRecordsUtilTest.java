@@ -1,17 +1,13 @@
 package de.metas.handlingunits.trace.repository;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU_Trace;
-import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceEventQuery;
-import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
-import de.metas.handlingunits.trace.HUTraceRepository;
-import de.metas.handlingunits.trace.HUTraceRepositoryTests;
-import de.metas.handlingunits.trace.HUTraceType;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
+import java.util.OptionalInt;
+
 import de.metas.inout.InOutId;
-import de.metas.organization.OrgId;
-import de.metas.process.PInstanceId;
-import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.test.AdempiereTestHelper;
@@ -21,12 +17,17 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.OptionalInt;
-
-import static org.assertj.core.api.Assertions.*;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.trace.HUTraceEvent;
+import de.metas.handlingunits.trace.HUTraceEventQuery;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.organization.OrgId;
+import de.metas.handlingunits.trace.HUTraceRepository;
+import de.metas.handlingunits.trace.HUTraceRepositoryTests;
+import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.process.PInstanceId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -72,7 +73,7 @@ public class RetrieveDbRecordsUtilTest
 	{
 		final HUTraceEventQuery query = HUTraceEventQuery.builder().type(HUTraceType.MATERIAL_RECEIPT).build();
 
-		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.createQueryBuilderOrNull(query);
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.HUTraceEventsLoaderInstance.createQueryBuilderOrNull(query);
 		assertThat(queryBuilder).isNotNull();
 	}
 
@@ -81,7 +82,7 @@ public class RetrieveDbRecordsUtilTest
 	{
 		final HUTraceEventQuery query = HUTraceEventQuery.builder().orgId(OrgId.ofRepoId(30)).build();
 
-		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.createQueryBuilderOrNull(query);
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.HUTraceEventsLoaderInstance.createQueryBuilderOrNull(query);
 		assertThat(queryBuilder).isNotNull();
 	}
 
@@ -90,7 +91,7 @@ public class RetrieveDbRecordsUtilTest
 	{
 		final HUTraceEventQuery query = HUTraceEventQuery.builder().huTraceEventId(OptionalInt.of(30)).build();
 
-		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.createQueryBuilderOrNull(query);
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.HUTraceEventsLoaderInstance.createQueryBuilderOrNull(query);
 		assertThat(queryBuilder).isNotNull();
 	}
 
