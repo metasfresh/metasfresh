@@ -24,6 +24,7 @@ import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 final class POServicesFacade
@@ -121,7 +122,8 @@ final class POServicesFacade
 			{
 				logger.warn("Spring context is not yet started => using an empty ModelCacheInvalidationService instance");
 
-				return ModelCacheInvalidationService.newInstanceForUnitTesting();
+				//return ModelCacheInvalidationService.newInstanceForUnitTesting();
+				return new ModelCacheInvalidationService(null, Optional.empty());
 			}
 
 			cacheInvalidationService = this._cacheInvalidationService = ModelCacheInvalidationService.get();
