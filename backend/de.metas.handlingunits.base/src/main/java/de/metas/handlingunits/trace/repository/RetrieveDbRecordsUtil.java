@@ -1,41 +1,40 @@
 package de.metas.handlingunits.trace.repository;
 
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.trace.HUTraceEvent;
+import de.metas.handlingunits.trace.HUTraceEventQuery;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.annotations.VisibleForTesting;
-import java.util.Objects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU_Trace;
-import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceEventQuery;
-import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /*
  * #%L
