@@ -6,6 +6,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -15,6 +16,7 @@ import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -81,14 +83,17 @@ public class ModelCacheInvalidationService
 	private final ImmutableList<IModelCacheInvalidateRequestFactoryGroup> factoryGroups;
 
 	public ModelCacheInvalidationService(
-			@NonNull final IEventBusFactory eventBusFactory,
+			@Nullable final IEventBusFactory eventBusFactory,
 			@NonNull final Optional<List<IModelCacheInvalidateRequestFactoryGroup>> factoryGroups)
 	{
 		this.factoryGroups = factoryGroups.map(ImmutableList::copyOf).orElseGet(ImmutableList::of);
 
-		final CacheMgt cacheMgt = CacheMgt.get();
-		cacheMgt.setEventBusFactory(eventBusFactory); // if not setting this, enableRemoteCacheInvalidationForTableNamesGroup might fail
-		this.factoryGroups.forEach(factoryGroup -> cacheMgt.enableRemoteCacheInvalidationForTableNamesGroup(factoryGroup.getTableNamesToEnableRemoveCacheInvalidation()));
+		if (!this.factoryGroups.isEmpty())
+		{
+			final CacheMgt cacheMgt = CacheMgt.get();
+			cacheMgt.setEventBusFactory(Check.assumeNotNull(eventBusFactory, "eventBusFactory must be provided when factory groups are provided")); // if not setting this, enableRemoteCacheInvalidationForTableNamesGroup might fail
+			this.factoryGroups.forEach(factoryGroup -> cacheMgt.enableRemoteCacheInvalidationForTableNamesGroup(factoryGroup.getTableNamesToEnableRemoveCacheInvalidation()));
+		}
 
 		logger.info("Registered {}", this.factoryGroups); // calling it last to make sure cache was warmed up, so we have more info to show
 	}
