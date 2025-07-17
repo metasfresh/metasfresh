@@ -39,13 +39,13 @@ public class JsonDocTypeInfo
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "This translates to <code>C_DocType.DocBaseType</code>.\n")
-	private String docBaseType;
+	String docBaseType;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to <code>C_DocType.DocSubType</code>.\n"
 					+ "An empty value means that the matching <code>C_DocType</code> record's <code>DocSubType</code> needs to be <code>null</code>")
-	private String docSubType;
+	String docSubType;
 
 	@JsonCreator
 	@Builder
