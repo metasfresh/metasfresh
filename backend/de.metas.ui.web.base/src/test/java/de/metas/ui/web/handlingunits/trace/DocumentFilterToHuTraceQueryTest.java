@@ -8,6 +8,7 @@ import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
@@ -123,7 +124,7 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(huTraceQuery.getDocTypeId().get().getRepoId()).isEqualTo(30);
 		assertThat(huTraceQuery.getDocStatus()).isEqualTo("CO");
-		assertThat(huTraceQuery.getType().toString()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
+		assertThat(huTraceQuery.getTypes()).contains(HUTraceType.MATERIAL_PICKING);
 		assertThat(huTraceQuery.getTopLevelHuIds()).isEqualTo(ImmutableSet.of(HuId.ofRepoId(60)));
 		assertThat(huTraceQuery.getHuTraceEventId().getAsInt()).isEqualTo(70);
 		assertThat(huTraceQuery.getHuTrxLineId()).isEqualTo(80);

@@ -12,6 +12,7 @@ import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -27,6 +28,14 @@ import org.adempiere.mmovement.MovementId;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
 import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.function.BiFunction;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -78,6 +87,7 @@ final class HuTraceQueryCreator
 					.put(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, HuTraceQueryCreator::updateVhuSourceIdFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_VHUStatus, HuTraceQueryCreator::updateVhuStatusFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_EventTime, HuTraceQueryCreator::updateEventTimeFromParameter)
+					.put(I_M_HU_Trace.COLUMNNAME_LotNumber, HuTraceQueryCreator::updateLotNumberFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_M_HU_Value, HuTraceQueryCreator::updateHuValueFromParameter)
 					.build();
 
@@ -140,7 +150,7 @@ final class HuTraceQueryCreator
 				&& !parameter.getSqlWhereClause().isEmpty())
 		{ // case: zooming
 			if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU.COLUMNNAME_M_HU_ID))
-			{ 
+			{
 				queryUpdateFunction = HuTraceQueryCreator::updateAnyHuFromParameterWhereClause;
 			}
 			else if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU_Trace.COLUMNNAME_M_Product_ID))
@@ -168,7 +178,7 @@ final class HuTraceQueryCreator
 				queryUpdateFunction = HuTraceQueryCreator::updateMovementIdFromParameterWhereClause;
 			}
 		}
-		
+
 		if(queryUpdateFunction == null)
 		{
 			final String message = StringUtils.formatMessage("The given filterParam has has nothing we can extract into the HUTraceQuery={}", parameter);
@@ -224,6 +234,15 @@ final class HuTraceQueryCreator
 
 		final int repoId = extractRepoIdFromParamWhereClause(parameter);
 		return query.withProductId(ProductId.ofRepoId(repoId));
+	}
+
+	private static HUTraceEventQuery updateLotNumberFromParameter(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("LotNumber", query.getLotNumber(), query);
+
+		return query.withLotNumber(extractString(parameter));
 	}
 
 	private static HUTraceEventQuery updateShipmentScheduleIdFromParameter(
@@ -305,9 +324,9 @@ final class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueNotNull("Type", query.getType(), query);
+		errorIfQueryValueNotEmpty("Type", query.getTypes(), query);
 
-		return query.withType(HUTraceType.valueOf(extractString(parameter)));
+		return query.withTypes(ImmutableSet.of(HUTraceType.valueOf(extractString(parameter))));
 	}
 
 	private static HUTraceEventQuery updateVhuStatusFromParameter(
@@ -334,6 +353,14 @@ final class HuTraceQueryCreator
 
 		final int repoId = extractRepoIdFromParamWhereClause(parameter);
 		return query.withMovementId(MovementId.ofRepoId(repoId));
+	}
+
+	private static HUTraceEventQuery updateInventoryIdFromParameter(
+			@NonNull final HUTraceEventQuery query, @NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("InventoryId", query.getInventoryId(), query);
+
+		return query.withInventoryId(InventoryId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateHuTrxLineIdFromParameter(

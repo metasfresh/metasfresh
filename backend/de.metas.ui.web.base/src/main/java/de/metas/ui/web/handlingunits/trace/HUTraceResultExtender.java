@@ -61,7 +61,7 @@ final class HUTraceResultExtender implements SqlDocumentFilterConverter
 	@Override
 	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		if (!request.hasFilterParameters())
+		if (!request.hasFilterParameters() || isSQLOnly(request))
 		{
 			return converter.getSql(request); // do whatever the system usually does
 		}
@@ -72,5 +72,10 @@ final class HUTraceResultExtender implements SqlDocumentFilterConverter
 
 			return FilterSql.ofWhereClause(WHERE_IN_T_SELECTION, selectionId);
 		}
+	}
+
+	private static boolean isSQLOnly(final @NonNull FilterSqlRequest request)
+	{
+		return request.getFilterParameters().stream().allMatch(parameter -> parameter.isSqlFilter());
 	}
 }
