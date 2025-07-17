@@ -187,12 +187,24 @@ public class DataTableRow
 		return nameResolved;
 	}
 
-	public ValueAndName suggestValueAndName()
+	public ValueAndName suggestValueAndName(@Nullable final Supplier<String> defaultValueSupplier, @Nullable final Supplier<String> defaultNameSupplier)
 	{
 		final ValueAndName valueAndName = getOptionalValueAndName().orElse(null);
 		if (valueAndName != null)
 		{
 			return valueAndName;
+		}
+
+		if (defaultNameSupplier != null || defaultValueSupplier != null)
+		{
+			final String name = defaultNameSupplier != null ? defaultNameSupplier.get() : null;
+			final String value = defaultValueSupplier != null ? defaultValueSupplier.get() : null;
+
+			final Optional<ValueAndName> valueAndNameFromSupplier = ValueAndName.ofNullableValueAndName(value, name);
+			if (valueAndNameFromSupplier.isPresent())
+			{
+				return valueAndNameFromSupplier.get();
+			}
 		}
 
 		final StepDefDataIdentifier recordIdentifier = getAsOptionalIdentifier().orElse(null);
@@ -202,6 +214,11 @@ public class DataTableRow
 		}
 
 		return ValueAndName.unique();
+	}
+
+	public ValueAndName suggestValueAndName()
+	{
+		return suggestValueAndName(null, null);
 	}
 
 	public ExplainedOptional<ValueAndName> getOptionalValueAndName()
