@@ -211,6 +211,7 @@ public class UserNotificationRequest
 	{
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	@lombok.Value
 	@lombok.Builder(toBuilder = true)
 	public static class TargetRecordAction implements TargetAction
@@ -247,13 +248,9 @@ public class UserNotificationRequest
 			return (TargetRecordAction)targetAction;
 		}
 
-		@NonNull
-		@Builder.Default
-		Optional<AdWindowId> adWindowId = Optional.empty();
+		@NonNull @Builder.Default Optional<AdWindowId> adWindowId = Optional.empty();
 
-		@NonNull
-		TableRecordReference record;
-
+		@NonNull TableRecordReference record;
 		String recordDisplayText;
 	}
 

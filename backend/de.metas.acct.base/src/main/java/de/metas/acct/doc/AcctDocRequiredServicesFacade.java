@@ -7,11 +7,11 @@ import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.api.impl.FactAcctDAO;
@@ -290,19 +290,9 @@ public class AcctDocRequiredServicesFacade
 		return bankAccountService.getById(bpBankAccountId);
 	}
 
-	public void postImmediateNoFail(
-			@NonNull final TableRecordReference documentRef,
-			@NonNull final ClientId clientId)
+	public void scheduleReposting(@NonNull final DocumentPostMultiRequest requests)
 	{
-		postingService.newPostingRequest()
-				.setClientId(clientId)
-				.setDocumentRef(documentRef)
-				.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
-				.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
-				.setForce(false) // don't force it
-				.setPostWithoutServer() // post directly (don't contact the server) because we want to post on client or server like the main document
-				.postIt(); // do it!
-
+		postingService.schedule(requests);
 	}
 
 	public I_M_Product getProductById(@NonNull final ProductId productId)

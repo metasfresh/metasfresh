@@ -22,7 +22,7 @@ package de.metas.dunning;
  * #L%
  */
 
-import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.impl.PostingService;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -113,7 +113,7 @@ public class DunningTestBase
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
-		Services.get(ISysConfigBL.class).setValue(IPostingService.SYSCONFIG_Enabled, false, ClientId.SYSTEM, OrgId.ANY);
+		Services.get(ISysConfigBL.class).setValue(PostingService.SYSCONFIG_Enabled, false, ClientId.SYSTEM, OrgId.ANY);
 
 		dao = new PlainDunningDAO();
 		Services.registerService(IDunningDAO.class, dao);

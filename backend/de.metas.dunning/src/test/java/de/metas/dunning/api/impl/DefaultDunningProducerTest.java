@@ -22,26 +22,11 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.Date;
-import java.util.List;
-
-import de.metas.record.warning.RecordWarningRepository;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
-import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningProducer;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
@@ -49,13 +34,29 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.record.warning.RecordWarningRepository;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Date;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
 		StartupListener.class,
 		ShutdownListener.class,
 		DunningDocDocumentHandlerProvider.class,
-		RecordWarningRepository.class
+		RecordWarningRepository.class,
+		DocumentPostingUserNotificationService.class,
 })
 public class DefaultDunningProducerTest extends DunningTestBase
 {
@@ -92,8 +93,8 @@ public class DefaultDunningProducerTest extends DunningTestBase
 
 		producer.finish();
 
-		assertDunningDocValid(context, candidate1);
-		assertDunningDocValid(context, candidate2);
+		assertDunningDocValid(candidate1);
+		assertDunningDocValid(candidate2);
 	}
 
 	private I_C_Dunning_Candidate createCandidate(final LocalDate dunningDate, final I_C_DunningLevel dunningLevel)
@@ -124,63 +125,55 @@ public class DefaultDunningProducerTest extends DunningTestBase
 		return candidate;
 	}
 
-	private void assertDunningDocValid(final IDunningContext context, final I_C_Dunning_Candidate candidate)
+	private void assertDunningDocValid(final I_C_Dunning_Candidate candidate)
 	{
 		InterfaceWrapperHelper.refresh(candidate);
 
 		final I_C_DunningDoc dunningDoc = retrieveDunningDocForCandidate(candidate);
-		Assert.assertNotNull("No dunning doc found for " + candidate, dunningDoc);
-		assertValid(context, dunningDoc, candidate);
+		assertThat(dunningDoc).as("No dunning doc found for " + candidate).isNotNull();
+		assertValid(dunningDoc, candidate);
 
 		final List<I_C_DunningDoc_Line> docLines = dao.retrieveDunningDocLines(dunningDoc);
-		Assert.assertNotNull("No lines found for" + dunningDoc, docLines);
-		Assert.assertEquals("One line expected for " + dunningDoc, 1, docLines.size());
+		assertThat(docLines).as("One line expected for " + dunningDoc).hasSize(1);
 		final I_C_DunningDoc_Line docLine = docLines.get(0);
-		assertValid(context, docLine, candidate);
+		assertValid(docLine, candidate);
 
 		final List<I_C_DunningDoc_Line_Source> docLineSources = dao.retrieveDunningDocLineSources(docLine);
-		Assert.assertNotNull("No sources found for" + docLine, docLineSources);
-		Assert.assertEquals("One source expected for " + docLine, 1, docLineSources.size());
+		assertThat(docLineSources).as("One source expected for " + docLine).hasSize(1);
 		// final I_C_DunningDoc_Line_Source docLineSrc = docLineSources.get(0);
 
 		// Validate back the candidate:
-		Assert.assertTrue("Candidate - Invalid Processed: " + candidate, candidate.isProcessed());
-		Assert.assertTrue("Candidate - Invalid DunningDocProcessed: " + candidate, candidate.isDunningDocProcessed());
-		Assert.assertEquals("Candidate - Invalid DunningDate: " + candidate, dunningDoc.getDunningDate(), candidate.getDunningDate());
+		assertThat(candidate.isProcessed()).as("Candidate - Invalid Processed: " + candidate).isTrue();
+		assertThat(candidate.isDunningDocProcessed()).as("Candidate - Invalid DunningDocProcessed: " + candidate).isTrue();
+		assertThat(candidate.getDunningDate()).as("Candidate - Invalid DunningDate: " + candidate).isEqualTo(dunningDoc.getDunningDate());
 	}
 
-	private void assertValid(final IDunningContext context, final I_C_DunningDoc dunningDoc, final I_C_Dunning_Candidate candidate)
+	private void assertValid(final I_C_DunningDoc dunningDoc, final I_C_Dunning_Candidate candidate)
 	{
 		// this is valid only when execution dunningDate is not null
 		// Assert.assertEquals("DunningDoc - DunningDate for execution context shall be used: " + dunningDoc, context.getDunningDate(), dunningDoc.getDunningDate());
-		Assert.assertEquals("DunningDoc - Invalid Processed", true, dunningDoc.isProcessed());
+		assertThat(dunningDoc.isProcessed()).as("DunningDoc - Invalid Processed").isTrue();
 
-		Assert.assertEquals("DunningDoc - Invalid AD_Org_ID", candidate.getAD_Org_ID(), dunningDoc.getAD_Org_ID());
-		Assert.assertEquals("DunningDoc - Invalid C_BPartner_ID", candidate.getC_BPartner_ID(), dunningDoc.getC_BPartner_ID());
-		Assert.assertEquals("DunningDoc - Invalid C_BPartner_Location_ID", candidate.getC_BPartner_Location_ID(), dunningDoc.getC_BPartner_Location_ID());
-		Assert.assertEquals("DunningDoc - Invalid C_Dunning_Contact_ID", candidate.getC_Dunning_Contact_ID(), dunningDoc.getC_Dunning_Contact_ID());
+		assertThat(dunningDoc.getAD_Org_ID()).as("DunningDoc - Invalid AD_Org_ID").isEqualTo(candidate.getAD_Org_ID());
+		assertThat(dunningDoc.getC_BPartner_ID()).as("DunningDoc - Invalid C_BPartner_ID").isEqualTo(candidate.getC_BPartner_ID());
+		assertThat(dunningDoc.getC_BPartner_Location_ID()).as("DunningDoc - Invalid C_BPartner_Location_ID").isEqualTo(candidate.getC_BPartner_Location_ID());
+		assertThat(dunningDoc.getC_Dunning_Contact_ID()).as("DunningDoc - Invalid C_Dunning_Contact_ID").isEqualTo(candidate.getC_Dunning_Contact_ID());
 	}
 
-	private void assertValid(final IDunningContext context, final I_C_DunningDoc_Line docLine, final I_C_Dunning_Candidate candidate)
+	private void assertValid(final I_C_DunningDoc_Line docLine, final I_C_Dunning_Candidate candidate)
 	{
-		Assert.assertEquals("DunningDoc - Invalid Processed", true, docLine.isProcessed());
+		assertThat(docLine.isProcessed()).as("DunningDoc - Invalid Processed").isTrue();
 
-		Assert.assertEquals("DunningDocLine - Invalid AD_Org_ID", candidate.getAD_Org_ID(), docLine.getAD_Org_ID());
-		Assert.assertEquals("DunningDocLine - Invalid C_DunningLevel", candidate.getC_DunningLevel(), docLine.getC_DunningLevel());
-		Assert.assertEquals("DunningDocLine - Invalid C_BPartner_ID", candidate.getC_BPartner_ID(), docLine.getC_BPartner_ID());
-		Assert.assertEquals("DunningDocLine - Invalid C_Dunning_Contact_ID", candidate.getC_Dunning_Contact_ID(), docLine.getC_Dunning_Contact_ID());
-		Assert.assertEquals("DunningDocLine - Invalid C_Dunning_Contact_ID", candidate.getC_Currency_ID(), docLine.getC_Currency_ID());
+		assertThat(docLine.getAD_Org_ID()).as("DunningDocLine - Invalid AD_Org_ID").isEqualTo(candidate.getAD_Org_ID());
+		assertThat(docLine.getC_DunningLevel()).as("DunningDocLine - Invalid C_DunningLevel").isEqualTo(candidate.getC_DunningLevel());
+		assertThat(docLine.getC_BPartner_ID()).as("DunningDocLine - Invalid C_BPartner_ID").isEqualTo(candidate.getC_BPartner_ID());
+		assertThat(docLine.getC_Dunning_Contact_ID()).as("DunningDocLine - Invalid C_Dunning_Contact_ID").isEqualTo(candidate.getC_Dunning_Contact_ID());
+		assertThat(docLine.getC_Currency_ID()).as("DunningDocLine - Invalid C_Dunning_Contact_ID").isEqualTo(candidate.getC_Currency_ID());
 	}
 
 	private I_C_DunningDoc retrieveDunningDocForCandidate(final I_C_Dunning_Candidate candidate)
 	{
-		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, pojo -> {
-			if (pojo.getC_Dunning_Candidate_ID() != candidate.getC_Dunning_Candidate_ID())
-			{
-				return false;
-			}
-			return true;
-		});
+		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, pojo -> pojo.getC_Dunning_Candidate_ID() == candidate.getC_Dunning_Candidate_ID());
 		if (lineSrc == null)
 		{
 			return null;

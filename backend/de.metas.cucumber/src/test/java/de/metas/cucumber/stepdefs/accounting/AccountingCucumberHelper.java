@@ -4,7 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-import de.metas.acct.api.IPostingRequestBuilder;
+import de.metas.acct.api.DocumentPostMultiRequest;
+import de.metas.acct.api.DocumentPostRequest;
 import de.metas.acct.api.IPostingService;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.FactAcctBalanceValidator.FactAcctBalanceValidatorBuilder;
@@ -40,14 +41,19 @@ public class AccountingCucumberHelper
 		final IPostingService postingService = Services.get(IPostingService.class);
 
 		streamPostingInfo(recordRefs)
-				.forEach(postingInfo -> postingService.newPostingRequest()
-						.setClientId(postingInfo.getClientId())
-						.setDocumentRef(postingInfo.getRecordRef())
-						.setForce(true)
-						.setPostImmediate(IPostingRequestBuilder.PostImmediate.Yes)
-						.setFailOnError(true)
-						.onErrorNotifyUser(Env.getLoggedUserId())
-						.postIt());
+				.map(AccountingCucumberHelper::toDocumentPostRequest)
+				.collect(DocumentPostMultiRequest.collect())
+				.ifPresent(postingService::postAfterCommit);
+	}
+
+	private static DocumentPostRequest toDocumentPostRequest(final PostingInfo postingInfo)
+	{
+		return DocumentPostRequest.builder()
+				.record(postingInfo.getRecordRef())
+				.clientId(postingInfo.getClientId())
+				.force(true)
+				.onErrorNotifyUserId(Env.getLoggedUserId())
+				.build();
 	}
 
 	public static void waitUtilPosted(final Set<TableRecordReference> recordRefs) throws InterruptedException
