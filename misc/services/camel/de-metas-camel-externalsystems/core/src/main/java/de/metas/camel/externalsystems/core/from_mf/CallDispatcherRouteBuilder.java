@@ -101,6 +101,7 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 	private void processExternalSystemRequest(@NonNull final Exchange exchange)
 	{
 		final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
+		
 		exchange.getIn().setHeader(HEADER_TARGET_ROUTE, request.getExternalSystemName().getName() + "-" + request.getCommand());
 		exchange.getIn().setHeader(HEADER_TRACE_ID, request.getTraceId());
 
