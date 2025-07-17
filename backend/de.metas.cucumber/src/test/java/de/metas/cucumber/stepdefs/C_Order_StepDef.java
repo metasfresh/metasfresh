@@ -103,8 +103,10 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DocumentNo;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_ExternalId;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
@@ -308,6 +310,12 @@ public class C_Order_StepDef
 						order.setDropShip_Location_ID(dropShipLocation.getC_BPartner_Location_ID());
 						order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
 					}
+
+					tableRow.getAsOptionalString(COLUMNNAME_DocumentNo)
+							.ifPresent(order::setDocumentNo);
+
+					tableRow.getAsOptionalString(COLUMNNAME_ExternalId)
+							.ifPresent(order::setExternalId);
 
 					saveRecord(order);
 

@@ -187,8 +187,7 @@ public class C_BPartner_Location_StepDef
 
 		saveRecord(bPartnerLocationRecord);
 
-		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
-		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
+		bPartnerLocationTable.putOrReplace(tableRow.getAsIdentifier(), bPartnerLocationRecord);
 	}
 
 	private void load_bpartner_location(@NonNull final DataTableRow tableRow)

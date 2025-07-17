@@ -91,8 +91,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
-import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
-import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
@@ -148,7 +146,6 @@ import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -2532,18 +2529,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	@Override
 	public int createSelectionForInvoiceCandidates(
-			@NonNull final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds,
+			@NonNull final InvoiceCandidateMultiQuery multiQuery,
 			@NonNull final PInstanceId pInstanceId)
 	{
-		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
-		for (final ExternalHeaderIdWithExternalLineIds headerWithLineIds : headerAndLineIds)
-		{
-			multiQuery.query(InvoiceCandidateQuery.builder()
-									 .externalIds(headerWithLineIds)
-									 .build());
-		}
-
-		return invoiceCandDAO.createSelectionByQuery(multiQuery.build(), pInstanceId);
+		return invoiceCandDAO.createSelectionByQuery(multiQuery, pInstanceId);
 	}
 
 	@Override
