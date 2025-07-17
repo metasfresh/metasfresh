@@ -38,6 +38,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -95,12 +96,6 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	private static final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
-	}
-
-	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
 		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
@@ -108,18 +103,20 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+		testConfiguration().withUseAdviceWith(true);
 		final Properties properties = new Properties();
 		try
 		{
 			properties.load(LeichUndMehlExportPPOrderRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Test

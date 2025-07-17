@@ -24,12 +24,14 @@ package de.metas.camel.externalsystems.scripting;
 
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -39,12 +41,12 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
  */
 @RequiredArgsConstructor
 @Component
-public class ScriptingFromMetasfreshRouteBuilder extends RouteBuilder
+public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 {
-	public static final String Scripting_ROUTE_ID = "Script-Conversion";
+	public static final String Scripting_ROUTE_ID = "ScriptedAdapter-ConvertMsgFromMF";
 
 	public static final String PROPERTY_SCRIPTING_REPO_BASE_DIR = "metasfresh.scripting.repo.baseDir";
-	
+
 	public static final String PROPERTY_METASFRESH_INPUT = "metasfreshInput";
 	public static final String PROPERTY_JAVASCRIPT_IDENTIFIER = "scriptIdentifier";
 
@@ -70,26 +72,38 @@ public class ScriptingFromMetasfreshRouteBuilder extends RouteBuilder
 		from(direct(Scripting_ROUTE_ID))
 				.routeId(Scripting_ROUTE_ID)
 				.log("Route invoked!")
+				.process(this::buildAndSetContext)
 				.process(this::executeJavaScript)
 				// TODO: forward to destination, which shall be specified by the ExternalSystemsRequest !
 			;
 		//@formatter:on
 	}
 
+	private void buildAndSetContext(@NonNull final Exchange exchange)
+	{
+
+		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
+		final Map<String, String> parameters = request.getParameters();
+
+		final MsgFromMfContext msgFromMfContext = MsgFromMfContext.builder()
+				.scriptingRequestBody(parameters.get(PROPERTY_METASFRESH_INPUT))
+				.scriptIdentifier(parameters.get(PROPERTY_JAVASCRIPT_IDENTIFIER))
+				.build();
+		exchange.getIn().setBody(msgFromMfContext);
+	}
+
 	private void executeJavaScript(@NonNull final Exchange exchange)
 	{
-		// the (json-)string to be converted
-		final String scriptingRequestBody = ProcessorHelper.getPropertyOrThrowError(exchange,
-				PROPERTY_METASFRESH_INPUT,
-				String.class);
-		final String scriptIdentifier = ProcessorHelper.getPropertyOrThrowError(exchange,
-				PROPERTY_JAVASCRIPT_IDENTIFIER,
-				String.class);
+		final MsgFromMfContext msgFromMfContext = exchange.getIn().getBody(MsgFromMfContext.class);
 
-		final String script = javaScriptRepo.get(scriptIdentifier);
+		final String script = javaScriptRepo.get(msgFromMfContext.getScriptIdentifier());
+		msgFromMfContext.setScript(script);
 
-		final Object javaScriptResult = javaScriptExecutorService.executeScript(scriptIdentifier, script, scriptingRequestBody);
-
-		exchange.getIn().setBody(javaScriptResult);
+		final String javaScriptResult = javaScriptExecutorService.executeScript(
+				msgFromMfContext.getScriptIdentifier(),
+				msgFromMfContext.getScript(),
+				msgFromMfContext.getScriptingRequestBody());
+		
+		msgFromMfContext.setScriptReturnValue(javaScriptResult);
 	}
 }

@@ -45,7 +45,9 @@ public class JavaScriptRepo
 		}
 		catch (final IOException e)
 		{
-			throw new RuntimeException("Unable to load script with identifier " + identifier, e);
+			throw new JavaScriptRepoException(identifier,
+					"Unable to load script with identifier " + identifier,
+					e);
 		}
 	}
 
@@ -59,7 +61,10 @@ public class JavaScriptRepo
 		}
 		catch (final IOException e)
 		{
-			throw new RuntimeException("Unable to store script with identifier " + identifier, e);
+			throw new JavaScriptRepoException(
+					identifier,
+					"Unable to store script with identifier " + identifier,
+					e);
 		}
 	}
 }

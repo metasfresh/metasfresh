@@ -29,28 +29,21 @@ import org.apache.camel.RuntimeCamelException;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class JavaScriptExecutorException extends RuntimeCamelException
+public class JavaScriptRepoException extends RuntimeCamelException
 {
 	@NonNull String scriptIdentifier;
-
-	@NonNull String script;
-
-	@NonNull String metasfreshInput;
 	
 	@NonNull String errorMsg;
 
-	public JavaScriptExecutorException(
+	public JavaScriptRepoException(
 			@NonNull final String scriptIdentifier,
-			@NonNull final String script,
-			@NonNull final String metasfreshInput,
 			@NonNull final String errorMsg,
 			@NonNull final Throwable cause)
 	{
 		super("scpriptIdentifier=" + scriptIdentifier + "; errorMsg=" + errorMsg, cause);
 
 		this.scriptIdentifier = scriptIdentifier;
-		this.script = script;
-		this.metasfreshInput = metasfreshInput;
+		
 		this.errorMsg = errorMsg;
 	}
 }

@@ -22,35 +22,16 @@
 
 package de.metas.camel.externalsystems.scripting;
 
-import lombok.EqualsAndHashCode;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
-import org.apache.camel.RuntimeCamelException;
 
-@Value
-@EqualsAndHashCode(callSuper = false)
-public class JavaScriptExecutorException extends RuntimeCamelException
+@Data
+@Builder
+public class MsgFromMfContext
 {
-	@NonNull String scriptIdentifier;
-
-	@NonNull String script;
-
-	@NonNull String metasfreshInput;
-	
-	@NonNull String errorMsg;
-
-	public JavaScriptExecutorException(
-			@NonNull final String scriptIdentifier,
-			@NonNull final String script,
-			@NonNull final String metasfreshInput,
-			@NonNull final String errorMsg,
-			@NonNull final Throwable cause)
-	{
-		super("scpriptIdentifier=" + scriptIdentifier + "; errorMsg=" + errorMsg, cause);
-
-		this.scriptIdentifier = scriptIdentifier;
-		this.script = script;
-		this.metasfreshInput = metasfreshInput;
-		this.errorMsg = errorMsg;
-	}
+	@NonNull final String scriptingRequestBody;
+	@NonNull final String scriptIdentifier;
+	String script;
+	String scriptReturnValue;
 }

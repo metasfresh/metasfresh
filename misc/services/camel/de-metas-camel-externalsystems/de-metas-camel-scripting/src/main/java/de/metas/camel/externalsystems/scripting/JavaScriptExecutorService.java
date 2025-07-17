@@ -34,7 +34,7 @@ import org.graalvm.polyglot.Value;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
-import static de.metas.camel.externalsystems.scripting.ScriptingFromMetasfreshRouteBuilder.PROPERTY_METASFRESH_INPUT;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_METASFRESH_INPUT;
 
 /**
  * Executes javascript.
@@ -43,7 +43,7 @@ import static de.metas.camel.externalsystems.scripting.ScriptingFromMetasfreshRo
  */
 public class JavaScriptExecutorService
 {
-	public Object executeScript(
+	public String executeScript(
 			@NonNull final String scriptIdentifier,
 			@NonNull final String script,
 			@NonNull final String input)
@@ -57,11 +57,8 @@ public class JavaScriptExecutorService
 		catch (final PolyglotException e)
 		{
 			throw new JavaScriptExecutorException(
-					scriptIdentifier,
-					script,
-					input,
-					e.getMessage(),
-					e);
+					scriptIdentifier, script, input,
+					e.getMessage(), e);
 		}
 	}
 
@@ -70,11 +67,11 @@ public class JavaScriptExecutorService
 	 *
 	 * @param script   The JavaScript code to execute.
 	 * @param bindings A map of variable names to Java objects that will be available in the script's scope.
-	 * @return The result of the script execution, converted to a Java object.
+	 * @return The result of the script execution, converted to a string.
 	 * @throws RuntimeException if there is an error during script execution.
 	 */
 	@VisibleForTesting
-	Object executeScript(@NonNull final String script,
+	String executeScript(@NonNull final String script,
 						 @NonNull final Map<String, Object> bindings) throws RuntimeException
 	{
 		final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -103,7 +100,7 @@ public class JavaScriptExecutorService
 
 			// 5. Convert the result to a Java type and return it.
 			// This will handle primitives, maps, lists, etc.
-			return result.as(Object.class);
+			return result.as(String.class);
 		}
 	}
 }

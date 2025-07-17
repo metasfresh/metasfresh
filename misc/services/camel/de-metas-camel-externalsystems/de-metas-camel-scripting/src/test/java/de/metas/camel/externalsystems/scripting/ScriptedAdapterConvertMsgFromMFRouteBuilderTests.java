@@ -25,6 +25,9 @@ package de.metas.camel.externalsystems.scripting;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.common.externalsystem.JsonExternalSystemName;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -39,13 +42,13 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.scripting.ScriptingFromMetasfreshRouteBuilder.PROPERTY_JAVASCRIPT_IDENTIFIER;
-import static de.metas.camel.externalsystems.scripting.ScriptingFromMetasfreshRouteBuilder.PROPERTY_METASFRESH_INPUT;
-import static de.metas.camel.externalsystems.scripting.ScriptingFromMetasfreshRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
-import static de.metas.camel.externalsystems.scripting.ScriptingFromMetasfreshRouteBuilder.Scripting_ROUTE_ID;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_JAVASCRIPT_IDENTIFIER;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_METASFRESH_INPUT;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.Scripting_ROUTE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ScriptingFromMetasfreshRouteBuilderTests extends CamelTestSupport
+public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestSupport
 {
 	/**
 	 * Used to parse and verify the results.
@@ -61,7 +64,7 @@ public class ScriptingFromMetasfreshRouteBuilderTests extends CamelTestSupport
 		final Properties properties = new Properties();
 		try
 		{
-			properties.load(ScriptingFromMetasfreshRouteBuilderTests.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(ScriptedAdapterConvertMsgFromMFRouteBuilderTests.class.getClassLoader().getResourceAsStream("application.properties"));
 		}
 		catch (final IOException e)
 		{
@@ -73,7 +76,7 @@ public class ScriptingFromMetasfreshRouteBuilderTests extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new ScriptingFromMetasfreshRouteBuilder(Mockito.mock(ProcessLogger.class));
+		return new ScriptedAdapterConvertMsgFromMFRouteBuilder(Mockito.mock(ProcessLogger.class));
 	}
 
 	@Test
@@ -108,11 +111,11 @@ public class ScriptingFromMetasfreshRouteBuilderTests extends CamelTestSupport
 		template.send("direct:" + Scripting_ROUTE_ID, exchange);
 
 		// Then: Verify the result
-		final String result = exchange.getIn().getBody(String.class);
+		final MsgFromMfContext result = exchange.getIn().getBody(MsgFromMfContext.class);
 		assertThat(result).isNotNull();
 
 		// Parse the result to verify it's valid JSON
-		final var resultObject = objectMapper.readTree(result);
+		final var resultObject = objectMapper.readTree(result.getScriptReturnValue());
 		assertThat(resultObject.get("processed").asBoolean()).isTrue();
 		assertThat(resultObject.get("originalName").asText()).isEqualTo("John");
 		assertThat(resultObject.get("ageInMonths").asInt()).isEqualTo(360);
@@ -144,8 +147,8 @@ public class ScriptingFromMetasfreshRouteBuilderTests extends CamelTestSupport
 		template.send("direct:" + Scripting_ROUTE_ID, exchange);
 
 		// Then: Verify the result
-		final String result = exchange.getIn().getBody(String.class);
-		final var resultObject = objectMapper.readTree(result);
+		final MsgFromMfContext result = exchange.getIn().getBody(MsgFromMfContext.class);
+		final var resultObject = objectMapper.readTree(result.getScriptReturnValue());
 		assertThat(resultObject.get("originalValue").asInt()).isEqualTo(42);
 		assertThat(resultObject.get("doubledValue").asInt()).isEqualTo(84);
 	}
@@ -177,35 +180,11 @@ public class ScriptingFromMetasfreshRouteBuilderTests extends CamelTestSupport
 		template.send("direct:" + Scripting_ROUTE_ID, exchange);
 
 		// Then: Verify the result
-		final String result = exchange.getIn().getBody(String.class);
-		final var resultObject = objectMapper.readTree(result);
+		final MsgFromMfContext result = exchange.getIn().getBody(MsgFromMfContext.class);
+		final var resultObject = objectMapper.readTree(result.getScriptReturnValue());
 		assertThat(resultObject.get("sum").asInt()).isEqualTo(15);
 		assertThat(resultObject.get("count").asInt()).isEqualTo(5);
 		assertThat(resultObject.get("average").asDouble()).isEqualTo(3.0);
-	}
-
-	@Test
-	void executeJavaScriptReturnsPrimitiveValue() throws Exception
-	{
-		// Given: JSON input
-		final String jsonInput = "{\"count\":5}";
-
-		// JavaScript that returns a primitive value
-		final String jsScript = """
-				var inputData = JSON.parse(metasfreshInput);
-				inputData.count * 10;
-				""";
-
-		context.start();
-
-		// When: Send message to the scripting route
-		final Exchange exchange = prepareScriptAndExchange(jsScript, jsonInput);
-
-		template.send("direct:" + Scripting_ROUTE_ID, exchange);
-
-		// Then: Verify the result
-		final Object result = exchange.getIn().getBody();
-		assertThat(result).isEqualTo(50);
 	}
 
 	@Test
@@ -261,8 +240,17 @@ public class ScriptingFromMetasfreshRouteBuilderTests extends CamelTestSupport
 		javaScriptRepo.save("testScript", jsScript);
 
 		final Exchange exchange = new DefaultExchange(template.getCamelContext());
-		exchange.setProperty(PROPERTY_METASFRESH_INPUT, metasfreshInput);
-		exchange.setProperty(PROPERTY_JAVASCRIPT_IDENTIFIER, "testScript");
+		exchange.getIn().setBody(
+				JsonExternalSystemRequest.builder()
+						.orgCode("orgCode")
+						.externalSystemName(JsonExternalSystemName.of("externalSystemName"))
+						.command("command")
+						.externalSystemConfigId(JsonMetasfreshId.of(1))
+						.traceId("traceId")
+						.externalSystemChildConfigValue("externalSystemChildConfigValue")
+						.parameter(PROPERTY_METASFRESH_INPUT, metasfreshInput)
+						.parameter(PROPERTY_JAVASCRIPT_IDENTIFIER, "testScript")
+						.build());
 
 		return exchange;
 	}

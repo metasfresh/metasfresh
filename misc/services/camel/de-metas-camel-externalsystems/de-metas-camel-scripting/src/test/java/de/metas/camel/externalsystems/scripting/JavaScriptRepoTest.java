@@ -71,7 +71,7 @@ class JavaScriptRepoTest
 
 		// when
 		assertThatThrownBy(() -> javaScriptRepo.get(identifier))
-				.isInstanceOf(RuntimeException.class)
+				.isInstanceOf(JavaScriptRepoException.class)
 				.hasMessageContaining("Unable to load script with identifier " + identifier)
 				.hasCauseInstanceOf(IOException.class);
 	}
