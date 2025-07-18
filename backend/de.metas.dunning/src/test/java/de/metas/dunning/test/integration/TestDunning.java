@@ -25,30 +25,10 @@ package de.metas.dunning.test.integration;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.record.warning.RecordWarningRepository;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.acct.posting.DocumentPostingUserNotificationService;
+import de.metas.common.util.time.SystemTime;
 import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;
@@ -63,19 +43,38 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.MockedDunningCandidateListener;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.record.warning.RecordWarningRepository;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author tsa
- *
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
 		StartupListener.class,
 		ShutdownListener.class,
 		DunningDocDocumentHandlerProvider.class,
-		RecordWarningRepository.class
+		RecordWarningRepository.class,
+		DocumentPostingUserNotificationService.class,
 })
 public class TestDunning extends DunningTestBase
 {
@@ -109,14 +108,17 @@ public class TestDunning extends DunningTestBase
 	// Candidate for level 2
 	private I_C_Dunning_Candidate candidate2_2;
 
+	@SuppressWarnings({ "SameParameterValue", "deprecation" })
+	Timestamp timestamp(final int year, final int month, final int day) {return TimeUtil.getDay(year, month, day);}
+
 	@Test
 	public void testCreateInvoices()
 	{
 		prepareWriteOff();
-		assertThat("Invoice is already written off: " + invoice1, invoiceBL.isInvoiceWroteOff(invoice1), is(false));
-		Assert.assertFalse("Invoice not wrote off " + invoice2, invoiceBL.isInvoiceWroteOff(invoice2));
-		Assert.assertFalse("Invoice not wrote off " + invoice3, invoiceBL.isInvoiceWroteOff(invoice3));
-		Assert.assertFalse("Invoice not wrote off " + invoice4, invoiceBL.isInvoiceWroteOff(invoice4));
+		assertThat(invoiceBL.isInvoiceWroteOff(invoice1)).as("Invoice is already written off: " + invoice1).isFalse();
+		assertThat(invoiceBL.isInvoiceWroteOff(invoice2)).as("Invoice not wrote off " + invoice2).isFalse();
+		assertThat(invoiceBL.isInvoiceWroteOff(invoice3)).as("Invoice not wrote off " + invoice3).isFalse();
+		assertThat(invoiceBL.isInvoiceWroteOff(invoice4)).as("Invoice not wrote off " + invoice4).isFalse();
 	}
 
 	@Test
@@ -128,11 +130,9 @@ public class TestDunning extends DunningTestBase
 
 		loadDunningCandidates();
 
-		Assert.assertEquals("Only one candidate1 shall be generated for " + invoice1, 1, candidates1.size());
-
-		Assert.assertEquals("Only one candidate2 shall be generated for " + invoice2, 1, candidates2.size());
-
-		Assert.assertEquals("Only one candidate1 shall be generated for " + invoice4, 1, candidates4.size());
+		assertThat(candidates1).as("Only one candidate1 shall be generated for " + invoice1).hasSize(1);
+		assertThat(candidates2).as("Only one candidate2 shall be generated for " + invoice2).hasSize(1);
+		assertThat(candidates4).as("Only one candidate1 shall be generated for " + invoice4).hasSize(1);
 	}
 
 	@Test
@@ -144,17 +144,17 @@ public class TestDunning extends DunningTestBase
 
 		loadDunningCandidates();
 
-		Assert.assertFalse("Candidate1 - processed", candidate1.isProcessed());
-		Assert.assertEquals("Candidate1 - invalid dunning level", dunningLevel1, candidate1.getC_DunningLevel());
-		Assert.assertNull("Candidate1 - DunningDateEffective", candidate1.getDunningDateEffective());
-		Assert.assertFalse("Candidate1 - WriteOff", candidate1.isWriteOff());
+		assertThat(candidate1.isProcessed()).as("Candidate1 - processed").isFalse();
+		assertThat(candidate1.getC_DunningLevel()).as("Candidate1 - invalid dunning level").isEqualTo(dunningLevel1);
+		assertThat(candidate1.getDunningDateEffective()).as("Candidate1 - DunningDateEffective").isNull();
+		assertThat(candidate1.isWriteOff()).as("Candidate1 - WriteOff").isFalse();
 		writeOffListener.assertNotTriggered(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate1);
 
-		Assert.assertFalse("Candidate2 - processed", candidate2.isProcessed());
+		assertThat(candidate2.isProcessed()).as("Candidate2 - processed").isFalse();
 		// Still level 1 because we are dunning sequentially
-		Assert.assertEquals("Candidate2 - invalid dunning level", dunningLevel1, candidate2.getC_DunningLevel());
-		Assert.assertNull("Candidate2 - DunningDateEffective", candidate2.getDunningDateEffective());
-		Assert.assertFalse("Candidate2 - WriteOff", candidate2.isWriteOff());
+		assertThat(candidate2.getC_DunningLevel()).as("Candidate2 - invalid dunning level").isEqualTo(dunningLevel1);
+		assertThat(candidate2.getDunningDateEffective()).as("Candidate2 - DunningDateEffective").isNull();
+		assertThat(candidate2.isWriteOff()).as("Candidate2 - WriteOff").isFalse();
 		writeOffListener.assertNotTriggered(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate2);
 
 	}
@@ -169,29 +169,29 @@ public class TestDunning extends DunningTestBase
 		loadDunningCandidates();
 
 		// Not generated for invoice that has a dunning grace.
-		Assert.assertNull("Candidate3 - null", candidate3);
+		assertThat(candidate3).as("Candidate3 - null").isNull();
 
-		Assert.assertFalse("Candidate4 - processed", candidate4.isProcessed());
-		Assert.assertEquals("Candidate4 - invalid dunning level", dunningLevel1, candidate4.getC_DunningLevel());
-		Assert.assertNull("Candidate4 - DunningDateEffective", candidate4.getDunningDateEffective());
-		Assert.assertFalse("Candidate4 - WriteOff", candidate4.isWriteOff());
+		assertThat(candidate4.isProcessed()).as("Candidate4 - processed").isFalse();
+		assertThat(candidate4.getC_DunningLevel()).as("Candidate4 - invalid dunning level").isEqualTo(dunningLevel1);
+		assertThat(candidate4.getDunningDateEffective()).as("Candidate4 - DunningDateEffective").isNull();
+		assertThat(candidate4.isWriteOff()).as("Candidate4 - WriteOff").isFalse();
 		writeOffListener.assertNotTriggered(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate4);
 
-		candidate4.setDunningGrace(TimeUtil.getDay(2014, 01, 01));
+		candidate4.setDunningGrace(timestamp(2014, 1, 1));
 		InterfaceWrapperHelper.save(candidate4);
 
 		//
 		// Process all dunning candidates => Dunning Docs will be generated
 		dunningBL.processCandidates(dunningContext);
 		loadDunningCandidates(); // reload candidates
-		Assert.assertTrue("Candidate1 - processed", candidate1.isProcessed());
-		Assert.assertFalse("Candidate1 - IsDunningDocProcessed", candidate1.isDunningDocProcessed());
-		Assert.assertTrue("Candidate2 - processed", candidate2.isProcessed());
-		Assert.assertFalse("Candidate2 - IsDunningDocProcessed", candidate2.isDunningDocProcessed());
+		assertThat(candidate1.isProcessed()).as("Candidate1 - processed").isTrue();
+		assertThat(candidate1.isDunningDocProcessed()).as("Candidate1 - IsDunningDocProcessed").isFalse();
+		assertThat(candidate2.isProcessed()).as("Candidate2 - processed").isTrue();
+		assertThat(candidate2.isDunningDocProcessed()).as("Candidate2 - IsDunningDocProcessed").isFalse();
 
 		//
 		// Assert candidate with dunning grace not processed.
-		Assert.assertEquals("Candidate4 - processed", false, candidate4.isProcessed());
+		assertThat(candidate4.isProcessed()).as("Candidate4 - processed").isFalse();
 
 	}
 
@@ -210,10 +210,10 @@ public class TestDunning extends DunningTestBase
 		// Process all dunning docs => candidates shall be marked as doc processed
 		processDunningDocs();
 		loadDunningCandidates();
-		Assert.assertTrue("Candidate1 - IsDunningDocProcessed", candidate1.isDunningDocProcessed());
-		Assert.assertEquals("Candidate1 - DunningDateEffective", dunningContext.getDunningDate(), candidate1.getDunningDateEffective());
-		Assert.assertTrue("Candidate2 - IsDunningDocProcessed", candidate2.isDunningDocProcessed());
-		Assert.assertEquals("Candidate2 - DunningDateEffective", dunningContext.getDunningDate(), candidate2.getDunningDateEffective());
+		assertThat(candidate1.isDunningDocProcessed()).as("Candidate1 - IsDunningDocProcessed").isTrue();
+		assertThat(candidate1.getDunningDateEffective()).as("Candidate1 - DunningDateEffective").isEqualTo(dunningContext.getDunningDate());
+		assertThat(candidate2.isDunningDocProcessed()).as("Candidate2 - IsDunningDocProcessed").isTrue();
+		assertThat(candidate2.getDunningDateEffective()).as("Candidate2 - DunningDateEffective").isEqualTo(dunningContext.getDunningDate());
 
 	}
 
@@ -233,8 +233,8 @@ public class TestDunning extends DunningTestBase
 		//
 		// Assert no invoice shall be wrote-off at this moment (we are still on level1)
 		Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(dunningContext.getCtx(), "writeoff test");
-		Assert.assertFalse("Invoice1 - Invalid WriteOff: " + invoice1, invoiceBL.isInvoiceWroteOff(invoice1));
-		Assert.assertFalse("Invoice2 - InvalidWriteOff: " + invoice2, invoiceBL.isInvoiceWroteOff(invoice2));
+		assertThat(invoiceBL.isInvoiceWroteOff(invoice1)).as("Invoice1 - Invalid WriteOff: " + invoice1).isFalse();
+		assertThat(invoiceBL.isInvoiceWroteOff(invoice2)).as("Invoice2 - InvalidWriteOff: " + invoice2).isFalse();
 	}
 
 	@Test
@@ -257,11 +257,11 @@ public class TestDunning extends DunningTestBase
 		//
 		//
 		candidate2_2 = dao.retrieveDunningCandidate(dunningContext, invoice2, dunningLevel2);
-		Assert.assertNotNull("Candidate2_2 - not null", candidate2_2);
-		assertThat("Candidate2_2 references wrong invoice", candidate2_2.getRecord_ID(), is(invoice2.getC_Invoice_ID()));
-		Assert.assertEquals("Candidate2_2 - processed", false, candidate2_2.isProcessed());
-		Assert.assertEquals("Candidate2_2 - invalid dunning level", dunningLevel2, candidate2_2.getC_DunningLevel());
-		Assert.assertEquals("Candidate2 - WriteOff", true, candidate2_2.isWriteOff());
+		assertThat(candidate2_2).as("Candidate2_2 - not null").isNotNull();
+		assertThat(candidate2_2.getRecord_ID()).as("Candidate2_2 references wrong invoice").isEqualTo(invoice2.getC_Invoice_ID());
+		assertThat(candidate2_2.isProcessed()).as("Candidate2_2 - processed").isFalse();
+		assertThat(candidate2_2.getC_DunningLevel()).as("Candidate2_2 - invalid dunning level").isEqualTo(dunningLevel2);
+		assertThat(candidate2_2.isWriteOff()).as("Candidate2 - WriteOff").isTrue();
 		writeOffListener.assertNotTriggered(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate2_2);
 	}
 
@@ -293,13 +293,13 @@ public class TestDunning extends DunningTestBase
 		// Check write-off because we actually executing the write-off
 		{
 			final List<I_C_DunningDoc_Line_Source> sourcesToWriteOff = IteratorUtils.asList(dao.retrieveDunningDocLineSourcesToWriteOff(dunningContext));
-			Assert.assertEquals("Only one candidate shall be in writeoff list", 1, sourcesToWriteOff.size());
+			assertThat(sourcesToWriteOff).as("Only one candidate shall be in writeoff list").hasSize(1);
 
 			final I_C_DunningDoc_Line_Source sourceToWriteOff = sourcesToWriteOff.get(0);
-			Assert.assertEquals("Source to writeoff - Invalid - Processed", true, sourceToWriteOff.isProcessed());
-			Assert.assertEquals("Source to writeoff - Invalid - IsWriteOff", true, sourceToWriteOff.isWriteOff());
-			Assert.assertEquals("Source to writeoff - Invalid - IsWriteOffApplied", false, sourceToWriteOff.isWriteOffApplied());
-			Assert.assertEquals("Source to writeoff - Invalid - C_Dunning_Candidate_ID", candidate2_2.getC_Dunning_Candidate_ID(), sourceToWriteOff.getC_Dunning_Candidate_ID());
+			assertThat(sourceToWriteOff.isProcessed()).as("Source to writeoff - Invalid - Processed").isTrue();
+			assertThat(sourceToWriteOff.isWriteOff()).as("Source to writeoff - Invalid - IsWriteOff").isTrue();
+			assertThat(sourceToWriteOff.isWriteOffApplied()).as("Source to writeoff - Invalid - IsWriteOffApplied").isFalse();
+			assertThat(sourceToWriteOff.getC_Dunning_Candidate_ID()).as("Source to writeoff - Invalid - C_Dunning_Candidate_ID").isEqualTo(candidate2_2.getC_Dunning_Candidate_ID());
 		}
 	}
 
@@ -334,14 +334,14 @@ public class TestDunning extends DunningTestBase
 		//
 		// Assert no invoice shall be wrote-off at this moment (we are still on level1)
 		loadDunningCandidates();
-		Assert.assertFalse("Invoice1 - Invalid WriteOff: " + invoice1, invoiceBL.isInvoiceWroteOff(invoice1));
-		Assert.assertTrue("Invoice2 - InvalidWriteOff: " + invoice2, invoiceBL.isInvoiceWroteOff(invoice2));
+		assertThat(invoiceBL.isInvoiceWroteOff(invoice1)).as("Invoice1 - Invalid WriteOff: " + invoice1).isFalse();
+		assertThat(invoiceBL.isInvoiceWroteOff(invoice2)).as("Invoice2 - InvalidWriteOff: " + invoice2).isTrue();
 		writeOffListener.assertTriggered(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate2_2);
 	}
 
 	private IDunnableDoc createDunningDoc(final I_C_Invoice invoice, final Date dueDate, final int daysDue, final Date graceDate)
 	{
-		final IDunnableDoc dunnableDoc = new DunnableDocBuilder()
+		return new DunnableDocBuilder()
 				.setRecord(invoice)
 				.setDocumentNo(invoice.getDocumentNo())
 				.setC_BPartner_ID(invoice.getC_BPartner_ID())
@@ -355,7 +355,6 @@ public class TestDunning extends DunningTestBase
 				.setDaysDue(daysDue) // daysDue,
 				.setInDispute(false) // isInDispute
 				.create();
-		return dunnableDoc;
 	}
 
 	/**
@@ -383,7 +382,7 @@ public class TestDunning extends DunningTestBase
 
 		//
 		// Setup dunning context
-		final Date dunningDate = TimeUtil.getDay(2012, 02, 01);
+		final Date dunningDate = timestamp(2012, 2, 1);
 		dunningContext = createPlainDunningContext();
 		dunningContext.setDunningDate(dunningDate);
 
@@ -455,13 +454,13 @@ public class TestDunning extends DunningTestBase
 		// Setup dunnable documents
 		final List<IDunnableDoc> documents = getLiveDunnableDocList(dunningContext);
 
-		documents.add(createDunningDoc(invoice1, TimeUtil.getDay(2012, 01, 01), 15, null));
+		documents.add(createDunningDoc(invoice1, timestamp(2012, 1, 1), 15, null));
 
-		documents.add(createDunningDoc(invoice2, TimeUtil.getDay(2012, 01, 01), 25, null));
+		documents.add(createDunningDoc(invoice2, timestamp(2012, 1, 1), 25, null));
 
-		documents.add(createDunningDoc(invoice3, TimeUtil.getDay(2012, 01, 01), 15, TimeUtil.getDay(2014, 01, 01)));
+		documents.add(createDunningDoc(invoice3, timestamp(2012, 1, 1), 15, timestamp(2014, 1, 1)));
 
-		documents.add(createDunningDoc(invoice4, TimeUtil.getDay(2012, 01, 01), 15, null));
+		documents.add(createDunningDoc(invoice4, timestamp(2012, 1, 1), 15, null));
 
 		//
 		// Create candidates without processing them.

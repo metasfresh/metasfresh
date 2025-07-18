@@ -16,9 +16,9 @@ import de.metas.util.Services;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -48,15 +48,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 
 @Service
+@RequiredArgsConstructor
 public class UserNotificationsService
 {
 	private static final Logger logger = LogManager.getLogger(UserNotificationsService.class);
 
-	@Autowired
-	private WebsocketSender websocketSender;
+	@NonNull private final WebsocketSender websocketSender;
+	@NonNull private final IEventBusFactory eventBusFactory;
 
 	private final ConcurrentHashMap<UserId, UserNotificationsQueue> adUserId2notifications = new ConcurrentHashMap<>();
-
 	private final AtomicBoolean subscribedToEventBus = new AtomicBoolean(false);
 
 	@EventListener
@@ -73,7 +73,6 @@ public class UserNotificationsService
 	{
 		if (!subscribedToEventBus.getAndSet(true))
 		{
-			final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 			eventBusFactory.registerUserNotificationsListener(this::forwardEventToNotificationsQueues);
 		}
 	}

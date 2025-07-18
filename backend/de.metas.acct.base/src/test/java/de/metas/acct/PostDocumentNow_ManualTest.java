@@ -86,7 +86,6 @@ import java.util.Optional;
 		StartupListener.class,
 		ShutdownListener.class,
 		ADReferenceService.class, AdRefListRepositoryOverJdbc.class, AdRefTableRepositoryOverJdbc.class,
-		ModelCacheInvalidationService.class,
 })
 public class PostDocumentNow_ManualTest
 {
@@ -188,7 +187,7 @@ public class PostDocumentNow_ManualTest
 				)
 		);
 
-		final ModelCacheInvalidationService modelCacheInvalidationService = new ModelCacheInvalidationService(Optional.empty());
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.newInstanceForUnitTesting();
 
 		return new AcctDocRequiredServicesFacade(
 				modelCacheInvalidationService,

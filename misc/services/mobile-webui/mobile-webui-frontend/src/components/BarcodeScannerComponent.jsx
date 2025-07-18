@@ -9,6 +9,8 @@ import { debounce } from 'lodash';
 import { beep } from '../utils/audio';
 import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
+import { useKeyboardBarcodeReader } from '../hooks/useKeyboardBarcodeReader';
+import { isMobileOrTablet } from '../utils/browser';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -38,6 +40,7 @@ const useConfigParams = () => {
       vibrateMillis: useNumber('barcodeScanner.onError.vibrate.durationMillis', 100),
     },
     isShowInputText: useBooleanSetting('barcodeScanner.showInputText'),
+    isInputTextReadonly: useBooleanSetting('barcodeScanner.isInputTextReadonly', isMobileOrTablet),
     triggerOnChangeIfLengthGreaterThan: usePositiveNumberSetting(
       'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
       0
@@ -54,16 +57,70 @@ const BarcodeScannerComponent = ({
 }) => {
   const {
     isShowInputText,
+    isInputTextReadonly,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
     okBeepParams,
     errorBeepParams,
   } = useConfigParams();
+  // console.log('BarcodeScannerComponent', {
+  //   isShowInputText,
+  //   isInputTextReadonly,
+  //   triggerOnChangeIfLengthGreaterThan,
+  //   textChangedDebounceMillis,
+  // });
 
+  const mountedRef = useRef(true);
   const videoRef = useRef();
   const inputTextRef = useRef();
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
+    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
+      if (mountedRef.current === false) {
+        controls.stop();
+      } else if (typeof result !== 'undefined') {
+        validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
+      }
+    });
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => handleInputTextChangedDebounced.cancel();
+  });
+
+  useEffect(
+    () => {
+      videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
+      if (!isInputTextReadonly) {
+        inputTextRef?.current?.focus();
+      }
+    } /* no deps, call it on each render */
+  );
+
+  useKeyboardBarcodeReader({
+    onReadDone: (barcode) => {
+      console.log('onReadDone', barcode);
+      validateScannedBarcodeAndForward({ scannedBarcode: barcode });
+      inputTextRef.current.value = '';
+    },
+    onReadInProgress: (barcode) => {
+      if (inputTextRef.current) {
+        inputTextRef.current.value = barcode;
+      }
+    },
+    rateMs: textChangedDebounceMillis,
+    minLength: triggerOnChangeIfLengthGreaterThan,
+    disabled: !isInputTextReadonly || isProcessing,
+  });
 
   const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, controls = null }) => {
     inputTextRef?.current?.select();
@@ -118,31 +175,21 @@ const BarcodeScannerComponent = ({
       }
     }
   };
-
   const validateScannedBarcodeAndForward = uiTrace.traceFunction(
     validateScannedBarcodeAndForward0,
-    ({ scannedBarcode }) => ({ eventName: 'barcodeScanned', scannedBarcode })
+    ({ scannedBarcode }) => ({
+      eventName: 'barcodeScanned',
+      scannedBarcode,
+      isShowInputText,
+      isInputTextReadonly,
+      triggerOnChangeIfLengthGreaterThan,
+      textChangedDebounceMillis,
+    })
   );
 
-  const mountedRef = useRef(true);
-  useEffect(() => {
-    mountedRef.current = true;
-
-    const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
-      if (mountedRef.current === false) {
-        controls.stop();
-      } else if (typeof result !== 'undefined') {
-        validateScannedBarcodeAndForward({ scannedBarcode: result.text, controls });
-      }
-    });
-
-    return function cleanup() {
-      mountedRef.current = false;
-    };
-  }, []);
-
   const handleInputTextChanged = (e) => {
+    if (isInputTextReadonly) return;
+
     const scannedBarcode = e.target.value;
 
     if (
@@ -154,15 +201,13 @@ const BarcodeScannerComponent = ({
       validateScannedBarcodeAndForward({ scannedBarcode });
     }
   };
-
   const handleInputTextChangedDebounced = useMemo(() => {
     return debounce(handleInputTextChanged, textChangedDebounceMillis);
   }, [textChangedDebounceMillis]);
-  useEffect(() => {
-    return () => handleInputTextChangedDebounced.cancel();
-  });
 
   const handleInputTextKeyPress = (e) => {
+    if (isInputTextReadonly) return;
+
     if (e.key === 'Enter') {
       const scannedBarcode = e.target.value;
 
@@ -180,11 +225,6 @@ const BarcodeScannerComponent = ({
     }, 2000);
   };
 
-  useEffect(() => {
-    videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
-    inputTextRef?.current?.focus();
-  });
-
   return (
     <div className="barcode-scanner">
       {isProcessing && <Spinner />}
@@ -197,6 +237,7 @@ const BarcodeScannerComponent = ({
           className="input-text"
           type="text"
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
+          readOnly={isInputTextReadonly}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}

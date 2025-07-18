@@ -132,11 +132,4 @@ public class PlainEventBusFactory implements IEventBusFactory
 	{
 		assertJUnitTestMode();
 	}
-
-	@Override
-	public boolean checkRemoteEndpointStatus()
-	{
-		assertJUnitTestMode();
-		return false;
-	}
 }
