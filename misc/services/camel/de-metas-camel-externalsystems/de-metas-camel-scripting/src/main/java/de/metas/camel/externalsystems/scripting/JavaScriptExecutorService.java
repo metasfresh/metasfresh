@@ -34,7 +34,7 @@ import org.graalvm.polyglot.Value;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_METASFRESH_INPUT;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 
 /**
  * Executes javascript.
@@ -43,6 +43,11 @@ import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsg
  */
 public class JavaScriptExecutorService
 {
+	/**
+	 * @param script a javascript that takes one parameter named `messageFromMetasfresh` and converts it to an output-string.
+	 *
+	 * @return the string return-value of the script
+	 */
 	public String executeScript(
 			@NonNull final String scriptIdentifier,
 			@NonNull final String script,
@@ -52,7 +57,7 @@ public class JavaScriptExecutorService
 		{
 			return executeScript(
 					script,
-					ImmutableMap.of(PROPERTY_METASFRESH_INPUT, input));
+					ImmutableMap.of(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, input));
 		}
 		catch (final PolyglotException e)
 		{

@@ -30,6 +30,7 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.support.DefaultExchange;
@@ -42,9 +43,13 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_JAVASCRIPT_IDENTIFIER;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_METASFRESH_INPUT;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
 import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
+import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID;
 import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.Scripting_ROUTE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -82,15 +87,13 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	@Test
 	void executeJavaScriptWithJsonInput() throws Exception
 	{
-		context.start();
-
 		// Given: A JSON input object
-		final String metasfreshInput = "{\"name\":\"John\",\"age\":30,\"city\":\"New York\"}";
+		final String messageFromMetasfresh = "{\"name\":\"John\",\"age\":30,\"city\":\"New York\"}";
 
 		// JavaScript that processes the JSON and returns a modified object
 		final String jsScript = """
 				// Parse the JSON input
-				var inputData = JSON.parse(metasfreshInput);
+				var inputData = JSON.parse(messageFromMetasfresh);
 				
 				// Process the data
 				var result = {
@@ -104,18 +107,24 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 				// Return as JSON string
 				JSON.stringify(result);
 				""";
+		
+		final Exchange exchange = prepareScriptAndExchange(jsScript, messageFromMetasfresh);
+
+		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint();
+		mockHttpEndpoint.expectedMessageCount(1);
+
+		context.start();
 
 		// When: Send message to the scripting route
-		final Exchange exchange = prepareScriptAndExchange(jsScript, metasfreshInput);
-
 		template.send("direct:" + Scripting_ROUTE_ID, exchange);
-
+		
 		// Then: Verify the result
-		final MsgFromMfContext result = exchange.getIn().getBody(MsgFromMfContext.class);
+		MockEndpoint.assertIsSatisfied(context);
+		final String result = exchange.getIn().getBody(String.class);
 		assertThat(result).isNotNull();
 
 		// Parse the result to verify it's valid JSON
-		final var resultObject = objectMapper.readTree(result.getScriptReturnValue());
+		final var resultObject = objectMapper.readTree(result);
 		assertThat(resultObject.get("processed").asBoolean()).isTrue();
 		assertThat(resultObject.get("originalName").asText()).isEqualTo("John");
 		assertThat(resultObject.get("ageInMonths").asInt()).isEqualTo(360);
@@ -126,14 +135,12 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	@Test
 	void executeJavaScriptWithSimpleTransformation() throws Exception
 	{
-		context.start();
-
 		// Given: A simple JSON object
-		final String metasfreshInput = "{\"value\":42}";
+		final String messageFromMetasfresh = "{\"value\":42}";
 
 		// JavaScript that doubles the value
 		final String jsScript = """
-				var inputData = JSON.parse(metasfreshInput);
+				var inputData = JSON.parse(messageFromMetasfresh);
 				var result = {
 					originalValue: inputData.value,
 					doubledValue: inputData.value * 2
@@ -141,14 +148,20 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 				JSON.stringify(result);
 				""";
 
-		// When: Send message to the scripting route
-		final Exchange exchange = prepareScriptAndExchange(jsScript, metasfreshInput);
+		final Exchange exchange = prepareScriptAndExchange(jsScript, messageFromMetasfresh);
 
+		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint();
+		mockHttpEndpoint.expectedMessageCount(1);
+
+		context.start();
+
+		// When: Send message to the scripting route
 		template.send("direct:" + Scripting_ROUTE_ID, exchange);
 
 		// Then: Verify the result
-		final MsgFromMfContext result = exchange.getIn().getBody(MsgFromMfContext.class);
-		final var resultObject = objectMapper.readTree(result.getScriptReturnValue());
+		MockEndpoint.assertIsSatisfied(context);
+		final String result = exchange.getIn().getBody(String.class);
+		final var resultObject = objectMapper.readTree(result);
 		assertThat(resultObject.get("originalValue").asInt()).isEqualTo(42);
 		assertThat(resultObject.get("doubledValue").asInt()).isEqualTo(84);
 	}
@@ -156,14 +169,12 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	@Test
 	void executeJavaScriptWithArrayProcessing() throws Exception
 	{
-		context.start();
-
 		// Given: JSON with an array
-		final String metasfreshInput = "{\"numbers\":[1,2,3,4,5]}";
+		final String messageFromMetasfresh = "{\"numbers\":[1,2,3,4,5]}";
 
 		// JavaScript that processes the array
 		final String jsScript = """
-				var inputData = JSON.parse(metasfreshInput);
+				var inputData = JSON.parse(messageFromMetasfresh);
 				var sum = inputData.numbers.reduce(function(acc, num) { return acc + num; }, 0);
 				var result = {
 					originalArray: inputData.numbers,
@@ -175,31 +186,71 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 				""";
 
 		// When: Send message to the scripting route
-		final Exchange exchange = prepareScriptAndExchange(jsScript, metasfreshInput);
-
+		final Exchange exchange = prepareScriptAndExchange(jsScript, messageFromMetasfresh);
+		
+		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint();
+		mockHttpEndpoint.expectedMessageCount(1);
+		
+		context.start();
 		template.send("direct:" + Scripting_ROUTE_ID, exchange);
 
+		MockEndpoint.assertIsSatisfied(context);
+		
 		// Then: Verify the result
-		final MsgFromMfContext result = exchange.getIn().getBody(MsgFromMfContext.class);
-		final var resultObject = objectMapper.readTree(result.getScriptReturnValue());
+		final String result = exchange.getIn().getBody(String.class);
+		final var resultObject = objectMapper.readTree(result);
 		assertThat(resultObject.get("sum").asInt()).isEqualTo(15);
 		assertThat(resultObject.get("count").asInt()).isEqualTo(5);
 		assertThat(resultObject.get("average").asDouble()).isEqualTo(3.0);
+	}
+
+	private MockEndpoint createAndInjectMockHttpEndpoint() throws Exception
+	{
+		final MockEndpoint mockHttpEndpoint = getMockEndpoint("mock:httpEndPoint");
+		AdviceWith.adviceWith(context,
+				ScriptedAdapterConvertMsgFromMFRouteBuilder.Scripting_ROUTE_ID,
+				advice -> advice.weaveById(SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID)
+						.replace()
+						.to(mockHttpEndpoint));
+		return mockHttpEndpoint;
 	}
 
 	@Test
 	void testFaultyJavaScriptInvokesErrorRoute() throws Exception
 	{
 		// Given: A faulty JavaScript that will throw an error
-		final String metasfreshInput = "{\"value\":10}";
+		final String messageFromMetasfresh = "{\"value\":10}";
 		final String faultyJsScript = """
 				// This will cause a ReferenceError because 'undefinedVariable' is not defined
 				var result = undefinedVariable;
 				""";
 
-		// Define a mock endpoint to assert that the error route was invoked
-		final MockEndpoint mockErrorRoute = getMockEndpoint("mock:errorRoute");
+		final Exchange exchange = prepareScriptAndExchange(faultyJsScript, messageFromMetasfresh);
+		
+		final MockEndpoint mockErrorRoute = creatAndInjectMockErrorRoute();
 		mockErrorRoute.expectedMessageCount(1); // Expect one message to reach the error route
+
+		final MockEndpoint mockHttpEndpoint = createAndInjectMockHttpEndpoint();
+		mockHttpEndpoint.expectedMessageCount(0);
+
+		context.start();
+
+		// When: Send message to the scripting route with faulty JavaScript
+		template.send("direct:" + Scripting_ROUTE_ID, exchange);
+
+		// Then: Verify that the error route was invoked
+		MockEndpoint.assertIsSatisfied(context);
+
+		// assert the original exchange has the exception
+		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+		assertThat(exception).isNotNull();
+		assertThat(exception).isInstanceOf(JavaScriptExecutorException.class).hasMessageContaining("scpriptIdentifier=testScript; errorMsg=ReferenceError: undefinedVariable is not defined");
+	}
+
+	private MockEndpoint creatAndInjectMockErrorRoute() throws Exception
+	{
+		// Define a mock endpoint to assert whether the error route was invoked
+		final MockEndpoint mockErrorRoute = getMockEndpoint("mock:errorRoute");
 
 		// The onException handler is tricky to advise directly.
 		// Instead, we add a new route in our test that consumes from the error endpoint
@@ -214,27 +265,13 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 						.to(mockErrorRoute);
 			}
 		});
-
-		context.start();
-
-		final Exchange exchange = prepareScriptAndExchange(faultyJsScript, metasfreshInput);
-
-		// When: Send message to the scripting route with faulty JavaScript
-		template.send("direct:" + Scripting_ROUTE_ID, exchange);
-
-		// Then: Verify that the error route was invoked
-		MockEndpoint.assertIsSatisfied(context);
-
-		// assert the original exchange has the exception
-		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
-		assertThat(exception).isNotNull();
-		assertThat(exception).isInstanceOf(JavaScriptExecutorException.class).hasMessageContaining("scpriptIdentifier=testScript; errorMsg=ReferenceError: undefinedVariable is not defined");
+		return mockErrorRoute;
 	}
 
 	@NonNull
 	private Exchange prepareScriptAndExchange(
 			@NonNull final String jsScript,
-			@NonNull final String metasfreshInput)
+			@NonNull final String messageFromMetasfresh)
 	{
 		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(context.resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
 		javaScriptRepo.save("testScript", jsScript);
@@ -248,8 +285,11 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 						.externalSystemConfigId(JsonMetasfreshId.of(1))
 						.traceId("traceId")
 						.externalSystemChildConfigValue("externalSystemChildConfigValue")
-						.parameter(PROPERTY_METASFRESH_INPUT, metasfreshInput)
-						.parameter(PROPERTY_JAVASCRIPT_IDENTIFIER, "testScript")
+						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, messageFromMetasfresh)
+						.parameter(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, "testScript")
+						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP, "http://localhost:8080/test")
+						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN, "API_TOKEN")
+						.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD, "POST")
 						.build());
 
 		return exchange;

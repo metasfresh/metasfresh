@@ -30,8 +30,14 @@ import lombok.NonNull;
 @Builder
 public class MsgFromMfContext
 {
-	@NonNull final String scriptingRequestBody;
-	@NonNull final String scriptIdentifier;
-	String script;
-	String scriptReturnValue;
+	@NonNull private final String scriptingRequestBody;
+	@NonNull private final String scriptIdentifier;
+
+	private String script;
+	private String scriptReturnValue;
+
+	// TODO These three shall soon be replaced with a config- or request-object for de-metas-camel-outbound-endpoints  
+	@NonNull private final String outboundHttpEP;
+	@NonNull private final String outboundHttpToken;
+	@NonNull private final String outboundHttpMethod;
 }

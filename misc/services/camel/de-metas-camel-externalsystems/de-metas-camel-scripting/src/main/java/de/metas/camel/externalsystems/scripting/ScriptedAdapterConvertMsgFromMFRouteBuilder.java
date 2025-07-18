@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.scripting;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -29,10 +30,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -47,8 +50,14 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 	public static final String PROPERTY_SCRIPTING_REPO_BASE_DIR = "metasfresh.scripting.repo.baseDir";
 
-	public static final String PROPERTY_METASFRESH_INPUT = "metasfreshInput";
-	public static final String PROPERTY_JAVASCRIPT_IDENTIFIER = "scriptIdentifier";
+	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT = "messageFromMetasfresh";
+	public static final String PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER = "scriptIdentifier";
+	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP = "outboundHttpEP";
+	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN = "outboundHttpToken";
+	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD = "outboundHttpMethod";
+	
+	@VisibleForTesting
+	static final String SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID = "scriptedAdapterOutboundHttpEPId";
 
 	private JavaScriptRepo javaScriptRepo;
 
@@ -74,20 +83,24 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 				.log("Route invoked!")
 				.process(this::buildAndSetContext)
 				.process(this::executeJavaScript)
-				// TODO: forward to destination, which shall be specified by the ExternalSystemsRequest !
+				.process(this::prepareHttpRequest)
+				//dev-note: the actual path is set in this.prepareHttpRequest()
+				.to("https://placeholder").id(SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID)
 			;
 		//@formatter:on
 	}
 
 	private void buildAndSetContext(@NonNull final Exchange exchange)
 	{
-
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 		final Map<String, String> parameters = request.getParameters();
 
 		final MsgFromMfContext msgFromMfContext = MsgFromMfContext.builder()
-				.scriptingRequestBody(parameters.get(PROPERTY_METASFRESH_INPUT))
-				.scriptIdentifier(parameters.get(PROPERTY_JAVASCRIPT_IDENTIFIER))
+				.scriptingRequestBody(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT))
+				.scriptIdentifier(parameters.get(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER))
+				.outboundHttpEP(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP))
+				.outboundHttpToken(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN))
+				.outboundHttpMethod(parameters.get(PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD))
 				.build();
 		exchange.getIn().setBody(msgFromMfContext);
 	}
@@ -103,7 +116,18 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 				msgFromMfContext.getScriptIdentifier(),
 				msgFromMfContext.getScript(),
 				msgFromMfContext.getScriptingRequestBody());
-		
+
 		msgFromMfContext.setScriptReturnValue(javaScriptResult);
+	}
+
+	private void prepareHttpRequest(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = exchange.getIn().getBody(MsgFromMfContext.class);
+		
+		exchange.getIn().removeHeaders("CamelHttp*");
+		exchange.getIn().setHeader(AUTHORIZATION, msgFromMfContext.getOutboundHttpToken());
+		exchange.getIn().setHeader(Exchange.HTTP_URI, msgFromMfContext.getOutboundHttpEP());
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(msgFromMfContext.getOutboundHttpMethod()));
+		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
 	}
 }

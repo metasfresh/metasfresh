@@ -93,13 +93,11 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 	{
 		final Object dispatchMessageRequestCandidate = exchange.getIn().getBody();
 
-		if (!(dispatchMessageRequestCandidate instanceof DispatchMessageRequest))
+		if (!(dispatchMessageRequestCandidate instanceof final DispatchMessageRequest dispatchMessageRequest))
 		{
 			throw new RuntimeCamelException("The route " + RABBITMQ_DISPATCHER_ROUTE_ID + " requires the body to be instanceof DispatchMessageRequest."
 													+ " However, it is " + (dispatchMessageRequestCandidate == null ? "null" : dispatchMessageRequestCandidate.getClass().getName()));
 		}
-
-		final DispatchMessageRequest dispatchMessageRequest = (DispatchMessageRequest)dispatchMessageRequestCandidate;
 
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, dispatchMessageRequest.getAuthToken());

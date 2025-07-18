@@ -62,17 +62,9 @@ public class JavaScriptProcessorTests
 				""";
 
 		// 5. Execute the script
-		final Object result = jsService.executeScript(script, bindings);
+		final String result = jsService.executeScript(script, bindings);
 
 		// 6. Print the result
 		assertThat(result).isEqualTo("{\"processed\":true,\"originalName\":\"John\",\"ageInMonths\":360,\"anotherVal\":123}");
-	}
-
-	@Test
-	public void executeScript_Simple()
-	{
-		final JavaScriptExecutorService jsService = new JavaScriptExecutorService();
-		final Object numberResult = jsService.executeScript("10 * 20", ImmutableMap.of());
-		assertThat(numberResult).isEqualTo(200);
 	}
 }
