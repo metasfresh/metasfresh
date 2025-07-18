@@ -38,6 +38,8 @@ import lombok.ToString;
 public final class InvoiceAmtMultiplier
 {
 	private final SOTrx soTrx;
+
+	@Getter
 	private final boolean isCreditMemo;
 
 	@Getter
@@ -71,25 +73,25 @@ public final class InvoiceAmtMultiplier
 
 	public Amount convertToRealValue(@NonNull final Amount amount)
 	{
-		int toRealValueMultiplier = getToRealValueMultiplier();
+		final int toRealValueMultiplier = getToRealValueMultiplier();
 		return toRealValueMultiplier > 0 ? amount : amount.negate();
 	}
 
 	public Money convertToRealValue(@NonNull final Money money)
 	{
-		int toRealValueMultiplier = getToRealValueMultiplier();
+		final int toRealValueMultiplier = getToRealValueMultiplier();
 		return toRealValueMultiplier > 0 ? money : money.negate();
 	}
 
 	public Money convertToRelativeValue(@NonNull final Money realValue)
 	{
-		int toRelativeValueMultiplier = getToRelativeValueMultiplier();
+		final int toRelativeValueMultiplier = getToRelativeValueMultiplier();
 		return toRelativeValueMultiplier > 0 ? realValue : realValue.negate();
 	}
 
 	public Amount convertToRelativeValue(@NonNull final Amount realValue)
 	{
-		int toRelativeValueMultiplier = getToRelativeValueMultiplier();
+		final int toRelativeValueMultiplier = getToRelativeValueMultiplier();
 		return toRelativeValueMultiplier > 0 ? realValue : realValue.negate();
 	}
 
@@ -137,7 +139,7 @@ public final class InvoiceAmtMultiplier
 
 	public Money fromNotAdjustedAmount(@NonNull final Money money)
 	{
-		int multiplier = computeFromNotAdjustedAmountMultiplier();
+		final int multiplier = computeFromNotAdjustedAmountMultiplier();
 		return multiplier > 0 ? money : money.negate();
 	}
 
@@ -161,4 +163,11 @@ public final class InvoiceAmtMultiplier
 		return multiplier;
 	}
 
+	/**
+	 * @return {@code true} for purchase-invoice and sales-creditmemo. {@code false} otherwise.
+	 */
+	public boolean isOutgoingMoney()
+	{
+		return isCreditMemo ^ soTrx.isPurchase();
+	}
 }
