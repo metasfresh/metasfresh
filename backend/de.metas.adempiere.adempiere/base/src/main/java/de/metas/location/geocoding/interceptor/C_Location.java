@@ -5,6 +5,8 @@ import de.metas.event.Topic;
 import de.metas.location.LocationId;
 import de.metas.location.geocoding.asynchandler.LocationGeocodeEventRequest;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -54,6 +56,16 @@ public class C_Location
 
 		Services.get(ITrxManager.class)
 				.runAfterCommit(() -> fireLocationGeocodeRequest(locationId));
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_C_Location.COLUMNNAME_Postal)
+	public void trimPostal(@NonNull final I_C_Location locationRecord)
+	{
+		final String untrimmedPostal = locationRecord.getPostal();
+
+		locationRecord.setPostal(StringUtils.trim(untrimmedPostal));
 	}
 
 	private void fireLocationGeocodeRequest(final LocationId locationId)
