@@ -21,7 +21,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -486,7 +485,7 @@ public class VLocationDialog extends CDialog
 		m_location.setAddress4(fAddress4.getText());
 		m_location.setCity(fCity.getText());
 		m_location.setC_City_ID(fCityAutoCompleter.getC_City_ID());
-		m_location.setPostal(StringUtils.trim(fPostal.getText()));
+		m_location.setPostal(fPostal.getText());
 		m_location.setPostal_Add(fPostalAdd.getText());
 
 		// Country/Region

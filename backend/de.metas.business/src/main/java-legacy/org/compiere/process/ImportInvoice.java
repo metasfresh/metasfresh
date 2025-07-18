@@ -26,7 +26,6 @@ import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -582,7 +581,7 @@ public class ImportInvoice extends JavaProcess
 					loc.setAddress1(imp.getAddress1());
 					loc.setAddress2(imp.getAddress2());
 					loc.setCity(imp.getCity());
-					loc.setPostal(StringUtils.trim(imp.getPostal()));
+					loc.setPostal(imp.getPostal());
 					if (imp.getC_Region_ID() != 0)
 						loc.setC_Region_ID(imp.getC_Region_ID());
 					loc.setC_Country_ID(imp.getC_Country_ID());

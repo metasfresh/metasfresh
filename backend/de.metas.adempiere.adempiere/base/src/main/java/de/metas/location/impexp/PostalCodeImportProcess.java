@@ -3,7 +3,6 @@ package de.metas.location.impexp;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.location.ICountryDAO;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -109,7 +108,7 @@ public class PostalCodeImportProcess extends SimpleImportProcessTemplate<I_I_Pos
 
 		cPostal.setC_Country(Services.get(ICountryDAO.class).retrieveCountryByCountryCode(importRecord.getCountryCode()));
 		cPostal.setCity(importRecord.getCity());
-		cPostal.setPostal(StringUtils.trim(importRecord.getPostal()));
+		cPostal.setPostal(importRecord.getPostal());
 		cPostal.setRegionName(importRecord.getRegionName());
 
 		// these 2 are not yet used

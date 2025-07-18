@@ -13,7 +13,6 @@ import de.metas.shipper.gateway.spi.model.PhoneNumber;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
@@ -177,7 +176,7 @@ import java.util.Set;
 		locationPO.setAddress1(address.getStreet1());
 		locationPO.setAddress2(address.getStreet2());
 		locationPO.setAddress3(address.getHouseNo());
-		locationPO.setPostal(StringUtils.trim(address.getZipCode()));
+		locationPO.setPostal(address.getZipCode());
 		locationPO.setCity(address.getCity());
 
 		final String countryCode2 = address.getCountry().getAlpha2();
