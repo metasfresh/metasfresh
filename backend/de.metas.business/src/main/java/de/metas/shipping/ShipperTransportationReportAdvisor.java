@@ -39,7 +39,6 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -79,7 +78,7 @@ public class ShipperTransportationReportAdvisor implements DocumentReportAdvisor
 		final BPartnerId shipperPartnerId = BPartnerId.ofRepoId(shipperTransportation.getShipper_BPartner_ID());
 		final I_C_BPartner shipperPartner = util.getBPartnerById(shipperPartnerId);
 
-		final DocTypeId docTypeId = extractDocTypeId(shipperTransportation);
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(shipperTransportation.getC_DocType_ID());
 		final I_C_DocType docType = util.getDocTypeById(docTypeId);
 
 		final Language language = util.getBPartnerLanguage(shipperPartner).orElse(null);
@@ -93,7 +92,7 @@ public class ShipperTransportationReportAdvisor implements DocumentReportAdvisor
 				.build();
 
 		return DocumentReportInfo.builder()
-				.recordRef(TableRecordReference.of(I_M_ShipperTransportation.Table_Name, shipperTransportationId))
+				.recordRef(recordRef)
 				.reportProcessId(reportProcessIdToUse)
 				.copies(util.getDocumentCopies(docType, bpPrintFormatQuery))
 				.documentNo(shipperTransportation.getDocumentNo())
@@ -101,16 +100,5 @@ public class ShipperTransportationReportAdvisor implements DocumentReportAdvisor
 				.docTypeId(docTypeId)
 				.language(language)
 				.build();
-	}
-
-	@NonNull
-	private DocTypeId extractDocTypeId(@NonNull final I_M_ShipperTransportation shipperTransportation)
-	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(shipperTransportation.getC_DocType_ID());
-		if (docTypeId != null)
-		{
-			return docTypeId;
-		}
-		throw new AdempiereException("No document type set");
 	}
 }
