@@ -21,6 +21,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpression
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.IExpression;
@@ -462,7 +463,7 @@ public class AddressDescriptorFactory
 
 		public static void writeValue_Postal(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
 		{
-			toLocationRecord.setPostal(fromField.getValueAs(String.class));
+			toLocationRecord.setPostal(StringUtils.trim(fromField.getValueAs(String.class)));
 		}
 
 		public static void writeValue_City(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
@@ -565,7 +566,7 @@ public class AddressDescriptorFactory
 			{
 				final I_C_Postal postalRecord = InterfaceWrapperHelper.load(postalId, I_C_Postal.class);
 				toLocationRecord.setC_Postal_ID(postalRecord.getC_Postal_ID());
-				toLocationRecord.setPostal(postalRecord.getPostal());
+				toLocationRecord.setPostal(StringUtils.trim(postalRecord.getPostal()));
 				toLocationRecord.setPostal_Add(postalRecord.getPostal_Add());
 				toLocationRecord.setC_City_ID(postalRecord.getC_City_ID());
 				toLocationRecord.setCity(postalRecord.getCity());

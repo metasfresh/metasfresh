@@ -16,18 +16,19 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.DocumentLocation;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.util.Services;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.location.DocumentLocation;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.util.StringUtils;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -651,7 +652,7 @@ public class ImportOrder extends JavaProcess
 					loc.setAddress1(imp.getAddress1());
 					loc.setAddress2(imp.getAddress2());
 					loc.setCity(imp.getCity());
-					loc.setPostal(imp.getPostal());
+					loc.setPostal(StringUtils.trim(imp.getPostal()));
 					if (imp.getC_Region_ID() != 0)
 					{
 						loc.setC_Region_ID(imp.getC_Region_ID());

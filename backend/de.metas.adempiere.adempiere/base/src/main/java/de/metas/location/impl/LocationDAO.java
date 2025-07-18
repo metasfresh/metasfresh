@@ -11,6 +11,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -119,7 +120,7 @@ public class LocationDAO implements ILocationDAO
 
 		final PostalId postalId = getPostalId(request);
 		locationRecord.setC_Postal_ID(PostalId.toRepoId(postalId));
-		locationRecord.setPostal(request.getPostal());
+		locationRecord.setPostal(StringUtils.trim(request.getPostal()));
 		locationRecord.setPostal_Add(request.getPostalAdd());
 
 		locationRecord.setCity(request.getCity());

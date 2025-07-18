@@ -1,8 +1,10 @@
 package de.metas.location.impexp;
 
-import java.sql.ResultSet;
-import java.util.Properties;
-
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.location.ICountryDAO;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
@@ -10,11 +12,8 @@ import org.compiere.model.I_C_Postal;
 import org.compiere.model.I_I_Postal;
 import org.compiere.model.X_I_Postal;
 
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.impexp.processing.SimpleImportProcessTemplate.ImportRecordResult;
-import de.metas.location.ICountryDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /*
  * #%L
@@ -110,7 +109,7 @@ public class PostalCodeImportProcess extends SimpleImportProcessTemplate<I_I_Pos
 
 		cPostal.setC_Country(Services.get(ICountryDAO.class).retrieveCountryByCountryCode(importRecord.getCountryCode()));
 		cPostal.setCity(importRecord.getCity());
-		cPostal.setPostal(importRecord.getPostal());
+		cPostal.setPostal(StringUtils.trim(importRecord.getPostal()));
 		cPostal.setRegionName(importRecord.getRegionName());
 
 		// these 2 are not yet used

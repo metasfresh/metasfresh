@@ -1,5 +1,6 @@
 package de.metas.location.impl;
 
+import de.metas.common.util.StringUtils;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
@@ -19,8 +20,6 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-
-import java.util.Properties;
 
 public class LocationBL implements ILocationBL
 {
@@ -74,7 +73,7 @@ public class LocationBL implements ILocationBL
 	private void addToCPostal(@NonNull final I_C_Location location)
 	{
 		final I_C_Postal postal = InterfaceWrapperHelper.newInstance(I_C_Postal.class);
-		postal.setPostal(location.getPostal());
+		postal.setPostal(StringUtils.trim(location.getPostal()));
 		// postal.setPostal_Add(location.getPostal_Add());
 
 		final int countryId = location.getC_Country_ID();

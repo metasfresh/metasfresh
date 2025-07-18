@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 import lombok.Builder;
 import lombok.NonNull;
@@ -257,7 +258,7 @@ import java.util.stream.Collectors;
 	{
 		location.setAddress1(buildAddress1(importRecord));
 		location.setAddress2(buildAddress2(importRecord));
-		location.setPostal(importRecord.getb00plzzu1());
+		location.setPostal(StringUtils.trim(importRecord.getb00plzzu1()));
 		location.setCity(importRecord.getb00ortzu());
 		if (importRecord.getC_Country_ID() > 0)
 		{
