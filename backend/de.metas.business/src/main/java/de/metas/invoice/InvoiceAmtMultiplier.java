@@ -38,8 +38,6 @@ import lombok.ToString;
 public final class InvoiceAmtMultiplier
 {
 	private final SOTrx soTrx;
-
-	@Getter
 	private final boolean isCreditMemo;
 
 	@Getter
@@ -163,11 +161,4 @@ public final class InvoiceAmtMultiplier
 		return multiplier;
 	}
 
-	/**
-	 * @return {@code true} for purchase-invoice and sales-creditmemo. {@code false} otherwise.
-	 */
-	public boolean isOutgoingMoney()
-	{
-		return isCreditMemo ^ soTrx.isPurchase();
-	}
 }

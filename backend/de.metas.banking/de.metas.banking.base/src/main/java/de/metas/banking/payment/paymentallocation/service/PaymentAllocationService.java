@@ -221,14 +221,14 @@ public class PaymentAllocationService
 					);
 
 			invoiceProcessingFeeCalculation = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
-							InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
-									.orgId(paymentAllocationPayableItem.getClientAndOrgId().getOrgId())
-									.paymentDate(paymentDate)
-									.customerId(paymentAllocationPayableItem.getBPartnerId())
-									.invoiceId(paymentAllocationPayableItem.getInvoiceId())
-									.feeAmountIncludingTax(serviceFeeAmt)
-									.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
-									.build())
+					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
+							.orgId(paymentAllocationPayableItem.getClientAndOrgId().getOrgId())
+							.paymentDate(paymentDate)
+							.customerId(paymentAllocationPayableItem.getBPartnerId())
+							.invoiceId(paymentAllocationPayableItem.getInvoiceId())
+							.feeAmountIncludingTax(serviceFeeAmt)
+							.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
+							.build())
 					.orElseThrow(() -> new AdempiereException("Cannot find Invoice Processing Service Company for the selected Payment"));
 		}
 		else
@@ -241,11 +241,11 @@ public class PaymentAllocationService
 				: Money.zero(currencyId);
 
 		final InvoiceAmtMultiplier amtMultiplier = paymentAllocationPayableItem.getAmtMultiplier();
-		final boolean invoiceIsCreditMemo = amtMultiplier.isCreditMemo();
 
-		// for purchase invoices and sales credit memos, we need to allow this,
-		// because we want the "outgoing-money"-invoice to be allocated against the "incoming-money"-payment
-		final boolean allowAllocateAgainstDifferentSignumPayment = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ amtMultiplier.isOutgoingMoney();
+		// for purchase invoices and sales credit memos, we need to negate
+		// but not for sales invoices and purchase credit memos
+		final boolean invoiceIsCreditMemo = paymentAllocationPayableItem.isInvoiceIsCreditMemo();
+		final boolean negateAmounts = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
 
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
@@ -254,16 +254,16 @@ public class PaymentAllocationService
 				.soTrx(paymentAllocationPayableItem.getSoTrx())
 				.openAmt(amtMultiplier.convertToRealValue(openAmt))
 				.amountsToAllocate(AllocationAmounts.builder()
-						.payAmt(payAmt)
-						.discountAmt(discountAmt)
-						.invoiceProcessingFee(invoiceProcessingFee)
-						.build()
-						.convertToRealAmounts(amtMultiplier))
+										   .payAmt(payAmt)
+										   .discountAmt(discountAmt)
+										   .invoiceProcessingFee(invoiceProcessingFee)
+										   .build()
+										   .convertToRealAmounts(amtMultiplier))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
-				.creditMemo(invoiceIsCreditMemo)
-				.allowAllocateAgainstDifferentSignumPayment(allowAllocateAgainstDifferentSignumPayment)
+				//.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo()) // we don't want the credit memo to be wrapped as IPaymentDocument
+				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way
 				.build();
 	}
 
@@ -280,7 +280,9 @@ public class PaymentAllocationService
 		final Amount openAmtWithDiscount = invoiceToAllocate.getOpenAmountConverted().subtract(invoiceToAllocate.getDiscountAmountConverted());
 
 		final boolean isSoTrx = invoiceToAllocate.getDocBaseType().isSales();
-		if (isSoTrx)
+		final boolean isVendorCreditMemo = invoiceToAllocate.getDocBaseType().isVendorCreditMemo();
+
+		if (isSoTrx || isVendorCreditMemo)
 		{
 			return openAmountToMatch.equals(openAmtWithDiscount);
 		}
