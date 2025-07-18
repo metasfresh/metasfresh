@@ -282,10 +282,16 @@ public class PaymentAllocationService
 		final boolean isSoTrx = invoiceToAllocate.getDocBaseType().isSales();
 		final boolean isVendorCreditMemo = invoiceToAllocate.getDocBaseType().isVendorCreditMemo();
 
-		if (isSoTrx || isVendorCreditMemo)
+		if (isSoTrx)
 		{
 			return openAmountToMatch.equals(openAmtWithDiscount);
 		}
+		else if (isVendorCreditMemo)
+		{
+			// for vendor credit memos, we need to negate the open amount to match
+			return openAmountToMatch.negate().equals(openAmtWithDiscount);
+		}
+
 		else
 		{
 			return openAmountToMatch.abs().equals(openAmtWithDiscount);
