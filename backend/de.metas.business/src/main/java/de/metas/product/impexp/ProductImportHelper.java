@@ -180,6 +180,7 @@ import java.math.BigDecimal;
 			product.setM_ProductPlanningSchema_Selector(from.getM_ProductPlanningSchema_Selector());
 		}
 
+		product.setGuaranteeDaysMin(from.getGuaranteeDaysMin());
 	}
 
 	private de.metas.adempiere.model.I_M_Product createProductRecordNoSave(@NonNull final I_I_Product importRecord)
@@ -215,6 +216,7 @@ import java.math.BigDecimal;
 		product.setTrademark(importRecord.getTrademark());
 		product.setPZN(importRecord.getPZN());
 		product.setIsCommissioned(importRecord.isCommissioned());
+		product.setGuaranteeDaysMin(importRecord.getGuaranteeDaysMin());
 
 		return product;
 	}    // MProduct

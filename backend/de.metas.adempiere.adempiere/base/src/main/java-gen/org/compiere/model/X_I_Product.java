@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1907849333L;
+	private static final long serialVersionUID = -1314340582L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -368,6 +368,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setGuaranteeDaysMin (final int GuaranteeDaysMin)
+	{
+		set_Value (COLUMNNAME_GuaranteeDaysMin, GuaranteeDaysMin);
+	}
+
+	@Override
+	public int getGuaranteeDaysMin() 
+	{
+		return get_ValueAsInt(COLUMNNAME_GuaranteeDaysMin);
 	}
 
 	@Override
