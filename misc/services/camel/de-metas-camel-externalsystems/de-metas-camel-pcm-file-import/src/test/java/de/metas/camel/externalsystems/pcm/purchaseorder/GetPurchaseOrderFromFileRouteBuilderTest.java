@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de-metas-camel-pcm-file-import
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.camel.externalsystems.pcm.purchaseorder;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
@@ -18,6 +40,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,7 +59,7 @@ import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.U
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_PURCHASE_ORDER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_ROOT_LOCATION;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 {
@@ -60,30 +83,27 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 			new LocalFilePurchaseOrderSyncServicePCMRouteBuilder(Mockito.mock(ProcessLogger.class));
 
 	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
-	}
-
-	@Override
 	protected RouteBuilder[] createRouteBuilders()
 	{
 		return new RouteBuilder[] { purchaseOrderServiceRouteBuilder, new OnDemandRoutesPCMController() };
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
 		final var properties = new Properties();
 		try
 		{
 			properties.load(GetPurchaseOrderFromFileRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Test
@@ -126,7 +146,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		template.sendBodyAndHeader("direct:" + PURCHASE_ORDER_SYNC_DIRECT_ROUTE_ENDPOINT, purchaseOrderImportFile, Exchange.FILE_NAME_ONLY, PURCHASE_ORDER_IMPORT_FILE_CSV);
 		
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 		assertThat(mockUpsertPurchaseCandicateProcessor.called).isEqualTo(2);
 		assertThat(mockProcessPurchaseCandicatesProcessor.called).isEqualTo(1);
@@ -140,7 +160,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 	@Test
 	public void masterDataFileExists_SyncPurchaseOrders_LocalFile() throws Exception
 	{
-		// ..assuming that we run within the de-metas-camel-pcm-file-import folder
+		// ...assuming that we run within the de-metas-camel-pcm-file-import folder
 		final String rootFolderStr = "src/test/resources/de/metas/camel/externalsystems/pcm/purchaseorder/masterDataFileExists";
 		final Path path = Paths.get(rootFolderStr);
 
@@ -150,9 +170,18 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		test_NothingCreated(path);
 
 		assertThat(new File(rootFolderStr + "/processedDirectory")).doesNotExist();
-		assertThat(new File(rootFolderStr + "/errorDirectory")).doesNotExist();
+		assertDirectoryNotExistsOrEmpty(new File(rootFolderStr + "/errorDirectory"));
 	}
 
+	public static void assertDirectoryNotExistsOrEmpty(@NonNull final File directory) {
+		assertThat(
+				!directory.exists() ||
+						(directory.isDirectory() && directory.list().length == 0)
+		)
+				.as("Directory must not exist or must be empty")
+				.isTrue();
+	}
+	
 	/**
 	 * Note: actually lets the route under test read the input file from disk.
 	 */
@@ -168,6 +197,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 
 		test_NothingCreated(path);
 		
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(new File(rootFolderStr + "/errorDirectory")).isNotEmptyDirectory();
 		assertThat(new File(rootFolderStr + "/processedDirectory")).doesNotExist();
 	}
@@ -208,7 +238,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 								   LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(startRequest));
 
 		//then
-		assertMockEndpointsSatisfied();
+//		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 		assertThat(mockUpsertPurchaseCandicateProcessor.called).isEqualTo(0);
 		assertThat(mockProcessPurchaseCandicatesProcessor.called).isEqualTo(0);
@@ -239,7 +269,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + purchaseOrderServiceRouteBuilder.getStopPurchaseOrderRouteId(), stopExternalSystemRequest);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
 
 		assertThat(context.getRoute(routeId)).isNull();

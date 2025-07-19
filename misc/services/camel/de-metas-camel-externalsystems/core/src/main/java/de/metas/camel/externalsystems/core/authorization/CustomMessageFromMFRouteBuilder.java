@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.core.authorization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
@@ -44,7 +45,8 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 {
 	public static final String CUSTOM_MESSAGE_FROM_MF_ROUTE_ID = "RabbitMQ_custom_message_from_MF_Route_ID";
-	private final static String CUSTOM_FROM_MF_ROUTE_ID = "RabbitMQ_custom_from_MF_ID";
+	@VisibleForTesting
+	final static String CUSTOM_FROM_MF_ROUTE_ID = "RabbitMQ_custom_from_MF_ID";
 
 	@NonNull
 	private final MetasfreshAuthProvider authProvider;

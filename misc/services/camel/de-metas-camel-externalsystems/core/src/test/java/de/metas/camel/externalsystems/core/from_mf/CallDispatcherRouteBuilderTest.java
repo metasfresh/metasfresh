@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,20 +23,22 @@
 package de.metas.camel.externalsystems.core.from_mf;
 
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.util.SocketUtils;
+import org.springframework.test.util.TestSocketUtils;
 
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class CallDispatcherRouteBuilderTest extends CamelTestSupport
 {
@@ -47,27 +49,31 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
-		final var properties = new Properties();
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
+
+		final Properties properties = new Properties();
 		try
 		{
-			final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
+			final int appServerPort = TestSocketUtils.findAvailableTcpPort();
 
 			properties.load(CallDispatcherRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
 
 			final String port = Integer.toString(appServerPort);
 			properties.setProperty("server.port", port);
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	/**
-	 * Verifies that a request is touted to a dinamic endpoint that is according to the request's externalSystem and command.
+	 * Verifies that a request is touted to a dynamic endpoint that is according to the request's externalSystem and command.
 	 */
 	@Test
 	void callEndpoint() throws Exception
@@ -75,12 +81,19 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 		final var postEndpoint = new ExternalSystemEndpoint();
 		final var command = "myCommand";
 		final var externalSystem = "myExternalSystem";
-		
+
+		// Mock the RabbitMQ route by replacing it with a direct endpoint
+		AdviceWith.adviceWith(context,
+				CallDispatcherRouteBuilder.FROM_MF_ROUTE_ID, // The route ID from CallDispatcherRouteBuilder
+				a -> a.replaceFromWith("direct:test-RabbitMQ_from_MF_ID"));
+
 		AdviceWith.adviceWith(context,
 				CallDispatcherRouteBuilder.DISPATCH_ROUTE_ID,
 				a -> a.interceptSendToEndpoint("direct:" + externalSystem + "-" + command)
 						.skipSendToOriginalEndpoint()
 						.process(postEndpoint));
+
+		context.start();
 
 		final NotifyBuilder notify = new NotifyBuilder(context)
 				.wereSentTo("direct:" + externalSystem + "-" + command)

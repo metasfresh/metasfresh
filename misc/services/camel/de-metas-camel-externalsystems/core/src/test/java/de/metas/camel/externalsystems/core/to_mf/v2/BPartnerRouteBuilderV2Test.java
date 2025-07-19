@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,9 +26,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
+import lombok.NonNull;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -73,43 +75,40 @@ public class BPartnerRouteBuilderV2Test extends CamelTestSupport
 		//fire the route
 		template.sendBody("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}", retrieveBPartnerRequest);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	private void prepareRouteForTesting() throws Exception
 	{
 		AdviceWith.adviceWith(context, RETRIEVE_BPARTNER_ROUTE_ID,
-							  advice -> {
-								  advice.weaveById(RETRIEVE_BPARTNER_ENDPOINT_ID)
-										  .replace()
-										  .to(MOCK_BPARTNER_RETRIEVE);
+				advice -> {
+					advice.weaveById(RETRIEVE_BPARTNER_ENDPOINT_ID)
+							.replace()
+							.to(MOCK_BPARTNER_RETRIEVE);
 
-								  advice.interceptSendToEndpoint("direct:" + UNPACK_V2_API_RESPONSE)
-										  .skipSendToOriginalEndpoint()
-										  .process(); // do nothing
-							  }
+					advice.interceptSendToEndpoint("direct:" + UNPACK_V2_API_RESPONSE)
+							.skipSendToOriginalEndpoint()
+							.process(); // do nothing
+				}
 		);
 	}
 
 	@Override
-	public boolean isUseAdviceWith()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
-		return true;
-	}
+		super.configureContext(camelContextConfiguration);
 
-	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
-	{
+		testConfiguration().withUseAdviceWith(true);
 		final Properties properties = new Properties();
 		try
 		{
 			properties.load(BPartnerRouteBuilderV2Test.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Override

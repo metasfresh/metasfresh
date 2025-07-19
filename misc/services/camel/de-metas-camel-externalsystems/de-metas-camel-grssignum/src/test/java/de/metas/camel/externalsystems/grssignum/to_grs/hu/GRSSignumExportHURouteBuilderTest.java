@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -112,7 +112,7 @@ public class GRSSignumExportHURouteBuilderTest extends CamelTestSupport
 
 		//then
 		assertThat(mockGetHUProcessor.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	private void prepareRouteForTesting(@NonNull final MockGetHUProcessor mockGetHUProcessor) throws Exception

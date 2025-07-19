@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -50,7 +50,7 @@ public class CustomMessageToMFRouteBuilder extends RouteBuilder
 		from(direct(CUSTOM_TO_MF_ROUTE_ID))
 				.routeId(CUSTOM_TO_MF_ROUTE_ID)
 				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
-				.streamCaching()
+				.streamCache("true")
 				.log("Invoked")
 				.process(this::postAuthorizationMessage)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemMessage.class))

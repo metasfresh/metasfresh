@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,23 +38,12 @@ public interface CoreConstants
 	String AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT = "\".*?(auth|key|pass|token).*?\":(.*?\"(.+?)\")";
 	String AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT_GROUP = "3";
 
-	String FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES
-			+ "?durable=true"
-			+ "&autoDelete=false"
-			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
-			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
+	String FROM_MF_ROUTE = "spring-rabbitmq:" + QUEUE_NAME_MF_TO_ES
+			+ "?routingKey=" + QUEUE_NAME_MF_TO_ES;
 
-	String CUSTOM_TO_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_ES_TO_MF_CUSTOM
-			+ "?durable=true"
-			+ "&autoDelete=false"
-			+ "&autoAck=false"
-			+ "&routingKey=" + QUEUE_NAME_ES_TO_MF_CUSTOM
-			+ "&queue=" + QUEUE_NAME_ES_TO_MF_CUSTOM;
+	String CUSTOM_TO_MF_ROUTE = "spring-rabbitmq:" + QUEUE_NAME_ES_TO_MF_CUSTOM
+			+ "?routingKey=" + QUEUE_NAME_ES_TO_MF_CUSTOM;
 
-	String CUSTOM_FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES_CUSTOM
-			+ "?durable=true"
-			+ "&autoDelete=false"
-			+ "&autoAck=false"
-			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES_CUSTOM
-			+ "&queue=" + QUEUE_NAME_MF_TO_ES_CUSTOM;
+	String CUSTOM_FROM_MF_ROUTE = "spring-rabbitmq:" + QUEUE_NAME_MF_TO_ES_CUSTOM
+			+ "?routingKey=" + QUEUE_NAME_MF_TO_ES_CUSTOM;
 }

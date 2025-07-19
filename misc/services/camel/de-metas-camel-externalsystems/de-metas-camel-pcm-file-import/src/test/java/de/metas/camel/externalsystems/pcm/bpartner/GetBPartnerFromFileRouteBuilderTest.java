@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-pcm-file-import
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +36,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -45,7 +46,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.pcm.bpartner.GetBPartnerFromFileRouteBuilder.UPSERT_BPARTNER_ENDPOINT_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 {
@@ -66,30 +67,27 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 			new LocalFileBPartnerSyncServicePCMRouteBuilder(Mockito.mock(ProcessLogger.class));
 
 	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
-	}
-
-	@Override
 	protected RouteBuilder[] createRouteBuilders()
 	{
 		return new RouteBuilder[] { bpartnerServiceRouteBuilder, new OnDemandRoutesPCMController() };
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
 		final var properties = new Properties();
 		try
 		{
 			properties.load(GetBPartnerFromFileRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Test
@@ -127,7 +125,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		template.sendBodyAndHeader("direct:" + BPARTNER_SYNC_DIRECT_ROUTE_ENDPOINT, bpartnerImportFile, Exchange.FILE_NAME_ONLY, BPARTNER_IMPORT_FILE_CSV);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockUpsertBPartnerProcessor.called).isEqualTo(2);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 	}
@@ -162,7 +160,6 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + bpartnerServiceRouteBuilder.getStopBPartnerRouteId(), stopExternalSystemRequest);
 
 		//then
-		assertMockEndpointsSatisfied();
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
 
 		assertThat(context.getRoute(routeId)).isNull();

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de-metas-camel-pcm-file-import
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.camel.externalsystems.pcm.product;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +36,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,7 +46,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.pcm.product.GetProductFromFileRouteBuilder.UPSERT_PRODUCT_ENDPOINT_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 {
@@ -45,30 +68,27 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 			new LocalFileProductSyncServicePCMRouteBuilder(Mockito.mock(ProcessLogger.class));
 
 	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
-	}
-
-	@Override
 	protected RouteBuilder[] createRouteBuilders()
 	{
 		return new RouteBuilder[] { productServiceRouteBuilder, new OnDemandRoutesPCMController() };
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
 		final var properties = new Properties();
 		try
 		{
 			properties.load(GetProductsFromFileRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Test
@@ -109,7 +129,7 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 		template.sendBodyAndHeader("direct:" + PRODUCT_SYNC_DIRECT_ROUTE_ENDPOINT, productImportFile, Exchange.FILE_NAME_ONLY, PRODUCT_IMPORT_FILE_CSV);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockUpsertProductProcessor.called).isEqualTo(3);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 	}
@@ -144,7 +164,6 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + productServiceRouteBuilder.getStopProductRouteId(), stopExternalSystemRequest);
 
 		//then
-		assertMockEndpointsSatisfied();
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
 
 		assertThat(context.getRoute(routeId)).isNull();

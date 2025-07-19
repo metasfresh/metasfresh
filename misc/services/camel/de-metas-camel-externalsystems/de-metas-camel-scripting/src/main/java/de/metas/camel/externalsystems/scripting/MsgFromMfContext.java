@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-leichundmehl
+ * de-metas-camel-scripting
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,24 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
+package de.metas.camel.externalsystems.scripting;
 
-import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
 
-import java.io.IOException;
-import java.io.Writer;
-
-public class NoEscapeHandler implements CharacterEscapeHandler
+@Data
+@Builder
+public class MsgFromMfContext
 {
-	private NoEscapeHandler()
-	{
-		super();
-	}
+	@NonNull private final String scriptingRequestBody;
+	@NonNull private final String scriptIdentifier;
 
-	public static final NoEscapeHandler INSTANCE = new NoEscapeHandler();
+	private String script;
+	private String scriptReturnValue;
 
-	public void escape(final char[] buf, final int start, final int len, final boolean isAttValue, final Writer out) throws IOException
-	{
-		for (int i = start; i < start + len; i++)
-		{
-			out.write(buf[i]);
-		}
-		return;
-	}
+	// TODO These three shall soon be replaced with a config- or request-object for de-metas-camel-outbound-endpoints  
+	@NonNull private final String outboundHttpEP;
+	@NonNull private final String outboundHttpToken;
+	@NonNull private final String outboundHttpMethod;
 }
-
