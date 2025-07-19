@@ -17,6 +17,7 @@ import java.util.Properties;
 
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
+import static org.compiere.model.I_M_Product.COLUMNNAME_C_UOM_ID;
 
 /*
  * #%L
@@ -273,7 +274,7 @@ public class MProductImportTableSqlUpdater
 				logger.debug(strField + " - default from existing Product=" + no);
 			}
 		}
-		final String[] numFields = new String[] { "C_UOM_ID", "M_Product_Category_ID",
+		final String[] numFields = new String[] { "M_Product_Category_ID",
 				"Volume", "Weight", "ShelfWidth", "ShelfHeight", "ShelfDepth", "UnitsPerPallet" };
 		for (final String numField : numFields)
 		{
@@ -298,6 +299,19 @@ public class MProductImportTableSqlUpdater
 	{
 		StringBuilder sql;
 		int no;
+		//
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName).append(" i SET ")
+				.append(COLUMNNAME_C_UOM_ID).append(" = (SELECT ").append(COLUMNNAME_C_UOM_ID)
+				.append(" FROM M_Product p")
+				.append(" WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append("WHERE M_Product_ID IS NOT NULL")
+				.append(" AND (").append(COLUMNNAME_C_UOM_ID).append(" IS NULL OR ").append(COLUMNNAME_C_UOM_ID).append("=0)")
+				.append(" AND X12DE355 IS NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set UOM from existing Product={}",  no);
 		// Set UOM (System/own)
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")

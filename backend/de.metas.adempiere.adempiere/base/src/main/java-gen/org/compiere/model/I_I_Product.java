@@ -302,7 +302,7 @@ public interface I_I_Product
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -312,7 +312,7 @@ public interface I_I_Product
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -580,6 +580,29 @@ public interface I_I_Product
 
 	ModelColumn<I_I_Product, Object> COLUMN_ExternalId = new ModelColumn<>(I_I_Product.class, "ExternalId", null);
 	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
+	 * Set Min Guarantee Days.
+	 * Minimum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGuaranteeDaysMin (int GuaranteeDaysMin);
+
+	/**
+	 * Get Min Guarantee Days.
+	 * Minimum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getGuaranteeDaysMin();
+
+	ModelColumn<I_I_Product, Object> COLUMN_GuaranteeDaysMin = new ModelColumn<>(I_I_Product.class, "GuaranteeDaysMin", null);
+	String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
 
 	/**
 	 * Set Help.
