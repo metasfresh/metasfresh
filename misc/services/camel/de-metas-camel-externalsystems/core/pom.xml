@@ -286,7 +286,7 @@
                 <version>${spring-boot.version}</version>
                 <executions>
                     <execution>
-                        <id>spring-boot-webui-api-repackage</id>
+                        <id>spring-boot-externalsystems-repackage</id>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
@@ -347,6 +347,7 @@
                 </configuration>
             </plugin>
 
+            <!-- Only needed when build with jenkins -->
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
