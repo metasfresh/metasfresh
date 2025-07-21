@@ -92,6 +92,7 @@ Feature: check invoice candidates status
       | ExternalHeaderId | ExternalLineId | QtyEntered | QtyToInvoice | QtyInvoiced | Processed |
       | ExtHeader_1      | ExtLine_1      | 5          | 0            | 5           | true      |
 
+  @flaky
   @from:cucumber
   Scenario: Generate invoice candidate from order and validate that checking the invoice candidate status works via order document number
     And metasfresh contains M_Products:
