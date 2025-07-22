@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scripting;
+package de.metas.camel.externalsystems.scriptedadapter;
 
 import lombok.Builder;
 import lombok.Data;

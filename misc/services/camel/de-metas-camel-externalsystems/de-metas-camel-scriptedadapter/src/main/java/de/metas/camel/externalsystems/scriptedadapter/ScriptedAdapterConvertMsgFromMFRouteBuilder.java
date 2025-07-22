@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scripting;
+package de.metas.camel.externalsystems.scriptedadapter;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;

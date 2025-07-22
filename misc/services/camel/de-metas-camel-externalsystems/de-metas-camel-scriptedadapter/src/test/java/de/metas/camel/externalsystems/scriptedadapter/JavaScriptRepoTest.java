@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scripting;
+package de.metas.camel.externalsystems.scriptedadapter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

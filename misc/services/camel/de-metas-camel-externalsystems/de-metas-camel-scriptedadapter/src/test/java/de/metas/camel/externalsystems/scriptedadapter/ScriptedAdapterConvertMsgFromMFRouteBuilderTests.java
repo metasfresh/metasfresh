@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scripting;
+package de.metas.camel.externalsystems.scriptedadapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
@@ -43,14 +43,14 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID;
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.Scripting_ROUTE_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.Scripting_ROUTE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestSupport

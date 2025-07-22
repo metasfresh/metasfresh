@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scripting;
+package de.metas.camel.externalsystems.scriptedadapter;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;

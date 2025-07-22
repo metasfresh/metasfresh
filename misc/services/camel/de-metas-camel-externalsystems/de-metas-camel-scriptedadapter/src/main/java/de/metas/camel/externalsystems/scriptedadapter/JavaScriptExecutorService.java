@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scripting;
+package de.metas.camel.externalsystems.scriptedadapter;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -34,7 +34,7 @@ import org.graalvm.polyglot.Value;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
-import static de.metas.camel.externalsystems.scripting.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 
 /**
  * Executes javascript.
