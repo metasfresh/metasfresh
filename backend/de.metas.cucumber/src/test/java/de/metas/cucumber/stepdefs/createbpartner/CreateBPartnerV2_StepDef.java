@@ -171,6 +171,7 @@ public class CreateBPartnerV2_StepDef
 			final String city = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.City");
 			final String countryCode = DataTableUtil.extractStringForColumnName(dataTableRow, "CountryCode");
 			final String gln = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Gln");
+			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VATaxId");
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
@@ -186,6 +187,7 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedLocation.getCity()).isEqualTo(city);
 			assertThat(persistedLocation.getDistrict()).isEqualTo(DataTableUtil.extractValueOrNull(district));
 			assertThat(persistedLocation.getGln()).isEqualTo(gln);
+			assertThat(persistedLocation.getVatId()).isEqualTo(vatId);
 		}
 	}
 
