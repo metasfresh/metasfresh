@@ -40,7 +40,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <spring-boot.version>3.4.3</spring-boot.version>
+        <spring-boot.version>3.5.3</spring-boot.version>
         <camel.version>4.10.6</camel.version>
         <guava.version>33.4.5-jre</guava.version>
 
