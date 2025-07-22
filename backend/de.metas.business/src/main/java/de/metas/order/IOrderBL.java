@@ -336,4 +336,6 @@ public interface IOrderBL extends ISingletonService
 	String getDescriptionBottomById(@NonNull OrderId orderId);
 
 	String getDescriptionById(@NonNull OrderId orderId);
+
+	void setShipperId(@NonNull I_C_Order order);
 }

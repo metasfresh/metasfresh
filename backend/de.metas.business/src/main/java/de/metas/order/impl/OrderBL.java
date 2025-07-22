@@ -82,6 +82,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.Tax;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -1358,5 +1359,19 @@ public class OrderBL implements IOrderBL
 	public String getDescriptionById(@NonNull final OrderId orderId)
 	{
 		return getById(orderId).getDescription();
+	}
+
+
+	@Override
+	public void setShipperId(@NonNull final I_C_Order order)
+	{
+		//TODO
+		final BPartnerLocationAndCaptureId bpartnerAndLocation = extractBPartnerLocation(order).orElse(null);
+	}
+
+	private Optional<ShipperId> findShipperId(@NonNull final I_C_Order orderRecord)
+	{
+		final Optional<BPartnerOrderParams> params = retrieveBPartnerParams(orderRecord);
+		return params.flatMap(BPartnerOrderParams::getShipperId);
 	}
 }
