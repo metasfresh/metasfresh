@@ -68,13 +68,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>au.com.origin</groupId>
-			<artifactId>snapshot-testing-junit5</artifactId>
-			<version>2.0.1</version>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 	<build>
