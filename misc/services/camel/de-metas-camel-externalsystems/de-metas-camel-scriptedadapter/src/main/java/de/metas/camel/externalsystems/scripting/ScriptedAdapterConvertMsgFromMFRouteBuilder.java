@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-scripting
+ * de-metas-camel-scriptedadapter
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -48,7 +48,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 {
 	public static final String Scripting_ROUTE_ID = "ScriptedAdapter-ConvertMsgFromMF";
 
-	public static final String PROPERTY_SCRIPTING_REPO_BASE_DIR = "metasfresh.scripting.repo.baseDir";
+	public static final String PROPERTY_SCRIPTING_REPO_BASE_DIR = "metasfresh.scriptedadapter.repo.baseDir";
 
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT = "messageFromMetasfresh";
 	public static final String PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER = "scriptIdentifier";

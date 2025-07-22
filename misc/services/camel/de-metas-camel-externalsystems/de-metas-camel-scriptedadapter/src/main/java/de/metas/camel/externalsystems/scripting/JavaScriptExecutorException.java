@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-scripting
+ * de-metas-camel-scriptedadapter
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%

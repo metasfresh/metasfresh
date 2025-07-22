@@ -58,7 +58,7 @@
         <module>de-metas-camel-pcm-file-import</module>
         <module>de-metas-camel-printingclient</module>
         <module>de-metas-camel-rabbitmq</module>
-        <module>de-metas-camel-scripting</module>
+        <module>de-metas-camel-scriptedadapter</module>
         <module>de-metas-camel-shopware6</module>
         <module>de-metas-camel-woocommerce</module>
     </modules>

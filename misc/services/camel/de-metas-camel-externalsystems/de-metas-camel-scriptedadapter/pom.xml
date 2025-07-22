@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ #%L
-  ~ de-metas-camel-scripting
+  ~ de-metas-camel-scriptedadapter
   ~ %%
   ~ Copyright (C) 2025 metas GmbH
   ~ %%
@@ -32,7 +32,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>de-metas-camel-scripting</artifactId>
+    <artifactId>de-metas-camel-scriptedadapter</artifactId>
     <version>10.0.0</version>
 
     <properties>
