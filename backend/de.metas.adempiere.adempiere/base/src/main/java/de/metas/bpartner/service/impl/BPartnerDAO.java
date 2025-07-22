@@ -1980,4 +1980,11 @@ public class BPartnerDAO implements IBPartnerDAO
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		return bpLocation != null ? SalesRegionId.optionalOfRepoId(bpLocation.getC_SalesRegion_ID()) : Optional.empty();
 	}
+
+	@Override
+	public Optional<ShipperId> getShipperIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		return bpLocation != null ? ShipperId.optionalOfRepoId(bpLocation.getM_Shipper_ID()) : Optional.empty();
+	}
 }

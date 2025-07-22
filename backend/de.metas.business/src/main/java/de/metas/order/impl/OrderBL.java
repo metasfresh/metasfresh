@@ -1361,17 +1361,24 @@ public class OrderBL implements IOrderBL
 		return getById(orderId).getDescription();
 	}
 
-
 	@Override
 	public void setShipperId(@NonNull final I_C_Order order)
 	{
-		//TODO
-		final BPartnerLocationAndCaptureId bpartnerAndLocation = extractBPartnerLocation(order).orElse(null);
+		order.setM_Shipper_ID(ShipperId.toRepoId(findShipperId(order)));
 	}
 
-	private Optional<ShipperId> findShipperId(@NonNull final I_C_Order orderRecord)
+	private ShipperId findShipperId(@NonNull final I_C_Order orderRecord)
 	{
-		final Optional<BPartnerOrderParams> params = retrieveBPartnerParams(orderRecord);
-		return params.flatMap(BPartnerOrderParams::getShipperId);
+
+		final Optional<ShipperId> deliveryAddressShipperId = partnerDAO.getShipperIdByBPLocationId(BPartnerLocationId.ofRepoId(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID()));
+		if (deliveryAddressShipperId.isPresent())
+		{
+			return deliveryAddressShipperId.get(); // we are done
+		}
+
+		return partnerDAO.getShipperId(CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID()),
+				() -> BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID())));
+
 	}
 }
