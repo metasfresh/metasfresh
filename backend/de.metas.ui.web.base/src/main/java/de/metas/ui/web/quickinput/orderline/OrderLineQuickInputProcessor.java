@@ -10,6 +10,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.contracts.ConditionsId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -29,15 +32,18 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.ui.web.order.BOMExploderCommand;
 import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
+import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -90,6 +96,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
@@ -101,6 +108,10 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final Set<OrderLineId> newOrderLineIds;
 		if (extractGroupTemplateId(quickInput).isPresent())
 		{
+			if (QuickInputConstants.isEnableLUFields())
+			{
+				throw new AdempiereException("Generating order lines from group template is not supported when LU fields are enabled");
+			}
 			newOrderLineIds = process_GenerateOrderLinesFromGroupTemplate(quickInput);
 		}
 		else
@@ -209,30 +220,54 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 
 		// Validate quick input:
-		final BigDecimal quickInputQty = orderLineQuickInput.getQty();
-		if (quickInputQty == null || quickInputQty.signum() <= 0)
-		{
-			logger.warn("Invalid Qty={} for {}", quickInputQty, orderLineQuickInput);
-			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
-		}
+		final BigDecimal quickInputTUQty;
+		final BigDecimal quickInputLUQty = orderLineQuickInput.getQtyLU();
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(orderLineQuickInput.getM_LU_HU_PI_ID());
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID());
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 
+		final boolean isEnableLUFields = QuickInputConstants.isEnableLUFields();
+		if (isEnableLUFields)
+		{
+			checkValidQty(IOrderLineQuickInput.COLUMNNAME_QtyLU, quickInputLUQty, orderLineQuickInput);
+			final Optional<I_M_HU_PI_Item> tuPIItem = handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, luPIId, Check.assumeNotNull(piItemProductId, "PIItemProductId shall not be null (quickInputLUQty={}, quickInputPIId={}, quickInputItemProductId={})", quickInputLUQty, luPIId, piItemProductId));
+			final BigDecimal tuPiItemCapacity = tuPIItem.map(I_M_HU_PI_Item::getQty).orElse(BigDecimal.ONE);
+			quickInputTUQty = quickInputLUQty.multiply(tuPiItemCapacity);
+		}
+		else
+		{
+			quickInputTUQty = orderLineQuickInput.getQty();
+			checkValidQty(IOrderLineQuickInput.COLUMNNAME_Qty, quickInputTUQty, orderLineQuickInput);
+		}
+
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(orderLineQuickInput.getM_Product_ID());
 		final UomId uomId = productBL.getStockUOMId(productAndAttributes.getProductId());
+		final Quantity luQty = Quantitys.of(quickInputLUQty, uomId);
 
 		return OrderLineCandidate.builder()
 				.orderId(orderId)
 				.productId(productAndAttributes.getProductId())
 				.attributes(productAndAttributes.getAttributes())
-				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
-				.qty(Quantitys.of(quickInputQty, uomId))
+				.piItemProductId(piItemProductId)
+				.qty(Quantitys.of(quickInputTUQty, uomId))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(bpartnerId)
+				.luId(luPIId)
+				.luQty(luQty)
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.build();
+	}
+
+	private static void checkValidQty(final String columnName, final @Nullable BigDecimal quickInputTUQty, final IOrderLineQuickInput orderLineQuickInput)
+	{
+		if (quickInputTUQty == null || quickInputTUQty.signum() <= 0)
+		{
+			logger.warn("Invalid {}={} for {}", columnName, quickInputTUQty, orderLineQuickInput);
+			throw new AdempiereException(columnName + " shall be greater than zero"); // TODO trl
+		}
 	}
 
 	private List<OrderLineCandidate> explodePhantomBOM(final OrderLineCandidate initialCandidate)
@@ -285,6 +320,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		huPackingAware.setUomId(candidate.getQty().getUomId());
 		huPackingAware.setAsiId(createASI(candidate.getProductId(), candidate.getAttributes()));
 		huPackingAware.setPiItemProductId(candidate.getPiItemProductId());
+		huPackingAware.setLuId(candidate.getLuId());
+		huPackingAware.setQtyLU(candidate.getLuQty().toBigDecimal());
 
 		//
 		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, candidate.getQty().toBigDecimal());

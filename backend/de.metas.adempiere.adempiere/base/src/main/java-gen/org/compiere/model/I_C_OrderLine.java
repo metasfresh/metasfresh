@@ -1653,7 +1653,7 @@ public interface I_C_OrderLine
 	 * Set Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1663,7 +1663,7 @@ public interface I_C_OrderLine
 	 * Get Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1876,6 +1876,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_Order_Min = new ModelColumn<>(I_C_OrderLine.class, "Order_Min", null);
 	String COLUMNNAME_Order_Min = "Order_Min";
+
+	/**
+	 * Set Packinfo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackInfo (@Nullable java.lang.String PackInfo);
+
+	/**
+	 * Get Packinfo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPackInfo();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_PackInfo = new ModelColumn<>(I_C_OrderLine.class, "PackInfo", null);
+	String COLUMNNAME_PackInfo = "PackInfo";
 
 	/**
 	 * Set Payment Discount %.

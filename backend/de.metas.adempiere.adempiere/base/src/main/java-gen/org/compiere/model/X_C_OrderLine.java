@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1506736272L;
+	private static final long serialVersionUID = -772130860L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -1326,6 +1326,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Min);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPackInfo (final @Nullable java.lang.String PackInfo)
+	{
+		set_Value (COLUMNNAME_PackInfo, PackInfo);
+	}
+
+	@Override
+	public java.lang.String getPackInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_PackInfo);
 	}
 
 	@Override
