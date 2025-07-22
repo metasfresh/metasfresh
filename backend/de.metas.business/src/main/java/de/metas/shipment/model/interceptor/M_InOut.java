@@ -12,6 +12,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
@@ -103,4 +104,16 @@ public class M_InOut
 			}
 		}
 	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE,
+	}, ifColumnsChanged = {
+			I_M_InOut.COLUMNNAME_DropShip_Location_ID, I_M_InOut.COLUMNNAME_C_BPartner_Location_ID
+	})
+	public void onBPartnerLocation(final I_M_InOut inout)
+	{
+		inOutBL.setShipperId(inout);
+	}
+
 }
