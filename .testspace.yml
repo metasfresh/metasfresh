@@ -45,6 +45,7 @@ release:
   - soft_panda_hotfix
   - soft_panda_release
   - science_vessel_uat
+  - science_vessel_hotfix
   - secondary_opinion_uat
   - secondary_opinion_hotfix
   - tasty_ham_uat
