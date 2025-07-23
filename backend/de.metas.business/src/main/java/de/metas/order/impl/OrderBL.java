@@ -82,6 +82,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.Tax;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -1358,5 +1359,27 @@ public class OrderBL implements IOrderBL
 	public String getDescriptionById(@NonNull final OrderId orderId)
 	{
 		return getById(orderId).getDescription();
+	}
+
+	@Override
+	public void setShipperId(@NonNull final I_C_Order order)
+	{
+		order.setM_Shipper_ID(ShipperId.toRepoId(findShipperId(order)));
+	}
+
+	private ShipperId findShipperId(@NonNull final I_C_Order orderRecord)
+	{
+		if (orderRecord.getDropShip_BPartner_ID() > 0 && orderRecord.getDropShip_Location_ID() > 0)
+		{
+			final Optional<ShipperId> deliveryAddressShipperId = partnerDAO.getShipperIdByBPLocationId(BPartnerLocationId.ofRepoId(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID()));
+			if (deliveryAddressShipperId.isPresent())
+			{
+				return deliveryAddressShipperId.get(); 
+			}
+		}
+		return partnerDAO.getShipperId(CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID()),
+				() -> BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID())));
+
 	}
 }
