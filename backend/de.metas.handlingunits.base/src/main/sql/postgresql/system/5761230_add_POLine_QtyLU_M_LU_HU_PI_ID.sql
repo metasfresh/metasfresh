@@ -73,17 +73,17 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 -- 2025-07-21T14:51:10.965Z
 INSERT INTO AD_Val_Rule (ad_val_rule_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, description, type, code, entitytype, classname) VALUES (540738, 0, 0, 'Y', '2025-07-21 14:49:43.620000 +00:00', 100, '2025-07-21 14:51:10.963000 +00:00', 100, 'M_HU_PI_Item_Product for selected BP / M_LU_HU_PI_ID', null, 'S', e'/* GENERAL*/
     M_HU_PI_Item_Product.AD_Org_ID IN (0, @AD_Org_ID@)
-  AND (M_HU_PI_Item_Product.M_Product_ID =@ M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct = \'Y\' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID NOT IN (100)))
+  AND (M_HU_PI_Item_Product.M_Product_ID =@ M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct = ''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID NOT IN (100)))
   AND (M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
-  AND M_HU_PI_Item_Product.ValidFrom <= \'@DatePromised@\'
-  AND (\'@DatePromised@\' <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL)
+  AND M_HU_PI_Item_Product.ValidFrom <= ''@DatePromised@''
+  AND (''@DatePromised@'' <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL)
   AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
       (SELECT i.M_HU_PI_Item_ID
        FROM M_HU_PI_Item i
        WHERE i.M_HU_PI_Version_ID IN
              (SELECT v.M_HU_PI_Version_ID
               FROM M_HU_PI_Version v
-              WHERE v.HU_UnitType = \'TU\'))
+              WHERE v.HU_UnitType = ''TU''))
   /* Price list*/
   AND (
     (
@@ -91,69 +91,69 @@ INSERT INTO AD_Val_Rule (ad_val_rule_id, ad_client_id, ad_org_id, isactive, crea
         (SELECT pp.M_HU_PI_Item_Product_ID
          FROM M_ProductPrice pp
          WHERE pp.M_Product_ID = @M_Product_ID@
-           AND pp.IsActive = \'Y\'
+           AND pp.IsActive = ''Y''
            AND pp.M_PriceList_Version_ID =
                (SELECT M_PriceList_Version.M_PriceList_Version_ID
                 FROM M_PriceList_Version
                 WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-                  AND M_PriceList_Version.IsActive = \'Y\'
+                  AND M_PriceList_Version.IsActive = ''Y''
                   AND M_PriceList_Version.ValidFrom =
                       (SELECT MAX(M_PriceList_Version.ValidFrom)
                        FROM M_PriceList_Version
                        WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-                         AND M_PriceList_Version.ValidFrom <= \'@DatePromised@\'
-                         AND M_PriceList_Version.IsActive = \'Y\'
+                         AND M_PriceList_Version.ValidFrom <= ''@DatePromised@''
+                         AND M_PriceList_Version.IsActive = ''Y''
                        GROUP BY M_PriceList_ID)))
         )
         OR M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID IN
            (SELECT pp.M_HU_PI_Item_Product_ID
             FROM M_ProductPrice pp
             WHERE pp.M_Product_ID = @M_Product_ID@
-              AND pp.IsActive = \'Y\'
+              AND pp.IsActive = ''Y''
               AND pp.M_PriceList_Version_ID =
                   (SELECT M_PriceList_Version.M_PriceList_Version_ID
                    FROM M_PriceList_Version
                    WHERE M_PriceList_Version.M_PriceList_ID = (SELECT basepricelist_id FROM M_Pricelist WHERE m_pricelist_id = @M_PriceList_ID@)
-                     AND M_PriceList_Version.IsActive = \'Y\'
+                     AND M_PriceList_Version.IsActive = ''Y''
                      AND M_PriceList_Version.ValidFrom =
                          (SELECT MAX(M_PriceList_Version.ValidFrom)
                           FROM M_PriceList_Version
                           WHERE M_PriceList_Version.m_pricelist_id = (SELECT basepricelist_id FROM M_Pricelist WHERE m_pricelist_id = @M_PriceList_ID@)
-                            AND M_PriceList_Version.ValidFrom <= \'@DatePromised@\'
-                            AND M_PriceList_Version.IsActive = \'Y\'
+                            AND M_PriceList_Version.ValidFrom <= ''@DatePromised@''
+                            AND M_PriceList_Version.IsActive = ''Y''
                           GROUP BY M_PriceList_ID)))
         OR EXISTS
         (SELECT 1
          FROM M_ProductPrice pp
          WHERE pp.M_Product_ID = @M_Product_ID@
-           AND pp.IsActive = \'Y\'
+           AND pp.IsActive = ''Y''
            AND pp.M_PriceList_Version_ID = (SELECT M_PriceList_Version.M_PriceList_Version_ID
                                             FROM M_PriceList_Version
                                             WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-                                              AND M_PriceList_Version.IsActive = \'Y\'
+                                              AND M_PriceList_Version.IsActive = ''Y''
                                               AND M_PriceList_Version.ValidFrom =
                                                   (SELECT MAX(M_PriceList_Version.ValidFrom)
                                                    FROM M_PriceList_Version
                                                    WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-                                                     AND M_PriceList_Version.ValidFrom <= \'@DatePromised@\'
-                                                     AND M_PriceList_Version.IsActive = \'Y\'
+                                                     AND M_PriceList_Version.ValidFrom <= ''@DatePromised@''
+                                                     AND M_PriceList_Version.IsActive = ''Y''
                                                    GROUP BY M_PriceList_ID))
            AND pp.m_hu_pi_item_product_id IS NULL)
         OR EXISTS
         (SELECT 1
          FROM M_ProductPrice pp
          WHERE pp.M_Product_ID = @M_Product_ID@
-           AND pp.IsActive = \'Y\'
+           AND pp.IsActive = ''Y''
            AND pp.M_PriceList_Version_ID = (SELECT M_PriceList_Version.M_PriceList_Version_ID
                                             FROM M_PriceList_Version
                                             WHERE M_PriceList_Version.M_PriceList_ID = (SELECT basepricelist_id FROM M_Pricelist WHERE m_pricelist_id = @M_PriceList_ID@)
-                                              AND M_PriceList_Version.IsActive = \'Y\'
+                                              AND M_PriceList_Version.IsActive = ''Y''
                                               AND M_PriceList_Version.ValidFrom =
                                                   (SELECT MAX(M_PriceList_Version.ValidFrom)
                                                    FROM M_PriceList_Version
                                                    WHERE M_PriceList_Version.M_PriceList_ID = (SELECT basepricelist_id FROM M_Pricelist WHERE m_pricelist_id = @M_PriceList_ID@)
-                                                     AND M_PriceList_Version.ValidFrom <= \'@DatePromised@\'
-                                                     AND M_PriceList_Version.IsActive = \'Y\'
+                                                     AND M_PriceList_Version.ValidFrom <= ''@DatePromised@''
+                                                     AND M_PriceList_Version.IsActive = ''Y''
                                                    GROUP BY M_PriceList_ID))
            AND pp.m_hu_pi_item_product_id IS NULL)
     )
@@ -161,17 +161,17 @@ INSERT INTO AD_Val_Rule (ad_val_rule_id, ad_client_id, ad_org_id, isactive, crea
 AND EXISTS (SELECT 1
               FROM M_HU_PI_Version lu_hupiVersion
                        INNER JOIN m_hu_pi_item lu_hupiItem ON lu_hupiItem.m_hu_pi_version_id = lu_hupiVersion.m_hu_pi_version_id AND (lu_hupiItem.C_BPartner_ID = @C_BPartner_ID/-1@ OR lu_hupiItem.C_BPartner_ID IS NULL)
-                       INNER JOIN m_hu_pi hupi ON lu_hupiItem.included_hu_pi_id = hupi.m_hu_pi_id AND lu_hupiItem.isactive = \'Y\'
-                  AND lu_hupiItem.itemtype = \'HU\'
-                  AND lu_hupiVersion.isactive = \'Y\'
-                  AND lu_hupiVersion.iscurrent = \'Y\'
-                  AND lu_hupiVersion.hu_unittype = \'LU\'
+                       INNER JOIN m_hu_pi hupi ON lu_hupiItem.included_hu_pi_id = hupi.m_hu_pi_id AND lu_hupiItem.isactive = ''Y''
+                  AND lu_hupiItem.itemtype = ''HU''
+                  AND lu_hupiVersion.isactive = ''Y''
+                  AND lu_hupiVersion.iscurrent = ''Y''
+                  AND lu_hupiVersion.hu_unittype = ''LU''
                        INNER JOIN m_hu_pi_version tu_hupiVersion ON lu_hupiItem.included_hu_pi_id = tu_hupiVersion.m_hu_pi_id
-                  AND tu_hupiVersion.iscurrent = \'Y\'
-                  AND tu_hupiVersion.isactive = \'Y\'
-                  AND tu_hupiVersion.hu_unittype = \'TU\'
-                       INNER JOIN m_hu_pi_item tu_hupiItem ON tu_hupiItem.m_hu_pi_version_id = tu_hupiVersion.m_hu_pi_version_id AND tu_hupiItem.itemtype = \'MI\' AND tu_hupiItem.isactive = \'Y\' AND (tu_hupiItem.C_BPartner_ID = @C_BPartner_ID/-1@ OR tu_hupiItem.C_BPartner_ID IS NULL)
-                       INNER JOIN m_hu_pi_item_product tu_hupiip ON tu_hupiip.m_hu_pi_item_id = tu_hupiItem.m_hu_pi_item_id AND tu_hupiip.isactive = \'Y\' and tu_hupiip.M_Product_ID = @M_Product_ID/-1@
+                  AND tu_hupiVersion.iscurrent = ''Y''
+                  AND tu_hupiVersion.isactive = ''Y''
+                  AND tu_hupiVersion.hu_unittype = ''TU''
+                       INNER JOIN m_hu_pi_item tu_hupiItem ON tu_hupiItem.m_hu_pi_version_id = tu_hupiVersion.m_hu_pi_version_id AND tu_hupiItem.itemtype = ''MI'' AND tu_hupiItem.isactive = ''Y'' AND (tu_hupiItem.C_BPartner_ID = @C_BPartner_ID/-1@ OR tu_hupiItem.C_BPartner_ID IS NULL)
+                       INNER JOIN m_hu_pi_item_product tu_hupiip ON tu_hupiip.m_hu_pi_item_id = tu_hupiItem.m_hu_pi_item_id AND tu_hupiip.isactive = ''Y'' and tu_hupiip.M_Product_ID = @M_Product_ID/-1@
               WHERE lu_hupiVersion.m_hu_pi_id = @M_LU_HU_PI_ID/-1@
                 AND m_hu_pi_item_product.m_hu_pi_item_product_id = tu_hupiip.m_hu_pi_item_product_id)', 'D', null)
 ;
