@@ -494,6 +494,8 @@ public class C_Order
 		}
 
 		orderBL.setPriceList(order);
+
+		orderBL.setShipperId(order);
 	}
 
 	@ModelChange(timings = {
