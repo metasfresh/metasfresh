@@ -816,11 +816,15 @@ public class InOutBL implements IInOutBL
 	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
 	{
 
-		final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(BPartnerLocationId.ofRepoId(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()));
-		if (deliveryAddressShipperId.isPresent())
+		if (inout.getDropShip_BPartner_ID() > 0 && inout.getDropShip_Location_ID() > 0)
 		{
-			return deliveryAddressShipperId.get(); // we are done
+			final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(BPartnerLocationId.ofRepoId(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()));
+			if (deliveryAddressShipperId.isPresent())
+			{
+				return deliveryAddressShipperId.get(); // we are done
+			}
 		}
+
 
 		return bpartnerDAO.getShipperId(CoalesceUtil.coalesceSuppliersNotNull(
 				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),
