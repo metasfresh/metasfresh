@@ -1369,11 +1369,11 @@ public class OrderBL implements IOrderBL
 
 	private ShipperId findShipperId(@NonNull final I_C_Order orderRecord)
 	{
-		final Optional<ShipperId> dropShipShipperId = getDropShipShipperId(orderRecord);
+		final Optional<ShipperId> dropShipShipperId = getDropShipAddressShipperId(orderRecord);
 		return dropShipShipperId.orElse(getDeliveryAddressShipperId(orderRecord));
 	}
 
-	private Optional<ShipperId> getDropShipShipperId(final I_C_Order orderRecord)
+	private Optional<ShipperId> getDropShipAddressShipperId(final I_C_Order orderRecord)
 	{
 		if (orderRecord.getDropShip_BPartner_ID() <= 0 || orderRecord.getDropShip_Location_ID() <= 0)
 		{
@@ -1387,7 +1387,6 @@ public class OrderBL implements IOrderBL
 
 		return Optional.ofNullable(dropShipShipperId.orElse(getPartnerShipperId(BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID()))));
 	}
-
 
 	private ShipperId getDeliveryAddressShipperId(final I_C_Order orderRecord)
 	{
@@ -1403,5 +1402,4 @@ public class OrderBL implements IOrderBL
 	{
 		return partnerDAO.getShipperId(partnerId);
 	}
-
 }
