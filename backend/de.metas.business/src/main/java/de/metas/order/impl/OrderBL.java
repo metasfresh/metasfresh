@@ -1369,17 +1369,39 @@ public class OrderBL implements IOrderBL
 
 	private ShipperId findShipperId(@NonNull final I_C_Order orderRecord)
 	{
-		if (orderRecord.getDropShip_BPartner_ID() > 0 && orderRecord.getDropShip_Location_ID() > 0)
-		{
-			final Optional<ShipperId> deliveryAddressShipperId = partnerDAO.getShipperIdByBPLocationId(BPartnerLocationId.ofRepoId(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID()));
-			if (deliveryAddressShipperId.isPresent())
-			{
-				return deliveryAddressShipperId.get(); 
-			}
-		}
-		return partnerDAO.getShipperId(CoalesceUtil.coalesceSuppliersNotNull(
-				() -> BPartnerId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID()),
-				() -> BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID())));
-
+		final Optional<ShipperId> dropShipShipperId = getDropShipShipperId(orderRecord);
+		return dropShipShipperId.orElse(getDeliveryAddressShipperId(orderRecord));
 	}
+
+	private Optional<ShipperId> getDropShipShipperId(final I_C_Order orderRecord)
+	{
+		if (orderRecord.getDropShip_BPartner_ID() <= 0 || orderRecord.getDropShip_Location_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final Optional<ShipperId> dropShipShipperId = partnerDAO.getShipperIdByBPLocationId(
+				BPartnerLocationId.ofRepoId(
+						orderRecord.getDropShip_BPartner_ID(),
+						orderRecord.getDropShip_Location_ID()));
+
+		return Optional.ofNullable(dropShipShipperId.orElse(getPartnerShipperId(BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID()))));
+	}
+
+
+	private ShipperId getDeliveryAddressShipperId(final I_C_Order orderRecord)
+	{
+		final Optional<ShipperId> deliveryShipShipperId = partnerDAO.getShipperIdByBPLocationId(
+				BPartnerLocationId.ofRepoId(
+						orderRecord.getC_BPartner_ID(),
+						orderRecord.getC_BPartner_Location_ID()));
+
+		return deliveryShipShipperId.orElse(getPartnerShipperId(BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID())));
+	}
+
+	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
+	{
+		return partnerDAO.getShipperId(partnerId);
+	}
+
 }
