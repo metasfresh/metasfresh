@@ -9,9 +9,9 @@ import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.QuickInput;
+import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.field.DefaultPackingItemCriteria;
 import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.util.Services;
@@ -78,6 +78,10 @@ final class OrderLineQuickInputCallout
 		if (!quickInput.hasField(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 		{
 			return; // there are users whose systems don't have M_HU_PI_Item_Product_ID in their quick-input
+		}
+		if (QuickInputConstants.isEnableLUFields())
+		{
+			return; // shall be handled by first selecting an LU
 		}
 
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);

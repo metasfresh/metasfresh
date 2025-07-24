@@ -367,4 +367,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	<T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper);
 
 	void createTUPackingInstructions(CreateTUPackingInstructionsRequest request);
+
+	Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(@Nullable final BPartnerId bpartnerId, @NonNull final HuPackingInstructionsId luPIId, @NonNull final HUPIItemProductId piItemProductId);
 }

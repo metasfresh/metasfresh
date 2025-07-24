@@ -25,6 +25,7 @@ package de.metas.ui.web.order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
@@ -56,6 +57,11 @@ public class OrderLineCandidate
 
 	@NonNull
 	Quantity qty;
+
+	@Nullable
+	HuPackingInstructionsId luId;
+
+	Quantity luQty;
 
 	@Nullable
 	ShipmentAllocationBestBeforePolicy bestBeforePolicy;

@@ -24,6 +24,7 @@ package de.metas.handlingunits.allocation;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -105,6 +106,15 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	void save(
 			I_M_HU_LUTU_Configuration lutuConfiguration,
 			boolean disableChangeCheckingOnSave);
+
+	I_M_HU_LUTU_Configuration createLUTUConfiguration(
+			@NonNull I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull ProductId cuProductId,
+			@NonNull UomId cuUomId,
+			BPartnerId bpartnerId,
+			boolean noLUForVirtualTU,
+			@Nullable HuPackingInstructionsId luPIId,
+			@NonNull BigDecimal qtyLu);
 
 	boolean isNoLU(I_M_HU_LUTU_Configuration lutuConfiguration);
 
@@ -204,7 +214,7 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 
 	static I_M_HU_PI_Item_Product extractHUPIItemProduct(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		I_M_HU_PI_Item_Product huPIItemProduct = extractHUPIItemProductOrNull(lutuConfiguration);
+		final I_M_HU_PI_Item_Product huPIItemProduct = extractHUPIItemProductOrNull(lutuConfiguration);
 		if (huPIItemProduct == null)
 		{
 			throw new HUException("No PI Item Product set for " + lutuConfiguration);
