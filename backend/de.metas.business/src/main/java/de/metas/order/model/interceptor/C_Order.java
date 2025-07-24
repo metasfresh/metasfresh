@@ -483,7 +483,7 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_DropShip_Location_ID
+			I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID
 	})
 	public void onDropShipLocation(final I_C_Order order)
 	{
