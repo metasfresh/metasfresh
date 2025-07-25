@@ -1,3 +1,25 @@
+<!--
+  ~ #%L
+  ~ de.metas.parent.general
+  ~ %%
+  ~ Copyright (C) 2025 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -69,8 +91,8 @@
         <objenesis.version>3.3</objenesis.version>
 
         <!-- please keep junit jupiter and platform versions synched up -->
-        <junit-jupiter.version>5.9.3</junit-jupiter.version>
-        <junit-platform.version>1.9.3</junit-platform.version>
+        <junit-jupiter.version>5.12.2</junit-jupiter.version>
+        <junit-platform.version>1.12.2</junit-platform.version>
 
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>

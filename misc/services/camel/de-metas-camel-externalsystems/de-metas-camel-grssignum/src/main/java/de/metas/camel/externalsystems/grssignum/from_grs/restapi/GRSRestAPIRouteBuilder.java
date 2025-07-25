@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -130,9 +130,11 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.end();
 
 		rest().path(RestServiceRoutes.GRS.getPath())
-				.post()
-				.route()
-				.routeId(REST_API_ROUTE_ID)
+			.post()
+			.to("direct:" + REST_API_ROUTE_ID);
+		
+		from("direct:" + REST_API_ROUTE_ID)
+			.routeId(REST_API_ROUTE_ID)
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.doTry()
 					.process(this::restAPIProcessor)
@@ -149,8 +151,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 					.to(direct(MF_ERROR_ROUTE_ID))
 					.process(this::prepareErrorResponse)
 					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
-				.endDoTry()
-				.end();
+				.endDoTry();
 		//@formatter:on
 	}
 

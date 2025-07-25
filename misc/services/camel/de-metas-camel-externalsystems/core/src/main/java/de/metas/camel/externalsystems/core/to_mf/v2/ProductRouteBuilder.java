@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,7 +30,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -58,7 +58,7 @@ public class ProductRouteBuilder extends RouteBuilder
 
 		from(direct(MF_GET_PRODUCTS_ROUTE_ID))
 				.routeId(MF_GET_PRODUCTS_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked")
 				.process(exchange -> {
 					final Object getProductsRequest = exchange.getIn().getBody();
@@ -72,14 +72,14 @@ public class ProductRouteBuilder extends RouteBuilder
 					exchange.getIn().setHeader("queryParams", getQueryParams(getProductsCamelRequest));
 				})
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.toD("{{metasfresh.products.v2.api.uri}}?${header.queryParams}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
 		from(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
 				.routeId(MF_UPSERT_PRODUCT_V2_CAMEL_URI)
-				.streamCaching()
+				.streamCache("true")
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
 					if (!(lookupRequest instanceof ProductUpsertCamelRequest))
@@ -96,7 +96,7 @@ public class ProductRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductUpsert.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-product-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));

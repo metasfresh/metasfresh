@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-alberta-camelroutes
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -176,7 +176,7 @@ public class GetPatientsRouteTests extends CamelTestSupport
 		//fire the route
 		template.sendBody("direct:" + GET_PATIENTS_ROUTE_ID, invokeExternalSystemRequest);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(7);
 		assertThat(mockBPartnerRelationUpsertResponse.called).isEqualTo(1);
 		assertThat(mockGetDocumentsProcessor.called).isEqualTo(1);

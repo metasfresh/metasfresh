@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -57,7 +57,7 @@ public class GRSSignumExportHURouteBuilder extends RouteBuilder
 
 		from(direct(EXPORT_HU_ROUTE_ID))
 				.routeId(EXPORT_HU_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(this::buildAndAttachContext)
 
 				.process(this::buildRetrieveHUCamelRequest)

@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-alberta-camelroutes
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -185,7 +185,7 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 		//fire the route
 		template.sendBody("direct:" + AlbertaGetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID, "Nothing relevant");
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockExternalReferenceResponse.called).isEqualTo(1);
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(1);
 		assertThat(mockBPartnerDeliveryAddressProcessor.called).isEqualTo(1);

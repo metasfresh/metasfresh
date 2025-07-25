@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-camel-scriptedadapter
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,30 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.stock;
+package de.metas.camel.externalsystems.scriptedadapter;
 
-import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.common.externalsystem.JsonAvailableForSales;
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
+import org.apache.camel.RuntimeCamelException;
 
 @Value
-@Builder
-public class ExportStockRouteContext
+@EqualsAndHashCode(callSuper = false)
+public class JavaScriptRepoException extends RuntimeCamelException
 {
-	@NonNull
-	ShopwareClient shopwareClient;
+	@NonNull String scriptIdentifier;
+	
+	@NonNull String errorMsg;
 
-	@NonNull
-	JsonAvailableForSales jsonAvailableForSales;
+	public JavaScriptRepoException(
+			@NonNull final String scriptIdentifier,
+			@NonNull final String errorMsg,
+			@NonNull final Throwable cause)
+	{
+		super("scpriptIdentifier=" + scriptIdentifier + "; errorMsg=" + errorMsg, cause);
+
+		this.scriptIdentifier = scriptIdentifier;
+		
+		this.errorMsg = errorMsg;
+	}
 }

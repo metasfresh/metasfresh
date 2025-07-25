@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -44,7 +44,6 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_PROCESS;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.BUILD_ORDERS_CONTEXT_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.BUILD_ORDERS_CONTEXT_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PAGE_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
@@ -52,7 +51,7 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDERS_PAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrdersRouteBuilder_HappyFlow_Tests
 {
@@ -129,7 +128,7 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
 		assertThat(successfullyCalledGetOrderPage.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	@Test
@@ -194,7 +193,7 @@ public class GetOrdersRouteBuilder_HappyFlow_RenumberLines_Tests extends GetOrde
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
 		assertThat(mockSuccessfullyCalledGetOrderPage.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 
 	}
 

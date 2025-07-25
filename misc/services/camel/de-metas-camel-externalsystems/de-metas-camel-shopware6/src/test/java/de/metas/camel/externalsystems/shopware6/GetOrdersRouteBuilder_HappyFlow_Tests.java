@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -63,6 +63,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -132,7 +133,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRICE
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_LOOKUP;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_TARGET_PRICE_LIST_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -166,18 +167,21 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 	protected static final String JSON_OL_CAND_PROCESS_REQUEST = HAPPY_FLOW + "70_JsonOLCandProcessRequest.json";
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
 		final var properties = new Properties();
 		try
 		{
 			properties.load(GetOrdersRouteBuilder_HappyFlow_Tests.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Override
@@ -187,12 +191,6 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
 
 		return new GetOrdersRouteBuilder(processLogger, producerTemplate);
-	}
-
-	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
 	}
 
 	@Test
@@ -263,7 +261,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
 		assertThat(buildOrdersContextProcessor.called).isEqualTo(1);
 		assertThat(mockSuccessfullyCalledGetOrderPage.called).isEqualTo(2);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	private void prepareRouteForTesting(
