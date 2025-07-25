@@ -16,11 +16,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2025-07-19T09:22:08.235Z
-/* DDL */  select update_Column_Translation_From_AD_Element(2197)
+/* DDL */  perform update_Column_Translation_From_AD_Element(2197)
 ;
 
 -- 2025-07-19T09:22:12.992Z
-/* DDL */ SELECT public.db_alter_table('I_Product','ALTER TABLE public.I_Product ADD COLUMN GuaranteeDaysMin NUMERIC(10) DEFAULT 0 NOT NULL')
+/* DDL */ perform public.db_alter_table('I_Product','ALTER TABLE public.I_Product ADD COLUMN GuaranteeDaysMin NUMERIC(10) DEFAULT 0 NOT NULL')
 ;
 
 -- Field: Import - Produkt(247,D) -> Import - Produkt(442,D) -> Min. Garantie-Tage
@@ -34,7 +34,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- 2025-07-19T09:27:28.369Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2197)
+/* DDL */  perform update_FieldTranslation_From_AD_Name_Element(2197)
 ;
 
 -- 2025-07-19T09:27:28.404Z
@@ -42,7 +42,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=750389
 ;
 
 -- 2025-07-19T09:27:28.411Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(750389)
+/* DDL */ perform AD_Element_Link_Create_Missing_Field(750389)
 ;
 
 -- UI Element: Import - Produkt(247,D) -> Import - Produkt(442,D) -> main -> 20 -> extend import.Min. Garantie-Tage
