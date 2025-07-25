@@ -1,5 +1,11 @@
 -- Run mode: SWING_CLIENT
 
+
+DO $$
+BEGIN
+-- -------------------------------------------------------------------------------
+
+
 -- Column: I_Product.GuaranteeDaysMin
 -- 2025-07-19T09:22:08.208Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,590568,2197,0,11,532,'XX','GuaranteeDaysMin',TO_TIMESTAMP('2025-07-19 09:22:07.993000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','0','Mindestanzahl Garantie-Tage','D',0,10,'When selecting batch/products with a guarantee date, the minimum left guarantee days for automatic picking.  You can pick any batch/product manually. ','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Min. Garantie-Tage',0,0,TO_TIMESTAMP('2025-07-19 09:22:07.993000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
@@ -45,3 +51,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=750389
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,750389,0,442,552659,635291,'F',TO_TIMESTAMP('2025-07-19 09:29:15.802000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mindestanzahl Garantie-Tage','When selecting batch/products with a guarantee date, the minimum left guarantee days for automatic picking.  You can pick any batch/product manually. ','Y','N','N','Y','N','N','N',0,'Min. Garantie-Tage',70,0,0,TO_TIMESTAMP('2025-07-19 09:29:15.802000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+-- -------------------------------------------------------------------------------
+EXCEPTION
+    WHEN unique_violation THEN
+        -- Ignore the 'ad_element_columnname' unique constraint violation
+        RAISE NOTICE 'Ignoring duplicate key value which violates unique constraint "ad_element_columnname"';
+END;
+$$;
