@@ -441,6 +441,10 @@ public class C_OrderLine
 		{
 			orderLine.setPriceActual(BigDecimal.ZERO);
 			orderLine.setPriceEntered(BigDecimal.ZERO);
+			orderLine.setIsManualPrice(true);
+
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
 		}
 	}
 }
