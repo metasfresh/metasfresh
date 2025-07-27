@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OrderLine
  *  @author metasfresh (generated) 
@@ -1527,6 +1526,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
+	 * Set Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWithoutCharge (boolean IsWithoutCharge);
+
+	/**
+	 * Get Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWithoutCharge();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsWithoutCharge = new ModelColumn<>(I_C_OrderLine.class, "IsWithoutCharge", null);
+	String COLUMNNAME_IsWithoutCharge = "IsWithoutCharge";
+
+	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
@@ -2489,6 +2509,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_QtyReserved = new ModelColumn<>(I_C_OrderLine.class, "QtyReserved", null);
 	String COLUMNNAME_QtyReserved = "QtyReserved";
+
+	/**
+	 * Set Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReason (@Nullable java.lang.String Reason);
+
+	/**
+	 * Get Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReason();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Reason = new ModelColumn<>(I_C_OrderLine.class, "Reason", null);
+	String COLUMNNAME_Reason = "Reason";
 
 	/**
 	 * Set Referenced Order Line.
