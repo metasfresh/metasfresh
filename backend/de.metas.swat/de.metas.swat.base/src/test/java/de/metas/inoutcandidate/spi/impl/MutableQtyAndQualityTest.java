@@ -8,13 +8,13 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.test.ErrorMessage;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -29,13 +29,13 @@ public class MutableQtyAndQualityTest
 	private ProductId productId;
 	private UomId uomId;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass()
 	{
 		AdempiereTestHelper.get().forceStaticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
@@ -165,7 +165,7 @@ public class MutableQtyAndQualityTest
 	public void test_getQualityDiscountPercent_zeroQtys()
 	{
 		final ReceiptQty qv = ReceiptQty.newWithCatchWeight(productId, uomId);
-		Assert.assertThat("Invalid QualityDiscountPercent", qv.getQualityDiscountPercent().toBigDecimal(), Matchers.comparesEqualTo(ZERO));
+		assertThat(qv.getQualityDiscountPercent().toBigDecimal()).as("Invalid QualityDiscountPercent").isEqualByComparingTo(ZERO);
 	}
 
 	@Test
@@ -179,7 +179,7 @@ public class MutableQtyAndQualityTest
 
 		// NOTE: at the moment we expect to return ZERO and an WARNING shall be logged
 		// TBD: throwing an exception in this case...
-		Assert.assertThat("Invalid QualityDiscountPercent", qv.getQualityDiscountPercent().toBigDecimal(), Matchers.comparesEqualTo(BigDecimal.ZERO));
+		assertThat( qv.getQualityDiscountPercent().toBigDecimal()).as("Invalid QualityDiscountPercent").isEqualByComparingTo(ZERO);
 	}
 
 	public static ReceiptQtyExpectation<Object> randomQtyAndQualityExpectation(

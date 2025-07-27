@@ -22,16 +22,6 @@ package de.metas.handlingunits.storage.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Assume;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.StaticHUAssert;
@@ -41,7 +31,14 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 public abstract class AbstractProductStorageTest extends AbstractHUTest
 {
@@ -334,7 +331,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 		final boolean reversal = false;
 		final boolean outboundTrx = false;
 		final IProductStorage storage = createStorage("10", reversal, outboundTrx);
-		Assume.assumeTrue(!storage.isAllowNegativeStorage());
+		Assumptions.assumeTrue(!storage.isAllowNegativeStorage());
 
 		//
 		// Initial storage checking (Total/Qty/Free)
@@ -361,7 +358,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 		final boolean outboundTrx = false;
 		final IProductStorage storage = createStorage("10", reversal, outboundTrx);
 		//
-		Assume.assumeTrue("storage allows negative storage", storage.isAllowNegativeStorage());
+		Assumptions.assumeTrue(storage.isAllowNegativeStorage(),"storage allows negative storage");
 		final boolean forceQtyAllocation = false;
 		//
 		test_removeQty_More_inboundTrx_NegativeStorageAllowed(storage, forceQtyAllocation);
@@ -403,10 +400,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 	protected void assertRequestedQty(final IAllocationRequest request, final String expectedQtyStr)
 	{
-		Assert.assertThat("Invalid requested qty - " + request,
-				request.getQty(),
-				Matchers.comparesEqualTo(new BigDecimal(expectedQtyStr)));
-
+		Assertions.assertEquals(0,	request.getQty().compareTo(new BigDecimal(expectedQtyStr)),"Invalid requested qty - " + request);
 	}
 
 	protected IAllocationRequest createAllocationRequest(final BigDecimal qty)
@@ -446,6 +440,6 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 			considerForceQtyAllocationFromRequest = true;
 		}
 
-		Assume.assumeTrue("Product storage is considering the Request's ForceQtyAllocation flag", considerForceQtyAllocationFromRequest);
+		Assumptions.assumeTrue( considerForceQtyAllocationFromRequest,"Product storage is considering the Request's ForceQtyAllocation flag");
 	}
 }

@@ -32,15 +32,15 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static shadow.org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Enqueue a number of workpackages and verify their priorities.
@@ -50,7 +50,7 @@ import static org.junit.Assert.assertThat;
  */
 public class TestQueue_SizeBasedPrio
 {
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -61,7 +61,7 @@ public class TestQueue_SizeBasedPrio
 	/**
 	 * Sets up the {@link SizeBasedWorkpackagePrio} with a simple size2prio function.
 	 */
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -91,7 +91,7 @@ public class TestQueue_SizeBasedPrio
 						});
 	}
 
-	@After
+	@AfterEach
 	public void cleanup()
 	{
 		((SizeBasedWorkpackagePrio)SizeBasedWorkpackagePrio.INSTANCE)
@@ -109,18 +109,18 @@ public class TestQueue_SizeBasedPrio
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 
 		final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
-		assertThat(wp1.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Urgent));
+		assertThat(wp1.getPriority()).isEqualTo(X_C_Queue_WorkPackage.PRIORITY_Urgent);
 
 		final I_C_Queue_WorkPackage wp2 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
-		assertThat(wp2.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_High));
+		assertThat(wp2.getPriority()).isEqualTo(X_C_Queue_WorkPackage.PRIORITY_High);
 
 		final I_C_Queue_WorkPackage wp3 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
-		assertThat(wp3.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Medium));
+		assertThat(wp3.getPriority()).isEqualTo(X_C_Queue_WorkPackage.PRIORITY_Medium);
 
 		final I_C_Queue_WorkPackage wp4 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
-		assertThat(wp4.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Low));
+		assertThat(wp4.getPriority()).isEqualTo(X_C_Queue_WorkPackage.PRIORITY_Low);
 
 		final I_C_Queue_WorkPackage wp5 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
-		assertThat(wp5.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Minor));
+		assertThat(wp5.getPriority()).isEqualTo(X_C_Queue_WorkPackage.PRIORITY_Minor);
 	}
 }

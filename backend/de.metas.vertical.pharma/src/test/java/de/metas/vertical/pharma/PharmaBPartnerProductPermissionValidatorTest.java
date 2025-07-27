@@ -17,14 +17,12 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
@@ -36,7 +34,10 @@ import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.interceptor.C_OrderLine;
 
-@RunWith(SpringRunner.class)
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatCode;
+
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
 		// needed to register the spring context with the Adempiere main class
 		StartupListener.class, ShutdownListener.class,
@@ -50,18 +51,15 @@ import de.metas.vertical.pharma.model.interceptor.C_OrderLine;
 })
 public class PharmaBPartnerProductPermissionValidatorTest
 {
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
-
 	private C_OrderLine orderLineInterceptor;
 
-	@BeforeClass
+	@BeforeAll
 	public static void initStatic()
 	{
 		AdempiereTestHelper.get().init();
 	}
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		orderLineInterceptor = SpringContextHolder.instance.getBean(C_OrderLine.class);
@@ -80,7 +78,8 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currency, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatCode(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.doesNotThrowAnyException();
 	}
 
 	@Test
@@ -95,9 +94,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Sales.toAD_Message());
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Sales.toAD_Message());
 	}
 
 	@Test
@@ -112,7 +111,8 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatCode(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.doesNotThrowAnyException();
 	}
 
 	@Test
@@ -127,7 +127,8 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatCode(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.doesNotThrowAnyException();
 	}
 
 	@Test
@@ -142,9 +143,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
 	}
 
 	@Test
@@ -159,9 +160,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
 	}
 
 	@Test
@@ -176,7 +177,8 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatCode(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.doesNotThrowAnyException();
 	}
 
 	// here starts the VENDOR part
@@ -193,7 +195,8 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatCode(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.doesNotThrowAnyException();
 	}
 
 	@Test
@@ -208,9 +211,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Purchase.toAD_Message());
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Purchase.toAD_Message());
 	}
 
 	@Test
@@ -225,7 +228,8 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatCode(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.doesNotThrowAnyException();
 	}
 
 	@Test
@@ -240,7 +244,8 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatCode(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.doesNotThrowAnyException();
 	}
 
 	@Test
@@ -255,9 +260,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
 	}
 
 	@Test
@@ -272,9 +277,9 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
 	}
 
 	@Test
@@ -289,7 +294,8 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_UOM cUom = createCUom();
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
-		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
+		assertThatCode(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
+				.doesNotThrowAnyException();
 	}
 
 	/**

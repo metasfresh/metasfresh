@@ -13,14 +13,16 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_PInstance;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+
 
 /*
  * #%L
@@ -49,7 +51,6 @@ import static org.junit.Assert.assertThat;
  * The differences between the tests are about which records are partitioned and which records aren't.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PartitionerServiceAttachToPartitionTests
 {
@@ -60,7 +61,7 @@ public class PartitionerServiceAttachToPartitionTests
 	private I_C_Queue_Element element;
 	private PartitionConfig config;
 
-	@Before
+	@BeforeEach
 	public void setup()
 	{
 		AdempiereTestHelper.get().init();
@@ -85,13 +86,13 @@ public class PartitionerServiceAttachToPartitionTests
 		config = PartitionConfig.builder()
 				.line(I_AD_PInstance.Table_Name)
 				.line(I_C_Queue_WorkPackage.Table_Name)
-					.ref()
-						.setReferencedTableName(I_AD_PInstance.Table_Name).setReferencingColumnName(I_C_Queue_WorkPackage.COLUMNNAME_AD_PInstance_ID)
+				.ref()
+				.setReferencedTableName(I_AD_PInstance.Table_Name).setReferencingColumnName(I_C_Queue_WorkPackage.COLUMNNAME_AD_PInstance_ID)
 				.endRef()
 				.line(I_C_Queue_Element.Table_Name)
-					.ref()
-						.setReferencedTableName(I_C_Queue_WorkPackage.Table_Name).setReferencingColumnName(I_C_Queue_Element.COLUMNNAME_C_Queue_WorkPackage_ID)
-					.endRef()
+				.ref()
+				.setReferencedTableName(I_C_Queue_WorkPackage.Table_Name).setReferencingColumnName(I_C_Queue_Element.COLUMNNAME_C_Queue_WorkPackage_ID)
+				.endRef()
 				.endLine()
 				.build();
 	}
@@ -106,7 +107,7 @@ public class PartitionerServiceAttachToPartitionTests
 				.getPartition();
 
 		// no records are partitioned. return them all.
-		assertThat(result.getRecordsFlat().size(), is(3));
+		assertThat(result.getRecordsFlat()).hasSize(3);
 	}
 
 	/**
@@ -124,8 +125,8 @@ public class PartitionerServiceAttachToPartitionTests
 				.getPartition();
 
 		// no adjacent records are partitioned. return them all.
-		assertThat(result.getRecordsFlat().size(), is(3));
-		assertThat(result.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
+		assertThat(result.getRecordsFlat()).hasSize(3);
+		assertThat(result.getDLM_Partition_ID()).isEqualTo(partitionDB.getDLM_Partition_ID());
 	}
 
 	@Test
@@ -140,8 +141,8 @@ public class PartitionerServiceAttachToPartitionTests
 				.getPartition();
 
 		// the result contains the workpackage itself the element and the pinstance, because on finding the partitioned element, the system shall search in each direction.
-		assertThat(result.getRecordsFlat().size(), is(3));
-		assertThat(result.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
+		assertThat(result.getRecordsFlat()).hasSize(3);
+		assertThat(result.getDLM_Partition_ID()).isEqualTo(partitionDB.getDLM_Partition_ID());
 	}
 
 	@Test
@@ -157,8 +158,8 @@ public class PartitionerServiceAttachToPartitionTests
 				.getPartition();
 
 		// the result contains the workpackage itself the element and the pinstance, because on finding the partitioned element, the system shall search in each direction.
-		assertThat(result.getRecordsFlat().size(), is(3));
-		assertThat(result.getDLM_Partition_ID(), is(partitionDB.getDLM_Partition_ID()));
+		assertThat(result.getRecordsFlat()).hasSize(3);
+		assertThat(result.getDLM_Partition_ID()).isEqualTo(partitionDB.getDLM_Partition_ID());
 	}
 
 	private void addToPartition(final Object record, final I_DLM_Partition partitionDB)
@@ -177,10 +178,7 @@ public class PartitionerServiceAttachToPartitionTests
 	}
 
 	/**
-	 * truns the given <code>model</code> into a table reference singleton list.
-	 *
-	 * @param model
-	 * @return
+	 * turns the given <code>model</code> into a table reference singleton list.
 	 */
 	private CreatePartitionIterateResult mkMethodParam(final IDLMAware model)
 	{

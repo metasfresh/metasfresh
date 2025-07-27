@@ -1,7 +1,9 @@
 package de.metas.migration.scanner.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import com.google.common.collect.ImmutableList;
+import de.metas.migration.IScript;
+import de.metas.migration.impl.LocalScript;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -10,12 +12,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.migration.IScript;
-import de.metas.migration.impl.LocalScript;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 /*
  * #%L

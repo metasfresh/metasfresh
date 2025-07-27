@@ -22,13 +22,12 @@ package org.compiere.util;
  * #L%
  */
 
+import org.junit.jupiter.api.Disabled;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
-
-@Ignore
+@Disabled
 public class MockedEvaluatee2 extends MockedEvaluatee implements Evaluatee2
 {
 	private final Map<String, String> mapOld = new HashMap<String, String>();

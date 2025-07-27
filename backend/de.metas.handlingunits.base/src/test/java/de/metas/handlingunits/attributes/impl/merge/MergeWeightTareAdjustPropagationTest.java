@@ -1,45 +1,20 @@
 package de.metas.handlingunits.attributes.impl.merge;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.Assert;
-
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * NOTE: Tests propagation WITH TareAdjsut VARIABLE.
- *
+ * <p>
  * Test <i>propagation</i> of the <code>Weight</code> attributes (Gross, Net, Tare, Tare Adjust) and their behavior together.<br>
  * Test <i>HU operations</i> (i.e split, join, merge) and how these attributes are handled/re-propagated together.
  *
@@ -75,8 +50,7 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				materialItemProductTomato_10.getQty(), // 10, split the full TU off the source LU
 				BigDecimal.valueOf(2), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
-
-		Assert.assertEquals("Invalid amount of TUs were split", 2, splitTradingUnits.size());
+		assertThat(splitTradingUnits).as("Invalid amount of TUs were split").hasSize(2);
 
 		//
 		// Simulate - take off one of the TUKeys to bind it to the new LU
@@ -109,7 +83,7 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		// First split the palette
 		final I_M_HU loadingUnit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_101); // 85 x Tomato
 		setWeightTareAdjust(loadingUnit, BigDecimal.ONE);
-		
+
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("101", "66", "34", "1"),
 				newHUWeightsExpectation("4.882", "3.882", "1", "0"),
@@ -124,7 +98,8 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				BigDecimal.valueOf(2), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		Assert.assertEquals("Invalid amount of TUs were split", 2, splitTradingUnits.size());
+		assertThat(splitTradingUnits).as("Invalid amount of TUs were split").hasSize(2);
+
 		// verify the split source
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 7,
 				newHUWeightsExpectation("83.471", "50.471", "32", "1"),
@@ -158,7 +133,9 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		// Assert data integrity on SOURCE TUs
 		// sourceTUFromOutside is the one we merged from, i.e. it now contains not 10 but 8xCU
-		assertThat("After we merged 2, there shall still be something left on the source IFCO", splitTradingUnits.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
+		assertThat(splitTradingUnits.get(0).getHUStatus())
+				.as("After we merged 2, there shall still be something left on the source IFCO")
+				.isEqualTo(X_M_HU.HUSTATUS_Planning);
 		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(sourceTUFromOutside);
 		assertSingleHandlingUnitWeights(attributeStorageTU, newHUWeightsExpectation("7.212", "6.212", "1", "0"));
 

@@ -10,12 +10,12 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,24 +40,23 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 /**
  * See {@link #test_forwardWorkPackagePrio()}.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class TestQueue_InheritPriority
 {
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -67,12 +66,12 @@ public class TestQueue_InheritPriority
 	private String trxName;
 	private Helper helper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		NOPWorkpackageLogsRepository.registerToSpringContext();
-		
+
 		//
 		// Setup test data
 		ctx = Env.getCtx();
@@ -124,8 +123,7 @@ public class TestQueue_InheritPriority
 				.newWorkPackage()
 				.buildWithPackageProcessor();
 		// creating the WP with this method because this is still the code under test and it is also still called by the modern builder API.
-		@SuppressWarnings("deprecation")
-		final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.enqueueWorkPackage(workPackage, priorityToForward);
+		@SuppressWarnings("deprecation") final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.enqueueWorkPackage(workPackage, priorityToForward);
 		createQueueElement(wp1, 456);
 		wp1.setIsReadyForProcessing(true);
 
@@ -139,8 +137,8 @@ public class TestQueue_InheritPriority
 
 		// expecting CountProcessed = two, because when we enqueue the 2nd WP in TestQueue_InheritPriority_WorkPackageProcessor (in order to verify it's prio),
 		// the second WP will also be processed
-		assertThat(processor.getStatisticsSnapshot().getCountProcessed(), is(2L));
-		assertThat(processor.getStatisticsSnapshot().getCountErrors(), is(0L));
+		Assertions.assertEquals(2L, processor.getStatisticsSnapshot().getCountProcessed());
+		Assertions.assertEquals(0L, processor.getStatisticsSnapshot().getCountErrors());
 	}
 
 	private I_C_Queue_Processor createProcessor()

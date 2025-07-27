@@ -92,20 +92,22 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 
 		// JavaScript that processes the JSON and returns a modified object
 		final String jsScript = """
-				// Parse the JSON input
-				var inputData = JSON.parse(messageFromMetasfresh);
-				
-				// Process the data
-				var result = {
-					processed: true,
-					originalName: inputData.name,
-					ageInMonths: inputData.age * 12,
-					location: inputData.city,
-					timestamp: new Date().toISOString().substring(0, 10)
-				};
-				
-				// Return as JSON string
-				JSON.stringify(result);
+				function transform(messageFromMetasfresh) {
+					// Parse the JSON input
+					var inputData = JSON.parse(messageFromMetasfresh);
+					
+					// Process the data
+					var result = {
+						processed: true,
+						originalName: inputData.name,
+						ageInMonths: inputData.age * 12,
+						location: inputData.city,
+						timestamp: new Date().toISOString().substring(0, 10)
+					};
+					
+					// Return as JSON string
+					return JSON.stringify(result);
+				}
 				""";
 		
 		final Exchange exchange = prepareScriptAndExchange(jsScript, messageFromMetasfresh);
@@ -140,12 +142,14 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 
 		// JavaScript that doubles the value
 		final String jsScript = """
-				var inputData = JSON.parse(messageFromMetasfresh);
-				var result = {
-					originalValue: inputData.value,
-					doubledValue: inputData.value * 2
-				};
-				JSON.stringify(result);
+				function transform(messageFromMetasfresh) {
+					var inputData = JSON.parse(messageFromMetasfresh);
+					var result = {
+						originalValue: inputData.value,
+						doubledValue: inputData.value * 2
+					};
+					return JSON.stringify(result);
+				}
 				""";
 
 		final Exchange exchange = prepareScriptAndExchange(jsScript, messageFromMetasfresh);
@@ -174,15 +178,17 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 
 		// JavaScript that processes the array
 		final String jsScript = """
-				var inputData = JSON.parse(messageFromMetasfresh);
-				var sum = inputData.numbers.reduce(function(acc, num) { return acc + num; }, 0);
-				var result = {
-					originalArray: inputData.numbers,
-					sum: sum,
-					count: inputData.numbers.length,
-					average: sum / inputData.numbers.length
-				};
-				JSON.stringify(result);
+				function transform(messageFromMetasfresh) {
+					var inputData = JSON.parse(messageFromMetasfresh);
+					var sum = inputData.numbers.reduce(function(acc, num) { return acc + num; }, 0);
+					var result = {
+						originalArray: inputData.numbers,
+						sum: sum,
+						count: inputData.numbers.length,
+						average: sum / inputData.numbers.length
+					};
+					return JSON.stringify(result);
+				}
 				""";
 
 		// When: Send message to the scripting route
@@ -220,12 +226,14 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	{
 		// Given: A faulty JavaScript that will throw an error
 		final String messageFromMetasfresh = "{\"value\":10}";
-		final String faultyJsScript = """
-				// This will cause a ReferenceError because 'undefinedVariable' is not defined
-				var result = undefinedVariable;
+		final String scriptWithFaultyMethodName = """
+				function transfoorm(messageFromMetasfresh) {
+					var result = messageFromMetasfresh;
+					return result;
+				}
 				""";
 
-		final Exchange exchange = prepareScriptAndExchange(faultyJsScript, messageFromMetasfresh);
+		final Exchange exchange = prepareScriptAndExchange(scriptWithFaultyMethodName, messageFromMetasfresh);
 		
 		final MockEndpoint mockErrorRoute = creatAndInjectMockErrorRoute();
 		mockErrorRoute.expectedMessageCount(1); // Expect one message to reach the error route
@@ -244,7 +252,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		// assert the original exchange has the exception
 		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
 		assertThat(exception).isNotNull();
-		assertThat(exception).isInstanceOf(JavaScriptExecutorException.class).hasMessageContaining("scpriptIdentifier=testScript; errorMsg=ReferenceError: undefinedVariable is not defined");
+		assertThat(exception).isInstanceOf(JavaScriptExecutorException.class).hasMessageContaining("JavaScript script must define a 'transform' function that is executable.");
 	}
 
 	private MockEndpoint creatAndInjectMockErrorRoute() throws Exception

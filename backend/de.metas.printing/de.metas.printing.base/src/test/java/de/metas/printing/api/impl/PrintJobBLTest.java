@@ -23,8 +23,9 @@ package de.metas.printing.api.impl;
  */
 
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+
 
 import java.util.List;
 
@@ -32,8 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.collections4.IteratorUtils;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_SysConfig;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_PrinterRouting;
@@ -42,11 +42,13 @@ import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.util.Services;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PrintJobBLTest extends AbstractPrintingTest
 {
 
-	@Before
+	@BeforeEach
 	public final void beforeRunningTest()
 	{
 		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
@@ -88,26 +90,26 @@ public class PrintJobBLTest extends AbstractPrintingTest
 		helper.addToPrintQueue("01", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
 
 		helper.createAllPrintJobs();
-		assertThat(helper.getDB().getRecords(I_C_Print_Job.class).size(), is(1));
+		assertThat(helper.getDB().getRecords(I_C_Print_Job.class)).hasSize(1);
 
 		final I_C_Print_Job printJob = helper.getDB().getRecords(I_C_Print_Job.class).get(0);
 
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 		final List<I_C_Print_Job_Line> jobLines = IteratorUtils.toList(printingDAO.retrievePrintJobLines(printJob));
-		assertThat(jobLines.size(), is(1));
+		assertThat(jobLines).hasSize(1);
 
 		final I_C_Print_Job_Line jobLine = jobLines.get(0);
 		final List<I_C_Print_Job_Detail> jobDetails = printingDAO.retrievePrintJobDetails(jobLine);
-		assertThat("expecting one detail per routing", jobDetails.size(), is(2));
+		assertThat(jobDetails).as("expecting one detail per routing").hasSize(2);
 
-		assertThat(jobDetails.get(0).getAD_PrinterRouting_ID(), is(routing11.getAD_PrinterRouting_ID()));
-		assertThat(jobDetails.get(1).getAD_PrinterRouting_ID(), is(routing12.getAD_PrinterRouting_ID()));
+		assertThat(jobDetails.get(0).getAD_PrinterRouting_ID()).isEqualTo(routing11.getAD_PrinterRouting_ID());
+		assertThat(jobDetails.get(1).getAD_PrinterRouting_ID()).isEqualTo(routing12.getAD_PrinterRouting_ID());
 
 		final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob);
-		assertThat(instructions1.getC_Print_Job(), is(printJob));
-		assertThat(instructions1.getC_PrintJob_Line_From(), is(jobLine));
-		assertThat(instructions1.getC_PrintJob_Line_To(), is(jobLine));
-		assertThat("Job1 instructions - Invalid line count", getPrintJobLinesCount(printJob), is(1));
+		assertThat(instructions1.getC_Print_Job()).isEqualTo(printJob);
+		assertThat(instructions1.getC_PrintJob_Line_From()).isEqualTo(jobLine);
+		assertThat(instructions1.getC_PrintJob_Line_To()).isEqualTo(jobLine);
+		assertThat(getPrintJobLinesCount(printJob)).as("Job1 instructions - Invalid line count").isEqualTo(1);
 	}
 
 	private int getPrintJobLinesCount(final I_C_Print_Job job)
@@ -142,7 +144,7 @@ public class PrintJobBLTest extends AbstractPrintingTest
 		// then
 		// remembers that we have SYSCONFIG_MAX_LINES_PER_JOB = 2
 		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
-		Assertions.assertThat(printJobs).as("Invalid Print Jobs count").hasSize(3);
+		assertThat(printJobs).as("Invalid Print Jobs count").hasSize(3);
 	}
 
 }

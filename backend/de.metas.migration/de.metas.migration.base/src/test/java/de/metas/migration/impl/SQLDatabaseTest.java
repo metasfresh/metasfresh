@@ -22,8 +22,8 @@ package de.metas.migration.impl;
  * #L%
  */
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class SQLDatabaseTest
 {
@@ -33,11 +33,11 @@ public class SQLDatabaseTest
 		final String dbUrl = "jdbc:postgresql://localhost/databaseName";
 		final SQLDatabase database = new SQLDatabase(dbUrl, "testUser", "testPassword");
 
-		Assert.assertEquals("Invalid DbHostname", "localhost", database.getDbHostname());
-		Assert.assertEquals("Invalid DbHostname", null, database.getDbPort());
-		Assert.assertEquals("Invalid DbHostname", "databaseName", database.getDbName());
-		Assert.assertEquals("Invalid DbHostname", "postgresql", database.getDbType());
-		Assert.assertEquals("Invalid DbHostname", "testUser", database.getDbUser());
-		Assert.assertEquals("Invalid DbHostname", "testPassword", database.getDbPassword());
+		Assertions.assertEquals("Invalid DbHostname", "localhost", database.getDbHostname());
+		Assertions.assertNull(database.getDbPort());
+		Assertions.assertEquals("databaseName", database.getDbName());
+		Assertions.assertEquals("postgresql", database.getDbType());
+		Assertions.assertEquals("testUser", database.getDbUser());
+		Assertions.assertEquals("testPassword", database.getDbPassword());
 	}
 }

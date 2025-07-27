@@ -46,13 +46,12 @@ public class OrderLineCandRouteBuilder extends RouteBuilder
 				.streamCache("true")
 				.process(exchange -> {
 					final Object request = exchange.getIn().getBody();
-					if (!(request instanceof JsonOLCandCreateBulkRequest))
+					if (!(request instanceof final JsonOLCandCreateBulkRequest createOLCandidatesRequest))
 					{
 						throw new RuntimeCamelException("The route " + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID + " requires the body to be instanceof JsonOLCandCreateBulkRequest. "
 																+ "However, it is " + (request == null ? "null" : request.getClass().getName()));
 					}
 
-					final JsonOLCandCreateBulkRequest createOLCandidatesRequest = (JsonOLCandCreateBulkRequest)request;
 					log.info("Route invoked with : " + createOLCandidatesRequest.getRequests().size() + " items.");
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonOLCandCreateBulkRequest.class))

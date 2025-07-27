@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
 import de.metas.camel.externalsystems.shopware6.api.model.product.price.JsonPrice;
 import lombok.NonNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;

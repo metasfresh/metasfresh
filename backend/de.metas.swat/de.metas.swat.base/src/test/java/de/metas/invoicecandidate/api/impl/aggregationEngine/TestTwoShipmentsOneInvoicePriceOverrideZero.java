@@ -29,9 +29,7 @@ import lombok.NonNull;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestTwoShipmentsOneInvoicePriceOverrideZero extends AbstractTwoInOutsOneInvoiceSalesTests
 {
@@ -43,7 +41,7 @@ public class TestTwoShipmentsOneInvoicePriceOverrideZero extends AbstractTwoInOu
 	{
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
-			assertThat(invoiceCandidate.getPriceEntered(), not(comparesEqualTo(config_GetPriceEntered_Override())));
+			assertThat(invoiceCandidate.getPriceEntered()).isNotEqualByComparingTo(config_GetPriceEntered_Override());
 		}
 
 		super.step_validate_before_aggregation(invoiceCandidates, inOutLines);

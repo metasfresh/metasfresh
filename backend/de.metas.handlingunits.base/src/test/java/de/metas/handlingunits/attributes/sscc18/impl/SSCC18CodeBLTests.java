@@ -8,9 +8,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class SSCC18CodeBLTests
 
 	static int nextSSCC18SerialNumber = 0;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -47,10 +47,10 @@ public class SSCC18CodeBLTests
 		final SSCC18 sscc18 = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 
 		final boolean isCorrectCheckDigit = sscc18CodeBL.isCheckDigitValid(sscc18);
-		Assert.assertTrue("Check Digit is not correct: " + sscc18, isCorrectCheckDigit);
+		Assertions.assertTrue(isCorrectCheckDigit, "Check Digit is not correct: " + sscc18);
 	}
 
-	@Test(expected = Exception.class)
+	@Test
 	public void testSSCC18_NotCorrcetLength()
 	{
 		final String manufacturerCode = "07189080 ";
@@ -61,7 +61,7 @@ public class SSCC18CodeBLTests
 		final SSCC18 sscc18 = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 
 		final boolean isCorrectCheckDigit = sscc18CodeBL.isCheckDigitValid(sscc18);
-		Assert.assertTrue("Check Digit is not correct: " + sscc18, isCorrectCheckDigit);
+		Assertions.assertTrue(isCorrectCheckDigit, "Check Digit is not correct: " + sscc18);
 	}
 
 	@Test
@@ -75,7 +75,7 @@ public class SSCC18CodeBLTests
 		final SSCC18 sscc18 = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 
 		final boolean isCorrectCheckDigit = sscc18CodeBL.isCheckDigitValid(sscc18);
-		Assert.assertFalse("Check Digit is not correct: " + sscc18, isCorrectCheckDigit);
+		Assertions.assertFalse(isCorrectCheckDigit, "Check Digit is not correct: " + sscc18);
 	}
 
 	@Test
@@ -85,9 +85,10 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
-		Assert.assertEquals("Serial number is not correct",
+		Assertions.assertEquals(
 				"01000000", // expected,
-				generatedSSCC18.getSerialNumber() // actual
+				generatedSSCC18.getSerialNumber(), // actual
+				"Serial number is not correct"
 		);
 	}
 
@@ -99,10 +100,10 @@ public class SSCC18CodeBLTests
 		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		assertThat(generatedSSCC18.asString()).hasSize(18);
-		Assert.assertEquals("Serial number is not correct",
+		Assertions.assertEquals(
 				"001000000", // expected,
-				generatedSSCC18.getSerialNumber() // actual
-		);
+				generatedSSCC18.getSerialNumber(),// actual
+				"Serial number is not correct");
 	}
 
 	@Test
@@ -113,10 +114,11 @@ public class SSCC18CodeBLTests
 		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
 		assertThat(generatedSSCC18.asString()).hasSize(18);
-		Assert.assertEquals("Serial number is not correct",
+		Assertions.assertEquals(
 				"001000000", // expected,
-				generatedSSCC18.getSerialNumber() // actual
-		);
+				generatedSSCC18.getSerialNumber(), // actual
+				"Serial number is not correct");
+
 	}
 
 	@Test
@@ -127,14 +129,16 @@ public class SSCC18CodeBLTests
 		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 		assertThat(generatedSSCC18.asString()).hasSize(18);
 
-		Assert.assertEquals("Serial number is not correct",
+		Assertions.assertEquals(
 				"001000000", // expected,
-				generatedSSCC18.getSerialNumber() // actual
+				generatedSSCC18.getSerialNumber(), // actual
+				"Serial number is not correct"
 		);
 
-		Assert.assertEquals("Manufacturer code is not correct",
+		Assertions.assertEquals(
 				"0000002", // expected,
-				generatedSSCC18.getManufacturerCode() // actual
+				generatedSSCC18.getManufacturerCode(), // actual
+				"Manufacturer code is not correct"
 		);
 	}
 
@@ -164,7 +168,7 @@ public class SSCC18CodeBLTests
 		sscc18CodeBL.validate(sscc18ToValidate);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void testcheckValidSSCC18_wrongCheckDigit()
 	{
 		final String manufacturerCode = "0718907 ";
@@ -173,12 +177,12 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
-		sscc18CodeBL.validate(sscc18ToValidate);
+		Assertions.assertThrows(AdempiereException.class, () -> sscc18CodeBL.validate(sscc18ToValidate));
 
 		StaticHUAssert.assertMock("mock");
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void testcheckValidSSCC18_tooLongManufacturerCode()
 	{
 		final String manufacturerCode = "071890799 ";
@@ -187,7 +191,7 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
-		sscc18CodeBL.validate(sscc18ToValidate);
+		Assertions.assertThrows(AdempiereException.class, () -> sscc18CodeBL.validate(sscc18ToValidate));
 	}
 
 	@Test
@@ -204,7 +208,7 @@ public class SSCC18CodeBLTests
 		assertThat(sscc18ToValidate.asString()).hasSize(18).isEqualTo("0" + manufacturerCode + serialNumber + checkDigit);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void testcheckValidSSCC18_NotDigit()
 	{
 		final String manufacturerCode = "0718907y";
@@ -213,10 +217,10 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
-		sscc18CodeBL.validate(sscc18ToValidate);
+		Assertions.assertThrows(AdempiereException.class, () -> sscc18CodeBL.validate(sscc18ToValidate));
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void testcheckValidSSCC18_ManufacturingCodePlusSerialNumberTooLong()
 	{
 		final String manufacturerCode = "12345678";
@@ -225,7 +229,7 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
-		sscc18CodeBL.validate(sscc18ToValidate);
+		Assertions.assertThrows(AdempiereException.class, () -> sscc18CodeBL.validate(sscc18ToValidate));
 	}
 
 	@Test

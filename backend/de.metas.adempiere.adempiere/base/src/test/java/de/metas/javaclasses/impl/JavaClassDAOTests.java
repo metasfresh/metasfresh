@@ -22,19 +22,16 @@ package de.metas.javaclasses.impl;
  * #L%
  */
 
-
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import java.util.List;
 
 public class JavaClassDAOTests extends JavaClassTestBase
 {
@@ -62,9 +59,9 @@ public class JavaClassDAOTests extends JavaClassTestBase
 
 		//testing
 
-		final List<I_AD_JavaClass> javaClasses1= dao.retrieveAllJavaClasses(type);
+		final List<I_AD_JavaClass> javaClasses1 = dao.retrieveAllJavaClasses(type);
 
-		Assert.assertTrue("List not empty", javaClasses1.isEmpty());
+		Assertions.assertTrue(javaClasses1.isEmpty(), "List not empty");
 
 		// input
 		final I_AD_JavaClass javaClass = InterfaceWrapperHelper.create(ctx, I_AD_JavaClass.class, trxName);
@@ -74,12 +71,12 @@ public class JavaClassDAOTests extends JavaClassTestBase
 
 		// testing
 
-		final List<I_AD_JavaClass> javaClasses= dao.retrieveAllJavaClasses(type);
+		final List<I_AD_JavaClass> javaClasses = dao.retrieveAllJavaClasses(type);
 
 		// output
 
-		Assert.assertTrue("No class found for type id", javaClasses.contains(javaClass));
-		Assert.assertEquals("Size not equals one", 1, javaClasses.size());
+		Assertions.assertTrue(javaClasses.contains(javaClass), "No class found for type id");
+		Assertions.assertEquals(1, javaClasses.size(), "Size not equals one");
 
 	}
 }

@@ -24,27 +24,28 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 
 import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
+
 
 import java.math.BigDecimal;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
 
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
 import de.metas.util.Services;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class QualityBasedInvoicingBLTest
 {
 	/** service under test */
 	private QualityBasedInvoicingBL qualityBasedInvoicingBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -57,22 +58,20 @@ public class QualityBasedInvoicingBLTest
 	{
 		final I_C_UOM uom = createUOM(2);
 
-		assertThat(
+		Assertions.assertThat(
 				qualityBasedInvoicingBL.calculateProjectedQty(new BigDecimal("100"), // fullRaw
 						new BigDecimal("10"),  // sampleRaw
 						new BigDecimal("8"),// sampleProduced
 						uom
-						),
-				comparesEqualTo(new BigDecimal("80")));
+						)).isEqualByComparingTo(new BigDecimal("80"));
 
 		// doesn't make sense, but shall not fail
-		assertThat(
+		Assertions.assertThat(
 				qualityBasedInvoicingBL.calculateProjectedQty(new BigDecimal("0"), // fullRaw
 						new BigDecimal("10"),  // sampleRaw
 						new BigDecimal("8"), // sampleProduced
 						uom
-						),
-				comparesEqualTo(new BigDecimal("0")));
+						)).isEqualByComparingTo(new BigDecimal("0"));
 	}
 
 	private I_C_UOM createUOM(final int precision)

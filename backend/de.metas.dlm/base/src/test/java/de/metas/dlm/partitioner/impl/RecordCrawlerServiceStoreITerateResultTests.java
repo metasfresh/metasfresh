@@ -1,7 +1,7 @@
 package de.metas.dlm.partitioner.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -12,11 +12,11 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.dlm.Partition.WorkQueue;
 import de.metas.dlm.model.IDLMAware;
@@ -24,6 +24,8 @@ import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.util.Services;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -57,7 +59,7 @@ public class RecordCrawlerServiceStoreITerateResultTests
 	private final PlainContextAware ctxAware = PlainContextAware.newOutOfTrx(Env.getCtx());
 	private final PartitionConfig config = PartitionConfig.builder().build();
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
 		AdempiereTestHelper.get().init();
@@ -80,8 +82,6 @@ public class RecordCrawlerServiceStoreITerateResultTests
 
 	/**
 	 * Performs the actual test of {@link #testStoreIterateResultWithInitialQueue()}.
-	 *
-	 * @return
 	 */
 	private CreatePartitionIterateResult testStoreIterateResultWithInitialQueue0()
 	{
@@ -101,13 +101,13 @@ public class RecordCrawlerServiceStoreITerateResultTests
 
 		final CreatePartitionIterateResult result = new CreatePartitionIterateResult(initialQueue, ctxAware);
 		result.nextFromQueue(); //
-		assertThat(result.size(), is(1));
+		assertThat(result.size()).isEqualTo(1);
 
 		// call the method under test
 		recordCrawlerService.storeIterateResult0(config, result, ctxAware);
 
-		assertThat(result.getPartition().getDLM_Partition_ID(), is(p1.getDLM_Partition_ID()));
-		assertThat(result.getDlmPartitionId2Record().isEmpty(), is(true));
+		assertThat(result.getPartition().getDLM_Partition_ID()).isEqualTo(p1.getDLM_Partition_ID());
+		assertThat(result.getDlmPartitionId2Record()).isEmpty();
 
 		return result;
 	}
@@ -145,6 +145,6 @@ public class RecordCrawlerServiceStoreITerateResultTests
 		// invoke the method under test
 		recordCrawlerService.storeIterateResult0(config, result, ctxAware);
 
-		assertThat(result.getPartition().getDLM_Partition_ID(), is(p1.getDLM_Partition_ID()));
+		assertThat(result.getPartition().getDLM_Partition_ID()).isEqualTo(p1.getDLM_Partition_ID());
 	}
 }

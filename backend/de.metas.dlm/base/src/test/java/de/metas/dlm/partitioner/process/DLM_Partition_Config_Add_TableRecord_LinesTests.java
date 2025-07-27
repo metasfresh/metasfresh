@@ -1,10 +1,9 @@
 package de.metas.dlm.partitioner.process;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.dlm.partitioner.config.PartitionConfig;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_ChangeLog;
@@ -14,14 +13,12 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-import ch.qos.logback.classic.Level;
-import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.logging.LogManager;
+import static shadow.org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -47,7 +44,7 @@ import de.metas.logging.LogManager;
 
 public class DLM_Partition_Config_Add_TableRecord_LinesTests
 {
-	@Before
+	@BeforeEach
 	public void before()
 	{
 		AdempiereTestHelper.get().init();
@@ -72,7 +69,7 @@ public class DLM_Partition_Config_Add_TableRecord_LinesTests
 
 		final List<TableRecordIdDescriptor> relevantDescriptors = new DLM_Partition_Config_Add_TableRecord_Lines().retainRelevantDescriptors(config, descriptors);
 
-		assertThat(relevantDescriptors.size(), is(4));
+		assertThat(relevantDescriptors).hasSize(4);
 
 	}
 }

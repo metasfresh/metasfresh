@@ -1,9 +1,9 @@
 package org.adempiere.util.lang;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 
 /*
  * #%L
@@ -48,7 +48,7 @@ public class ObjectUtilsTest
 		assertThat(string, containsString("ExtendedReflectionToStringBuilder threw"));
 	}
 
-	public static final String toStringMockup(final Object obj)
+	public static String toStringMockup(final Object obj)
 	{
 		try
 		{

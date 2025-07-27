@@ -22,14 +22,13 @@ package org.adempiere.model.tree.impl;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import org.compiere.model.MTreeNode;
+import org.junit.jupiter.api.Test;
+import shadow.org.assertj.core.api.Assertions;
 
 import java.util.Collections;
 
-import org.compiere.model.MTreeNode;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ADTreeBLTest
 {
@@ -45,16 +44,16 @@ public class ADTreeBLTest
 		
 		parent.add(child1);
 		parent.add(child2);
-		
-		assertThat(parent.isDisplayed(), is(true));
-		assertThat(child1.isDisplayed(), is(true));
-		assertThat(child2.isDisplayed(), is(true));
+
+		Assertions.assertThat(parent.isDisplayed()).isTrue();
+		assertThat(child1.isDisplayed()).isTrue();
+		assertThat(child2.isDisplayed()).isTrue();
 		
 		new ADTreeBL().filterIds(parent, Collections.singletonList(11)); // only child1 is selected.
 		
-		assertThat(parent.isDisplayed(), is(true)); // because one of its children was selected
-		assertThat(child1.isDisplayed(), is(true)); // because it was explicitly selected
-		assertThat(child2.isDisplayed(), is(false)); // because it wasn't selected
+		assertThat(parent.isDisplayed()).isTrue(); // because one of its children was selected
+		assertThat(child1.isDisplayed()).isTrue(); // because it was explicitly selected
+		assertThat(child2.isDisplayed()).isFalse(); // because it wasn't selected
 	}
 
 	
@@ -85,18 +84,18 @@ public class ADTreeBLTest
 		node11.add(node112);
 		node1.add(node12);
 				
-		assertThat(node1.isDisplayed(), is(true));
-		assertThat(node11.isDisplayed(), is(true));
-		assertThat(node111.isDisplayed(), is(true));
-		assertThat(node112.isDisplayed(), is(true));
-		assertThat(node12.isDisplayed(), is(true));
+		assertThat(node1.isDisplayed()).isTrue();
+		assertThat(node11.isDisplayed()).isTrue();
+		assertThat(node111.isDisplayed()).isTrue();
+		assertThat(node112.isDisplayed()).isTrue();
+		assertThat(node12.isDisplayed()).isTrue();
 		
 		new ADTreeBL().filterIds(node1, Collections.singletonList(111)); // only node111 is selected.
 		
-		assertThat(node111.isDisplayed(), is(true)); // because it was explicitly selected
-		assertThat(node11.isDisplayed(), is(true)); // because one of its children was selected
-		assertThat(node1.isDisplayed(), is(true)); // because one of its grand-children was selected
-		assertThat(node112.isDisplayed(), is(false)); // because it wasn't selected
-		assertThat(node12.isDisplayed(), is(false)); // because it wasn't selected
+		assertThat(node111.isDisplayed()).isTrue(); // because it was explicitly selected
+		assertThat(node11.isDisplayed()).isTrue(); // because one of its children was selected
+		assertThat(node1.isDisplayed()).isTrue(); // because one of its grand-children was selected
+		assertThat(node112.isDisplayed()).isFalse(); // because it wasn't selected
+		assertThat(node12.isDisplayed()).isFalse(); // because it wasn't selected
 	}
 }

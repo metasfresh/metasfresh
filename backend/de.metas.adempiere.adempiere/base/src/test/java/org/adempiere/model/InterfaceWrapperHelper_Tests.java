@@ -1,10 +1,5 @@
 package org.adempiere.model;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -12,11 +7,13 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_Test;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class InterfaceWrapperHelper_Tests
 {
@@ -77,20 +74,21 @@ public class InterfaceWrapperHelper_Tests
 	{
 		final I_TestModel testModel = InterfaceWrapperHelper.newInstance(I_TestModel.class, contextProvider);
 
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue), is(nullValue()));
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue_Override), is(nullValue()));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue)).isNull();
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue_Override)).isNull();
 
 		testModel.setOverridableValue(10);
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue), is(10));
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue_Override), is(nullValue()));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue)).isEqualTo(10);
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue_Override)).isNull();
 
 		testModel.setOverridableValue_Override(20);
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue), is(20));
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue_Override), is(20));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue)).isEqualTo(20);
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue_Override)).isEqualTo(20);
 
 		InterfaceWrapperHelper.setValue(testModel, I_TestModel.COLUMNNAME_OverridableValue_Override, null);
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue), is(10));
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue_Override), is(nullValue()));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue)).isEqualTo(10);
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_OverridableValue_Override)).isNull();
+
 	}
 
 	/**
@@ -101,20 +99,20 @@ public class InterfaceWrapperHelper_Tests
 	{
 		final I_TestModel testModel = InterfaceWrapperHelper.newInstance(I_TestModel.class, contextProvider);
 
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_ID), is(nullValue()));
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_Override_ID), is(nullValue()));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_ID)).isNull();
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_Override_ID)).isNull();
 
 		testModel.setC_Tax_ID(10);
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_ID), is(10));
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_Override_ID), is(nullValue()));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_ID)).isEqualTo(10);
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_Override_ID)).isNull();
 
 		testModel.setC_Tax_Override_ID(20);
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_ID), is(20));
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_Override_ID), is(20));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_ID)).isEqualTo(20);
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_Override_ID)).isEqualTo(20);
 
 		InterfaceWrapperHelper.setValue(testModel, I_TestModel.COLUMNNAME_C_Tax_Override_ID, null);
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_ID), is(10));
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_Override_ID), is(nullValue()));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_ID)).isEqualTo(10);
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_C_Tax_Override_ID)).isNull();
 	}
 
 	/**
@@ -125,10 +123,10 @@ public class InterfaceWrapperHelper_Tests
 	{
 		final I_TestModel testModel = InterfaceWrapperHelper.newInstance(I_TestModel.class, contextProvider);
 
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_NotOverridableValue), is(nullValue()));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_NotOverridableValue)).isNull();
 
 		testModel.setNotOverridableValue(10);
-		assertThat(InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_NotOverridableValue), is(10));
+		assertThat((int)InterfaceWrapperHelper.getValueOverrideOrValue(testModel, I_TestModel.COLUMNNAME_NotOverridableValue)).isEqualTo(10);
 	}
 
 	/**
@@ -167,24 +165,31 @@ public class InterfaceWrapperHelper_Tests
 	private void test_wrapToOldValues(final I_TestModel baseModel)
 	{
 		final I_TestModel_Ext extModel = InterfaceWrapperHelper.create(baseModel, I_TestModel_Ext.class);
-		assertThat("Old values flag shall not be set by default", InterfaceWrapperHelper.isOldValues(extModel), is(false));
+		assertThat(InterfaceWrapperHelper.isOldValues(extModel))
+				.as("Old values flag shall not be set by default")
+				.isFalse();
 
 		final I_TestModel extModelOld = InterfaceWrapperHelper.createOld(extModel, I_TestModel_Ext.class);
-		assertThat("Old values flag shall be set", InterfaceWrapperHelper.isOldValues(extModelOld), is(true));
+		assertThat(InterfaceWrapperHelper.isOldValues(extModelOld))
+				.as("Old values flag shall be set")
+				.isTrue();
 
 		final I_TestModel extModelOld_WrappedAgain = InterfaceWrapperHelper.create(extModelOld, I_TestModel.class);
-		assertThat("Old values flag shall be preserved", InterfaceWrapperHelper.isOldValues(extModelOld_WrappedAgain), is(true));
+		assertThat(InterfaceWrapperHelper.isOldValues(extModelOld_WrappedAgain))
+				.as("Old values flag shall be preserved")
+				.isTrue();
 
 		// Make sure that when calling InterfaceWrapperHelper.create() with oldValues=false
 		// that option is interpreted as "PRESERVE" and not as "DON'T use old values"
-		@SuppressWarnings("deprecation")
-		final I_TestModel extModelOld_WrappedAgain2 = InterfaceWrapperHelper.create(extModelOld, I_TestModel.class, false);
-		assertThat("Old values flag shall be preserved", InterfaceWrapperHelper.isOldValues(extModelOld_WrappedAgain2), is(true));
+		@SuppressWarnings("deprecation") final I_TestModel extModelOld_WrappedAgain2 = InterfaceWrapperHelper.create(extModelOld, I_TestModel.class, false);
+		assertThat(InterfaceWrapperHelper.isOldValues(extModelOld_WrappedAgain2))
+				.as("Old values flag shall be preserved")
+				.isTrue();
 	}
 
 	/**
 	 * Make sure {@link InterfaceWrapperHelper#getModelTableNameOrNull(Object)} is working with {@link ITableRecordReference}s.
-	 *
+	 * <p>
 	 * This behavior is assumed by some BLs.
 	 */
 	@Test
@@ -194,12 +199,12 @@ public class InterfaceWrapperHelper_Tests
 		InterfaceWrapperHelper.save(testModel);
 
 		final ITableRecordReference testModelRef = TableRecordReference.of(testModel);
-		assertThat(InterfaceWrapperHelper.getModelTableNameOrNull(testModelRef), is(I_Test.Table_Name));
+		assertThat(InterfaceWrapperHelper.getModelTableNameOrNull(testModelRef)).isEqualTo(I_Test.Table_Name);
 	}
 
 	/**
 	 * Make sure {@link InterfaceWrapperHelper#getId(Object)} is working with {@link ITableRecordReference}s.
-	 *
+	 * <p>
 	 * This behavior is assumed by some BLs.
 	 */
 	@Test
@@ -209,21 +214,21 @@ public class InterfaceWrapperHelper_Tests
 		InterfaceWrapperHelper.save(testModel);
 
 		final ITableRecordReference testModelRef = TableRecordReference.of(testModel);
-		assertThat(InterfaceWrapperHelper.getId(testModelRef), is(testModelRef.getRecord_ID()));
+		assertThat(InterfaceWrapperHelper.getId(testModelRef)).isEqualTo(testModelRef.getRecord_ID());
 	}
 
 	@Test
 	public void test_getTableName_withModelClassTableName_withExpectedTableName()
 	{
 		String tableName = InterfaceWrapperHelper.getTableName(I_TestModel.class, I_TestModel.Table_Name);
-		Assert.assertEquals(I_TestModel.Table_Name, tableName);
+		assertThat(tableName).isEqualTo(I_TestModel.Table_Name);
 	}
 
 	@Test
 	public void test_getTableName_withModelClassTableName_withNullExpectedTableName()
 	{
 		String tableName = InterfaceWrapperHelper.getTableName(I_TestModel.class, null);
-		Assert.assertEquals(I_TestModel.Table_Name, tableName);
+		assertThat(tableName).isEqualTo(I_TestModel.Table_Name);
 	}
 
 	@Test
@@ -237,7 +242,7 @@ public class InterfaceWrapperHelper_Tests
 	public void test_getTableName_withNonModelClass_withExpectedTableName()
 	{
 		String tableName = InterfaceWrapperHelper.getTableName(ITaxAware.class, "expectedTableName");
-		Assert.assertEquals("expectedTableName", tableName);
+		assertThat(tableName).isEqualTo("expectedTableName");
 	}
 
 	@Test

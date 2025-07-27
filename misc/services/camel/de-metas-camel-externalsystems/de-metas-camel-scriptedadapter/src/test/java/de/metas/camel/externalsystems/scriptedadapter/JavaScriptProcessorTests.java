@@ -42,29 +42,29 @@ public class JavaScriptProcessorTests
 
 		// 3. Create a map for variables to pass to the script
 		final Map<String, Object> bindings = ImmutableMap.of(
-				"requestBody", jsonInput,
+				"messageFromMetasfresh", jsonInput,
 				"someOtherValue", 123);
 
 		// 4. Define the JavaScript to be executed
 		final String script = """
-				    // The 'requestBody' variable is available here because we passed it in the bindings
-				    var inputData = JSON.parse(requestBody);
-				
-				    var result = {
-				        processed: true,
-				        originalName: inputData.name,
-				        ageInMonths: inputData.age * 12,
-				        anotherVal: someOtherValue // 'someOtherValue' is also available
-				    };
-				
-				    // Return the result as a new JSON string
-				    JSON.stringify(result);
+				    function transform(messageFromMetasfresh) {
+						var inputData = JSON.parse(messageFromMetasfresh);
+					
+						var result = {
+							processed: true,
+							originalName: inputData.name,
+							ageInMonths: inputData.age * 12,
+						};
+					
+						// Return the result as a new JSON string
+						return JSON.stringify(result);
+				    }
 				""";
 
 		// 5. Execute the script
 		final String result = jsService.executeScript(script, bindings);
 
-		// 6. Print the result
-		assertThat(result).isEqualTo("{\"processed\":true,\"originalName\":\"John\",\"ageInMonths\":360,\"anotherVal\":123}");
+		// 6. Validate the result
+		assertThat(result).isEqualTo("{\"processed\":true,\"originalName\":\"John\",\"ageInMonths\":360}");
 	}
 }

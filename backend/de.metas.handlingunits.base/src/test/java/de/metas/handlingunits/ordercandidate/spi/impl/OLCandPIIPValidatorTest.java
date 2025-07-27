@@ -29,20 +29,22 @@ import de.metas.uom.X12DE355;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
+
 
 public class OLCandPIIPValidatorTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -61,7 +63,7 @@ public class OLCandPIIPValidatorTest
 		// invoke the method under test
 		new OLCandPIIPPriceValidator().validate(olCand);
 
-		assertThat(olCand.getQtyEntered(), comparesEqualTo(BigDecimal.TEN));
+		assertThat(olCand.getQtyEntered()).isEqualByComparingTo(BigDecimal.TEN);
 	}
 
 	@Test
@@ -87,7 +89,7 @@ public class OLCandPIIPValidatorTest
 		// invoke the method under test
 		new OLCandPIIPPriceValidator().validate(olCand);
 
-		assertThat(olCand.getC_UOM_Internal_ID(), comparesEqualTo(eachUOM.getC_UOM_ID()));
+		assertThat(olCand.getC_UOM_Internal_ID()).isEqualTo(eachUOM.getC_UOM_ID());
 	}
 
 	@Test
@@ -113,7 +115,7 @@ public class OLCandPIIPValidatorTest
 		// invoke the method under test
 		new OLCandPIIPPriceValidator().validate(olCand);
 
-		assertThat(olCand.getC_UOM_Internal_ID(), comparesEqualTo(coliUOM.getC_UOM_ID()));
+		assertThat(olCand.getC_UOM_Internal_ID()).isEqualTo(coliUOM.getC_UOM_ID());
 	}
 
 	private I_C_UOM createUOM(final X12DE355 coli)

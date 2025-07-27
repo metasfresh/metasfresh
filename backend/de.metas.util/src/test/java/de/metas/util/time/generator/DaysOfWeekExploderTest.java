@@ -1,16 +1,13 @@
 package de.metas.util.time.generator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.google.common.collect.ImmutableSet;
+import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.time.generator.DaysOfWeekExploder;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

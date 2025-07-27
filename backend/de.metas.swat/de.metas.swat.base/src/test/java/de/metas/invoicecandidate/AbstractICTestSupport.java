@@ -101,9 +101,9 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -162,13 +162,13 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	private C_Invoice_Candidate invoiceCandidateValidator = null;
 	private boolean modelInterceptorsRegistered = false;
 
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public final void initStuff()
 	{
 		AdempiereTestHelper.get().init();
@@ -669,7 +669,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
 					.anyMatch();
-			Assert.assertFalse("Existing invalid invoice candidates", existingInvalidCandidates);
+			Assertions.assertFalse(existingInvalidCandidates,"Existing invalid invoice candidates");
 		}
 	}
 

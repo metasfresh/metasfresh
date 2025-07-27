@@ -1,5 +1,10 @@
 package de.metas.aggregation.api.impl;
 
+import de.metas.aggregation.api.IAggregationDAO;
+import de.metas.aggregation.model.C_Aggregation_Builder;
+import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
@@ -7,32 +12,22 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.aggregation.api.IAggregationDAO;
-import de.metas.aggregation.model.C_Aggregation_Builder;
-import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.aggregation.model.X_C_Aggregation;
-import de.metas.util.Services;
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class AggregationDAOTest
 {
 	private static final Boolean IsSOTrx_NULL = null;
-
-	@Rule
-	public TestWatcher testWatchman = new AdempiereTestWatcher();
 
 	private IContextAware context;
 	private AggregationDAO aggregationDAO;
 	private final Class<I_Test> aggTestModelClass = I_Test.class;
 	private String aggregationUsageLevel = X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		final AdempiereTestHelper adempiereTestHelper = AdempiereTestHelper.get();
@@ -135,9 +130,7 @@ public class AggregationDAOTest
 				.create()
 				.first(I_C_Aggregation.class);
 
-		Assert.assertThat("Invalid aggregation",
-				actualAgg,
-				Matchers.equalTo(expectedAggregation));
+		Assertions.assertEquals(actualAgg, expectedAggregation, "Invalid aggregation");
 	}
 
 	private final C_Aggregation_Builder newAggregation()

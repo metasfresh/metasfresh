@@ -1,23 +1,22 @@
 package org.adempiere.util.proxy.impl;
 
+import de.metas.util.ISingletonService;
+import javassist.util.proxy.Proxy;
+import org.adempiere.util.proxy.AroundInvoke;
+import org.adempiere.util.proxy.Cached;
+import org.adempiere.util.proxy.IInvocationContext;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.typeCompatibleWith;
-import static org.junit.Assert.assertThat;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.adempiere.util.proxy.AroundInvoke;
-import org.adempiere.util.proxy.Cached;
-import org.adempiere.util.proxy.IInvocationContext;
-import org.junit.Test;
-
-import de.metas.util.ISingletonService;
-import javassist.util.proxy.Proxy;
 
 /*
  * #%L
@@ -47,8 +46,6 @@ public class JavaAssistInterceptorTests
 	/**
 	 * Tests {@link JavaAssistInterceptor#createInterceptedClass(Class)} with a class whose abstract super class declares a {@link Cached} method.<br>
 	 * Verifies that the method under test returns a proxy class.
-	 * 
-	 * @throws Exception
 	 */
 	@Test
 	public void testInterceptInheritedMethod() throws Exception

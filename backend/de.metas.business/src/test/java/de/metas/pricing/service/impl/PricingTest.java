@@ -8,12 +8,12 @@ import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.lang.Percent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 
@@ -40,15 +40,12 @@ import static org.assertj.core.api.Assertions.*;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class PricingTest
 {
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private PricingTestHelper helper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -86,7 +83,7 @@ public class PricingTest
 
 			final IPricingResult result = helper.calculatePrice(pricingCtx);
 			assertThat(result.isCalculated()).isTrue();
-			Assert.assertThat("not-Bio PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(2)));
+			Assertions.assertThat(result.getPriceStd()).as("not-Bio PriceStd\n" + result).isEqualByComparingTo(BigDecimal.valueOf(2));
 		}
 
 		//
@@ -98,7 +95,7 @@ public class PricingTest
 					.build());
 
 			final IPricingResult result = helper.calculatePrice(pricingCtx);
-			Assert.assertThat("Bio PriceStd\n" + result, result.getPriceStd(), Matchers.comparesEqualTo(BigDecimal.valueOf(3)));
+			Assertions.assertThat(result.getPriceStd()).as("Bio PriceStd\n" + result).isEqualByComparingTo(BigDecimal.valueOf(3));
 		}
 	}
 

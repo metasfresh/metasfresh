@@ -10,32 +10,28 @@ package de.metas.cache.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.lang.reflect.Method;
-import java.util.Properties;
-
-import org.adempiere.util.proxy.Cached;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheIgnore;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.cache.interceptor.CacheKeyBuilder;
-import de.metas.cache.interceptor.CachedMethodDescriptor;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Method;
+import java.util.Properties;
 
 public class CachedMethodDescriptorTest
 {
@@ -87,11 +83,11 @@ public class CachedMethodDescriptorTest
 		Env.setContext(ctx, "#AD_Org_ID", 124);
 		final Object keyArray2 = methodDescriptor.createKeyBuilder(testObj, params).buildKey();
 
-		Assert.assertEquals(keyArray1, keyArray2);
+		Assertions.assertEquals(keyArray1, keyArray2);
 
 		Env.setContext(ctx, "#AD_Client_ID", 101);
 		final Object keyArray3 = methodDescriptor.createKeyBuilder(testObj, params).buildKey();
-		Assert.assertNotEquals(keyArray1, keyArray3);
+		Assertions.assertNotEquals(keyArray1, keyArray3);
 	}
 
 	@Test
@@ -114,7 +110,7 @@ public class CachedMethodDescriptorTest
 
 		Env.setContext(ctx, "#AD_Client_ID", 101);
 		final Object key2 = methodDescriptor.createKeyBuilder(testObj, params).buildKey();
-		Assert.assertEquals(key1, key2);
+		Assertions.assertEquals(key1, key2);
 	}
 
 	@Test
@@ -125,13 +121,11 @@ public class CachedMethodDescriptorTest
 		final CachedMethodDescriptor methodDescriptor = new CachedMethodDescriptor(method);
 
 		final CacheKeyBuilder keyBuilder1 = methodDescriptor.createKeyBuilder(testObj, new Object[] { 100, "trxName1" });
-		Assert.assertEquals("Invalid keyBuilder1's trxName", "trxName1", keyBuilder1.getTrxName());
+		Assertions.assertEquals("trxName1", keyBuilder1.getTrxName(), "Invalid keyBuilder1's trxName");
 
 		final CacheKeyBuilder keyBuilder2 = methodDescriptor.createKeyBuilder(testObj, new Object[] { 100, "trxName2" });
-		Assert.assertEquals("Invalid keyBuilder2's trxName", "trxName2", keyBuilder2.getTrxName());
-
-		Assert.assertEquals(
-				"Keys shall be equal because trxName shall not be included (we are using different cache storages)",
-				keyBuilder1.buildKey(), keyBuilder2.buildKey());
+		Assertions.assertEquals("trxName2", keyBuilder2.getTrxName(), "Invalid keyBuilder2's trxName");
+		Assertions.assertEquals(
+				keyBuilder1.buildKey(), keyBuilder2.buildKey(), "Keys shall be equal because trxName shall not be included (we are using different cache storages)");
 	}
 }

@@ -1,25 +1,3 @@
-/*
- * #%L
- * de-metas-camel-scriptedadapter
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.camel.externalsystems.scriptedadapter;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -44,25 +22,26 @@ import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConv
 public class JavaScriptExecutorService
 {
 	/**
-	 * @param script a javascript that takes one parameter named `messageFromMetasfresh` and converts it to an output-string.
-	 *
+	 * @param scriptIdentifier just needed for additional context in case of an error.
+	 * @param script           a javascript with a  {@code function transform(messageFromMetasfresh)} that takes one string parameter and returns a string as output.
+	 *                         See `from_metasfresh_template.js` for a template.
 	 * @return the string return-value of the script
 	 */
 	public String executeScript(
 			@NonNull final String scriptIdentifier,
 			@NonNull final String script,
-			@NonNull final String input)
+			@NonNull final String messageFromMetasfresh)
 	{
 		try
 		{
 			return executeScript(
 					script,
-					ImmutableMap.of(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, input));
+					ImmutableMap.of(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, messageFromMetasfresh));
 		}
-		catch (final PolyglotException e)
+		catch (final PolyglotException | IllegalStateException | IllegalArgumentException e)
 		{
 			throw new JavaScriptExecutorException(
-					scriptIdentifier, script, input,
+					scriptIdentifier, script, messageFromMetasfresh,
 					e.getMessage(), e);
 		}
 	}
@@ -91,20 +70,40 @@ public class JavaScriptExecutorService
 				.err(byteArrayErrorStream)
 				.build())
 		{
-			// 2. Get the bindings for the context, which is where we'll put our variables.
+			// 2. Evaluate the script string to define functions (like 'transform').
+			// We don't need the result of this eval directly, as it's just the function definition.
+			context.eval("js", script);
+
+			// 3. Get the bindings for the context.
 			final Value contextBindings = context.getBindings("js");
 
-			// 3. Populate the context's bindings with the variables from our input map.
+			// 4. Populate the context's bindings with the variables from our input map.
+			// This makes variables like 'messageFromMetasfresh' globally available in the JS context.
 			for (final Map.Entry<String, Object> entry : bindings.entrySet())
 			{
 				contextBindings.putMember(entry.getKey(), entry.getValue());
 			}
 
-			// 4. Execute the script and get the result.
-			final Value result = context.eval("js", script);
+			// 5. Get a reference to the 'transform' function from the evaluated script.
+			final Value transformFunction = contextBindings.getMember("transform");
 
-			// 5. Convert the result to a Java type and return it.
-			// This will handle primitives, maps, lists, etc.
+			// 6. Check if the 'transform' function exists and is executable.
+			if (transformFunction == null || !transformFunction.canExecute())
+			{
+				throw new IllegalStateException("JavaScript script must define a 'transform' function that is executable.");
+			}
+
+			// 7. Get the input parameter value from the bindings.
+			final String messageFromMetasfreshInput = (String)bindings.get(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT);
+			if (messageFromMetasfreshInput == null)
+			{
+				throw new IllegalArgumentException("Missing required input parameter: " + PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT);
+			}
+
+			// 8. Invoke the 'transform' function, passing the 'messageFromMetasfresh' parameter.
+			final Value result = transformFunction.execute(messageFromMetasfreshInput);
+
+			// 9. Convert the result to a Java type and return it.
 			return result.as(String.class);
 		}
 	}

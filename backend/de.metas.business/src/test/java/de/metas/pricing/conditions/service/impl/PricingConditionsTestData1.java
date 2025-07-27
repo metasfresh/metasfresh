@@ -1,25 +1,24 @@
 package de.metas.pricing.conditions.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.assertj.core.api.AbstractIntegerAssert;
-import org.compiere.model.I_M_DiscountSchema;
-import org.compiere.model.I_M_DiscountSchemaBreak;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-import org.junit.Ignore;
-
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.util.Services;
+import org.assertj.core.api.AbstractIntegerAssert;
+import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaBreak;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+import org.junit.jupiter.api.Disabled;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -43,7 +42,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Ignore
+@Disabled
 public class PricingConditionsTestData1
 {
 	public static PricingConditionsTestData1 newInstance()
