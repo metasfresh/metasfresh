@@ -43,7 +43,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -63,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -222,7 +222,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		// Validate quick input:
 		final BigDecimal quickInputTUQty;
 		final BigDecimal quickInputLUQty = orderLineQuickInput.getQtyLU();
-		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(orderLineQuickInput.getM_LU_HU_PI_ID());
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(orderLineQuickInput.getM_LU_HU_PI_ID());
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID());
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
@@ -233,7 +233,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		if (isEnableLUFields)
 		{
 			checkValidQty(IOrderLineQuickInput.COLUMNNAME_QtyLU, quickInputLUQty, orderLineQuickInput);
-			final Optional<I_M_HU_PI_Item> tuPIItem = handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, luPIId, Check.assumeNotNull(piItemProductId, "PIItemProductId shall not be null (quickInputLUQty={}, quickInputPIId={}, quickInputItemProductId={})", quickInputLUQty, luPIId, piItemProductId));
+			final Optional<I_M_HU_PI_Item> tuPIItem = handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, Objects.requireNonNull(luPIId), Objects.requireNonNull(piItemProductId));
 			final BigDecimal tuPiItemCapacity = tuPIItem.map(I_M_HU_PI_Item::getQty).orElse(BigDecimal.ONE);
 			quickInputTUQty = quickInputLUQty.multiply(tuPiItemCapacity);
 		}
