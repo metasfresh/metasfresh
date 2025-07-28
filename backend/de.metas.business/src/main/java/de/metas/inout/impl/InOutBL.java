@@ -54,6 +54,7 @@ import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.api.RequestCandidate;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -803,5 +804,31 @@ public class InOutBL implements IInOutBL
 				.excludeDocStatuses(ImmutableSet.of(DocStatus.Voided, DocStatus.Reversed))
 				.build();
 		return inOutDAO.retrieveByQuery(query).collect(ImmutableSet.toImmutableSet());
+	}
+
+
+	@Override
+	public void setShipperId(@NonNull final I_M_InOut inout)
+	{
+		inout.setM_Shipper_ID(ShipperId.toRepoId(findShipperId(inout)));
+	}
+
+	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
+	{
+
+		if (inout.getDropShip_BPartner_ID() > 0 && inout.getDropShip_Location_ID() > 0)
+		{
+			final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(BPartnerLocationId.ofRepoId(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()));
+			if (deliveryAddressShipperId.isPresent())
+			{
+				return deliveryAddressShipperId.get(); // we are done
+			}
+		}
+
+
+		return bpartnerDAO.getShipperId(CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),
+				() -> BPartnerId.ofRepoIdOrNull(inout.getC_BPartner_ID())));
+
 	}
 }

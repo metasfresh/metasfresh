@@ -239,7 +239,7 @@ public class C_Order
 		order.setC_Incoterms_ID(c_Incoterms);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{
 		final DeliveryViaRule deliveryViaRule = orderBL.findDeliveryViaRule(order).orElse(null);
@@ -483,7 +483,7 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_DropShip_Location_ID
+			I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID
 	})
 	public void onDropShipLocation(final I_C_Order order)
 	{
@@ -494,6 +494,8 @@ public class C_Order
 		}
 
 		orderBL.setPriceList(order);
+
+		orderBL.setShipperId(order);
 	}
 
 	@ModelChange(timings = {
