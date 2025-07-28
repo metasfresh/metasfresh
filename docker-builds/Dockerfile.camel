@@ -1,5 +1,6 @@
 ARG REFNAME=local
-FROM metasfresh/metas-mvn-common:$REFNAME as common
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-mvn-common:$REFNAME AS common
 
 FROM maven:3.8.4-eclipse-temurin-17 as build
 

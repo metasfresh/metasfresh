@@ -1,5 +1,6 @@
 ARG REFNAME=local
-FROM metasfresh/metas-mvn-backend:$REFNAME as backend
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
 FROM maven:3.8.4-jdk-8
 
