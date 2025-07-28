@@ -1,34 +1,8 @@
-package de.metas.dlm.partitioner.impl;
-
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.dlm.Partition;
-import de.metas.dlm.Partition.WorkQueue;
-import de.metas.dlm.model.IDLMAware;
-import de.metas.dlm.model.I_DLM_Partition;
-import de.metas.dlm.model.I_DLM_Partition_Record_V;
-import de.metas.dlm.partitioner.config.PartitionConfig;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.assertj.core.api.Assertions;
-import org.compiere.model.I_AD_PInstance;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-
-
 /*
  * #%L
- * metasfresh-dlm
+ * metasfresh-dlm-base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -45,6 +19,30 @@ import static org.hamcrest.Matchers.is;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.dlm.partitioner.impl;
+
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.dlm.Partition;
+import de.metas.dlm.Partition.WorkQueue;
+import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.dlm.model.I_DLM_Partition_Record_V;
+import de.metas.dlm.partitioner.config.PartitionConfig;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PInstance;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * This class tests with a number of records that a re always connected in the same manner (see {@link #setup()}).

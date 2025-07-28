@@ -1,10 +1,8 @@
-package de.metas.handlingunits.ordercandidate.spi.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,14 +11,16 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.ordercandidate.spi.impl;
 
 import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -29,7 +29,6 @@ import de.metas.uom.X12DE355;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +38,6 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.comparesEqualTo;
 
 
 public class OLCandPIIPValidatorTest

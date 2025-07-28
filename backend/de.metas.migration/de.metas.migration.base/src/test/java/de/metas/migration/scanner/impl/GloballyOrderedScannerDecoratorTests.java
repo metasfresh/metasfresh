@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.migration.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.migration.scanner.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -12,30 +34,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/*
- * #%L
- * de.metas.migration.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class GloballyOrderedScannerDecoratorTests
 {
@@ -46,19 +46,19 @@ public class GloballyOrderedScannerDecoratorTests
 	public void testExtractSequenceNumber()
 	{
 		// return prefix before first '_'
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("1234_sys_test.sql"), is("1234"));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("1234_sys_test.sql")).isEqualTo("1234");
 
 		// no '_' => full name
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("1234-sys-test.sql"), is("1234-sys-test.sql"));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("1234-sys-test.sql")).isEqualTo("1234-sys-test.sql");
 
 		// empty => empty
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber(""), is(""));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("")).isEqualTo("");
 
 		// empty prefix (just '_') => full name
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("_sys_test.sql"), is("_sys_test.sql"));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("_sys_test.sql")).isEqualTo("_sys_test.sql");
 
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("5441640_sys_09848_add_table_AD_JAXRS_Endpoint.sql"), is("5441640"));
-		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("5442050_sys_09628_add_AD_JavaClasses_and_JaxRs_Endpoints.sql"), is("5442050"));
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("5441640_sys_09848_add_table_AD_JAXRS_Endpoint.sql")).isEqualTo("5441640");
+		assertThat(GloballyOrderedScannerDecorator.extractSequenceNumber("5442050_sys_09628_add_AD_JavaClasses_and_JaxRs_Endpoints.sql")).isEqualTo("5442050");
 	}
 
 	/**
@@ -76,10 +76,10 @@ public class GloballyOrderedScannerDecoratorTests
 
 		final GloballyOrderedScannerDecorator testee = new GloballyOrderedScannerDecorator(PlainListScriptScanner.fromScripts(ImmutableList.<IScript>of(script1, script2)));
 		final Iterator<IScript> iterator = testee.lexiographicallyOrderedScriptsSupplier.get();
-		assertThat(iterator.hasNext(), is(true));
-		assertThat(iterator.next(), is(script2));
-		assertThat(iterator.hasNext(), is(true));
-		assertThat(iterator.next(), is(script1));
+		assertThat(iterator.hasNext()).isEqualTo(true);
+		assertThat(iterator.next()).isEqualTo(script2);
+		assertThat(iterator.hasNext()).isEqualTo(true);
+		assertThat(iterator.next()).isEqualTo(script1);
 	}
 
 	/**
@@ -101,6 +101,6 @@ public class GloballyOrderedScannerDecoratorTests
 		set.add("String1");
 		set.add("String2");
 
-		assertThat(set.size(), is(1));
+		assertThat(set).hasSize(1);
 	}
 }

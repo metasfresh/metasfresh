@@ -1,10 +1,8 @@
-package de.metas.materialtracking;
-
 /*
  * #%L
  * de.metas.materialtracking
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,19 +20,7 @@ package de.metas.materialtracking;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.assertj.core.api.Assertions;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.CostCollectorType;
-import org.eevolution.model.I_PP_Cost_Collector;
-import org.hamcrest.Matchers;
+package de.metas.materialtracking;
 
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.impl.MaterialTrackingPPOrderBL;
@@ -46,6 +32,17 @@ import de.metas.materialtracking.model.I_PP_Order_BOMLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.impl.QualityInspectionOrderFactory;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.model.I_PP_Cost_Collector;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,12 +1,8 @@
-package org.adempiere.ad.trx.processor.api.impl;
-
-import static org.hamcrest.Matchers.is;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,11 +20,9 @@ import static org.hamcrest.Matchers.is;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
+package org.adempiere.ad.trx.processor.api.impl;
 
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.MockedTrx;
 import org.adempiere.ad.trx.api.impl.MockedTrxManager;
@@ -37,11 +31,14 @@ import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-
-import de.metas.util.Services;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class TrxItemProcessorExecutorTest
 {

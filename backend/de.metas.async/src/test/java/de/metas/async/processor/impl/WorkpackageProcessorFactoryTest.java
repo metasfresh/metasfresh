@@ -1,10 +1,8 @@
-package de.metas.async.processor.impl;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,25 +11,24 @@ package de.metas.async.processor.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import static org.hamcrest.Matchers.sameInstance;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
+package de.metas.async.processor.impl;
 
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

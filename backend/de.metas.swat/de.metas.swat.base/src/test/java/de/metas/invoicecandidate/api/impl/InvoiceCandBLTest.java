@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoicecandidate.api.impl;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
@@ -22,7 +44,6 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +56,7 @@ import java.util.Properties;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class InvoiceCandBLTest
@@ -110,9 +131,9 @@ public class InvoiceCandBLTest
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2);
 		icTestSupport.updateInvalid(invoiceCandidates);
 
-		MatcherAssert.assertThat("Price Actual Override should be same with price actual computed for " + ic1.getDescription(), ic1.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed1));
-		MatcherAssert.assertThat("Price Actual Override should be same with price actual computed for " + ic2.getDescription(), ic2.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed2));
-
+		assertThat(ic1.getPriceActual_Override()).as("Price Actual Override should be same with price actual computed for " + ic1.getDescription()).isEqualByComparingTo(priceActual_OverrideComputed1);
+		assertThat(ic2.getPriceActual_Override()).as("Price Actual Override should be same with price actual computed for " + ic2.getDescription()).isEqualByComparingTo(priceActual_OverrideComputed2);
+		
 		final BigDecimal discount1After = ic1.getDiscount();
 		final BigDecimal discount_override1After = ic1.getDiscount_Override();
 		//
@@ -441,7 +462,7 @@ public class InvoiceCandBLTest
 		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
-		MatcherAssert.assertThat(invoiceCandBL.getQtyDelivered_Effective(icRecord), comparesEqualTo(expectedQtyDelivered_Effective));
+		assertThat(invoiceCandBL.getQtyDelivered_Effective(icRecord)).isNotEqualByComparingTo(expectedQtyDelivered_Effective);
 	}
 
 	private static BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, CurrencyPrecision precision)

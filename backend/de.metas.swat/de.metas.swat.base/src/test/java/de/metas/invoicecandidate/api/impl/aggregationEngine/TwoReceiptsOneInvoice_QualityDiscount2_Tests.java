@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl.aggregationEngine;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
@@ -53,8 +53,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
 
 /**
  * Similar to {@link TestTwoReceiptsOneInvoice_QualityDiscount1}, but only the first InOut has two lines (one of them has <code>IsInDispute=Y</code>) <strike>and the iols of the two inOuts have

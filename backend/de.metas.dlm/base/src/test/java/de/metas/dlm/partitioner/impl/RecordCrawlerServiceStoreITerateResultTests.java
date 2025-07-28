@@ -1,37 +1,8 @@
-package de.metas.dlm.partitioner.impl;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-
-import java.util.Collections;
-import java.util.Iterator;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.assertj.core.api.Assertions;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_Tab;
-import org.compiere.util.Env;
-
-
-import de.metas.dlm.Partition.WorkQueue;
-import de.metas.dlm.model.IDLMAware;
-import de.metas.dlm.model.I_DLM_Partition;
-import de.metas.dlm.model.I_DLM_Partition_Workqueue;
-import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.util.Services;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 /*
  * #%L
- * metasfresh-dlm
+ * metasfresh-dlm-base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -48,6 +19,31 @@ import org.junit.jupiter.api.Test;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.dlm.partitioner.impl;
+
+import de.metas.dlm.Partition.WorkQueue;
+import de.metas.dlm.model.IDLMAware;
+import de.metas.dlm.model.I_DLM_Partition;
+import de.metas.dlm.model.I_DLM_Partition_Workqueue;
+import de.metas.dlm.partitioner.config.PartitionConfig;
+import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.Iterator;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RecordCrawlerServiceStoreITerateResultTests
 {
