@@ -98,10 +98,15 @@
     
     <dependencies>
         <dependency>
-            <!-- we include lombok in the actual build, as a curtesty to 3rd-parties who want to compile against this build's image -->
+            <!-- we include lombok in the actual build, as curtesy to 3rd-parties who want to compile against this build's image -->
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

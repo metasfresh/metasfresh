@@ -90,10 +90,6 @@
         <byte-buddy.version>1.12.20</byte-buddy.version>
         <objenesis.version>3.3</objenesis.version>
 
-        <!-- please keep junit jupiter and platform versions synched up with spring and spring-boot -->
-        <junit-jupiter.version>5.12.2</junit-jupiter.version>
-        <junit-platform.version>1.12.2</junit-platform.version>
-
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>30.1.1-jre</guava.version>
@@ -134,33 +130,7 @@
             <version>0.0.20131108.vaadin1</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>${junit-platform.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-engine</artifactId>
-            <version>${junit-platform.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.junit.vintage</groupId>-->
-        <!--            <artifactId>junit-vintage-engine</artifactId>-->
-        <!--            <version>${junit-jupiter.version}</version>-->
-        <!--            <scope>test</scope>-->
-        <!--        </dependency>-->
     </dependencies>
-
     <dependencyManagement>
         <dependencies>
 
