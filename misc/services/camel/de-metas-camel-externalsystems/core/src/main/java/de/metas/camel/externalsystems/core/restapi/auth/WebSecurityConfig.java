@@ -31,7 +31,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -61,7 +60,7 @@ public class WebSecurityConfig
 	{
 		//@formatter:off
 		http.authenticationProvider(tokenAuthProvider)
-				.csrf(AbstractHttpConfigurer::disable)
+				//.csrf(AbstractHttpConfigurer::disable) find out why this was needed and find a better solution
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers("/**" + RestServiceRoutes.WOO.getPath()).hasAuthority(RestServiceRoutes.WOO.getStringAuthority())
 						.requestMatchers("/**" + RestServiceRoutes.GRS.getPath()).hasAuthority(RestServiceRoutes.GRS.getStringAuthority())
