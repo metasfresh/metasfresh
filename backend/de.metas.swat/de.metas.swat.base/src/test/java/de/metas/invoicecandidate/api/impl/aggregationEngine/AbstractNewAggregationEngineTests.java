@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl.aggregationEngine;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
@@ -45,6 +45,7 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -76,6 +77,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	protected static final BigDecimal FIVE_HUNDRET = new BigDecimal("500");
 	protected static final BigDecimal THOUSAND = new BigDecimal("1000");
 
+	@BeforeEach
 	@Override
 	public void init()
 	{
@@ -171,7 +173,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 				aggregateForLine = aggregate;
 			}
 		}
-		assertThat(aggregateForLine).isNull();
+		assertThat(aggregateForLine).isNotNull();
 
 		final List<I_C_Invoice_Candidate> candsForInvoiceLine1 = aggregateForLine.getCandsFor(invoiceLine);
 		assertThat(candsForInvoiceLine1).hasSize(1);

@@ -1,31 +1,8 @@
-package de.metas.invoicecandidate.api.impl.aggregationEngine;
-
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.business.BusinessTestHelper;
-import de.metas.currency.CurrencyRepository;
-import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
-import de.metas.invoicecandidate.api.IInvoiceHeader;
-import de.metas.invoicecandidate.api.impl.AggregationEngine;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -43,8 +20,33 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+package de.metas.invoicecandidate.api.impl.aggregationEngine;
+
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.currency.CurrencyRepository;
+import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
+import de.metas.invoicecandidate.api.IInvoiceHeader;
+import de.metas.invoicecandidate.api.impl.AggregationEngine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineTestBase
 {
+	@BeforeEach
 	@Override
 	public void init()
 	{

@@ -1,10 +1,8 @@
-package de.metas.printing.api.impl;
-
 /*
  * #%L
  * de.metas.printing.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,14 +11,16 @@ package de.metas.printing.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.printing.api.impl;
 
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.printing.HardwarePrinterRepository;
@@ -45,7 +45,6 @@ import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -309,12 +308,12 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		final IPrintPackageCtx printCtx = printPackageBL.createInitialCtx(helper.getCtx());
 		final PrintJobLinesAggregator aggregator = new PrintJobLinesAggregator(printingDataFactory, printCtx, printJobInstructions);
 
-		final Mutable<ArrayKey> preceedingKey = new Mutable<Util.ArrayKey>(null);
+		final Mutable<ArrayKey> preceedingKey = new Mutable<>(null);
 		aggregator.add(line1, preceedingKey);
-		aggregator.add(line2, preceedingKey);
+		// Here we expect to throw the exception
+		Assertions.assertThrows(PrintingQueueAggregationException.class, () -> aggregator.add(line2, preceedingKey));
 		aggregator.add(line3, preceedingKey);
 
-		// Here we expect to throw exception
-		Assertions.assertThrows(PrintingQueueAggregationException.class, () -> aggregator.createPrintPackage());
+		aggregator.createPrintPackage();
 	}
 }

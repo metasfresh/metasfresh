@@ -462,7 +462,7 @@ public class InvoiceCandBLTest
 		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
-		assertThat(invoiceCandBL.getQtyDelivered_Effective(icRecord)).isNotEqualByComparingTo(expectedQtyDelivered_Effective);
+		assertThat(invoiceCandBL.getQtyDelivered_Effective(icRecord)).isEqualByComparingTo(expectedQtyDelivered_Effective);
 	}
 
 	private static BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, CurrencyPrecision precision)

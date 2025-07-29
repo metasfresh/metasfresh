@@ -44,6 +44,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -91,6 +92,7 @@ public class TwoReceiptsOneInvoice_QualityDiscount2_Tests extends AbstractNewAgg
 	/** {@link IInvoiceLineAttribute}s expectations for all lines which are coming from {@link #inOut2} */
 	protected InvoiceLineAttributeExpectations<Object> ic_inout2_attributeExpectations;
 
+	@BeforeEach
 	@Override
 	public void init()
 	{

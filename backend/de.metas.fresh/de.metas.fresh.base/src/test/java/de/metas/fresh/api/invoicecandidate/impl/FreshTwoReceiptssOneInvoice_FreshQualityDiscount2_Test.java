@@ -1,10 +1,8 @@
-package de.metas.fresh.api.invoicecandidate.impl;
-
 /*
  * #%L
  * de.metas.fresh.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,14 +11,16 @@ package de.metas.fresh.api.invoicecandidate.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.fresh.api.invoicecandidate.impl;
 
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
@@ -89,7 +89,7 @@ public class FreshTwoReceiptssOneInvoice_FreshQualityDiscount2_Test extends TwoR
 		final I_C_Invoice_Candidate ic = CollectionUtils.singleElement(invoiceCandidates);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
-		assertThat(invoices).as("We are expecting three invoice lines: " + invoiceLines).hasSize(3);
+		assertThat(invoiceLines).as("We are expecting three invoice lines: " + invoiceLines).hasSize(3);
 
 		//
 		// invoiceLine1

@@ -1,10 +1,8 @@
-package org.adempiere.ad.expression.api.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,25 +11,26 @@ package org.adempiere.ad.expression.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.util.Set;
+package org.adempiere.ad.expression.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.compiere.util.MockedEvaluatee;
-
-import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -73,7 +72,7 @@ public class StringExpressionCompilerTests
 		final Set<String> expectedParams = ImmutableSet.of("C_BPartner_ID");
 		assertEquals(expectedParams, expression.getParameterNames(), "Invalid params");
 
-		assertEquals("Formated expression shall be equal to initial expression", expressionStr, expression.getFormatedExpressionString());
+		assertEquals(expressionStr, expression.getFormatedExpressionString(), "Formated expression shall be equal to initial expression");
 
 		// Try to evaluate it
 		final MockedEvaluatee ctx = new MockedEvaluatee();
@@ -84,7 +83,6 @@ public class StringExpressionCompilerTests
 	public void test_compileStringExpression_noClosingTag()
 	{
 		final String expressionStr = "C_BPartner_ID=@C_BPartner_ID and closing tag is missing";
-		final IStringExpression expression = compiler.compile(expressionStr);
 		Assertions.assertThrows(ExpressionCompileException.class, () -> compiler.compile(expressionStr));
 	}
 

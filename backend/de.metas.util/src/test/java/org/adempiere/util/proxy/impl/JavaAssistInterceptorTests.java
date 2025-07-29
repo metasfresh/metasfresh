@@ -51,7 +51,7 @@ public class JavaAssistInterceptorTests
 		final Class<TestService> interceptedClass = javaAssistInterceptor.createInterceptedClass(TestService.class);
 
 		assertThat(interceptedClass).isNotNull();
-		assertThat(interceptedClass).isAssignableFrom(TestService.class);
+		assertThat(interceptedClass).isAssignableTo(TestService.class);
 		assertThat(interceptedClass).isNotSameAs(TestService.class); // we expect a proxy class, not TestService.class itself
 
 		final TestService interceptedInstance = interceptedClass.newInstance();
@@ -89,9 +89,7 @@ public class JavaAssistInterceptorTests
 	}
 
 	/**
-	 * 
 	 * Implements testMethod1 and annotates the implementation with cached.
-	 *
 	 */
 	static abstract class AbstractTestService implements ITestService
 	{
@@ -105,7 +103,6 @@ public class JavaAssistInterceptorTests
 
 	/**
 	 * Implements testMethod2 and leaves the implementation of {@link #testMethod1()} alone.
-	 *
 	 */
 	static abstract class TestService extends AbstractTestService
 	{
@@ -118,7 +115,6 @@ public class JavaAssistInterceptorTests
 
 	/**
 	 * Implements both testMethod1() and testMethod2(). The overriding implementation of testMethod1() is <b>not</b> annotated with {@link Cached}.
-	 *
 	 */
 	static abstract class TestService2 extends AbstractTestService
 	{
@@ -136,9 +132,7 @@ public class JavaAssistInterceptorTests
 	}
 
 	/**
-	 * 
 	 * Trivial interceptor mockup that only stores the names of the methods it intercepted.
-	 *
 	 */
 	@Cached
 	static class CacheInterceptorDummy

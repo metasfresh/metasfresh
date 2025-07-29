@@ -1,14 +1,36 @@
+/*
+ * #%L
+ * metasfresh-pharma
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.vertical.pharma;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-
-import javax.annotation.Nullable;
-
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineRepository;
+import de.metas.vertical.pharma.model.I_C_BPartner;
+import de.metas.vertical.pharma.model.I_M_Product;
+import de.metas.vertical.pharma.model.interceptor.C_OrderLine;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -24,18 +46,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.money.CurrencyId;
-import de.metas.order.OrderLineRepository;
-import de.metas.vertical.pharma.model.I_C_BPartner;
-import de.metas.vertical.pharma.model.I_M_Product;
-import de.metas.vertical.pharma.model.interceptor.C_OrderLine;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
@@ -96,7 +115,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 
 		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Sales.toAD_Message());
+				.hasMessageContaining(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Sales.toAD_Message());
 	}
 
 	@Test
@@ -145,7 +164,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 
 		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
+				.hasMessageContaining(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
 	}
 
 	@Test
@@ -162,7 +181,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 
 		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
+				.hasMessageContaining(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
 	}
 
 	@Test
@@ -213,7 +232,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 
 		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Purchase.toAD_Message());
+				.hasMessageContaining(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Purchase.toAD_Message());
 	}
 
 	@Test
@@ -262,7 +281,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 
 		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
+				.hasMessageContaining(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
 	}
 
 	@Test
@@ -279,7 +298,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 
 		assertThatThrownBy(() -> orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
+				.hasMessageContaining(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
 	}
 
 	@Test

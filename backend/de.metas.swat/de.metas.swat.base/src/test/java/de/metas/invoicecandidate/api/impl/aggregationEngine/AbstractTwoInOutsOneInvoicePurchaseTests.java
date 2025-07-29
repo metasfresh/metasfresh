@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl.aggregationEngine;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,14 +11,16 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -91,7 +91,7 @@ public abstract class AbstractTwoInOutsOneInvoicePurchaseTests extends AbstractT
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullqty);
 
 			final InvoiceCandidateInOutLineToUpdate ic_iol11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
-			assertThat(ic_iol11.getQtyInvoiced().getUOMQtyNotNull()).isEqualTo(partialQty1_32.multiply(TEN));
+			assertThat(ic_iol11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal()).isEqualTo(partialQty1_32.multiply(TEN));
 			final InvoiceCandidateInOutLineToUpdate ic_iol21 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol21);
 			assertThat(ic_iol21.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal()).isEqualByComparingTo(partialQty2_8.multiply(TEN));
 			final InvoiceCandidateInOutLineToUpdate ic_iol22 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol22);

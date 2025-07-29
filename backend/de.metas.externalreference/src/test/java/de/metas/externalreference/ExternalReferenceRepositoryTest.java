@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalreference
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ExternalReferenceRepositoryTest
 {
 	private ExternalReferenceRepository externalReferenceRepository;
-	
 
 	@BeforeEach
 	public void init()
@@ -99,14 +98,11 @@ public class ExternalReferenceRepositoryTest
 
 		final ExternalReferenceId externalReferenceId = externalReferenceRepository.save(mockExternalReference);
 
-		// TODO: find out when the exception that we verify here is thrown and update the assertions accordingsly
-		// exceptionRule.expect(RuntimeException.class);
-		// exceptionRule.expectMessage("de.metas.externalreference.model.I_S_ExternalReference, id=" + externalReferenceId.getRepoId());
 		//when
 		externalReferenceRepository.deleteByRecordIdAndType(mockExternalReference.getRecordId(), mockExternalReference.getExternalReferenceType());
 
 		//then
-		InterfaceWrapperHelper.load(externalReferenceId, I_S_ExternalReference.class);
+		Assertions.assertThrows(RuntimeException.class, () -> InterfaceWrapperHelper.load(externalReferenceId, I_S_ExternalReference.class));
 	}
 
 	private ExternalReference getMockExternalReference()

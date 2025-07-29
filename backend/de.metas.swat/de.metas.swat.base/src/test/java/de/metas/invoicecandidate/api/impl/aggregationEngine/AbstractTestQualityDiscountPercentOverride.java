@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl.aggregationEngine;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,14 +11,16 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
@@ -91,7 +91,7 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 		}
 		else
 		{
-			assertThat(InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override)).isTrue();
+			assertThat(InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override)).isFalse();
 			assertThat(ic.getQualityDiscountPercent_Override()).isEqualByComparingTo(config_getQualityDiscount_Override());
 		}
 		// Required because QualityDiscountPercent_Override will be applied to the QtyDelivered, and if we have invoiceRule "immediate", then qtyDelivered make a difference at all.
