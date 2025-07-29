@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.allocation.transfer.impl;
 
 import de.metas.bpartner.BPartnerId;
@@ -72,13 +94,13 @@ public class LUTUProducerDestinationLoadTests
 		final Node createdHuXMLs = HUXmlConverter.toXml(createdHUs.get(0));
 		// System.out.println(HUXmlConverter.toString(createdHuXMLs));
 
-		XmlAssert.assertThat(createdHuXMLs).hasXPath("count(HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXMLs).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])").isEqualTo("1");
 
-		XmlAssert.assertThat(createdHuXMLs).hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXMLs).hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXMLs).hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXMLs).hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXMLs).hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXMLs).valueByXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXMLs).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='MI'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXMLs).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXMLs).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXMLs).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 	}
 
 	/**
@@ -117,37 +139,37 @@ public class LUTUProducerDestinationLoadTests
 		final Node createdHuXML = HUXmlConverter.toXml(createdHUs.get(0));
 		// System.out.println(HUXmlConverter.toString(createdHuXML));
 
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartnerId.getRepoId())); // verify that the bpartner is propagated
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/@M_Locator_ID)").isEqualTo(Integer.toString(locatorId.getRepoId())); // verify that the locator is propagated
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartnerId.getRepoId())); // verify that the bpartner is propagated
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/@M_Locator_ID)").isEqualTo(Integer.toString(locatorId.getRepoId())); // verify that the locator is propagated
 
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])").isEqualTo("1");
 
 		// the aggregate HU that is not really used in this case. It has no storage, and its PM item has a quantity of zero
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartnerId.getRepoId())); // verify that the bpartner is propagated
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)").isEqualTo(Integer.toString(locatorId.getRepoId())); // verify that the locator is propagated
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartnerId.getRepoId())); // verify that the bpartner is propagated
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)").isEqualTo(Integer.toString(locatorId.getRepoId())); // verify that the locator is propagated
 
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI)").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI)").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI'])").isEqualTo("1");
 		XmlAssert.assertThat(createdHuXML).doesNotHaveXPath("HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI']/Storage");
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])").isEqualTo("1");
 
 		// the "real" partially filled IFCO
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartnerId.getRepoId())); // verify that the bpartner is propagated
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_Locator_ID)").isEqualTo(Integer.toString(locatorId.getRepoId())); // verify that the locator is propagated
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartnerId.getRepoId())); // verify that the bpartner is propagated
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_Locator_ID)").isEqualTo(Integer.toString(locatorId.getRepoId())); // verify that the locator is propagated
 
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI'])").isEqualTo("1");
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 	}
 
 	/**
@@ -173,10 +195,10 @@ public class LUTUProducerDestinationLoadTests
 
 		// data.helper.commitAndDumpHU(createdHUs.get(0));
 		final Node createdHuXML = HUXmlConverter.toXml(createdHUs.get(0));
-		XmlAssert.assertThat(createdHuXML).hasXPath("string(HU-TU_IFCO/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
+		XmlAssert.assertThat(createdHuXML).valueByXPath("string(HU-TU_IFCO/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
 
 		// reach far down, to check if everything is as expected also in general
-		XmlAssert.assertThat(createdHuXML).hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(createdHuXML).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 	}
 
 	/**
@@ -223,13 +245,13 @@ public class LUTUProducerDestinationLoadTests
 
 		// there shall be no "real" HU
 
-		XmlAssert.assertThat(createdLuXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HU'])").isEqualTo("0");
+		XmlAssert.assertThat(createdLuXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU'])").isEqualTo("0");
 
 		// the aggregate HU shall contain the full quantity and represent 20 IFCOs
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("109.400");
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("109.400");
 
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@Qty)").isEqualTo("20");
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("109.400");
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@Qty)").isEqualTo("20");
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("109.400");
 	}
 
 	/**
@@ -505,7 +527,7 @@ public class LUTUProducerDestinationLoadTests
 			// The truck's product item has the allowed qty limited to 6, BUT it has IsInfiniteCapacity checked
 			// As such, the entire qty will be allocated to this particular item
 
-			XmlAssert.assertThat(huPaletsXML).hasXPath("count(/Truck/HU-Truck)").isEqualTo("1");
+			XmlAssert.assertThat(huPaletsXML).valueByXPath("count(/Truck/HU-Truck)").isEqualTo("1");
 			XmlAssert.assertThat(huPaletsXML).hasXPath("/Truck/HU-Truck[1]/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg' and @Qty='999999.000']");
 
 			StaticHUAssert.assertAllStoragesAreValid();
@@ -558,15 +580,15 @@ public class LUTUProducerDestinationLoadTests
 
 		// the aggregate HU that is not really used in this case. It has no storage, and its PM item has a quantity of zero
 
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartner.getC_BPartner_ID())); // verify that the bpartner is propagated
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bpLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)").isEqualTo(Integer.toString(l.getM_Locator_ID())); // verify that the locator is propagated
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartner.getC_BPartner_ID())); // verify that the bpartner is propagated
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bpLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)").isEqualTo(Integer.toString(l.getM_Locator_ID())); // verify that the locator is propagated
 
 		// the "real" virtual PI
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartner.getC_BPartner_ID())); // verify that the bpartner is propagated
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bpLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@M_Locator_ID)").isEqualTo(Integer.toString(l.getM_Locator_ID())); // verify that the locator is propagated
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/Item/@ItemType)").isEqualTo("MI");
-		XmlAssert.assertThat(createdLuXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Ea']/@Qty)").isEqualTo("252");
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@C_BPartner_ID)").isEqualTo(Integer.toString(bpartner.getC_BPartner_ID())); // verify that the bpartner is propagated
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@C_BPartner_Location_ID)").isEqualTo(Integer.toString(bpLocation.getC_BPartner_Location_ID())); // verify that the bpartner location is propagated
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/@M_Locator_ID)").isEqualTo(Integer.toString(l.getM_Locator_ID())); // verify that the locator is propagated
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/Item/@ItemType)").isEqualTo("MI");
+		XmlAssert.assertThat(createdLuXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Ea']/@Qty)").isEqualTo("252");
 	}
 }

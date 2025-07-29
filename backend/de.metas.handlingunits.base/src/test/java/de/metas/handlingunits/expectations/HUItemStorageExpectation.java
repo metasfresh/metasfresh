@@ -1,10 +1,8 @@
-package de.metas.handlingunits.expectations;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package de.metas.handlingunits.expectations;
  * #L%
  */
 
+package de.metas.handlingunits.expectations;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -37,9 +37,10 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.jupiter.api.Assertions;
 
 import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
@@ -58,15 +59,15 @@ public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUE
 		final String prefix = (message == null ? "" : message)
 				+ "\n\nInvalid: ";
 
-		Assertions.assertNotNull(storage, prefix + "HU Item Storage not null");
+		assertThat(storage).as(prefix + "HU Item Storage not null").isNotNull();
 
 		if (_productId != null)
 		{
-			Assertions.assertEquals(_productId, ProductId.ofRepoId(storage.getM_Product_ID()), prefix + "Product");
+			assertThat(ProductId.ofRepoId(storage.getM_Product_ID())).as(prefix + "Product").isEqualTo(_productId);
 		}
 		if (_qty != null)
 		{
-			assertEquals(prefix + "Qty", _qty, storage.getQty());
+			assertThat(storage.getQty()).as(prefix + "Qty").isEqualByComparingTo(_qty);
 		}
 		if (_uom != null)
 		{
@@ -142,7 +143,7 @@ public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUE
 		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 		final IHUItemStorage storage = huStorageFactory.getStorage(huItem);
 
-		Assertions.assertTrue(storage.isEmpty(getProductId()), "Storage shall be empty: " + storage);
+		assertThat(storage.isEmpty(getProductId())).as("Storage shall be empty: " + storage).isTrue();
 
 		storage.addQty(getProductId(), getQty(), getC_UOM());
 

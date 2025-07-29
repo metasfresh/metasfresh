@@ -66,11 +66,9 @@ public class JavaAssistInterceptorTests
 	/**
 	 * Tests {@link JavaAssistInterceptor#createInterceptedClass(Class)} with a class that does not any {@link Cached} method. Its abstract parent class does, but that method is overridden.<bre>
 	 * Verifies that the method under test does not return a proxy class, but the class it was called with.
-	 * 
-	 * @throws Exception
 	 */
 	@Test
-	public void testDontInterceptOverriddenMethod() throws Exception
+	public void testDontInterceptOverriddenMethod()
 	{
 		final JavaAssistInterceptor javaAssistInterceptor = new JavaAssistInterceptor();
 		final CacheInterceptorDummy interceptordummy = new CacheInterceptorDummy();

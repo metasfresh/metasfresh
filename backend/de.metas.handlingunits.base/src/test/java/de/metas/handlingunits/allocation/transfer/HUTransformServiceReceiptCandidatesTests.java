@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.allocation.transfer;
 
 import com.google.common.collect.ImmutableList;
@@ -54,27 +76,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 public class HUTransformServiceReceiptCandidatesTests
 {
 	private LUTUProducerDestinationTestSupport data;
@@ -182,14 +183,14 @@ public class HUTransformServiceReceiptCandidatesTests
 		// data.helper.commitAndDumpHU(cuToSplit);
 
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
-		XmlAssert.assertThat(cuToSplitXML).hasXPath("count(HU-VirtualPI[@HUStatus='P'])").isEqualTo("1");
-		XmlAssert.assertThat(cuToSplitXML).hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='39.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(cuToSplitXML).valueByXPath("count(HU-VirtualPI[@HUStatus='P'])").isEqualTo("1");
+		XmlAssert.assertThat(cuToSplitXML).valueByXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='39.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 
 		final Node newTUXML = HUXmlConverter.toXml(newTUs.get(0));
 
-		XmlAssert.assertThat(newTUXML).hasXPath("count(HU-TU_Bag[@HUStatus='P'])").isEqualTo("1");
-		XmlAssert.assertThat(newTUXML).hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
-		XmlAssert.assertThat(newTUXML).hasXPath("count(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(newTUXML).valueByXPath("count(HU-TU_Bag[@HUStatus='P'])").isEqualTo("1");
+		XmlAssert.assertThat(newTUXML).valueByXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
+		XmlAssert.assertThat(newTUXML).valueByXPath("count(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
 	}
 
 	@ParameterizedTest
@@ -223,13 +224,13 @@ public class HUTransformServiceReceiptCandidatesTests
 		// the LU shall contain 'tuToSplit'
 		final Node newLUXML = HUXmlConverter.toXml(newLUs.get(0));
 		XmlAssert.assertThat(newLUXML).doesNotHaveXPath("HU-LU_Palet/M_HU_Item_Parent_ID"); // verify that the LU has no parent HU
-		XmlAssert.assertThat(newLUXML).hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
+		XmlAssert.assertThat(newLUXML).valueByXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)").isEqualTo(Boolean.toString(isOwnPackingMaterials));
 
-		XmlAssert.assertThat(newLUXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/@M_HU_PI_Item_ID)").isEqualTo(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()));
-		XmlAssert.assertThat(newLUXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_HU_ID)").isEqualTo(Integer.toString(tuToSplit.getM_HU_ID()));
+		XmlAssert.assertThat(newLUXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/@M_HU_PI_Item_ID)").isEqualTo(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()));
+		XmlAssert.assertThat(newLUXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_HU_ID)").isEqualTo(Integer.toString(tuToSplit.getM_HU_ID()));
 
-		XmlAssert.assertThat(newLUXML).hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("20.000");
-		XmlAssert.assertThat(newLUXML).hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("20.000");
+		XmlAssert.assertThat(newLUXML).valueByXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("20.000");
+		XmlAssert.assertThat(newLUXML).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("20.000");
 	}
 
 	/**
@@ -276,16 +277,16 @@ public class HUTransformServiceReceiptCandidatesTests
 
 		// secondCU is still there, with the remaining 1.4kg
 		final Node secondCUXML = HUXmlConverter.toXml(cu2);
-		XmlAssert.assertThat(secondCUXML).hasXPath("string(HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/@HUStatus)").isEqualTo("P");
-		XmlAssert.assertThat(secondCUXML).hasXPath("string(HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("1.400");
+		XmlAssert.assertThat(secondCUXML).valueByXPath("string(HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/@HUStatus)").isEqualTo("P");
+		XmlAssert.assertThat(secondCUXML).valueByXPath("string(HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("1.400");
 
 		final Node existingLUXML = HUXmlConverter.toXml(existingTU);
-		XmlAssert.assertThat(existingLUXML).hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("2.000");
-		XmlAssert.assertThat(existingLUXML).hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("1.600");
-		XmlAssert.assertThat(existingLUXML).hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("2.000");
-		XmlAssert.assertThat(existingLUXML).hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("1.600");
-		XmlAssert.assertThat(existingLUXML).hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu1.getM_HU_ID() + "]/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("2.000");
-		XmlAssert.assertThat(existingLUXML).hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("1.600");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("2.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("1.600");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("2.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("1.600");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu1.getM_HU_ID() + "]/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("2.000");
+		XmlAssert.assertThat(existingLUXML).valueByXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("1.600");
 
 		// verify that the receipt M_ReceiptSchedule_Allocs are also OK
 		final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
@@ -370,14 +371,14 @@ public class HUTransformServiceReceiptCandidatesTests
 
 		// data.helper.commitAndDumpHU(tuWithMixedCUs);
 		final Node tuWithMixedCUsXML = HUXmlConverter.toXml(tuWithMixedCUs);
-		XmlAssert.assertThat(tuWithMixedCUsXML).hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("5.000");
-		XmlAssert.assertThat(tuWithMixedCUsXML).hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("4.000");
+		XmlAssert.assertThat(tuWithMixedCUsXML).valueByXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("5.000");
+		XmlAssert.assertThat(tuWithMixedCUsXML).valueByXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("4.000");
 
-		XmlAssert.assertThat(tuWithMixedCUsXML).hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu1.getM_HU_ID() + "])").isEqualTo("1");
-		XmlAssert.assertThat(tuWithMixedCUsXML).hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu1.getM_HU_ID() + "]/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("5.000");
+		XmlAssert.assertThat(tuWithMixedCUsXML).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu1.getM_HU_ID() + "])").isEqualTo("1");
+		XmlAssert.assertThat(tuWithMixedCUsXML).valueByXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu1.getM_HU_ID() + "]/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("5.000");
 
-		XmlAssert.assertThat(tuWithMixedCUsXML).hasXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "])").isEqualTo("1");
-		XmlAssert.assertThat(tuWithMixedCUsXML).hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("4.000");
+		XmlAssert.assertThat(tuWithMixedCUsXML).valueByXPath("count(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "])").isEqualTo("1");
+		XmlAssert.assertThat(tuWithMixedCUsXML).valueByXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("4.000");
 
 		// verify that the receipt M_ReceiptSchedule_Allocs are also OK
 		final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);

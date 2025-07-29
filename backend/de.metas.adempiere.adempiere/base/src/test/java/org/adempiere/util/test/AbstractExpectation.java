@@ -1,10 +1,8 @@
-package org.adempiere.util.test;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package org.adempiere.util.test;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.adempiere.util.test;
 
 import de.metas.util.lang.RepoIdAware;
 import org.adempiere.ad.trx.api.ITrx;
@@ -160,8 +160,6 @@ public class AbstractExpectation<ParentExpectationType>
 	 * Copy values from given expectation to this expectation.
 	 * <p>
 	 * To be extended by actual expectations. At this level it throws {@link UnsupportedOperationException}.
-	 *
-	 * @param from
 	 */
 	public <FromExpectationType extends AbstractExpectation<?>> void copyFromExpectation(FromExpectationType from)
 	{
@@ -187,17 +185,11 @@ public class AbstractExpectation<ParentExpectationType>
 			actualToUse = BigDecimal.ZERO;
 		}
 
-		Assertions.assertEquals(actualToUse,
-				expectedToUse,
-				ErrorMessage.toString(message));
+		assertThat(actualToUse).as(ErrorMessage.toString(message)).isEqualByComparingTo(expectedToUse);
 	}
 
 	/**
 	 * Asserts <code>actual</code> is close to <code>expected</code>, considering the defined error margin ({@link #getErrorMargin()}).
-	 *
-	 * @param message
-	 * @param expected
-	 * @param actual
 	 */
 	protected final void assertCloseToExpected(final String message, final BigDecimal expected, final BigDecimal actual)
 	{

@@ -87,8 +87,8 @@ public class HUMovementGeneratorTests
 				hu -> {
 					// guard: HU is not aggregated
 					final Node huXML = HUXmlConverter.toXml(hu);
-					XmlAssert.assertThat(huXML).hasXPath("string(HU-LU_Palet/Item/@ItemType)").isEqualTo("HU");
-					XmlAssert.assertThat(huXML).hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("1");
+					XmlAssert.assertThat(huXML).valueByXPath("string(HU-LU_Palet/Item/@ItemType)").isEqualTo("HU");
+					XmlAssert.assertThat(huXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("1");
 				},
 				BigDecimal.ONE);
 	}
@@ -103,7 +103,7 @@ public class HUMovementGeneratorTests
 				hu -> {
 					// guard: HU is aggregated
 					final Node huXML = HUXmlConverter.toXml(hu);
-					XmlAssert.assertThat(huXML).hasXPath("string(HU-LU_Palet/Item/@ItemType)").isEqualTo("HA");
+					XmlAssert.assertThat(huXML).valueByXPath("string(HU-LU_Palet/Item/@ItemType)").isEqualTo("HA");
 				},
 				new BigDecimal("3"));
 	}
