@@ -136,7 +136,7 @@ import java.util.Set;
 			final DetailId tabId,
 			@NonNull final Optional<SOTrx> soTrx)
 	{
-		final boolean isLUFieldsEnabled = soTrx.map(SOTrx::isPurchase).orElse(false) && QuickInputConstants.isEnableLUFields();
+		final boolean isLUFieldsEnabled = soTrx.map(QuickInputConstants::isLUFieldsEnabled).orElse(false);
 		return DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, rootDocumentTypeId)
 				.setIsSOTrx(soTrx)
@@ -146,7 +146,7 @@ import java.util.Set;
 				//
 				.addField(createProductField(soTrx))
 				.addFieldIf(isLUFieldsEnabled, this::createLUPackingInstructionField)
-				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingInstructionField)
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), () -> this.createPackingInstructionField(soTrx))
 				.addField(createCompensationGroupSchemaField())
 				.addField(createContractConditionsField())
 				.addFieldIf(!isLUFieldsEnabled, this::createQuantityField)
@@ -224,20 +224,21 @@ import java.util.Set;
 				.addCharacteristic(Characteristic.PublicField);
 	}
 
-	private DocumentFieldDescriptor.Builder createPackingInstructionField()
+	private DocumentFieldDescriptor.Builder createPackingInstructionField(final @NonNull Optional<SOTrx> soTrx)
 	{
-		final AdValRuleId valRuleToUse = QuickInputConstants.isEnableLUFields() ? VAL_RULE_M_HU_PI_Item_Product_for_BP_M_LU_HU_PI_ID : VAL_RULE_M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised;
+		final Boolean isEnableLUFields = soTrx.map(QuickInputConstants::isLUFieldsEnabled).orElse(false);
+		final AdValRuleId valRuleToUse = isEnableLUFields ? VAL_RULE_M_HU_PI_Item_Product_for_BP_M_LU_HU_PI_ID : VAL_RULE_M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised;
 
 		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
-						.setCtxTableName(null) // ctxTableName
-						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
-						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(valRuleToUse)
-						.build())
+													 .setCtxTableName(null) // ctxTableName
+													 .setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+													 .setDisplayType(DisplayType.TableDir)
+													 .setAD_Val_Rule_ID(valRuleToUse)
+													 .build())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
