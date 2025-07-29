@@ -1,6 +1,8 @@
 package de.metas.ui.web.quickinput;
 
+import de.metas.lang.SOTrx;
 import de.metas.util.Services;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.service.ISysConfigBL;
 
@@ -48,9 +50,9 @@ public class QuickInputConstants
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnablePackingInstructionsField, true);
 	}
 
-	public static boolean isEnableLUFields()
+	public static boolean isLUFieldsEnabled(@NonNull final SOTrx soTrx)
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableLUFields, false);
+		return soTrx.isPurchase() && Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableLUFields, false);
 	}
 
 	public static boolean isEnableBestBeforePolicy()
