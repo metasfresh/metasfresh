@@ -217,7 +217,7 @@
                 <configuration>
                     <properties>
                         <configurationParameters>
-                            cucumber.junit-platform.naming-strategy=surefire
+                            cucumber.junit-platform.naming-strategy=long
                         </configurationParameters>
                     </properties>
                 </configuration>

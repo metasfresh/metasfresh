@@ -47,7 +47,7 @@ echo "==================="
 echo " running cucumber tests ..."
 echo "==================="
 
-mvn --debug --offline surefire:test --fail-never "$@"
+mvn --offline surefire:test --fail-never "$@"
 
 echo "==================="
 echo " exporting reports ..."
