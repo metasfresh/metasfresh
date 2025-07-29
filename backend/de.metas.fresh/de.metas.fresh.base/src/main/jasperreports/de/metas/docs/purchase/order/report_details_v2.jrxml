@@ -1,16 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+<!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 7.0.3-41034ca841d452f3305ba55b9042260aaa1ab5dd  -->
+<jasperReport name="report_details" language="java" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<import value="net.sf.jasperreports.engine.*"/>
-	<import value="java.util.*"/>
-	<import value="net.sf.jasperreports.engine.data.*"/>
+	<import>net.sf.jasperreports.engine.*</import>
+	<import>java.util.*</import>
+	<import>net.sf.jasperreports.engine.data.*</import>
 	<parameter name="c_order_id" class="java.lang.Integer">
 		<defaultValueExpression><![CDATA[$P{c_order_id}]]></defaultValueExpression>
 	</parameter>
@@ -18,11 +17,9 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<parameter name="displayhu" class="java.lang.String">
-		<parameterDescription><![CDATA[]]></parameterDescription>
+		<description><![CDATA[]]></description>
 	</parameter>
-	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details($P{c_order_id}, $P{ad_language});]]>
-	</queryString>
+	<query language="sql"><![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details($P{c_order_id}, $P{ad_language});]]></query>
 	<field name="line" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="line"/>
 		<property name="com.jaspersoft.studio.field.label" value="line"/>
@@ -42,6 +39,14 @@
 	<field name="huname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="huname"/>
 		<property name="com.jaspersoft.studio.field.label" value="huname"/>
+	</field>
+	<field name="qtylu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtylu"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtylu"/>
+	</field>
+	<field name="lu_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="lu_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="lu_name"/>
 	</field>
 	<field name="qtyenteredinpriceuom" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="qtyenteredinpriceuom"/>
@@ -119,454 +124,309 @@
 		<property name="com.jaspersoft.studio.field.name" value="amountpattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="amountpattern"/>
 	</field>
-	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
-		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
+	<field name="week_year" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="week_year"/>
+		<property name="com.jaspersoft.studio.field.label" value="week_year"/>
+	</field>
+	<variable name="LINESUM_SUM" calculation="Sum" class="java.math.BigDecimal">
+		<expression><![CDATA[$F{linenetamt}]]></expression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
-	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
-		<variableExpression><![CDATA[1]]></variableExpression>
+	<variable name="LINE_COUNT" calculation="Count" class="java.lang.Number">
+		<expression><![CDATA[1]]></expression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
-	<variable name="showAttributes" class="java.lang.Integer" calculation="Count">
-		<variableExpression><![CDATA[$F{attributes}!=null ? "showAttr":null]]></variableExpression>
+	<variable name="showAttributes" calculation="Count" class="java.lang.Integer">
+		<expression><![CDATA[$F{attributes}!=null ? "showAttr":null]]></expression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
-	<title>
-		<band splitType="Stretch"/>
-	</title>
-	<pageHeader>
-		<band height="23" splitType="Stretch">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField>
-				<reportElement key="textField-13" x="239" y="7" width="30" height="12" forecolor="#000000" uuid="7bebebb5-1cfc-495c-8365-824e28ea2340">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Center" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-16" x="97" y="7" width="142" height="12" forecolor="#000000" uuid="5f346c6f-9774-4c47-8dd4-cdf66fecf436">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-17" x="271" y="7" width="82" height="12" forecolor="#000000" uuid="47fac58e-fec0-4aa0-bdc5-e8e0dbd727f2">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-19" x="470" y="7" width="30" height="12" forecolor="#000000" uuid="f26ad2e8-9346-494d-ad3b-c678879593f6">
-					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Discount}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-20" x="393" y="7" width="38" height="12" forecolor="#000000" uuid="3152c5c9-d9e5-45e9-aa4b-8427307c50c6">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-20" x="500" y="7" width="45" height="12" forecolor="#000000" uuid="80ba15ab-1a48-405d-962e-bb2690ebc503"/>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-19" x="353" y="7" width="38" height="12" forecolor="#000000" uuid="d14181b0-e766-4e62-90cf-728f15b0e15a"/>
-				<textElement textAlignment="Center" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-20" x="431" y="7" width="36" height="12" forecolor="#000000" uuid="9cc1b771-5336-44cd-a8cf-406dccb79903">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-20" x="545" y="7" width="34" height="12" forecolor="#000000" uuid="9e5a5e80-b8a5-4345-a31c-c24a83e7f197">
-					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="37" y="7" width="22" height="12" uuid="14c843f7-78e8-45a5-8f4d-c4490b35b8f7">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Position}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="59" y="7" width="41" height="12" uuid="03729641-e2b9-4af4-8069-018be5b9b767">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Value}]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement x="34" y="3" width="545" height="1" uuid="dcdfef79-f6c7-4ad6-8e2f-481f8f4cb276">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-			</line>
-			<line>
-				<reportElement x="34" y="21" width="545" height="1" uuid="8bbdd0b9-78f7-4be7-9bb1-d03f9f7e15d5">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-			</line>
-		</band>
+	<background splitType="Stretch"/>
+	<title splitType="Stretch"/>
+	<pageHeader height="23" splitType="Stretch">
+		<element kind="textField" uuid="7bebebb5-1cfc-495c-8365-824e28ea2340" key="textField-13" x="239" y="7" width="30" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" bold="true" hTextAlign="Center">
+			<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
+			<expression><![CDATA[$R{HUQuantity}]]></expression>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="textField" uuid="5f346c6f-9774-4c47-8dd4-cdf66fecf436" key="textField-16" x="97" y="7" width="142" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" bold="true">
+			<expression><![CDATA[$R{Article}]]></expression>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="textField" uuid="47fac58e-fec0-4aa0-bdc5-e8e0dbd727f2" key="textField-17" x="271" y="7" width="82" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" bold="true">
+			<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
+			<expression><![CDATA[$R{Pack_Inst}]]></expression>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="textField" uuid="f26ad2e8-9346-494d-ad3b-c678879593f6" key="textField-19" x="470" y="7" width="30" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" bold="true" hTextAlign="Right">
+			<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
+			<expression><![CDATA[$R{Discount}]]></expression>
+		</element>
+		<element kind="textField" uuid="3152c5c9-d9e5-45e9-aa4b-8427307c50c6" key="textField-20" x="393" y="7" width="38" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" bold="true">
+			<expression><![CDATA[$R{Unit}]]></expression>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="textField" uuid="80ba15ab-1a48-405d-962e-bb2690ebc503" key="textField-20" x="500" y="7" width="45" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" bold="true" hTextAlign="Right">
+			<expression><![CDATA[$R{Amount}]]></expression>
+		</element>
+		<element kind="textField" uuid="d14181b0-e766-4e62-90cf-728f15b0e15a" key="textField-19" x="353" y="7" width="38" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" bold="true" hTextAlign="Center">
+			<expression><![CDATA[$R{Quantity}]]></expression>
+		</element>
+		<element kind="textField" uuid="9cc1b771-5336-44cd-a8cf-406dccb79903" key="textField-20" x="431" y="7" width="36" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" bold="true" hTextAlign="Right">
+			<expression><![CDATA[$R{Price}]]></expression>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="textField" uuid="9e5a5e80-b8a5-4345-a31c-c24a83e7f197" key="textField-20" x="545" y="7" width="34" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" bold="true" hTextAlign="Right">
+			<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
+			<expression><![CDATA[$R{Tax}]]></expression>
+		</element>
+		<element kind="textField" uuid="14c843f7-78e8-45a5-8f4d-c4490b35b8f7" x="37" y="7" width="22" height="12" fontName="Arial" fontSize="9.0" bold="true">
+			<expression><![CDATA[$R{Position}]]></expression>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="textField" uuid="03729641-e2b9-4af4-8069-018be5b9b767" x="59" y="7" width="41" height="12" fontName="Arial" fontSize="9.0" bold="true">
+			<expression><![CDATA[$R{Value}]]></expression>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+		</element>
+		<element kind="line" uuid="dcdfef79-f6c7-4ad6-8e2f-481f8f4cb276" x="34" y="3" width="545" height="1">
+			<property name="com.jaspersoft.studio.unit.width" value="px"/>
+		</element>
+		<element kind="line" uuid="8bbdd0b9-78f7-4be7-9bb1-d03f9f7e15d5" x="34" y="21" width="545" height="1">
+			<property name="com.jaspersoft.studio.unit.width" value="px"/>
+		</element>
+		<property name="com.jaspersoft.studio.unit.height" value="px"/>
 	</pageHeader>
-	<columnHeader>
-		<band height="12" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1)]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-50" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="23063069-0aae-45ed-93fe-4444f6d4f434">
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isItalic="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-49" mode="Transparent" x="37" y="0" width="156" height="12" forecolor="#000000" uuid="95233fd8-e7e0-459c-997e-058c73db260e"/>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isItalic="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Carry}]]></textFieldExpression>
-			</textField>
-		</band>
+	<columnHeader height="12" splitType="Stretch">
+		<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1)]]></printWhenExpression>
+		<element kind="textField" uuid="23063069-0aae-45ed-93fe-4444f6d4f434" key="textField-50" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" italic="true" hTextAlign="Right">
+			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+			<expression><![CDATA[$V{LINESUM_SUM}]]></expression>
+			<property name="com.jaspersoft.studio.unit.x" value="px"/>
+			<box>
+				<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			</box>
+		</element>
+		<element kind="textField" uuid="95233fd8-e7e0-459c-997e-058c73db260e" key="textField-49" mode="Transparent" x="37" y="0" width="156" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" italic="true">
+			<expression><![CDATA[$R{Carry}]]></expression>
+		</element>
 	</columnHeader>
 	<detail>
 		<band height="12" splitType="Prevent">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-24" stretchType="ContainerHeight" mode="Transparent" x="97" y="0" width="142" height="12" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($F{attributes} == null)]]></printWhenExpression>
-				</reportElement>
+			<element kind="textField" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" stretchType="ContainerHeight" mode="Transparent" x="97" y="0" width="142" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" printInFirstWholeBand="true" printWhenDetailOverflows="true" bold="false">
+				<printWhenExpression><![CDATA[new Boolean($F{attributes} == null)]]></printWhenExpression>
+				<expression><![CDATA[$F{bp_product_name}
++
+($F{p_description} != null ? "\n" + $F{p_description}  :  "\n")
++
+($F{description} != null ? "\n" + $F{description} :  "\n")]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
-					<font fontName="Arial" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{bp_product_name}
+			</element>
+			<element kind="textField" uuid="70bfc435-7c21-4f78-afe6-8f29eec8deb0" key="textField-24" stretchType="ContainerHeight" mode="Transparent" x="97" y="0" width="142" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" printInFirstWholeBand="true" printWhenDetailOverflows="true" bold="false">
+				<printWhenExpression><![CDATA[new Boolean($F{attributes} != null)]]></printWhenExpression>
+				<expression><![CDATA[$F{bp_product_name}
 +
 ($F{p_description} != null ? "\n" + $F{p_description}  :  "\n")
 +
-($F{description} != null ? "\n" + $F{description} :  "\n")]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-24" stretchType="ContainerHeight" mode="Transparent" x="97" y="0" width="142" height="12" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="70bfc435-7c21-4f78-afe6-8f29eec8deb0">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($F{attributes} != null)]]></printWhenExpression>
-				</reportElement>
+($F{description} != null ? "\n" + $F{description} :  "\n")]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
-					<font fontName="Arial" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{bp_product_name}
-+
-($F{p_description} != null ? "\n" + $F{p_description}  :  "\n")
-+
-($F{description} != null ? "\n" + $F{description} :  "\n")]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-34" mode="Transparent" x="500" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{linenetamt}]]></textFieldExpression>
+			</element>
+			<element kind="textField" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6" key="textField-34" mode="Transparent" x="500" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" hTextAlign="Right">
+				<expression><![CDATA[$F{linenetamt}]]></expression>
 				<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="393" y="0" width="37" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
+				<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
-					<font fontName="Arial" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.##%" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="470" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
-					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
-				</reportElement>
+			</element>
+			<element kind="textField" uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="393" y="0" width="37" height="12" forecolor="#000000" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false">
+				<expression><![CDATA[$F{uomsymbol}]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{discount}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="239" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ) && $F{huname} != null && !$F{huname}.isEmpty())]]></printWhenExpression>
-				</reportElement>
+			</element>
+			<element kind="textField" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="470" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.##%" blankWhenNull="true" hTextAlign="Right">
+				<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
+				<expression><![CDATA[$F{discount}]]></expression>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="239" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="###0" blankWhenNull="true" bold="false" hTextAlign="Center">
+				<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ) && $F{huname} != null && !$F{huname}.isEmpty())]]></printWhenExpression>
+				<expression><![CDATA[$F{huqty}]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<box rightPadding="0">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{huqty}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-31" mode="Transparent" x="271" y="0" width="82" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
+			</element>
+			<element kind="textField" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1" key="textField-31" mode="Transparent" x="271" y="0" width="82" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true">
+				<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
+				<expression><![CDATA[$F{huname}]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{huname}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="431" y="0" width="36" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{priceentered}]]></textFieldExpression>
+			</element>
+			<element kind="textField" uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="431" y="0" width="36" height="12" forecolor="#000000" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" hTextAlign="Right">
+				<expression><![CDATA[$F{priceentered}]]></expression>
 				<patternExpression><![CDATA[$F{pricepattern}]]></patternExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="545" y="0" width="26" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
-					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{rate}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="353" y="0" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-				</reportElement>
+			</element>
+			<element kind="textField" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="545" y="0" width="26" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" hTextAlign="Right">
+				<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
+				<expression><![CDATA[$F{rate}]]></expression>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="574" y="0" width="5" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($F{rate} != null && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
+			</element>
+			<element kind="textField" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="353" y="0" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0" blankWhenNull="true" hTextAlign="Center">
+				<expression><![CDATA[$F{qtyenteredinpriceuom}]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+			</element>
+			<element kind="staticText" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666" x="574" y="0" width="5" height="12" fontName="Arial" fontSize="9.0" hTextAlign="Right">
+				<printWhenExpression><![CDATA[new Boolean($F{rate} != null && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				<text><![CDATA[%]]></text>
-			</staticText>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="37" y="0" width="22" height="12" uuid="d532d15c-2421-4d99-a1df-97ddd7203ab0">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{line}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="41" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="aa42ce2f-b09c-4625-8c48-08130ca5d055">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+			</element>
+			<element kind="textField" uuid="d532d15c-2421-4d99-a1df-97ddd7203ab0" x="37" y="0" width="22" height="12" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true">
+				<expression><![CDATA[$F{line}]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+			</element>
+			<element kind="textField" uuid="aa42ce2f-b09c-4625-8c48-08130ca5d055" key="textField-24" mode="Transparent" x="59" y="0" width="41" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" removeLineWhenBlank="true" bold="false">
+				<expression><![CDATA[$F{bp_product_no}]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
-					<font fontName="Arial" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{bp_product_no}]]></textFieldExpression>
-			</textField>
+			</element>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 		</band>
 		<band height="12">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean($F{attributes} != null)]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" mode="Transparent" x="97" y="0" width="181" height="12" forecolor="#000000" uuid="302334ce-936c-4c10-a17a-0285ed3eace8">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
+			<printWhenExpression><![CDATA[new Boolean($F{attributes} != null) 
+  ||  ( new Boolean($P{displayhu}.equals( "Y" ) && $F{lu_name} != null && !$F{lu_name}.isEmpty() ) )  ]]></printWhenExpression>
+			<element kind="textField" uuid="302334ce-936c-4c10-a17a-0285ed3eace8" key="textField-13" mode="Transparent" x="97" y="0" width="142" height="12" forecolor="#000000" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false">
+				<expression><![CDATA[$F{attributes}]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
-					<font fontName="Arial" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
-			</textField>
+			</element>
+			<element kind="textField" uuid="841b5508-49d5-422b-8d5b-331f1bf2227e" key="textField-24" mode="Transparent" x="239" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="###0" blankWhenNull="true" bold="false" hTextAlign="Center">
+				<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ) && $F{lu_name} != null && !$F{lu_name}.isEmpty())]]></printWhenExpression>
+				<expression><![CDATA[$F{qtylu}]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<box rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="3dbd294c-e2e5-45c4-b343-7ec650f7b5fd" key="textField-31" mode="Transparent" x="271" y="0" width="82" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true">
+				<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
+				<expression><![CDATA[$F{lu_name}]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+			</element>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
-	<pageFooter>
-		<band height="12" splitType="Stretch">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="201" height="12" forecolor="#000000" uuid="5b90fa33-3cd6-4da3-9aff-90a3f6970af4">
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isItalic="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{SubTotal}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isItalic="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
-				<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
-			</textField>
-		</band>
+	<columnFooter splitType="Stretch"/>
+	<pageFooter height="12" splitType="Stretch">
+		<element kind="textField" uuid="5b90fa33-3cd6-4da3-9aff-90a3f6970af4" key="textField-52" mode="Transparent" x="37" y="0" width="201" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" italic="true">
+			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+			<expression><![CDATA[$R{SubTotal}]]></expression>
+		</element>
+		<element kind="textField" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992" key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" italic="true" hTextAlign="Right">
+			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+			<expression><![CDATA[$V{LINESUM_SUM}]]></expression>
+			<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
+			<property name="com.jaspersoft.studio.unit.x" value="px"/>
+			<box>
+				<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			</box>
+		</element>
 	</pageFooter>
-	<lastPageFooter>
-		<band height="12" splitType="Stretch">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="201" height="12" forecolor="#000000" uuid="5b6d8087-d737-4da0-a80f-197ed0cbb526">
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
-				<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
-			</textField>
-		</band>
+	<lastPageFooter height="12" splitType="Stretch">
+		<element kind="textField" uuid="5b6d8087-d737-4da0-a80f-197ed0cbb526" key="textField-52" mode="Transparent" x="37" y="0" width="201" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" italic="false">
+			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+			<expression><![CDATA[$R{TotalAmount}]]></expression>
+		</element>
+		<element kind="textField" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992" key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" italic="false" hTextAlign="Right">
+			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
+			<expression><![CDATA[$V{LINESUM_SUM}]]></expression>
+			<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
+			<property name="com.jaspersoft.studio.unit.x" value="px"/>
+			<box>
+				<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			</box>
+		</element>
 	</lastPageFooter>
-	<summary>
-		<band splitType="Stretch"/>
-	</summary>
+	<summary splitType="Stretch"/>
 </jasperReport>
