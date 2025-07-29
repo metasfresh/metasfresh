@@ -38,8 +38,10 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
-        <cucumber.version>7.26.0</cucumber.version>
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <!-- The current latest cucumber-version is 7.26.0, but it's not compatible with junit-jupiter 5.12.2 and junit-platform 1.12.2 -->
+        <!-- A starting point for the current docu is here: https://cucumber.io/docs/tools/java#maven-->
+        <cucumber.version>7.18.0</cucumber.version>
+        <testcontainers.version>1.21.3</testcontainers.version>
     </properties>
 
     <dependencyManagement>
@@ -134,6 +136,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-junit-platform-engine</artifactId>
             <version>${cucumber.version}</version>
@@ -158,18 +166,12 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter -->
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
+            <artifactId>junit-jupiter</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <!-- avoid ClassNotFoundException regarding InputCoercionException-->
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -214,7 +216,7 @@
                 <configuration>
                     <properties>
                         <configurationParameters>
-                            cucumber.junit-platform.naming-strategy=long
+                            cucumber.junit-platform.naming-strategy=surefire
                         </configurationParameters>
                     </properties>
                 </configuration>
