@@ -1,5 +1,5 @@
 <!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 7.0.3-41034ca841d452f3305ba55b9042260aaa1ab5dd  -->
-<jasperReport name="report_details" language="java" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+<jasperReport name="report_details" language="java" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
@@ -136,59 +136,59 @@
 	<background splitType="Stretch"/>
 	<title splitType="Stretch"/>
 	<pageHeader height="23" splitType="Stretch">
-		<element kind="textField" uuid="7bebebb5-1cfc-495c-8365-824e28ea2340" key="textField-13" x="230" y="7" width="37" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
+		<element kind="textField" key="textField-13" x="230" y="7" width="37" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
 			<expression><![CDATA[$R{HUQuantity}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="textField" uuid="5f346c6f-9774-4c47-8dd4-cdf66fecf436" key="textField-16" x="37" y="7" width="130" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true">
+		<element kind="textField" key="textField-16" x="37" y="7" width="130" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true">
 			<expression><![CDATA[$R{Article}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="textField" uuid="47fac58e-fec0-4aa0-bdc5-e8e0dbd727f2" key="textField-17" x="271" y="7" width="84" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true">
+		<element kind="textField" key="textField-17" x="271" y="7" width="84" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true">
 			<expression><![CDATA[$R{Pack_Inst}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="textField" uuid="f26ad2e8-9346-494d-ad3b-c678879593f6" key="textField-19" x="469" y="7" width="30" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
+		<element kind="textField" key="textField-19" x="469" y="7" width="30" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
 			<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
 			<expression><![CDATA[$R{Discount}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="textField" uuid="3152c5c9-d9e5-45e9-aa4b-8427307c50c6" key="textField-20" x="402" y="7" width="40" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true">
+		<element kind="textField" key="textField-20" x="402" y="7" width="40" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true">
 			<expression><![CDATA[$R{Unit}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="textField" uuid="bfbe99d8-bc18-42aa-a9a9-5c05ea50469e" key="textField-13" x="166" y="7" width="71" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true">
+		<element kind="textField" key="textField-13" x="166" y="7" width="71" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true">
 			<expression><![CDATA[$R{Attributes}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="textField" uuid="80ba15ab-1a48-405d-962e-bb2690ebc503" key="textField-20" x="500" y="7" width="45" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
+		<element kind="textField" key="textField-20" x="500" y="7" width="45" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
 			<expression><![CDATA[$R{Amount}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="textField" uuid="d14181b0-e766-4e62-90cf-728f15b0e15a" key="textField-19" x="351" y="7" width="47" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
+		<element kind="textField" key="textField-19" x="351" y="7" width="47" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
 			<expression><![CDATA[$R{Quantity}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="textField" uuid="9cc1b771-5336-44cd-a8cf-406dccb79903" key="textField-20" x="434" y="7" width="33" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
+		<element kind="textField" key="textField-20" x="434" y="7" width="33" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
 			<expression><![CDATA[$R{Price}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="textField" uuid="9e5a5e80-b8a5-4345-a31c-c24a83e7f197" key="textField-20" x="545" y="7" width="32" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
+		<element kind="textField" key="textField-20" x="545" y="7" width="32" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" hTextAlign="Right">
 			<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<expression><![CDATA[$R{Tax}]]></expression>
 			<property name="com.jaspersoft.studio.unit.y" value="px"/>
 		</element>
-		<element kind="line" uuid="874c7144-5268-4a70-8742-5cba62a637c8" x="34" y="3" width="545" height="1">
+		<element kind="line" x="34" y="3" width="545" height="1">
 			<property name="com.jaspersoft.studio.unit.width" value="px"/>
 		</element>
-		<element kind="line" uuid="e1e99f3f-f656-47c6-8fa5-fb1a868b1154" x="34" y="21" width="545" height="1">
+		<element kind="line" x="34" y="21" width="545" height="1">
 			<property name="com.jaspersoft.studio.unit.width" value="px"/>
 		</element>
 		<property name="com.jaspersoft.studio.unit.height" value="px"/>
 	</pageHeader>
 	<columnHeader height="12" splitType="Stretch">
 		<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1)]]></printWhenExpression>
-		<element kind="textField" uuid="23063069-0aae-45ed-93fe-4444f6d4f434" key="textField-50" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" italic="true" hTextAlign="Right">
+		<element kind="textField" key="textField-50" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" italic="true" hTextAlign="Right">
 			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 			<expression><![CDATA[$V{LINESUM_SUM}]]></expression>
 			<box>
@@ -198,13 +198,13 @@
 				<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 			</box>
 		</element>
-		<element kind="textField" uuid="95233fd8-e7e0-459c-997e-058c73db260e" key="textField-49" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" italic="true">
+		<element kind="textField" key="textField-49" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" italic="true">
 			<expression><![CDATA[$R{Carry}]]></expression>
 		</element>
 	</columnHeader>
 	<detail>
 		<band height="12" splitType="Stretch">
-			<element kind="textField" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="37" y="0" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" bold="false">
+			<element kind="textField" key="textField-24" mode="Transparent" x="37" y="0" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" bold="false">
 				<expression><![CDATA[$F{name}]]></expression>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -213,7 +213,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6" key="textField-34" mode="Transparent" x="500" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" hTextAlign="Right">
+			<element kind="textField" key="textField-34" mode="Transparent" x="500" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" hTextAlign="Right">
 				<expression><![CDATA[$F{linenetamt}]]></expression>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -222,7 +222,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="402" y="0" width="34" height="12" forecolor="#000000" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false">
+			<element kind="textField" key="textField-20" x="402" y="0" width="34" height="12" forecolor="#000000" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false">
 				<expression><![CDATA[$F{uomsymbol}]]></expression>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -231,7 +231,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="469" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.##%" blankWhenNull="true" hTextAlign="Right">
+			<element kind="textField" key="textField-33" mode="Transparent" x="469" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.##%" blankWhenNull="true" hTextAlign="Right">
 				<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
 				<expression><![CDATA[$F{discount}]]></expression>
 				<box>
@@ -241,7 +241,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05" key="textField-24" mode="Transparent" x="230" y="0" width="37" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="###0" blankWhenNull="true" bold="false" hTextAlign="Right">
+			<element kind="textField" key="textField-24" mode="Transparent" x="230" y="0" width="37" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="###0" blankWhenNull="true" bold="false" hTextAlign="Right">
 				<expression><![CDATA[$F{huqty}]]></expression>
 				<box rightPadding="0">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -250,7 +250,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1" key="textField-31" mode="Transparent" x="271" y="0" width="84" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true">
+			<element kind="textField" key="textField-31" mode="Transparent" x="271" y="0" width="84" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true">
 				<expression><![CDATA[$F{huname}]]></expression>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -259,7 +259,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01" key="textField-13" x="166" y="0" width="71" height="12" forecolor="#000000" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false">
+			<element kind="textField" key="textField-13" x="166" y="0" width="71" height="12" forecolor="#000000" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false">
 				<expression><![CDATA[$F{attributes}]]></expression>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -268,7 +268,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="118a78d4-035b-4396-877b-f4e9c74bf281" key="textField-20" x="435" y="0" width="32" height="12" forecolor="#000000" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" hTextAlign="Right">
+			<element kind="textField" key="textField-20" x="435" y="0" width="32" height="12" forecolor="#000000" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" hTextAlign="Right">
 				<expression><![CDATA[$F{priceentered}]]></expression>
 				<patternExpression><![CDATA[$F{pricepattern}]]></patternExpression>
 				<box>
@@ -278,7 +278,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="545" y="0" width="24" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" hTextAlign="Right">
+			<element kind="textField" key="textField-33" mode="Transparent" x="545" y="0" width="24" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" hTextAlign="Right">
 				<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				<expression><![CDATA[$F{rate}]]></expression>
 				<box>
@@ -288,7 +288,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0" blankWhenNull="true" hTextAlign="Right">
+			<element kind="textField" key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0" blankWhenNull="true" hTextAlign="Right">
 				<printWhenExpression><![CDATA[new Boolean ($F{stdprecision}.intValue() == 0)]]></printWhenExpression>
 				<expression><![CDATA[$F{qtyenteredinpriceuom}]]></expression>
 				<box>
@@ -298,7 +298,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" hTextAlign="Right">
+			<element kind="textField" key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" hTextAlign="Right">
 				<printWhenExpression><![CDATA[new Boolean ($F{stdprecision}.intValue() == 2)]]></printWhenExpression>
 				<expression><![CDATA[$F{qtyenteredinpriceuom}]]></expression>
 				<box>
@@ -308,7 +308,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b" key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.000" blankWhenNull="true" hTextAlign="Right">
+			<element kind="textField" key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.000" blankWhenNull="true" hTextAlign="Right">
 				<printWhenExpression><![CDATA[new Boolean ($F{stdprecision}.intValue() == 3)]]></printWhenExpression>
 				<expression><![CDATA[$F{qtyenteredinpriceuom}]]></expression>
 				<box>
@@ -318,14 +318,14 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="staticText" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666" x="568" y="0" width="9" height="12" fontName="Arial" fontSize="9.0" hTextAlign="Right">
+			<element kind="staticText" x="568" y="0" width="9" height="12" fontName="Arial" fontSize="9.0" hTextAlign="Right">
 				<printWhenExpression><![CDATA[new Boolean($F{rate} != null && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				<text><![CDATA[%]]></text>
 			</element>
 		</band>
 		<band height="12">
 			<printWhenExpression><![CDATA[$F{lu_name} != null && !$F{lu_name}.isEmpty() ]]></printWhenExpression>
-			<element kind="textField" uuid="8d3a8a7f-7996-4a81-8ad7-e14296fe9f86" key="textField-31" mode="Transparent" x="271" y="0" width="82" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true">
+			<element kind="textField" key="textField-31" mode="Transparent" x="271" y="0" width="82" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true">
 				<expression><![CDATA[$F{lu_name}]]></expression>
 				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<box>
@@ -335,7 +335,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 			</element>
-			<element kind="textField" uuid="7d0203be-cb83-48db-99ed-56c2eadbb913" key="textField-24" mode="Transparent" x="239" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="###0" blankWhenNull="true" bold="false" hTextAlign="Center">
+			<element kind="textField" key="textField-24" mode="Transparent" x="239" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="###0" blankWhenNull="true" bold="false" hTextAlign="Center">
 				<printWhenExpression><![CDATA[$F{lu_name} != null && !$F{lu_name}.isEmpty()]]></printWhenExpression>
 				<expression><![CDATA[$F{qtylu}]]></expression>
 				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -350,7 +350,7 @@
 		</band>
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean( !$F{description}.isEmpty() && $R{showdescription}.equals("Y"))]]></printWhenExpression>
-			<element kind="textField" uuid="67d13506-b59f-426e-8b8c-2b84e7bc94a2" key="textField-24" mode="Transparent" x="37" y="0" width="539" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" printWhenDetailOverflows="true" bold="false">
+			<element kind="textField" key="textField-24" mode="Transparent" x="37" y="0" width="539" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="" blankWhenNull="true" printWhenDetailOverflows="true" bold="false">
 				<expression><![CDATA[$F{description} + "\n"]]></expression>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -364,11 +364,11 @@
 	</detail>
 	<columnFooter splitType="Stretch"/>
 	<pageFooter height="12" splitType="Stretch">
-		<element kind="textField" uuid="5b90fa33-3cd6-4da3-9aff-90a3f6970af4" key="textField-52" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" italic="true">
+		<element kind="textField" key="textField-52" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" italic="true">
 			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 			<expression><![CDATA[$R{SubTotal}]]></expression>
 		</element>
-		<element kind="textField" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992" key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" italic="true" hTextAlign="Right">
+		<element kind="textField" key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" italic="true" hTextAlign="Right">
 			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 			<expression><![CDATA[$V{LINESUM_SUM}]]></expression>
 			<box>
@@ -380,11 +380,11 @@
 		</element>
 	</pageFooter>
 	<lastPageFooter height="12" splitType="Stretch">
-		<element kind="textField" uuid="5b6d8087-d737-4da0-a80f-197ed0cbb526" key="textField-52" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" italic="false">
+		<element kind="textField" key="textField-52" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" markup="none" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" blankWhenNull="true" bold="true" italic="false">
 			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 			<expression><![CDATA[$R{TotalAmount}]]></expression>
 		</element>
-		<element kind="textField" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992" key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" bold="true" italic="false" hTextAlign="Right">
+		<element kind="textField" key="textField-53" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" fontName="Arial" fontSize="9.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" bold="true" italic="false" hTextAlign="Right">
 			<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 			<expression><![CDATA[$V{LINESUM_SUM}]]></expression>
 			<box>
