@@ -22,6 +22,7 @@ package org.adempiere.mm.attributes.spi.impl;
  * #L%
  */
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
@@ -40,6 +41,7 @@ import de.metas.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -52,6 +54,8 @@ import java.util.Optional;
 public class WeightGenerateHUTrxListener implements IHUTrxListener
 {
 	public static final WeightGenerateHUTrxListener instance = new WeightGenerateHUTrxListener();
+
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void trxLineProcessed(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)
@@ -127,7 +131,9 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 
 		//
 		// Get Product's weight
-		final Quantity productWeight = Services.get(IProductBL.class).getNetWeight(product, qtyUOM).orElse(null);
+		final Quantity productNetWeight = productBL.getNetWeight(product, qtyUOM).orElse(null);
+		final Quantity productGrossWeight = productBL.getGrossWeight(product, qtyUOM).orElse(null);
+		final Quantity productWeight = CoalesceUtil.coalesce(productGrossWeight, productNetWeight);
 		if (productWeight == null || productWeight.signum() <= 0)
 		{
 			return Optional.empty();
@@ -139,6 +145,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		return Optional.of(trxWeightNet);
 	}
 
+	@Nullable
 	private IWeightable getWeightableIfApplies(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)
 	{
 		//
