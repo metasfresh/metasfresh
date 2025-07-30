@@ -173,6 +173,11 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostDetailCreateRequest requestEffective = request.withAmount(amtConv);
 
 		currentCost.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
+		if (requestEffective.isReversal() && currentCost.getCurrentQty().isZero())
+		{
+			currentCost.clearOwnCostPrice();
+		}
+
 		utils.saveCurrentCost(currentCost);
 
 		return utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCost));
