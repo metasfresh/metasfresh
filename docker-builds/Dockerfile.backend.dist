@@ -7,6 +7,6 @@ COPY docker-builds/mvn/settings.xml /root/.m2/
 WORKDIR /backend/extensionsupport
 
 ARG VERSION=10.0.0-local
-RUN mvn --batch-mode --quiet versions:set -DnewVersion=$VERSION
+RUN mvn --batch-mode versions:set -DnewVersion=$VERSION
 
-CMD mvn --batch-mode --quiet clean deploy
+CMD mvn --batch-mode clean deploy
