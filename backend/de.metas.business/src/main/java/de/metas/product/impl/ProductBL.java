@@ -185,6 +185,12 @@ public final class ProductBL implements IProductBL
 	public Optional<Quantity> getGrossWeight(final ProductId productId, final I_C_UOM targetProductUOM)
 	{
 		final I_M_Product product = getById(productId);
+		return getGrossWeight(product, targetProductUOM);
+	}
+
+	@Override
+	public Optional<Quantity> getGrossWeight(final I_M_Product product, final I_C_UOM targetProductUOM)
+	{
 		return getGrossWeight(product)
 				.map(weightForOneStockingUOM -> convertWeightFromStockingUOMToTargetUOM(weightForOneStockingUOM, product, targetProductUOM));
 	}
@@ -199,20 +205,15 @@ public final class ProductBL implements IProductBL
 	private Optional<Quantity> getGrossWeight(final I_M_Product product)
 	{
 		final UomId weightUomId = UomId.ofRepoIdOrNull(product.getGrossWeight_UOM_ID());
-		if (weightUomId == null)
+		if (weightUomId == null || InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_GrossWeight))
 		{
-			return Optional.empty();
-		}
-
-		if (InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_GrossWeight))
-		{
-			return Optional.empty();
+			return getNetWeight(product);
 		}
 
 		final BigDecimal weightBD = product.getGrossWeight();
 		if (weightBD.signum() <= 0)
 		{
-			return Optional.empty();
+			return getNetWeight(product);
 		}
 
 		return Optional.of(Quantitys.of(weightBD, weightUomId));
@@ -692,7 +693,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId)
+	public Optional<ProductId> getProductIdByBarcode(@NonNull final String barcode, @NonNull final ClientId clientId)
 	{
 		return productsRepo.getProductIdByBarcode(barcode, clientId);
 	}
@@ -776,7 +777,7 @@ public final class ProductBL implements IProductBL
 	public Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull final String queryString,
 			@NonNull final ClientId clientId,
-			@NonNull QueryLimit limit)
+			@NonNull final QueryLimit limit)
 	{
 		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
 	}
