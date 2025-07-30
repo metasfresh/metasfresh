@@ -86,6 +86,7 @@ public class C_OrderLine_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
+<<<<<<< HEAD
 	private final M_Product_StepDefData productTable;
 	private final C_BPartner_StepDefData partnerTable;
 	private final C_Order_StepDefData orderTable;
@@ -126,61 +127,90 @@ public class C_OrderLine_StepDef
 		this.warehouseTable = warehouseTable;
 		this.identifierIdsTable = identifierIdsTable;
 	}
+=======
+	private final @NonNull M_Product_StepDefData productTable;
+	private final @NonNull C_BPartner_StepDefData partnerTable;
+	private final @NonNull C_Order_StepDefData orderTable;
+	private final @NonNull C_OrderLine_StepDefData orderLineTable;
+	private final @NonNull M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final @NonNull C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
+	private final @NonNull C_Flatrate_Term_StepDefData contractTable;
+	private final @NonNull C_TaxCategory_StepDefData taxCategoryTable;
+	private final @NonNull M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final @NonNull M_Attribute_StepDefData attributeTable;
+	private final @NonNull C_Tax_StepDefData taxTable;
+	private final @NonNull M_Warehouse_StepDefData warehouseTable;
+	private final @NonNull IdentifierIds_StepDefData identifierIdsTable;
+>>>>>>> 35b06f5141 (Fix Moving Average Invoice costing bugs + cucumber test (#21145))
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+<<<<<<< HEAD
 				.forEach(tableRow -> {
 					final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
 					orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+=======
+				.forEach(this::createOrderLine);
+	}
 
-					final StepDefDataIdentifier productIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
-					final ProductId productId = productTable.getIdOptional(productIdentifier)
-							.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+	public void createOrderLine(final DataTableRow tableRow)
+	{
+		final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
+>>>>>>> 35b06f5141 (Fix Moving Average Invoice costing bugs + cucumber test (#21145))
 
-					orderLine.setM_Product_ID(productId.getRepoId());
-					orderLine.setQtyEntered(tableRow.getAsBigDecimal(I_C_OrderLine.COLUMNNAME_QtyEntered));
+		// make sure all defaults are set. If not, this method might be called later, when the orderLine is saved and might then override things set in this stepdef
+		final I_C_Order orderRecord = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+		orderLine.setC_Order_ID(orderRecord.getC_Order_ID());
+		orderLineBL.setOrder(orderLine, orderRecord);
 
-					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
-							.map(attributeSetInstanceTable::getId)
-							.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
+		final StepDefDataIdentifier productIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
+		final ProductId productId = productTable.getIdOptional(productIdentifier)
+				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
 
+		orderLine.setM_Product_ID(productId.getRepoId());
+		orderLine.setQtyEntered(tableRow.getAsBigDecimal(I_C_OrderLine.COLUMNNAME_QtyEntered));
+
+<<<<<<< HEAD
 					final OrderId orderId = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupIdIn(orderTable);
 					orderLine.setC_Order_ID(orderId.getRepoId());
 
 					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
 							.map(partnerTable::getId)
 							.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
+=======
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
+>>>>>>> 35b06f5141 (Fix Moving Average Invoice costing bugs + cucumber test (#21145))
 
-					final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
-					if (Check.isNotBlank(flatrateConditionsIdentifier))
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
+				.map(partnerTable::getId)
+				.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
+
+		final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(flatrateConditionsIdentifier))
+		{
+			final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
+			orderLine.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
+		}
+
+		tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.ifPresent(itemProductIdentifier -> {
+					if (itemProductIdentifier.isNullPlaceholder())
 					{
-						final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
-						orderLine.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
+						orderLine.setM_HU_PI_Item_Product_ID(-1);
 					}
-
-					tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
-							.ifPresent(itemProductIdentifier -> {
-								if (itemProductIdentifier.isNullPlaceholder())
-								{
-									orderLine.setM_HU_PI_Item_Product_ID(-1);
-								}
-								else
-								{
-									final HUPIItemProductId huPiItemProductId = huPiItemProductTable.getIdOptional(itemProductIdentifier)
-											.orElseGet(() -> itemProductIdentifier.getAsId(HUPIItemProductId.class));
-
-									orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductId.getRepoId());
-								}
-							});
-
-					final BigDecimal qtyEnteredTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU);
-					if (qtyEnteredTU != null)
+					else
 					{
-						orderLine.setQtyEnteredTU(qtyEnteredTU);
+						final HUPIItemProductId huPiItemProductId = huPiItemProductTable.getIdOptional(itemProductIdentifier)
+								.orElseGet(() -> itemProductIdentifier.getAsId(HUPIItemProductId.class));
+
+						orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductId.getRepoId());
 					}
+<<<<<<< HEAD
 
 					final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
 					if (qtyItemCapacity != null)
@@ -222,7 +252,59 @@ public class C_OrderLine_StepDef
 					saveRecord(orderLine);
 
 					orderLineTable.putOrReplace(tableRow.getAsIdentifier(), orderLine);
+=======
+>>>>>>> 35b06f5141 (Fix Moving Average Invoice costing bugs + cucumber test (#21145))
 				});
+
+		final BigDecimal qtyEnteredTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU);
+		if (qtyEnteredTU != null)
+		{
+			orderLine.setQtyEnteredTU(qtyEnteredTU);
+		}
+
+		final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
+		if (qtyItemCapacity != null)
+		{
+			orderLine.setQtyItemCapacity(qtyItemCapacity);
+		}
+
+		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(warehouseIdentifier))
+		{
+			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+			assertThat(warehouse).isNotNull();
+
+			orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		}
+
+		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
+		if (Check.isNotBlank(uomX12DE355))
+		{
+			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
+					.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstIdOnly(UomId::ofRepoIdOrNull);
+			assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
+			orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
+		}
+
+		tableRow.getAsOptionalBigDecimal("Price")
+				.ifPresent(price -> {
+					orderLine.setIsManualPrice(true);
+					orderLine.setPriceEntered(price);
+					orderLine.setPriceActual(price);
+				});
+
+		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
+				.ifPresent(orderLine::setDescription);
+
+		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
+				.ifPresent(orderLine::setExternalId);
+
+		saveRecord(orderLine);
+
+		orderLineTable.putOrReplace(tableRow.getAsIdentifier(), orderLine);
 	}
 
 	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")
