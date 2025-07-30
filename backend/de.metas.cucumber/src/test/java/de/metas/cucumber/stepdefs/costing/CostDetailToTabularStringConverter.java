@@ -142,7 +142,7 @@ public class CostDetailToTabularStringConverter
 	{
 		final CostingDocumentRef documentRef = record.getDocumentRef();
 		return costingDocumentRefResolver.resolveToIdentifier(documentRef)
-				.map(StepDefDataIdentifier::toString)
+				.map(StepDefDataIdentifier::getAsString)
 				.orElseGet(() -> "<" + documentRef.getId().getRepoId() + ">");
 	}
 
@@ -151,7 +151,7 @@ public class CostDetailToTabularStringConverter
 	{
 		final CostElementId costElementId = record.getCostElementId();
 		return costElementTable.getFirstIdentifierById(costElementId)
-				.map(StepDefDataIdentifier::toString)
+				.map(StepDefDataIdentifier::getAsString)
 				.orElseGet(() -> "<" + costElementId.getRepoId() + ">");
 	}
 

@@ -98,7 +98,7 @@ public class M_InOut_Line_StepDef
 	private final M_AttributeSetInstance_StepDefData asiTable;
 
 	@And("^validate the created (shipment|material receipt) lines$")
-	public void validate_created_M_InOutLines(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validate_created_M_InOutLines(@NonNull final String ignoredModel, @NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach(this::loadAndValidateAInOutLine);
 	}
@@ -169,7 +169,7 @@ public class M_InOut_Line_StepDef
 	}
 
 	@And("^validate the created (shipment|material receipt) lines by id$")
-	public void validateInOutLinesById(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validateInOutLinesById(@NonNull final String ignoredModel, @NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach((row) -> {
 			final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.create(row.getAsIdentifier().lookupIn(inoutLineTable), I_M_InOutLine.class);
@@ -180,7 +180,7 @@ public class M_InOut_Line_StepDef
 	}
 
 	@And("^validate the (shipment|material receipt) lines do not exist$")
-	public void validate_not_created_M_InOutLine(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validate_not_created_M_InOutLine(@NonNull final String ignoredModel, @NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)

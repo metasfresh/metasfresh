@@ -227,9 +227,7 @@ public class C_Invoice_Candidate_StepDef
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_Invoice_Candidate_ID)
-				.forEach((row) -> {
-					waitAndLoad_C_Invoice_Candidate(row, timeoutSec);
-				});
+				.forEach((row) -> waitAndLoad_C_Invoice_Candidate(row, timeoutSec));
 	}
 
 	@NonNull

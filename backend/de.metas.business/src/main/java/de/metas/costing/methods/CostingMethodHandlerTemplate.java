@@ -177,11 +177,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return null;
 	}
 
-	protected CostDetailCreateResult createCostForShippingNotification(final CostDetailCreateRequest request)
-	{
-		return createOutboundCostDefaultImpl(request);
-	}
-
 	protected CostDetailCreateResultsList createCostForMaterialShipment(final CostDetailCreateRequest request)
 	{
 		return CostDetailCreateResultsList.ofNullable(createOutboundCostDefaultImpl(request));

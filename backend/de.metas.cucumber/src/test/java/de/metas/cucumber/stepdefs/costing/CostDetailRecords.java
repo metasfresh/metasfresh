@@ -44,11 +44,6 @@ public class CostDetailRecords
 		return list.size();
 	}
 
-	public Optional<CostDetail> getBy(@NonNull final CostingDocumentRef documentRef)
-	{
-		return getBy(documentRef, CostAmountType.MAIN);
-	}
-
 	public Optional<CostDetail> getBy(@NonNull final CostingDocumentRef documentRef, @NonNull final CostAmountType amtType)
 	{
 		final CostDetailKey key = CostDetailKey.of(documentRef, amtType);

@@ -11,7 +11,6 @@ import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -42,7 +41,6 @@ import java.util.function.Function;
  */
 
 @EqualsAndHashCode
-@ToString
 public final class CostAmount
 {
 	public static CostAmount of(

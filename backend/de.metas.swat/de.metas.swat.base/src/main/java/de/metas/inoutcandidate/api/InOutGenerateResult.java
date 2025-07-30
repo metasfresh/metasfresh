@@ -41,11 +41,6 @@ public interface InOutGenerateResult
 
 	void addInOut(I_M_InOut inOut);
 
-	default I_M_InOut getSingleInOut()
-	{
-		return getSingleInOut(I_M_InOut.class);
-	}
-
 	default <T extends org.compiere.model.I_M_InOut> T getSingleInOut(final Class<T> type)
 	{
 		final I_M_InOut inout = CollectionUtils.singleElement(getInOuts());

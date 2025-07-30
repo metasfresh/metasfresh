@@ -251,27 +251,21 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCosts)
 	{
-		return new ShipmentCosts.CostAmountAndQtyAndTypeMapper()
-		{
-			@Override
-			public CostDetailCreateResult shippedButNotNotified(final CostAmountAndQty amtAndQty, final CostAmountType type)
+		return (amtAndQty, type) -> {
+			final CostDetailCreateResult shippedButNotNotifiedResult = utils.createCostDetailRecordWithChangedCosts(
+					request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
+					CostDetailPreviousAmounts.of(currentCosts));
+
+			if (!request.isReversal())
 			{
-				final CostDetailCreateResult shippedButNotNotifiedResult = utils.createCostDetailRecordWithChangedCosts(
-						request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
-						CostDetailPreviousAmounts.of(currentCosts));
-
-				if (!request.isReversal())
-				{
-					currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
-				}
-				else
-				{
-					currentCosts.addWeightedAverage(shippedButNotNotifiedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
-				}
-
-				return shippedButNotNotifiedResult;
+				currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
+			}
+			else
+			{
+				currentCosts.addWeightedAverage(shippedButNotNotifiedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
 			}
 
+			return shippedButNotNotifiedResult;
 		};
 	}
 
@@ -332,6 +326,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 				requestEffective = request.withAmount(effectiveAmt);
 
+				//noinspection StatementWithEmptyBody
 				if (explicitCostPrice != null && currentCosts.getCurrentQty().isZero())
 				{
 					currentCosts.setOwnCostPrice(explicitCostPrice);
