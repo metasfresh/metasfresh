@@ -131,9 +131,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 
 		//
 		// Get Product's weight
-		final Quantity productNetWeight = productBL.getNetWeight(product, qtyUOM).orElse(null);
-		final Quantity productGrossWeight = productBL.getGrossWeight(product, qtyUOM).orElse(null);
-		final Quantity productWeight = CoalesceUtil.coalesce(productGrossWeight, productNetWeight);
+		final Quantity productWeight = productBL.getGrossWeight(product, qtyUOM).orElse(null);
 		if (productWeight == null || productWeight.signum() <= 0)
 		{
 			return Optional.empty();

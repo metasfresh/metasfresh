@@ -205,20 +205,15 @@ public final class ProductBL implements IProductBL
 	private Optional<Quantity> getGrossWeight(final I_M_Product product)
 	{
 		final UomId weightUomId = UomId.ofRepoIdOrNull(product.getGrossWeight_UOM_ID());
-		if (weightUomId == null)
+		if (weightUomId == null || InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_GrossWeight))
 		{
-			return Optional.empty();
-		}
-
-		if (InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_GrossWeight))
-		{
-			return Optional.empty();
+			return getNetWeight(product);
 		}
 
 		final BigDecimal weightBD = product.getGrossWeight();
 		if (weightBD.signum() <= 0)
 		{
-			return Optional.empty();
+			return getNetWeight(product);
 		}
 
 		return Optional.of(Quantitys.of(weightBD, weightUomId));
