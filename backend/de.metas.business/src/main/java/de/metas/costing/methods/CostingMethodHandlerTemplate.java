@@ -17,6 +17,7 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
@@ -148,24 +149,28 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 	}
 
+	@Nullable
 	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
 	}
 
+	@Nullable
 	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
 	}
 
+	@Nullable
 	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
 	}
 
+	@Nullable
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
