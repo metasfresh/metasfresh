@@ -108,10 +108,6 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final Set<OrderLineId> newOrderLineIds;
 		if (extractGroupTemplateId(quickInput).isPresent())
 		{
-			if (QuickInputConstants.isEnableLUFields())
-			{
-				throw new AdempiereException("Generating order lines from group template is not supported when LU fields are enabled");
-			}
 			newOrderLineIds = process_GenerateOrderLinesFromGroupTemplate(quickInput);
 		}
 		else
@@ -128,6 +124,10 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		if (QuickInputConstants.isLUFieldsEnabled(SOTrx.ofBoolean(order.isSOTrx())))
+		{
+			throw new AdempiereException("Generating order lines from group template is not supported when LU fields are enabled");
+		}
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
 		final ConditionsId contractConditionsId = extractContractConditionsId(quickInput).orElse(null);
@@ -228,9 +228,10 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
-		final boolean isEnableLUFields = QuickInputConstants.isEnableLUFields();
-		if (isEnableLUFields)
+		final boolean isLUFieldsUsed = QuickInputConstants.isLUFieldsEnabled(soTrx);
+		if (isLUFieldsUsed)
 		{
 			checkValidQty(IOrderLineQuickInput.COLUMNNAME_QtyLU, quickInputLUQty, orderLineQuickInput);
 			final Optional<I_M_HU_PI_Item> tuPIItem = handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, Objects.requireNonNull(luPIId), Objects.requireNonNull(piItemProductId));
@@ -257,7 +258,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.bpartnerId(bpartnerId)
 				.luId(luPIId)
 				.luQty(luQty)
-				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.soTrx(soTrx)
 				.build();
 	}
 
