@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Cost;
 import org.compiere.util.Env;
@@ -85,21 +86,25 @@ public class M_Cost_StepDef
 			assertThat(currentCost).isNotNull();
 			SharedTestContext.put("currentCost", currentCost);
 
+			final SoftAssertions softly = new SoftAssertions();
+
 			row.getAsOptionalMoney(I_M_Cost.COLUMNNAME_CurrentCostPrice, moneyService::getCurrencyIdByCurrencyCode)
 					.ifPresent(currentCostPriceExpected -> {
 						final Money currentCostPriceActual = currentCost.getCostPrice().toCostAmount().toMoney();
-						assertThat(currentCostPriceActual).isEqualTo(currentCostPriceExpected);
+						softly.assertThat(currentCostPriceActual).as("CurrentCostPrice").isEqualTo(currentCostPriceExpected);
 					});
 			row.getAsOptionalMoney(I_M_Cost.COLUMNNAME_CumulatedAmt, moneyService::getCurrencyIdByCurrencyCode)
 					.ifPresent(cumulatedAmtExpected -> {
 						final Money cumulatedAmtActual = currentCost.getCumulatedAmt().toMoney();
-						assertThat(cumulatedAmtActual).isEqualTo(cumulatedAmtExpected);
+						softly.assertThat(cumulatedAmtActual).as("CumulatedAmt").isEqualTo(cumulatedAmtExpected);
 					});
 			row.getAsOptionalQuantity(I_M_Cost.COLUMNNAME_CurrentQty, uomDAO::getByX12DE355)
 					.ifPresent(currentQtyExpected -> {
 						final Quantity currentQtyActual = currentCost.getCurrentQty();
-						assertThat(currentQtyActual).isEqualTo(currentQtyExpected);
+						softly.assertThat(currentQtyActual).as("CurrentQty").isEqualTo(currentQtyExpected);
 					});
+
+			softly.assertAll();
 		});
 	}
 
