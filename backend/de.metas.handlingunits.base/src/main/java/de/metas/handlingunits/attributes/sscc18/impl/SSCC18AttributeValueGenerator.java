@@ -23,10 +23,10 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  */
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.organization.OrgId;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.SSCC18;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeSet;

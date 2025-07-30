@@ -1,27 +1,22 @@
 package de.metas.shipping;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.sql.Timestamp;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.sscc18.SSCC18;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -57,44 +52,27 @@ public class PurchaseOrderToShipperTransportationRepository
 				.anyMatch();
 	}
 
-	public void addPurchaseOrderToShipperTransportation(
-			@NonNull final OrderId purchaseOrderId,
-			@NonNull final ShipperTransportationId shipperTransportationId)
+	public void addPurchaseOrderToShipperTransportation(@NonNull final PurchaseShippingPackageCreateRequest request)
 	{
-
-		final I_M_ShipperTransportation shipperTransportation = Services.get(IShipperTransportationDAO.class).getById(shipperTransportationId);
-		final org.compiere.model.I_C_Order purchaseOrder = Services.get(IOrderDAO.class).getById(purchaseOrderId);
-
-		final Timestamp deliverydate = purchaseOrder.getDatePromised();
-
 		final I_M_Package mpackage = newInstance(I_M_Package.class);
-		mpackage.setM_Shipper_ID(shipperTransportation.getM_Shipper_ID());
-		mpackage.setShipDate(deliverydate);
-		mpackage.setC_BPartner_ID(purchaseOrder.getC_BPartner_ID());
-		mpackage.setC_BPartner_Location_ID(purchaseOrder.getC_BPartner_Location_ID());
+		mpackage.setM_Shipper_ID(ShipperId.toRepoId(request.getShiperId()));
+		mpackage.setShipDate(request.getDatePromised());
+		mpackage.setC_BPartner_ID(BPartnerId.toRepoId(request.getBPartnerId()));
+		mpackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBPartnerLocationId()));
+		mpackage.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
+		mpackage.setIPA_SSCC18(SSCC18.toString(request.getSscc()));
 		save(mpackage);
 
-		final I_M_ShippingPackage shippingPackage = Services.get(IShipperTransportationBL.class)
-				.createShippingPackage(shipperTransportation, mpackage);
-		shippingPackage.setC_Order_ID(purchaseOrder.getC_Order_ID());
+		final I_M_ShippingPackage shippingPackage = InterfaceWrapperHelper.newInstance(I_M_ShippingPackage.class, mpackage);
+		shippingPackage.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationIdl()));
+		shippingPackage.setM_Package_ID(mpackage.getM_Package_ID());
+		shippingPackage.setC_BPartner_ID(mpackage.getC_BPartner_ID());
+		shippingPackage.setC_BPartner_Location_ID(mpackage.getC_BPartner_Location_ID());
+		shippingPackage.setC_Order_ID(OrderId.toRepoId(request.getOrderId()));
+		shippingPackage.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 		shippingPackage.setIsToBeFetched(true);
+		shippingPackage.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
 		save(shippingPackage);
-	}
-
-	public ImmutableList<OrderId> retrieveEligiblePurchaseOrders(IQueryFilter<I_C_Order> queryFilter)
-	{
-
-		final ImmutableList<OrderId> validPurchaseOrdersIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order.class)
-				.filter(queryFilter)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_IsSOTrx, false)
-				.create()
-				.idsAsSet(OrderId::ofRepoId)
-				.stream()
-				.filter(orderId -> purchaseOrderNotInShipperTransportation(orderId))
-				.collect(ImmutableList.toImmutableList());
-
-		return validPurchaseOrdersIds;
 	}
 
 }

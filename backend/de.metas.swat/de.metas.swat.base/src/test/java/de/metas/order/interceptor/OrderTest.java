@@ -10,6 +10,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -62,7 +63,8 @@ public class OrderTest
 		final DocumentLocationBL documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService));
+		final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, purchaseOrderToShipperTransportationService));
 	}
 
 	@Test
