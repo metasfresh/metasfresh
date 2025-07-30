@@ -16,4 +16,4 @@ RUN echo en_US.UTF-8 UTF-8 > /etc/locale.gen && locale-gen en_US.UTF-8
 COPY docker-builds/db/init/ /docker-entrypoint-initdb.d/
 
 # COPY docker-builds/db/metasfresh_latest.pgdump .
-ADD --chown=postgres https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_172.pgdump metasfresh.pgdump
+ADD --chown=postgres https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_172_gh24441.pgdump metasfresh.pgdump
