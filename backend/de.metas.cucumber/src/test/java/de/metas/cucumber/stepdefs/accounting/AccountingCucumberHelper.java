@@ -55,6 +55,11 @@ public class AccountingCucumberHelper
 				.onErrorNotifyUserId(Env.getLoggedUserId())
 				.build();
 	}
+	
+	public static void waitUtilPosted(final TableRecordReferenceSet recordRefs) throws InterruptedException
+	{
+		waitUtilPosted(recordRefs.toSet());
+	}
 
 	public static void waitUtilPosted(final Set<TableRecordReference> recordRefs) throws InterruptedException
 	{

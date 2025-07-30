@@ -90,7 +90,11 @@ public class M_Cost_StepDef
 						final Money currentCostPriceActual = currentCost.getCostPrice().toCostAmount().toMoney();
 						assertThat(currentCostPriceActual).isEqualTo(currentCostPriceExpected);
 					});
-
+			row.getAsOptionalMoney(I_M_Cost.COLUMNNAME_CumulatedAmt, moneyService::getCurrencyIdByCurrencyCode)
+					.ifPresent(cumulatedAmtExpected -> {
+						final Money cumulatedAmtActual = currentCost.getCumulatedAmt().toMoney();
+						assertThat(cumulatedAmtActual).isEqualTo(cumulatedAmtExpected);
+					});
 			row.getAsOptionalQuantity(I_M_Cost.COLUMNNAME_CurrentQty, uomDAO::getByX12DE355)
 					.ifPresent(currentQtyExpected -> {
 						final Quantity currentQtyActual = currentCost.getCurrentQty();
