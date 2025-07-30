@@ -1038,25 +1038,25 @@ jobs:
         profile: [ profile1, profile2, profile3, profile4, profile5, profile6, profile7, report, flaky, catchall ]
         include:
           - profile: profile1
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @flaky and not @ignore"
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor1"
           - profile: profile2
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor2 and not @flaky and not @ignore"
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor2"
           - profile: profile3
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor3 and not @flaky and not @ignore"
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor3"
           - profile: profile4
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor4 and not @flaky and not @ignore"
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor4"
           - profile: profile5
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor5 and not @flaky and not @ignore"
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor5"
           - profile: profile6
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor6 and not @flaky and not @ignore"
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor6"
           - profile: profile7
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor7 and not @flaky and not @ignore"
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="ghActions:run_on_executor7"
           - profile: report
-            params: -Dcucumber.filter.tags="@report and not @flaky and not @ignore"
+            params: -DexcludedGroups="ignore,flaky" -Dgroups="report"
           - profile: flaky
-            params: -Dcucumber.filter.tags="@flaky and not @ignore"
+            params: -DexcludedGroups="ignore" -Dgroups="flaky"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @report and not @ignore and not @flaky"
+            params: -DexcludedGroups="ignore,ghActions:run_on_executor1,ghActions:run_on_executor2,ghActions:run_on_executor3,ghActions:run_on_executor4,ghActions:run_on_executor5,ghActions:run_on_executor6,ghActions:run_on_executor7,report,flaky"
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3

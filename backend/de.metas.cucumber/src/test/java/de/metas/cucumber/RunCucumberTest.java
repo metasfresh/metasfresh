@@ -28,12 +28,13 @@ import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectClasspathResource;
 import org.junit.platform.suite.api.Suite;
 
-
 /**
  * Use this class to run cucumber tests as junit-5 tests.
  * But note that in IntelliJ you can also run scenarios directly from the feature file.
- * Just make sure that your {@code Scenario} or {@code Background} contain the Step
+ * Just make sure that your {@code Scenario} or {@code Background} contain this Step:
  * {@code Given infrastructure and metasfresh are running}.
+ * <p>
+ * Also note that this class is invoked when the cucumber-tests are run from {@code mvn test}
  */
 @Suite
 @IncludeEngines("cucumber")
