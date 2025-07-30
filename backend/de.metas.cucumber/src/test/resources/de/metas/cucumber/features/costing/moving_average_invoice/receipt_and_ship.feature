@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor6
-Feature: Moving Avg Invoice - receive and ship
+Feature: Moving Average Invoice - receive and ship
 
   Background:
     Given infrastructure and metasfresh are running
