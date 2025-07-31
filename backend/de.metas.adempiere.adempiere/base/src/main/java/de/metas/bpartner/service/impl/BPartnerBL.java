@@ -863,13 +863,13 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
 		{
-			return Optional.of(bpartnerLocation.getVATaxID());
+			return Optional.of(VATIdentifier.of(bpartnerLocation.getVATaxID()));
 		}
 
 		final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
 		if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
 		{
-			return Optional.of(bPartner.getVATaxID());
+			return Optional.of(VATIdentifier.of(bPartner.getVATaxID()));
 		}
 
 		return Optional.empty();
