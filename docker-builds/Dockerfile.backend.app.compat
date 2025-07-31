@@ -3,9 +3,6 @@ ARG REGISTRY=
 FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 FROM ${REGISTRY}metasfresh/metas-app:$REFNAME AS app
 
-FROM metasfresh/metas-mvn-backend:$REFNAME AS backend
-FROM metasfresh/metas-app:$REFNAME AS app
-
 # instead of: FROM ubuntu:16.04 & apt get install openjdk-8-jdk-headless
 FROM openjdk:8-jre-bullseye AS runtime
 

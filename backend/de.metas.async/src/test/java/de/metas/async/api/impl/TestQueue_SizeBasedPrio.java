@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 
-import static shadow.org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Enqueue a number of workpackages and verify their priorities.
