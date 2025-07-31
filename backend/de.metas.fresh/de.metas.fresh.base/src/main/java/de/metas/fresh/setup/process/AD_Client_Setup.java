@@ -1,5 +1,6 @@
 package de.metas.fresh.setup.process;
 
+import de.metas.tax.api.VATIdentifier;
 import org.adempiere.util.lang.IAutoCloseable;
 
 import de.metas.cache.CacheMgt;
@@ -53,7 +54,8 @@ public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParam
 		}
 		else if (PARAM_VATaxID.equalsIgnoreCase(name))
 		{
-			return clientSetup.getCompanyTaxID();
+			final VATIdentifier companyTaxID = clientSetup.getCompanyTaxID();
+			return companyTaxID != null ? companyTaxID.getAsString() : null;
 		}
 		else if (PARAM_C_Location_ID.equalsIgnoreCase(name))
 		{
