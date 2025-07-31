@@ -92,6 +92,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -1752,7 +1753,7 @@ public class JsonPersisterService
 		// VAT ID
 		if (jsonBPartnerLocation.isVatIdSet())
 		{
-			location.setVatTaxId(StringUtils.trim(jsonBPartnerLocation.getVatId()));
+			location.setVatTaxId(VATIdentifier.ofNullable(jsonBPartnerLocation.getVatId()));
 		}
 
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
