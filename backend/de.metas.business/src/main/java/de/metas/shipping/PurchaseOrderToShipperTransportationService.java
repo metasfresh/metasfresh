@@ -115,7 +115,8 @@ public class PurchaseOrderToShipperTransportationService
 		final List<I_C_OrderLine> orderLinesWithLUQty = orderLines.stream()
 				.filter(PurchaseOrderToShipperTransportationService::isLUQtySet)
 				.collect(Collectors.toList());
-		final boolean isOrderLinesWithoutLUQtyExist = orderLines.size() != orderLinesWithLUQty.size();
+		final boolean isOrderLinesWithoutLUQtyExist = orderLines.stream()
+				.anyMatch(ol -> !orderLinesWithLUQty.contains(ol) && !ol.isPackagingMaterial());
 
 		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationIdToUse);
 
