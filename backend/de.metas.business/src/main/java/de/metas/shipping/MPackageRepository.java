@@ -3,6 +3,7 @@ package de.metas.shipping;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import de.metas.shipping.mpackage.PackageId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Package;
 import org.springframework.stereotype.Repository;
@@ -31,7 +32,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class MPackageRepository
 {
-	public I_M_Package getById(final MPackageId mPackageId)
+	public I_M_Package getById(final PackageId mPackageId)
 	{
 		final I_M_Package mPackage = load(mPackageId.getRepoId(), I_M_Package.class);
 		if (mPackage == null)
@@ -41,7 +42,7 @@ public class MPackageRepository
 		return mPackage;
 	}
 
-	public void closeMPackage(MPackageId mPackageId)
+	public void closeMPackage(PackageId mPackageId)
 	{
 		final I_M_Package mPackage = getById(mPackageId);
 

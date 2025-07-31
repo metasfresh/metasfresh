@@ -20,44 +20,27 @@
  * #L%
  */
 
-package de.metas.mpackage;
+package de.metas.shipping.mpackage;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
+import de.metas.inout.InOutId;
+import de.metas.sscc18.SSCC18;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+
 @Value
-public class PackageId implements RepoIdAware
+@Builder(toBuilder = true)
+public class Package
 {
-	int repoId;
+	@NonNull PackageId id;
+	@Nullable BigDecimal weightInKg;
+	@Nullable InOutId inOutId;
+	@Nullable String sscc; // because there's no easy way to parse a String into an SSCC without knowing details about the producer
+	@NonNull @Singular List<PackageItem> packageContents;
 
-	@JsonCreator
-	public static PackageId ofRepoId(final int repoId)
-	{
-		return new PackageId(repoId);
-	}
-
-	public static PackageId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new PackageId(repoId) : null;
-	}
-
-	public static int toRepoId(final PackageId id)
-	{
-		return id != null ? id.getRepoId() : -1;
-	}
-
-	private PackageId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Package_ID");
-	}
-
-	@Override
-	@JsonValue
-	public int getRepoId()
-	{
-		return repoId;
-	}
 }

@@ -10,7 +10,7 @@ import de.metas.common.util.pair.IPair;
 import de.metas.location.CountryCode;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;

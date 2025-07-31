@@ -143,9 +143,12 @@ public class PurchaseOrderToShipperTransportationService
 
 	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate, @NonNull final I_C_OrderLine ol)
 	{
-		requestTemplate.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()));
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
+		requestTemplate.orderLineId(orderLineId);
 		final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
 		final int qtyLUs = ol.getQtyLU().intValueExact();
+		//TODO IT2 avoid creating duplicates on reopen, via de.metas.shipping.PurchaseOrderToShipperTransportationRepository.getByOrderLineId
+
 		for (int i = 0; i < qtyLUs; i++)
 		{
 			repo.addPurchaseOrderToShipperTransportation(requestTemplate

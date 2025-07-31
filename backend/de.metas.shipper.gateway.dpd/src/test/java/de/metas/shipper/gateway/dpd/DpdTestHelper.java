@@ -25,7 +25,7 @@ package de.metas.shipper.gateway.dpd;
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Strings;
 import de.metas.location.CountryCode;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;

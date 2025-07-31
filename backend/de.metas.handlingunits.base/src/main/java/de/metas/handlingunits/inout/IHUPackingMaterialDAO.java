@@ -29,7 +29,7 @@ import de.metas.handlingunits.HuPackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;

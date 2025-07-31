@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.mpackage;
+package de.metas.shipping.mpackage;
 
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -29,11 +29,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder(toBuilder = true)
 public class PackageItem
 {
 	@NonNull ProductId productId;
-	@NonNull Quantity quantity;
+	@Nullable Quantity quantity;
 	@NonNull OrderLineId orderLineId;
 }

@@ -1,11 +1,17 @@
 package de.metas.shipping;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.inout.InOutId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.Package;
+import de.metas.shipping.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageItem;
 import de.metas.sscc18.SSCC18;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -14,6 +20,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -42,9 +51,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Repository
 public class PurchaseOrderToShipperTransportationRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	public boolean purchaseOrderNotInShipperTransportation(@NonNull final OrderId purchaseOrderId)
 	{
-		return !Services.get(IQueryBL.class)
+		return !queryBL
 				.createQueryBuilder(I_M_ShippingPackage.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, purchaseOrderId)
@@ -73,6 +84,38 @@ public class PurchaseOrderToShipperTransportationRepository
 		shippingPackage.setIsToBeFetched(true);
 		shippingPackage.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
 		save(shippingPackage);
+	}
+
+	public List<Package> getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final Map<PackageId, I_M_ShippingPackage> packageIdToShippingPackageMultimap = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.map(I_M_ShippingPackage.class, shippingPackage -> PackageId.ofRepoId(shippingPackage.getM_Package_ID()));
+		return queryBL.createQueryBuilder(I_M_Package.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Package.COLUMNNAME_M_Package_ID, packageIdToShippingPackageMultimap.keySet())
+				.stream()
+				.map(mPackage -> fromDB(mPackage, orderLineId, packageIdToShippingPackageMultimap))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private Package fromDB(@NonNull final I_M_Package mPackage, @NonNull final OrderLineId orderLineId, @NonNull final Map<PackageId, I_M_ShippingPackage> packageIdToShippingPackageMultimap)
+	{
+		final PackageId packageId = PackageId.ofRepoId(mPackage.getM_Package_ID());
+		final I_M_ShippingPackage shippingPackage = packageIdToShippingPackageMultimap.get(packageId);
+		return Package.builder()
+				.id(packageId)
+				.inOutId(InOutId.ofRepoIdOrNull(mPackage.getM_InOut_ID()))
+				.weightInKg(mPackage.getPackageWeight())
+				.sscc(mPackage.getIPA_SSCC18())
+				.packageContent(PackageItem.builder()
+						.orderLineId(orderLineId)
+						.productId(ProductId.ofRepoId(shippingPackage.getM_Product_ID()))
+						.build()
+				)
+				.build();
 	}
 
 }
