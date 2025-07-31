@@ -44,8 +44,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * In this scenario we have two invoice candidates (also referencing two orders). The first ic has two iols, the 2nd ic has one iol.
@@ -137,7 +136,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 			iol121 = createInvoiceCandidateInOutLine(ic1, inOut12, qtysDelivered_20, inOutDocumentNo + "_1");
 			completeInOut(inOut12);
 		}
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(2));
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1))).hasSize(2);
 
 		// Deliver everything via WP
 		final StockQtyAndUOMQty qtysDelivered_50 = StockQtyAndUOMQtys.create(FIFTY, productId, FIVE_HUNDRET, uomId);
@@ -150,8 +149,8 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		}
 
 
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(2));
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic2)).size(), is(1));
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1))).hasSize(2);
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic2))).hasSize(1);
 		return Arrays.asList(iol111, iol121, iol211);
 
 	}
@@ -170,7 +169,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic1);
 
-		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(2));
+		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1))).hasSize(2);
 
 		InvoiceCandidateExpectation.newExpectation()
 				.inDispute(false)
@@ -180,6 +179,6 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 				.qtyWithIssues(BigDecimal.ZERO)
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic2);
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic2)).size(), is(1));
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic2))).hasSize(1);
 	}
 }

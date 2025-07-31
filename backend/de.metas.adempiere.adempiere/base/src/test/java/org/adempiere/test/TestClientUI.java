@@ -25,9 +25,9 @@ package org.adempiere.test;
 
 import java.lang.reflect.Method;
 
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-import org.junit.Assert;
 
 import de.metas.adempiere.form.AbstractClientUI;
 import de.metas.adempiere.form.IClientUI;
@@ -140,7 +140,7 @@ public class TestClientUI extends AbstractClientUI implements IClientUIInstance
 		// ADAssert.assertMsgExists(AD_Message);
 
 		final Boolean answer = getYesNoAnswer(WindowNo, AD_Message, message);
-		Assert.assertNotNull("No default answer was specified for windowNo=" + WindowNo + ", AD_Message=" + AD_Message + ", message=" + message, answer);
+		Assertions.assertNotNull( answer, "No default answer was specified for windowNo=" + WindowNo + ", AD_Message=" + AD_Message + ", message=" + message);
 
 		logger.info("Answering " + answer + " on windowNo=" + WindowNo + ", AD_Message=" + AD_Message + ", message=" + message);
 
@@ -164,12 +164,12 @@ public class TestClientUI extends AbstractClientUI implements IClientUIInstance
 
 	public void assertWarnDialogWasShown()
 	{
-		Assert.assertEquals("IClientUI.warn() was not called", "warn", getLastInvocation().getName());
+		Assertions.assertEquals( "warn",  getLastInvocation().getName(), "IClientUI.warn() was not called");
 	}
 
 	public void assertAskDialogWasShown()
 	{
-		Assert.assertEquals("IClientUI.ask() was not called", "ask", getLastInvocation().getName());
+		Assertions.assertEquals( "ask",  getLastInvocation().getName(), "IClientUI.ask() was not called");
 	}
 
 	private void askMethodCalled()
@@ -180,7 +180,7 @@ public class TestClientUI extends AbstractClientUI implements IClientUIInstance
 		}
 		catch (final Exception e)
 		{
-			Assert.fail("Caught " + e);
+			Assertions.fail("Caught " + e);
 		}
 	}
 
@@ -192,7 +192,7 @@ public class TestClientUI extends AbstractClientUI implements IClientUIInstance
 		}
 		catch (final Exception e)
 		{
-			Assert.fail("Caught " + e);
+			Assertions.fail("Caught " + e);
 		}
 	}
 
@@ -225,7 +225,7 @@ public class TestClientUI extends AbstractClientUI implements IClientUIInstance
 		}
 		catch (final Exception e)
 		{
-			Assert.fail("Caught " + e);
+			Assertions.fail("Caught " + e);
 		}
 	}
 
@@ -238,7 +238,7 @@ public class TestClientUI extends AbstractClientUI implements IClientUIInstance
 		}
 		catch (final Exception e)
 		{
-			Assert.fail("Caught " + e);
+			Assertions.fail("Caught " + e);
 		}
 	}
 

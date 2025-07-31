@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.spi.impl.aggregator.standard;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
@@ -113,7 +113,7 @@ public class DefaultAggregator implements IAggregator
 
 		final StringBuilder aggregationKeyToUse = new StringBuilder();
 
-		if (Check.isEmpty(lineAggregationKeyStr))
+		if (Check.isBlank(lineAggregationKeyStr))
 		{
 			// 'ic' has an empty LineAggregationKey;
 			// don't aggregate it with any other candidate

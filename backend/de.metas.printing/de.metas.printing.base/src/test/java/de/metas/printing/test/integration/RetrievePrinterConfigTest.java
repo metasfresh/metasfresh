@@ -33,12 +33,12 @@ import de.metas.workplace.WorkplaceRepository;
 import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.WorkplaceUserAssignRepository;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RetrievePrinterConfigTest extends AbstractPrintingTest
 {
@@ -46,7 +46,7 @@ public class RetrievePrinterConfigTest extends AbstractPrintingTest
 	public static final String HOST_KEY = "hostKey";
 	final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

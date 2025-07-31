@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-rabbitmq
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -50,7 +50,7 @@ public class RabbitMQExportExternalReferenceRouteBuilder extends RouteBuilder
 
 		from(direct(EXPORT_EXTERNAL_REFERENCE_ROUTE_ID))
 				.routeId(EXPORT_EXTERNAL_REFERENCE_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(new ExportExternalReferenceProcessor())
 
 				.to(direct(ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI))

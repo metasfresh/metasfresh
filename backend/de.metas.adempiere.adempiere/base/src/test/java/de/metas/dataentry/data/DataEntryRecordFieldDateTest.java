@@ -1,18 +1,17 @@
 package de.metas.dataentry.data;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.CreatedUpdatedInfo;
+import de.metas.common.util.time.SystemTime;
+import de.metas.dataentry.DataEntryFieldId;
+import de.metas.user.UserId;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import de.metas.CreatedUpdatedInfo;
-import de.metas.common.util.time.SystemTime;
-import org.junit.Test;
-
-import de.metas.dataentry.DataEntryFieldId;
-import de.metas.user.UserId;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

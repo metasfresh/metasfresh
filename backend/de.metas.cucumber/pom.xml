@@ -2,7 +2,7 @@
   ~ #%L
   ~ de.metas.cucumber
   ~ %%
-  ~ Copyright (C) 2022 metas GmbH
+  ~ Copyright (C) 2025 metas GmbH
   ~ %%
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as
@@ -38,9 +38,35 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
-        <cucumber.version>7.5.0</cucumber.version>
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <testcontainers.version>1.21.3</testcontainers.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- use dependency management as seen in https://github.com/cucumber/cucumber-java-skeleton/blob/main/maven/pom.xml --> 
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.13.4</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-bom</artifactId>
+                <version>7.27.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-bom</artifactId>
+                <version>3.27.3</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -96,7 +122,7 @@
             <version>${metasfresh.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
@@ -109,42 +135,52 @@
             <scope>test</scope>
         </dependency>
 
-        <!--
-        Not using junit5 (jupiter) right now, because it seems to be half baked.
-        Instead I'm following the docs at https://cucumber.io/docs/cucumber/api/ .
-        -->
+        <!-- JUnit 5 and Cucumber JUnit Platform Engine -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- needed to run the tests with maven's surefire-plugin -->
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-junit</artifactId>
-            <version>${cucumber.version}</version>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
-            <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-picocontainer</artifactId>
-            <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter -->
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
+            <artifactId>junit-jupiter</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <!-- avoid ClassNotFoundException regarding InputCoercionException-->
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -189,12 +225,11 @@
                 <configuration>
                     <properties>
                         <configurationParameters>
-                            cucumber.junit-platform.naming-strategy=long
+                            cucumber.junit-platform.naming-strategy=surefire
                         </configurationParameters>
                     </properties>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>

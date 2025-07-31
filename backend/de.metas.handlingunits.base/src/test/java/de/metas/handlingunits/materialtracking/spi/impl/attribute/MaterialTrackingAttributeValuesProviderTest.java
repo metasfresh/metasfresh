@@ -16,8 +16,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.NamePair;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -51,7 +51,7 @@ public class MaterialTrackingAttributeValuesProviderTest
 {
 	private MaterialTrackingAttributeValuesProvider materialTrackingAttributeValuesProvider;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

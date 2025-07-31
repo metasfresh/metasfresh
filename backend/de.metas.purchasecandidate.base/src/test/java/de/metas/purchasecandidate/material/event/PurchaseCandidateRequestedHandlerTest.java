@@ -3,14 +3,15 @@ package de.metas.purchasecandidate.material.event;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.purchasecandidate.PurchaseCandidateId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -36,7 +37,7 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 
 public class PurchaseCandidateRequestedHandlerTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

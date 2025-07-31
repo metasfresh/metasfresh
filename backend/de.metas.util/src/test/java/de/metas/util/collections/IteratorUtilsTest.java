@@ -1,14 +1,12 @@
 package de.metas.util.collections;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import de.metas.util.collections.IteratorUtils;
-import de.metas.util.collections.IteratorWrapper;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * #%L
@@ -39,7 +37,7 @@ public class IteratorUtilsTest
 	{
 		final MockedAutoCloseableIterator iterator = new MockedAutoCloseableIterator();
 		IteratorUtils.close(iterator);
-		Assert.assertTrue(iterator.closed);
+		assertTrue(iterator.closed);
 	}
 
 	@Test
@@ -47,7 +45,7 @@ public class IteratorUtilsTest
 	{
 		final MockedAutoCloseableIterator iterator = new MockedAutoCloseableIterator();
 		IteratorUtils.close(new MockedIteratorWrapper<>(iterator));
-		Assert.assertTrue(iterator.closed);
+		assertTrue(iterator.closed);
 	}
 
 	@Test
@@ -55,7 +53,7 @@ public class IteratorUtilsTest
 	{
 		final MockedCloseableIterator iterator = new MockedCloseableIterator();
 		IteratorUtils.close(iterator);
-		Assert.assertTrue(iterator.closed);
+		assertTrue(iterator.closed);
 	}
 
 	@Test
@@ -63,7 +61,7 @@ public class IteratorUtilsTest
 	{
 		final MockedCloseableIterator iterator = new MockedCloseableIterator();
 		IteratorUtils.close(new MockedIteratorWrapper<>(iterator));
-		Assert.assertTrue(iterator.closed);
+		assertTrue(iterator.closed);
 	}
 
 	private static class MockedIterator implements Iterator<Object>
