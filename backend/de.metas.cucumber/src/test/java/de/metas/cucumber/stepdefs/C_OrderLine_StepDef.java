@@ -95,7 +95,6 @@ public class C_OrderLine_StepDef
 
 	private final @NonNull M_Product_StepDefData productTable;
 	private final @NonNull C_BPartner_StepDefData partnerTable;
-	private final @NonNull C_BPartner_Location_StepDefData partnerLocationTable;
 	private final @NonNull C_Order_StepDefData orderTable;
 	private final @NonNull C_OrderLine_StepDefData orderLineTable;
 	private final @NonNull M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
@@ -113,101 +112,104 @@ public class C_OrderLine_StepDef
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
-				.forEach(tableRow -> {
-					final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
+				.forEach(this::createOrderLine);
+	}
 
-					// make sure all defaults are set. If not, this method might be called later, when the orderLine is saved and might then override things set in this stepdef
-					final I_C_Order orderRecord = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
-					orderLine.setC_Order_ID(orderRecord.getC_Order_ID());
-					orderLineBL.setOrder(orderLine, orderRecord);
+	public void createOrderLine(final DataTableRow tableRow)
+	{
+		final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
 
-					final StepDefDataIdentifier productIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
-					final ProductId productId = productTable.getIdOptional(productIdentifier)
-							.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+		// make sure all defaults are set. If not, this method might be called later, when the orderLine is saved and might then override things set in this stepdef
+		final I_C_Order orderRecord = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+		orderLine.setC_Order_ID(orderRecord.getC_Order_ID());
+		orderLineBL.setOrder(orderLine, orderRecord);
 
-					orderLine.setM_Product_ID(productId.getRepoId());
-					orderLine.setQtyEntered(tableRow.getAsBigDecimal(I_C_OrderLine.COLUMNNAME_QtyEntered));
+		final StepDefDataIdentifier productIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
+		final ProductId productId = productTable.getIdOptional(productIdentifier)
+				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
 
-					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
-							.map(attributeSetInstanceTable::getId)
-							.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
+		orderLine.setM_Product_ID(productId.getRepoId());
+		orderLine.setQtyEntered(tableRow.getAsBigDecimal(I_C_OrderLine.COLUMNNAME_QtyEntered));
 
-					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
-							.map(partnerTable::getId)
-							.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
 
-					final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
-					if (Check.isNotBlank(flatrateConditionsIdentifier))
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
+				.map(partnerTable::getId)
+				.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
+
+		final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(flatrateConditionsIdentifier))
+		{
+			final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
+			orderLine.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
+		}
+
+		tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.ifPresent(itemProductIdentifier -> {
+					if (itemProductIdentifier.isNullPlaceholder())
 					{
-						final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
-						orderLine.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
+						orderLine.setM_HU_PI_Item_Product_ID(-1);
 					}
-
-					tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
-							.ifPresent(itemProductIdentifier -> {
-								if (itemProductIdentifier.isNullPlaceholder())
-								{
-									orderLine.setM_HU_PI_Item_Product_ID(-1);
-								}
-								else
-								{
-									final HUPIItemProductId huPiItemProductId = huPiItemProductTable.getIdOptional(itemProductIdentifier)
-											.orElseGet(() -> itemProductIdentifier.getAsId(HUPIItemProductId.class));
-
-									orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductId.getRepoId());
-								}
-							});
-
-					final BigDecimal qtyEnteredTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU);
-					if (qtyEnteredTU != null)
+					else
 					{
-						orderLine.setQtyEnteredTU(qtyEnteredTU);
+						final HUPIItemProductId huPiItemProductId = huPiItemProductTable.getIdOptional(itemProductIdentifier)
+								.orElseGet(() -> itemProductIdentifier.getAsId(HUPIItemProductId.class));
+
+						orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductId.getRepoId());
 					}
-
-					final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
-					if (qtyItemCapacity != null)
-					{
-						orderLine.setQtyItemCapacity(qtyItemCapacity);
-					}
-
-					final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-					if (Check.isNotBlank(warehouseIdentifier))
-					{
-						final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
-						assertThat(warehouse).isNotNull();
-
-						orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-					}
-
-					final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
-					if (Check.isNotBlank(uomX12DE355))
-					{
-						final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
-								.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
-								.addOnlyActiveRecordsFilter()
-								.create()
-								.firstIdOnly(UomId::ofRepoIdOrNull);
-						assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
-						orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
-					}
-
-					tableRow.getAsOptionalBigDecimal("Price")
-							.ifPresent(price -> {
-								orderLine.setIsManualPrice(true);
-								orderLine.setPriceEntered(price);
-								orderLine.setPriceActual(price);
-							});
-
-					tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
-							.ifPresent(orderLine::setDescription);
-
-					tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
-							.ifPresent(orderLine::setExternalId);
-
-					saveRecord(orderLine);
-
-					orderLineTable.putOrReplace(tableRow.getAsIdentifier(), orderLine);
 				});
+
+		final BigDecimal qtyEnteredTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU);
+		if (qtyEnteredTU != null)
+		{
+			orderLine.setQtyEnteredTU(qtyEnteredTU);
+		}
+
+		final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
+		if (qtyItemCapacity != null)
+		{
+			orderLine.setQtyItemCapacity(qtyItemCapacity);
+		}
+
+		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(warehouseIdentifier))
+		{
+			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+			assertThat(warehouse).isNotNull();
+
+			orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		}
+
+		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
+		if (Check.isNotBlank(uomX12DE355))
+		{
+			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
+					.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstIdOnly(UomId::ofRepoIdOrNull);
+			assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
+			orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
+		}
+
+		tableRow.getAsOptionalBigDecimal("Price")
+				.ifPresent(price -> {
+					orderLine.setIsManualPrice(true);
+					orderLine.setPriceEntered(price);
+					orderLine.setPriceActual(price);
+				});
+
+		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
+				.ifPresent(orderLine::setDescription);
+
+		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
+				.ifPresent(orderLine::setExternalId);
+
+		saveRecord(orderLine);
+
+		orderLineTable.putOrReplace(tableRow.getAsIdentifier(), orderLine);
 	}
 
 	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")

@@ -1,10 +1,8 @@
 package de.metas.inoutcandidate.invalidation.segments;
 
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
-import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 
 /*
  * #%L

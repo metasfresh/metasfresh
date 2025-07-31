@@ -22,15 +22,14 @@ package org.adempiere.server.rpl.api.impl;
  * #L%
  */
 
-
-import static org.adempiere.server.rpl.api.impl.ReplicationHelper.setReplicationCtx;
+import org.adempiere.server.rpl.exceptions.ReplicationException;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 
-import org.adempiere.server.rpl.exceptions.ReplicationException;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.adempiere.server.rpl.api.impl.ReplicationHelper.setReplicationCtx;
 
 public class ImportHelperTest
 {
@@ -41,21 +40,21 @@ public class ImportHelperTest
 		Env.setContext(initialCtx, Env.CTXNAME_AD_Client_ID, 12345);
 
 		final Properties ctx = Env.deriveCtx(initialCtx);
-		Assert.assertEquals(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID), 12345);
+		Assertions.assertEquals(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID), 12345);
 
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Client_ID, 1, false); // overwrite = false
-		Assert.assertEquals(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID), 1);
+		Assertions.assertEquals(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID), 1);
 
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Client_ID, 1, true); // overwrite = true, but same value
-		Assert.assertEquals(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID), 1);
+		Assertions.assertEquals(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID), 1);
 
 		// Test remove
 		// We expect that AD_Client_ID to be set to ZERO
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Client_ID, null, true); // overwrite = true
-		Assert.assertEquals(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID), 0);
+		Assertions.assertEquals(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID), 0);
 	}
 
-	@Test(expected = ReplicationException.class)
+	@Test
 	public void test_setReplicationCtx_overwrite_fails() throws Exception
 	{
 		final Properties initialCtx = new Properties();
@@ -64,8 +63,9 @@ public class ImportHelperTest
 		final Properties ctx = new Properties(initialCtx);
 
 		setReplicationCtx(ctx, Env.CTXNAME_AD_Client_ID, 1, false); // overwrite = false
-		Assert.assertEquals(Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID), 1);
+		Assertions.assertEquals(1, Env.getContextAsInt(ctx, Env.CTXNAME_AD_Client_ID));
 
-		setReplicationCtx(ctx, Env.CTXNAME_AD_Client_ID, 2, false); // overwrite = false, not same value, shall throw exception
+		Assertions.assertThrows(ReplicationException.class, ()->
+		setReplicationCtx(ctx, Env.CTXNAME_AD_Client_ID, 2, false)); // overwrite = false, not same value, shall throw exception
 	}
 }

@@ -1,19 +1,17 @@
 package de.metas.handlingunits.impl;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -25,12 +23,12 @@ import de.metas.handlingunits.model.X_M_HU_Item;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,16 +37,16 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 
 public class HUItemsLocalCacheTests
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 	}
 
 	/**
-	 * Verifies that the items retrieved by {@link HUItemsLocalCache#retrieveItems(org.adempiere.model.IContextAware, I_M_HU)} are neatly ordered.
+	 * Verifies that the items retrieved by {@link HUItemsLocalCache#retrieveItems(IContextAware, I_M_HU)} are neatly ordered.
 	 * <p>
-	 * The ordering is important: when we unload thing from a HU, we first want to unload from its included "real" HUs and only afterwards from its "aggregate"/compressed HU. 
+	 * The ordering is important: when we unload thing from a HU, we first want to unload from its included "real" HUs and only afterwards from its "aggregate"/compressed HU.
 	 */
 	@Test
 	public void testRetrieveItemsOrdered()
@@ -82,14 +80,14 @@ public class HUItemsLocalCacheTests
 		InterfaceWrapperHelper.save(item5);
 
 		final List<I_M_HU_Item> items = HUItemsLocalCache.getCreate(hu).retrieveItems(InterfaceWrapperHelper.getContextAware(hu), hu);
-		assertThat(items.size(), is(5));
-		assertThat(items.get(0).getItemType(), is(X_M_HU_Item.ITEMTYPE_Material));
-		assertThat(items.get(1).getItemType(), is(X_M_HU_Item.ITEMTYPE_HandlingUnit));
-		assertThat(items.get(2).getItemType(), is(X_M_HU_Item.ITEMTYPE_HUAggregate));
+		assertThat(items).hasSize(5);
+		assertThat(items.get(0).getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_Material);
+		assertThat(items.get(1).getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_HandlingUnit);
+		assertThat(items.get(2).getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_HUAggregate);
 
-		assertThat(items.get(3).getItemType(), is(X_M_HU_Item.ITEMTYPE_PackingMaterial));
-		assertThat(items.get(4).getItemType(), is(X_M_HU_Item.ITEMTYPE_PackingMaterial));
-		assertThat(items.get(4).getM_HU_Item_ID(), greaterThan(items.get(3).getM_HU_Item_ID()));
+		assertThat(items.get(3).getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_PackingMaterial);
+		assertThat(items.get(4).getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_PackingMaterial);
+		assertThat(items.get(4).getM_HU_Item_ID()).isGreaterThan(items.get(3).getM_HU_Item_ID());
 	}
 
 }

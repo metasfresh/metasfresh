@@ -1,13 +1,14 @@
 package de.metas.vertical.pharma;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.adempiere.test.AdempiereTestHelper;
 import org.apache.commons.validator.routines.checkdigit.CheckDigitException;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /*
  * #%L
@@ -34,13 +35,13 @@ import org.junit.Test;
 // TODO
 public class PharmaModulo11ValidationTest
 {
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public void beforeTest()
 	{
 		AdempiereTestHelper.get().init();

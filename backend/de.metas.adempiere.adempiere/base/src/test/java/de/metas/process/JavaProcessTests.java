@@ -1,8 +1,9 @@
 package de.metas.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
+import de.metas.process.JavaProcess.ProcessCanceledException;
+import de.metas.process.impl.ADPInstanceDAO;
+import de.metas.user.UserId;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.PlainTrxManager;
@@ -13,21 +14,18 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.process.JavaProcess.ProcessCanceledException;
-import de.metas.process.impl.ADPInstanceDAO;
-import de.metas.user.UserId;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Tests {@link JavaProcess} life-cycle management.
  *
  * @author tsa
- *
  */
 public class JavaProcessTests
 {
@@ -64,7 +62,7 @@ public class JavaProcessTests
 		@Override
 		protected void prepare()
 		{
-			Assert.assertFalse("prepare method not already executed", prepareExecuted);
+			Assertions.assertFalse(prepareExecuted, "prepare method not already executed");
 			prepareExecuted = true;
 
 			assertOutOfTrx(expectPrepareOutOfTrx);
@@ -78,7 +76,7 @@ public class JavaProcessTests
 		@Override
 		protected String doIt() throws Exception
 		{
-			Assert.assertFalse("doIt method not already executed", doItExecuted);
+			Assertions.assertFalse(doItExecuted, "doIt method not already executed");
 			doItExecuted = true;
 
 			assertOutOfTrx(expectDoItOutOfTrx);
@@ -88,7 +86,7 @@ public class JavaProcessTests
 			final I_AD_PInstance pinstance = retrieveAD_PInstance();
 			if (validateAD_PInstance_Values)
 			{
-				Assert.assertEquals("Invalid AD_PInstance.Processing", true, pinstance.isProcessing());
+				Assertions.assertEquals( true,  pinstance.isProcessing(), "Invalid AD_PInstance.Processing");
 			}
 
 			if (onDoItThrowException != null)
@@ -102,7 +100,7 @@ public class JavaProcessTests
 		@Override
 		protected void postProcess(final boolean success)
 		{
-			Assert.assertFalse("postProcess method not already executed", postProcess_Executed);
+			Assertions.assertFalse(postProcess_Executed, "postProcess method not already executed");
 			postProcess_Executed = true;
 			postProcess_Param_Success = success;
 
@@ -136,20 +134,20 @@ public class JavaProcessTests
 
 		public void assertPostProcessExecuted(final boolean expectedSuccess)
 		{
-			Assert.assertTrue("postProcess method executed", postProcess_Executed);
-			Assert.assertEquals("postProcess - success parameter", expectedSuccess, postProcess_Param_Success);
+			Assertions.assertTrue(postProcess_Executed, "postProcess method executed");
+			Assertions.assertEquals( expectedSuccess,  postProcess_Param_Success, "postProcess - success parameter");
 		}
 
 		private final I_AD_PInstance retrieveAD_PInstance()
 		{
 			final ProcessInfo pi = getProcessInfo();
-			Assert.assertNotNull("ProcessInfo not null", pi);
+			Assertions.assertNotNull(pi, "ProcessInfo not null");
 
 			final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).getById(pi.getPinstanceId());
 
 			// Make sure AD_PInstance record was created in database
-			Assert.assertNotNull("AD_PInstance record exists in database", pinstance);
-			Assert.assertTrue("AD_PInstance record exists in database (ID exists)", pinstance.getAD_PInstance_ID() > 0); // shall not happen
+			Assertions.assertNotNull(pinstance, "AD_PInstance record exists in database");
+			Assertions.assertTrue(pinstance.getAD_PInstance_ID() > 0, "AD_PInstance record exists in database (ID exists)"); // shall not happen
 
 			return pinstance;
 		}
@@ -158,10 +156,10 @@ public class JavaProcessTests
 		{
 			// Make sure ProcesInfo exists
 			final ProcessInfo pi = getProcessInfo();
-			Assert.assertNotNull("ProcessInfo not null", pi);
+			Assertions.assertNotNull( pi, "ProcessInfo not null");
 
 			final ProcessExecutionResult result = pi.getResult();
-			Assert.assertEquals("Result AD_PInstance_ID shall match ProcessInfo's AD_PInstance_ID", pi.getPinstanceId(), result.getPinstanceId());
+			Assertions.assertEquals( pi.getPinstanceId(),  result.getPinstanceId(), "Result AD_PInstance_ID shall match ProcessInfo's AD_PInstance_ID");
 
 			//
 			// Validate AD_PInstance values
@@ -169,11 +167,11 @@ public class JavaProcessTests
 			{
 				final I_AD_PInstance pinstance = retrieveAD_PInstance();
 				final int resultExpected = result.isError() ? ADPInstanceDAO.RESULT_ERROR : ADPInstanceDAO.RESULT_OK;
-				Assert.assertEquals("Invalid AD_PInstance.AD_User_ID", loggedUserId.getRepoId(), pinstance.getAD_User_ID());
-				Assert.assertEquals("Invalid AD_PInstance.Result", resultExpected, pinstance.getResult());
-				Assert.assertEquals("Invalid AD_PInstance.ErrorMsg/Summary", result.getSummary(), pinstance.getErrorMsg());
-				Assert.assertEquals("Invalid AD_PInstance.Processing", false, pinstance.isProcessing());
-				Assert.assertEquals("Invalid AD_PInstance.ErrorMsg/Summary", pi.getWhereClause(), pinstance.getWhereClause());
+				Assertions.assertEquals( loggedUserId.getRepoId(),  pinstance.getAD_User_ID(), "Invalid AD_PInstance.AD_User_ID");
+				Assertions.assertEquals( resultExpected,  pinstance.getResult(), "Invalid AD_PInstance.Result");
+				Assertions.assertEquals( result.getSummary(),  pinstance.getErrorMsg(), "Invalid AD_PInstance.ErrorMsg/Summary");
+				Assertions.assertEquals( false,  pinstance.isProcessing(), "Invalid AD_PInstance.Processing");
+				Assertions.assertEquals( pi.getWhereClause(),  pinstance.getWhereClause(), "Invalid AD_PInstance.ErrorMsg/Summary");
 			}
 
 			// Make sure postProcess was executed and it's success parameter was consistent with ProcessInfo.isError
@@ -217,7 +215,7 @@ public class JavaProcessTests
 	private static UserId loggedUserId = UserId.ofRepoId(1234567);
 	private PlainTrxManager trxManager;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -232,7 +230,7 @@ public class JavaProcessTests
 		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
 	}
 
-	@After
+	@AfterEach
 	public void afterTest()
 	{
 		trxManager.assertNoActiveTransactions();
@@ -284,7 +282,7 @@ public class JavaProcessTests
 		try (IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(process))
 		{
 			process.startProcess(pi, trx);
-			Assert.fail("Process is expected to fail");
+			Assertions.fail("Process is expected to fail");
 			return null;
 		}
 		catch (final Exception e)
@@ -308,10 +306,10 @@ public class JavaProcessTests
 		process.onDoItReturnMsg = "Process executed";
 		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.IsError", "Process executed", result.getSummary());
-		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
-		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
+		Assertions.assertEquals( false,  result.isError(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( "Process executed",  result.getSummary(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( true,  process.prepareExecuted, "prepare() executed");
+		Assertions.assertEquals( true,  process.doItExecuted, "doIt() executed");
 		process.assertEverythingConsistentAfterRun();
 	}
 
@@ -325,14 +323,14 @@ public class JavaProcessTests
 		final String failErrorMsg = "FailOnDoIt";
 		process.onDoItThrowException = new AdempiereException(failErrorMsg);
 		final Exception exceptionActual = startProcessAndExpectToFail(process, pi, trx);
-		Assert.assertEquals("Thrown exception", process.onDoItThrowException, exceptionActual);
+		Assertions.assertEquals( process.onDoItThrowException,  exceptionActual, "Thrown exception");
 
 		final ProcessExecutionResult result = pi.getResult();
 
-		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, result.getSummary());
-		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
-		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
+		Assertions.assertEquals( true,  result.isError(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( failErrorMsg,  result.getSummary(), "Invalid ProcessInfo.Summary");
+		Assertions.assertEquals( true,  process.prepareExecuted, "prepare() executed");
+		Assertions.assertEquals( true,  process.doItExecuted, "doIt() executed");
 		process.assertEverythingConsistentAfterRun();
 	}
 
@@ -346,14 +344,14 @@ public class JavaProcessTests
 		final String failErrorMsg = "FailOnPrepare";
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
 		final Exception exceptionActual = startProcessAndExpectToFail(process, pi, trx);
-		Assert.assertEquals("Thrown exception", process.onPrepareThrowException, exceptionActual);
+		Assertions.assertEquals( process.onPrepareThrowException,  exceptionActual, "Thrown exception");
 
 		final ProcessExecutionResult result = pi.getResult();
 
-		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, result.getSummary());
-		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
-		Assert.assertEquals("doIt() executed", false, process.doItExecuted);
+		Assertions.assertEquals( true,  result.isError(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( failErrorMsg,  result.getSummary(), "Invalid ProcessInfo.Summary");
+		Assertions.assertEquals( true,  process.prepareExecuted, "prepare() executed");
+		Assertions.assertEquals( false,  process.doItExecuted, "doIt() executed");
 		process.assertEverythingConsistentAfterRun();
 	}
 
@@ -367,10 +365,10 @@ public class JavaProcessTests
 		process.onDoItReturnMsg = "Process executed";
 		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", "Process executed", result.getSummary());
-		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
-		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
+		Assertions.assertEquals( false,  result.isError(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( "Process executed",  result.getSummary(), "Invalid ProcessInfo.Summary");
+		Assertions.assertEquals( true,  process.prepareExecuted, "prepare() executed");
+		Assertions.assertEquals( true,  process.doItExecuted, "doIt() executed");
 		process.assertEverythingConsistentAfterRun();
 	}
 
@@ -384,14 +382,14 @@ public class JavaProcessTests
 		final String failErrorMsg = "FailOnPrepare";
 		process.onPrepareThrowException = new AdempiereException(failErrorMsg);
 		final Exception exceptionActual = startProcessAndExpectToFail(process, pi, trx);
-		Assert.assertEquals("Thrown exception", process.onPrepareThrowException, exceptionActual);
+		Assertions.assertEquals( process.onPrepareThrowException,  exceptionActual, "Thrown exception");
 
 		final ProcessExecutionResult result = pi.getResult();
 
-		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, result.getSummary());
-		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
-		Assert.assertEquals("doIt() executed", false, process.doItExecuted);
+		Assertions.assertEquals( true,  result.isError(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( failErrorMsg,  result.getSummary(), "Invalid ProcessInfo.Summary");
+		Assertions.assertEquals( true,  process.prepareExecuted, "prepare() executed");
+		Assertions.assertEquals( false,  process.doItExecuted, "doIt() executed");
 		process.assertEverythingConsistentAfterRun();
 	}
 
@@ -405,10 +403,10 @@ public class JavaProcessTests
 		process.onPrepareThrowException = new ProcessCanceledException();
 		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", ProcessCanceledException.MSG_Canceled.toAD_Message(), result.getSummary());
-		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
-		Assert.assertEquals("doIt() executed", false, process.doItExecuted);
+		Assertions.assertEquals( false,  result.isError(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( ProcessCanceledException.MSG_Canceled.toAD_Message(),  result.getSummary(), "Invalid ProcessInfo.Summary");
+		Assertions.assertEquals( true,  process.prepareExecuted, "prepare() executed");
+		Assertions.assertEquals( false,  process.doItExecuted, "doIt() executed");
 		process.assertEverythingConsistentAfterRun();
 	}
 
@@ -422,10 +420,10 @@ public class JavaProcessTests
 		process.onDoItReturnMsg = "Process executed";
 		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", "Process executed", result.getSummary());
-		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
-		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
+		Assertions.assertEquals( false,  result.isError(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( "Process executed",  result.getSummary(), "Invalid ProcessInfo.Summary");
+		Assertions.assertEquals( true,  process.prepareExecuted, "prepare() executed");
+		Assertions.assertEquals( true,  process.doItExecuted, "doIt() executed");
 		process.assertEverythingConsistentAfterRun();
 	}
 
@@ -439,14 +437,14 @@ public class JavaProcessTests
 		final String failErrorMsg = "FailOnDoIt";
 		process.onDoItThrowException = new AdempiereException(failErrorMsg);
 		final Exception exceptionActual = startProcessAndExpectToFail(process, pi, trx);
-		Assert.assertEquals("Thrown exception", process.onDoItThrowException, exceptionActual);
+		Assertions.assertEquals( process.onDoItThrowException,  exceptionActual, "Thrown exception");
 
 		final ProcessExecutionResult result = pi.getResult();
 
-		Assert.assertEquals("Invalid ProcessInfo.IsError", true, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", failErrorMsg, result.getSummary());
-		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
-		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
+		Assertions.assertEquals( true,  result.isError(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( failErrorMsg,  result.getSummary(), "Invalid ProcessInfo.Summary");
+		Assertions.assertEquals( true,  process.prepareExecuted, "prepare() executed");
+		Assertions.assertEquals( true,  process.doItExecuted, "doIt() executed");
 		process.assertEverythingConsistentAfterRun();
 	}
 
@@ -460,16 +458,16 @@ public class JavaProcessTests
 		process.onDoItThrowException = new ProcessCanceledException();
 		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
-		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", ProcessCanceledException.MSG_Canceled.toAD_Message(), result.getSummary());
-		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
-		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
+		Assertions.assertEquals( false,  result.isError(), "Invalid ProcessInfo.IsError");
+		Assertions.assertEquals( ProcessCanceledException.MSG_Canceled.toAD_Message(),  result.getSummary(), "Invalid ProcessInfo.Summary");
+		Assertions.assertEquals( true,  process.prepareExecuted, "prepare() executed");
+		Assertions.assertEquals( true,  process.doItExecuted, "doIt() executed");
 		process.assertEverythingConsistentAfterRun();
 	}
 
 	/**
 	 * Test the behavior when {@link JavaProcess#postProcess(boolean)} fails.
-	 *
+	 * <p>
 	 * NOTE: this is subject to change, but at the moment, if postProcess fails, an exception is thrown right away and it's assumed that it's the job of caller to handle it and update the ProcessInfo.
 	 * I know it's not OK, but it is as it is for now.
 	 */
@@ -482,6 +480,6 @@ public class JavaProcessTests
 
 		process.onPostProcessThrowException = new RuntimeException("fail on postProcess");
 		final Exception startProcess_Exception = startProcessAndExpectToFail(process, pi, trx);
-		Assert.assertSame("startProcess exception", process.onPostProcessThrowException, startProcess_Exception);
+		Assertions.assertSame( process.onPostProcessThrowException, startProcess_Exception, "startProcess exception");
 	}
 }

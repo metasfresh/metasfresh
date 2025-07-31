@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.async
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 /**
  *
  */
@@ -16,14 +38,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author tsa
@@ -84,7 +102,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 
 	private void assertAfterWorkpackageProcessedInvoked(final TestableWorkpackageProcessorTask task)
 	{
-		Assert.assertTrue("afterWorkpackageProcessed() method should be invoked for " + task, task.isAfterWorkpackageProcessedInvoked());
+		Assertions.assertTrue(task.isAfterWorkpackageProcessedInvoked(), "afterWorkpackageProcessed() method should be invoked for " + task);
 	}
 
 	/**
@@ -98,9 +116,9 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
-		Assert.assertEquals("Invalid IsError", false, workpackage.isError());
-		Assert.assertEquals("Invalid AD_Issue", null, workpackage.getAD_Issue());
-		Assert.assertEquals("Invalid Processed", true, workpackage.isProcessed());
+		Assertions.assertFalse(workpackage.isError(), "Invalid IsError");
+		Assertions.assertNull(workpackage.getAD_Issue(), "Invalid AD_Issue");
+		Assertions.assertTrue(workpackage.isProcessed(), "Invalid Processed");
 	}
 
 	/**
@@ -117,9 +135,9 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
-		Assert.assertEquals("Invalid Processed", false, workpackage.isProcessed());
-		Assert.assertEquals("Invalid IsError", true, workpackage.isError());
-		Assert.assertNotNull("Invalid AD_Issue", workpackage.getAD_Issue());
+		Assertions.assertFalse(workpackage.isProcessed(), "Invalid Processed");
+		Assertions.assertTrue(workpackage.isError(), "Invalid IsError");
+		Assertions.assertNotNull(workpackage.getAD_Issue(), "Invalid AD_Issue");
 
 		final String expectedErrorMessage = RuntimeException.class.getSimpleName() + ": " + processingErrorMsg;
 		assertThat(workpackage.getErrorMsg()).as("Invalid ErrorMsg").startsWith(expectedErrorMessage);
@@ -140,12 +158,12 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
-		Assert.assertEquals("Invalid Processed", false, workpackage.isProcessed());
-		Assert.assertEquals("Invalid IsError", false, workpackage.isError());
-		Assert.assertNotNull("Invalid SkippedAt", workpackage.getSkippedAt());
+		Assertions.assertFalse(workpackage.isProcessed(), "Invalid Processed");
+		Assertions.assertFalse(workpackage.isError(), "Invalid IsError");
+		Assertions.assertNotNull(workpackage.getSkippedAt(), "Invalid SkippedAt");
 		assertThat(workpackage.getSkipped_Last_Reason()).as("Invalid Skipped_Last_Reason").startsWith(skipReason);
-		Assert.assertEquals("Invalid SkipTimeoutMillis", skipTimeoutMillis, workpackage.getSkipTimeoutMillis());
-		Assert.assertEquals("Invalid Skipped_Count", 1, workpackage.getSkipped_Count());
+		Assertions.assertEquals(skipTimeoutMillis, workpackage.getSkipTimeoutMillis(), "Invalid SkipTimeoutMillis");
+		Assertions.assertEquals(1, workpackage.getSkipped_Count(), "Invalid Skipped_Count");
 	}
 
 	@Test
@@ -159,12 +177,13 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
-		assertEquals("Invalid Processed", false, workpackage.isProcessed());
-		assertEquals("Invalid IsError", false, workpackage.isError());
-		assertNotNull("Invalid SkippedAt", workpackage.getSkippedAt());
-		assertThat("Invalid Skipped_Last_Reason", workpackage.getSkipped_Last_Reason(), startsWith("Deadlock detected"));
-		assertEquals("Invalid SkipTimeoutMillis", skipTimeoutMillis, workpackage.getSkipTimeoutMillis());
-		assertEquals("Invalid Skipped_Count", 1, workpackage.getSkipped_Count());
+		Assertions.assertFalse(workpackage.isProcessed(), "Invalid Processed");
+		Assertions.assertFalse(workpackage.isError(), "Invalid IsError");
+		Assertions.assertNotNull(workpackage.getSkippedAt(), "Invalid SkippedAt");
+
+		Assertions.assertTrue(workpackage.getSkipped_Last_Reason().startsWith("Deadlock detected"), "Invalid Skipped_Last_Reason");
+		Assertions.assertEquals(skipTimeoutMillis, workpackage.getSkipTimeoutMillis(), "Invalid SkipTimeoutMillis");
+		Assertions.assertEquals(1, workpackage.getSkipped_Count(), "Invalid Skipped_Count");
 	}
 
 	/**
@@ -181,7 +200,7 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		{
 			final TestableWorkpackageProcessorTask task = new TestableWorkpackageProcessorTask(queueProcessor, workPackageProcessor, workpackage, logsRepository, perfMonService);
 			task.run();
-			Assert.assertEquals("Invalid Skipped_Count", i, workpackage.getSkipped_Count());
+			Assertions.assertEquals(i, workpackage.getSkipped_Count(), "Invalid Skipped_Count");
 		}
 	}
 
@@ -196,8 +215,8 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		task.run();
 
 		assertAfterWorkpackageProcessedInvoked(task);
-		Assert.assertEquals("Invalid Processed", false, workpackage.isProcessed());
-		Assert.assertEquals("Invalid IsError", true, workpackage.isError());
-		Assert.assertNotNull("Invalid AD_Issue", workpackage.getAD_Issue());
+		Assertions.assertFalse(workpackage.isProcessed(), "Invalid Processed");
+		Assertions.assertTrue(workpackage.isError(), "Invalid IsError");
+		Assertions.assertNotNull(workpackage.getAD_Issue(), "Invalid AD_Issue");
 	}
 }

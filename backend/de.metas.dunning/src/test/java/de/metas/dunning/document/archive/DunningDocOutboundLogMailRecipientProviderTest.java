@@ -34,8 +34,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -46,7 +46,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -289,14 +289,14 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 				.create();
 
 		final I_C_Dunning_Candidate candidateRecord1 = defaultDunningCandidateProducer.createDunningCandidate(context, sourceDoc);
-		Assert.assertNotNull("Candidate shall be generated", candidateRecord1);
+		Assertions.assertNotNull(candidateRecord1, "Candidate shall be generated");
 
 		producer.setDunningContext(context);
 		producer.addCandidate(candidateRecord1);
 		producer.finish();
 
 		final I_C_DunningDoc dunningDoc = retrieveDunningDocForCandidate(candidateRecord1);
-		Assert.assertNotNull("No dunning doc found for " + candidateRecord1, dunningDoc);
+		Assertions.assertNotNull(dunningDoc, "No dunning doc found for " + candidateRecord1);
 
 		assertThat(dunningDoc.getC_Dunning_Contact_ID()).isEqualTo(dunningUserRecord.getAD_User_ID());
 

@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /*
  * #%L
@@ -29,13 +29,11 @@ import org.junit.Rule;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class PMMBalanceChangeEventProcessorTest extends AbstractBalanceScenariosTest
 {
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	@Override
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		super.init();

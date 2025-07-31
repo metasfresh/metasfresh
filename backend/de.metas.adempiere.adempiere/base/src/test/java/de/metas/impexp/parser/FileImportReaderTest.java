@@ -23,8 +23,6 @@
 package de.metas.impexp.parser;
 
 import org.apache.commons.io.FileUtils;
-import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -35,10 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FileImportReaderTest
 {
@@ -48,20 +43,23 @@ public class FileImportReaderTest
 	public void testMultipleLinesFieldFile() throws IOException
 	{
 		final URL url = getClass().getResource(packagePath + "/multiplelines.csv");
-		Assert.assertNotNull("url null", url);
+		assertThat(url).as("url null").isNotNull();
 		final File file = FileUtils.toFile(url);
-		Assert.assertNotNull("file null", file);
+		assertThat(file).as("file null").isNotNull();
 
 		//
 		final Charset charset = StandardCharsets.UTF_8;
 		final List<String> lines = FileImportReader.readMultiLines(file, charset);
 
-		Assert.assertNotNull("lines null", lines);
-		Assert.assertFalse(lines.isEmpty());
-		Assert.assertEquals(2, lines.size());
-		lines.forEach(l -> Assert.assertTrue(l.startsWith("G00")));
-		Assert.assertTrue(lines.get(0).endsWith("70"));
-		Assert.assertTrue(lines.get(1).endsWith("80"));
+		assertThat(lines)
+			.as("lines null")
+			.isNotNull()
+			.isNotEmpty()
+			.hasSize(2);
+		
+		lines.forEach(l -> assertThat(l).startsWith("G00"));
+		assertThat(lines.get(0)).endsWith("70");
+		assertThat(lines.get(1)).endsWith("80");
 	}
 
 	@Test
@@ -69,53 +67,54 @@ public class FileImportReaderTest
 	{
 		final URL url = getClass().getResource(packagePath + "/OnlyAppendIfInQuotesPreserveFirstLine.csv");
 		System.out.println(url);
-		assertNotNull("url null", url);
+		assertThat(url).as("url null").isNotNull();
 		final File file = FileUtils.toFile(url);
-		assertNotNull("file null", file);
+		assertThat(file).as("file null").isNotNull();
 
 		//
 		final Charset charset = StandardCharsets.UTF_8;
 		final List<String> lines = FileImportReader.readMultiLines(file, charset);
 
-		assertNotNull("lines null", lines);
-		assertFalse(lines.isEmpty());
-		assertEquals(5, lines.size());
+		assertThat(lines)
+			.as("lines null")
+			.isNotNull()
+			.isNotEmpty()
+			.hasSize(5);
 
 		// todo
-		assertEquals("Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF", lines.get(0));
-		assertEquals("Umsatztotal;;;;;4420;2210;", lines.get(1));
-		assertEquals("11.01.1111;11.01.1111;aaaaaaaaaaaaaaaaaaa;\"aaaaaaa\n"
+		assertThat(lines.get(0)).isEqualTo("Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF");
+		assertThat(lines.get(1)).isEqualTo("Umsatztotal;;;;;4420;2210;");
+		assertThat(lines.get(2)).isEqualTo("11.01.1111;11.01.1111;aaaaaaaaaaaaaaaaaaa;\"aaaaaaa\n"
 				+ "aaaaaaaaaaaaaaaa\n"
 				+ "aaaaaaaaaaaaa\n"
-				+ "aaaaa aaaaaaaaaaaaaaaaaaaa aaaa\";;2210;;", lines.get(2));
+				+ "aaaaa aaaaaaaaaaaaaaaaaaaa aaaa\";;2210;;");
 
-		assertEquals("22.02.2222;22.02.2222;bbbbbbbbb bbbbbbbbb; \"bbbbbbbb\n"
+		assertThat(lines.get(3)).isEqualTo("22.02.2222;22.02.2222;bbbbbbbbb bbbbbbbbb; \"bbbbbbbb\n"
 				+ "bbbbbbbbbbbbbbbbb b\n"
 				+ "bbbb\n"
 				+ "bbbbbbbbb\n"
 				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
 				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
 				+ "bbbbbbbbbbb.bb bb\n"
-				+ "bbbbbbbbbbbbbbbbbbbb\";;;2210;", lines.get(3));
+				+ "bbbbbbbbbbbbbbbbbbbb\";;;2210;");
 
-		assertEquals("33.03.3333;33.03.3333;cccccccccccccc;\"cccccccccccccccccc\n"
-				+ "cccccc c cccccccc  cc\";;2210;;", lines.get(4));
-
+		assertThat(lines.get(4)).isEqualTo("33.03.3333;33.03.3333;cccccccccccccc;\"cccccccccccccccccc\n"
+				+ "cccccc c cccccccc  cc\";;2210;;");
 	}
 
 	@Test
 	public void multilineFile_NumberOfEmptyLinesIsPreserved() throws IOException
 	{
 		final URL url = getClass().getResource(packagePath + "/NumberOfEmptyLinesIsPreserved.csv");
-		assertNotNull("url null", url);
+		assertThat(url).as("url null").isNotNull();
 		final File file = FileUtils.toFile(url);
-		assertNotNull("file null", file);
+		assertThat(file).as("file null").isNotNull();
 
 		//
 		final Charset charset = StandardCharsets.UTF_8;
 		final List<String> lines = FileImportReader.readMultiLines(file, charset);
 
-		Assertions.assertThat(lines)
+		assertThat(lines)
 				.isNotEmpty()
 				.isNotNull()
 				.hasSize(15)
@@ -154,15 +153,15 @@ public class FileImportReaderTest
 	{
 		final URL url = getClass().getResource(packagePath + "/evenNumberOfQuotes.csv");
 		System.out.println(url);
-		assertNotNull("url null", url);
+		assertThat(url).as("url null").isNotNull();
 		final File file = FileUtils.toFile(url);
-		assertNotNull("file null", file);
+		assertThat(file).as("file null").isNotNull();
 
 		//
 		final Charset charset = StandardCharsets.UTF_8;
 		final List<String> lines = FileImportReader.readMultiLines(file, charset);
 
-		Assertions.assertThat(lines)
+		assertThat(lines)
 				.isNotNull()
 				.isNotEmpty()
 				.hasSize(8)
@@ -198,19 +197,22 @@ public class FileImportReaderTest
 	public void testRegularLinesFieldFile() throws IOException
 	{
 		final URL url = getClass().getResource(packagePath + "/regularlines.csv");
-		assertNotNull("url null", url);
+		assertThat(url).as("url null").isNotNull();
 		final File file = FileUtils.toFile(url);
-		assertNotNull("file null", file);
+		assertThat(file).as("file null").isNotNull();
 
 		final Charset charset = StandardCharsets.UTF_8;
 		final List<String> lines = FileImportReader.readRegularLines(file, charset);
 
-		assertNotNull("lines null", lines);
-		assertFalse(lines.isEmpty());
-		assertEquals(3, lines.size());
-		lines.forEach(l -> assertTrue(l.startsWith("G00")));
-		assertTrue(lines.get(0).endsWith("80"));
-		assertTrue(lines.get(1).endsWith("90"));
-		assertTrue(lines.get(2).endsWith("100"));
+		assertThat(lines)
+			.as("lines null")
+			.isNotNull()
+			.isNotEmpty()
+			.hasSize(3);
+			
+		lines.forEach(l -> assertThat(l).startsWith("G00"));
+		assertThat(lines.get(0)).endsWith("80");
+		assertThat(lines.get(1)).endsWith("90");
+		assertThat(lines.get(2)).endsWith("100");
 	}
 }

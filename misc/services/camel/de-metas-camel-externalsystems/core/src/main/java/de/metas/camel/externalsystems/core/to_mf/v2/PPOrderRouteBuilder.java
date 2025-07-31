@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,7 +28,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PP_ORDER_ID;
@@ -46,11 +46,11 @@ public class PPOrderRouteBuilder extends RouteBuilder
 	
 		from(direct(MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID))
 				.routeId(MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(this::validateAndAttachHeaders)
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.setHeader(Exchange.HTTP_CHARACTER_ENCODING, constant(Charsets.UTF_8))
 				.toD("{{metasfresh.pp-order-v2.api.uri}}/${header.PP_ORDER_ID}")
 

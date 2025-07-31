@@ -22,8 +22,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -58,7 +58,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBase
 {
 	@Override
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));

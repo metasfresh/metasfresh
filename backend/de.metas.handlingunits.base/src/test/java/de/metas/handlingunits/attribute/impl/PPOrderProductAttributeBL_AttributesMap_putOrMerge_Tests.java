@@ -1,10 +1,8 @@
 package de.metas.handlingunits.attribute.impl;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -14,9 +12,8 @@ import java.util.function.Function;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
@@ -57,7 +54,7 @@ import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
  */
 public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -76,7 +73,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -93,7 +90,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -112,7 +109,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				is(expectedValue) // expected
+				AssertionType.EQUALS, expectedValue // expected
 		);
 	}
 
@@ -131,7 +128,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueNumber(), // actual
-				comparesEqualTo(expectedValue) // expected
+				AssertionType.COMPARABLE_EQUALS, expectedValue // expected
 		);
 	}
 
@@ -150,7 +147,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				is(expectedValue) // expected
+				AssertionType.EQUALS, expectedValue // expected
 		);
 	}
 
@@ -169,7 +166,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				is(expectedValue) // expected
+				AssertionType.EQUALS, expectedValue // expected
 		);
 	}
 
@@ -188,7 +185,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueNumber(),// actual
-				comparesEqualTo(expectedValue) // expected
+				AssertionType.COMPARABLE_EQUALS, expectedValue // expected
 
 		);
 	}
@@ -206,7 +203,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -223,7 +220,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueNumber(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -240,7 +237,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -257,7 +254,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueNumber(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -276,7 +273,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -293,7 +290,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueNumber(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -312,7 +309,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -331,7 +328,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				is(expectedValue) // expected
+				AssertionType.EQUALS, expectedValue // expected
 		);
 	}
 
@@ -350,7 +347,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueNumber(),// actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -369,7 +366,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueNumber(),// actual
-				comparesEqualTo(expectedValue) // expected
+				AssertionType.COMPARABLE_EQUALS, expectedValue // expected
 		);
 	}
 
@@ -386,7 +383,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -403,7 +400,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueNumber(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -420,7 +417,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueString(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -437,7 +434,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		performTestWithThreeAttributes(attribute,
 				ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3,
 				a -> a.getValueNumber(), // actual
-				nullValue() // expected
+				AssertionType.NULL // expected
 		);
 	}
 
@@ -470,9 +467,17 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 	 * @param ppOrderAttribute2
 	 * @param ppOrderAttribute3
 	 * @param actualValue function that will be used to get the actual value (i.e. {@code value} or {@code valueNumber}) when checking the results
-	 * @param expectedValue matcher that is applied to find out if the actual value is OK
+	 * @param assertionType type of assertion to perform
+	 * @param expectedValue expected value for comparison (optional, not used for NULL assertions)
 	 */
-	private <T> void performTestWithThreeAttributes(final I_M_Attribute attribute, final I_PP_Order_ProductAttribute ppOrderAttribute1, final I_PP_Order_ProductAttribute ppOrderAttribute2, final I_PP_Order_ProductAttribute ppOrderAttribute3, final Function<PPOrderProductAttributeBL.AttributeWithValue, T> actualValue, final Matcher<?> expectedValue)
+	private <T> void performTestWithThreeAttributes(
+			final I_M_Attribute attribute, 
+			final I_PP_Order_ProductAttribute ppOrderAttribute1, 
+			final I_PP_Order_ProductAttribute ppOrderAttribute2, 
+			final I_PP_Order_ProductAttribute ppOrderAttribute3, 
+			final Function<PPOrderProductAttributeBL.AttributeWithValue, T> actualValue, 
+			final AssertionType assertionType,
+			final Object... expectedValue)
 	{
 
 		// we want to check each different ordering (i.e. all possible permutations).
@@ -487,7 +492,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 			// verify
 			try
 			{
-				verifyInvariants(attribute, attributesMap, actualValue, expectedValue);
+				verifyInvariants(attribute, attributesMap, actualValue, assertionType, expectedValue);
 			}
 			catch (final AssertionError e)
 			{
@@ -500,27 +505,49 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 	}
 
 	/**
-	 * Called by {@link #performTestWithThreeAttributes(I_M_Attribute, I_PP_Order_ProductAttribute, I_PP_Order_ProductAttribute, I_PP_Order_ProductAttribute, Function, Matcher)} to verify each single result.
+	 * Called by {@link #performTestWithThreeAttributes(I_M_Attribute, I_PP_Order_ProductAttribute, I_PP_Order_ProductAttribute, I_PP_Order_ProductAttribute, Function, AssertionType, Object...)} to verify each single result.
 	 */
 	private <T> void verifyInvariants(
 			final I_M_Attribute attribute,
 			final AttributesMap attributesMap,
 			final Function<PPOrderProductAttributeBL.AttributeWithValue, T> actualValue,
-			final Matcher<?> expectedValue)
+			final AssertionType assertionType,
+			final Object... expectedValue)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 		final AttributeWithValue attributeFromMap = attributesMap.getByAttributeId(attributeId);
-		if (attributeFromMap == null)
+		
+		switch (assertionType)
 		{
-			if (!expectedValue.equals(nullValue()))
-			{
-				fail("expected=" + expectedValue.toString() + "; actual=null");
-			}
-		}
-		else
-		{
-			final Object actual = actualValue.apply(attributeFromMap);
-			assertTrue("expected=" + expectedValue.toString() + "; actual=" + actual, expectedValue.matches(actual));
+			case NULL:
+				if (attributeFromMap == null)
+				{
+					// This is expected for NULL assertion
+					return;
+				}
+				final Object actualForNull = actualValue.apply(attributeFromMap);
+				assertThat(actualForNull).isNull();
+				break;
+				
+			case EQUALS:
+				assertThat(attributeFromMap).isNotNull();
+				final Object actualForEquals = actualValue.apply(attributeFromMap);
+				assertThat(actualForEquals).isEqualTo(expectedValue[0]);
+				break;
+				
+			case COMPARABLE_EQUALS:
+				assertThat(attributeFromMap).isNotNull();
+				final Object actualForComparable = actualValue.apply(attributeFromMap);
+				if (actualForComparable instanceof BigDecimal && expectedValue[0] instanceof BigDecimal)
+				{
+					assertThat((BigDecimal) actualForComparable)
+						.isEqualByComparingTo((BigDecimal) expectedValue[0]);
+				}
+				else
+				{
+					assertThat(actualForComparable).isEqualTo(expectedValue[0]);
+				}
+				break;
 		}
 	}
 
@@ -533,4 +560,8 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 		return attribute;
 	}
 
+	private enum AssertionType
+	{
+		NULL, EQUALS, COMPARABLE_EQUALS
+	}
 }
