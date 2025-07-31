@@ -172,7 +172,7 @@ public class CreateBPartnerV2_StepDef
 			final String countryCode = DataTableUtil.extractStringForColumnName(dataTableRow, "CountryCode");
 			final String gln = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Gln");
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VATaxId");
-			
+
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
 					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier));
