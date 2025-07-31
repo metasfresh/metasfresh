@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,10 +24,12 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.NonNull;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.stream.InputStreamCache;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -47,24 +49,21 @@ public class UnpackV2ResponseRouteBuilderTest extends CamelTestSupport
 	private final static String UnpackedV2_Object = "10_UnpackedV2_Object.json";
 
 	@Override
-	public boolean isUseAdviceWith()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
-		return true;
-	}
+		super.configureContext(camelContextConfiguration);
 
-	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
-	{
+		testConfiguration().withUseAdviceWith(true);
 		final Properties properties = new Properties();
 		try
 		{
 			properties.load(BPartnerRouteBuilderV2Test.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Override
@@ -94,7 +93,7 @@ public class UnpackV2ResponseRouteBuilderTest extends CamelTestSupport
 
 		template.sendBody("direct:" + UNPACK_V2_API_RESPONSE, jsonApiResponseIS);
 
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	@Test
@@ -121,9 +120,9 @@ public class UnpackV2ResponseRouteBuilderTest extends CamelTestSupport
 	private void prepareRouteForTesting() throws Exception
 	{
 		AdviceWith.adviceWith(context, UNPACK_V2_API_RESPONSE,
-							  advice -> advice.weaveById(UNPACK_V2_API_RESPONSE_PROCESSOR_ID)
-									  .after()
-									  .to(MOCK_UNPACK_V2_API_RESPONSE)
+				advice -> advice.weaveById(UNPACK_V2_API_RESPONSE_PROCESSOR_ID)
+						.after()
+						.to(MOCK_UNPACK_V2_API_RESPONSE)
 		);
 	}
 }

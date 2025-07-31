@@ -10,8 +10,8 @@ import de.metas.money.MoneyService;
 import de.metas.payment.paymentterm.PaymentTermId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_PaymentTerm;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
@@ -47,7 +47,7 @@ public class PaymentTermGrossProfitComponentTest
 	private CurrencyId currencyId;
 	private MoneyService moneyService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

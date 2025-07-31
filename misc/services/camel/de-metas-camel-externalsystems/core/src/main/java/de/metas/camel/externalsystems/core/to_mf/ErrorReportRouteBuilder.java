@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,8 +38,8 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.http.base.HttpOperationFailedException;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
@@ -73,7 +73,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 
 		from(direct(MF_ERROR_ROUTE_ID))
 				.routeId(MF_ERROR_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
 				.multicast()
 					.parallelProcessing(true)
@@ -97,7 +97,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.process(this::prepareJsonErrorRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error");
 
 		from(direct(ERROR_SEND_LOG_MESSAGE))

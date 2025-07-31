@@ -32,8 +32,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.apache.commons.io.IOUtils;
 import org.compiere.model.I_AD_AttachmentEntry;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -43,13 +43,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Path;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AttachmentEntryRepositoryTest
 {
 	private AttachmentEntryRepository attachmentEntryRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

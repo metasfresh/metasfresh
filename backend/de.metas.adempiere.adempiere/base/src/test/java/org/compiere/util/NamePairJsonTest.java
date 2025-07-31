@@ -1,13 +1,13 @@
 package org.compiere.util;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import de.metas.JsonObjectMapperHolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -35,7 +35,7 @@ public class NamePairJsonTest
 {
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
@@ -59,13 +59,13 @@ public class NamePairJsonTest
 	private <T> void testJsonEquals(final T value, final Class<T> type) throws Exception
 	{
 		final T valueDeserialized = testSerializeDeserialize(value, type);
-		Assert.assertEquals(value, valueDeserialized);
+		Assertions.assertEquals(value, valueDeserialized);
 	}
 
 	private <T> void testJsonIdentical(final T value, final Class<T> type) throws Exception
 	{
 		final T valueDeserialized = testSerializeDeserialize(value, type);
-		Assert.assertSame(value, valueDeserialized);
+		Assertions.assertSame(value, valueDeserialized);
 	}
 
 	private <T> T testSerializeDeserialize(final T value, final Class<T> type) throws Exception

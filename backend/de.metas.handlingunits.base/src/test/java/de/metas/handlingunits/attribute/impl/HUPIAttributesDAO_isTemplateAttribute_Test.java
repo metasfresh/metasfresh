@@ -11,7 +11,7 @@ import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -78,7 +78,7 @@ public class HUPIAttributesDAO_isTemplateAttribute_Test extends AbstractHUTest
 
 	private void assertTemplateAttribute(final boolean isTemplateAttributeExpected, final I_M_HU_PI_Attribute piAttribute)
 	{
-		Assert.assertEquals("IsTemplateAttribute", isTemplateAttributeExpected, piAttributesDAO.isTemplateAttribute(piAttribute));
+		Assertions.assertEquals( isTemplateAttributeExpected, piAttributesDAO.isTemplateAttribute(piAttribute), "IsTemplateAttribute");
 	}
 
 	@Test

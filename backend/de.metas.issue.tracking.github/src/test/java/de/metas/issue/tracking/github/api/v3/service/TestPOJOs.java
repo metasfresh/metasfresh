@@ -28,7 +28,7 @@ import de.metas.issue.tracking.github.api.v3.model.Issue;
 import de.metas.issue.tracking.github.api.v3.model.Label;
 import de.metas.issue.tracking.github.api.v3.model.PullRequest;
 import de.metas.issue.tracking.github.api.v3.model.User;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Collections;

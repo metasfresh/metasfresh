@@ -1,16 +1,17 @@
 ARG REFNAME=local
-FROM metasfresh/metas-db:$REFNAME as db
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-db:$REFNAME AS db
 
 # we are prepopulating the image with pgdata
 # https://cadu.dev/creating-a-docker-image-with-database-preloaded/
 # dirty but works
 
-FROM db as init
+FROM db AS init
 
 RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
 RUN /usr/local/bin/docker-entrypoint.sh postgres
 
-FROM postgres:15.4 as final
+FROM postgres:15.4 AS final
 
 RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
 

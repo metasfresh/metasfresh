@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -136,7 +136,7 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + PushRawMaterialsRouteBuilder.PUSH_RAW_MATERIALS_ROUTE_ID, requestBodyAsString);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockUpsertProductsEP.called).isEqualTo(1);
 		assertThat(mockAttachFileEP.called).isEqualTo(1);
 	}

@@ -30,7 +30,7 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -57,42 +57,42 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 
 	protected void assertOrderMatches(final I_M_ReceiptSchedule rc, final I_C_Order fromOrder)
 	{
-		Assert.assertEquals("AD_Org_IDs do not match", fromOrder.getAD_Org_ID(), rc.getAD_Org_ID());
-		Assert.assertEquals("AD_Client_IDs do not match", fromOrder.getAD_Client_ID(), rc.getAD_Client_ID());
-		Assert.assertEquals("C_Order_IDs do not match", fromOrder.getC_Order_ID(), rc.getC_Order_ID());
+		Assertions.assertEquals( fromOrder.getAD_Org_ID(),  rc.getAD_Org_ID(), "AD_Org_IDs do not match");
+		Assertions.assertEquals( fromOrder.getAD_Client_ID(),  rc.getAD_Client_ID(), "AD_Client_IDs do not match");
+		Assertions.assertEquals( fromOrder.getC_Order_ID(),  rc.getC_Order_ID(), "C_Order_IDs do not match");
 
-		Assert.assertEquals("C_BPartner_IDs do not match", fromOrder.getC_BPartner_ID(), rc.getC_BPartner_ID());
-		Assert.assertEquals("C_BPartner_Location_IDs do not match", fromOrder.getC_BPartner_Location_ID(), rc.getC_BPartner_Location_ID());
-		Assert.assertEquals("AD_User_IDs do not match", fromOrder.getAD_User_ID(), rc.getAD_User_ID());
+		Assertions.assertEquals( fromOrder.getC_BPartner_ID(),  rc.getC_BPartner_ID(), "C_BPartner_IDs do not match");
+		Assertions.assertEquals( fromOrder.getC_BPartner_Location_ID(),  rc.getC_BPartner_Location_ID(), "C_BPartner_Location_IDs do not match");
+		Assertions.assertEquals( fromOrder.getAD_User_ID(),  rc.getAD_User_ID(), "AD_User_IDs do not match");
 
-		Assert.assertEquals("DeliveryRule do not match", fromOrder.getDeliveryRule(), rc.getDeliveryRule());
-		Assert.assertEquals("DeliveryViaRule do not match", fromOrder.getDeliveryViaRule(), rc.getDeliveryViaRule());
-		Assert.assertEquals("PriorityRule do not match", fromOrder.getPriorityRule(), rc.getPriorityRule());
+		Assertions.assertEquals( fromOrder.getDeliveryRule(),  rc.getDeliveryRule(), "DeliveryRule do not match");
+		Assertions.assertEquals( fromOrder.getDeliveryViaRule(),  rc.getDeliveryViaRule(), "DeliveryViaRule do not match");
+		Assertions.assertEquals( fromOrder.getPriorityRule(),  rc.getPriorityRule(), "PriorityRule do not match");
 
-		Assert.assertEquals("M_Warehouse_IDs do not match", fromOrder.getM_Warehouse_ID(), rc.getM_Warehouse_ID());
+		Assertions.assertEquals( fromOrder.getM_Warehouse_ID(),  rc.getM_Warehouse_ID(), "M_Warehouse_IDs do not match");
 
-		Assert.assertEquals("DateOrdered do not match", fromOrder.getDateOrdered(), rc.getDateOrdered());
-		Assert.assertEquals("MovementDate do not match", fromOrder.getDatePromised(), rc.getMovementDate());
-		Assert.assertEquals("POReference do not match", fromOrder.getPOReference(), rc.getPOReference());
+		Assertions.assertEquals( fromOrder.getDateOrdered(),  rc.getDateOrdered(), "DateOrdered do not match");
+		Assertions.assertEquals( fromOrder.getDatePromised(),  rc.getMovementDate(), "MovementDate do not match");
+		Assertions.assertEquals( fromOrder.getPOReference(),  rc.getPOReference(), "POReference do not match");
 	}
 
 	protected void assertOrderLineMatches(final I_M_ReceiptSchedule rc, final I_C_OrderLine fromOrderLine)
 	{
-		Assert.assertEquals("AD_Org_IDs do not match", fromOrderLine.getAD_Org_ID(), rc.getAD_Org_ID());
-		Assert.assertEquals("AD_Client_IDs do not match", fromOrderLine.getAD_Client_ID(), rc.getAD_Client_ID());
-		Assert.assertEquals("C_Order_IDs do not match", fromOrderLine.getC_Order_ID(), rc.getC_Order_ID());
-		Assert.assertEquals("C_OrderLine_IDs do not match", fromOrderLine.getC_OrderLine_ID(), rc.getC_OrderLine_ID());
+		Assertions.assertEquals( fromOrderLine.getAD_Org_ID(),  rc.getAD_Org_ID(), "AD_Org_IDs do not match");
+		Assertions.assertEquals( fromOrderLine.getAD_Client_ID(),  rc.getAD_Client_ID(), "AD_Client_IDs do not match");
+		Assertions.assertEquals( fromOrderLine.getC_Order_ID(),  rc.getC_Order_ID(), "C_Order_IDs do not match");
+		Assertions.assertEquals( fromOrderLine.getC_OrderLine_ID(),  rc.getC_OrderLine_ID(), "C_OrderLine_IDs do not match");
 
-		Assert.assertEquals("C_BPartner_IDs do not match", fromOrderLine.getC_BPartner_ID(), rc.getC_BPartner_ID());
-		Assert.assertEquals("C_BPartner_Location_IDs do not match", fromOrderLine.getC_BPartner_Location_ID(), rc.getC_BPartner_Location_ID());
+		Assertions.assertEquals( fromOrderLine.getC_BPartner_ID(),  rc.getC_BPartner_ID(), "C_BPartner_IDs do not match");
+		Assertions.assertEquals( fromOrderLine.getC_BPartner_Location_ID(),  rc.getC_BPartner_Location_ID(), "C_BPartner_Location_IDs do not match");
 
-		Assert.assertEquals("M_Warehouse_IDs do not match", fromOrderLine.getM_Warehouse_ID(), rc.getM_Warehouse_ID());
+		Assertions.assertEquals( fromOrderLine.getM_Warehouse_ID(),  rc.getM_Warehouse_ID(), "M_Warehouse_IDs do not match");
 
-		Assert.assertEquals("QtyDelivereds do not match", fromOrderLine.getQtyDelivered(), receiptScheduleBL.getQtyMoved(rc));
-		Assert.assertEquals("QtyOrdereds do not match", fromOrderLine.getQtyOrdered(), rc.getQtyOrdered());
+		Assertions.assertEquals( fromOrderLine.getQtyDelivered(),  receiptScheduleBL.getQtyMoved(rc), "QtyDelivereds do not match");
+		Assertions.assertEquals( fromOrderLine.getQtyOrdered(),  rc.getQtyOrdered(), "QtyOrdereds do not match");
 
-		Assert.assertEquals("M_Product_ID do not match", fromOrderLine.getM_Product_ID(), rc.getM_Product_ID());
-		Assert.assertEquals("C_UOM_ID do not match", fromOrderLine.getC_UOM_ID(), rc.getC_UOM_ID());
+		Assertions.assertEquals( fromOrderLine.getM_Product_ID(),  rc.getM_Product_ID(), "M_Product_ID do not match");
+		Assertions.assertEquals( fromOrderLine.getC_UOM_ID(),  rc.getC_UOM_ID(), "C_UOM_ID do not match");
 	}
 
 	@Test
@@ -101,7 +101,7 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 		final I_C_Order order = createOrder(warehouse1);
 		createOrderLine(order, product1_wh1); // we don't care for product
 		final List<I_M_ReceiptSchedule> rcs = orderReceiptScheduleProducer.createOrUpdateReceiptSchedules(order, ImmutableList.of());
-		Assert.assertEquals(1, rcs.size());
+		Assertions.assertEquals(1, rcs.size());
 	}
 
 	@Test
@@ -113,7 +113,7 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 		final I_M_ReceiptSchedule rc = createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 12);
 		receiptSchedules.add(rc);
 		final List<I_M_ReceiptSchedule> rcs = orderReceiptScheduleProducer.createOrUpdateReceiptSchedules(order, receiptSchedules);
-		Assert.assertEquals(1, rcs.size());
+		Assertions.assertEquals(1, rcs.size());
 	}
 
 	@Test
@@ -130,7 +130,7 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 		receiptSchedules.add(rc3);
 
 		final List<I_M_ReceiptSchedule> rcs = orderReceiptScheduleProducer.createOrUpdateReceiptSchedules(order, receiptSchedules);
-		Assert.assertEquals(1, rcs.size());
+		Assertions.assertEquals(1, rcs.size());
 	}
 
 	@Test
@@ -140,7 +140,7 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 		final I_C_OrderLine ol = createOrderLine(order, product1_wh1);
 
 		final List<I_M_ReceiptSchedule> rcs = orderReceiptScheduleProducer.createOrUpdateReceiptSchedules(order, ImmutableList.of());
-		Assert.assertEquals(1, rcs.size());
+		Assertions.assertEquals(1, rcs.size());
 
 		final I_M_ReceiptSchedule rc = rcs.get(0);
 		assertOrderMatches(rc, order);

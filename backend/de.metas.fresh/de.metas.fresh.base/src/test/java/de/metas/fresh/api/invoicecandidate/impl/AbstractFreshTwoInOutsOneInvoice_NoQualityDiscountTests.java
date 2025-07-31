@@ -33,8 +33,7 @@ import lombok.NonNull;
 import java.util.List;
 import java.util.Properties;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Similar to its super class {@link AbstractTwoInOutsOneInvoiceSalesTests}, but uses the {@link FreshQuantityDiscountAggregator} instead of the default aggregator.<br>
@@ -60,6 +59,6 @@ public abstract class AbstractFreshTwoInOutsOneInvoice_NoQualityDiscountTests ex
 
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
-		assertThat(ic.getC_Invoice_Candidate_Agg(), is(freshAgg));
+		assertThat(ic.getC_Invoice_Candidate_Agg()).isEqualTo(freshAgg);
 	}
 }

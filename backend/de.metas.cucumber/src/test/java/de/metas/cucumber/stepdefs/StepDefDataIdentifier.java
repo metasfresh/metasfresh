@@ -89,7 +89,12 @@ public final class StepDefDataIdentifier
 
 	public static StepDefDataIdentifier nextUnnamed()
 	{
-		return ofString(PREFIX_Unnamed + nextUnnamedIdentifierId.getAndIncrement());
+		return nextUnnamed(PREFIX_Unnamed);
+	}
+
+	public static StepDefDataIdentifier nextUnnamed(@NonNull final String prefix)
+	{
+		return ofString(prefix + nextUnnamedIdentifierId.getAndIncrement());
 	}
 
 	public static boolean equals(@Nullable final StepDefDataIdentifier id1, @Nullable final StepDefDataIdentifier id2)
@@ -98,6 +103,7 @@ public final class StepDefDataIdentifier
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
 		return getAsString();

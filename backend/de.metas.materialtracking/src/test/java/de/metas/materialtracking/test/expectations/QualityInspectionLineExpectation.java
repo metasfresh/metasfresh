@@ -10,31 +10,32 @@ package de.metas.materialtracking.test.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.X_PP_Order_Report;
-import org.junit.Assert;
 
 import de.metas.materialtracking.PPOrderReportUtil;
 import de.metas.materialtracking.model.I_PP_Order_Report;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLine;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.util.Check;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class QualityInspectionLineExpectation extends AbstractExpectation
 {
@@ -79,13 +80,13 @@ public class QualityInspectionLineExpectation extends AbstractExpectation
 
 	public QualityInspectionLineExpectation assertExpected(final I_PP_Order_Report line)
 	{
-		Assert.assertNotNull("line not null", line);
+		assertThat(line).as("line not null").isNotNull();
 
 		final String prefix = "Invalid \"" + PPOrderReportUtil.toString(line) + "\" - ";
 
 		if (productionMaterialTypeSet)
 		{
-			Assert.assertEquals(prefix + "ProductionMaterialType", this.productionMaterialType, line.getProductionMaterialType());
+			assertThat(line.getProductionMaterialType()).as(prefix + "ProductionMaterialType").isEqualTo(this.productionMaterialType);
 		}
 		if (productSet)
 		{
@@ -104,15 +105,15 @@ public class QualityInspectionLineExpectation extends AbstractExpectation
 
 	public QualityInspectionLineExpectation assertExpected(final IQualityInspectionLine line)
 	{
-		Assert.assertNotNull("line not null", line);
+		assertThat(line).as("line not null").isNotNull();
 
 		final String prefix = "Invalid \"" + line + "\" - ";
 
-		Assert.assertEquals(prefix + "Type", this.qualityInspectionLineType, line.getQualityInspectionLineType());
+		assertThat(line.getQualityInspectionLineType()).as(prefix + "QualityInspectionLineType").isEqualTo(this.qualityInspectionLineType);
 
 		if (productionMaterialTypeSet)
 		{
-			Assert.assertEquals(prefix + "ProductionMaterialType", this.productionMaterialType, line.getProductionMaterialType());
+			assertThat(line.getProductionMaterialType()).as(prefix + "ProductionMaterialType").isEqualTo(this.productionMaterialType);
 		}
 		if (productSet)
 		{
@@ -212,7 +213,6 @@ public class QualityInspectionLineExpectation extends AbstractExpectation
 	}
 
 	/**
-	 * 
 	 * @param productionMaterialType see {@link X_PP_Order_Report#PRODUCTIONMATERIALTYPE_AD_Reference_ID}
 	 * @return this
 	 */

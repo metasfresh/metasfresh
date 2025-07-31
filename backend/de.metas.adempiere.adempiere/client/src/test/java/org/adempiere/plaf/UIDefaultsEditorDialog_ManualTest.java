@@ -22,9 +22,8 @@ package org.adempiere.plaf;
  * #L%
  */
 
-
 import org.compiere.util.ValueNamePair;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Run {@link UIDefaultsEditorDialog}, database decoupled.
@@ -32,11 +31,11 @@ import org.junit.Ignore;
  * @author tsa
  *
  */
-@Ignore
+@Disabled
 public class UIDefaultsEditorDialog_ManualTest
 {
 
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
 		final ValueNamePair plaf = ValueNamePair.of(AdempiereLookAndFeel.class.getName(), AdempiereLookAndFeel.NAME);
 		final ValueNamePair theme = ValueNamePair.of(MetasFreshTheme.class.getName(), MetasFreshTheme.NAME);

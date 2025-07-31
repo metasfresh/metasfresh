@@ -22,12 +22,9 @@ package de.metas.migration.cli.rollout_migrate;
  * #L%
  */
 
+import org.junit.jupiter.api.Disabled;
 
-import org.junit.Ignore;
-
-import de.metas.migration.cli.rollout_migrate.Main;
-
-@Ignore
+@Disabled
 public class RolloutMigrateManualTest
 {
 	public static final void main(String[] args)
