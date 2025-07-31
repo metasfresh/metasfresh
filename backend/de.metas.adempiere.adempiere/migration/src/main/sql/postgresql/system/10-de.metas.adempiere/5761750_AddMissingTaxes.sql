@@ -2,7 +2,8 @@
 -- Run mode: WEBUI
 
 -- 2025-07-31T13:08:05.371Z
-INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,SeqNo,SOPOType,Updated,UpdatedBy,ValidFrom,ValidTo) VALUES (1000000,1000000,101,TO_TIMESTAMP('2025-07-31 13:08:05.368000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000009,540107,'Y','N','Y','N','N','N','N','N','UST Normal 8.1%',0,0,'B',TO_TIMESTAMP('2025-07-31 13:08:05.368000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'2025-07-01'::timestamp without time zone,'9999-12-31'::timestamp without time zone)
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsSalesTax,IsSmallbusiness,IsSummary,
+                   IsTaxExempt,IsWholeTax,Name,Rate,SeqNo,SOPOType,Updated,UpdatedBy,ValidFrom,ValidTo, requirestaxcertificate) VALUES (1000000,1000000,101,TO_TIMESTAMP('2025-07-31 13:08:05.368000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000009,540107,'Y','N','Y','N','N','N','N','N','UST Normal 8.1%',0,0,'B',TO_TIMESTAMP('2025-07-31 13:08:05.368000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'2025-07-01'::timestamp without time zone,'9999-12-31'::timestamp without time zone,'N')
 ;
 
 -- 2025-07-31T13:08:05.381Z
@@ -49,7 +50,7 @@ UPDATE C_Tax_Trl trl SET Name='Normale MWSt 8.1%' WHERE C_Tax_ID=540107 AND (IsT
 ;
 
 -- 2025-07-31T13:08:55.884Z
-UPDATE C_Tax SET To_Country_ID=NULL, TypeOfDestCountry='OUTSIDE_COUNTRY_AREA',Updated=TO_TIMESTAMP('2025-07-31 13:08:55.884000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_Tax_ID=540107
+UPDATE C_Tax SET To_Country_ID=107, TypeOfDestCountry='OUTSIDE_COUNTRY_AREA',Updated=TO_TIMESTAMP('2025-07-31 13:08:55.884000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_Tax_ID=540107
 ;
 
 -- 2025-07-31T13:09:15.994Z
@@ -59,7 +60,9 @@ UPDATE C_Tax SET SeqNo=1001,Updated=TO_TIMESTAMP('2025-07-31 13:09:15.994000','Y
 
 
 -- 2025-07-31T13:16:51.636Z
-INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,SeqNo,SOPOType,Updated,UpdatedBy,ValidFrom,ValidTo) VALUES (1000000,1000000,101,TO_TIMESTAMP('2025-07-31 13:16:51.635000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000009,540108,'Y','N','Y','N','N','N','N','N','Normale MWSt 7.7%',0,0,'B',TO_TIMESTAMP('2025-07-31 13:16:51.635000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'2021-01-01'::timestamp without time zone,'2023-12-31'::timestamp without time zone)
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,
+                   Rate,SeqNo,SOPOType,Updated,UpdatedBy,ValidFrom,ValidTo, requirestaxcertificate) VALUES (1000000,1000000,101,
+                                                                                                            TO_TIMESTAMP('2025-07-31 13:16:51.635000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000009,540108,'Y','N','Y','N','N','N','N','N','Normale MWSt 7.7%',0,0,'B',TO_TIMESTAMP('2025-07-31 13:16:51.635000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'2021-01-01'::timestamp without time zone,'2023-12-31'::timestamp without time zone, 'N')
 ;
 
 -- 2025-07-31T13:16:51.639Z
@@ -90,7 +93,7 @@ INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActi
 ;
 
 -- 2025-07-31T13:17:01.235Z
-UPDATE C_Tax SET To_Country_ID=NULL, TypeOfDestCountry='OUTSIDE_COUNTRY_AREA',Updated=TO_TIMESTAMP('2025-07-31 13:17:01.235000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_Tax_ID=540108
+UPDATE C_Tax SET To_Country_ID=107, TypeOfDestCountry='OUTSIDE_COUNTRY_AREA',Updated=TO_TIMESTAMP('2025-07-31 13:17:01.235000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_Tax_ID=540108
 ;
 
 -- 2025-07-31T13:17:07.209Z
@@ -114,7 +117,9 @@ UPDATE C_Tax SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2025-07-31 13:17:31.383000','
 ;
 
 -- 2025-07-31T13:18:53.770Z
-INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,SeqNo,SOPOType,Updated,UpdatedBy,ValidFrom,ValidTo) VALUES (1000000,1000000,101,TO_TIMESTAMP('2025-07-31 13:18:53.769000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000010,540109,'Y','N','Y','N','N','N','N','N','Reduzierte MWSt 2.6%',0,0,'B',TO_TIMESTAMP('2025-07-31 13:18:53.769000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'2024-01-01'::timestamp without time zone,'9999-12-31'::timestamp without time zone)
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,
+                   Rate,SeqNo,SOPOType,Updated,UpdatedBy,ValidFrom,ValidTo, requirestaxcertificate) VALUES (1000000,1000000,101,
+                                                                                                            TO_TIMESTAMP('2025-07-31 13:18:53.769000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000010,540109,'Y','N','Y','N','N','N','N','N','Reduzierte MWSt 2.6%',0,0,'B',TO_TIMESTAMP('2025-07-31 13:18:53.769000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'2024-01-01'::timestamp without time zone,'9999-12-31'::timestamp without time zone, 'N')
 ;
 
 -- 2025-07-31T13:18:53.775Z
@@ -145,7 +150,7 @@ INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActi
 ;
 
 -- 2025-07-31T13:19:04.901Z
-UPDATE C_Tax SET To_Country_ID=NULL, TypeOfDestCountry='OUTSIDE_COUNTRY_AREA',Updated=TO_TIMESTAMP('2025-07-31 13:19:04.901000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_Tax_ID=540109
+UPDATE C_Tax SET To_Country_ID=107, TypeOfDestCountry='OUTSIDE_COUNTRY_AREA',Updated=TO_TIMESTAMP('2025-07-31 13:19:04.901000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_Tax_ID=540109
 ;
 
 -- 2025-07-31T13:19:18.593Z
@@ -153,7 +158,8 @@ UPDATE C_Tax SET Rate=2.6,Updated=TO_TIMESTAMP('2025-07-31 13:19:18.593000','YYY
 ;
 
 -- 2025-07-31T13:28:29.826Z
-INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,SeqNo,SOPOType,Updated,UpdatedBy,ValidFrom,ValidTo) VALUES (1000000,1000000,101,TO_TIMESTAMP('2025-07-31 13:28:29.824000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000010,540110,'Y','N','Y','N','N','N','N','N','Reduzierte MWSt 2.5%',0,0,'B',TO_TIMESTAMP('2025-07-31 13:28:29.824000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'2021-01-01'::timestamp without time zone,'2023-12-31'::timestamp without time zone)
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsSalesTax,IsSmallbusiness,IsSummary,
+                   IsTaxExempt,IsWholeTax,Name,Rate,SeqNo,SOPOType,Updated,UpdatedBy,ValidFrom,ValidTo, requirestaxcertificate) VALUES (1000000,1000000,101,TO_TIMESTAMP('2025-07-31 13:28:29.824000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000010,540110,'Y','N','Y','N','N','N','N','N','Reduzierte MWSt 2.5%',0,0,'B',TO_TIMESTAMP('2025-07-31 13:28:29.824000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'2021-01-01'::timestamp without time zone,'2023-12-31'::timestamp without time zone, 'N')
 ;
 
 -- 2025-07-31T13:28:29.828Z
@@ -192,7 +198,7 @@ UPDATE C_Tax SET Rate=2.5,Updated=TO_TIMESTAMP('2025-07-31 13:28:39.642000','YYY
 ;
 
 -- 2025-07-31T13:28:43.849Z
-UPDATE C_Tax SET To_Country_ID=NULL, TypeOfDestCountry='OUTSIDE_COUNTRY_AREA',Updated=TO_TIMESTAMP('2025-07-31 13:28:43.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_Tax_ID=540110
+UPDATE C_Tax SET To_Country_ID=107, TypeOfDestCountry='OUTSIDE_COUNTRY_AREA',Updated=TO_TIMESTAMP('2025-07-31 13:28:43.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_Tax_ID=540110
 ;
 
 -- 2025-07-31T13:28:52.352Z
