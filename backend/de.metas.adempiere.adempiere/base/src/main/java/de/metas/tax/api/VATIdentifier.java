@@ -1,5 +1,7 @@
 package de.metas.tax.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -30,6 +32,7 @@ public final class VATIdentifier
 	}
 
 	@Nullable
+	@JsonCreator
 	public static VATIdentifier ofNullable(@Nullable final String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
@@ -41,6 +44,7 @@ public final class VATIdentifier
 	public String toString() {return getAsString();}
 
 	@NonNull
+	@JsonValue
 	public String getAsString() {return value;}
 
 	@Nullable
