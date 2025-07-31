@@ -399,7 +399,8 @@ public class TaxDAO implements ITaxDAO
 		final String bpVATaxID = Optional.ofNullable(taxQuery.getBPartnerLocationId())
 				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId)
 				.flatMap(bpartnerBL::getVATTaxId)
-				.orElse( ignorePartnerVATID ? null : bpartner.getVATaxID());
+				.orElseGet(() -> ignorePartnerVATID ? null : bpartner.getVATaxID());
+
 
 		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpVATaxID);
 		loggable.addLog("BPartner has tax certificate={}", bPartnerHasTaxCertificate);
