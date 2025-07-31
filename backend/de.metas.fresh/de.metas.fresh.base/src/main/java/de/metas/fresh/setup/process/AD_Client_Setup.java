@@ -1,7 +1,5 @@
 package de.metas.fresh.setup.process;
 
-import org.adempiere.util.lang.IAutoCloseable;
-
 import de.metas.cache.CacheMgt;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.interfaces.I_C_BPartner;
@@ -10,6 +8,8 @@ import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.tax.api.VATIdentifier;
+import org.adempiere.util.lang.IAutoCloseable;
 
 /**
  * Process used to quick setup the metas Fresh installation.
@@ -53,7 +53,8 @@ public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParam
 		}
 		else if (PARAM_VATaxID.equalsIgnoreCase(name))
 		{
-			return clientSetup.getCompanyTaxID();
+			final VATIdentifier companyTaxID = clientSetup.getCompanyTaxID();
+			return companyTaxID != null ? companyTaxID.getAsString() : null;
 		}
 		else if (PARAM_C_Location_ID.equalsIgnoreCase(name))
 		{

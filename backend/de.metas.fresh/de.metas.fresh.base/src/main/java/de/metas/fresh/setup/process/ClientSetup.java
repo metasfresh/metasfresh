@@ -17,6 +17,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -431,14 +432,15 @@ class ClientSetup
 		return this;
 	}
 
-	public final String getCompanyTaxID()
+	public final VATIdentifier getCompanyTaxID()
 	{
-		if (Check.isNotBlank(orgBPartnerLocation.getVATaxID()))
+		final VATIdentifier bplVATId = VATIdentifier.ofNullable(orgBPartnerLocation.getVATaxID());
+		if (bplVATId != null)
 		{
-			return orgBPartnerLocation.getVATaxID();
+			return bplVATId;
 		}
 
-		return orgBPartner.getVATaxID();
+		return VATIdentifier.ofNullable(orgBPartner.getVATaxID());
 	}
 
 	public String getContactFirstName()

@@ -33,6 +33,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -857,18 +858,20 @@ public class BPartnerBL implements IBPartnerBL
 
 	@NonNull
 	@Override
-	public Optional<String> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	public Optional<VATIdentifier> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
-		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
+		final VATIdentifier bplVATId = bpartnerLocation != null ? VATIdentifier.ofNullable(bpartnerLocation.getVATaxID()) : null;
+		if (bplVATId != null)
 		{
-			return Optional.of(bpartnerLocation.getVATaxID());
+			return Optional.of(bplVATId);
 		}
 
 		final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
-		if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
+		final VATIdentifier bpVATId = bPartner != null ? VATIdentifier.ofNullable(bPartner.getVATaxID()) : null;
+		if (bpVATId != null)
 		{
-			return Optional.of(bPartner.getVATaxID());
+			return Optional.of(bpVATId);
 		}
 
 		return Optional.empty();
