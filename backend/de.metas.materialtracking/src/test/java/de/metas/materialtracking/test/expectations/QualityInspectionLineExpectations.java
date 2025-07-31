@@ -22,17 +22,15 @@ package de.metas.materialtracking.test.expectations;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import de.metas.materialtracking.model.I_PP_Order_Report;
+import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLine;
+import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.materialtracking.model.I_PP_Order_Report;
-import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLine;
-import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 
 /**
  * One instance expectations for one PP_Order (quality inspection or not). Multiple instances are bundles into one {@link QualityInspectionExpectations} instance.
@@ -93,7 +91,7 @@ public class QualityInspectionLineExpectations
 	{
 		final int actualLinesCount = lines.size();
 		final int expectedLinesCount = expectations.size();
-		assertEquals("Invalid expected lines count", expectedLinesCount, actualLinesCount);
+		assertThat(actualLinesCount).as("Invalid expected lines count").isEqualTo(expectedLinesCount);
 
 		for (int i = 0; i < actualLinesCount; i++)
 		{
@@ -108,12 +106,12 @@ public class QualityInspectionLineExpectations
 	{
 		if (!isQualityInspection)
 		{
-			assertThat("Only qualityInspections shall have PPOrderReportLines", lines.isEmpty(), is(true));
+			assertThat(lines).as("Only qualityInspections shall have PPOrderReportLines").isEmpty();
 		}
 
 		final int actualLinesCount = lines.size();
 		final int expectedLinesCount = expectations.size();
-		assertEquals("Invalid expected lines count", expectedLinesCount, actualLinesCount);
+		assertThat(actualLinesCount).as("Invalid expected lines count").isEqualTo(expectedLinesCount);
 
 		for (int i = 0; i < actualLinesCount; i++)
 		{

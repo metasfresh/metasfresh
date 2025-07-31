@@ -22,14 +22,13 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
-
 import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.IQuery;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -54,11 +53,11 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 
 		final List<I_M_ReceiptSchedule> schedulesList = IteratorUtils.asList(schedules);
 
-		Assert.assertEquals("Invalid size", 5, schedulesList.size());
-		Assert.assertEquals("Invalid receipt schedule at index 0", rs1, schedulesList.getFirst());
-		Assert.assertEquals("Invalid receipt schedule at index 1", rs5, schedulesList.get(1));
-		Assert.assertEquals("Invalid receipt schedule at index 2", rs2, schedulesList.get(2));
-		Assert.assertEquals("Invalid receipt schedule at index 3", rs3, schedulesList.get(3));
-		Assert.assertEquals("Invalid receipt schedule at index 4", rs4, schedulesList.get(4));
+		Assertions.assertEquals(5, schedulesList.size(), "Invalid size");
+		Assertions.assertEquals(rs1, schedulesList.getFirst(), "Invalid receipt schedule at index 0");
+		Assertions.assertEquals(rs5, schedulesList.get(1), "Invalid receipt schedule at index 1");
+		Assertions.assertEquals(rs2, schedulesList.get(2), "Invalid receipt schedule at index 2");
+		Assertions.assertEquals(rs3, schedulesList.get(3), "Invalid receipt schedule at index 3");
+		Assertions.assertEquals(rs4, schedulesList.get(4), "Invalid receipt schedule at index 4");
 	}
 }

@@ -33,8 +33,8 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 
 /*
  * #%L
@@ -84,7 +84,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final Properties deriveCtx = Env.deriveCtx(Env.getCtx());
 		Env.setContext(deriveCtx, Env.CTXNAME_AD_Client_ID, 0);
 		Env.setContext(deriveCtx, Env.CTXNAME_AD_Org_ID, 0);
-		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
+		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
 		sysConfig.setName(SaveDecoupledHUAttributesDAO.SYSCONFIG_AutoFlushEnabledInitial);
 		sysConfig.setValue("Y");
 		InterfaceWrapperHelper.save(sysConfig);
@@ -101,11 +101,11 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 		{
 			reversedLines = createReceiptInOutLines(IDocument.STATUS_Reversed);
-			assertThat(reversedLines.getFirst().getM_Product_ID(), is(helper.pTomato.getM_Product_ID()));
-			assertThat(reversedLines.get(1).getM_Product_ID(), is(helper.pSalad.getM_Product_ID()));
+			assertThat(reversedLines.getFirst().getM_Product_ID()).isEqualTo(helper.pTomato.getM_Product_ID());
+			assertThat(reversedLines.get(1).getM_Product_ID()).isEqualTo(helper.pSalad.getM_Product_ID());
 
 			reversedLineTomatoHU = createLU(helper.pTomatoProductId, new BigDecimal("20"));
-			assertThat(handlingUnitsBL.isTopLevel(reversedLineTomatoHU), is(true));
+			assertThat(handlingUnitsBL.isTopLevel(reversedLineTomatoHU)).isEqualTo(true);
 
 			reversedLineSaladHU = createLU(helper.pSaladProductId, new BigDecimal("20"));
 
@@ -123,14 +123,14 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final I_M_HU completedLineSaladHU;
 		{
 			completedLines = createReceiptInOutLines(IDocument.STATUS_Completed);
-			assertThat(completedLines.getFirst().getM_Product_ID(), is(helper.pTomatoProductId.getRepoId()));
-			assertThat(completedLines.get(1).getM_Product_ID(), is(helper.pSaladProductId.getRepoId()));
+			assertThat(completedLines.getFirst().getM_Product_ID()).isEqualTo(helper.pTomatoProductId.getRepoId());
+			assertThat(completedLines.get(1).getM_Product_ID()).isEqualTo(helper.pSaladProductId.getRepoId());
 
 			completedLineTomatoHU = createLU(helper.pTomatoProductId, new BigDecimal("30"));
-			assertThat(handlingUnitsBL.isTopLevel(completedLineTomatoHU), is(true));
+			assertThat(handlingUnitsBL.isTopLevel(completedLineTomatoHU)).isTrue();
 
 			completedLineSaladHU = createLU(helper.pSaladProductId, new BigDecimal("30"));
-			assertThat(handlingUnitsBL.isTopLevel(completedLineSaladHU), is(true));
+			assertThat(handlingUnitsBL.isTopLevel(completedLineSaladHU)).isTrue();
 
 			createAssignments(
 					completedLines.getFirst(), // the one with tomato
@@ -168,12 +168,12 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		}
 
 		final List<de.metas.materialtracking.model.I_M_InOutLine> provideIssuedInOutLinesTomato = new PPOrderMInOutLineRetrievalService().provideIssuedInOutLines(issueCostCollectorTomato);
-		assertThat(provideIssuedInOutLinesTomato.size(), is(1));
-		assertThat(provideIssuedInOutLinesTomato.getFirst(), is(completedLines.getFirst())); // expecting the completed tomato line
+		assertThat(provideIssuedInOutLinesTomato).hasSize(1);
+		assertThat(provideIssuedInOutLinesTomato.getFirst()).isEqualTo(completedLines.getFirst()); // expecting the completed tomato line
 
 		final List<de.metas.materialtracking.model.I_M_InOutLine> provideIssuedInOutLinesSalad = new PPOrderMInOutLineRetrievalService().provideIssuedInOutLines(issueCostCollectorSalad);
-		assertThat(provideIssuedInOutLinesSalad.size(), is(1));
-		assertThat(provideIssuedInOutLinesSalad.getFirst(), is(completedLines.get(1))); // expecting the completed salad line
+		assertThat(provideIssuedInOutLinesSalad).hasSize(1);
+		assertThat(provideIssuedInOutLinesSalad.getFirst()).isEqualTo(completedLines.get(1)); // expecting the completed salad line
 
 	}
 
@@ -185,8 +185,8 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		assertThat(handlingUnitsBL.isTopLevel(luHU), is(true));
-		assertThat(handlingUnitsBL.isLoadingUnit(luHU), is(true));
+		assertThat(handlingUnitsBL.isTopLevel(luHU)).isTrue();
+		assertThat(handlingUnitsBL.isLoadingUnit(luHU)).isTrue();
 
 		final List<I_M_HU> tuHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
 
@@ -219,7 +219,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 	 */
 	private List<I_M_InOutLine> createReceiptInOutLines(final String docStatus)
 	{
-		final I_M_InOut io = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+		final I_M_InOut io = newInstance(I_M_InOut.class);
 		io.setDocStatus(docStatus);
 		io.setM_Warehouse_ID(helper.defaultWarehouse.getM_Warehouse_ID());
 
@@ -231,13 +231,13 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 		InterfaceWrapperHelper.save(io);
 
-		final I_M_InOutLine iol1 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+		final I_M_InOutLine iol1 = newInstance(I_M_InOutLine.class);
 		iol1.setM_InOut(io);
 		iol1.setLine(10);
 		iol1.setM_Product_ID(helper.pTomato.getM_Product_ID());
 		InterfaceWrapperHelper.save(iol1);
 
-		final I_M_InOutLine iol2 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+		final I_M_InOutLine iol2 = newInstance(I_M_InOutLine.class);
 		iol2.setM_InOut(io);
 		iol2.setLine(20);
 		iol2.setM_Product_ID(helper.pSalad.getM_Product_ID());

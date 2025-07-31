@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-rabbitmq
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,7 +42,7 @@ import java.util.Properties;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.rabbitmq.RabbitMQDispatcherRouteBuilder.RABBITMQ_DISPATCHER_ROUTE_ID;
 import static de.metas.camel.externalsystems.rabbitmq.externalreference.RabbitMQExportExternalReferenceRouteBuilder.EXPORT_EXTERNAL_REFERENCE_ROUTE_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RabbitMQExportExternalReferenceRouteBuilderTest extends CamelTestSupport
 {
@@ -111,7 +111,7 @@ public class RabbitMQExportExternalReferenceRouteBuilderTest extends CamelTestSu
 
 		//then
 		assertThat(mockRetrieveExternalReferenceProcessor.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	private void prepareRouteForTesting(

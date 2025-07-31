@@ -1527,6 +1527,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
+	 * Set Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWithoutCharge (boolean IsWithoutCharge);
+
+	/**
+	 * Get Without Charge.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWithoutCharge();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsWithoutCharge = new ModelColumn<>(I_C_OrderLine.class, "IsWithoutCharge", null);
+	String COLUMNNAME_IsWithoutCharge = "IsWithoutCharge";
+
+	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
@@ -1653,7 +1674,7 @@ public interface I_C_OrderLine
 	 * Set Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1663,7 +1684,7 @@ public interface I_C_OrderLine
 	 * Get Price List Version.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1876,6 +1897,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_Order_Min = new ModelColumn<>(I_C_OrderLine.class, "Order_Min", null);
 	String COLUMNNAME_Order_Min = "Order_Min";
+
+	/**
+	 * Set Packinfo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackInfo (@Nullable java.lang.String PackInfo);
+
+	/**
+	 * Get Packinfo.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPackInfo();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_PackInfo = new ModelColumn<>(I_C_OrderLine.class, "PackInfo", null);
+	String COLUMNNAME_PackInfo = "PackInfo";
 
 	/**
 	 * Set Payment Discount %.
@@ -2468,6 +2510,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_QtyReserved = new ModelColumn<>(I_C_OrderLine.class, "QtyReserved", null);
 	String COLUMNNAME_QtyReserved = "QtyReserved";
+
+	/**
+	 * Set Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReason (@Nullable java.lang.String Reason);
+
+	/**
+	 * Get Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReason();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Reason = new ModelColumn<>(I_C_OrderLine.class, "Reason", null);
+	String COLUMNNAME_Reason = "Reason";
 
 	/**
 	 * Set Referenced Order Line.

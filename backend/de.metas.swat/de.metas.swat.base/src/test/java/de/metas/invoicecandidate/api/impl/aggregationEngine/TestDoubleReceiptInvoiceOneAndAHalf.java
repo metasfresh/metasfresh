@@ -22,21 +22,6 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOutLine;
@@ -45,13 +30,21 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * A part from the over-delivered shall be invoiced. See {@link #config_GetQtyToInvoice_Override()}.
  *
  * @see AbstractDoubleReceiptQtyOverride
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestDoubleReceiptInvoiceOneAndAHalf extends AbstractDoubleReceiptQtyOverride
 {
@@ -59,24 +52,30 @@ public class TestDoubleReceiptInvoiceOneAndAHalf extends AbstractDoubleReceiptQt
 	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
 	{
 		// guard
-		assertThat(config_IsSOTrx(), is(false));
+		assertThat(config_IsSOTrx()).isFalse();
 
-		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
+		assertThat(invoices)
+			.as("We are expecting one invoice: %s", invoices)
+			.hasSize(1);
 
 		final IInvoiceHeader invoice1 = invoices.removeFirst();
 
-		assertThat(invoice1.getPOReference(), is(IC_PO_REFERENCE));
-		assertThat(invoice1.getDateAcct(), is(IC_DATE_ACCT));
-
-		assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
+		assertThat(invoice1.getPOReference()).isEqualTo(IC_PO_REFERENCE);
+		assertThat(invoice1.getDateAcct()).isEqualTo(IC_DATE_ACCT);
+		assertThat(invoice1.isSOTrx()).isEqualTo(config_IsSOTrx());
 
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
-		assertEquals("We are expecting one invoice line: " + invoiceLines1, 1, invoiceLines1.size());
+		assertThat(invoiceLines1)
+			.as("We are expecting one invoice line: %s", invoiceLines1)
+			.hasSize(1);
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
-		assertNotNull("Missing IInvoiceLineRW for iol111=" + iol111, il1);
-		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY.add(TWENTY))); // the first iol's QtyDelviered, plus the remaining rest of the 2nd iol..truncated according to QtyToInvoice_Override
-		assertThat(il1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(2));
+		assertThat(il1)
+			.as("Missing IInvoiceLineRW for iol111=%s", iol111)
+			.isNotNull();
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal())
+			.isEqualByComparingTo(FIFTY.add(TWENTY)); // the first iol's QtyDelviered, plus the remaining rest of the 2nd iol..truncated according to QtyToInvoice_Override
+		assertThat(il1.getC_InvoiceCandidate_InOutLine_IDs()).hasSize(2);
 	}
 
 	/**

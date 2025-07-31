@@ -1,8 +1,5 @@
 package de.metas.handlingunits.attributes.impl.merge;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -14,37 +11,36 @@ import static org.junit.Assert.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.attributes.impl.split.SplitWeightAttributePropagationTest;
 import de.metas.handlingunits.attributes.impl.split.SplitWeightTareAdjustPropagationTest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 /**
- * 
  * <i>Test detailed propagation with ZERO margin of error (without the allowed single 0.01 margin).</i><br>
  * <ul>
  * <li>Tests here are mostly the same ones as for HU Merge at this current time, but are not strictly related to it.</li>
@@ -91,7 +87,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.valueOf(2), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		Assert.assertEquals("Invalid amount of TUs were split", 2, splitTradingUnits.size());
+		Assertions.assertEquals(2, splitTradingUnits.size(), "Invalid amount of TUs were split");
 
 		//
 		// Simulate - take off one of the two 10kg IFCOs and re-attach it to 'loadingUnit'
@@ -141,7 +137,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.valueOf(2), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		Assert.assertEquals("Invalid amount of TUs were split", 2, splitTradingUnits.size());
+		Assertions.assertEquals(2, splitTradingUnits.size(), "Invalid amount of TUs were split");
 		// verify the split source
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 7,
 				newHUWeightsExpectation("82.471", "50.471", "32", "0"),
@@ -166,19 +162,19 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		// note that splitTradingUnits only contains one IFCO (we removed the other one before we joned it)
 		final I_M_HU sourceTUFromOutside = splitTradingUnits.getFirst();
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find a TU with 5 x CU
-		
+
 		// we "offer" both TUs to the merge method, but expect it not to touch the second TU since only 2 CU shall be transferred
-		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProductId(), 
-				BigDecimal.valueOf(2), 
+		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProductId(),
+				BigDecimal.valueOf(2),
 				getCUUOM());
-	
+
 		//
 		// Assert data integrity on SOURCE TUs
 		// sourceTUFromOutside is the one we merged from, i.e. it now contains not 10 but 8xCU
-		assertThat("After we merged 2, there shall still be something left on the source IFCO", splitTradingUnits.getFirst().getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
+		assertThat(splitTradingUnits.getFirst().getHUStatus()).as("After we merged 2, there shall still be something left on the source IFCO").isEqualTo(X_M_HU.HUSTATUS_Planning);
 		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(sourceTUFromOutside);
 		assertSingleHandlingUnitWeights(attributeStorageTU, newHUWeightsExpectation("7.212", "6.212", "1", "0"));
-		
+
 		//
 		// Assert data integrity on TARGET LU
 		//
@@ -214,7 +210,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.valueOf(2), // TUs Per LU
 				BigDecimal.ONE); // split on ONE additional LU
 
-		Assert.assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
+		Assertions.assertEquals(1, splitLUs.size(), "Invalid amount of LUs were split");
 		final I_M_HU splitLU = splitLUs.getFirst();
 
 		// commitAndDumpHU(splitLU);
@@ -253,9 +249,9 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find a TU with 5 x CU in the LU FROM which we split
 		helper.mergeTUs(huContext, Collections.singletonList(sourceTUInLoadingUnit), targetTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
-		Assert.assertEquals("Target TU is planning", targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
-		Assert.assertEquals("Source TU is destroyed", sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Destroyed);
-		Assert.assertEquals("Source LU is planning", splitLU.getHUStatus(), X_M_HU.HUSTATUS_Planning);
+		Assertions.assertEquals(targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning, "Target TU is planning");
+		Assertions.assertEquals(sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Destroyed, "Source TU is destroyed");
+		Assertions.assertEquals(splitLU.getHUStatus(), X_M_HU.HUSTATUS_Planning, "Source LU is planning");
 
 		//
 		// Assert data integrity for both SOURCE LU and TARGET LU
@@ -300,7 +296,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.valueOf(1), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		assertThat(listWithSingleTU.size(), is(1));
+		assertThat(listWithSingleTU).hasSize(1);
 		assertLoadingUnitStorageWeights(listWithSingleTU.getFirst(), huItemIFCO_10, 0,
 				newHUWeightsExpectation("8.765", "7.765", "1", "0") // one "real" IFCO with two VHUs of 5xCU each
 		);
@@ -313,8 +309,8 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.valueOf(5),
 				getCUUOM());
 
-		Assert.assertEquals("Target TU is planning", targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
-		Assert.assertEquals("Source TU is planning", sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
+		Assertions.assertEquals(targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning, "Target TU is planning");
+		Assertions.assertEquals(sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning, "Source TU is planning");
 
 		//
 		// Assert data integrity on TARGET LU for both SOURCE TU and TARGET TU
@@ -327,8 +323,8 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 
 		helper.mergeTUs(huContext, Collections.singletonList(targetTUInLoadingUnit), sourceTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
-		Assert.assertEquals("Target TU is planning", targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
-		Assert.assertEquals("Source TU is planning", sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
+		Assertions.assertEquals(targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning, "Target TU is planning");
+		Assertions.assertEquals(sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning, "Source TU is planning");
 
 		//
 		// Assert data integrity on TARGET LU for both SOURCE TU and TARGET TU
@@ -363,7 +359,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.valueOf(2), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		assertEquals("Invalid amount of TUs were split", 2, splitTradingUnits.size());
+		assertThat(splitTradingUnits).as("Invalid amount of TUs were split").hasSize(2);
 
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 8,
 				newHUWeightsExpectation("91.235", "58.235", "33", "0"),
@@ -389,8 +385,8 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU targetTUInLoadingUnit = splitTradingUnits.get(1);
 		helper.mergeTUs(huContext, Collections.singletonList(sourceTUInLoadingUnit), targetTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
-		Assert.assertEquals("Target TU is planning", targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning);
-		Assert.assertEquals("Source TU is destroyed", sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Destroyed);
+		Assertions.assertEquals(targetTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Planning, "Target TU is planning");
+		Assertions.assertEquals(sourceTUInLoadingUnit.getHUStatus(), X_M_HU.HUSTATUS_Destroyed, "Source TU is destroyed");
 
 		//
 		// Assert data integrity on TARGET LU for both SOURCE TU and TARGET TU
@@ -428,7 +424,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ONE); // split on ONE additional LU
 
 		// verify split destination
-		Assert.assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
+		Assertions.assertEquals(1, splitLUs.size(), "Invalid amount of LUs were split");
 		final I_M_HU splitLU = splitLUs.getFirst();
 		// commitAndDumpHU(splitLU);
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 1,
@@ -439,19 +435,19 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		assertLoadingUnitStorageWeights(loadingUnit, huItemIFCO_10, 8,
 				newHUWeightsExpectation("95.118", "62.118", "33", "0"),
 				newHUWeightsExpectation("70.118", "62.118", "8", "0"));
-		
+
 		//
 		// Finally, merge 2 x TUs from both palettes at the same time
 		final I_M_HU sourceTUInLoadingUnit = findTUInLUWithQty(splitLU, 5); // find a TU with 5 x CU in the LU onto which CUs were split
 		helper.mergeTUs(huContext, Collections.singletonList(sourceTUInLoadingUnit), loadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
-		Assert.assertEquals("Target TU is planning", X_M_HU.HUSTATUS_Planning, loadingUnit.getHUStatus());
-		Assert.assertEquals("Source TU is destroyed", X_M_HU.HUSTATUS_Destroyed, sourceTUInLoadingUnit.getHUStatus());
+		Assertions.assertEquals(X_M_HU.HUSTATUS_Planning, loadingUnit.getHUStatus(), "Target TU is planning");
+		Assertions.assertEquals(X_M_HU.HUSTATUS_Destroyed, sourceTUInLoadingUnit.getHUStatus(), "Source TU is destroyed");
 
 		// NOTE: because splitLU was changed outside, we need to refresh it first
 		// FIXME: do this somehow auto-magically
 		InterfaceWrapperHelper.refresh(splitLU);
-		Assert.assertEquals("Source LU is destroyed", X_M_HU.HUSTATUS_Destroyed, splitLU.getHUStatus());
+		Assertions.assertEquals(X_M_HU.HUSTATUS_Destroyed, splitLU.getHUStatus(), "Source LU is destroyed");
 
 		//
 		// Assert data integrity for TARGET LU
@@ -486,7 +482,7 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 				new BigDecimal("2"), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		assertThat("Invalid amount of TUs were split", splitTradingUnits.size(), is(2));
+		assertThat(splitTradingUnits).as("Invalid amount of TUs were split").hasSize(2);
 		// commitAndDumpHU(loadingUnit);
 		// verify the loading source
 		// the one "real" IFCO with 5xCU was split away, but there is now a new one
@@ -501,9 +497,9 @@ public class MergeWeightAttributePropagationTest extends AbstractWeightAttribute
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find the "real" IFCO with 5 x CU
 		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(5), getCUUOM());
 
-		assertThat("Target TU is planning", targetTUInLoadingUnit.getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
-		assertThat("Source TU is destroyed", splitTradingUnits.getFirst().getHUStatus(), is(X_M_HU.HUSTATUS_Destroyed));
-		assertThat("unmerged split-TU is still planning", splitTradingUnits.get(1).getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
+		assertThat(targetTUInLoadingUnit.getHUStatus()).as("Target TU is planning").isEqualTo(X_M_HU.HUSTATUS_Planning);
+		assertThat(splitTradingUnits.getFirst().getHUStatus()).as("Source TU is destroyed").isEqualTo(X_M_HU.HUSTATUS_Destroyed);
+		assertThat(splitTradingUnits.get(1).getHUStatus()).as("unmerged split-TU is still planning").isEqualTo(X_M_HU.HUSTATUS_Planning);
 
 		//
 		// Assert data integrity on TARGET LU for both SOURCE TU and TARGET TU

@@ -18,8 +18,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.reflect.TestingClassInstanceProvider;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -51,11 +51,11 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		processWorkpackages(StaticMockedWorkpackageProcessor.class);
 
 		final List<I_C_Queue_WorkPackage> processedWorkpackages = workpackageProcessor.getProcessedWorkpackages();
-		Assert.assertEquals("Processed workpackages list shall have same size as initial workpackages list",
-				workpackages.size(), processedWorkpackages.size());
+		Assertions.assertEquals(
+				workpackages.size(), processedWorkpackages.size(), "Processed workpackages list shall have same size as initial workpackages list");
 
 		InterfaceWrapperHelper.refresh(workpackages.get(7));
-		Assert.assertEquals("Priority 1 packages shall be processed first", workpackages.get(7), processedWorkpackages.getFirst());
+		Assertions.assertEquals(workpackages.get(7), processedWorkpackages.getFirst(), "Priority 1 packages shall be processed first");
 
 		for (final I_C_Queue_WorkPackage wp : processedWorkpackages)
 		{
@@ -64,13 +64,13 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 			{
 				// Exception
 				assertThat(wp.getErrorMsg()).as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith(rteExpected.getMessage());
-				Assert.assertFalse("Workpackage - Invalid Processed: " + wp, wp.isProcessed());
-				Assert.assertTrue("Workpackage - Invalid IsError: " + wp, wp.isError());
+				Assertions.assertFalse(wp.isProcessed(), "Workpackage - Invalid Processed: " + wp);
+				Assertions.assertTrue(wp.isError(), "Workpackage - Invalid IsError: " + wp);
 			}
 			else
 			{
-				Assert.assertTrue("Workpackage - Invalid Processed: " + wp, wp.isProcessed());
-				Assert.assertFalse("Workpackage - Invalid IsError: " + wp, wp.isError());
+				Assertions.assertTrue(wp.isProcessed(), "Workpackage - Invalid Processed: " + wp);
+				Assertions.assertFalse(wp.isError(), "Workpackage - Invalid IsError: " + wp);
 			}
 		}
 
@@ -87,7 +87,6 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 
 	/**
 	 * Class for test_WorkpackageProcessorClassNotFound().
-	 * 
 	 */
 	public static class MissingWorkPackageProcessor implements IWorkpackageProcessor
 	{
@@ -108,7 +107,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 
 		//
 		// Setup Queue Processor and Work Package processors
-		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_" + testName.getMethodName(), 10, 1000);
+		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_test_WorkpackageProcessorClassNotFound", 10, 1000);
 
 		// create a package processor with a wrong class name.
 		final I_C_Queue_PackageProcessor packageProcessor1 = helper.createPackageProcessor(ctx, StaticMockedWorkpackageProcessor.class);
@@ -117,8 +116,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		//
 		// Make sure our bad workpackage processor wasn't blacklisted yet
 		final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
-		Assert.assertFalse("Package processor " + packageProcessor1 + " shall not be blacklisted yet",
-				workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessor1.getC_Queue_PackageProcessor_ID()));
+		Assertions.assertFalse(workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessor1.getC_Queue_PackageProcessor_ID()), "Package processor " + packageProcessor1 + " shall not be blacklisted yet");
 
 		//
 		// Create Queue, and fill it with some dummy items
@@ -142,17 +140,18 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 
 		//
 		// Now our processor shall be black listed
-		Assert.assertTrue("Package processor " + packageProcessor1 + " shall be blacklisted",
-				workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessor1.getC_Queue_PackageProcessor_ID()));
+		Assertions.assertTrue(
+				workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessor1.getC_Queue_PackageProcessor_ID()),
+				"Package processor " + packageProcessor1 + " shall be blacklisted");
 
 		//
 		// Make sure all packages are not processed, not flagged as Error
 		for (final I_C_Queue_WorkPackage workpackage : workpackages)
 		{
 			InterfaceWrapperHelper.refresh(workpackage);
-			Assert.assertFalse("Workpackage " + workpackage + " - Invalid IsError", workpackage.isError());
-			Assert.assertFalse("Workpackage " + workpackage + " - Invalid Processed", workpackage.isProcessed());
-			Assert.assertFalse("Workpackage " + workpackage + " - Shall not be locked", Services.get(ILockManager.class).isLocked(workpackage));
+			Assertions.assertFalse(workpackage.isError(), "Workpackage " + workpackage + " - Invalid IsError");
+			Assertions.assertFalse(workpackage.isProcessed(), "Workpackage " + workpackage + " - Invalid Processed");
+			Assertions.assertFalse(Services.get(ILockManager.class).isLocked(workpackage), "Workpackage " + workpackage + " - Shall not be locked");
 		}
 
 		//
@@ -161,8 +160,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 
 		// Validate the processor. If valid (i.e. no exceptions will be thrown), the processor will be removed from blacklist
 		workpackageProcessorFactory.validateWorkpackageProcessor(packageProcessor1);
-		Assert.assertFalse("Package processor " + packageProcessor1 + " shall not be blacklisted anymore",
-				workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessor1.getC_Queue_PackageProcessor_ID()));
+		Assertions.assertFalse(workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessor1.getC_Queue_PackageProcessor_ID()), "Package processor " + packageProcessor1 + " shall not be blacklisted anymore");
 
 		//
 		// Create processor and run
@@ -178,9 +176,9 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		for (final I_C_Queue_WorkPackage workpackage : workpackages)
 		{
 			InterfaceWrapperHelper.refresh(workpackage);
-			Assert.assertFalse("Workpackage " + workpackage + " - Invalid IsError", workpackage.isError());
-			Assert.assertTrue("Workpackage " + workpackage + " - Invalid Processed", workpackage.isProcessed());
-			Assert.assertFalse("Workpackage " + workpackage + " - Shall not be locked", Services.get(ILockManager.class).isLocked(workpackage));
+			Assertions.assertFalse(workpackage.isError(), "Workpackage " + workpackage + " - Invalid IsError");
+			Assertions.assertTrue(workpackage.isProcessed(), "Workpackage " + workpackage + " - Invalid Processed");
+			Assertions.assertFalse(Services.get(ILockManager.class).isLocked(workpackage), "Workpackage " + workpackage + " - Shall not be locked");
 		}
 
 	}

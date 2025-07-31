@@ -35,8 +35,8 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.collections4.IteratorUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,7 +158,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		helper.createAllPrintJobs();
 
 		final int printJobsCountActual = POJOLookupMap.get().getRecords(I_C_Print_Job.class).size();
-		Assert.assertEquals("Invalid Print Jobs count", printJobsCountExpected, printJobsCountActual);
+		Assertions.assertEquals(printJobsCountExpected, printJobsCountActual, "Invalid Print Jobs count");
 		assumePrintJobInstructions(X_C_Print_Job_Instructions.STATUS_Pending);
 
 		final I_C_Print_Job printJobExpected = null; // we don't know what print job(s) were created
@@ -235,21 +235,21 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		final I_C_Print_Job printJob1 = printJobs.getFirst();
 		{
 			final List<I_C_Print_Job_Line> lines = IteratorUtils.toList(helper.getDAO().retrievePrintJobLines(printJob1));
-			Assert.assertEquals("Job1 - Only one line was expected for " + printJob1, 1, lines.size());
+			Assertions.assertEquals(1, lines.size(), "Job1 - Only one line was expected for " + printJob1);
 
 			final I_C_Print_Job_Line line = lines.getFirst();
 			final I_C_Print_Job_Detail detail = helper.getDAO().retrievePrintJobDetails(line).getFirst();
-			Assert.assertEquals("Job1 - Invalid routing used", routing1.getAD_PrinterRouting_ID(), detail.getAD_PrinterRouting_ID());
+			Assertions.assertEquals(routing1.getAD_PrinterRouting_ID(), detail.getAD_PrinterRouting_ID(), "Job1 - Invalid routing used");
 		}
 		// Validate PrintJob 2
 		final I_C_Print_Job printJob2 = printJobs.get(1);
 		{
 			final List<I_C_Print_Job_Line> lines = IteratorUtils.toList(helper.getDAO().retrievePrintJobLines(printJob2));
-			Assert.assertEquals("Job2 - Only one line was expected for " + printJob2, 1, lines.size());
+			Assertions.assertEquals(1, lines.size(), "Job2 - Only one line was expected for " + printJob2);
 
 			final I_C_Print_Job_Line line = lines.getFirst();
 			final I_C_Print_Job_Detail detail = helper.getDAO().retrievePrintJobDetails(line).getFirst();
-			Assert.assertEquals("Job2 - Invalid routing used", routing2.getAD_PrinterRouting_ID(), detail.getAD_PrinterRouting_ID());
+			Assertions.assertEquals(routing2.getAD_PrinterRouting_ID(), detail.getAD_PrinterRouting_ID(), "Job2 - Invalid routing used");
 		}
 
 		//
@@ -272,10 +272,10 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		// Validate PrintJob1 Instructions
 		{
 			final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob1);
-			// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged inAssert.assertEquals("Job1 instructions - Invalid HostKey",
-			// helper.getSessionHostKey(), instructions1.getHostKey());
-			// Assert.assertEquals("Job1 instructions - Invalid status", X_C_Print_Job_Instructions.STATUS_Error, instructions1.getStatus());
-			Assert.assertNotNull("Job1 instructions - Missing error message", instructions1.getErrorMsg());
+			// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged inAssertions.assertEquals(
+			// helper.getSessionHostKey(),  instructions1.getHostKey(), "Job1 instructions - Invalid HostKey");
+			// Assertions.assertEquals( X_C_Print_Job_Instructions.STATUS_Error,  instructions1.getStatus(), "Job1 instructions - Invalid status");
+			Assertions.assertNotNull(instructions1.getErrorMsg(),"Job1 instructions - Missing error message");
 		}
 
 		//
@@ -283,9 +283,9 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		{
 			final I_C_Print_Job_Instructions instructions2 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob2);
 			// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
-			// Assert.assertEquals("Job2 instructions - Invalid HostKey", helper.getSessionHostKey(), instructions2.getHostKey());
-			Assert.assertEquals("Job2 instructions - Invalid status", X_C_Print_Job_Instructions.STATUS_Send, instructions2.getStatus());
-			Assert.assertNull("Job2 instructions - Missing error message", instructions2.getErrorMsg());
+			// Assertions.assertEquals( helper.getSessionHostKey(),  instructions2.getHostKey(), "Job2 instructions - Invalid HostKey");
+			Assertions.assertEquals(X_C_Print_Job_Instructions.STATUS_Send, instructions2.getStatus(), "Job2 instructions - Invalid status");
+			Assertions.assertNull(instructions2.getErrorMsg(),"Job2 instructions - Missing error message");
 		}
 
 		//
@@ -315,8 +315,8 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		// Validate PrintJob2 Instructions
 		{
 			final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob1);
-			Assert.assertEquals("Job1 instructions - Invalid status", X_C_Print_Job_Instructions.STATUS_Send, instructions1.getStatus());
-			Assert.assertNull("Job1 instructions - Missing error message", instructions1.getErrorMsg());
+			Assertions.assertEquals(X_C_Print_Job_Instructions.STATUS_Send, instructions1.getStatus(), "Job1 instructions - Invalid status");
+			Assertions.assertNull(instructions1.getErrorMsg(), "Job1 instructions - Missing error message");
 		}
 
 		//
@@ -331,7 +331,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		for (final I_C_Printing_Queue pq : helper.getDB().getRecords(I_C_Printing_Queue.class))
 		{
-			Assert.assertTrue("Record " + pq + " shall be processed", pq.isProcessed());
+			Assertions.assertTrue(pq.isProcessed(), "Record " + pq + " shall be processed");
 		}
 	}
 
@@ -339,7 +339,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		for (final I_C_Print_Job printJob : helper.getDB().getRecords(I_C_Print_Job.class))
 		{
-			Assert.assertTrue("Record " + printJob + " shall be processed", printJob.isProcessed());
+			Assertions.assertTrue(printJob.isProcessed(), "Record " + printJob + " shall be processed");
 		}
 	}
 
@@ -347,7 +347,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		for (final I_C_Print_Job_Instructions printJobInstructions : helper.getDB().getRecords(I_C_Print_Job_Instructions.class))
 		{
-			Assert.assertEquals("Invalid status for " + printJobInstructions, expectedStatus, printJobInstructions.getStatus());
+			Assertions.assertEquals(expectedStatus, printJobInstructions.getStatus(), "Invalid status for " + printJobInstructions);
 		}
 	}
 }

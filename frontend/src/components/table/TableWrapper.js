@@ -414,7 +414,10 @@ class TableWrapper extends PureComponent {
           }
         </div>
         {showPagination ? (
-          <div onClick={this.handleClickOutside}>
+          <div
+            className="table-padding-bottom"
+            onClick={this.handleClickOutside}
+          >
             <TablePagination
               {...{
                 handleChangePage,

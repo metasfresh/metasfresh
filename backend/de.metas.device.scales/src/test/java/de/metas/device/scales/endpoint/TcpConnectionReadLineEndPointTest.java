@@ -3,11 +3,11 @@ package de.metas.device.scales.endpoint;
 import de.metas.device.scales.impl.ICmd;
 import de.metas.device.scales.impl.sics.ISiscCmd;
 import de.metas.device.scales.impl.sics.SicsWeighCmdS;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,10 +18,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /*
  * #%L
@@ -59,7 +57,7 @@ public class TcpConnectionReadLineEndPointTest
 
 	private static Thread serverSocketThread;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setupEP()
 	{
 		tcpConnectionEndPoint = new TcpConnectionReadLineEndPoint();
@@ -73,7 +71,7 @@ public class TcpConnectionReadLineEndPointTest
 	 * Create a server socket to emulate the scale.
 	 * It picks a port each time it is run, in order to prevent issued with ports that are already in use.
 	 */
-	@Before
+	@BeforeEach
 	public void setUpServer() throws InterruptedException
 	{
 		exitServerSocketThread = false;
@@ -151,7 +149,7 @@ public class TcpConnectionReadLineEndPointTest
 	}
 
 	@Test
-	@Ignore
+	@Disabled
 	public void test1()
 	{
 		weight = 300;
@@ -160,13 +158,21 @@ public class TcpConnectionReadLineEndPointTest
 		final String result = tcpConnectionEndPoint.sendCmd(cmd);
 		final String expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
 
-		assertThat(result, is(expectedResult));
-		assertThat(serverSocketReceived.size(), is(1));
-		assertThat(serverSocketReceived.getFirst(), is(cmd));
+		assertThat(result)
+				.as("Unexpected result")
+				.isEqualTo(expectedResult);
+		
+		assertThat(serverSocketReceived)
+				.as("Unexpected number of received messages")
+				.hasSize(1);
+		
+		assertThat(serverSocketReceived.getFirst())
+				.as("Unexpected first received message")
+				.isEqualTo(cmd);
 	}
 
 	@Test
-	@Ignore
+	@Disabled
 	public void test2()
 	{
 		weight = 200;
@@ -174,35 +180,58 @@ public class TcpConnectionReadLineEndPointTest
 
 		String result = tcpConnectionEndPoint.sendCmd(cmd);
 		String expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
-		assertThat(result, is(expectedResult));
-		assertThat(serverSocketReceived.size(), is(1));
-		assertThat(serverSocketReceived.getFirst(), is(cmd));
+		
+		assertThat(result)
+				.as("Unexpected result for first call")
+				.isEqualTo(expectedResult);
+		
+		assertThat(serverSocketReceived)
+				.as("Unexpected number of received messages after first call")
+				.hasSize(1);
+		
+		assertThat(serverSocketReceived.getFirst())
+				.as("Unexpected first received message")
+				.isEqualTo(cmd);
 
 		weight = 220;
 		result = tcpConnectionEndPoint.sendCmd(cmd);
 		expectedResult = MockedEndpoint.createWeightString(new BigDecimal(weight));
-		assertThat(result, is(expectedResult));
-		assertThat(serverSocketReceived.size(), is(2));
-		assertThat(serverSocketReceived.get(1), is(cmd));
+		
+		assertThat(result)
+				.as("Unexpected result for second call")
+				.isEqualTo(expectedResult);
+		
+		assertThat(serverSocketReceived)
+				.as("Unexpected number of received messages after second call")
+				.hasSize(2);
+		
+		assertThat(serverSocketReceived.get(1))
+				.as("Unexpected second received message")
+				.isEqualTo(cmd);
 	}
 
 	/**
 	 * Makes sure that the server socked thread has finished.
 	 */
-	@After
+	@AfterEach
 	public void tearDown() throws InterruptedException
 	{
 		exitServerSocketThread = true;
 
 		System.out.println("TcpConnectionEndPointTest" + ": tearDown method sets exitServerSocketThread=true for serverSocketThread to stop");
 
-		assertThat(serverSocketThread, notNullValue());
+		assertThat(serverSocketThread)
+				.as("Server socket thread should not be null")
+				.isNotNull();
 
 		serverSocketThread.join(3000); // waiting for just three seconds, we don't want the whole build to stall
 
 		// it's weird..the jenkins console output seems to imply that the following assertThat is reached after 300ms, and not after 3000.
 		// ..let's just wait another 3secs
 		Thread.sleep(3000);
-		assertThat("TcpConnectionEndPointTest" + ": serverSocketThread did not stop within 3 seconds; serverSocketThread=" + serverSocketThread.toString(), serverSocketThread.isAlive(), is(false));
+		
+		assertThat(serverSocketThread.isAlive())
+				.as("TcpConnectionEndPointTest: serverSocketThread did not stop within 3 seconds; serverSocketThread=" + serverSocketThread.toString())
+				.isFalse();
 	}
 }

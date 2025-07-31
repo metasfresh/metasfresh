@@ -3,7 +3,7 @@
   ~ #%L
   ~ de-metas-camel
   ~ %%
-  ~ Copyright (C) 2022 metas GmbH
+  ~ Copyright (C) 2025 metas GmbH
   ~ %%
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as
@@ -80,6 +80,10 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

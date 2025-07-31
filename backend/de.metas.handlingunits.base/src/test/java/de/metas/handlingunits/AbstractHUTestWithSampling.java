@@ -48,10 +48,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_UOM;
-import org.junit.Assert;
 
 import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -59,8 +57,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Contains BL for easily sampling / creating or splitting Handling Units
@@ -243,7 +240,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 
 		loadingUnits.addAll(helper.createHUs(huContext, luProducerDestination, cuQty));
 
-		Assert.assertEquals("Invalid amount of initial LoadingUnits", 1, loadingUnits.size());
+		assertThat(loadingUnits).as("Invalid amount of initial LoadingUnits").hasSize(1);
 		final I_M_HU loadingUnit = loadingUnits.getFirst();
 		// HUXmlConverter.toString(HUXmlConverter.toXml(loadingUnit));
 		//
@@ -376,7 +373,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		// Create and destroy instances only with an I_M_Transaction
 		final List<I_M_HU> tradingUnits = helper.createHUs(huContext, luProducerDestination, cuQty);
 
-		Assert.assertEquals("Invalid amount of initial TradingUnits", cuQty.divide(tuCapacity, 2, RoundingMode.CEILING).intValueExact(), tradingUnits.size());
+		assertThat(tradingUnits.size()).as("Invalid amount of initial TradingUnits").isEqualTo(cuQty.divide(tuCapacity, 2, RoundingMode.CEILING).intValueExact());
 
 		//
 		// Set and propagate WeightGross (this will also calculate Net)
@@ -406,7 +403,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		helper.load(loadRequest);
 
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
-		assertThat(createdCUs.size(), is(1));
+		assertThat(createdCUs).hasSize(1);
 
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final I_M_HU cuToSplit = createdCUs.getFirst();

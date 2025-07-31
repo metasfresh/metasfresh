@@ -22,12 +22,10 @@ package de.metas.quantity;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class QuantityExpectation
 {
@@ -52,7 +50,9 @@ public class QuantityExpectation
 				+ "\n Quantity: " + quantity
 				+ "\n Invalid: ";
 
-		Assert.assertNotNull(prefix + "Quantity shall not be null", quantity);
+		assertThat(quantity)
+				.as(prefix + "Quantity shall not be null")
+				.isNotNull();
 
 		if (_qty != null)
 		{
@@ -60,7 +60,9 @@ public class QuantityExpectation
 		}
 		if (_uom != null)
 		{
-			Assert.assertEquals(prefix + "UOM", _uom, quantity.getUOM());
+			assertThat(quantity.getUOM())
+					.as(prefix + "UOM")
+					.isEqualTo(_uom);
 		}
 
 		if (_sourceQty != null)
@@ -69,13 +71,17 @@ public class QuantityExpectation
 		}
 		if (_sourceUOM != null)
 		{
-			Assert.assertEquals(prefix + "Source UOM", _sourceUOM, quantity.getSourceUOM());
+			assertThat(quantity.getSourceUOM())
+					.as(prefix + "Source UOM")
+					.isEqualTo(_sourceUOM);
 		}
 
 		if (_sourceSameAsCurrent)
 		{
 			assertSameOrEquals(prefix + "Source Qty (same as current)", true, quantity.toBigDecimal(), quantity.getSourceQty());
-			Assert.assertSame(prefix + "Source UOM (same as current)", quantity.getUOM(), quantity.getSourceUOM());
+			assertThat(quantity.getSourceUOM())
+					.as(prefix + "Source UOM (same as current)")
+					.isSameAs(quantity.getUOM());
 		}
 
 		return this;
@@ -141,12 +147,15 @@ public class QuantityExpectation
 	{
 		if (expectSame)
 		{
-			Assert.assertSame(message, expected, actual);
+			assertThat(actual)
+					.as(message)
+					.isSameAs(expected);
 		}
 		else
 		{
-			Assert.assertThat(message, actual, Matchers.comparesEqualTo(expected));
+			assertThat(actual)
+					.as(message)
+					.isEqualByComparingTo(expected);
 		}
 	}
-
 }

@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl.aggregationEngine;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
@@ -45,18 +45,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test case:
@@ -70,7 +68,7 @@ import static org.junit.Assert.assertThat;
  *
  * @task 08489
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends AbstractTwoInOutsTests
 {
@@ -86,6 +84,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 	private I_C_Aggregation lineAggregation_StandardFields;
 	private I_C_Aggregation lineAggregation_PerInvoiceCandidate;
 
+	@BeforeEach
 	@Override
 	public void init()
 	{
@@ -195,7 +194,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 
 		// iol11: set Attribute1=Value1
 		{
-			Assert.assertSame(iol11, inoutLines.getFirst());
+			Assertions.assertSame(iol11, inoutLines.getFirst());
 
 			//@formatter:off
 			iol11_attributeExpectations = InvoiceLineAttributeExpectations.newExpectation()
@@ -211,7 +210,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 
 		// iol21: set Attribute1=Value2
 		{
-			Assert.assertSame(iol21, inoutLines.get(1));
+			Assertions.assertSame(iol21, inoutLines.get(1));
 
 			//@formatter:off
 			iol21_attributeExpectations = InvoiceLineAttributeExpectations.newExpectation()
@@ -236,7 +235,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 		final I_C_Invoice_Candidate invoiceCandidate = CollectionUtils.singleElement(invoiceCandidates);
 
 		// Make sure our line aggregation builder was used
-		assertEquals(lineAggregation_PerInvoiceCandidate.getC_Aggregation_ID(), invoiceCandidate.getLineAggregationKeyBuilder_ID());
+		Assertions.assertEquals(lineAggregation_PerInvoiceCandidate.getC_Aggregation_ID(), invoiceCandidate.getLineAggregationKeyBuilder_ID());
 	}
 
 	@Override
@@ -248,9 +247,9 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 
 		// Assert we invoiced all inout lines
 		final BigDecimal qtyToInvoice_Expected = partialQty1_32.add(partialQty2_8).add(partialQty3_4);
-		assertThat(invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(qtyToInvoice_Expected));
+		assertThat(invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal()).isEqualByComparingTo(qtyToInvoice_Expected);
 
 		// Make sure attributes were not aggregated
-		assertThat(invoiceLine.getInvoiceLineAttributes(), empty());
+		assertThat(invoiceLine.getInvoiceLineAttributes()).isEmpty();
 	}
 }

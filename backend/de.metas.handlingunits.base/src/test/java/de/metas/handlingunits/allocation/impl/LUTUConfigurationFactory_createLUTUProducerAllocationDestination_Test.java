@@ -46,18 +46,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 /**
  * Test {@link AllocationUtils#createLUTUProducerDestinationForTUConfig(I_M_HU_PI_Item_Product, I_M_Product, I_C_UOM)}.
@@ -156,7 +152,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// Execute transfer => HUs will be generated
 		final IAllocationResult result = HULoader.of(allocationSource, allocationDestination)
 				.load(request);
-		Assert.assertTrue("Result shall be completed: " + result, result.isCompleted());
+		Assertions.assertTrue(result.isCompleted(), "Result shall be completed: " + result);
 
 		return allocationDestination.getCreatedHUs();
 	}
@@ -199,10 +195,10 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// verify storage of palet1's aggregate HU
 		{
 			final List<I_M_HU> huPalet1_aggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(huPalet1);
-			assertThat(huPalet1_aggregateHUs.size(), is(1));
+			Assertions.assertEquals(1, huPalet1_aggregateHUs.size(), "Invalid included HUs count for palet1");
 
 			final I_M_HU aggregateVhu = huPalet1_aggregateHUs.getFirst();
-			assertTrue(handlingUnitsBL.isAggregateHU(aggregateVhu));
+			Assertions.assertTrue(handlingUnitsBL.isAggregateHU(aggregateVhu));
 
 			assertHUStorageLevel(aggregateVhu, piVirtual, 20);
 		}
@@ -216,10 +212,10 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// verify storage of palet2's aggregate HU
 		{
 			final List<I_M_HU> huPalet2_includedHUs = handlingUnitsDAO.retrieveIncludedHUs(huPalet2);
-			assertThat(huPalet2_includedHUs.size(), is(2)); // expect two VHUs; the 2nd one is the aggregate HU "item stub"
+			Assertions.assertEquals(2, huPalet2_includedHUs.size(), "Invalid included HUs count for palet2"); // expect two VHUs; the 2nd one is the aggregate HU "item stub"
 
-			assertFalse(handlingUnitsBL.isAggregateHU(huPalet2_includedHUs.getFirst()));
-			assertTrue(handlingUnitsBL.isAggregateHU(huPalet2_includedHUs.get(1)));
+			Assertions.assertFalse(handlingUnitsBL.isAggregateHU(huPalet2_includedHUs.getFirst()));
+			Assertions.assertTrue(handlingUnitsBL.isAggregateHU(huPalet2_includedHUs.get(1)));
 
 			final I_M_HU hu = huPalet2_includedHUs.getFirst();
 
@@ -246,7 +242,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// 1 IFCO x 5items
 		final List<I_M_HU> hus = createHUs(piIFCO_Product, 25);
 
-		Assert.assertEquals("Invalid IFCOs count", 3, hus.size());
+		Assertions.assertEquals(3, hus.size(), "Invalid IFCOs count");
 		assertHUStorageLevel(hus.getFirst(), piIFCO, 10);
 		assertHUStorageLevel(hus.get(1), piIFCO, 10);
 		assertHUStorageLevel(hus.get(2), piIFCO, 5);
@@ -281,8 +277,8 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 		assertThat(huPalet_VHUs).as("Invalid VHUs count for Palet").hasSize(2); // expect two VHUs; the 2nd one is the aggregate HU "item stub"
 
-		assertTrue(handlingUnitsBL.isAggregateHU(huPalet_VHUs.get(1)));
-		assertFalse(handlingUnitsBL.isAggregateHU(huPalet_VHUs.getFirst()));
+		Assertions.assertTrue(handlingUnitsBL.isAggregateHU(huPalet_VHUs.get(1)));
+		Assertions.assertFalse(handlingUnitsBL.isAggregateHU(huPalet_VHUs.getFirst()));
 		assertHUStorageLevel(huPalet_VHUs.getFirst(), piVirtual, 25);
 	}
 
@@ -303,7 +299,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// 1 virtual HU x 25items
 		final List<I_M_HU> hus = createHUs(piVirtual_Item_Product, 25);
 
-		Assert.assertEquals("Invalid HUs count", 1, hus.size());
+		Assertions.assertEquals(1, hus.size(), "Invalid HUs count");
 		final I_M_HU huVirtual = hus.getFirst();
 		assertHUStorageLevel(huVirtual, piVirtual, 25);
 	}

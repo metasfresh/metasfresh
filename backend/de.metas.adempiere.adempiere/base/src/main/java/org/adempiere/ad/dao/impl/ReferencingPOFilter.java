@@ -22,20 +22,18 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.adempiere.model.IPOReferenceAware;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MTable;
 
-import de.metas.adempiere.model.IPOReferenceAware;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Filter for records that reference a given PO via the {@code AD_Table_ID} and {@code Record_ID} columns.
@@ -50,11 +48,8 @@ public class ReferencingPOFilter<T extends IPOReferenceAware> implements IQueryF
 	 * 
 	 * @param referencedModel May not be null; this filter will only accept records that reference the given model. 
 	 */
-	public ReferencingPOFilter(final Object referencedModel)
+	public ReferencingPOFilter(@NonNull final Object referencedModel)
 	{
-		super();
-		
-		Check.assumeNotNull(referencedModel, "Param 'referencedModel' not null");
 		this.referencedModel = referencedModel;
 	}
 

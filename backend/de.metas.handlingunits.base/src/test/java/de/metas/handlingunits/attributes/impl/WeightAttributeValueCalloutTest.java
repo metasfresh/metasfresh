@@ -32,8 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
+
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -48,11 +47,11 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Ignore
+import static org.assertj.core.api.Assertions.assertThat;
+
 @Disabled
 public class WeightAttributeValueCalloutTest extends AbstractHUTest
 {
@@ -165,8 +164,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 	}
 
 	@Test
-	@Ignore
-	// TODO fix & reactivate when http://dewiki908/mediawiki/index.php/07267_Automatic_weighing_for_top-level_HUs_%28108576827619%29 is solved
+	@Disabled("TODO fix & reactivate when http://dewiki908/mediawiki/index.php/07267_Automatic_weighing_for_top-level_HUs_%28108576827619%29 is solved")
 	public void testWeightNet()
 	{
 		createMasterData();
@@ -213,10 +211,9 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 
 		final Object weightNetActualObj = attrs.getValue(attr_WeightNet);
 		final BigDecimal weightNetActual = ConversionHelper.toBigDecimal(weightNetActualObj);
-		Assert.assertThat(
-				"Invalid WeightNet (GrossToSet=" + weightGrossToSet + ", TareToSet=" + weightTareToSet + ")",
-				weightNetActual,
-				Matchers.comparesEqualTo(weightNetExpected));
+		assertThat(weightNetActual)
+				.as("Invalid WeightNet (GrossToSet=%s, TareToSet=%s)", weightGrossToSet, weightTareToSet)
+				.isEqualByComparingTo(weightNetExpected);
 	}
 
 	private void assertWeightTare(final IAttributeSet attrs, final Object weightTareExpectedObj)
@@ -224,10 +221,9 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		final BigDecimal weightTareExpected = ConversionHelper.toBigDecimal(weightTareExpectedObj);
 		final Object weightTareActualObj = attrs.getValue(attr_WeightTare);
 		final BigDecimal weightTareActual = ConversionHelper.toBigDecimal(weightTareActualObj);
-		Assert.assertThat(
-				"Invalid WeightTare on " + getDisplayName(attrs),
-				weightTareActual,
-				Matchers.comparesEqualTo(weightTareExpected));
+		assertThat(weightTareActual)
+				.as("Invalid WeightTare on %s", getDisplayName(attrs))
+				.isEqualByComparingTo(weightTareExpected);
 	}
 
 	private void assertWeightGross(final IAttributeSet attrs, final Object weightGrossExpectedObj)
@@ -235,10 +231,9 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		final BigDecimal weightGrossExpected = ConversionHelper.toBigDecimal(weightGrossExpectedObj);
 		final Object weightGrossActualObj = attrs.getValue(attr_WeightGross);
 		final BigDecimal weightGrossActual = ConversionHelper.toBigDecimal(weightGrossActualObj);
-		Assert.assertThat(
-				"Invalid WeightGross on " + getDisplayName(attrs),
-				weightGrossActual,
-				Matchers.comparesEqualTo(weightGrossExpected));
+		assertThat(weightGrossActual)
+				.as("Invalid WeightGross on %s", getDisplayName(attrs))
+				.isEqualByComparingTo(weightGrossExpected);
 	}
 
 	private void assertWeightNet(final IAttributeSet attrs, final Object weightNetExpectedObj)
@@ -246,10 +241,9 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		final BigDecimal weightNetExpected = ConversionHelper.toBigDecimal(weightNetExpectedObj);
 		final Object WeightNetActualObj = attrs.getValue(attr_WeightNet);
 		final BigDecimal WeightNetActual = ConversionHelper.toBigDecimal(WeightNetActualObj);
-		Assert.assertThat(
-				"Invalid WeightNet on " + getDisplayName(attrs),
-				WeightNetActual,
-				Matchers.comparesEqualTo(weightNetExpected));
+		assertThat(WeightNetActual)
+				.as("Invalid WeightNet on %s", getDisplayName(attrs))
+				.isEqualByComparingTo(weightNetExpected);
 	}
 
 	private void assertWeights(final IAttributeSet attrs,
@@ -263,8 +257,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 	}
 
 	@Test
-	@Ignore
-	// TODO fix & reactivate when http://dewiki908/mediawiki/index.php/07267_Automatic_weighing_for_top-level_HUs_%28108576827619%29 is solved
+	@Disabled("TODO fix & reactivate when http://dewiki908/mediawiki/index.php/07267_Automatic_weighing_for_top-level_HUs_%28108576827619%29 is solved")
 	public void test_WeightTare_WeightGrossPropagation_WeightNet()
 	{
 		createMasterData();

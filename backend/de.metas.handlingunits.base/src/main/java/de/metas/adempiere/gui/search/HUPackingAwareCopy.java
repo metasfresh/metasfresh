@@ -1,12 +1,11 @@
 package de.metas.adempiere.gui.search;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -61,6 +60,8 @@ public class HUPackingAwareCopy
 		to.setQty(from.getQty());
 		to.setM_HU_PI_Item_Product_ID(from.getM_HU_PI_Item_Product_ID());
 		to.setQtyTU(from.getQtyTU());
+		to.setLuId(from.getLuId());
+		to.setQtyLU(from.getQtyLU());
 		from.getQtyCUsPerTU().ifPresent(to::setQtyCUsPerTU);
 
 		copyBPartner(to);

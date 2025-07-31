@@ -133,7 +133,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
-import org.assertj.core.api.Assertions;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
@@ -176,8 +175,7 @@ import static de.metas.business.BusinessTestHelper.createUomEach;
 import static de.metas.business.BusinessTestHelper.createUomKg;
 import static de.metas.business.BusinessTestHelper.createUomPCE;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -1546,7 +1544,7 @@ public class HUTestHelper
 		// Execute transfer => HUs will be generated
 		final HULoader loader = HULoader.of(allocationSource, allocationDestination);
 		final IAllocationResult result = loader.load(request);
-		Assertions.assertThat(result.isCompleted()).as("Result shall be completed: " + result).isTrue();
+		assertThat(result.isCompleted()).as("Result shall be completed: " + result).isTrue();
 
 		//
 		// Get generated HUs and set them to HUContext's transaction
@@ -1821,7 +1819,8 @@ public class HUTestHelper
 		final List<I_M_HU_PI_Item> piItemsForChildHU = handlingUnitsDAO.retrievePIItems(currentPIVersion, null).stream()
 				.filter(piItem -> Objects.equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit, piItem.getItemType()))
 				.collect(Collectors.toList());
-		assertThat("This method only works if the given 'huPI' has exactly one child-HU item", piItemsForChildHU.size(), is(1));
+		
+		assertThat(piItemsForChildHU).as("This method only works if the given 'huPI' has exactly one child-HU item").hasSize(1);
 
 		lutuProducer.setLUItemPI(piItemsForChildHU.getFirst());
 		lutuProducer.setTUPI(handlingUnitsDAO.getIncludedPI(piItemsForChildHU.getFirst()));

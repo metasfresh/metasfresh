@@ -5,7 +5,7 @@ import de.metas.tourplanning.api.ITourVersionRange;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -55,7 +55,7 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2014, 12, 31)
 		);
 
-		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 3, tourVersionRanges.size());
+		Assertions.assertEquals(3, tourVersionRanges.size(), "Invalid ranges count: " + tourVersionRanges);
 
 		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-01-01", "2014-01-31");
 		assertTourVersionRange(tourVersionRanges.get(1), tourVersion2, "2014-02-01", "2014-04-30");
@@ -73,7 +73,7 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2014, 9, 30)
 		);
 
-		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
+		Assertions.assertEquals(1, tourVersionRanges.size(), "Invalid ranges count: " + tourVersionRanges);
 
 		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-09-01", "2014-09-30");
 	}
@@ -89,7 +89,7 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2014, 12, 31)
 		);
 
-		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
+		Assertions.assertEquals(1, tourVersionRanges.size(), "Invalid ranges count: " + tourVersionRanges);
 
 		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-01-01", "2014-12-31");
 	}
@@ -105,7 +105,7 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2014, 12, 31)
 		);
 
-		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
+		Assertions.assertEquals(1, tourVersionRanges.size(), "Invalid ranges count: " + tourVersionRanges);
 
 		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-12-31", "2014-12-31");
 	}
@@ -121,7 +121,7 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2014, 9, 30)
 		);
 
-		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 0, tourVersionRanges.size());
+		Assertions.assertEquals(0, tourVersionRanges.size(), "Invalid ranges count: " + tourVersionRanges);
 	}
 
 	@Test
@@ -135,7 +135,7 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2014, 12, 31)
 		);
 
-		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
+		Assertions.assertEquals(1, tourVersionRanges.size(), "Invalid ranges count: " + tourVersionRanges);
 
 		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-06-01", "2014-12-31");
 	}
@@ -152,7 +152,7 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2014, 12, 31)
 		);
 
-		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 2, tourVersionRanges.size());
+		Assertions.assertEquals(2, tourVersionRanges.size(), "Invalid ranges count: " + tourVersionRanges);
 
 		assertTourVersionRange(tourVersionRanges.getFirst(), tourVersion1, "2014-06-01", "2014-06-01");
 		assertTourVersionRange(tourVersionRanges.get(1), tourVersion2, "2014-06-02", "2014-12-31");
@@ -170,7 +170,7 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2014, 5, 31)
 		);
 
-		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 0, tourVersionRanges.size());
+		Assertions.assertEquals(0, tourVersionRanges.size(), "Invalid ranges count: " + tourVersionRanges);
 	}
 
 	@Test
@@ -186,7 +186,7 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2014, 12, 31)
 		);
 
-		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 0, tourVersionRanges.size());
+		Assertions.assertEquals(0, tourVersionRanges.size(), "Invalid ranges count: " + tourVersionRanges);
 	}
 
 	@Test
@@ -208,9 +208,9 @@ public class TourDAOTest extends TourPlanningTestBase
 				.validTo(LocalDate.of(2014, 2, 1))
 				.build();
 
-		Assert.assertEquals("Tourversion Range TourVersions match", expextedTourVersionRange.getM_TourVersion(), tourVersionRange.getM_TourVersion());
-		Assert.assertEquals("Tourversion Range Valid From match", expextedTourVersionRange.getValidFrom(), tourVersionRange.getValidFrom());
-		Assert.assertEquals("Tourversion Range Valid To match", expextedTourVersionRange.getValidTo(), tourVersionRange.getValidTo());
+		Assertions.assertEquals(expextedTourVersionRange.getM_TourVersion(), tourVersionRange.getM_TourVersion(), "Tourversion Range TourVersions match");
+		Assertions.assertEquals(expextedTourVersionRange.getValidFrom(), tourVersionRange.getValidFrom(), "Tourversion Range Valid From match");
+		Assertions.assertEquals(expextedTourVersionRange.getValidTo(), tourVersionRange.getValidTo(), "Tourversion Range Valid To match");
 	}
 
 	@Test
@@ -230,9 +230,9 @@ public class TourDAOTest extends TourPlanningTestBase
 				.validTo(LocalDate.of(2014, 12, 31))
 				.build();
 
-		Assert.assertEquals("Tourversion Range TourVersions match", expextedTourVersionRange.getM_TourVersion(), tourVersionRange.getM_TourVersion());
-		Assert.assertEquals("Tourversion Range Valid From match", expextedTourVersionRange.getValidFrom(), tourVersionRange.getValidFrom());
-		Assert.assertEquals("Tourversion Range Valid To match", expextedTourVersionRange.getValidTo(), tourVersionRange.getValidTo());
+		Assertions.assertEquals(expextedTourVersionRange.getM_TourVersion(), tourVersionRange.getM_TourVersion(), "Tourversion Range TourVersions match");
+		Assertions.assertEquals(expextedTourVersionRange.getValidFrom(), tourVersionRange.getValidFrom(), "Tourversion Range Valid From match");
+		Assertions.assertEquals(expextedTourVersionRange.getValidTo(), tourVersionRange.getValidTo(), "Tourversion Range Valid To match");
 	}
 
 	@Test
@@ -247,19 +247,19 @@ public class TourDAOTest extends TourPlanningTestBase
 				LocalDate.of(2017, 12, 31)
 		);
 
-		Assert.assertEquals("Tourversion Range TourVersions match", null, tourVersionRange);
+		Assertions.assertEquals(null, tourVersionRange, "Tourversion Range TourVersions match");
 
 	}
 
 	private void assertTourVersionRange(ITourVersionRange tourVersionRange,
-			I_M_TourVersion expectedTourVersion,
-			String expectedValidFrom,
-			String expectedValidTo)
+										I_M_TourVersion expectedTourVersion,
+										String expectedValidFrom,
+										String expectedValidTo)
 	{
 		final I_M_TourVersion actualTourVersion = tourVersionRange.getM_TourVersion();
 
-		Assert.assertEquals("Invalid Tour Version: " + tourVersionRange, expectedTourVersion, actualTourVersion);
-		Assert.assertEquals("Invalid ValidFrom: " + tourVersionRange, createDate(expectedValidFrom), tourVersionRange.getValidFrom());
-		Assert.assertEquals("Invalid ValidTo: " + tourVersionRange, createDate(expectedValidTo), tourVersionRange.getValidTo());
+		Assertions.assertEquals(expectedTourVersion, actualTourVersion, "Invalid Tour Version: " + tourVersionRange);
+		Assertions.assertEquals(createDate(expectedValidFrom), tourVersionRange.getValidFrom(), "Invalid ValidFrom: " + tourVersionRange);
+		Assertions.assertEquals(createDate(expectedValidTo), tourVersionRange.getValidTo(), "Invalid ValidTo: " + tourVersionRange);
 	}
 }

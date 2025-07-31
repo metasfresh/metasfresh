@@ -19,7 +19,7 @@ Feature: Dhl Shipment
 
     #Karton
     And load M_Product:
-      | M_Product_ID.Identifier | OPT.M_Product_ID |
+      | Identifier | OPT.M_Product_ID |
       | packing_product_1       | 2003135          |
     #Configure dimensions of packing product
     And metasfresh contains M_HU_PackingMaterial:

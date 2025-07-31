@@ -521,13 +521,14 @@ public interface ITrxManager extends ISingletonService
 			beforeCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
 		}
 	}
+
 	default <T> void accumulateAndProcessAfterCommit(
 			@NonNull final String propertyName,
 			@NonNull final Collection<T> itemsToAccumulate,
 			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
 	{
 		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (isActive(trx)&& canRegisterOnTiming(ITrxListenerManager.TrxEventTiming.AFTER_COMMIT))
+		if (isActive(trx) && canRegisterOnTiming(ITrxListenerManager.TrxEventTiming.AFTER_COMMIT))
 		{
 			trx.accumulateAndProcessAfterCommit(propertyName, itemsToAccumulate, afterCommitListProcessor);
 		}

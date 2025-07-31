@@ -14,7 +14,7 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.Services;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -52,7 +52,7 @@ import java.util.List;
  */
 
 @SpringBootApplication(scanBasePackages = "de.metas.shipper.gateway")
-@Ignore
+@Disabled
 public class Application
 {
 	public static void main(final String[] args)

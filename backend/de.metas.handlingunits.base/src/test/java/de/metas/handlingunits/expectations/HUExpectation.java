@@ -22,23 +22,6 @@ package de.metas.handlingunits.expectations;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Locator;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnableAdapter;
-import org.junit.Assert;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -50,6 +33,22 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_M_Locator;
+import org.compiere.util.Env;
+import org.compiere.util.TrxRunnableAdapter;
+import org.junit.jupiter.api.Assertions;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Used to specify expectations related to a single HU. Hint: use within the greater framework of {@link HUsExpectation}
@@ -113,7 +112,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 		if (huStatus != null)
 		{
-			Assert.assertEquals(prefix + "HUStatus", huStatus.orElse(null), hu.getHUStatus());
+			Assertions.assertEquals( huStatus.orElse(null),  hu.getHUStatus(), prefix + "HUStatus");
 		}
 
 		if (locator != null)
@@ -135,11 +134,11 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 		if (_bpartner != null)
 		{
-			Assert.assertEquals(prefix + " C_BPartner", _bpartner, IHandlingUnitsBL.extractBPartnerOrNull(hu));
+			Assertions.assertEquals( _bpartner,  IHandlingUnitsBL.extractBPartnerOrNull(hu), prefix + " C_BPartner");
 		}
 		if (_bpartnerLocation != null)
 		{
-			Assert.assertEquals(prefix + " C_BPartner_Location", _bpartnerLocation, IHandlingUnitsBL.extractBPartnerLocationOrNull(hu));
+			Assertions.assertEquals( _bpartnerLocation,  IHandlingUnitsBL.extractBPartnerLocationOrNull(hu), prefix + " C_BPartner_Location");
 		}
 
 		//
@@ -170,7 +169,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		final int count = huItems.size();
 		final int expectedCount = huItemExpectations.size();
 
-		Assert.assertEquals(message + " HU Items count", expectedCount, count);
+		Assertions.assertEquals( expectedCount,  count, message + " HU Items count");
 
 		for (int i = 0; i < count; i++)
 		{

@@ -1,3 +1,4 @@
+
 package de.metas.document.archive.spi.impl;
 
 /*
@@ -22,6 +23,7 @@ package de.metas.document.archive.spi.impl;
  * #L%
  */
 
+import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -40,16 +42,18 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test for {@link RemoteArchiveStorage}
@@ -57,13 +61,10 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
+@ExtendWith(AdempiereTestWatcher.class)
 public class RemoteArchiveStorageTests
 {
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -73,11 +74,11 @@ public class RemoteArchiveStorageTests
 	private IArchiveStorageFactory storageFactory;
 	private I_AD_Client client;
 
-	@Rule
-	public TemporaryFolder storageFolder = new TemporaryFolder();
+	@TempDir
+	Path storageFolder;
 	private ISysConfigBL sysConfigBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -90,11 +91,11 @@ public class RemoteArchiveStorageTests
 
 	protected void setupClient()
 	{
-				//
+		//
 		// Configure client level settings
 		ctx = Env.getCtx();
 		client = InterfaceWrapperHelper.create(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
-		client.setWindowsArchivePath(storageFolder.getRoot().getAbsolutePath());
+		client.setWindowsArchivePath(storageFolder.toAbsolutePath().toString());
 		client.setUnixArchivePath(client.getWindowsArchivePath());
 		client.setStoreArchiveOnFileSystem(true);
 		InterfaceWrapperHelper.save(client);
@@ -125,7 +126,6 @@ public class RemoteArchiveStorageTests
 				StaticMockedArchiveEndpoint.class.getName(),
 				ClientId.ofRepoId(client.getAD_Client_ID()), OrgId.ANY);
 		StaticMockedArchiveEndpoint.setArchiveEndpoint(new MockedArchiveEndpoint());
-
 	}
 
 	private byte[] createTestData()
@@ -150,8 +150,9 @@ public class RemoteArchiveStorageTests
 
 		// Test that remote endpoint is well configured
 		final RemoteArchiveStorage remoteStorage = (RemoteArchiveStorage)storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT);
-		Assert.assertEquals("Invalid endpoint class configured for " + remoteStorage,
-				StaticMockedArchiveEndpoint.class, remoteStorage.getEndpoint().getClass());
+		assertThat(remoteStorage.getEndpoint().getClass())
+				.as("Invalid endpoint class configured for " + remoteStorage)
+				.isEqualTo(StaticMockedArchiveEndpoint.class);
 	}
 
 	private void assertConfigStorageClass(final boolean isClient, final boolean clientStoreOnFilesystem, final Class<?> expectedArchiveClass)
@@ -161,9 +162,9 @@ public class RemoteArchiveStorageTests
 		client.setStoreArchiveOnFileSystem(clientStoreOnFilesystem);
 		InterfaceWrapperHelper.save(client);
 
-		Assert.assertEquals("Invalid storage class for isClient=" + isClient + ", clientStoreOnFilesystem=" + clientStoreOnFilesystem,
-				expectedArchiveClass,
-				storageFactory.getArchiveStorage(ctx).getClass());
+		assertThat(storageFactory.getArchiveStorage(ctx).getClass())
+				.as("Invalid storage class for isClient=" + isClient + ", clientStoreOnFilesystem=" + clientStoreOnFilesystem)
+				.isEqualTo(expectedArchiveClass);
 	}
 
 	@Test
@@ -189,7 +190,9 @@ public class RemoteArchiveStorageTests
 			Ini.setClient(true);
 			final IArchiveStorage storage = storageFactory.getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem);
 			final byte[] dataActual = storage.getBinaryData(archive);
-			Assert.assertArrayEquals("Invalid binary data", data, dataActual);
+			assertThat(dataActual)
+					.as("Invalid binary data")
+					.isEqualTo(data);
 		}
 	}
 
@@ -206,6 +209,8 @@ public class RemoteArchiveStorageTests
 		InterfaceWrapperHelper.save(archive);
 
 		final byte[] dataActual = storage.getBinaryData(archive);
-		Assert.assertArrayEquals("Invalid binary data", data, dataActual);
+		assertThat(dataActual)
+				.as("Invalid binary data")
+				.isEqualTo(data);
 	}
 }

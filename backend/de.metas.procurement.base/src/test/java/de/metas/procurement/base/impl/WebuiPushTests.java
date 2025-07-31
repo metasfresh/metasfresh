@@ -17,9 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -150,16 +148,16 @@ public class WebuiPushTests
 		final PutBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
 		// agentSync.syncBPartners(syncBPartnersRequest = withCapture());
 
-		assertNotNull(syncBPartnersRequest);
-		assertThat(syncBPartnersRequest.getBpartners().size(), is(1));
+		assertThat(syncBPartnersRequest).isNotNull();
+		assertThat(syncBPartnersRequest.getBpartners()).hasSize(1);
 
 		final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().getFirst();
-		assertThat(syncBPartner.getName(), is(bpartner.getName()));
-		assertThat("syncBPartner.isSyncContracts", syncBPartner.isSyncContracts(), is(false));
-		assertThat("syncBPartner.isDeleted", syncBPartner.isDeleted(), is(true));
+		assertThat(syncBPartner.getName()).isEqualTo(bpartner.getName());
+		assertThat(syncBPartner.isSyncContracts()).as("syncBPartner.isSyncContracts").isFalse();
+		assertThat(syncBPartner.isDeleted()).as("syncBPartner.isDeleted").isTrue();
 
-		assertThat(syncBPartner.getUsers().isEmpty(), is(true));
-		assertThat(syncBPartner.getContracts().isEmpty(), is(true));
+		assertThat(syncBPartner.getUsers()).isEmpty();
+		assertThat(syncBPartner.getContracts()).isEmpty();
 	}
 
 	private void verifyOnlySyncBPartnersCalled()
@@ -193,20 +191,20 @@ public class WebuiPushTests
 
 		final PutBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
 
-		assertNotNull(syncBPartnersRequest);
-		assertThat(syncBPartnersRequest.getBpartners().size(), is(1));
+		assertThat(syncBPartnersRequest).isNotNull();
+		assertThat(syncBPartnersRequest.getBpartners()).hasSize(1);
 
 		final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().getFirst();
-		assertThat(syncBPartner.getUsers().size(), is(1));
-		assertThat(syncBPartner.getContracts().isEmpty(), is(true));
-		assertThat(syncBPartner.getName(), is(bpartner.getName()));
-		assertThat("syncBPartner.isSyncContracts", syncBPartner.isSyncContracts(), is(false));
-		assertThat("syncBPartner.isDeleted", syncBPartner.isDeleted(), is(false));
+		assertThat(syncBPartner.getUsers()).hasSize(1);
+		assertThat(syncBPartner.getContracts()).isEmpty();
+		assertThat(syncBPartner.getName()).isEqualTo(bpartner.getName());
+		assertThat(syncBPartner.isSyncContracts()).as("syncBPartner.isSyncContracts").isFalse();
+		assertThat(syncBPartner.isDeleted()).as("syncBPartner.isDeleted").isFalse();
 
 		final SyncUser syncUser = syncBPartner.getUsers().getFirst();
-		assertThat(syncUser.isDeleted(), is(false));
-		assertThat(syncUser.getEmail(), is(user.getEMail()));
-		assertThat(syncUser.getPassword(), is(user.getProcurementPassword()));
-		assertThat(syncUser.getLanguage(), is(bpartner.getAD_Language()));
+		assertThat(syncUser.isDeleted()).isFalse();
+		assertThat(syncUser.getEmail()).isEqualTo(user.getEMail());
+		assertThat(syncUser.getPassword()).isEqualTo(user.getProcurementPassword());
+		assertThat(syncUser.getLanguage()).isEqualTo(bpartner.getAD_Language());
 	}
 }

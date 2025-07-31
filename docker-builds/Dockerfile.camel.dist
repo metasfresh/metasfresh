@@ -7,6 +7,6 @@ COPY docker-builds/mvn/settings.xml /root/.m2/
 WORKDIR /camel/de-metas-camel-externalsystems/dist
 
 ARG VERSION=10.0.0-local
-RUN mvn versions:set -DnewVersion=$VERSION
+RUN mvn --batch-mode versions:set -DnewVersion=$VERSION
 
-CMD mvn clean deploy
+CMD mvn --batch-mode clean deploy

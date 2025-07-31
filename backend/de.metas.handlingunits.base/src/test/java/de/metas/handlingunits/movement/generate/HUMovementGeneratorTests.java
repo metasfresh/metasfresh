@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,10 +40,10 @@ import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
+import org.xmlunit.assertj3.XmlAssert;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -52,8 +52,6 @@ import java.util.function.Consumer;
 import static de.metas.business.BusinessTestHelper.createLocator;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.is;
 
 public class HUMovementGeneratorTests
 {
@@ -89,8 +87,8 @@ public class HUMovementGeneratorTests
 				hu -> {
 					// guard: HU is not aggregated
 					final Node huXML = HUXmlConverter.toXml(hu);
-					MatcherAssert.assertThat(huXML, hasXPath("string(HU-LU_Palet/Item/@ItemType)", is("HU")));
-					MatcherAssert.assertThat(huXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("1")));
+					XmlAssert.assertThat(huXML).valueByXPath("string(HU-LU_Palet/Item/@ItemType)").isEqualTo("HU");
+					XmlAssert.assertThat(huXML).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("1");
 				},
 				BigDecimal.ONE);
 	}
@@ -105,7 +103,7 @@ public class HUMovementGeneratorTests
 				hu -> {
 					// guard: HU is aggregated
 					final Node huXML = HUXmlConverter.toXml(hu);
-					MatcherAssert.assertThat(huXML, hasXPath("string(HU-LU_Palet/Item/@ItemType)", is("HA")));
+					XmlAssert.assertThat(huXML).valueByXPath("string(HU-LU_Palet/Item/@ItemType)").isEqualTo("HA");
 				},
 				new BigDecimal("3"));
 	}

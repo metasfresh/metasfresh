@@ -22,8 +22,8 @@ package de.metas.document.refid.api.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -32,7 +32,7 @@ import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.refid.RefIdTestBase;
@@ -56,37 +56,39 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 
 		PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
 
-		assertThat(dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen1.class), is(type1));
-		assertThat(dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen2.class), is(type2));
+		assertThat(dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen1.class)).isEqualTo(type1);
+		assertThat(dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen2.class)).isEqualTo(type2);
 	}
 
 	/**
 	 * Expecting the code to check that there is only one type per classname and throw an DBMoreThenOneRecordsFoundException if that is not the case (instead of simply returning the first one).
 	 */
-	@Test(expected = DBMoreThanOneRecordsFoundException.class)
+	@Test
 	public void testGetTypeByClassDuplicate()
 	{
 		setupType(Gen1.class);
 		setupType(Gen1.class);
 
 		PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
-		assertThat(dao.retrieveReferenceNoTypes().size(), is(2)); // guard
+		assertThat(dao.retrieveReferenceNoTypes()).hasSize(2); // guard
 
-		dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen1.class);
+		assertThatThrownBy(() -> dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen1.class))
+				.isInstanceOf(DBMoreThanOneRecordsFoundException.class);
 	}
 
 	/**
 	 * Expecting the code to check that there is a type for the given classname and throwing an {@link AdempiereException} if that is not the case (instead of returning <code>null</code>).
 	 */
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void testGetTypeByClassMissing()
 	{
 		setupType(Gen1.class);
 
 		PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
-		assertThat(dao.retrieveReferenceNoTypes().size(), is(1)); // guard
+		assertThat(dao.retrieveReferenceNoTypes()).hasSize(1); // guard
 
-		dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen2.class);
+		assertThatThrownBy(() -> dao.retrieveRefNoTypeByClass(Env.getCtx(), Gen2.class))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	/**
@@ -101,37 +103,39 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 
 		PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
 
-		assertThat(dao.retrieveRefNoTypeByName(mkName(Gen1.class)), is(type1));
-		assertThat(dao.retrieveRefNoTypeByName(mkName(Gen2.class)), is(type2));
+		assertThat(dao.retrieveRefNoTypeByName(mkName(Gen1.class))).isEqualTo(type1);
+		assertThat(dao.retrieveRefNoTypeByName(mkName(Gen2.class))).isEqualTo(type2);
 	}
 
 	/**
 	 * Expecting the code to check that there is only one type per Name and throw an DBMoreThenOneRecordsFoundException if that is not the case (instead of simply returning the first one).
 	 */
-	@Test(expected = DBMoreThanOneRecordsFoundException.class)
+	@Test
 	public void testGetTypeByNameDuplicate()
 	{
 		setupType(Gen1.class);
 		setupType(Gen1.class);
 
 		final PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
-		assertThat(dao.retrieveReferenceNoTypes().size(), is(2)); // guard
+		assertThat(dao.retrieveReferenceNoTypes()).hasSize(2); // guard
 
-		dao.retrieveRefNoTypeByName(mkName(Gen1.class));
+		assertThatThrownBy(() -> dao.retrieveRefNoTypeByName(mkName(Gen1.class)))
+				.isInstanceOf(DBMoreThanOneRecordsFoundException.class);
 	}
 
 	/**
 	 * Expecting the code to check that there is a type for the given name and throwing an {@link AdempiereException} if that is not the case (instead of returning <code>null</code>).
 	 */
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void testGetTypeByNameMissing()
 	{
 		setupType(Gen1.class);
 
 		PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
-		assertThat(dao.retrieveReferenceNoTypes().size(), is(1)); // guard
+		assertThat(dao.retrieveReferenceNoTypes()).hasSize(1); // guard
 
-		dao.retrieveRefNoTypeByName(mkName(Gen2.class));
+		assertThatThrownBy(() -> dao.retrieveRefNoTypeByName(mkName(Gen2.class)))
+				.isInstanceOf(AdempiereException.class);
 	}
 
 	private static class Gen1 implements IReferenceNoGenerator
@@ -203,17 +207,17 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 		lookupMap.save(invoiceRefNoDoc);
 
 		final PlainReferenceNoDAO dao = new PlainReferenceNoDAO();
-		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Invoice.class).size(), is(1));
-		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Invoice.class).getFirst(), is(invoice));
+		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Invoice.class)).hasSize(1);
+		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Invoice.class).getFirst()).isEqualTo(invoice);
 
-		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Order.class).size(), is(1));
-		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Order.class).getFirst(), is(order));
+		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Order.class)).hasSize(1);
+		assertThat(dao.retrieveAssociatedRecords(order, Gen1.class, I_C_Order.class).getFirst()).isEqualTo(order);
 
 		// create another unused type
 		setupType(Gen2.class);
 
 		// check that the method returns the empty list, when using Gen2.class for referenceNo type
-		assertThat(dao.retrieveAssociatedRecords(order, Gen2.class, I_C_Invoice.class).isEmpty(), is(true));
-		assertThat(dao.retrieveAssociatedRecords(invoice, Gen2.class, I_C_Order.class).isEmpty(), is(true));
+		assertThat(dao.retrieveAssociatedRecords(order, Gen2.class, I_C_Invoice.class)).isEmpty();
+		assertThat(dao.retrieveAssociatedRecords(invoice, Gen2.class, I_C_Order.class)).isEmpty();
 	}
 }

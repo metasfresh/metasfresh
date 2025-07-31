@@ -338,6 +338,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
 
+	Optional<ShipperId> getShipperIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
+
 	@Value
 	@Builder
 	class BPartnerLocationQuery

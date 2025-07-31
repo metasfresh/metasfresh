@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -50,6 +49,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
@@ -103,7 +103,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 		//
 		// Validate result transactions
 		// NOTE: at this point Shipment Schedule's QtyPicked is not changed. It will be changed when transactions will be processed
-		Assert.assertEquals("Invalid transactions count", 3, trxs.size());
+		Assertions.assertEquals( 3,  trxs.size(), "Invalid transactions count");
 		shipmentScheduleHelper.assertValidTransaction(trxs.getFirst(), schedules.getFirst(), new BigDecimal("-9"), new BigDecimal("1"));
 		shipmentScheduleHelper.assertValidTransaction(trxs.get(1), schedules.get(1), new BigDecimal("-8"), new BigDecimal("2"));
 		shipmentScheduleHelper.assertValidTransaction(trxs.get(2), schedules.get(2), new BigDecimal("-3"), new BigDecimal("3"));
@@ -166,19 +166,19 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 				.load(request);
 		// NOTE: transactions are already processed at this point
 
-		Assert.assertTrue("Request shall be completelly allocated: " + result, result.isCompleted());
+		Assertions.assertTrue(result.isCompleted(),"Request shall be completelly allocated: " + result);
 
 		//
 		// Validate created HU
-		Assert.assertEquals("There shall be only one HU created: " + destination.getCreatedHUs(),
-				1, // expecteds
-				destination.getCreatedHUs().size());
+		Assertions.assertEquals(
+				1,  // expecteds
+				destination.getCreatedHUs().size(), "There shall be only one HU created: " + destination.getCreatedHUs());
 		final I_M_HU createdHU = destination.getCreatedHUs().getFirst();
 
 		//
 		// Validate result transactions
 		{
-			Assert.assertEquals("Invalid trx count in result: " + result, 6, result.getTransactions().size());
+			Assertions.assertEquals( 6,  result.getTransactions().size(), "Invalid trx count in result: " + result);
 			final List<IHUTransactionCandidate> scheduleTrxs = Arrays.asList(
 					result.getTransactions().getFirst(),
 					// result.getTransactions().get(1), // HU_Item trx

@@ -75,6 +75,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -90,11 +91,10 @@ public class C_OrderLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IOrderLineBL  orderLineBL = Services.get(IOrderLineBL.class);;
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	private final @NonNull M_Product_StepDefData productTable;
 	private final @NonNull C_BPartner_StepDefData partnerTable;
-	private final @NonNull C_BPartner_Location_StepDefData partnerLocationTable;
 	private final @NonNull C_Order_StepDefData orderTable;
 	private final @NonNull C_OrderLine_StepDefData orderLineTable;
 	private final @NonNull M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
@@ -112,98 +112,104 @@ public class C_OrderLine_StepDef
 	{
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
-				.forEach(tableRow -> {
-					final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
+				.forEach(this::createOrderLine);
+	}
 
-					// make sure all defaults are set. If not, this method might be called later, when the orderLine is saved and might then override things set in this stepdef
-					final I_C_Order orderRecord = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
-					orderLine.setC_Order_ID(orderRecord.getC_Order_ID());
-					orderLineBL.setOrder(orderLine, orderRecord);
+	public void createOrderLine(final DataTableRow tableRow)
+	{
+		final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
 
-					final StepDefDataIdentifier productIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
-					final ProductId productId = productTable.getIdOptional(productIdentifier)
-							.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+		// make sure all defaults are set. If not, this method might be called later, when the orderLine is saved and might then override things set in this stepdef
+		final I_C_Order orderRecord = tableRow.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+		orderLine.setC_Order_ID(orderRecord.getC_Order_ID());
+		orderLineBL.setOrder(orderLine, orderRecord);
 
-					orderLine.setM_Product_ID(productId.getRepoId());
-					orderLine.setQtyEntered(tableRow.getAsBigDecimal(I_C_OrderLine.COLUMNNAME_QtyEntered));
+		final StepDefDataIdentifier productIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
+		final ProductId productId = productTable.getIdOptional(productIdentifier)
+				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
 
-					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
-							.map(attributeSetInstanceTable::getId)
-							.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
+		orderLine.setM_Product_ID(productId.getRepoId());
+		orderLine.setQtyEntered(tableRow.getAsBigDecimal(I_C_OrderLine.COLUMNNAME_QtyEntered));
 
-					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
-							.map(partnerTable::getId)
-							.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID)
+				.map(attributeSetInstanceTable::getId)
+				.ifPresent(asiId -> orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId()));
 
-					final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
-					if (Check.isNotBlank(flatrateConditionsIdentifier))
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
+				.map(partnerTable::getId)
+				.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
+
+		final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(flatrateConditionsIdentifier))
+		{
+			final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
+			orderLine.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
+		}
+
+		tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.ifPresent(itemProductIdentifier -> {
+					if (itemProductIdentifier.isNullPlaceholder())
 					{
-						final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
-						orderLine.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
+						orderLine.setM_HU_PI_Item_Product_ID(-1);
 					}
-
-					tableRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
-							.ifPresent(itemProductIdentifier -> {
-								if (itemProductIdentifier.isNullPlaceholder())
-								{
-									orderLine.setM_HU_PI_Item_Product_ID(-1);
-								}
-								else
-								{
-									final HUPIItemProductId huPiItemProductId = huPiItemProductTable.getIdOptional(itemProductIdentifier)
-											.orElseGet(() -> itemProductIdentifier.getAsId(HUPIItemProductId.class));
-
-									orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductId.getRepoId());
-								}
-							});
-
-					final BigDecimal qtyEnteredTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU);
-					if (qtyEnteredTU != null)
+					else
 					{
-						orderLine.setQtyEnteredTU(qtyEnteredTU);
+						final HUPIItemProductId huPiItemProductId = huPiItemProductTable.getIdOptional(itemProductIdentifier)
+								.orElseGet(() -> itemProductIdentifier.getAsId(HUPIItemProductId.class));
+
+						orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductId.getRepoId());
 					}
-
-					final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
-					if (qtyItemCapacity != null)
-					{
-						orderLine.setQtyItemCapacity(qtyItemCapacity);
-					}
-
-					final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-					if (Check.isNotBlank(warehouseIdentifier))
-					{
-						final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
-						assertThat(warehouse).isNotNull();
-
-						orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-					}
-
-					final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
-					if (Check.isNotBlank(uomX12DE355))
-					{
-						final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
-								.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
-								.addOnlyActiveRecordsFilter()
-								.create()
-								.firstIdOnly(UomId::ofRepoIdOrNull);
-						assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
-						orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
-					}
-
-					tableRow.getAsOptionalBigDecimal("Price")
-							.ifPresent(price -> {
-								orderLine.setIsManualPrice(true);
-								orderLine.setPriceEntered(price);
-								orderLine.setPriceActual(price);
-							});
-
-					tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
-							.ifPresent(orderLine::setDescription);
-
-					saveRecord(orderLine);
-
-					orderLineTable.putOrReplace(tableRow.getAsIdentifier(), orderLine);
 				});
+
+		final BigDecimal qtyEnteredTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU);
+		if (qtyEnteredTU != null)
+		{
+			orderLine.setQtyEnteredTU(qtyEnteredTU);
+		}
+
+		final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
+		if (qtyItemCapacity != null)
+		{
+			orderLine.setQtyItemCapacity(qtyItemCapacity);
+		}
+
+		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(warehouseIdentifier))
+		{
+			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+			assertThat(warehouse).isNotNull();
+
+			orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		}
+
+		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
+		if (Check.isNotBlank(uomX12DE355))
+		{
+			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
+					.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstIdOnly(UomId::ofRepoIdOrNull);
+			assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
+			orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
+		}
+
+		tableRow.getAsOptionalBigDecimal("Price")
+				.ifPresent(price -> {
+					orderLine.setIsManualPrice(true);
+					orderLine.setPriceEntered(price);
+					orderLine.setPriceActual(price);
+				});
+
+		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
+				.ifPresent(orderLine::setDescription);
+
+		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
+				.ifPresent(orderLine::setExternalId);
+
+		saveRecord(orderLine);
+
+		orderLineTable.putOrReplace(tableRow.getAsIdentifier(), orderLine);
 	}
 
 	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")
@@ -270,46 +276,44 @@ public class C_OrderLine_StepDef
 	@And("validate the created order lines")
 	public void validate_created_order_lines(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
-		{
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
+		DataTableRows.of(table)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+				.forEach(row -> {
+					final I_C_Order orderRecord = orderTable.get(row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID));
 
-			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+					final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_M_Product_ID);
+					final Integer expectedProductId = productTable.getOptional(productIdentifier)
+							.map(I_M_Product::getM_Product_ID)
+							.orElseGet(productIdentifier::getAsInt);
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer expectedProductId = productTable.getOptional(productIdentifier)
-					.map(I_M_Product::getM_Product_ID)
-					.orElseGet(() -> Integer.parseInt(productIdentifier));
+					final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 
-			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
+					//dev-note: we assume the tests are not using the same product on different lines
+					final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
+							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
+							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, expectedProductId)
+							.addEqualsFilter(I_C_OrderLine.COLUMNNAME_QtyOrdered, qtyOrdered)
+							.create()
+							.firstOnlyNotNull(I_C_OrderLine.class);
 
-			//dev-note: we assume the tests are not using the same product on different lines
-			final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, expectedProductId)
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_QtyOrdered, qtyOrdered)
-					.create()
-					.firstOnlyNotNull(I_C_OrderLine.class);
-
-			validateOrderLine(orderLineRecord, row);
-		}
+					validateOrderLine(orderLineRecord, row);
+				});
 	}
 
 	@And("validate C_OrderLine:")
 	public void validate_C_OrderLine(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> table = dataTable.asMaps();
-		for (final Map<String, String> row : table)
-		{
-			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-			assertThat(orderLine).isNotNull();
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+				.forEach(row -> {
+					final I_C_OrderLine orderLine = orderLineTable.get(row.getAsIdentifier());
+					assertThat(orderLine).isNotNull();
 
-			InterfaceWrapperHelper.refresh(orderLine);
+					InterfaceWrapperHelper.refresh(orderLine);
 
-			validateOrderLine(orderLine, row);
-		}
+					validateOrderLine(orderLine, row);
+
+				});
 	}
 
 	@And("update C_OrderLine:")
@@ -429,24 +433,25 @@ public class C_OrderLine_StepDef
 		}
 	}
 
-	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
+	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final DataTableRow row)
 	{
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
-		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_OrderLine.COLUMNNAME_DateOrdered);
+		final StepDefDataIdentifier orderIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID);
+		final Timestamp dateOrdered = row.getAsOptionalLocalDateTimestamp(I_C_OrderLine.COLUMNNAME_DateOrdered).orElse(null);
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Optional<StepDefDataIdentifier> productIdentifier = row.getAsOptionalIdentifier(I_C_OLCand.COLUMNNAME_M_Product_ID);
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
 		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OrderLine.COLUMNNAME_QtyOrdered);
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
-		final BigDecimal price = DataTableUtil.extractBigDecimalWithScaleForColumnName(row, "price");
+		final BigDecimal price = row.getAsOptionalBigDecimal("price").orElse(null);
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
-		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Optional<StepDefDataIdentifier> taxCategoryIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_TaxCategory_ID);
 
-		final Integer expectedProductId = productTable.getOptional(productIdentifier)
+		final Integer expectedProductId = productIdentifier
+				.flatMap(productTable::getOptional)
 				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
+				.orElseGet(() -> productIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
 
 		final String uomBPartner355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
 
@@ -503,19 +508,18 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
 		}
 
-		if (Check.isNotBlank(taxCategoryIdentifier))
+		if (taxCategoryIdentifier.isPresent())
 		{
-			final Integer taxCategoryId = taxCategoryTable.getOptional(taxCategoryIdentifier)
+			final Integer taxCategoryId = taxCategoryIdentifier.flatMap(taxCategoryTable::getOptional)
 					.map(I_C_TaxCategory::getC_TaxCategory_ID)
-					.orElseGet(() -> Integer.parseInt(taxCategoryIdentifier));
-
+					.orElseGet(() -> taxCategoryIdentifier.map(StepDefDataIdentifier::getAsInt).orElse(null));
 			assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
 		}
 
 		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
-		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualTo(qtyDelivered);
-		assertThat(orderLine.getPriceEntered()).as("PriceEntered").isEqualTo(price);
-		assertThat(orderLine.getDiscount()).as("Discount").isEqualTo(discount);
+		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered);
+		assertThat(orderLine.getPriceEntered()).as("PriceEntered").isEqualByComparingTo(price);
+		assertThat(orderLine.getDiscount()).as("Discount").isEqualByComparingTo(discount);
 		assertThat(orderLine.isProcessed()).as("Processed").isEqualTo(processed);
 		assertThat(orderLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
 		assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualByComparingTo(qtyordered);
@@ -596,9 +600,7 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
 		}
 
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		orderLineTable.putOrReplace(orderLineIdentifier, orderLine);
+		orderLineTable.putOrReplace(row.getAsIdentifier(), orderLine);
 	}
 
 	private void validateAttributeValue(@NonNull final I_C_OrderLine orderLine, @NonNull final String value)

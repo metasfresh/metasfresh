@@ -1,12 +1,11 @@
 package de.metas.process;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import lombok.Getter;
+import org.junit.jupiter.api.Test;
 
 import java.util.function.Supplier;
 
-import org.junit.Test;
-
-import lombok.Getter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

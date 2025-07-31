@@ -28,8 +28,8 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_OWNER;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE;
@@ -39,14 +39,14 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_PROJECT_ID;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExternalProjectRepositoryTest
 {
 	private final IQueryBL queryBL =  Services.get(IQueryBL.class);
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -99,25 +99,13 @@ cypress testing is defunct and plays no role currently. please ignore it.
 The project uses Docker extensively for builds and deployments:
 
 ```bash
-# Build backend images
-docker buildx build --file docker-builds/Dockerfile.backend .
-
-# Build frontend images  
-docker buildx build --file docker-builds/Dockerfile.frontend .
-
-# Start full stack locally
-cd docker-builds/compose/
-docker compose up
+build.sh
 ```
 
 ## Architecture Overview
 
 ### Backend Structure
 - **Modular Maven architecture** with 100+ modules in `backend/`
-- **Core modules**: `de.metas.business`, `de.metas.adempiere.adempiere`
-- **Web API**: `metasfresh-webui-api` (Spring Boot REST API)
-- **Domain modules**: contracts, manufacturing, material planning, payments, etc.
-- **Vertical modules**: healthcare, pharma industry-specific functionality
 
 ### Parent-pom and common libraries
 
@@ -202,7 +190,7 @@ To recursively get all files that end with `.java` and contain the string `impor
 find src/ -name "*.java" -print0 | xargs -0 grep -l "import javax\."
 ```
 
-on the other hadn, the following does **not** work:
+on the other hand, the following does **not** work, so you don't need to try):
 `find . -name "pom.xml" -exec grep -l "jaxb\|wsimport\|wsdl" {} \;`
 
 this fails with the error-message "Error: find: missing argument to `-exec'"

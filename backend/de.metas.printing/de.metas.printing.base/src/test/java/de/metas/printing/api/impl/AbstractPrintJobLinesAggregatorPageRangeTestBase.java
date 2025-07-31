@@ -22,21 +22,18 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Test;
-
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * To test additional things, create subclasses and override the setup and eval methods. Assertions run under static page range.
@@ -62,7 +59,7 @@ public abstract class AbstractPrintJobLinesAggregatorPageRangeTestBase extends A
 		final I_AD_PrinterHW_MediaTray tray1HW = helper.getCreatePrinterTrayHW(printerHWName, tray1HWName, 10);
 		final I_AD_PrinterHW_MediaTray tray2HW = helper.getCreatePrinterTrayHW(printerHWName, tray2HWName, 20);
 		final I_AD_PrinterHW printerHW = tray1HW.getAD_PrinterHW();
-		assertThat(printerHW, is(tray2HW.getAD_PrinterHW())); // guard
+		assertThat(printerHW).isEqualTo(tray2HW.getAD_PrinterHW()); // guard
 
 		// create the routings, which also will create the logical printer and trays
 		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name, 10, -1, 1, 1);
@@ -96,19 +93,20 @@ public abstract class AbstractPrintJobLinesAggregatorPageRangeTestBase extends A
 		//
 		// Validate PrintPackage Infos
 		final List<I_C_Print_PackageInfo> printPackageInfos = helper.getDAO().retrievePrintPackageInfo(printPackage);
-		assertEquals("Invalid infos count: " + printPackageInfos, 2, printPackageInfos.size());
+		assertThat(printPackageInfos).as("Invalid infos count: " + printPackageInfos).hasSize(2);
 
 		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.getFirst();
-		assertEquals("Invalid PageFrom for " + printPackageInfo1, 1, printPackageInfo1.getPageFrom());
-		assertEquals("Invalid PageTo for " + printPackageInfo1, 1, printPackageInfo1.getPageTo());
-		assertThat(printPackageInfo1.getAD_PrinterHW(), is(printerHW));
-		assertThat(printPackageInfo1.getAD_PrinterHW_MediaTray(), is(tray1HW));
+		assertThat(printPackageInfo1.getPageFrom()).as("Invalid PageFrom for " + printPackageInfo1.getPageFrom()).isEqualTo(1);
+		assertThat(printPackageInfo1.getPageTo()).as("Invalid PageTo for " + printPackageInfo1.getPageFrom()).isEqualTo(1);
+		assertThat(printPackageInfo1.getAD_PrinterHW()).isEqualTo(printerHW);
+		assertThat(printPackageInfo1.getAD_PrinterHW_MediaTray()).isEqualTo(tray1HW);
 
 		final I_C_Print_PackageInfo printPackageInfo2 = printPackageInfos.get(1);
-		assertEquals("Invalid PageFrom for " + printPackageInfo2, 2, printPackageInfo2.getPageFrom());
-		assertEquals("Invalid PageTo for " + printPackageInfo2, 2, printPackageInfo2.getPageTo());
-		assertThat(printPackageInfo2.getAD_PrinterHW(), is(printerHW));
-		assertThat(printPackageInfo2.getAD_PrinterHW_MediaTray(), is(tray2HW));
+		assertThat(printPackageInfo2.getPageFrom()).as("Invalid PageFrom for " + printPackageInfo2).isEqualTo(2);
+		assertThat(printPackageInfo2.getPageTo()).as("Invalid PageTo for " + printPackageInfo2).isEqualTo(2);
+
+		assertThat(printPackageInfo2.getAD_PrinterHW()).isEqualTo(printerHW);
+		assertThat(printPackageInfo2.getAD_PrinterHW_MediaTray()).isEqualTo(tray2HW);
 	}
 
 	protected abstract byte[] step10_CreatePdfDataToPrint();

@@ -1,41 +1,5 @@
 package de.metas.handlingunits.attributes.impl;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.hamcrest.Matchers.comparesEqualTo;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.model.X_M_Transaction;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -59,6 +23,18 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.model.X_M_Transaction;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class AttributesPropagationTest extends AbstractHUTest
 {
@@ -157,8 +133,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 	{
 		final List<I_M_HU> huPalets = createIncomingPalets();
 		//System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("huPalets", huPalets)));
-
-		Assert.assertEquals("There should be 2 palets", 2, huPalets.size());
+		assertThat(huPalets).as("There should be 2 palets").hasSize(2);
 
 		final I_M_HU palet1 = huPalets.getFirst();
 		final I_M_HU palet2 = huPalets.get(1);
@@ -182,7 +157,8 @@ public class AttributesPropagationTest extends AbstractHUTest
 			if (huPaletItemType.equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit))
 			{
 				final List<I_M_HU> huIFCOs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(huPaletItem);
-				Assert.assertEquals("Invalid number of IFCOs in pallet, palet item: \n" + huPaletItem, 2, huIFCOs.size());
+				assertThat(huIFCOs)
+						.as("Invalid number of IFCOs in pallet, palet item: \n" + huPaletItem).hasSize(2);
 
 				final I_M_HU huIFCO1 = huIFCOs.getFirst();
 				final IAttributeStorage huIFCO1_Attrs = storageFactory.getAttributeStorage(huIFCO1);
@@ -192,13 +168,12 @@ public class AttributesPropagationTest extends AbstractHUTest
 
 				// Now try to retrieve the volume ONE value and check if it was actually set
 				final IAttributeValue volumeAttributeValueOne = huIFCO1_Attrs.getAttributeValue(attr_Volume);
-				Assert.assertThat("Volumes are supposed to match: ", volumeAttributeValueOne.getValueAsBigDecimal(), comparesEqualTo(huIFCO1_Volume));
+				assertThat(volumeAttributeValueOne.getValueAsBigDecimal()).as("Volumes are supposed to match: ").isEqualByComparingTo(huIFCO1_Volume);
+
 
 				// Test if "country" was propagated down
-				Assert.assertEquals("Invalid countryMadeIn",
-						HUTestHelper.COUNTRYMADEIN_RO,
-						huIFCO1_Attrs.getAttributeValue(attr_CountryMadeIn).getValueAsString());
-
+				assertThat(huIFCO1_Attrs.getAttributeValue(attr_CountryMadeIn).getValueAsString()).as("Invalid countryMadeIn").isEqualTo(HUTestHelper.COUNTRYMADEIN_RO);	
+			
 				final I_M_HU huIFCO2 = huIFCOs.get(1);
 				final IAttributeStorage huIFCO2_Attrs = storageFactory.getAttributeStorage(huIFCO2);
 				final BigDecimal huIFCO2_Volume = new BigDecimal(20);
@@ -206,12 +181,12 @@ public class AttributesPropagationTest extends AbstractHUTest
 
 				// Now try to retrieve the volume TWO value and check if it was actually set
 				final IAttributeValue volumeAttributeValueTwo = huIFCO2_Attrs.getAttributeValue(attr_Volume);
-				Assert.assertThat("Volumes are supposed to match: ", volumeAttributeValueTwo.getValueAsBigDecimal(), comparesEqualTo(huIFCO2_Volume));
+				assertThat(volumeAttributeValueTwo.getValueAsBigDecimal()).as("Volumes are supposed to match: ").isEqualByComparingTo(huIFCO2_Volume);
 
 				// check that the master volume was aggregated successfully : expected=30
 				final IAttributeValue volumePalletOne = palet1_Attrs.getAttributeValue(attr_Volume);
-				Assert.assertThat("Invalid expected propagated volume", volumePalletOne.getValueAsBigDecimal(), comparesEqualTo(new BigDecimal("30")));
-
+				assertThat(volumePalletOne.getValueAsBigDecimal()).as("Invalid expected propagated volume").isEqualByComparingTo(new BigDecimal("30"));
+			
 				// Set the volume value again for IFCO ONE to be able to check that the aggregation strategy re-adds the proper value
 				final BigDecimal huIFCO1_Volume_Reset = BigDecimal.TEN;
 				huIFCO1_Attrs.setValue(attr_Volume, huIFCO1_Volume_Reset);
@@ -221,12 +196,10 @@ public class AttributesPropagationTest extends AbstractHUTest
 
 				// check that the master volume was re-aggregated successfully : expected=20
 				final IAttributeValue volumePalletOneReset = palet1_Attrs.getAttributeValue(attr_Volume);
-				Assert.assertThat("Invalid expected propagated volume", volumePalletOneReset.getValueAsBigDecimal(), comparesEqualTo(new BigDecimal("25")));
+				assertThat(volumePalletOneReset.getValueAsBigDecimal()).as("Invalid expected propagated volume").isEqualByComparingTo(new BigDecimal("25"));
 
 				// Test if "country" was propagated down
-				Assert.assertEquals("Invalid countryMadeIn",
-						HUTestHelper.COUNTRYMADEIN_RO,
-						huIFCO2_Attrs.getAttributeValue(attr_CountryMadeIn).getValueAsString());
+				assertThat(huIFCO1_Attrs.getAttributeValue(attr_CountryMadeIn).getValueAsString()).as("Invalid countryMadeIn").isEqualTo(HUTestHelper.COUNTRYMADEIN_RO);	
 			}
 		}
 
@@ -237,7 +210,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 			if (huPaletItem.getItemType().equals(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit))
 			{
 				final List<I_M_HU> huIFCOs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(huPaletItem);
-				Assert.assertEquals("Invalid number of IFCOs in pallet, palet item: \n" + huPaletItem, 1, huIFCOs.size());
+				assertThat(huIFCOs).as("Invalid number of IFCOs in pallet, palet item: \n" + huPaletItem).hasSize(1);
 
 				final I_M_HU huIFCO = huIFCOs.getFirst();
 				final IAttributeStorage huIFCO_Attrs = storageFactory.getAttributeStorage(huIFCO);
@@ -247,15 +220,13 @@ public class AttributesPropagationTest extends AbstractHUTest
 
 				// Now try to retrieve the volume value and check if it was actually set
 				final IAttributeValue huIFCO_Volume_AV = huIFCO_Attrs.getAttributeValue(attr_Volume);
-				Assert.assertThat("Volumes are supposed to match: ", huIFCO_Volume_AV.getValueAsBigDecimal(), comparesEqualTo(huIFCO_Volume));
+				assertThat(huIFCO_Volume_AV.getValueAsBigDecimal()).as("Volumes are supposed to match: ").isEqualByComparingTo(huIFCO_Volume);
 
 				final IAttributeValue palet2_Volume_AV = palet2_Attrs.getAttributeValue(attr_Volume);
-				Assert.assertThat("Invalid expected propagated volume", palet2_Volume_AV.getValueAsBigDecimal(), comparesEqualTo(BigDecimal.TEN));
+				assertThat(palet2_Volume_AV.getValueAsBigDecimal()).as("Invalid expected propagated volume").isEqualByComparingTo(BigDecimal.TEN);
 
 				// Test if "country" was propagated down
-				Assert.assertEquals("Invalid countryMadeIn",
-						HUTestHelper.COUNTRYMADEIN_DE,
-						huIFCO_Attrs.getAttributeValue(attr_CountryMadeIn).getValueAsString());
+				assertThat(huIFCO_Attrs.getAttributeValue(attr_CountryMadeIn).getValueAsString()).as("Invalid countryMadeIn").isEqualTo(HUTestHelper.COUNTRYMADEIN_DE);	
 			}
 		}
 	}
@@ -313,6 +284,6 @@ public class AttributesPropagationTest extends AbstractHUTest
 		propagator.propagateValue(propagationContext, attributeSet, expected); // updateStorageValue=true
 
 		final IAttributeValue actualAttributeValue = attributeSet.getAttributeValue(attr_CopyValueNoParent);
-		Assert.assertSame("Invalid attribute propagated on self", expected, actualAttributeValue.getValueAsString());
+		assertThat(actualAttributeValue.getValueAsString()).as("Invalid attribute propagated on self").isSameAs(expected);
 	}
 }

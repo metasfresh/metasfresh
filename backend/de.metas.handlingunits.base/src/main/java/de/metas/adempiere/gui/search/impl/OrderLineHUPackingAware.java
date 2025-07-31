@@ -23,12 +23,14 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -175,6 +177,16 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 		values.setC_BPartner_ID(bpartnerId);
 	}
 
+	public void setQtyLU(@NonNull final BigDecimal qtyLU)
+	{
+		orderLine.setQtyLU(qtyLU);
+	}
+
+	public void setLuId(@Nullable final HuPackingInstructionsId luId)
+	{
+		orderLine.setM_LU_HU_PI_ID(HuPackingInstructionsId.toRepoId(luId));
+	}
+
 	@Override
 	public boolean isInDispute()
 	{
@@ -191,9 +203,9 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	@Override
 	public String toString()
 	{
-		return "OrderLineHUPackingAware [orderLine=%s, getM_Product_ID()=%s, getM_Product()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getM_HU_PI_Item_Product_ID()=%s, isInDispute()=%s]"
+		return "OrderLineHUPackingAware [orderLine=%s, getM_Product_ID()=%s, getM_Product()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getM_HU_PI_Item_Product_ID()=%s, qtyLU()=%s, luId()=%s, isInDispute()=%s]"
 				.formatted(
 						orderLine, getM_Product_ID(), getM_Product_ID(), getQty(), getM_HU_PI_Item_Product_ID(), getM_AttributeSetInstance_ID(), getC_UOM_ID(), getQtyTU(), getC_BPartner_ID(),
-						getM_HU_PI_Item_Product_ID(), isInDispute());
+						getM_HU_PI_Item_Product_ID(), getQtyLU(), getLuId(), isInDispute());
 	}
 }

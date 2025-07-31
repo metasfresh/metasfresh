@@ -5,7 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
-import DocumentList from '../../containers/DocumentList';
+import DocumentListContainer from '../../containers/DocumentListContainer';
 import Tooltips from '../tooltips/Tooltips';
 import Attachments from './Attachments';
 import DocumentReferences from '../documentReferences/DocumentReferences';
@@ -82,7 +82,7 @@ class SideList extends Component {
     switch (tab) {
       case 0:
         return (
-          <DocumentList
+          <DocumentListContainer
             type="list"
             readonly={true}
             defaultViewId={

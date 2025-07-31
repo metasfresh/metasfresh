@@ -25,8 +25,10 @@ package de.metas.util.collections;
 
 import java.util.NoSuchElementException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import de.metas.util.collections.SingletonIterator;
 
@@ -44,29 +46,29 @@ public class SingletonIteratorTest
 		final String itemExpected = "item1";
 		SingletonIterator<String> it = new SingletonIterator<String>(itemExpected);
 
-		Assert.assertTrue(it.hasNext());
+		assertThat(it.hasNext()).isTrue();
 		final String itemActual = it.next();
-		Assert.assertSame(itemExpected, itemActual);
+		assertThat(itemActual).isSameAs(itemExpected);
 
-		Assert.assertFalse(it.hasNext());
+		assertThat(it.hasNext()).isFalse();
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void removeNotAllowed()
 	{
 		final String itemExpected = "item1";
 		SingletonIterator<String> it = new SingletonIterator<String>(itemExpected);
 
-		it.remove();
+		assertThrows(UnsupportedOperationException.class, () -> it.remove());
 	}
 
-	@Test(expected = NoSuchElementException.class)
+	@Test
 	public void onlyOneElementShallBeAvailable()
 	{
 		final String itemExpected = "item1";
 		SingletonIterator<String> it = new SingletonIterator<String>(itemExpected);
 
 		it.next();
-		it.next(); // this one shall throw exception
+		assertThrows(NoSuchElementException.class, () -> it.next()); // this one shall throw exception
 	}
 }

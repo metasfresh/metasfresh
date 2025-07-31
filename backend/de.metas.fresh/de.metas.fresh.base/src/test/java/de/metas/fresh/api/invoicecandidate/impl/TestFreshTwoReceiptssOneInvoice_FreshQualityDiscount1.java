@@ -35,20 +35,15 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.money.MoneyService;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Similar to its super class {@link TestTwoReceiptsOneInvoice_QualityDiscount1}, but uses the {@link FreshQuantityDiscountAggregator} instead of the default aggregator.<br>
@@ -63,7 +58,7 @@ import static org.junit.Assert.assertThat;
  *
  */
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestTwoReceiptsOneInvoice_QualityDiscount1
 {
@@ -82,29 +77,37 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 
 		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
-		assertThat(ic.getC_Invoice_Candidate_Agg(), is(freshAgg));
+		assertThat(ic.getC_Invoice_Candidate_Agg()).isEqualTo(freshAgg);
 	}
 
 	@Override
 	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
 	{
-		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
+		assertThat(invoices)
+			.as("We are expecting one invoice: %s", invoices)
+			.hasSize(1);
 		final IInvoiceHeader invoice = invoices.removeFirst();
 
 		final I_C_Invoice_Candidate ic = CollectionUtils.singleElement(invoiceCandidates);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
-		assertEquals("We are expecting two invoice lines: " + invoiceLines, 2, invoiceLines.size());
+		assertThat(invoiceLines)
+			.as("We are expecting two invoice lines: %s", invoiceLines)
+			.hasSize(2);
 
 		// checking that the first il has the full quantity which includes the qtys that are in dispute
 		final IInvoiceLineRW invoiceLine1 = getSingleForInOutLine(invoiceLines, iol11_three);
-		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11_three, invoiceLine1);
+		assertThat(invoiceLine1)
+			.as("Missing IInvoiceLineRW for iol11=%s", iol11_three)
+			.isNotNull();
 
 		final BigDecimal qtyDeliveredInclDisputed = THREE.add(FIVE).add(TEN).add(TWENTY);
 		final BigDecimal qtyDisputed = FIVE.add(TWENTY);
 
-		assertThat(invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(qtyDeliveredInclDisputed));
-		assertThat(invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(qtyDeliveredInclDisputed.multiply(TEN)));
+		assertThat(invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal())
+			.isEqualByComparingTo(qtyDeliveredInclDisputed);
+		assertThat(invoiceLine1.getNetLineAmt().toBigDecimal())
+			.isEqualByComparingTo(qtyDeliveredInclDisputed.multiply(TEN));
 		validateIcIlAllocationQty(ic, invoice, invoiceLine1, qtyDeliveredInclDisputed);
 
 //		final I_C_InvoiceCandidate_InOutLine icIol11 = invoiceCandidateInOutLine(ic, iol11_three);
@@ -113,22 +116,25 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 //		final I_C_InvoiceCandidate_InOutLine icIol21 = invoiceCandidateInOutLine(ic, iol21_ten);
 //		assertThat(icIol21.getQtyInvoiced(), comparesEqualTo(TEN)); // as of task 08529 we got rid of I_C_InvoiceCandidate_InOutLine.QtyInvoiced
 
-		assertThat(getSingleForInOutLine(invoiceLines, iol11_three), is(invoiceLine1)); // we already know this, explicitly checking just for completeness
-		assertThat(getSingleForInOutLine(invoiceLines, iol21_ten), is(invoiceLine1));
+		assertThat(getSingleForInOutLine(invoiceLines, iol11_three)).isEqualTo(invoiceLine1); // we already know this, explicitly checking just for completeness
+		assertThat(getSingleForInOutLine(invoiceLines, iol21_ten)).isEqualTo(invoiceLine1);
 
 		final List<IInvoiceLineRW> forIol22 = getForInOutLine(invoiceLines, iol22_twenty_disp);
-		assertThat(forIol22, hasItems(invoiceLine1));
+		assertThat(forIol22).contains(invoiceLine1);
 
 		forIol22.remove(invoiceLine1); // remove the one we already validated
 
 		// also verify that 'iol12_five_disp' is associated to both invoiceLines 1 and 2
-		assertThat(getForInOutLine(invoiceLines, iol22_twenty_disp), hasItems(invoiceLine1));
+		assertThat(getForInOutLine(invoiceLines, iol22_twenty_disp)).contains(invoiceLine1);
 
 		final IInvoiceLineRW invoiceLine2 = forIol22.getFirst();
 
-		assertThat(invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(qtyDisputed.negate()));
-		assertThat(invoiceLine2.getPriceActual().toMoney().toBigDecimal(), comparesEqualTo(BigDecimal.ONE));
-		assertThat(invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(qtyDisputed.negate().multiply(TEN)));
+		assertThat(invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal())
+			.isEqualByComparingTo(qtyDisputed.negate());
+		assertThat(invoiceLine2.getPriceActual().toMoney().toBigDecimal())
+			.isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(invoiceLine2.getNetLineAmt().toBigDecimal())
+			.isEqualByComparingTo(qtyDisputed.negate().multiply(TEN));
 		validateIcIlAllocationQty(ic, invoice, invoiceLine2, qtyDisputed.negate());
 
 //		final I_C_InvoiceCandidate_InOutLine icIol12 = invoiceCandidateInOutLine(ic, iol12_five_disp);

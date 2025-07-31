@@ -66,9 +66,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.rules.TestName;
 
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
@@ -146,11 +145,6 @@ public class Helper
 
 	private TestClientUI clientUI = null;
 	private PrintOutputFacade printOutputFacade;
-
-	public Helper(@NonNull final TestName testName)
-	{
-		this.testDisplayName = testName.getMethodName();
-	}
 
 	public Helper(@NonNull final TestInfo testInfo)
 	{
@@ -390,7 +384,7 @@ public class Helper
 							createHWName(trayName),
 							hwTrayNumber,
 							printerName,
-							trayName							);
+							trayName);
 				}
 				finally
 				{
@@ -522,7 +516,7 @@ public class Helper
 			@Nullable final Integer hwTrayNumber,
 			@NonNull final String printerName,
 			@Nullable final String trayName
-			)
+	)
 	{
 		final I_AD_Printer_Config printerConfig = printingDAO
 				.getLookupMap()
@@ -607,7 +601,7 @@ public class Helper
 	{
 		final String resourceName = "/document" + suffix + ".pdf";
 		final InputStream in = getClass().getResourceAsStream(resourceName);
-		Assert.assertNotNull("Resource not found: " + resourceName, in);
+		Assertions.assertNotNull(in, "Resource not found: " + resourceName);
 
 		return Util.readBytes(in);
 	}
@@ -648,7 +642,7 @@ public class Helper
 
 		final String msg = "Produced PDF is not valid for '" + testName + " (matching tolerance: " + PDFCOMPARE_MatchingPercent + ")."
 				+ " Please check " + fileExpected + " and " + fileActual + ".";
-		Assert.assertTrue(msg, equals);
+		Assertions.assertTrue(equals, msg);
 	}
 
 	/**

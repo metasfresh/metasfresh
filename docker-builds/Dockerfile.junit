@@ -1,9 +1,8 @@
 ARG REFNAME=local
-ARG REGISTRY=
-FROM ${REGISTRY}metasfresh/metas-mvn-common:$REFNAME AS common
-FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
+FROM metasfresh/metas-mvn-common:$REFNAME as common
+FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
-FROM maven:3.9.9-eclipse-temurin-21 AS junit
+FROM maven:3.8.4-jdk-8 as junit
 
 ARG SKIP_MIGRATION_SCRIPTS_TEST=false
 

@@ -79,7 +79,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMBL;
 import org.slf4j.Logger;
 
@@ -90,15 +89,17 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
 import static de.metas.util.Check.assume;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
+import static org.compiere.util.TimeUtil.asZonedDateTime;
+import static org.compiere.util.TimeUtil.asZonedDateTimeNonNull;
 
 /*
  * #%L
@@ -369,7 +370,7 @@ public class OrderLineBL implements IOrderLineBL
 		final Quantity qtyInPriceUOM = orderLine.isManualQtyInPriceUOM()
 				? getQtyEnteredInPriceUOM(orderLine)
 				: convertQtyEnteredToPriceUOM(orderLine);
-		
+
 		updateLineNetAmtFromQtyInPriceUOM(orderLine, qtyInPriceUOM);
 	}
 
@@ -541,23 +542,16 @@ public class OrderLineBL implements IOrderLineBL
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class); // as long as this is a static method, we can't use the orgDAO field. 
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
-		ZonedDateTime date = TimeUtil.asZonedDateTime(orderLine.getDatePromised(), timeZone);
-		// if null, then get date promised from order
-		if (date == null)
-		{
-			date = TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
-		}
-		// still null, then get date ordered from order line
-		if (date == null)
-		{
-			date = TimeUtil.asZonedDateTime(orderLine.getDateOrdered(), timeZone);
-		}
-		// still null, then get date ordered from order
-		if (date == null)
-		{
-			date = TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone);
-		}
-		return date;
+		return order.isSOTrx()
+				? getPriceDateFromDatePromised(orderLine, order, timeZone)
+				: asZonedDateTimeNonNull(orderLine.getDateOrdered(), timeZone);
+	}
+
+	@NonNull
+	private static ZonedDateTime getPriceDateFromDatePromised(final org.compiere.model.I_C_OrderLine orderLine, final I_C_Order order, final ZoneId timeZone)
+	{
+		return coalesceSuppliersNotNull(() -> asZonedDateTime(orderLine.getDatePromised(), timeZone), // because orderLine.getDatePromised() is nullable
+				() -> asZonedDateTimeNonNull(order.getDatePromised(), timeZone));
 	}
 
 	@Override
@@ -604,7 +598,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyItemCapacity = orderLine.getQtyItemCapacity();
 		if (qtyItemCapacity.signum() <= 0 && orderLine.getQtyEntered().signum() != 0)
 		{
-			throw new AdempiereException(TranslatableStrings.constant("Missing QtyItemCapacity for C_ORderLine_ID="+orderLine.getC_OrderLine_ID()))
+			throw new AdempiereException(TranslatableStrings.constant("Missing QtyItemCapacity for C_ORderLine_ID=" + orderLine.getC_OrderLine_ID()))
 					.appendParametersToMessage()
 					.setParameter("C_Order_ID", orderLine.getC_Order_ID())
 					.setParameter("Line", orderLine.getLine())
@@ -974,7 +968,7 @@ public class OrderLineBL implements IOrderLineBL
 
 			final OrgId orgId = OrgId.ofRepoId(olRecord.getAD_Org_ID());
 			final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
-			final ZonedDateTime orderDate = Objects.requireNonNull(TimeUtil.asZonedDateTime(olRecord.getDateOrdered(), orgZoneId));
+			final ZonedDateTime orderDate = asZonedDateTimeNonNull(olRecord.getDateOrdered(), orgZoneId);
 
 			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
@@ -1015,7 +1009,7 @@ public class OrderLineBL implements IOrderLineBL
 
 	private void setBPartnerLocation(@NonNull final I_C_OrderLine orderLine, @Nullable final I_C_BPartner_Location bpartnerLocation)
 	{
-		BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
+		final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
 		OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setLocationAndResetRenderedAddress(bpartnerLocationAndCaptureId);
 	}
 

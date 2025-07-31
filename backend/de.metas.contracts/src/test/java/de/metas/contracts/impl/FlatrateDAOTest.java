@@ -17,8 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -83,7 +82,7 @@ public class FlatrateDAOTest extends ContractsTestBase
 				0,
 				ITrx.TRXNAME_ThreadInherited);
 
-		assertThat(result.size(), is(1));
-		assertThat(result.getFirst(), is(ft));
+		assertThat(result).hasSize(1);
+		assertThat(result.getFirst()).isEqualTo(ft);
 	}
 }

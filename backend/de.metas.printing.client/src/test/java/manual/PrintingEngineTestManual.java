@@ -30,9 +30,9 @@ import de.metas.printing.client.util.Util;
 import de.metas.printing.esb.api.PrintPackage;
 import de.metas.printing.esb.api.PrintPackageInfo;
 import org.apache.hc.client5.http.utils.Base64;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.UUID;
 
 // This is a manual test because on build server we don't have the XPS printer, so this test will always fail
-@Ignore
+@Disabled
 // maven will skip it (because is not starting, nor ending with "Test"), but out new Run-All-Tests-Eclipse plugin would not skip it
 public class PrintingEngineTestManual
 {
@@ -58,7 +58,7 @@ public class PrintingEngineTestManual
 	// public static String printingServiceName = "WF-3540 Series(Netzwerk)";
 	// public static final String printingTray = "Kassette 1";
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		final Context ctx = Context.getContext();

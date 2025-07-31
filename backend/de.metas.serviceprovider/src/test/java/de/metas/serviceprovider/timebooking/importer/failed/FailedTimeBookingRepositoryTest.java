@@ -29,10 +29,8 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_ERROR_MESSAGE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
@@ -40,18 +38,15 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_1;
 import static de.metas.serviceprovider.TestConstants.MOCK_JSON_VALUE;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class FailedTimeBookingRepositoryTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final FailedTimeBookingRepository failedTimeBookingRepository = new FailedTimeBookingRepository(queryBL);
 
-	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -72,7 +67,7 @@ public class FailedTimeBookingRepositoryTest
 		//then
 		final FailedTimeBooking mockFailedTBookingWithId = mockFailedTimeBooking.toBuilder().failedTimeBookingId(failedTimeBookingId).build();
 
-		assertEquals(mockFailedTBookingWithId, storedFailedTimeBooking);
+		assertThat(storedFailedTimeBooking).isEqualTo(mockFailedTBookingWithId);
 	}
 
 	@Test
@@ -83,14 +78,13 @@ public class FailedTimeBookingRepositoryTest
 
 		final FailedTimeBookingId failedTimeBookingId = failedTimeBookingRepository.save(mockFailedTimeBooking);
 
-		exceptionRule.expect(RuntimeException.class);
-		exceptionRule.expectMessage("de.metas.serviceprovider.model.I_S_FailedTimeBooking, id=" + failedTimeBookingId.getRepoId());
-
 		//when
 		failedTimeBookingRepository.delete(failedTimeBookingId);
 
-		//then will throw error
-		InterfaceWrapperHelper.load(failedTimeBookingId, I_S_FailedTimeBooking.class);
+		//then
+		assertThatThrownBy(() -> InterfaceWrapperHelper.load(failedTimeBookingId, I_S_FailedTimeBooking.class))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("de.metas.serviceprovider.model.I_S_FailedTimeBooking, id=" + failedTimeBookingId.getRepoId());
 	}
 
 	@Test
@@ -109,9 +103,10 @@ public class FailedTimeBookingRepositoryTest
 		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(MOCK_EXTERNAL_SYSTEM);
 
 		//then
-		assertNotNull(failedTimeBookings);
-		assertEquals(failedTimeBookings.size(), 1);
-		assertEquals(failedTimeBookings.getFirst(), failedTimeBookingSysWithId);
+		assertThat(failedTimeBookings)
+				.isNotNull()
+				.hasSize(1)
+				.containsExactly(failedTimeBookingSysWithId);
 	}
 
 	private FailedTimeBooking getMockFailedTimeBooking(final ExternalSystem externalSystem)

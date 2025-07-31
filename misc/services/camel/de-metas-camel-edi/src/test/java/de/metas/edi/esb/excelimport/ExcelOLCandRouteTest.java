@@ -119,7 +119,7 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 		template.sendBody(MOCK_FROM, olCandInputStream);
 
 		// then
-		mappedToOLCand.assertIsSatisfied(1000);
+		MockEndpoint.assertIsSatisfied(context);
 		final List<JAXBElement<XLSImpCOLCandType>> result =
 				(List<JAXBElement<XLSImpCOLCandType>>)mappedToOLCand.getExchanges().get(0).getIn().getBody(List.class);
 

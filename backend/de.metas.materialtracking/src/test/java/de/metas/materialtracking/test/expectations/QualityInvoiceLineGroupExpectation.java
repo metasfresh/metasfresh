@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.junit.Assert;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -38,12 +37,14 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoice
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.assertj.core.api.Assertions;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Validates {@link IQualityInvoiceLineGroup}, {@link I_C_Invoice_Candidate}.
  *
  * @author tsa
- *
  */
 public class QualityInvoiceLineGroupExpectation extends AbstractExpectation
 {
@@ -153,7 +154,7 @@ public class QualityInvoiceLineGroupExpectation extends AbstractExpectation
 		final String prefix = "Group: " + group
 				+ "\nExpectation name: " + expectationName
 				+ "\n\nInvalid ";
-		Assert.assertEquals(prefix + "Type", this.type, group.getQualityInvoiceLineGroupType());
+		assertThat(group.getQualityInvoiceLineGroupType()).as(prefix + "Type").isEqualTo(this.type);
 
 		if (invoiceableLineExpectation != null)
 		{
@@ -170,7 +171,7 @@ public class QualityInvoiceLineGroupExpectation extends AbstractExpectation
 		final int count = lines.size();
 		final int expectedCount = expectations.size();
 
-		Assert.assertEquals(message + " lines count", expectedCount, count);
+		assertThat(count).as(message + "lines count").isEqualTo(expectedCount);
 
 		for (int i = 0; i < count; i++)
 		{
@@ -192,7 +193,8 @@ public class QualityInvoiceLineGroupExpectation extends AbstractExpectation
 		{
 			final List<I_C_Invoice_Detail> overridingDetail = retriveInvoiceOverridingDetail(ic);
 
-			Assert.assertEquals("overriding details: there shall be exactly one", overridingDetail.size(), 1);
+			assertThat(overridingDetail).as("overriding details: there shall be exactly one").hasSize(1);
+
 			overridingDetailException.assertExpected("overridingDetailException", overridingDetail.getFirst());
 		}
 
@@ -204,13 +206,13 @@ public class QualityInvoiceLineGroupExpectation extends AbstractExpectation
 	}
 
 	private void assertExpectedInvoiceDetails(final String message,
-			final List<QualityInvoiceLineExpectation> expectations,
-			final List<I_C_Invoice_Detail> details)
+											  final List<QualityInvoiceLineExpectation> expectations,
+											  final List<I_C_Invoice_Detail> details)
 	{
 		final int count = details.size();
 		final int expectedCount = expectations.size();
 
-		Assert.assertEquals("Invalid expected lines count: " + message, expectedCount, count);
+		assertThat(count).as("Invalid expected lines count: " + message).isEqualTo(expectedCount);
 
 		for (int i = 0; i < count; i++)
 		{

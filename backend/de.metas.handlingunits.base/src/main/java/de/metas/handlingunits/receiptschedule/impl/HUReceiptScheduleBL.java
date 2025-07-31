@@ -43,9 +43,11 @@ import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inout.InOutId;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
 import de.metas.logging.LogManager;
@@ -128,12 +130,19 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
 	private final IDocumentLUTUConfigurationHandler<List<I_M_ReceiptSchedule>> lutuConfigurationListHandler = CompositeDocumentLUTUConfigurationHandler.of(lutuConfigurationHandler);
 
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	@Override
+	public I_M_ReceiptSchedule getById(@NonNull ReceiptScheduleId id)
+	{
+		return InterfaceWrapperHelper.create(receiptScheduleDAO.getById(id), I_M_ReceiptSchedule.class);
+	}
 
 	@Override
 	public BigDecimal getQtyOrderedTUOrNull(final I_M_ReceiptSchedule receiptSchedule)
@@ -366,7 +375,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		if (selectedHuIds != null && !selectedHuIds.isEmpty())
 		{
 			validateHuIds(selectedHuIds);
-			
+
 			final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(parameters.getCtx(), ITrx.TRXNAME_ThreadInherited);
 			huWeightNetAdjuster.setInScopeHU_IDs(selectedHuIds);
 			for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
@@ -516,7 +525,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 	@Override
 	public IAllocationRequest setInitialAttributeValueDefaults(final IAllocationRequest request,
-			final Collection<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules)
+															   final Collection<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules)
 	{
 		Check.assumeNotNull(request, "request not null");
 		Check.assumeNotEmpty(receiptSchedules, "receiptSchedule not empty");
@@ -542,8 +551,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			else if (priceActual.compareTo(receiptSchedule_priceActual) != 0)
 			{
 				throw new HUException("Got different PriceActual."
-											  + "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
-											  + "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
+						+ "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
+						+ "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
 			}
 
 			final int orderLineId = receiptSchedule.getC_OrderLine_ID();
@@ -699,5 +708,4 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			huWeightNetAdjuster.addReceiptSchedule(receiptSchedule);
 		}
 	}
-
 }

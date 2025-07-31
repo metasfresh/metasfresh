@@ -1,27 +1,25 @@
 package org.adempiere.ad.modelvalidator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableSet;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableSet;
-
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Checks all {@link Interceptor} or {@link Validator} annotated classes if they are correctly defined.
@@ -128,7 +126,7 @@ public class ClasspathAnnotatedModelInterceptorTester
 	{
 		if (exceptionsCount > 0)
 		{
-			Assert.fail(exceptionsCount + " exceptions found while checking all classes. Check console");
+			Assertions.fail(exceptionsCount + " exceptions found while checking all classes. Check console");
 		}
 	}
 }

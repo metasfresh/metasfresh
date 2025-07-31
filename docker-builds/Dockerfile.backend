@@ -23,7 +23,7 @@ COPY --from=common /root/.m2 /root/.m2/
 COPY --from=poms /backend .
 
 # get dependencies that are still missing
-RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
 
 # *now* get all the rest of the sourcecode and perform the actual build
 COPY backend .
@@ -33,4 +33,4 @@ COPY backend .
 # to enable repackaging version information in app and api images
 RUN sed -i 's/<executable>true<\/executable>/<executable>false<\/executable>/' metasfresh-dist/serverRoot/pom.xml && sed -i 's/<executable>true<\/executable>/<executable>false<\/executable>/' metasfresh-webui-api/pom.xml
 
-RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn clean install --offline -Dmaven.gitcommitid.skip=true -DskipTests
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode clean install --offline -Dmaven.gitcommitid.skip=true -DskipTests

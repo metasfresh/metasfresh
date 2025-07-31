@@ -33,24 +33,22 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.money.MoneyService;
 import lombok.NonNull;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Checks the {@link FreshQuantityDiscountAggregator} when using {@link I_C_Invoice_Candidate#setQualityDiscountPercent_Override(BigDecimal)}, to "ignore" an in-dispute line (i.e set
  * QualityDiscount_Override to zero). Also see {@link TestQualityDiscountPercentOverrideToZero}.
  * <p>
- *
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestFreshQualityDiscountPercentOverrideToZero extends TestQualityDiscountPercentOverrideToZero
 {
@@ -69,7 +67,7 @@ public class TestFreshQualityDiscountPercentOverrideToZero extends TestQualityDi
 
 		// Make sure it's using our aggregator
 		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
-		assertThat(ic.getC_Invoice_Candidate_Agg(), is(freshAgg));
+		assertThat(ic.getC_Invoice_Candidate_Agg()).isEqualTo(freshAgg);
 	}
 
 	/**

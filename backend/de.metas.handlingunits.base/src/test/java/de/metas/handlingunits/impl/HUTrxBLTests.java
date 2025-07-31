@@ -1,19 +1,5 @@
 package de.metas.handlingunits.impl;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.X_M_Transaction;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.expectations.HUsExpectation;
@@ -26,6 +12,17 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
+import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.X_M_Transaction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -48,11 +45,11 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
  * These aren't really "unit" tests, but they all start by invoking stuff from {@link HUTrxBL}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUTrxBLTests
 {
@@ -96,8 +93,7 @@ public class HUTrxBLTests
 		);
 
 		final List<I_M_HU> huPalets = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet);
-
-		assertThat(huPalets.size(), is(1));
+		assertThat(huPalets).hasSize(1);
 
 		final Mutable<I_M_HU> aggregateVHU = new Mutable<>();
 		final Mutable<I_M_HU> realIFCO = new Mutable<>();
@@ -166,13 +162,14 @@ public class HUTrxBLTests
 		final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
 
 		final List<I_M_HU_Trx_Line> trxLinesForAgrregateVHU = huTrxDAO.retrieveReferencingTrxLinesForHU(aggregateVHU.getValue());
-		assertThat(trxLinesForAgrregateVHU.size(), is(1)); // we expect that there is just one trx line and not 3
-		assertThat(trxLinesForAgrregateVHU.getFirst().getQty(), comparesEqualTo(new BigDecimal("80")));
-		assertThat(TableRecordReference.ofReferenced(trxLinesForAgrregateVHU.getFirst()), is(TableRecordReference.of(incomingTrxDoc)));
+
+		assertThat(trxLinesForAgrregateVHU).hasSize(1); // we expect that there is just one trx line and not 3
+		assertThat(trxLinesForAgrregateVHU.getFirst().getQty()).isEqualByComparingTo("80");
+		assertThat(TableRecordReference.ofReferenced(trxLinesForAgrregateVHU.getFirst())).isEqualTo(TableRecordReference.of(incomingTrxDoc));
 
 		final List<I_M_HU_Trx_Line> trxLinesForRealIFCO = huTrxDAO.retrieveReferencingTrxLinesForHU(realIFCO.getValue());
-		assertThat(trxLinesForRealIFCO.size(), is(1)); //
-		assertThat(trxLinesForRealIFCO.getFirst().getQty(), comparesEqualTo(new BigDecimal("6")));
-		assertThat(TableRecordReference.ofReferenced(trxLinesForRealIFCO.getFirst()), is(TableRecordReference.of(incomingTrxDoc)));
+		assertThat(trxLinesForRealIFCO).hasSize(1);
+		assertThat(trxLinesForRealIFCO.getFirst().getQty()).isEqualByComparingTo("6");
+		assertThat(TableRecordReference.ofReferenced(trxLinesForRealIFCO.getFirst())).isEqualTo(TableRecordReference.of(incomingTrxDoc));
 	}
 }

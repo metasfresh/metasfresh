@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.allocation.strategy;
 
 import de.metas.business.BusinessTestHelper;
@@ -40,37 +62,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
+import org.xmlunit.assertj3.XmlAssert;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
 import static de.metas.handlingunits.QtyTU.ONE;
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class UniformAllocationStrategyTest
 {
@@ -360,9 +359,9 @@ public class UniformAllocationStrategyTest
 			//helper.commitAndDumpHU(lu);
 
 			final Node luXml = HUXmlConverter.toXml(lu);
-			assertThat(luXml, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("52")));
-			assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("A")));
-			assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("104")));
+			XmlAssert.assertThat(luXml).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("52");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/@HUStatus)").isEqualTo("A");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Storage/@Qty)").isEqualTo("104");
 		}
 
 		@Test
@@ -371,8 +370,8 @@ public class UniformAllocationStrategyTest
 			subtractQty(lu, "104", AllocationStrategyType.UNIFORM, helper.pTomatoProductId, helper.uomEach);
 
 			final Node luXml = HUXmlConverter.toXml(lu);
-			assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("D")));
-			assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("0")));
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/@HUStatus)").isEqualTo("D");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Storage/@Qty)").isEqualTo("0");
 		}
 	}
 
@@ -405,9 +404,9 @@ public class UniformAllocationStrategyTest
 			// dumpHU("initial", lu);
 
 			final Node luXml = HUXmlConverter.toXml(lu);
-			assertThat(luXml, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("50")));
-			assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("A")));
-			assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("500")));
+			XmlAssert.assertThat(luXml).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("50");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/@HUStatus)").isEqualTo("A");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Storage/@Qty)").isEqualTo("500");
 		}
 
 		@Test
@@ -416,15 +415,15 @@ public class UniformAllocationStrategyTest
 			addQty(lu, "80", AllocationStrategyType.UNIFORM, helper.pTomatoProductId, helper.uomEach);
 			// dumpHU("initial", lu);
 			final Node luXml = HUXmlConverter.toXml(lu);
-			assertThat(luXml, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("50")));
-			assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("A")));
-			assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("580")));
+			XmlAssert.assertThat(luXml).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("50");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/@HUStatus)").isEqualTo("A");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Storage/@Qty)").isEqualTo("580");
 
 			for (int i = 1; i <= 50; i++)
 			{
 				final String expectedQty = i <= 40 ? "12" : "10";
-				assertThat(luXml, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO[" + i + "]/Storage/@Qty)", is(expectedQty)));
-				assertThat(luXml, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO[" + i + "]/@HUStatus)", is("A")));
+				XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO[" + i + "]/Storage/@Qty)").isEqualTo(expectedQty);
+				XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO[" + i + "]/@HUStatus)").isEqualTo("A");
 			}
 		}
 	}

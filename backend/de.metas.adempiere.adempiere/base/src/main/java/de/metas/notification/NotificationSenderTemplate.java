@@ -30,7 +30,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
@@ -107,25 +106,20 @@ public class NotificationSenderTemplate
 
 	public void sendAfterCommit(@NonNull final List<UserNotificationRequest> requests)
 	{
-		if (requests.isEmpty())
-		{
-			return;
-		}
+		if (requests.isEmpty()) {return;}
 
-		final ImmutableList<UserNotificationRequest> requestsEffective = ImmutableList.copyOf(requests);
-
-		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.invokeMethodJustOnce(true)
-				.registerHandlingMethod(innerTrx -> send(requestsEffective));
+		trxManager.accumulateAndProcessAfterCommit(
+				"NotificationSenderTemplate.sendAfterCommit",
+				requests,
+				this::sendNow);
 	}
 
-	private void send(@NonNull final List<UserNotificationRequest> requests)
+	private void sendNow(@NonNull final List<UserNotificationRequest> requests)
 	{
-		requests.forEach(this::send);
+		requests.forEach(this::sendNow);
 	}
 
-	public void send(@NonNull final UserNotificationRequest request)
+	public void sendNow(@NonNull final UserNotificationRequest request)
 	{
 		logger.trace("Prepare sending notification: {}", request);
 		try
@@ -269,12 +263,11 @@ public class NotificationSenderTemplate
 		try
 		{
 			final Object targetRecordModel = record.getModel(PlainContextAware.createUsingOutOfTransaction());
-			final String documentNo = documentBL.getDocumentNo(targetRecordModel);
-			return documentNo;
+			return documentBL.getDocumentNo(targetRecordModel);
 		}
 		catch (final Exception ex)
 		{
-			logger.info("Failed retrieving record for " + record, ex);
+			logger.info("Failed retrieving record for {}", record, ex);
 		}
 
 		//
@@ -287,13 +280,8 @@ public class NotificationSenderTemplate
 		{
 			return targetRecordAction.getAdWindowId();
 		}
-		if (targetRecordAction.getRecord() == null)
-		{
-			return Optional.empty();
-		}
 
-		final RecordWindowFinder recordWindowFinder = RecordWindowFinder.newInstance(targetRecordAction.getRecord());
-		return recordWindowFinder.findAdWindowId();
+		return RecordWindowFinder.newInstance(targetRecordAction.getRecord()).findAdWindowId();
 	}
 
 	private String extractSubjectText(final UserNotificationRequest request)

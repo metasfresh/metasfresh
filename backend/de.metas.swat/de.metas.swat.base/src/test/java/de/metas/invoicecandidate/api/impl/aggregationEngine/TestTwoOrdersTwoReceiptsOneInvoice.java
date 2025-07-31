@@ -22,19 +22,15 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import org.assertj.core.api.Assertions;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestTwoOrdersTwoReceiptsOneInvoice extends AbstractTwoOrdersTwoInOutsOneInvoiceTests
 {
@@ -47,25 +43,26 @@ public class TestTwoOrdersTwoReceiptsOneInvoice extends AbstractTwoOrdersTwoInOu
 	@Override
 	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
 	{
-		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
+		assertThat(invoices).as("We are expecting one invoice: %s", invoices).hasSize(1);
 
 		final IInvoiceHeader invoice1 = invoices.removeFirst();
 
-		assertThat(invoice1.getPOReference(), is(IC_PO_REFERENCE));
-		assertThat(invoice1.getDateAcct(), is(IC_DATE_ACCT)); // task 08437
+		assertThat(invoice1.getPOReference()).isEqualTo(IC_PO_REFERENCE);
+		assertThat(invoice1.getDateAcct()).isEqualTo(IC_DATE_ACCT); // task 08437
 
-		assertThat(invoice1.isSOTrx(), is(config_IsSOTrx()));
+		assertThat(invoice1.isSOTrx()).isEqualTo(config_IsSOTrx());
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
-		assertEquals("We are expecting two invoice lines: " + invoiceLines1, 2, invoiceLines1.size());
+		assertThat(invoiceLines1).as("We are expecting two invoice lines: %s", invoiceLines1).hasSize(2);
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
-		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol111, il1);
-		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(TEN.add(TWENTY)));
+		assertThat(il1).as("Missing IInvoiceLineRW for iol11=%s", iol111).isNotNull();
 
-		assertThat(getSingleForInOutLine(invoiceLines1, iol121), is(il1));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal()).isEqualTo(TEN.add(TWENTY));
+
+		assertThat(getSingleForInOutLine(invoiceLines1, iol121)).isEqualTo(il1);
 
 		final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol211);
-		assertNotNull("Missing IInvoiceLineRW for iol21=" + iol121, il2);
-		assertThat(il2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY));
+		Assertions.assertThat(il2).as("Missing IInvoiceLineRW for iol21=%s", iol211).isNotNull();
+		assertThat(il2.getQtysToInvoice().getStockQty().toBigDecimal()).isEqualByComparingTo(FIFTY);
 	}
 }

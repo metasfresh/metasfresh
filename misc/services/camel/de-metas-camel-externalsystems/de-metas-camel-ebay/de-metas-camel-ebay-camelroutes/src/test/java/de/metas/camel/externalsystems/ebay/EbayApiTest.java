@@ -33,9 +33,8 @@ import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
 import de.metas.camel.externalsystems.ebay.api.invoker.auth.OAuth;
 import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -79,7 +78,7 @@ public class EbayApiTest
 
 		OAuth2Api auth2Api = new OAuth2Api();
 		OAuthResponse oauth2Response = auth2Api.exchangeCodeForAccessToken(EXECUTION_ENV, authorizationCode);
-		Assert.assertNotNull(oauth2Response);
+		Assertions.assertNotNull(oauth2Response);
 
 		if (oauth2Response.getAccessToken().isPresent())
 		{
@@ -103,7 +102,7 @@ public class EbayApiTest
 				String orderIds = null;
 				OrderSearchPagedCollection response = api.getOrders(fieldGroups, filter, limit, offset, orderIds);
 
-				Assert.assertNotNull(response);
+				Assertions.assertNotNull(response);
 				System.out.println(response);
 
 			}

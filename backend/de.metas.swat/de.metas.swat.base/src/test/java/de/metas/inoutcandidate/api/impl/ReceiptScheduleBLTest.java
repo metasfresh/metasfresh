@@ -1,45 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
-import ch.qos.logback.classic.Level;
-import de.metas.common.util.time.SystemTime;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
@@ -49,6 +11,17 @@ import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
 public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
@@ -76,7 +49,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);
 
-		Assert.assertEquals("2 receipts shall be generated", 2, result.getInOutCount());
+		Assertions.assertEquals(2, result.getInOutCount(), "2 receipts shall be generated");
 	}
 
 	@Test
@@ -92,7 +65,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules.iterator(), result, complete);
 
-		Assert.assertEquals("Invalid amount of generated receipts", 4, result.getInOutCount());
+		Assertions.assertEquals(4, result.getInOutCount(), "Invalid amount of generated receipts");
 
 		final List<I_M_InOut> receipts = result.getInOuts();
 		assertMatches(schedules.getFirst(), receipts.getFirst());
@@ -115,7 +88,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);
 
-		Assert.assertEquals("Invalid amount of generated receipts", 1, result.getInOutCount());
+		Assertions.assertEquals(1, result.getInOutCount(), "Invalid amount of generated receipts");
 	}
 
 	@Test
@@ -131,7 +104,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);
 
-		Assert.assertEquals("Invalid amount of generated receipts", 2, result.getInOutCount());
+		Assertions.assertEquals(2, result.getInOutCount(), "Invalid amount of generated receipts");
 	}
 
 	@Test
@@ -240,29 +213,29 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 	private void assertMatches(final I_M_ReceiptSchedule schedule, final I_M_InOut receipt)
 	{
 		final Timestamp movementDateExpected = Env.getDate(ctx);
-		Assert.assertEquals("AD_User_IDs do not match", schedule.getAD_User_ID(), receipt.getAD_User_ID());
-		Assert.assertEquals("AD_Org_IDs do not match", schedule.getAD_Org_ID(), receipt.getAD_Org_ID());
-		Assert.assertEquals("C_BPartner_IDs do not match", schedule.getC_BPartner_ID(), receipt.getC_BPartner_ID());
-		Assert.assertEquals("DateOrdered do not match", schedule.getDateOrdered(), receipt.getDateOrdered());
-		Assert.assertEquals("MovementDate do not match", movementDateExpected, receipt.getMovementDate());
-		Assert.assertEquals("M_Warehouse_IDs do not match", schedule.getM_Warehouse_ID(), receipt.getM_Warehouse_ID());
+		Assertions.assertEquals(schedule.getAD_User_ID(), receipt.getAD_User_ID(), "AD_User_IDs do not match");
+		Assertions.assertEquals(schedule.getAD_Org_ID(), receipt.getAD_Org_ID(), "AD_Org_IDs do not match");
+		Assertions.assertEquals(schedule.getC_BPartner_ID(), receipt.getC_BPartner_ID(), "C_BPartner_IDs do not match");
+		Assertions.assertEquals(schedule.getDateOrdered(), receipt.getDateOrdered(), "DateOrdered do not match");
+		Assertions.assertEquals(movementDateExpected, receipt.getMovementDate(), "MovementDate do not match");
+		Assertions.assertEquals(schedule.getM_Warehouse_ID(), receipt.getM_Warehouse_ID(), "M_Warehouse_IDs do not match");
 		// ts: the doctypes cannot match because 'schedule' has the purchase order's doctype and the receipt has a receipt-doctype
-		// Assert.assertEquals("C_DocType_IDs do not match", schedule.getC_DocType_ID(), receipt.getC_DocType_ID());
+		// Assertions.assertEquals( schedule.getC_DocType_ID(),  receipt.getC_DocType_ID(), "C_DocType_IDs do not match");
 	}
 
 	private void assertLineMatches(final I_M_ReceiptSchedule schedule, final I_M_InOutLine receiptLine)
 	{
-		Assert.assertEquals("AD_Org_IDs do not match", schedule.getAD_Org_ID(), receiptLine.getAD_Org_ID());
-		Assert.assertEquals("M_Product_IDs do not match", schedule.getM_Product_ID(), receiptLine.getM_Product_ID());
-		Assert.assertEquals("QtysEntered do not match", schedule.getQtyOrdered(), receiptLine.getQtyEntered());
+		Assertions.assertEquals(schedule.getAD_Org_ID(), receiptLine.getAD_Org_ID(), "AD_Org_IDs do not match");
+		Assertions.assertEquals(schedule.getM_Product_ID(), receiptLine.getM_Product_ID(), "M_Product_IDs do not match");
+		Assertions.assertEquals(schedule.getQtyOrdered(), receiptLine.getQtyEntered(), "QtysEntered do not match");
 
-		Assert.assertEquals("MovementQtys do not match", schedule.getQtyToMove(), receiptLine.getMovementQty());
-		// Assert.assertEquals("MovementQtys do not match", receiptScheduleBL.getQtyToMove(schedule), receiptLine.getMovementQty());
+		Assertions.assertEquals(schedule.getQtyToMove(), receiptLine.getMovementQty(), "MovementQtys do not match");
+		// Assertions.assertEquals( receiptScheduleBL.getQtyToMove(schedule),  receiptLine.getMovementQty(), "MovementQtys do not match");
 
 		if (schedule.getC_UOM_ID() > 0)
 		{
-			Assert.assertEquals("C_UOM_IDs do not match", schedule.getC_UOM_ID(), receiptLine.getC_UOM_ID());
+			Assertions.assertEquals(schedule.getC_UOM_ID(), receiptLine.getC_UOM_ID(), "C_UOM_IDs do not match");
 		}
-		Assert.assertEquals("C_OrderLine_IDs do not match", schedule.getC_OrderLine_ID(), receiptLine.getC_OrderLine_ID());
+		Assertions.assertEquals(schedule.getC_OrderLine_ID(), receiptLine.getC_OrderLine_ID(), "C_OrderLine_IDs do not match");
 	}
 }

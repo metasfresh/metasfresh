@@ -77,6 +77,11 @@ public class JsonEnqueueForInvoicingRequest
 					Default = `false`""")
 	Boolean updateLocationAndContactForInvoice;
 
+	@ApiModelProperty(position = 80, required = false,//
+			value = "When this parameter is set on true, the newly generated invoices are directly completed.\n"
+					+ "Otherwise they are just prepared and left in the DocStatus IP (in progress). Default = `true`")
+	Boolean completeInvoices;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonEnqueueForInvoicingRequest(
@@ -86,7 +91,8 @@ public class JsonEnqueueForInvoicingRequest
 			@JsonProperty("poReference") @Nullable final String poReference,
 			@JsonProperty("ignoreInvoiceSchedule") @Nullable final Boolean ignoreInvoiceSchedule,
 			@JsonProperty("supplementMissingPaymentTermIds") @Nullable final Boolean supplementMissingPaymentTermIds,
-			@JsonProperty("updateLocationAndContactForInvoice") @Nullable final Boolean updateLocationAndContactForInvoice)
+			@JsonProperty("updateLocationAndContactForInvoice") @Nullable final Boolean updateLocationAndContactForInvoice,
+			@JsonProperty("completeInvoices") @Nullable final Boolean completeInvoices)
 	{
 		this.invoiceCandidates = ImmutableList.copyOf(invoiceCandidates);
 		this.poReference = poReference;
@@ -95,5 +101,6 @@ public class JsonEnqueueForInvoicingRequest
 		this.ignoreInvoiceSchedule = coalesce(ignoreInvoiceSchedule, false);
 		this.supplementMissingPaymentTermIds = coalesce(supplementMissingPaymentTermIds, true);
 		this.updateLocationAndContactForInvoice = coalesce(updateLocationAndContactForInvoice, false);
+		this.completeInvoices = coalesce(completeInvoices, true);
 	}
 }

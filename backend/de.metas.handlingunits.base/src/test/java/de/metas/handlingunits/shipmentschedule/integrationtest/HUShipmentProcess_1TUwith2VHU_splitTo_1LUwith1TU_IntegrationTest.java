@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
 import de.metas.handlingunits.HUXmlConverter;
@@ -20,40 +42,16 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.Env;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.w3c.dom.Node;
+import org.xmlunit.assertj3.XmlAssert;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  * Test case:
@@ -168,14 +166,15 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 	{
 		final Node tuXML = HUXmlConverter.toXml(tu);
 		// System.out.println(HUXmlConverter.toString(tuXML));
-		assertThat(tuXML, hasXPath("count(/HU-TU)", is("1")));
-		assertThat(tuXML, hasXPath("count(/HU-TU[1]/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])", is("1")));
-		assertThat(tuXML, not(hasXPath("count(/HU-TU[1]/Item[@ItemType='HA'])"))); // no HU aggregate item, included-HU or packing material item
-		assertThat(tuXML, not(hasXPath("count(/HU-TU[1]/Item[@ItemType='HU'])")));
-		assertThat(tuXML, not(hasXPath("count(/HU-TU[1]/Item[@ItemType='PM'])")));
-		assertThat(tuXML, hasXPath("count(/HU-TU[1]/Item[@ItemType='MI'])", is("1"))); // one MI item with two virtual HUs below
-		assertThat(tuXML, hasXPath("count(/HU-TU[1]/Item[@ItemType='MI']/HU-VirtualPI)", is("2")));
-		assertThat(tuXML, hasXPath("count(/HU-TU[1]/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='10.000' and @C_UOM_Name='Kg'])", is("2")));
+
+		XmlAssert.assertThat(tuXML).valueByXPath("count(/HU-TU)").isEqualTo("1");
+		XmlAssert.assertThat(tuXML).valueByXPath("count(/HU-TU[1]/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])").isEqualTo("1");
+		XmlAssert.assertThat(tuXML).doesNotHaveXPath("count(/HU-TU[1]/Item[@ItemType='HA'])"); // no HU aggregate item, included-HU or packing material item
+		XmlAssert.assertThat(tuXML).doesNotHaveXPath("count(/HU-TU[1]/Item[@ItemType='HU'])");
+		XmlAssert.assertThat(tuXML).doesNotHaveXPath("count(/HU-TU[1]/Item[@ItemType='PM'])");
+		XmlAssert.assertThat(tuXML).valueByXPath("count(/HU-TU[1]/Item[@ItemType='MI'])").isEqualTo("1"); // one MI item with two virtual HUs below
+		XmlAssert.assertThat(tuXML).valueByXPath("count(/HU-TU[1]/Item[@ItemType='MI']/HU-VirtualPI)").isEqualTo("2");
+		XmlAssert.assertThat(tuXML).valueByXPath("count(/HU-TU[1]/Item[@ItemType='MI']/HU-VirtualPI/Item[@ItemType='MI']/Storage[@M_Product_Value='Tomato' and @Qty='10.000' and @C_UOM_Name='Kg'])").isEqualTo("2");
 	}
 
 	@Override
@@ -303,14 +302,14 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 	{
 		//
 		// Get generated shipment
-		Assert.assertEquals("Invalid generated shipments count", 1, generatedShipments.size());
+		Assertions.assertEquals( 1,  generatedShipments.size(), "Invalid generated shipments count");
 		final I_M_InOut shipment = generatedShipments.getFirst();
 
 		//
 		// Retrieve generated shipment lines
 		// We expect to have 2 shipment lines, not because we have 2 shipment schedules, but because we have 2 order lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
-		Assert.assertEquals("Invalid generated shipment lines count", 2, shipmentLines.size());
+		Assertions.assertEquals( 2,  shipmentLines.size(), "Invalid generated shipment lines count");
 		final I_M_InOutLine shipmentLine1 = shipmentLines.getFirst();
 		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
 
@@ -334,7 +333,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 	{
 		//
 		// Get LUs Package
-		Assert.assertEquals("Invalid generated LU packages count", 1, mpackagesForAggregatedHUs.size());
+		Assertions.assertEquals( 1,  mpackagesForAggregatedHUs.size(), "Invalid generated LU packages count");
 		final I_M_Package mpackage_LU = mpackagesForAggregatedHUs.getFirst();
 
 		//
@@ -345,7 +344,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		// Shipper Transportation: Make sure LU's M_Package is updated
 		{
 			InterfaceWrapperHelper.refresh(mpackage_LU);
-			Assert.assertEquals("LU's M_Package does not have the right M_InOut_ID", shipment.getM_InOut_ID(), mpackage_LU.getM_InOut_ID());
+			Assertions.assertEquals( shipment.getM_InOut_ID(),  mpackage_LU.getM_InOut_ID(), "LU's M_Package does not have the right M_InOut_ID");
 		}
 	}
 }

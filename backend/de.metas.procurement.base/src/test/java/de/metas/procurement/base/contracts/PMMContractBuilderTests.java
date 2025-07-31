@@ -1,8 +1,6 @@
 package de.metas.procurement.base.contracts;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -13,8 +11,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -23,6 +20,10 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.util.Services;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -48,7 +49,7 @@ import de.metas.util.Services;
 
 public class PMMContractBuilderTests
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -104,9 +105,9 @@ public class PMMContractBuilderTests
 		final I_C_Flatrate_Term newTermProcessed = pmmContractBuilder.build();
 
 		final List<I_C_Flatrate_DataEntry> newEntries = Services.get(IFlatrateDAO.class).retrieveDataEntries(newTermProcessed, null, null);
-		assertThat(newEntries.size(), is(3));
-		assertThat(InterfaceWrapperHelper.isNull(newEntries.getFirst(),I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM), is(true));
-		assertThat(newEntries.get(1).getFlatrateAmtPerUOM(), comparesEqualTo(BigDecimal.ZERO));
-		assertThat(newEntries.get(2).getFlatrateAmtPerUOM(), comparesEqualTo(new BigDecimal("1.23")));
+		assertThat(newEntries).hasSize(3);
+		assertThat(InterfaceWrapperHelper.isNull(newEntries.getFirst(),I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM)).isTrue();
+		assertThat(newEntries.get(1).getFlatrateAmtPerUOM()).isZero();
+		assertThat(newEntries.get(2).getFlatrateAmtPerUOM()).isEqualByComparingTo(new BigDecimal("1.23"));
 	}
 }

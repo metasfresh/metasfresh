@@ -43,7 +43,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -74,7 +74,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-@Ignore
+@Disabled
 final class TestMasterdata
 {
 	public static final String RESOURCE_PATH = "/de/metas/rest_api/v1/ordercandidates/impl/";

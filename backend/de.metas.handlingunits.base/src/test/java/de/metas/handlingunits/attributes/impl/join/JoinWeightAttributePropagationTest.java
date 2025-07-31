@@ -1,37 +1,5 @@
 package de.metas.handlingunits.attributes.impl.join;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -39,11 +7,17 @@ import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * NOTE: Tests propagation WITH TareAdjust CONSTANT ZERO.
- *
+ * <p>
  * Test <i>propagation</i> of the <code>Weight</code> attributes (Gross, Net, Tare, Tare Adjust) and their behavior together.<br>
  * Test <i>HU operations</i> (i.e split, join, merge) and how these attributes are handled/re-propagated together.
  *
@@ -79,7 +53,7 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 				BigDecimal.valueOf(2), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		Assert.assertEquals("Invalid amount of TUs were split", 2, splitTradingUnits.size());
+		Assertions.assertEquals(2, splitTradingUnits.size(), "Invalid amount of TUs were split");
 
 		//
 		// Simulate - take off one of the TUKeys to bind it to the new LU
@@ -98,7 +72,7 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 
 		//
 		// check out the HU which we just joined
-		Assert.assertEquals("Invalid amount of remaining TUs after join", 1, splitTradingUnits.size());
+		Assertions.assertEquals(1, splitTradingUnits.size(), "Invalid amount of remaining TUs after join");
 		final I_M_HU splitTU1 = splitTradingUnits.getFirst();
 		final IAttributeStorage attributeStorageTU1 = attributeStorageFactory.getAttributeStorage(splitTU1);
 		assertSingleHandlingUnitWeights(attributeStorageTU1, newHUWeightsExpectation("8.765", "7.765", "1", "0"));
@@ -123,7 +97,7 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		//
 		// Assert data integrity on TARGET TUs
 		//
-		Assert.assertTrue("There shall be no more remaining TUs", splitTradingUnits.isEmpty());
+		Assertions.assertTrue(splitTradingUnits.isEmpty(), "There shall be no more remaining TUs");
 	}
 
 	/**
@@ -148,7 +122,7 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 				BigDecimal.valueOf(2), // TUs per LU
 				BigDecimal.ZERO); // TUs are not going on an LU
 
-		Assert.assertEquals("Invalid amount of TUs were split", 2, splitTradingUnits.size());
+		Assertions.assertEquals(2, splitTradingUnits.size(), "Invalid amount of TUs were split");
 
 		//
 		// Simulate - take off one of the TUKeys to bind it to the new LU
@@ -170,7 +144,7 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		//
 		// Assert data integrity on TARGET TUs
 		//
-		Assert.assertTrue("There shall be no more remaining TUs", splitTradingUnits.isEmpty());
+		Assertions.assertTrue(splitTradingUnits.isEmpty(), "There shall be no more remaining TUs");
 	}
 
 	/**
@@ -197,7 +171,8 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 				BigDecimal.valueOf(2), // TUs Per LU
 				BigDecimal.ONE); // split on ONE additional LU
 
-		assertThat("Invalid amount of LUs were split", splitLUs.size(), is(1));
+		Assertions.assertEquals(1, splitLUs.size(), "Invalid amount of LUs were split");
+
 		final I_M_HU splitLU = splitLUs.getFirst();
 		// helper.commitAndDumpHU(splitLU);
 
@@ -212,13 +187,13 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final List<I_M_HU> tradingUnitsInSplitLU = handlingUnitsDAO.retrieveIncludedHUs(splitLU).stream()
 				.filter(hu -> !handlingUnitsBL.isAggregateHU(hu)).collect(Collectors.toList());
-		
-		assertThat(tradingUnitsInSplitLU.size(), is(2));
+
+		Assertions.assertEquals(2,tradingUnitsInSplitLU.size());
 		helper.joinHUs(huContext, loadingUnit, tradingUnitsInSplitLU);
 
 		// because splitLU is updated elsewhere, we need to refresh out instance.
 		InterfaceWrapperHelper.refresh(splitLU);
-		Assert.assertEquals("Source LU is destroyed", splitLU.getHUStatus(), X_M_HU.HUSTATUS_Destroyed);
+		Assertions.assertEquals(splitLU.getHUStatus(), X_M_HU.HUSTATUS_Destroyed, "Source LU is destroyed");
 
 		//
 		// Assert data integrity for TARGET LU
@@ -255,12 +230,12 @@ public class JoinWeightAttributePropagationTest extends AbstractWeightAttributeT
 				BigDecimal.valueOf(2), // TUs Per LU
 				BigDecimal.ONE); // split on ONE additional LU
 
-		Assert.assertEquals("Invalid amount of LUs were split", 1, splitLUs.size());
+		Assertions.assertEquals(1, splitLUs.size(), "Invalid amount of LUs were split");
 
 		//
 		// Source LU
 		final I_M_HU sourceLU = splitLUs.getFirst();
-		Assert.assertTrue("The target LU we just split to shall be a top-level handling unit", sourceLU.getM_HU_Item_Parent_ID() <= 0);
+		Assertions.assertTrue(sourceLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		final I_M_HU sourceTradingUnitWith10 = findTUInLUWithQty(sourceLU, 10); // find a TU with 10 x CU
 		helper.joinHUs(huContext, targetLU, sourceTradingUnitWith10);

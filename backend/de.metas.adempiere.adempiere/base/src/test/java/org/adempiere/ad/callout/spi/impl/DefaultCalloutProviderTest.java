@@ -22,9 +22,6 @@ package org.adempiere.ad.callout.spi.impl;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.api.TableCalloutsMap;
@@ -38,11 +35,15 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_ColumnCallout;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.List;
+import java.util.Properties;
+
+@ExtendWith(AdempiereTestWatcher.class)
 public class DefaultCalloutProviderTest
 {
 	public static abstract class AbstractMockedCallout extends CalloutEngine
@@ -85,15 +86,21 @@ public class DefaultCalloutProviderTest
 
 	public static class Callout1 extends AbstractMockedCallout
 	{
-	};
+	}
+
+	;
 
 	public static class Callout2 extends AbstractMockedCallout
 	{
-	};
+	}
+
+	;
 
 	public static class Callout3 extends AbstractMockedCallout
 	{
-	};
+	}
+
+	;
 
 	public static class Callout4 extends AbstractMockedCallout
 	{
@@ -107,12 +114,9 @@ public class DefaultCalloutProviderTest
 		}
 	}
 
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private DefaultCalloutProvider calloutsProvider;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -134,7 +138,7 @@ public class DefaultCalloutProviderTest
 
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
-		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 6, calloutInstances.size());
+		Assertions.assertEquals(6, calloutInstances.size(), "Invalid callouts list size: " + calloutInstances);
 
 		assertLegacyCalloutInstance(calloutInstances.getFirst(), Callout1.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(1), Callout1.class, AbstractMockedCallout.METHOD_method2);
@@ -153,7 +157,7 @@ public class DefaultCalloutProviderTest
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
 		;
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
-		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 0, calloutInstances.size());
+		Assertions.assertEquals(0, calloutInstances.size(), "Invalid callouts list size: " + calloutInstances);
 	}
 
 	@Test
@@ -167,7 +171,7 @@ public class DefaultCalloutProviderTest
 
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
-		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 0, calloutInstances.size());
+		Assertions.assertEquals(0, calloutInstances.size(), "Invalid callouts list size: " + calloutInstances);
 	}
 
 	@Test
@@ -182,7 +186,7 @@ public class DefaultCalloutProviderTest
 
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
-		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 3, calloutInstances.size());
+		Assertions.assertEquals(3, calloutInstances.size(), "Invalid callouts list size: " + calloutInstances);
 
 		assertLegacyCalloutInstance(calloutInstances.getFirst(), Callout1.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, AbstractMockedCallout.METHOD_method1);
@@ -199,10 +203,9 @@ public class DefaultCalloutProviderTest
 		field.createAD_ColumnCallout(Callout2.class, AbstractMockedCallout.METHOD_method1);
 
 		final TableCalloutsMap tableCallouts = calloutsProvider.getCallouts(field.getCtx(), field.getTableName());
-		testWatcher.putContext(tableCallouts);
 
 		final List<ICalloutInstance> calloutInstances = tableCallouts.getColumnCallouts(field.getColumnName());
-		Assert.assertEquals("Invalid callouts list size: " + calloutInstances, 2, calloutInstances.size());
+		Assertions.assertEquals(2, calloutInstances.size(), "Invalid callouts list size: " + calloutInstances);
 
 		assertLegacyCalloutInstance(calloutInstances.getFirst(), Callout1.class, AbstractMockedCallout.METHOD_method1);
 		assertLegacyCalloutInstance(calloutInstances.get(1), Callout2.class, AbstractMockedCallout.METHOD_method1);
@@ -210,18 +213,18 @@ public class DefaultCalloutProviderTest
 
 	private void assertLegacyCalloutInstance(final ICalloutInstance calloutInstance, final Class<?> calloutClass, final String methodName)
 	{
-		Assert.assertNotNull("calloutInstance not null", calloutInstance);
-		Assert.assertTrue("calloutInstance is not instanceof " + MethodNameCalloutInstance.class + ": " + calloutInstance,
-				calloutInstance instanceof MethodNameCalloutInstance);
+		Assertions.assertNotNull(calloutInstance, "calloutInstance not null");
+		Assertions.assertTrue(calloutInstance instanceof MethodNameCalloutInstance,
+				"calloutInstance is not instanceof " + MethodNameCalloutInstance.class + ": " + calloutInstance);
 
 		final MethodNameCalloutInstance methodnameCallout = (MethodNameCalloutInstance)calloutInstance;
-		@SuppressWarnings("deprecation")
-		final org.compiere.model.Callout legacyCallout = methodnameCallout.getLegacyCallout();
+		@SuppressWarnings("deprecation") final org.compiere.model.Callout legacyCallout = methodnameCallout.getLegacyCallout();
 
 		final Class<?> calloutClassActual = legacyCallout.getClass();
-		Assert.assertTrue("Callout class is not assignable from " + calloutClass + ": " + calloutClassActual,
-				calloutClass.isAssignableFrom(calloutClassActual));
+		Assertions.assertTrue(calloutClass.isAssignableFrom(calloutClassActual),
+				"Callout class is not assignable from " + calloutClass + ": " + calloutClassActual);
 
-		Assert.assertEquals("LegacyCalloutAdapter is not using the right method: " + legacyCallout, methodName, methodnameCallout.getMethodName());
+		Assertions.assertEquals(methodName, methodnameCallout.getMethodName(),
+				"LegacyCalloutAdapter is not using the right method: " + legacyCallout);
 	}
 }

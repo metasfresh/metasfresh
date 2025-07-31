@@ -22,19 +22,17 @@ package de.metas.security.impl;
  * #L%
  */
 
+import de.metas.security.TableAccessLevel;
+import de.metas.util.Pair;
+import org.compiere.model.X_AD_Role;
+import org.compiere.model.X_AD_Table;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-
-import org.compiere.model.X_AD_Role;
-import org.compiere.model.X_AD_Table;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.security.TableAccessLevel;
-import de.metas.util.Pair;
 
 /**
  * Tests {@link TableAccessLevel} logic.
@@ -49,7 +47,7 @@ public class TableAccessLevelTest
 	 */
 	private LinkedHashSet<Pair<TableAccessLevel, TableAccessLevel>> checkedAccessLevelPairs;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		checkedAccessLevelPairs = new LinkedHashSet<>();
@@ -69,7 +67,7 @@ public class TableAccessLevelTest
 					String message = "Pair should be checked: " + pair
 							+ "\n Checked pairs were: " + checkedAccessLevelPairs
 							+ "\n\n";
-					Assert.fail(message);
+					Assertions.fail(message);
 				}
 			}
 		}
@@ -95,13 +93,13 @@ public class TableAccessLevelTest
 	private void test_forAccessLevel(final TableAccessLevel expected, final String tableAccessLevelStr)
 	{
 		final TableAccessLevel actual = TableAccessLevel.forAccessLevel(tableAccessLevelStr);
-		Assert.assertEquals("Invalid forAccessLevel(" + tableAccessLevelStr + ")", expected, actual);
+		Assertions.assertEquals( expected,  actual, "Invalid forAccessLevel(" + tableAccessLevelStr + ")");
 
 		// now convert it back
-		Assert.assertEquals("Invalid getAccessLevelString of " + actual,
-				tableAccessLevelStr, // expected
+		Assertions.assertEquals(
+				tableAccessLevelStr,  // expected
 				actual.getAccessLevelString() // actual
-		);
+		, "Invalid getAccessLevelString of " + actual);
 	}
 
 	@Test
@@ -118,13 +116,13 @@ public class TableAccessLevelTest
 	private void test_forUserLevel(final TableAccessLevel expected, final String userLevelStr)
 	{
 		final TableAccessLevel actual = TableAccessLevel.forUserLevel(userLevelStr);
-		Assert.assertEquals("Invalid forUserLevel(" + userLevelStr + ")", expected, actual);
+		Assertions.assertEquals( expected,  actual, "Invalid forUserLevel(" + userLevelStr + ")");
 
 		// now convert it back
-		Assert.assertEquals("Invalid getAccessLevelString of " + actual,
-				userLevelStr, // expected
+		Assertions.assertEquals(
+				userLevelStr,  // expected
 				actual.getUserLevelString() // actual
-		);
+		, "Invalid getAccessLevelString of " + actual);
 	}
 
 	@Test
@@ -187,7 +185,7 @@ public class TableAccessLevelTest
 	private final void assertCanBeAccessBy(final boolean expected, final TableAccessLevel accessLevel, final TableAccessLevel accessor)
 	{
 		final boolean actual = accessLevel.canBeAccessedBy(accessor);
-		Assert.assertEquals("" + accessLevel + " can be accessed by " + accessor, expected, actual);
+		Assertions.assertEquals( expected,  actual, "" + accessLevel + " can be accessed by " + accessor);
 
 		markAccessLevelPairChecked(accessLevel, accessor);
 	}
@@ -220,10 +218,10 @@ public class TableAccessLevelTest
 	{
 		final boolean all = system && client && org;
 
-		Assert.assertEquals("Expected System flag for " + accessLevel, system, accessLevel.isSystem());
-		Assert.assertEquals("Expected Client flag for " + accessLevel, client, accessLevel.isClient());
-		Assert.assertEquals("Expected Org flag for " + accessLevel, org, accessLevel.isOrganization());
-		Assert.assertEquals("Expected All flag for " + accessLevel, all, accessLevel.isAll());
+		Assertions.assertEquals( system,  accessLevel.isSystem(), "Expected System flag for " + accessLevel);
+		Assertions.assertEquals( client,  accessLevel.isClient(), "Expected Client flag for " + accessLevel);
+		Assertions.assertEquals( org,  accessLevel.isOrganization(), "Expected Org flag for " + accessLevel);
+		Assertions.assertEquals( all,  accessLevel.isAll(), "Expected All flag for " + accessLevel);
 	}
 
 	@Test
@@ -243,7 +241,7 @@ public class TableAccessLevelTest
 						+ "\n Common Client: " + commonClientSet
 						+ "\n Common Org: " + commonOrgSet
 						+ "\n\n";
-				Assert.assertEquals(message, commonLevelsExpected, a1.hasCommonLevels(a2));
+				Assertions.assertEquals( commonLevelsExpected,  a1.hasCommonLevels(a2), message);
 
 				markAccessLevelPairChecked(a1, a2);
 			}

@@ -20,10 +20,9 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -31,9 +30,7 @@ import java.util.OptionalInt;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -63,21 +60,16 @@ import static org.junit.Assert.assertThat;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
+@ExtendWith(AdempiereTestWatcher.class)
 public class HUTransformTracingTests
 {
-	/**
-	 * Watches the current tests and dumps the database to console in case of failure
-	 */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private HUTraceRepository huTraceRepository;
 
 	private HUTransformTestsBase testsBase;
 
 	private static I_C_UOM uomRecord;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
@@ -107,26 +99,26 @@ public class HUTransformTracingTests
 		final TestHUs result = testsBase.testCU_To_NewCU_1Tomato_DoIt();
 
 		final List<HUTraceEvent> traceEvents = RetrieveDbRecordsUtil.queryAll();
-		assertThat(traceEvents.size(), is(2));
+		assertThat(traceEvents).hasSize(2);
 
 		{
 			final HUTraceEvent huTraceEvent = traceEvents.getFirst();
-			assertThat(huTraceEvent.getType(), is(HUTraceType.TRANSFORM_LOAD));
+			assertThat(huTraceEvent.getType()).isEqualTo(HUTraceType.TRANSFORM_LOAD);
 
-			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getInput().getM_HU_ID()));
-			assertThat(huTraceEvent.getVhuSourceId(), nullValue());
-			assertThat(huTraceEvent.getTopLevelHuId().getRepoId(), is(result.getInititalParent().getM_HU_ID()));
-			assertThat(huTraceEvent.getQty().toBigDecimal(), is(BigDecimal.ONE.negate()));
+			assertThat(huTraceEvent.getVhuId().getRepoId()).isEqualTo(result.getInput().getM_HU_ID());
+			assertThat(huTraceEvent.getVhuSourceId()).isNull();
+			assertThat(huTraceEvent.getTopLevelHuId().getRepoId()).isEqualTo(result.getInititalParent().getM_HU_ID());
+			assertThat(huTraceEvent.getQty().toBigDecimal()).isEqualTo(BigDecimal.ONE.negate());
 		}
 
 		{
 			final HUTraceEvent huTraceEvent = traceEvents.get(1);
-			assertThat(huTraceEvent.getType(), is(HUTraceType.TRANSFORM_LOAD));
+			assertThat(huTraceEvent.getType()).isEqualTo(HUTraceType.TRANSFORM_LOAD);
 
-			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getOutput().get(0).getM_HU_ID()));
-			assertThat(huTraceEvent.getVhuSourceId().getRepoId(), is(result.getInput().getM_HU_ID()));
-			assertThat(huTraceEvent.getTopLevelHuId(), is(huTraceEvent.getVhuId()));
-			assertThat(huTraceEvent.getQty().toBigDecimal(), is(BigDecimal.ONE));
+			assertThat(huTraceEvent.getVhuId().getRepoId()).isEqualTo(result.getOutput().get(0).getM_HU_ID());
+			assertThat(huTraceEvent.getVhuSourceId().getRepoId()).isEqualTo(result.getInput().getM_HU_ID());
+			assertThat(huTraceEvent.getTopLevelHuId()).isEqualTo(huTraceEvent.getVhuId());
+			assertThat(huTraceEvent.getQty().toBigDecimal()).isEqualTo(BigDecimal.ONE);
 		}
 	}
 
@@ -140,15 +132,15 @@ public class HUTransformTracingTests
 		final TestHUs result = testsBase.testCU_To_NewCU_MaxValueParent_DoIt();
 
 		final I_M_HU parentTU = result.getInititalParent();
-		assertThat(parentTU.getHUStatus(), is(X_M_HU.HUSTATUS_Active)); // guard
+		assertThat(parentTU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active); // guard
 		final I_M_HU cuToSplit = result.getInput();
-		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active)); // guard
+		assertThat(cuToSplit.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active); // guard
 
 		// retrieve the events that were added to the repo and make sure they are as expected
 
 		final HUTraceEventQuery tuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID())).build();
 		final List<HUTraceEvent> tuTraceEvents = huTraceRepository.query(tuTraceQuery);
-		assertThat(tuTraceEvents.size(), is(1));
+		assertThat(tuTraceEvents).hasSize(1);
 
 		final HUTraceEventBuilder common = HUTraceEvent.builder()
 				.orgId(OrgId.ofRepoIdOrAny(cuToSplit.getAD_Org_ID()))
@@ -158,32 +150,32 @@ public class HUTransformTracingTests
 				.productId(tuTraceEvents.getFirst().getProductId())
 				.type(HUTraceType.TRANSFORM_PARENT);
 
-		// when comparing with "common", we needs to keep the ID out
+		// when comparing with "common", we need to keep the ID out
 		final HUTraceEvent tuTraceEventToCompareWith = tuTraceEvents.getFirst().toBuilder().huTraceEventId(OptionalInt.empty()).build();
-		assertThat(tuTraceEventToCompareWith,
-				is(common
+		assertThat(tuTraceEventToCompareWith)
+				.isEqualTo(common
 						.qty(Quantity.of(new BigDecimal("-3"), uomRecord))
 						.topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID()))
-						.build()));
+						.build());
 
 		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID())).build();
 		final List<HUTraceEvent> cuTraceEvents = huTraceRepository.query(cuTraceQuery);
-		assertThat(cuTraceEvents.size(), is(1));
+		assertThat(cuTraceEvents).hasSize(1);
 
-		// when comparing with "common", we needs to keep the ID out
+		// when comparing with "common", we need to keep the ID out
 		final HUTraceEvent cuTraceEventToCompareWith = cuTraceEvents.getFirst().toBuilder().huTraceEventId(OptionalInt.empty()).build();
-		assertThat(cuTraceEventToCompareWith,
-				is(common
+		assertThat(cuTraceEventToCompareWith)
+				.isEqualTo(common
 						.qty(Quantity.of(new BigDecimal("3"), uomRecord))
 						.topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
-						.build()));
+						.build());
 	}
 
 	@Test
 	public void testCU_To_NewCU_MaxValueNoParent()
 	{
 		testsBase.testCU_To_NewCU_MaxValueNoParent_DoIt();
-		assertThat(RetrieveDbRecordsUtil.queryAll().isEmpty(), is(true));
+		assertThat(RetrieveDbRecordsUtil.queryAll()).isEmpty();
 	}
 
 	@Test
@@ -192,7 +184,6 @@ public class HUTransformTracingTests
 		testsBase.testAggregateCU_To_NewTUs_1Tomato_DoIt(false); // isOwnPackingMaterials = false
 
 		final List<HUTraceEvent> huTraceEvents = RetrieveDbRecordsUtil.queryAll();
-		assertThat(huTraceEvents.size(), is(4));
+		assertThat(huTraceEvents).hasSize(4);
 	}
-
 }

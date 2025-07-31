@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-rest_api
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,13 +38,13 @@ public class JsonDocTypeInfo
 	@Schema( //
 			nullable = false, //
 			description = "This translates to <code>C_DocType.DocBaseType</code>.\n")
-	private String docBaseType;
+	String docBaseType;
 
 	@Schema( //
 			nullable = true, //
 			description = "This translates to <code>C_DocType.DocSubType</code>.\n"
 					+ "An empty value means that the matching <code>C_DocType</code> record's <code>DocSubType</code> needs to be <code>null</code>")
-	private String docSubType;
+	String docSubType;
 
 	@JsonCreator
 	@Builder

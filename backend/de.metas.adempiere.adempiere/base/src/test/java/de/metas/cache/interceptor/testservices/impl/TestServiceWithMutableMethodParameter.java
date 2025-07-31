@@ -22,6 +22,9 @@ package de.metas.cache.interceptor.testservices.impl;
  * #L%
  */
 
+import de.metas.cache.interceptor.testservices.ITestServiceWithMutableMethodParameter;
+import org.adempiere.util.proxy.Cached;
+import org.junit.jupiter.api.Disabled;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -29,12 +32,7 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.adempiere.util.proxy.Cached;
-import org.junit.Ignore;
-
-import de.metas.cache.interceptor.testservices.ITestServiceWithMutableMethodParameter;
-
-@Ignore
+@Disabled
 public class TestServiceWithMutableMethodParameter implements ITestServiceWithMutableMethodParameter
 {
 

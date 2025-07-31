@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1506736272L;
+	private static final long serialVersionUID = -752666192L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -1056,6 +1056,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setIsWithoutCharge (final boolean IsWithoutCharge)
+	{
+		set_Value (COLUMNNAME_IsWithoutCharge, IsWithoutCharge);
+	}
+
+	@Override
+	public boolean isWithoutCharge() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWithoutCharge);
+	}
+
+	@Override
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);
@@ -1326,6 +1338,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Min);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPackInfo (final @Nullable java.lang.String PackInfo)
+	{
+		set_Value (COLUMNNAME_PackInfo, PackInfo);
+	}
+
+	@Override
+	public java.lang.String getPackInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_PackInfo);
 	}
 
 	@Override
@@ -1687,6 +1711,33 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReserved);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * Reason AD_Reference_ID=541968
+	 * Reference name: Reason for without charge
+	 */
+	public static final int REASON_AD_Reference_ID=541968;
+	/** Warranty = W */
+	public static final String REASON_Warranty = "W";
+	/** Goodwill = G */
+	public static final String REASON_Goodwill = "G";
+	/** FullService = F */
+	public static final String REASON_FullService = "F";
+	/** PromotionalCampaign = P */
+	public static final String REASON_PromotionalCampaign = "P";
+	/** InternalUse = I */
+	public static final String REASON_InternalUse = "I";
+	@Override
+	public void setReason (final @Nullable java.lang.String Reason)
+	{
+		set_Value (COLUMNNAME_Reason, Reason);
+	}
+
+	@Override
+	public java.lang.String getReason() 
+	{
+		return get_ValueAsString(COLUMNNAME_Reason);
 	}
 
 	@Override

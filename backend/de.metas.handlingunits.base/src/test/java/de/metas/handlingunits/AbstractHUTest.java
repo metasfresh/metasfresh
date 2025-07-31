@@ -32,7 +32,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -169,7 +168,7 @@ public abstract class AbstractHUTest
 	}
 
 	/**
-	 * Balled by the test's {@link Before} method, after the basic master data was set up.
+	 * Balled by the test's {@link BeforeEach} method, after the basic master data was set up.
 	 */
 	abstract protected void initialize();
 

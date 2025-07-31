@@ -22,12 +22,9 @@ package org.adempiere.ad.trx.api.impl;
  * #L%
  */
 
+import org.junit.jupiter.api.Disabled;
 
-import org.junit.Ignore;
-
-import java.io.Serial;
-
-@Ignore
+@Disabled
 public class MockedTrxRunnableException extends RuntimeException
 {
 

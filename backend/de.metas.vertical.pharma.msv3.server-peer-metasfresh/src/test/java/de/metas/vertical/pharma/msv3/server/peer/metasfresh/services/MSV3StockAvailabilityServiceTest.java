@@ -13,8 +13,8 @@ import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
@@ -49,7 +49,7 @@ public class MSV3StockAvailabilityServiceTest
 {
 	private MSV3StockAvailabilityService msv3StockAvailabilityService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -1,35 +1,32 @@
-package de.metas.cache.interceptor;
-
-import java.lang.reflect.Method;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-
 /*
  * #%L
  * de.metas.fresh.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.cache.interceptor;
+
+import com.google.common.base.Stopwatch;
+import de.metas.util.IService;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
@@ -46,11 +43,11 @@ import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.google.common.base.Stopwatch;
-
-import de.metas.util.IService;
-import lombok.NonNull;
-import lombok.ToString;
+import java.lang.reflect.Method;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * {@link Cached} integration test: makes sure all classes are valid
@@ -108,7 +105,7 @@ public class All_CachedMethods_Test
 		new CachedMethodDescriptor(method);
 	}
 
-	private final void testClass(final Class<?> clazz)
+	private void testClass(final Class<?> clazz)
 	{
 		// Skip if already tested
 		if (!testedClasses.add(clazz))
@@ -146,7 +143,7 @@ public class All_CachedMethods_Test
 			Assumptions.assumeTrue(!skipped, "skipped");
 		}
 
-		private final boolean isSkipClass(final Class<?> clazz)
+		private boolean isSkipClass(final Class<?> clazz)
 		{
 			final String classname = clazz.getName();
 
@@ -188,7 +185,11 @@ public class All_CachedMethods_Test
 			final Stopwatch stopwatch = Stopwatch.createStarted();
 
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
-					.addUrls(ClasspathHelper.forClassLoader())
+					//.addUrls(ClasspathHelper.forClassLoader())
+					.addUrls(ClasspathHelper.forClassLoader(Thread.currentThread().getContextClassLoader()))
+					.addUrls(ClasspathHelper.forClassLoader(this.getClass().getClassLoader()))
+					.addUrls(ClasspathHelper.forPackage("de.metas"))
+					.addUrls(ClasspathHelper.forPackage("org.adempiere"))
 					.setScanners(new MethodAnnotationsScanner()));
 
 			final Set<Method> methods = reflections.getMethodsAnnotatedWith(Cached.class);
@@ -199,7 +200,7 @@ public class All_CachedMethods_Test
 			if (methods.isEmpty())
 			{
 				throw new AdempiereException("""
-						No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin.
+						No method found . Might be because for some reason Reflections does not work correctly with maven surefire plugin.
 						 See https://github.com/metasfresh/metasfresh/issues/4773.""");
 			}
 

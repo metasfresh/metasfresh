@@ -1,10 +1,9 @@
 package de.metas.dlm.partitioner.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.dlm.partitioner.config.PartitionConfig;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -12,14 +11,12 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.I_AD_Field;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-import ch.qos.logback.classic.Level;
-import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.logging.LogManager;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -46,7 +43,7 @@ import de.metas.logging.LogManager;
 public class PartitionerServiceTests
 {
 
-	@Before
+	@BeforeEach
 	public void before()
 	{
 		AdempiereTestHelper.get().init();
@@ -80,11 +77,11 @@ public class PartitionerServiceTests
 		final PartitionConfig augmentedConfig = new PartitionerService()
 				.augmentPartitionerConfig(configtoAugment, descriptors);
 
-		assertThat(augmentedConfig.getLines().size(), is(2));
-		assertThat(augmentedConfig.getLineNotNull(I_AD_Field.Table_Name).getReferences().size(), is(0));
-		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().size(), is(1));
-		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().getFirst().getReferencedTableName(), is(I_AD_Field.Table_Name));
-		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().getFirst().getReferencingColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
+		assertThat(augmentedConfig.getLines()).hasSize(2);
+		assertThat(augmentedConfig.getLineNotNull(I_AD_Field.Table_Name).getReferences()).isEmpty();
+		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences()).hasSize(1);
+		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().getFirst().getReferencedTableName()).isEqualTo(I_AD_Field.Table_Name);
+		assertThat(augmentedConfig.getLineNotNull(I_AD_ChangeLog.Table_Name).getReferences().getFirst().getReferencingColumnName()).isEqualTo(I_AD_ChangeLog.COLUMNNAME_Record_ID);
 
 		return augmentedConfig;
 	}

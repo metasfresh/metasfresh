@@ -22,23 +22,23 @@ package de.metas.security.permissions;
  * #L%
  */
 
-
-import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Permissions related assertion utilities.
  * 
  * @author tsa
  */
-@Ignore
+@Disabled
 public final class PermissionAsserts
 {
 	public static void assertAccess(final Permissions<?> permissions, final Resource resource, final Access access, final boolean expected)
 	{
-		Assert.assertEquals("" + access + " to resource " + resource,
+		Assertions.assertEquals(
 				expected,
-				permissions.hasAccess(resource, access));
+				permissions.hasAccess(resource, access),
+				"" + access + " to resource " + resource);
 	}
 
 }

@@ -6,15 +6,15 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
 import org.compiere.model.PO;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AdempiereTableModelClassLoaderTest
 {
 	private TableModelClassLoaderTester tester = new TableModelClassLoaderTester()
 			.setEntityTypeModelPackage(PO.ENTITYTYPE_Dictionary, null);
 
-	@Before
+	@BeforeEach
 	public void setup()
 	{
 		AdempiereTestHelper.get().init();

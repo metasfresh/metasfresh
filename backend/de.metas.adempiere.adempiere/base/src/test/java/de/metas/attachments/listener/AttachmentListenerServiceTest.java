@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,14 +34,14 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Table_AttachmentListener;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.time.ZonedDateTime;
 
 import static de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 
 public class AttachmentListenerServiceTest
@@ -55,7 +55,7 @@ public class AttachmentListenerServiceTest
 	private static final int SEQ_NO_TEN = 10;
 	private static final String MOCK_TABLE_NAME = "MockTable";
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -84,9 +84,9 @@ public class AttachmentListenerServiceTest
 
 		final ImmutableList<AttachmentListenerActionResult> result = tableAttachmentListenerService.fireAfterRecordLinked(attachmentEntryMock, tableRecordReferenceMock);
 
-		assertEquals(result.size(), 1);
-		assertEquals(result.getFirst().getStatus(), SUCCESS);
-		assertEquals(result.getFirst().getListener().getClass(), DumbAttachmentListener.class);
+		assertEquals(1, result.size());
+		assertEquals(SUCCESS, result.getFirst().getStatus());
+		assertEquals(DumbAttachmentListener.class, result.getFirst().getListener().getClass());
 	}
 
 	private void prepareJavaClassTypeMockRecord()

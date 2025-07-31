@@ -1,15 +1,14 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.junit.Test;
-
 import de.metas.shipper.gateway.derkurier.DerKurierTestTools;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
