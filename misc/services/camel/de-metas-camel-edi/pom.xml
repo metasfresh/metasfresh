@@ -42,7 +42,6 @@
         <guava.version>33.4.5-jre</guava.version>
         <smooks.edifact.cartridge.version>2.1.0</smooks.edifact.cartridge.version>
         <jackson.version>2.18.3</jackson.version>
-        <lombok.version>1.18.38</lombok.version>
         <org.apache.poi.version>5.4.0</org.apache.poi.version>
 
         <jaxb.api.version>2.3.1</jaxb.api.version>
@@ -55,11 +54,6 @@
         <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
-        <!--
-            3.27.3 is currently the latest and greatest. Spring boot declares some 2.x version that
-            see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
-        -->
-        <assertj.version>3.27.3</assertj.version>
         <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
@@ -96,7 +90,6 @@
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <scope>test</scope>
-                <version>${assertj.version}</version>
             </dependency>
 
             <dependency>

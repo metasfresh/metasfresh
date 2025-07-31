@@ -73,12 +73,6 @@
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
         <slf4j-api.version>2.0.9</slf4j-api.version>
 
-        <!-- test related versions -->
-        <!--
-            3.27.2 is currently the latest and greatest. Spring boot declares some 2.x version that
-            see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
-        -->
-        <assertj.version>3.27.2</assertj.version>
         <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
         <xmlunit.version>2.10.0</xmlunit.version>
 
@@ -135,13 +129,6 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>1.18.38</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>${assertj.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
