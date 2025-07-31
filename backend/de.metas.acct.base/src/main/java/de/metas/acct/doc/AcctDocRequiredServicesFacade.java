@@ -103,6 +103,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.acct.FactLine;
 import org.compiere.acct.PostingStatus;
@@ -443,6 +444,11 @@ public class AcctDocRequiredServicesFacade
 		}
 
 		return warehouseBL.getLocationIdByLocatorRepoId(locatorRepoId);
+	}
+
+	public LocatorId getLocatorIdByRepoId(final int locatorId)
+	{
+		return warehouseBL.getLocatorIdByRepoId(locatorId);
 	}
 
 	public Tax getTaxById(@NonNull final TaxId taxId)
