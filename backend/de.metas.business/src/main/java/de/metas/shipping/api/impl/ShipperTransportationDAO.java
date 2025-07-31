@@ -16,6 +16,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 
@@ -109,16 +110,20 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	}
 
 	@NonNull
-	public Optional<ShipperTransportationId> getSingleByQuery(@NonNull final ShipperTransportationQuery query)
+	public Optional<ShipperTransportationId> getSingleByQuery(@NonNull final ShipperTransportationQuery shipperTransportationQuery)
 	{
-		return Optional.ofNullable(queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+		return toSqlQuery(shipperTransportationQuery).firstIdOptional(ShipperTransportationId::ofRepoIdOrNull);
+	}
+
+	private IQuery<I_M_ShipperTransportation> toSqlQuery(final @NonNull ShipperTransportationQuery query)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, query.getShipperId())
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, query.getShipperBPartnerAndLocationId().getBpartnerId())
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID, query.getShipperBPartnerAndLocationId().getRepoId())
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DateDoc, TimeUtil.asTimestamp(query.getShipDate()))
-				.create()
-				.firstId(ShipperTransportationId::ofRepoIdOrNull));
+				.create();
 	}
 
 	@Override

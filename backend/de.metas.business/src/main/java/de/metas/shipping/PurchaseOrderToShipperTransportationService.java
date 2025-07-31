@@ -84,29 +84,34 @@ public class PurchaseOrderToShipperTransportationService
 
 	public void addPurchaseOrderToCurrentShipperTransportation(final @NonNull I_C_Order purchaseOrder)
 	{
-		shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
+		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
 				.shipperId(ShipperId.ofRepoId(purchaseOrder.getM_Shipper_ID()))
 				.orgId(OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()))
 				.assignAnonymouslyPickedHUs(true)
 				.shipDate(TimeUtil.asLocalDate(purchaseOrder.getDatePromised()))
 				.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(purchaseOrder.getC_BPartner_ID()), purchaseOrder.getC_BPartner_Location_ID()))
 				.build());
+		addPurchaseOrderToShipperTransportation(purchaseOrder, shipperTransportationId);
 	}
 
 	public void addPurchaseOrderToShipperTransportation(final @NonNull OrderId purchaseOrderId, final @Nullable ShipperTransportationId shipperTransportationId)
 	{
-		final org.compiere.model.I_C_Order order = orderDAO.getById(purchaseOrderId);
+		addPurchaseOrderToShipperTransportation(orderDAO.getById(purchaseOrderId), shipperTransportationId);
+	}
 
-		final ShipperTransportationId shipperTransportationIdToUse = shipperTransportationId != null ? shipperTransportationId :
-				shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
-						.shipperId(ShipperId.ofRepoId(order.getM_Shipper_ID()))
-						.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
-						.shipDate(TimeUtil.asLocalDate(order.getDatePromised()))
-						.assignAnonymouslyPickedHUs(true)
-						.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(order.getC_BPartner_ID()), order.getC_BPartner_Location_ID()))
-						.build());
+	private void addPurchaseOrderToShipperTransportation(final @NonNull org.compiere.model.I_C_Order order, final @Nullable ShipperTransportationId shipperTransportationId)
+	{
+		final ShipperTransportationId shipperTransportationIdToUse = shipperTransportationId != null
+				? shipperTransportationId
+				: shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
+				.shipperId(ShipperId.ofRepoId(order.getM_Shipper_ID()))
+				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
+				.shipDate(TimeUtil.asLocalDate(order.getDatePromised()))
+				.assignAnonymouslyPickedHUs(true)
+				.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(order.getC_BPartner_ID()), order.getC_BPartner_Location_ID()))
+				.build());
 
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(purchaseOrderId);
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		final List<I_C_OrderLine> orderLinesWithLUQty = orderLines.stream()
 				.filter(PurchaseOrderToShipperTransportationService::isLUQtySet)
 				.collect(Collectors.toList());
@@ -118,7 +123,7 @@ public class PurchaseOrderToShipperTransportationService
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 		final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate = PurchaseShippingPackageCreateRequest.builder()
-				.orderId(purchaseOrderId)
+				.orderId(OrderId.ofRepoId(order.getC_Order_ID()))
 				.datePromised(order.getDatePromised().toInstant())
 				.shipperTransportationId(shipperTransportationIdToUse)
 				.shiperId(ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID()))
