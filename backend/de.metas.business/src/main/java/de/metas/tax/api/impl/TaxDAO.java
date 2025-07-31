@@ -41,6 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -81,6 +82,9 @@ public class TaxDAO implements ITaxDAO
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
 	private final IBPartnerBL bpartnerBL  = Services.get(IBPartnerBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	public final static String SYS_CONFIG_IgnorePartnerVATID = "de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID";
 
 	@Override
 	public Tax getTaxById(final int taxRepoId)
@@ -389,10 +393,13 @@ public class TaxDAO implements ITaxDAO
 
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 
+		// if is set on Y, we will not use the vatid from partner
+		final boolean ignorePartnerVATID = sysConfigBL.getBooleanValue(SYS_CONFIG_IgnorePartnerVATID, false);
+
 		final String bpVATaxID = Optional.ofNullable(taxQuery.getBPartnerLocationId())
 				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId)
 				.flatMap(bpartnerBL::getVATTaxId)
-				.orElse(bpartner.getVATaxID());
+				.orElse( ignorePartnerVATID ? null : bpartner.getVATaxID());
 
 		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpVATaxID);
 		loggable.addLog("BPartner has tax certificate={}", bPartnerHasTaxCertificate);
