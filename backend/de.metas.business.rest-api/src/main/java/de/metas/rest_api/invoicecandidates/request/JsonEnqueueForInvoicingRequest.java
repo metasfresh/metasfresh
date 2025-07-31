@@ -16,6 +16,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 /*
  * #%L
@@ -41,7 +43,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 @Value
 public class JsonEnqueueForInvoicingRequest
 {
-	@Schema(required = true, //
+	@Schema(requiredMode = REQUIRED,
 			description = "Specifies the invoice candidates to be invoiced.")
 	List<JsonInvoiceCandidateReference> invoiceCandidates;
 
@@ -58,27 +60,27 @@ public class JsonEnqueueForInvoicingRequest
 	@Schema(description = "Optional customer's purchase order's documentno. POReference to be set to all invoice candidates, right before enqueueing them.")
 	String poReference;
 
-	@Schema(required = false, //
+	@Schema(requiredMode = NOT_REQUIRED,
 			description = """
 					This is needed when the user wants to invoice candidates that have their `DateToInvoice` sometime in the future.
 					If this is not set and the DateToInvoice is in the future then an error will occur "no invoicable ICs selected
 					Default = `false`""")
 	Boolean ignoreInvoiceSchedule;
 
-	@Schema(required = false,//
+	@Schema(requiredMode = NOT_REQUIRED,
 			description = """
 					Specifies whether invoice candidate that have no payment term shall be updated with the reference of another selected invoice candidate.
 					Default = `true`""")
 	Boolean supplementMissingPaymentTermIds;
 
-	@Schema(required = false,//
+	@Schema(requiredMode = NOT_REQUIRED,
 			description = """
 					If this parameter is activated, the invoices to be created receive the current users and locations of their business partners, regardless of the values in `Bill_Location_ID` and `Bill_User_ID` that are set in the queued billing candidates.
 					Default = `false`""")
 	Boolean updateLocationAndContactForInvoice;
 
-	@ApiModelProperty(position = 80, required = false,//
-			value = "When this parameter is set on true, the newly generated invoices are directly completed.\n"
+	@Schema(requiredMode = NOT_REQUIRED,
+			description = "When this parameter is set on true, the newly generated invoices are directly completed.\n"
 					+ "Otherwise they are just prepared and left in the DocStatus IP (in progress). Default = `true`")
 	Boolean completeInvoices;
 

@@ -41,6 +41,7 @@ import org.compiere.util.Env;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;

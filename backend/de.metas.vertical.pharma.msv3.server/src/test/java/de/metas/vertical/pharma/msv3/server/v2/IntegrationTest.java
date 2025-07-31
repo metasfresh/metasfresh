@@ -39,6 +39,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRuec
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne.Artikel;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsantwortArtikel;
+import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -56,8 +57,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import javax.xml.bind.JAXBElement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -367,7 +366,7 @@ public class IntegrationTest
 		}
 	}
 
-	private final JAXBElement<VerfuegbarkeitAnfragen> createStockAvailabilityQuery(final PZN pzn, final int qtyRequired)
+	private JAXBElement<VerfuegbarkeitAnfragen> createStockAvailabilityQuery(final PZN pzn, final int qtyRequired)
 	{
 		final Artikel stockAvailabilityQueryItem = jaxbObjectFactory.createVerfuegbarkeitsanfrageEinzelneArtikel();
 		stockAvailabilityQueryItem.setPzn(pzn.getValueAsLong());
