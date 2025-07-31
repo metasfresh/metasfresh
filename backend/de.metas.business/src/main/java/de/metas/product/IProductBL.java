@@ -153,6 +153,8 @@ public interface IProductBL extends ISingletonService
 
 	Optional<Quantity> getGrossWeight(ProductId productId, I_C_UOM targetProductUOM);
 
+	Optional<Quantity> getGrossWeight(I_M_Product product, I_C_UOM targetProductUOM);
+
 	Optional<Quantity> getGrossWeight(ProductId productId);
 
 	Optional<Quantity> getNetWeight(@NonNull I_M_Product product);
