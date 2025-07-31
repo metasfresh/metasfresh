@@ -35,12 +35,13 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
 import java.sql.Timestamp;
+
+import static de.metas.bpartner.interceptor.MakeUniqueNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location
@@ -56,7 +57,7 @@ public class C_BPartner_Location
 
 	/**
 	 * Update {@link I_C_BPartner_Location#COLUMNNAME_Address} field right before new. Updating on TYPE_BEFORE_CHANGE is not needed because C_Location_ID is not changing and if user edits the address,
-	 * then {@link org.adempiere.bpartner.callout.BPartnerLocation#evalInput(GridTab)} is managing the case.
+	 * then {@link de.metas.bpartner.callout.C_BPartner_Location#updateAddressString(I_C_BPartner_Location)} is managing the case.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void updateAddressString(final I_C_BPartner_Location bpLocation)
@@ -88,7 +89,7 @@ public class C_BPartner_Location
 		final LocationId newLocationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
 		final I_C_BPartner_Location bpLocationOld = InterfaceWrapperHelper.createOld(bpLocation, I_C_BPartner_Location.class);
-		final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
+		final LocationId oldLocationId = LocationId.ofRepoId(bpLocationOld.getC_Location_ID());
 
 		warehouseBL.updateWarehouseLocation(oldLocationId, newLocationId);
 	}
@@ -96,7 +97,8 @@ public class C_BPartner_Location
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void updateName(@NonNull final I_C_BPartner_Location bpLocation)
 	{
-		if (!bpLocation.isNameReadWrite())
+		final String name = bpLocation.getName();
+		if (!bpLocation.isNameReadWrite() || BPARTNER_LOCATION_NAME_DEFAULT.equals(name))
 		{
 			updateBPLocationName(bpLocation);
 		}
