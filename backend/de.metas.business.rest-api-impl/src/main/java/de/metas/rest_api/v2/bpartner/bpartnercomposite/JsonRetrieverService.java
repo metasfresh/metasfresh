@@ -90,6 +90,7 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.title.Title;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
@@ -560,7 +561,7 @@ public class JsonRetrieverService
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
-					.vatId(location.getVatTaxId())
+					.vatId(VATIdentifier.toString(location.getVatTaxId()))
 					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}

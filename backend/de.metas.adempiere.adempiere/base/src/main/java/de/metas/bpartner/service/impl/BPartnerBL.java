@@ -33,6 +33,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -857,7 +858,7 @@ public class BPartnerBL implements IBPartnerBL
 
 	@NonNull
 	@Override
-	public Optional<String> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	public Optional<VATIdentifier> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))

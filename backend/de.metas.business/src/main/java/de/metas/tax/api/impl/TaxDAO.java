@@ -26,8 +26,8 @@ import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.TaxUtils;
 import de.metas.tax.api.TypeOfDestCountry;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
-import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -391,18 +391,9 @@ public class TaxDAO implements ITaxDAO
 
 		final BPartnerId bpartnerId = taxQuery.getBPartnerId();
 
-		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
+		final VATIdentifier bpVATaxID = extractVATIDIdentifier(bpartnerId, taxQuery.getBPartnerLocationId());
 
-		// if is set on Y, we will not use the vatid from partner
-		final boolean ignorePartnerVATID = sysConfigBL.getBooleanValue(SYS_CONFIG_IgnorePartnerVATID, false);
-
-		final String bpVATaxID = Optional.ofNullable(taxQuery.getBPartnerLocationId())
-				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId)
-				.flatMap(bpartnerBL::getVATTaxId)
-				.orElseGet(() -> ignorePartnerVATID ? null : bpartner.getVATaxID());
-
-
-		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpVATaxID);
+		final boolean bPartnerHasTaxCertificate = bpVATaxID != null;
 		loggable.addLog("BPartner has tax certificate={}", bPartnerHasTaxCertificate);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, StringUtils.ofBoolean(bPartnerHasTaxCertificate), null);
 
@@ -461,6 +452,27 @@ public class TaxDAO implements ITaxDAO
 			typeOfDestCountry = isEULocation ? WITHIN_COUNTRY_AREA : OUTSIDE_COUNTRY_AREA;
 		}
 		return typeOfDestCountry;
+	}
+
+	@Nullable
+	private VATIdentifier extractVATIDIdentifier(@NonNull final BPartnerId bpartnerId, @Nullable final BPartnerLocationAndCaptureId bPartnerLocationId)
+	{
+		// if is set on Y, we will not use the vatid from partner
+		final boolean ignorePartnerVATID = sysConfigBL.getBooleanValue(SYS_CONFIG_IgnorePartnerVATID, false);
+
+		final Optional<VATIdentifier> vatidIdentifier = Optional.ofNullable(bPartnerLocationId)
+				.map(BPartnerLocationAndCaptureId::getBpartnerLocationId)
+				.flatMap(bpartnerBL::getVATTaxId);
+
+		if (ignorePartnerVATID)
+		{
+			return vatidIdentifier.orElse(null);
+		}
+		else
+		{
+			final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
+			return vatidIdentifier.orElseGet(() -> VATIdentifier.ofNullable(bpartner.getVATaxID()));
+		}
 	}
 
 	@NonNull

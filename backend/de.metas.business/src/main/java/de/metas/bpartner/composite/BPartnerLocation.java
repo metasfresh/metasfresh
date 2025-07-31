@@ -11,6 +11,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.LocationId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
@@ -49,7 +50,7 @@ import static de.metas.util.Check.isBlank;
  */
 
 @Data
-@JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
+@JsonPropertyOrder(alphabetic = true/* we want the serialized JSON to be less flaky in our snapshot files */)
 public class BPartnerLocation
 {
 	public static final String ID = "id";
@@ -147,8 +148,7 @@ public class BPartnerLocation
 
 	@Nullable final String setupPlaceNo;
 
-	@Nullable
-	private String vatTaxId;
+	@Nullable private VATIdentifier vatTaxId;
 
 	final private boolean remitTo;
 	final private boolean handOverLocation;
@@ -194,7 +194,7 @@ public class BPartnerLocation
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
-			@Nullable final String vatTaxId,
+			@Nullable final VATIdentifier vatTaxId,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
 			@Nullable final Boolean replicationLookupDefault,
