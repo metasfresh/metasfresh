@@ -20,7 +20,7 @@ import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,7 +56,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 	@Nullable
 	@Override
-	public ShipperTransportationId retrieveNextOpenShipperTransportationIdOrNull(@NonNull final ShipperId shipperId, @Nullable final LocalDate beforeDate)
+	public ShipperTransportationId retrieveNextOpenShipperTransportationIdOrNull(@NonNull final ShipperId shipperId, @Nullable final Instant beforeDate)
 	{
 		final IQueryBuilder<I_M_ShipperTransportation> builder = queryBL
 				.createQueryBuilder(I_M_ShipperTransportation.class)
@@ -128,6 +128,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.shipperId(request.getShipperId())
 				.shipperBPartnerAndLocationId(request.getShipperBPartnerAndLocationId())
 				.shipDate(request.getShipDate())
+				.orgId(request.getOrgId())
 				.build())
 				.orElseGet(() -> create(request));
 	}

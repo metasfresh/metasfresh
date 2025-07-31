@@ -98,26 +98,30 @@ public class PurchaseOrderToShipperTransportationService
 		final org.compiere.model.I_C_Order order = orderDAO.getById(purchaseOrderId);
 
 		final ShipperTransportationId shipperTransportationIdToUse = shipperTransportationId != null ? shipperTransportationId :
-				shipperTransportationDAO.retrieveNextOpenShipperTransportationIdOrNull(ShipperId.ofRepoId(order.getM_Shipper_ID()), TimeUtil.asLocalDate(order.getDatePromised()));
+				shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
+						.shipperId(ShipperId.ofRepoId(order.getM_Shipper_ID()))
+						.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
+						.shipDate(TimeUtil.asLocalDate(order.getDatePromised()))
+						.assignAnonymouslyPickedHUs(true)
+						.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(order.getC_BPartner_ID()), order.getC_BPartner_Location_ID()))
+						.build());
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(purchaseOrderId);
 		final List<I_C_OrderLine> orderLinesWithLUQty = orderLines.stream()
-				.filter(this::isLUQtySet)
+				.filter(PurchaseOrderToShipperTransportationService::isLUQtySet)
 				.collect(Collectors.toList());
-		final boolean isOrderLinesWithoutLUQtyExist = orderLines.stream().anyMatch(ol -> !orderLinesWithLUQty.contains(ol));
+		final boolean isOrderLinesWithoutLUQtyExist = orderLines.size() != orderLinesWithLUQty.size();
 
 		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationIdToUse);
-		final org.compiere.model.I_C_Order purchaseOrder = orderDAO.getById(purchaseOrderId);
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(purchaseOrder.getC_BPartner_ID());
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
-		final OrgId orgId = OrgId.ofRepoId(purchaseOrder.getAD_Org_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 		final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate = PurchaseShippingPackageCreateRequest.builder()
 				.orderId(purchaseOrderId)
-				.datePromised(order.getDatePromised())
-				.shipperTransportationIdl(shipperTransportationIdToUse)
+				.datePromised(order.getDatePromised().toInstant())
+				.shipperTransportationId(shipperTransportationIdToUse)
 				.shiperId(ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID()))
-				.bPartnerId(bPartnerId)
 				.bPartnerLocationId(bPartnerLocationId)
 				.orgId(orgId);
 		if (isOrderLinesWithoutLUQtyExist)
@@ -144,7 +148,7 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	private boolean isLUQtySet(@NonNull final I_C_OrderLine orderLine)
+	private static boolean isLUQtySet(@NonNull final I_C_OrderLine orderLine)
 	{
 		final BigDecimal luQty = orderLine.getQtyLU();
 		return luQty != null && luQty.signum() > 0;

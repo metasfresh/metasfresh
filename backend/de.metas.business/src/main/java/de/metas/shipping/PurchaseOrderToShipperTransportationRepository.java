@@ -1,6 +1,5 @@
 package de.metas.shipping;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -13,6 +12,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -56,15 +56,15 @@ public class PurchaseOrderToShipperTransportationRepository
 	{
 		final I_M_Package mpackage = newInstance(I_M_Package.class);
 		mpackage.setM_Shipper_ID(ShipperId.toRepoId(request.getShiperId()));
-		mpackage.setShipDate(request.getDatePromised());
-		mpackage.setC_BPartner_ID(BPartnerId.toRepoId(request.getBPartnerId()));
+		mpackage.setShipDate(TimeUtil.asTimestamp(request.getDatePromised()));
+		mpackage.setC_BPartner_ID(request.getBPartnerLocationId().getBpartnerId().getRepoId());
 		mpackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBPartnerLocationId()));
 		mpackage.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
 		mpackage.setIPA_SSCC18(SSCC18.toString(request.getSscc()));
 		save(mpackage);
 
 		final I_M_ShippingPackage shippingPackage = InterfaceWrapperHelper.newInstance(I_M_ShippingPackage.class, mpackage);
-		shippingPackage.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationIdl()));
+		shippingPackage.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));
 		shippingPackage.setM_Package_ID(mpackage.getM_Package_ID());
 		shippingPackage.setC_BPartner_ID(mpackage.getC_BPartner_ID());
 		shippingPackage.setC_BPartner_Location_ID(mpackage.getC_BPartner_Location_ID());

@@ -22,7 +22,6 @@
 
 package de.metas.shipping;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -34,7 +33,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Value
 @Builder(toBuilder = true)
@@ -42,11 +41,10 @@ public class PurchaseShippingPackageCreateRequest
 {
 	@NonNull OrderId orderId;
 	@Nullable OrderLineId orderLineId;
-	@NonNull ShipperTransportationId shipperTransportationIdl;
+	@NonNull ShipperTransportationId shipperTransportationId;
 	@NonNull ShipperId shiperId;
 	@NonNull OrgId orgId;
-	@NonNull Timestamp datePromised;
-	@NonNull BPartnerId bPartnerId;
+	@NonNull Instant datePromised;
 	@NonNull BPartnerLocationId bPartnerLocationId;
 	@Nullable SSCC18 sscc;
 

@@ -32,7 +32,7 @@ import lombok.NonNull;
 import org.compiere.model.I_M_Package;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 
 public interface IShipperTransportationDAO extends ISingletonService
@@ -43,7 +43,7 @@ public interface IShipperTransportationDAO extends ISingletonService
 	List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull ShipperTransportationId shipperTransportation);
 
 	@Nullable
-	ShipperTransportationId retrieveNextOpenShipperTransportationIdOrNull(@NonNull ShipperId shipperId, @Nullable LocalDate date);
+	ShipperTransportationId retrieveNextOpenShipperTransportationIdOrNull(@NonNull ShipperId shipperId, @Nullable Instant date);
 
 	/**
 	 * Retrieve all {@link I_M_ShippingPackage}s which are pointing to givem {@link I_M_Package}.
