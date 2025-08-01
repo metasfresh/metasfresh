@@ -135,7 +135,9 @@ import lombok.NonNull;
 		bpartner.setVATaxID(from.getTaxID());
 		bpartner.setC_InvoiceSchedule_ID(from.getC_InvoiceSchedule_ID());
 		bpartner.setPaymentRule(from.getPaymentRule());
+		bpartner.setPaymentRuleInfo(from.getPaymentRuleInfo());
 		bpartner.setPaymentRulePO(from.getPaymentRulePO());
+		bpartner.setPaymentRulePOInfo(from.getPaymentRulePOInfo());
 		bpartner.setPO_PaymentTerm_ID(from.getPO_PaymentTerm_ID());
 		bpartner.setC_PaymentTerm_ID(from.getC_PaymentTerm_ID());
 		bpartner.setNAICS(from.getNAICS());
@@ -168,7 +170,7 @@ import lombok.NonNull;
 		return bpartner;
 	}
 
-	private static final String extractBPName(final I_I_BPartner importRecord)
+	private static String extractBPName(final I_I_BPartner importRecord)
 	{
 		final String name = importRecord.getName();
 		if (!Check.isEmpty(name, true))
@@ -184,9 +186,9 @@ import lombok.NonNull;
 		return extractBPValue(importRecord);
 	}
 
-	private static final String extractBPValue(final I_I_BPartner importRecord)
+	private static String extractBPValue(final I_I_BPartner importRecord)
 	{
-		String bpValue = importRecord.getBPValue();
+		final String bpValue = importRecord.getBPValue();
 		return Check.isEmpty(bpValue, true) ? importRecord.getEMail() : bpValue;
 	}
 
@@ -247,6 +249,10 @@ import lombok.NonNull;
 		{
 			bpartner.setPaymentRule(from.getPaymentRule());
 		}
+		if (from.getPaymentRuleInfo() != null)
+		{
+			bpartner.setPaymentRuleInfo(from.getPaymentRuleInfo());
+		}
 		if (from.getPO_PaymentTerm_ID() > 0)
 		{
 			bpartner.setPO_PaymentTerm_ID(from.getPO_PaymentTerm_ID());
@@ -260,6 +266,10 @@ import lombok.NonNull;
 		if (from.getPaymentRulePO() != null)
 		{
 			bpartner.setPaymentRulePO(from.getPaymentRulePO());
+		}
+		if (from.getPaymentRulePOInfo() != null)
+		{
+			bpartner.setPaymentRulePOInfo(from.getPaymentRulePOInfo());
 		}
 		if (from.getVendorCategory() != null)
 		{
@@ -319,12 +329,6 @@ import lombok.NonNull;
 		}
 	}
 
-	/**
-	 * Set type of Business Partner
-	 *
-	 * @param X_I_BPartner impBP
-	 * @param MBPartner bp
-	 */
 	private static void setTypeOfBPartner(final I_I_BPartner importRecord, final I_C_BPartner bpartner)
 	{
 		if (importRecord.isVendor())

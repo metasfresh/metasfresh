@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -542810341L;
+	private static final long serialVersionUID = 189776201L;
 
     /** Standard Constructor */
     public X_I_BPartner (final Properties ctx, final int I_BPartner_ID, @Nullable final String trxName)
@@ -1127,6 +1127,39 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public void setIsUpdateLocationName (final boolean IsUpdateLocationName)
+	{
+		set_Value (COLUMNNAME_IsUpdateLocationName, IsUpdateLocationName);
+	}
+
+	@Override
+	public boolean isUpdateLocationName() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateLocationName);
+	}
+
+	/** 
+	 * IsUserInvoiceEmailEnabled AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISUSERINVOICEEMAILENABLED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISUSERINVOICEEMAILENABLED_Yes = "Y";
+	/** No = N */
+	public static final String ISUSERINVOICEEMAILENABLED_No = "N";
+	@Override
+	public void setIsUserInvoiceEmailEnabled (final @Nullable java.lang.String IsUserInvoiceEmailEnabled)
+	{
+		set_Value (COLUMNNAME_IsUserInvoiceEmailEnabled, IsUserInvoiceEmailEnabled);
+	}
+
+	@Override
+	public java.lang.String getIsUserInvoiceEmailEnabled() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsUserInvoiceEmailEnabled);
+	}
+
+	@Override
 	public void setIsVendor (final boolean IsVendor)
 	{
 		set_Value (COLUMNNAME_IsVendor, IsVendor);
@@ -1160,6 +1193,45 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getLastname() 
 	{
 		return get_ValueAsString(COLUMNNAME_Lastname);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper getLocation_M_Shipper()
+	{
+		return get_ValueAsPO(COLUMNNAME_Location_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setLocation_M_Shipper(final org.compiere.model.I_M_Shipper Location_M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_Location_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, Location_M_Shipper);
+	}
+
+	@Override
+	public void setLocation_M_Shipper_ID (final int Location_M_Shipper_ID)
+	{
+		if (Location_M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_Location_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_Location_M_Shipper_ID, Location_M_Shipper_ID);
+	}
+
+	@Override
+	public int getLocation_M_Shipper_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Location_M_Shipper_ID);
+	}
+
+	@Override
+	public void setLocationShipperName (final @Nullable java.lang.String LocationShipperName)
+	{
+		set_Value (COLUMNNAME_LocationShipperName, LocationShipperName);
+	}
+
+	@Override
+	public java.lang.String getLocationShipperName() 
+	{
+		return get_ValueAsString(COLUMNNAME_LocationShipperName);
 	}
 
 	@Override
@@ -1343,6 +1415,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return get_ValueAsString(COLUMNNAME_PaymentRule);
 	}
 
+	@Override
+	public void setPaymentRuleInfo (final @Nullable java.lang.String PaymentRuleInfo)
+	{
+		set_Value (COLUMNNAME_PaymentRuleInfo, PaymentRuleInfo);
+	}
+
+	@Override
+	public java.lang.String getPaymentRuleInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRuleInfo);
+	}
+
 	/** 
 	 * PaymentRulePO AD_Reference_ID=195
 	 * Reference name: _Payment Rule
@@ -1384,6 +1468,18 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPaymentRulePO() 
 	{
 		return get_ValueAsString(COLUMNNAME_PaymentRulePO);
+	}
+
+	@Override
+	public void setPaymentRulePOInfo (final @Nullable java.lang.String PaymentRulePOInfo)
+	{
+		set_Value (COLUMNNAME_PaymentRulePOInfo, PaymentRulePOInfo);
+	}
+
+	@Override
+	public java.lang.String getPaymentRulePOInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRulePOInfo);
 	}
 
 	@Override
