@@ -60,7 +60,7 @@ public class ResponseErrorHandler extends DefaultResponseErrorHandler
 
 		if (!Check.isEmpty(retryAfter))
 		{
-			return Optional.of(Duration.of(Long.parseLong(retryAfter.get(0)), SECONDS));
+			return Optional.of(Duration.of(Long.parseLong(retryAfter.getFirst()), SECONDS));
 		}
 		return Optional.empty();
 	}

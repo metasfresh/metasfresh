@@ -36,6 +36,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import java.util.Collections;
@@ -44,8 +45,6 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 
 /*
  * #%L
@@ -461,7 +460,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 
 			Mockito.doReturn(ImmutableList.of(storageRecord))
 					.when(storageEngine)
-					.retrieveStorageRecords(any(IContextAware.class), anyList());
+					.retrieveStorageRecords(ArgumentMatchers.any(IContextAware.class), ArgumentMatchers.anyList());
 		}
 
 		return new HUPickingSlotBL()

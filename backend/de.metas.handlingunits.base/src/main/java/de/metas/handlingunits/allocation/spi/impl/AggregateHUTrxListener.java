@@ -222,7 +222,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 				final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(item);
 				if (includedHUs.size() == 1) {
-					huqrCodesService.propagateQrForSplitHUs(includedHUs.get(0), destination.getCreatedHUs());
+					huqrCodesService.propagateQrForSplitHUs(includedHUs.getFirst(), destination.getCreatedHUs());
 				}
 			}
 		}
@@ -230,7 +230,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		// TODO: i think we can move this shit or something better into a model interceptor that is fired when item.qty is changed
 		{
 			// update the tare of our aggregate VHU (*if* its storage has such a thing)
-			final I_M_HU aggregateVHU = handlingUnitsDAO.retrieveIncludedHUs(item).get(0);
+			final I_M_HU aggregateVHU = handlingUnitsDAO.retrieveIncludedHUs(item).getFirst();
 			final IAttributeStorage aggregateVHUAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(aggregateVHU);
 
 			final IWeightable aggregateVHUWeightable = Weightables.wrap(aggregateVHUAttributeStorage);

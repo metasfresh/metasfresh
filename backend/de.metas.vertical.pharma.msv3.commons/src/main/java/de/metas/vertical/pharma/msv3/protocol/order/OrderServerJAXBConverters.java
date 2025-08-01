@@ -1,9 +1,8 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
-import javax.xml.bind.JAXBElement;
-
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
+import jakarta.xml.bind.JAXBElement;
 
 /*
  * #%L

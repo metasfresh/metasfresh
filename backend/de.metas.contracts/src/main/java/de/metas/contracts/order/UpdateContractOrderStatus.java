@@ -107,7 +107,7 @@ public class UpdateContractOrderStatus
 		final ImmutableSet<OrderId> orderIds = parentOrderId == null ? ImmutableSet.of(orderId) : ImmutableSet.of(orderId, parentOrderId);
 		final List<I_C_Order> orders = orderDAO.getByIds(orderIds, I_C_Order.class);
 
-		final I_C_Order contractOrder = orders.get(0);
+		final I_C_Order contractOrder = orders.getFirst();
 		setContractStatusForCurrentOrder(contractOrder, term);
 		setContractStatusForParentOrderIfNeeded(orders);
 	}
@@ -131,7 +131,7 @@ public class UpdateContractOrderStatus
 			return;
 		}
 
-		final I_C_Order contractOrder = orders.get(0);
+		final I_C_Order contractOrder = orders.getFirst();
 		final I_C_Order parentOrder = orders.get(1);
 
 		if (isActiveParentContractOrder(parentOrder, contractOrder))

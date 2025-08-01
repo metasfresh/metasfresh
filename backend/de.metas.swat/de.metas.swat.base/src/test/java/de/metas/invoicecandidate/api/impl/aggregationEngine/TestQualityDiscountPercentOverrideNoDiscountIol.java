@@ -65,7 +65,7 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 	@Override
 	protected List<I_M_InOutLine> step_createInOutLines(List<I_C_Invoice_Candidate> invoiceCandidates)
 	{
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		final StockQtyAndUOMQty qtysDelivered_100 = StockQtyAndUOMQtys.create(HUNDRET, productId, THOUSAND, uomId);
 		{
@@ -91,7 +91,7 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, inOutLines);
 
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		assertThat(ic.getQtyToInvoiceBeforeDiscount()).isEqualByComparingTo(new BigDecimal("100"));
 		assertThat(ic.getQtyToInvoice()).isEqualByComparingTo(new BigDecimal("90"));
@@ -106,7 +106,7 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 	{
 		super.step_validate_after_aggregation(invoiceCandidates, inOutLines, invoices);
 
-		final IInvoiceHeader invoice1 = invoices.remove(0);
+		final IInvoiceHeader invoice1 = invoices.removeFirst();
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
 

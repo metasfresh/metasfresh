@@ -106,7 +106,7 @@ public class Amount implements Comparable<Amount>
 					.omitEmptyStrings()
 					.splitToList(json);
 
-			return Amount.of(parts.get(0), CurrencyCode.ofThreeLetterCode(parts.get(1)));
+			return Amount.of(parts.getFirst(), CurrencyCode.ofThreeLetterCode(parts.get(1)));
 		}
 		catch (final Exception e)
 		{

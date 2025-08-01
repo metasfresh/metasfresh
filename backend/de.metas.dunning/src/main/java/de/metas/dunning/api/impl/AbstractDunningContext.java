@@ -42,9 +42,8 @@ public abstract class AbstractDunningContext implements IDunningContext
 	{
 		this();
 
-		if (context instanceof AbstractDunningContext)
+		if (context instanceof AbstractDunningContext c)
 		{
-			final AbstractDunningContext c = (AbstractDunningContext)context;
 			if (c.properties != null && !c.properties.isEmpty())
 			{
 				this.properties = new HashMap<String, Object>(c.properties);

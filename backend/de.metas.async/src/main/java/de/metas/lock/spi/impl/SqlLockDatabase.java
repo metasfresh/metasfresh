@@ -748,7 +748,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		Check.assume(result.size() <= 1, "There can be only one lock for the same owner");
 
-		return result.isEmpty() ? null : result.get(0);
+		return result.isEmpty() ? null : result.getFirst();
 	}
 
 	@Override

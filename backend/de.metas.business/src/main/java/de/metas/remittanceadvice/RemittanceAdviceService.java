@@ -80,7 +80,7 @@ public class RemittanceAdviceService
 	{
 		final Optional<I_C_Invoice> invoiceOptional = resolveInvoice(remittanceAdviceLine);
 
-		if (!invoiceOptional.isPresent())
+		if (invoiceOptional.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.WARN).addLog("*** WARN no invoice found for remittanceLine: {}", remittanceAdviceLine);
 			return;
@@ -164,7 +164,7 @@ public class RemittanceAdviceService
 					.setParameter("MatchedInvoiceIds", matchedInvoiceIds);
 		}
 
-		return Optional.of(matchedInvoices.get(0));
+		return Optional.of(matchedInvoices.getFirst());
 	}
 
 	private RemittanceAdviceLineInvoiceDetails buildInvoiceDetailsForRemittanceLine(

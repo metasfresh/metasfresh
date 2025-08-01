@@ -57,7 +57,7 @@ public abstract class AbstractFreshTwoInOutsOneInvoice_NoQualityDiscountTests ex
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, ignored);
 
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		assertThat(ic.getC_Invoice_Candidate_Agg()).isEqualTo(freshAgg);
 	}

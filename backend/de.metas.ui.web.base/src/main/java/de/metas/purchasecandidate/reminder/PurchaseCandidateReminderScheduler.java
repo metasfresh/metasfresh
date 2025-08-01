@@ -311,7 +311,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 				return null;
 			}
 
-			return reminders.first().getNotificationTime();
+			return reminders.getFirst().getNotificationTime();
 		}
 	}
 

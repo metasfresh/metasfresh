@@ -194,9 +194,9 @@ public abstract class AbstractContextMenuAction implements IContextMenuAction
 		else
 		{
 			final VEditor editor = getEditor();
-			if (editor instanceof Component)
+			if (editor instanceof Component component)
 			{
-				comp = (Component)editor;
+				comp = component;
 			}
 			else
 			{
@@ -207,9 +207,9 @@ public abstract class AbstractContextMenuAction implements IContextMenuAction
 		Component p = comp;
 		while (p != null)
 		{
-			if (p instanceof GridController)
+			if (p instanceof GridController controller)
 			{
-				return (GridController)p;
+				return controller;
 			}
 			p = p.getParent();
 		}

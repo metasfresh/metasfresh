@@ -64,9 +64,8 @@ public class JsonErrors
 			{
 				break;
 			}
-			else if (currentException instanceof AdempiereException)
+			else if (currentException instanceof AdempiereException metasfreshException)
 			{
-				final AdempiereException metasfreshException = (AdempiereException)currentException;
 				if(adIssueId == null && metasfreshException.getAdIssueId() != null)
 				{
 					adIssueId = JsonMetasfreshId.of(metasfreshException.getAdIssueId().getRepoId());
@@ -112,17 +111,17 @@ public class JsonErrors
 		{
 			return "<null>";
 		}
-		else if (value instanceof ITranslatableString)
+		else if (value instanceof ITranslatableString string)
 		{
-			return ((ITranslatableString)value).translate(adLanguage);
+			return string.translate(adLanguage);
 		}
-		else if (value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware aware)
 		{
-			return String.valueOf(((RepoIdAware)value).getRepoId());
+			return String.valueOf(aware.getRepoId());
 		}
-		else if (value instanceof ReferenceListAwareEnum)
+		else if (value instanceof ReferenceListAwareEnum enum1)
 		{
-			return ((ReferenceListAwareEnum)value).getCode();
+			return enum1.getCode();
 		}
 		else
 		{

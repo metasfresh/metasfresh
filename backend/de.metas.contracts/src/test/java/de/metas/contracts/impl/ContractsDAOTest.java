@@ -70,8 +70,8 @@ public class ContractsDAOTest
 		final List<I_C_Flatrate_Term> termsWithMissingCandidates = new ContractsDAO().retrieveSubscriptionTermsWithMissingCandidates(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, QueryLimit.ofInt(50));
 
 		assertThat(termsWithMissingCandidates).hasSize(1);
-		assertThat(termsWithMissingCandidates.get(0)).isInstanceOf(I_C_Flatrate_Term.class);
-		assertThat(termsWithMissingCandidates.get(0).getC_Flatrate_Term_ID()).isEqualTo(term1.getC_Flatrate_Term_ID());
+		assertThat(termsWithMissingCandidates.getFirst()).isInstanceOf(I_C_Flatrate_Term.class);
+		assertThat(termsWithMissingCandidates.getFirst().getC_Flatrate_Term_ID()).isEqualTo(term1.getC_Flatrate_Term_ID());
 	}
 
 }

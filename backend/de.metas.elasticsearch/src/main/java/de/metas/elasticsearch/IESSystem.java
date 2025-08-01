@@ -1,8 +1,8 @@
 package de.metas.elasticsearch;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.util.ISingletonService;
-import org.elasticsearch.client.RestHighLevelClient;
 
 /*
  * #%L
@@ -35,5 +35,5 @@ public interface IESSystem extends ISingletonService
 {
 	BooleanWithReason getEnabled();
 
-	RestHighLevelClient elasticsearchClient();
+	ElasticsearchClient elasticsearchClient();
 }

@@ -1,17 +1,7 @@
 package de.metas.location.geocoding.asynchandler;
 
-import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-
 import com.google.common.annotations.VisibleForTesting;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_Location;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
 import com.google.common.base.Joiner;
-
 import de.metas.Profiles;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -24,7 +14,14 @@ import de.metas.location.geocoding.GeocodingService;
 import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.location.geocoding.interceptor.C_Location;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.X_C_Location;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /*
  * #%L

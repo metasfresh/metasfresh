@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
+import jakarta.mail.Authenticator;
+import jakarta.mail.PasswordAuthentication;
 
 import javax.annotation.concurrent.Immutable;
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
 import java.io.Serializable;
 
 /*

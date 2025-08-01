@@ -126,7 +126,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		}
 		else
 		{
-			tableRefToAttach = TableRecordReference.ofOrNull(recordsToAttach.get(0));
+			tableRefToAttach = TableRecordReference.ofOrNull(recordsToAttach.getFirst());
 		}
 
 		// note that the partitioner itself only cares about "sync" requests.

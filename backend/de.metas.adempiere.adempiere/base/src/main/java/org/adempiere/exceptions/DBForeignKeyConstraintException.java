@@ -3,6 +3,8 @@ package org.adempiere.exceptions;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 
+import java.io.Serial;
+
 /**
  * Exception thrown on database foreign key violation.
  * 
@@ -15,6 +17,7 @@ public class DBForeignKeyConstraintException extends DBException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -2810401877944246237L;
 
 	private static final String AD_Message = "DBForeignKeyConstraintException";

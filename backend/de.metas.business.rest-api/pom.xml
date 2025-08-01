@@ -90,12 +90,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>de.metas.common.ordercandidates</groupId>
             <artifactId>de-metas-common-ordercandidates</artifactId>
             <version>${metasfresh.version}</version>

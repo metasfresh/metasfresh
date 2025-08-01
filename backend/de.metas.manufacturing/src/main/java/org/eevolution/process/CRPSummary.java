@@ -246,7 +246,7 @@ public class CRPSummary extends JavaProcess
  		//
  		GregorianCalendar cal = new GregorianCalendar();
  		cal.setTime(dateTime);
- 		cal.add(Calendar.SECOND, new Long(offset).intValue());			//	may have a problem with negative
+ 		cal.add(Calendar.SECOND, Long.valueOf(offset).intValue());			//	may have a problem with negative
  		return new Timestamp (cal.getTimeInMillis());
  	}	//	addMinutes
      
@@ -392,7 +392,7 @@ public class CRPSummary extends JavaProcess
 		 cols.setLoad(0);
 		 cols.setSummary(0);
 		
-		 list.add(0,cols);
+		 list.addFirst(cols);
 		 
 		 col ++;
 		 
@@ -440,7 +440,7 @@ public class CRPSummary extends JavaProcess
  		 			 cols.setFrom(gc1.getTime().toString());
  		 			 cols.setTo(gc1.getTime().toString());
  		 			 cols.setDays(1);
- 		 			 Long Hours = new Long(hours); 
+ 		 			 Long Hours = Long.valueOf(hours); 
  		 			 cols.setCapacity(Hours.intValue());
  		 			 int C_UOM_ID = DB.getSQLValue(null,"SELECT C_UOM_ID FROM M_Product WHERE S_Resource_ID = ? " , r.getS_Resource_ID());
  		 			

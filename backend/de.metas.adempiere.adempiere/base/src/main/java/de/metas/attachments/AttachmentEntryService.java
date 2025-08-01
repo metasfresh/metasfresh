@@ -177,7 +177,7 @@ public class AttachmentEntryService
 
 		Check.assumeNotEmpty(referencedRecordsList, "Parameter referencedRecords may not be empty");
 
-		final Object firstRecord = referencedRecordsList.get(0);
+		final Object firstRecord = referencedRecordsList.getFirst();
 
 		final AttachmentEntry entry = createNewAttachment(firstRecord, attachmentEntryCreateRequest);
 

@@ -7,6 +7,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import javax.annotation.Nullable;
 
+import java.io.Serial;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -37,6 +39,7 @@ import javax.annotation.Nullable;
  */
 public class DLMReferenceException extends DBException
 {
+	@Serial
 	private static final long serialVersionUID = -4557251479983766242L;
 
 	private final boolean referencingTableHasDLMLevel;

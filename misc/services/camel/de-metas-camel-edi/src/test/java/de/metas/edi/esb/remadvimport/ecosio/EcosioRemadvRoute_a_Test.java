@@ -26,7 +26,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
@@ -39,7 +39,7 @@ import java.util.Properties;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.CREATE_REMADV_MF_URL;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ECOSIO_REMADV_XML_TO_JSON_ROUTE;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.REMADV_XML_TO_JSON_PROCESSOR;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class EcosioRemadvRoute_a_Test extends CamelTestSupport
 {
@@ -99,13 +99,13 @@ class EcosioRemadvRoute_a_Test extends CamelTestSupport
 		template.sendBodyAndHeader(MOCK_FROM_ENDPOINT, createREMADVFile, Exchange.FILE_NAME_ONLY, "a_10_EcosioRemadvTestFile.xml");
 
 		assertThat(createRemadvEndpoint.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		mock.assertIsSatisfied(1000);
 	}
 
 
 	private void prepareRouteForTesting(final MockSuccessfullyCreatedRemadvProcessor createdRemadvProcessor) throws Exception
 	{
-		AdviceWithRouteBuilder.adviceWith(context, ECOSIO_REMADV_XML_TO_JSON_ROUTE,
+		AdviceWith.adviceWith(context, ECOSIO_REMADV_XML_TO_JSON_ROUTE,
 										  advice -> {
 											  advice.replaceFromWith(MOCK_FROM_ENDPOINT);
 

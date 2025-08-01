@@ -112,17 +112,17 @@ public class MessageFormatter
 		{
 			return null;
 		}
-		else if (arg instanceof ITranslatableString)
+		else if (arg instanceof ITranslatableString string)
 		{
-			return ((ITranslatableString)arg).translate(adLanguage);
+			return string.translate(adLanguage);
 		}
-		else if (arg instanceof Amount)
+		else if (arg instanceof Amount amount)
 		{
-			return TranslatableStrings.amount((Amount)arg).translate(adLanguage);
+			return TranslatableStrings.amount(amount).translate(adLanguage);
 		}
-		else if (arg instanceof ReferenceListAwareEnum)
+		else if (arg instanceof ReferenceListAwareEnum enum1)
 		{
-			return normalizeSingleArgumentBeforeFormat_ReferenceListAwareEnum((ReferenceListAwareEnum)arg, adLanguage);
+			return normalizeSingleArgumentBeforeFormat_ReferenceListAwareEnum(enum1, adLanguage);
 		}
 		else if (arg instanceof Iterable)
 		{

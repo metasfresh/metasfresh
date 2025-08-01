@@ -193,7 +193,7 @@ public class ProcessPickingCandidatesCommand_PickFromPickingOrder_Test
 					.qty(Quantity.of(10000 - 6, helper.uomEach))
 					.assertExpected(chocolatesHUId);
 
-			final I_PP_Cost_Collector costCollector_ComponentIssue = costCollectors.get(0);
+			final I_PP_Cost_Collector costCollector_ComponentIssue = costCollectors.getFirst();
 			assertThat(costCollector_ComponentIssue.getM_Product_ID()).isEqualTo(chocolateProductId.getRepoId());
 			assertThat(costCollector_ComponentIssue.getMovementQty()).isEqualByComparingTo("6");
 		}

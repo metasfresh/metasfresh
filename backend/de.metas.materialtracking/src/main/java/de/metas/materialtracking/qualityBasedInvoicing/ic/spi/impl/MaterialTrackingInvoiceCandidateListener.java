@@ -85,7 +85,7 @@ public class MaterialTrackingInvoiceCandidateListener implements IInvoiceCandida
 			return null;
 		}
 
-		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(invoiceCandidates.get(0), de.metas.materialtracking.model.I_C_Invoice_Candidate.class).getM_Material_Tracking();
+		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(invoiceCandidates.getFirst(), de.metas.materialtracking.model.I_C_Invoice_Candidate.class).getM_Material_Tracking();
 		for (final I_C_Invoice_Candidate fromInvoiceCandidate : invoiceCandidates)
 		{
 			final de.metas.materialtracking.model.I_C_Invoice_Candidate invoicecandExt = InterfaceWrapperHelper.create(fromInvoiceCandidate,

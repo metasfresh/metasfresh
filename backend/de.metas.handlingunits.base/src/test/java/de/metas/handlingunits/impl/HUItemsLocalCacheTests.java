@@ -81,7 +81,7 @@ public class HUItemsLocalCacheTests
 
 		final List<I_M_HU_Item> items = HUItemsLocalCache.getCreate(hu).retrieveItems(InterfaceWrapperHelper.getContextAware(hu), hu);
 		assertThat(items).hasSize(5);
-		assertThat(items.get(0).getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_Material);
+		assertThat(items.getFirst().getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_Material);
 		assertThat(items.get(1).getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_HandlingUnit);
 		assertThat(items.get(2).getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_HUAggregate);
 

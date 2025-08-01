@@ -302,7 +302,7 @@ public class HealthcareXMLToInvoiceDetailPersister
 			final List<String> phones = telecom.getPhones();
 			if (phones != null && !phones.isEmpty())
 			{
-				setIfNotBlank(invoiceWithDetails, phones.get(0), detailItemLabel);
+				setIfNotBlank(invoiceWithDetails, phones.getFirst(), detailItemLabel);
 			}
 		}
 	}
@@ -317,7 +317,7 @@ public class HealthcareXMLToInvoiceDetailPersister
 			final List<String> emails = online.getEmails();
 			if (emails != null && !emails.isEmpty())
 			{
-				setIfNotBlank(invoiceWithDetails, emails.get(0), detailItemLabel);
+				setIfNotBlank(invoiceWithDetails, emails.getFirst(), detailItemLabel);
 			}
 		}
 	}

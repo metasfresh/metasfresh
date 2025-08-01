@@ -101,7 +101,7 @@ class ShipmentScheduleAuditRepositoryTest
 		// then
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
-		final I_M_ShipmentSchedule_ExportAudit exportAudit = exportAudits.get(0);
+		final I_M_ShipmentSchedule_ExportAudit exportAudit = exportAudits.getFirst();
 		assertThat(exportAudit.getTransactionIdAPI()).isEqualTo("transactionId");
 		assertThat(exportAudits).extracting("TransactionIdAPI", "AD_Org_ID", "AD_Issue_ID", "ExportStatus", "ForwardedData")
 				.containsExactlyInAnyOrder(

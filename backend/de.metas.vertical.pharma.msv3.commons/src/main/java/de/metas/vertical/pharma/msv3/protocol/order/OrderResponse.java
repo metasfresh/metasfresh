@@ -83,6 +83,6 @@ public class OrderResponse
 		{
 			throw new IllegalStateException("Only one order was expected but we have: " + responseOrders);
 		}
-		return responseOrders.get(0);
+		return responseOrders.getFirst();
 	}
 }

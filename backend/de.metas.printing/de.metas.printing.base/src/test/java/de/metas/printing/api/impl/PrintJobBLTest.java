@@ -86,17 +86,17 @@ public class PrintJobBLTest extends AbstractPrintingTest
 		helper.createAllPrintJobs();
 		assertThat(helper.getDB().getRecords(I_C_Print_Job.class)).hasSize(1);
 
-		final I_C_Print_Job printJob = helper.getDB().getRecords(I_C_Print_Job.class).get(0);
+		final I_C_Print_Job printJob = helper.getDB().getRecords(I_C_Print_Job.class).getFirst();
 
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 		final List<I_C_Print_Job_Line> jobLines = IteratorUtils.toList(printingDAO.retrievePrintJobLines(printJob));
 		assertThat(jobLines).hasSize(1);
 
-		final I_C_Print_Job_Line jobLine = jobLines.get(0);
+		final I_C_Print_Job_Line jobLine = jobLines.getFirst();
 		final List<I_C_Print_Job_Detail> jobDetails = printingDAO.retrievePrintJobDetails(jobLine);
 		assertThat(jobDetails).as("expecting one detail per routing").hasSize(2);
 
-		assertThat(jobDetails.get(0).getAD_PrinterRouting_ID()).isEqualTo(routing11.getAD_PrinterRouting_ID());
+		assertThat(jobDetails.getFirst().getAD_PrinterRouting_ID()).isEqualTo(routing11.getAD_PrinterRouting_ID());
 		assertThat(jobDetails.get(1).getAD_PrinterRouting_ID()).isEqualTo(routing12.getAD_PrinterRouting_ID());
 
 		final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob);

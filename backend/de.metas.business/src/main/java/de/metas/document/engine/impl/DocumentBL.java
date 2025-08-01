@@ -32,15 +32,15 @@ public final class DocumentBL extends AbstractDocumentBL
 		}
 
 		//
-		if (documentObj instanceof IDocument)
+		if (documentObj instanceof IDocument document)
 		{
-			return (IDocument)documentObj;
+			return document;
 		}
 
 		final PO po;
-		if (documentObj instanceof ITableRecordReference)
+		if (documentObj instanceof ITableRecordReference reference)
 		{
-			final Object model = ((ITableRecordReference)documentObj).getModel();
+			final Object model = reference.getModel();
 			po = InterfaceWrapperHelper.getPO(model);
 		}
 		else
@@ -57,9 +57,9 @@ public final class DocumentBL extends AbstractDocumentBL
 			}
 			return null;
 		}
-		if (po instanceof IDocument)
+		if (po instanceof IDocument document)
 		{
-			return (IDocument)po;
+			return document;
 
 		}
 

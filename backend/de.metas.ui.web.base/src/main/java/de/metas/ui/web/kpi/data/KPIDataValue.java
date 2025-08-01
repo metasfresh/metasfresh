@@ -123,18 +123,18 @@ public class KPIDataValue
 						final BigDecimal bd = new BigDecimal(value.toString());
 						return roundToPrecision(bd);
 					}
-					else if (value instanceof Double)
+					else if (value instanceof Double double1)
 					{
-						final BigDecimal bd = BigDecimal.valueOf((Double)value);
+						final BigDecimal bd = BigDecimal.valueOf(double1);
 						return roundToPrecision(bd);
 					}
 					else if (value instanceof Integer)
 					{
 						return value;
 					}
-					else if (value instanceof Number)
+					else if (value instanceof Number number)
 					{
-						final BigDecimal bd = BigDecimal.valueOf(((Number)value).doubleValue());
+						final BigDecimal bd = BigDecimal.valueOf(number.doubleValue());
 						return roundToPrecision(bd);
 					}
 					else
@@ -181,16 +181,15 @@ public class KPIDataValue
 					return DisplayType.getDateFormat(DisplayType.Date, language)
 							.format(date);
 				}
-				else if (value instanceof Date)
+				else if (value instanceof Date date)
 				{
-					final Date date = (Date)value;
 					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
 					return DisplayType.getDateFormat(DisplayType.Date, language)
 							.format(date);
 				}
-				else if (value instanceof Number)
+				else if (value instanceof Number number)
 				{
-					final long millis = ((Number)value).longValue();
+					final long millis = number.longValue();
 					final Date date = new Date(millis);
 					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
 					return DisplayType.getDateFormat(DisplayType.Date, language)
@@ -210,16 +209,15 @@ public class KPIDataValue
 					return DisplayType.getDateFormat(DisplayType.DateTime, language)
 							.format(date);
 				}
-				else if (value instanceof Date)
+				else if (value instanceof Date date)
 				{
-					final Date date = (Date)value;
 					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
 					return DisplayType.getDateFormat(DisplayType.DateTime, language)
 							.format(date);
 				}
-				else if (value instanceof Number)
+				else if (value instanceof Number number)
 				{
-					final long millis = ((Number)value).longValue();
+					final long millis = number.longValue();
 					final Date date = new Date(millis);
 					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
 					return DisplayType.getDateFormat(DisplayType.DateTime, language)

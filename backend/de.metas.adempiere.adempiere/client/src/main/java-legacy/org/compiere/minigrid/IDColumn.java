@@ -35,7 +35,7 @@ public class IDColumn
 	 */
 	public IDColumn (int record_ID)
 	{
-		this(new Integer(record_ID));
+		this(Integer.valueOf(record_ID));
 	}   //  IDColumn
 
 	/**

@@ -141,7 +141,7 @@ public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTempla
 
 			huLotNoQuarantineService.markHUAsQuarantine(hu);
 
-			final I_M_InOut firstReceipt = inOutLinesForHU.get(0).getM_InOut();
+			final I_M_InOut firstReceipt = inOutLinesForHU.getFirst().getM_InOut();
 			final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(firstReceipt.getC_BPartner_ID(), firstReceipt.getC_BPartner_Location_ID());
 
 			husToQuarantine.add(HUToDistribute.builder()

@@ -27,11 +27,14 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.util.Check;
 
+import java.io.Serial;
+
 public class TableColumnPathException extends AdempiereException
 {
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 8007680258422505748L;
 
 	private final String pathStr;

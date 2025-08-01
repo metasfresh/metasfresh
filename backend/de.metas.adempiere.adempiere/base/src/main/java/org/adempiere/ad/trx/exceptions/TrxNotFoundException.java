@@ -26,6 +26,8 @@ package org.adempiere.ad.trx.exceptions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when {@link ITrx} was not found for a given transaction name.
  * 
@@ -37,6 +39,7 @@ public class TrxNotFoundException extends TrxException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 662721300736919676L;
 
 	public TrxNotFoundException(final ITrxManager trxManager, final String trxName)

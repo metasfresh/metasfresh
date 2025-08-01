@@ -90,7 +90,7 @@ public class BPartnerSupplierApprovalService
 					.filter(supplierApproval -> norm.equals(supplierApproval.getSupplierApproval_Norm()))
 					.findFirst();
 
-			if (!foundNorm.isPresent())
+			if (foundNorm.isEmpty())
 			{
 				partnerLacksSupplierApproval(partnerName, norm);
 			}

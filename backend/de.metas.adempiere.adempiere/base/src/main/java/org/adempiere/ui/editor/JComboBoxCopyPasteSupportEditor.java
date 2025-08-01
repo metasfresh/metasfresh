@@ -1,14 +1,10 @@
 package org.adempiere.ui.editor;
 
-import java.awt.Component;
-
-import javax.swing.Action;
-import javax.swing.ComboBoxEditor;
-import javax.swing.JComboBox;
-import javax.swing.KeyStroke;
-import javax.swing.text.JTextComponent;
-
 import de.metas.util.Check;
+
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
 
 /*
  * #%L
@@ -74,9 +70,9 @@ public class JComboBoxCopyPasteSupportEditor implements ICopyPasteSupportEditor
 		final JComboBox<?> comboBox = getComboBox();
 		final ComboBoxEditor comboEditor = comboBox == null ? null : comboBox.getEditor();
 		final Component comboEditorComponent = comboEditor == null ? null : comboEditor.getEditorComponent();
-		if (comboEditorComponent instanceof JTextComponent)
+		if (comboEditorComponent instanceof JTextComponent component)
 		{
-			return (JTextComponent)comboEditorComponent;
+			return component;
 		}
 
 		return null;

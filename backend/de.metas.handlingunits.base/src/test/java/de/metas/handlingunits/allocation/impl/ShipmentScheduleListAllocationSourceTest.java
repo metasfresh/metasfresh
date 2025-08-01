@@ -104,7 +104,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 		// Validate result transactions
 		// NOTE: at this point Shipment Schedule's QtyPicked is not changed. It will be changed when transactions will be processed
 		Assertions.assertEquals( 3,  trxs.size(), "Invalid transactions count");
-		shipmentScheduleHelper.assertValidTransaction(trxs.get(0), schedules.get(0), new BigDecimal("-9"), new BigDecimal("1"));
+		shipmentScheduleHelper.assertValidTransaction(trxs.getFirst(), schedules.getFirst(), new BigDecimal("-9"), new BigDecimal("1"));
 		shipmentScheduleHelper.assertValidTransaction(trxs.get(1), schedules.get(1), new BigDecimal("-8"), new BigDecimal("2"));
 		shipmentScheduleHelper.assertValidTransaction(trxs.get(2), schedules.get(2), new BigDecimal("-3"), new BigDecimal("3"));
 
@@ -124,7 +124,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 
 		//
 		// Validate result transactions (after processing them)
-		shipmentScheduleHelper.assertValidTransaction(trxs.get(0), schedules.get(0), new BigDecimal("-9"), new BigDecimal("10"));
+		shipmentScheduleHelper.assertValidTransaction(trxs.getFirst(), schedules.getFirst(), new BigDecimal("-9"), new BigDecimal("10"));
 		shipmentScheduleHelper.assertValidTransaction(trxs.get(1), schedules.get(1), new BigDecimal("-8"), new BigDecimal("10"));
 		shipmentScheduleHelper.assertValidTransaction(trxs.get(2), schedules.get(2), new BigDecimal("-3"), new BigDecimal("6"));
 	}
@@ -173,14 +173,14 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 		Assertions.assertEquals(
 				1,  // expecteds
 				destination.getCreatedHUs().size(), "There shall be only one HU created: " + destination.getCreatedHUs());
-		final I_M_HU createdHU = destination.getCreatedHUs().get(0);
+		final I_M_HU createdHU = destination.getCreatedHUs().getFirst();
 
 		//
 		// Validate result transactions
 		{
 			Assertions.assertEquals( 6,  result.getTransactions().size(), "Invalid trx count in result: " + result);
 			final List<IHUTransactionCandidate> scheduleTrxs = Arrays.asList(
-					result.getTransactions().get(0),
+					result.getTransactions().getFirst(),
 					// result.getTransactions().get(1), // HU_Item trx
 					result.getTransactions().get(2),
 					// result.getTransactions().get(3), // HU_Item trx
@@ -188,10 +188,10 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 			// result.getTransactions().get(5), // HU_Item trx
 			);
 
-			shipmentScheduleHelper.assertValidTransaction(scheduleTrxs.get(0), schedules.get(0), new BigDecimal("-9"), new BigDecimal("10"));
+			shipmentScheduleHelper.assertValidTransaction(scheduleTrxs.getFirst(), schedules.getFirst(), new BigDecimal("-9"), new BigDecimal("10"));
 			//@formatter:off
 			new ShipmentScheduleQtyPickedExpectations()
-				.shipmentSchedule(schedules.get(0))
+				.shipmentSchedule(schedules.getFirst())
 				.newShipmentScheduleQtyPickedExpectation()
 					.qtyPicked("1").noHUs()
 					.endExpectation()
@@ -300,7 +300,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 
 		final I_M_HU hu = huBuilder.create(pi);
 
-		return dao.retrieveItems(hu).get(0);
+		return dao.retrieveItems(hu).getFirst();
 	}
 
 }

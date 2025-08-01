@@ -1,20 +1,18 @@
 package de.metas.vertical.pharma.securpharm.actions;
 
-import javax.annotation.PostConstruct;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
 import de.metas.Profiles;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L

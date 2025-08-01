@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jxb:bindings version="1.0" 
-	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" 
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+<jxb:bindings version="3.0" 
+	xmlns:jxb="https://jakarta.ee/xml/ns/jaxb" 
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
 	<jxb:bindings schemaLocation="generalInvoiceRequest_450.xsd">

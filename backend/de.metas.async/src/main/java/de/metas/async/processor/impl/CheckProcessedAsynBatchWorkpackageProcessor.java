@@ -68,7 +68,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 					.setParameter("C_Queue_WorkPackage_ID", workpackage.getC_Queue_WorkPackage_ID());
 		}
 
-		final I_C_Async_Batch asyncBatch = batches.get(0);
+		final I_C_Async_Batch asyncBatch = batches.getFirst();
 
 		if (asyncBatch.isProcessed() || !asyncBatch.isActive())
 		{

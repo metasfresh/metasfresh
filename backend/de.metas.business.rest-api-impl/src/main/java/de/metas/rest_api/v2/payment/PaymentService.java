@@ -53,7 +53,7 @@ public class PaymentService
 			@Nullable final String iban)
 	{
 		final Optional<BPartnerId> orgBPartnerIdOptional = bPartnerOrgBL.retrieveLinkedBPartnerId(orgId);
-		if (!orgBPartnerIdOptional.isPresent())
+		if (orgBPartnerIdOptional.isEmpty())
 		{
 			return Optional.empty();
 		}

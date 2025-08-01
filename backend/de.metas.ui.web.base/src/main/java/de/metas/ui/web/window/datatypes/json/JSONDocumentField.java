@@ -292,9 +292,9 @@ public final class JSONDocumentField
 	/* package */ void unboxPasswordField()
 	{
 		final Object value = this.value;
-		if (value instanceof Password)
+		if (value instanceof Password password)
 		{
-			this.value = ((Password)value).getAsString();
+			this.value = password.getAsString();
 		}
 	}
 
@@ -337,9 +337,9 @@ public final class JSONDocumentField
 
 	private static String extractReason(@NonNull final LogicExpressionResult result, @Nullable final String adLanguage)
 	{
-		if (result instanceof LogicExpressionResultWithReason)
+		if (result instanceof LogicExpressionResultWithReason withReason)
 		{
-			final ITranslatableString reason = ((LogicExpressionResultWithReason)result).getReason();
+			final ITranslatableString reason = withReason.getReason();
 			if (reason == null)
 			{
 				return null;

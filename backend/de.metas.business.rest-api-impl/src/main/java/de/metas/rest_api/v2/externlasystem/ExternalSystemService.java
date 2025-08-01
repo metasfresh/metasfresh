@@ -267,7 +267,7 @@ public class ExternalSystemService
 	{
 		final Optional<ExternalSystemParentConfig> parentConfig = getByTypeAndValue(externalSystemType, childConfigValue);
 
-		if (!parentConfig.isPresent())
+		if (parentConfig.isEmpty())
 		{
 			throw MissingResourceException.builder()
 					.resourceName("ExternalSystemConfig")

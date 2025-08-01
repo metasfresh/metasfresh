@@ -110,7 +110,7 @@ public final class CCacheStatsOrderBy implements Comparator<CCacheStats>
 
 	private Comparator<CCacheStats> createActualComparator()
 	{
-		Comparator<CCacheStats> result = parts.get(0).toComparator();
+		Comparator<CCacheStats> result = parts.getFirst().toComparator();
 		for (int i = 1; i < parts.size(); i++)
 		{
 			final Comparator<CCacheStats> partComparator = parts.get(i).toComparator();

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.acct.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for Document_Acct_Log
  *  @author metasfresh (generated) 

@@ -133,7 +133,7 @@ public class TransactionCreatedHandlerTests
 
 		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(unrelatedEvent);
 		assertThat(candidates).hasSize(1);
-		final Candidate candidate = candidates.get(0);
+		final Candidate candidate = candidates.getFirst();
 
 		makeCommonAssertions(candidate);
 
@@ -146,13 +146,13 @@ public class TransactionCreatedHandlerTests
 			//
 			assertThat(query).isNotNull();
 			assertThat(query.getTransactionDetails()).hasSize(1);
-			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
+			assertThat(query.getTransactionDetails().getFirst().getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_INCREASE);
 		assertThat(candidate.getAdditionalDemandDetail()).isNull();
 		assertThat(candidate.getBusinessCaseDetail()).isNull();
-		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("10");
+		assertThat(candidate.getTransactionDetails().getFirst().getQuantity()).isEqualByComparingTo("10");
 	}
 
 	@Test
@@ -187,7 +187,7 @@ public class TransactionCreatedHandlerTests
 
 		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(unrelatedEvent);
 		assertThat(candidates).hasSize(1);
-		final Candidate candidate = candidates.get(0);
+		final Candidate candidate = candidates.getFirst();
 
 		makeCommonAssertions(candidate);
 
@@ -200,7 +200,7 @@ public class TransactionCreatedHandlerTests
 			//
 			assertThat(query).isNotNull();
 			assertThat(query.getTransactionDetails()).hasSize(1);
-			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
+			assertThat(query.getTransactionDetails().getFirst().getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_INCREASE);
@@ -233,7 +233,7 @@ public class TransactionCreatedHandlerTests
 
 		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(relatedEvent);
 		assertThat(candidates).hasSize(1);
-		final Candidate candidate = candidates.get(0);
+		final Candidate candidate = candidates.getFirst();
 
 		makeCommonAssertions(candidate);
 
@@ -253,7 +253,7 @@ public class TransactionCreatedHandlerTests
 		assertThat(demandDetail).as("created candidate shall have a demand detail").isNotNull();
 		assertThat(demandDetail.getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
-		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo(TEN);
+		assertThat(candidate.getTransactionDetails().getFirst().getQuantity()).isEqualByComparingTo(TEN);
 	}
 
 	@Test
@@ -288,7 +288,7 @@ public class TransactionCreatedHandlerTests
 		// invoke the method under test
 		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(relatedEvent);
 		assertThat(candidates).hasSize(1);
-		final Candidate candidate = candidates.get(0);
+		final Candidate candidate = candidates.getFirst();
 
 		// verify that candidateRepository was called to decide if the event is related to anything we know
 		{
@@ -311,8 +311,8 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getBusinessCaseDetail()).isInstanceOf(DemandDetail.class);
 		assertThat(DemandDetail.cast(candidate.getBusinessCaseDetail()).getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
-		assertThat(candidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
-		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo(TEN);
+		assertThat(candidate.getTransactionDetails().getFirst().getTransactionId()).isEqualTo(TRANSACTION_ID);
+		assertThat(candidate.getTransactionDetails().getFirst().getQuantity()).isEqualByComparingTo(TEN);
 	}
 
 	private static void assertDemandDetailQuery(final CandidatesQuery query)

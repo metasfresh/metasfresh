@@ -1,13 +1,12 @@
 package org.adempiere.ad.trx.api.impl;
 
-import java.util.concurrent.Callable;
-
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.trx.api.TrxCallableAdapter;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
+
+import javax.annotation.Nullable;
+import java.util.concurrent.Callable;
 
 /*
  * #%L
@@ -86,9 +85,9 @@ import org.compiere.util.TrxRunnable2;
 			return null;
 		}
 
-		if (trxRunnable instanceof TrxRunnable2)
+		if (trxRunnable instanceof TrxRunnable2 runnable2)
 		{
-			return wrapIfNeeded((TrxRunnable2)trxRunnable);
+			return wrapIfNeeded(runnable2);
 		}
 
 		return new TrxCallableWithTrxName<Void>()

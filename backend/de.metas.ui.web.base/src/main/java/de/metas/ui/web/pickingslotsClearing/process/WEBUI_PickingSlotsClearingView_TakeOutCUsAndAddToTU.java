@@ -118,7 +118,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 				return DEFAULT_VALUE_NOTAVAILABLE;
 			}
 
-			return pickingSlotRows.get(0).getHuQtyCU();
+			return pickingSlotRows.getFirst().getHuQtyCU();
 		}
 		else
 		{
@@ -144,7 +144,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 		final List<Integer> huIdsDestroyedCollector = new ArrayList<>();
 		if (fromCUs.size() == 1)
 		{
-			huLoader.load(prepareUnloadRequest(fromCUs.get(0), getQtyCUsPerTU())
+			huLoader.load(prepareUnloadRequest(fromCUs.getFirst(), getQtyCUsPerTU())
 					.setForceQtyAllocation(true)
 					.addEmptyHUListener(EmptyHUListener.doBeforeDestroyed(hu -> huIdsDestroyedCollector.add(hu.getM_HU_ID())))
 					.create());

@@ -26,9 +26,8 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.process.WEBUI_CloneLine;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 @Component
 public class CloneLineProcessConfig

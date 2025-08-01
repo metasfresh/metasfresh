@@ -2,7 +2,7 @@ ARG REFNAME=local
 ARG REGISTRY=
 FROM ${REGISTRY}metasfresh/metas-mvn-common:$REFNAME AS common
 
-FROM maven:3.6.3-adoptopenjdk-14 AS build
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 COPY --from=common /root/.m2 /root/.m2/
 
@@ -12,7 +12,7 @@ COPY misc/services/procurement-webui/procurement-webui-backend .
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode clean install --offline -Dmaven.gitcommitid.skip=true -Djib.skip=true -DskipTests
 
-FROM adoptopenjdk:14.0.2_8-jdk-hotspot
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 

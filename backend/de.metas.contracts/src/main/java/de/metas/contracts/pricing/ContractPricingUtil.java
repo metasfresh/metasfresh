@@ -48,9 +48,9 @@ public final class ContractPricingUtil
 			return null;
 		}
 
-		if (referencedObject instanceof IFlatrateConditionsAware)
+		if (referencedObject instanceof IFlatrateConditionsAware aware)
 		{
-			return ((IFlatrateConditionsAware)(referencedObject)).getC_Flatrate_Conditions();
+			return aware.getC_Flatrate_Conditions();
 		}
 
 		try

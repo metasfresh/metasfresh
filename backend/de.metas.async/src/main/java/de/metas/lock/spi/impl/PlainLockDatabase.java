@@ -682,7 +682,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 				throw new LockFailedException("More then one lock found for " + lockOwner + ": " + recordLocksList);
 			}
 
-			final RecordLocks recordLocks = recordLocksList.get(0);
+			final RecordLocks recordLocks = recordLocksList.getFirst();
 
 			final LockInfo lockInfo = recordLocks.getLockByOwner(lockOwner);
 			if (lockInfo == null)

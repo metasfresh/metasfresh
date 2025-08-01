@@ -122,14 +122,12 @@ public class DATEVCsvExporter extends AbstractExporter
 		{
 			return null;
 		}
-		else if (value instanceof java.util.Date)
+		else if (value instanceof java.util.Date date)
 		{
-			final java.util.Date date = (java.util.Date)value;
 			return dateFormatter.format(TimeUtil.asLocalDate(date));
 		}
-		else if (value instanceof TemporalAccessor)
+		else if (value instanceof TemporalAccessor temporal)
 		{
-			TemporalAccessor temporal = (TemporalAccessor)value;
 			return dateFormatter.format(temporal);
 		}
 		else

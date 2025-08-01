@@ -22,13 +22,12 @@ package de.metas.cache.interceptor;
  * #L%
  */
 
-
-import java.lang.reflect.Method;
-
+import de.metas.logging.LogManager;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
+import java.lang.reflect.Method;
 
 /**
  * In case target object is an {@link PO} and {@link Cached#ignoreInstance()} is not set,
@@ -57,9 +56,8 @@ class TargetPOPartDescriptor implements ICachedMethodPartDescriptor
 	@Override
 	public void extractKeyParts(CacheKeyBuilder keyBuilder, Object targetObject, Object[] params)
 	{
-		if (targetObject instanceof PO && ((PO)targetObject).get_ID() > 0)
+		if (targetObject instanceof PO po && po.get_ID() > 0)
 		{
-			final PO po = (PO)targetObject;
 			keyBuilder.add(po.get_Table_ID());
 			keyBuilder.add(po.get_ID());
 			keyBuilder.add(po.get_TrxName());

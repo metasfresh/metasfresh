@@ -1,28 +1,6 @@
 package de.metas.invoicecandidate.ui.spi.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Properties;
@@ -44,6 +22,7 @@ import de.metas.util.Services;
 /** Represent a summary information (immutable) about a selection of invoice candidates */
 public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSummaryInfo
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/** @return new builder */
@@ -55,9 +34,9 @@ public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSumm
 	/** Cast given {@link IGridTabSummaryInfo} to {@link InvoiceCandidatesSelectionSummaryInfo} if possible. If not, null is returned */
 	public static InvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
 	{
-		if (gridTabSummaryInfo instanceof InvoiceCandidatesSelectionSummaryInfo)
+		if (gridTabSummaryInfo instanceof InvoiceCandidatesSelectionSummaryInfo info)
 		{
-			return (InvoiceCandidatesSelectionSummaryInfo)gridTabSummaryInfo;
+			return info;
 		}
 		return null;
 	}

@@ -135,7 +135,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 		//System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("huPalets", huPalets)));
 		assertThat(huPalets).as("There should be 2 palets").hasSize(2);
 
-		final I_M_HU palet1 = huPalets.get(0);
+		final I_M_HU palet1 = huPalets.getFirst();
 		final I_M_HU palet2 = huPalets.get(1);
 
 		final IAttributeStorageFactory storageFactory = helper.getHUContext().getHUAttributeStorageFactory();
@@ -160,7 +160,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 				assertThat(huIFCOs)
 						.as("Invalid number of IFCOs in pallet, palet item: \n" + huPaletItem).hasSize(2);
 
-				final I_M_HU huIFCO1 = huIFCOs.get(0);
+				final I_M_HU huIFCO1 = huIFCOs.getFirst();
 				final IAttributeStorage huIFCO1_Attrs = storageFactory.getAttributeStorage(huIFCO1);
 
 				final BigDecimal huIFCO1_Volume = BigDecimal.TEN;
@@ -212,7 +212,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 				final List<I_M_HU> huIFCOs = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(huPaletItem);
 				assertThat(huIFCOs).as("Invalid number of IFCOs in pallet, palet item: \n" + huPaletItem).hasSize(1);
 
-				final I_M_HU huIFCO = huIFCOs.get(0);
+				final I_M_HU huIFCO = huIFCOs.getFirst();
 				final IAttributeStorage huIFCO_Attrs = storageFactory.getAttributeStorage(huIFCO);
 
 				final BigDecimal huIFCO_Volume = BigDecimal.TEN;
@@ -246,7 +246,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 					.setPropagationType("Invalid propagation type"));
 
 			final List<I_M_HU> huPalets = createIncomingPalets();
-			final I_M_HU palletOne = huPalets.get(0);
+			final I_M_HU palletOne = huPalets.getFirst();
 
 			final IAttributeStorageFactory attributeStorageFactory = helper.getHUContext().getHUAttributeStorageFactory();
 
@@ -272,7 +272,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 				.setSplitterStrategyClass(CopyAttributeSplitterStrategy.class));
 
 		final List<I_M_HU> huPalets = createIncomingPalets();
-		final I_M_HU palletOne = huPalets.get(0);
+		final I_M_HU palletOne = huPalets.getFirst();
 
 		final IAttributeStorageFactory attributeStorageFactory = helper.getHUContext().getHUAttributeStorageFactory();
 

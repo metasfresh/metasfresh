@@ -158,7 +158,7 @@ final class BPartnersCache
 			bpartnersRepo.save(bpartnerLocation);
 			final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerLocation.getC_BPartner_ID(), bpartnerLocation.getC_BPartner_Location_ID());
 
-			if (!getBPLocationById(bpartnerLocationId).isPresent())
+			if (getBPLocationById(bpartnerLocationId).isEmpty())
 			{
 				getOrLoadBPLocations().add(bpartnerLocation);
 			}
@@ -194,7 +194,7 @@ final class BPartnersCache
 			bpartnersRepo.save(contact);
 			final BPartnerContactId contactId = BPartnerContactId.ofRepoId(contact.getC_BPartner_ID(), contact.getAD_User_ID());
 
-			if (!getContactById(contactId).isPresent())
+			if (getContactById(contactId).isEmpty())
 			{
 				getOrLoadContacts().add(contact);
 			}

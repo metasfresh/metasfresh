@@ -680,7 +680,7 @@ public class HUTransformService
 
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
-		final IHUProductStorage singleCUStorage = storages.get(0);
+		final IHUProductStorage singleCUStorage = storages.getFirst();
 
 		final Quantity qtyCUToUse = CoalesceUtil.coalesceSuppliersNotNull(() -> qtyCU, singleCUStorage::getQty);
 
@@ -1130,7 +1130,7 @@ public class HUTransformService
 			if (isAggregatedSourceTU)
 			{
 				// update the huItemOfLU if needed
-				final I_M_HU_Item huItemOfLU = handlingUnitsDAO.retrieveItems(lu).get(0);
+				final I_M_HU_Item huItemOfLU = handlingUnitsDAO.retrieveItems(lu).getFirst();
 				final QtyTU qtyTUEffective = QtyTU.ofBigDecimal(sourceLUItem.getQty());
 				huItemOfLU.setQty(qtyTUEffective.toBigDecimal());
 				huItemOfLU.setM_HU_PI_Item(handlingUnitsBL.getPIItem(sourceLUItem));
@@ -1171,7 +1171,7 @@ public class HUTransformService
 
 		// deal with the first of potentially many cuHUs and their storages
 		{
-			final IHUProductStorage firstProductStorage = productStorages.get(0);
+			final IHUProductStorage firstProductStorage = productStorages.getFirst();
 
 			final BigDecimal qtyOfStorage = firstProductStorage.getQty().toBigDecimal();
 
@@ -1843,7 +1843,7 @@ public class HUTransformService
 		final IHUProductStorage sourceProductStorage = getSingleProductStorage(sourceCuHU);
 		final ProductId targetHUProductId = productStorages.isEmpty()
 				? sourceProductStorage.getProductId()
-				: productStorages.get(0).getProductId();
+				: productStorages.getFirst().getProductId();
 
 		Check.assume(sourceProductStorage.getProductId().equals(targetHUProductId), "Source and Target HU productId must match!");
 

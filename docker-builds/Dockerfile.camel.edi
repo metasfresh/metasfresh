@@ -8,18 +8,14 @@ ARG CACHEBUST=1
 ARG REGISTRY=
 FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
-FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:21-jdk
 
-RUN apk update && apk upgrade && apk add bash && apk add curl && apk add zip && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
+RUN apt-get -y update && apt-get -y upgrade && apt-get -y install dos2unix && apt-get -y install zip
 
 WORKDIR /opt/metasfresh-esb-camel/
 
 COPY --from=camel /camel/de-metas-camel-edi/target/de-metas-camel-edi-exec.jar .
 COPY --from=camel /camel/de-metas-camel-edi/start_esb-camel_docker.sh .
-
-# get the APM agent binary
-# the preceeding COPY created the target folder on-the-fly
-RUN curl -s -o /opt/metasfresh-esb-camel/elastic-apm-agent.jar https://repo1.maven.org/maven2/co/elastic/apm/elastic-apm-agent/1.17.0/elastic-apm-agent-1.17.0.jar
 
 RUN dos2unix start_esb-camel_docker.sh
 

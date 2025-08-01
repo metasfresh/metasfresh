@@ -24,8 +24,7 @@ package de.metas.common.ordercandidates.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,19 +33,19 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIE
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 
-@ApiModel(description = "A BPartner with one contact (optional) and one location.\n"
+@Schema(description = "A BPartner with one contact (optional) and one location.\n"
 		+ "Can be used multiple times in each order line candidate, for billTo-partner, shipTo-partner etc.\n" //
 		+ "Note that given the respective use-case, either `bpartner.code`, `bpartner.externalId` or `location.gln` might be `null`, but not all at once.")
 @Value
 public class JsonRequestBPartnerLocationAndContact
 {
-	@ApiModelProperty(required = true, value = BPARTNER_IDENTIFIER_DOC)
+	@Schema(required = true, description = BPARTNER_IDENTIFIER_DOC)
 	String bPartnerIdentifier;
 
-	@ApiModelProperty(required = true, value = LOCATION_IDENTIFIER_DOC)
+	@Schema(required = true, description = LOCATION_IDENTIFIER_DOC)
 	String bPartnerLocationIdentifier;
 
-	@ApiModelProperty(value = CONTACT_IDENTIFIER_DOC)
+	@Schema(description = CONTACT_IDENTIFIER_DOC)
 	String contactIdentifier;
 
 	@JsonCreator

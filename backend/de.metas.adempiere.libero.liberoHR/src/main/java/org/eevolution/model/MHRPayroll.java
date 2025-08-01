@@ -15,6 +15,7 @@
  *****************************************************************************/
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -38,6 +39,7 @@ public class MHRPayroll extends X_HR_Payroll
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = -1407037967021019961L;
 	/** Cache */
 	private static CCache<Integer, MHRPayroll> s_cache = new CCache<Integer, MHRPayroll>(Table_Name, 10);

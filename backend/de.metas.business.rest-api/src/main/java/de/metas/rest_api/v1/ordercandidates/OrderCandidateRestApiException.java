@@ -1,5 +1,7 @@
 package de.metas.rest_api.v1.ordercandidates;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.ordercandidate.rest-api
@@ -24,6 +26,7 @@ package de.metas.rest_api.v1.ordercandidates;
 
 public class OrderCandidateRestApiException extends RuntimeException
 {
+	@Serial
 	private static final long serialVersionUID = 2214884129491787091L;
 
 	public OrderCandidateRestApiException(String message, Throwable cause)

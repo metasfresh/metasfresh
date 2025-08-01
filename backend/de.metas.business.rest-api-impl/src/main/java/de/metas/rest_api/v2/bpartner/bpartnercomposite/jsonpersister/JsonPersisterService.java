@@ -438,7 +438,7 @@ public class JsonPersisterService
 		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
-		if (!optBPartnerComposite.isPresent())
+		if (optBPartnerComposite.isEmpty())
 		{
 			return Optional.empty(); // 404
 		}
@@ -508,7 +508,7 @@ public class JsonPersisterService
 		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
-		if (!optBPartnerComposite.isPresent())
+		if (optBPartnerComposite.isEmpty())
 		{
 			return Optional.empty(); // 404
 		}
@@ -875,7 +875,7 @@ public class JsonPersisterService
 		if (bpartner.getGroupId() == null)
 		{
 			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup();
-			if (!optionalBPGroup.isPresent())
+			if (optionalBPGroup.isEmpty())
 			{
 				throw MissingResourceException.builder()
 						.resourceName("group")
@@ -1897,8 +1897,7 @@ public class JsonPersisterService
 																														BPLocationExternalReferenceType.BPARTNER_LOCATION,
 																														bpartnerLocationIdentifier2externalVersion.get(bPartnerLocation.getIdentifier()),
 																														null))
-													   .filter(Optional::isPresent)
-													   .map(Optional::get)
+													   .flatMap(Optional::stream)
 													   .collect(Collectors.toSet()));
 		}
 
@@ -1911,8 +1910,7 @@ public class JsonPersisterService
 																													   ExternalUserReferenceType.USER_ID,
 																													   null,
 																													   null))
-													   .filter(Optional::isPresent)
-													   .map(Optional::get)
+													   .flatMap(Optional::stream)
 													   .collect(Collectors.toSet()));
 		}
 

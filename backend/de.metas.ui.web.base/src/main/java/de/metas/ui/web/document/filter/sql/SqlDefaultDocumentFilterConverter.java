@@ -567,13 +567,13 @@ public final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilte
 		{
 			return LookupValuesList.EMPTY;
 		}
-		else if (valueObj instanceof String && ((String)valueObj).isEmpty())
+		else if (valueObj instanceof String string && string.isEmpty())
 		{
 			return LookupValuesList.EMPTY;
 		}
-		else if (valueObj instanceof LookupValuesList)
+		else if (valueObj instanceof LookupValuesList list)
 		{
-			return (LookupValuesList)valueObj;
+			return list;
 		}
 		else
 		{
@@ -605,7 +605,7 @@ public final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilte
 			else if (parts.size() == 3)
 			{
 				return of(
-						DetailId.fromJson(parts.get(0)),
+						DetailId.fromJson(parts.getFirst()),
 						parts.get(1),
 						parts.get(2)
 				);

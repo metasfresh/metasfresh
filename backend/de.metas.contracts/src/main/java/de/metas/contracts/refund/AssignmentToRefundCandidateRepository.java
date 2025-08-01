@@ -103,7 +103,7 @@ public class AssignmentToRefundCandidateRepository
 				I_C_Invoice_Candidate.class);
 
 		final Optional<RefundInvoiceCandidate> refundCandidate = refundInvoiceCandidateRepository.ofNullableRefundRecord(refundRecord);
-		if (!refundCandidate.isPresent())
+		if (refundCandidate.isEmpty())
 		{
 			return null;
 		}

@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -29,6 +30,7 @@ import de.metas.util.Check;
  */
 public class MHRAttribute extends X_HR_Attribute
 {
+	@Serial
 	private static final long serialVersionUID = 3783311896401143394L;
 
 

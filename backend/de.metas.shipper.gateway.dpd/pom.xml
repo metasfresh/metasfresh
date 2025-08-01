@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <migration-sql-basedir></migration-sql-basedir>
+        <migration-sql-basedir/>
         <metasfresh.version>[1,10.0.0]</metasfresh.version>
     </properties>
 
@@ -62,23 +62,66 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <executions>
+                <!-- Note that the dependencies and some overridable parameters are specified in the parent-pom's pluginManagement section -->
+                <groupId>com.sun.xml.ws</groupId>
+                <artifactId>jaxws-maven-plugin</artifactId>
+                  <executions>
                     <execution>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>wsimport</goal>
                         </goals>
                         <configuration>
-                            <schemaIncludes>*.wsdl</schemaIncludes>
-                            <schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/dpd/schema</schemaDirectory>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                            <wsdlDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/dpd/schema</wsdlDirectory>
+                            <wsdlFiles>
+                                <wsdlFile>LoginServiceV2_0.wsdl</wsdlFile>
+                                <wsdlFile>ShipmentServiceV3_2.wsdl</wsdlFile>
+                            </wsdlFiles>
+                            <bindingDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/dpd/schema</bindingDirectory>
+                            <bindingFiles>
+                                <!-- there is a known issue that we can't work with "*.xsd" -->
+                                <bindingFile>Authentication_2_0.xsd</bindingFile>
+                                <bindingFile>LoginService-Public_2_0.xsd</bindingFile>
+                                <bindingFile>ShipmentService-Public_3_2.xsd</bindingFile>
+                            </bindingFiles>
+
+                            <sourceDestDir>${project.basedir}/src/main/java-xjc</sourceDestDir>
+                            <packageName>de.metas.shipper.gateway.dpd.generated</packageName>
+                            <wsdlLocation>classpath:de/metas/shipper/gateway/dpd/schema/</wsdlLocation>
+                            <args>
+                                <arg>-Xnocompile</arg>
+                            </args>
                         </configuration>
                     </execution>
                 </executions>

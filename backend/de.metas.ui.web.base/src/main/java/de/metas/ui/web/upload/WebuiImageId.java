@@ -49,9 +49,9 @@ public final class WebuiImageId implements RepoIdAware
 		try
 		{
 			final int id;
-			if (obj instanceof Number)
+			if (obj instanceof Number number)
 			{
-				id = ((Number)obj).intValue();
+				id = number.intValue();
 			}
 			else
 			{

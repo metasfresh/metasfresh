@@ -1,17 +1,14 @@
 package de.metas.email;
 
+import com.google.common.base.MoreObjects;
+import de.metas.util.Check;
+import jakarta.activation.DataSource;
+import org.compiere.util.MimeType;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import javax.activation.DataSource;
-
-import org.compiere.util.MimeType;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.util.Check;
 
 /*
  * #%L

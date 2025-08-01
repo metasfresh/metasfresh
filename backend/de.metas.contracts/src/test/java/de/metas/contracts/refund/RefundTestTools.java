@@ -419,7 +419,7 @@ public class RefundTestTools
 	{
 		final List<RefundConfig> resultConfigs = refundCandidate.getRefundConfigs();
 		assertThat(resultConfigs).hasSize(1);
-		return resultConfigs.get(0);
+		return resultConfigs.getFirst();
 	}
 
 	public static ImmutableList<AssignmentToRefundCandidate> retrieveAllAssignmentsToRefundCandidates(

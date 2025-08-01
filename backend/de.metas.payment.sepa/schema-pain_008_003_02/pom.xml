@@ -14,29 +14,64 @@
 	<description>SEPA Payments - schema - pain_008_003_02 (Direct Debit)</description>
 
 	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 	</properties>
 
+	<dependencies>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.activation</groupId>
+			<artifactId>jakarta.activation-api</artifactId>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxb2-maven-plugin</artifactId>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<id>generate-de.metas.payment.sepa.jaxb.sct.schema-pain_008_003_02</id>
 						<phase>generate-sources</phase>
 						<goals>
-							<goal>generate</goal>
+							<goal>xjc</goal>
 						</goals>
 						<configuration>
-							<schemaDirectory>src/main/xsd</schemaDirectory>
-							<generatePackage>de.metas.payment.sepa.jaxb.sct.pain_008_003_02</generatePackage>
-							<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+							<sources>
+								<source>src/main/xsd/pain.008.003.02.xsd</source>
+							</sources>
+							<packageName>de.metas.payment.sepa.jaxb.sct.pain_008_003_02</packageName>
+							<outputDirectory>${project.basedir}/src/main/java-xjc</outputDirectory>
+							<clearOutputDir>false</clearOutputDir>
+							<extension>true</extension>
 						</configuration>
 					</execution>
 				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>jakarta.xml.bind</groupId>
+						<artifactId>jakarta.xml.bind-api</artifactId>
+						<version>4.0.2</version>
+					</dependency>
+					<dependency>
+						<groupId>jakarta.activation</groupId>
+						<artifactId>jakarta.activation-api</artifactId>
+						<version>2.1.3</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

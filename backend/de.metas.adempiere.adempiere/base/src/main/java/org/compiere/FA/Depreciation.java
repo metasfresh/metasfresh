@@ -35,14 +35,15 @@ package org.compiere.FA;
  * #L%
  */
 
+import org.compiere.util.DB;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.compiere.util.DB;
 /**
  * Fixed Asset Depreciation
  * 
@@ -171,39 +172,39 @@ public class Depreciation {
 				        v_months = 12 - AssetServiceDateMonth +1;				        
 				        if (v_con_type.compareTo("HYCON") ==0){
 				          v_adj = new BigDecimal(Conventions.HYCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));				          
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj).multiply(new BigDecimal(v_months)));
 				          v_monthadj = 6-v_months;
 				        }
 				        else if (v_con_type.compareTo("FYCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.FYCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,0,AssetServiceDateYear));
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));				          
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));				          
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj).multiply(new BigDecimal(v_months)));				          
 				          v_monthadj = 12-v_months;
 				        }
 				        else if (v_con_type.compareTo("DYCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.DYCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj));
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));				          
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));				          
 				          v_monthadj = 0;
 				        }
 				        else if (v_con_type.compareTo("MQCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.MQCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj));
-				          v_DB =(v_DB.divide(new BigDecimal(v_months),2, BigDecimal.ROUND_HALF_UP));				          				          
+				          v_DB =(v_DB.divide(new BigDecimal(v_months), 2, RoundingMode.HALF_UP));				          				          
 				          v_monthadj = 0;
 				        }
 				        else if (v_con_type.compareTo("FMCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.FMCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));				          
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));				          
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(new BigDecimal(v_months)));				          
 				          v_monthadj = 0;
 				        }
 				        else if (v_con_type.compareTo("MMCON") ==0){
 				        	
-				          v_Accum_Dep = v_Accum_Dep.add(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(.5)).add(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(v_months-1));
+				          v_Accum_Dep = v_Accum_Dep.add(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP)).multiply(new BigDecimal(.5)).add(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP)).multiply(new BigDecimal(v_months-1));
 				          v_adj = new BigDecimal(Conventions.MMCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateMonth+1));
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP)).multiply(v_adj);				          
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP)).multiply(v_adj);				          
 				          v_monthadj = 0;
 				        }
 				        v_firstyr = 1;
@@ -211,7 +212,7 @@ public class Depreciation {
 				     else{				    	
 				    	v_DB = (v_Base_Amount.subtract(v_Accum_Dep).subtract(v_Salvage_Amount)).multiply(new BigDecimal(1.5/v_Life_Years));				        
 				        v_Accum_Dep = v_Accum_Dep.add(v_DB);
-				        v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));				        
+				        v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));				        
 				     }
 			        v_counter = v_counter+1;				     
 				    }				 
@@ -219,7 +220,7 @@ public class Depreciation {
 				 
 				 if (p_SL ==1 ){   
 					 if (v_Life_Periods-(p_A_CURRENT_PERIOD+v_monthadj)>0 )					 
-					     v_SL = ((v_Base_Amount.subtract(v_Salvage_Amount).subtract(p_Accum_Dep)).divide(new BigDecimal(v_Life_Periods-(p_A_CURRENT_PERIOD+v_monthadj)),2, BigDecimal.ROUND_HALF_UP));				 
+					     v_SL = ((v_Base_Amount.subtract(v_Salvage_Amount).subtract(p_Accum_Dep)).divide(new BigDecimal(v_Life_Periods - (p_A_CURRENT_PERIOD + v_monthadj)), 2, RoundingMode.HALF_UP));				 
 	
 					 if (A_Period_Exp.compareTo(v_SL)==-1)				   
 					   A_Period_Exp = v_SL;				 
@@ -310,40 +311,40 @@ public class Depreciation {
 				        v_months = 12 - AssetServiceDateMonth +1;				        
 				        if (v_con_type.compareTo("HYCON") ==0){
 				          v_adj = new BigDecimal(Conventions.HYCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj).multiply(new BigDecimal(v_months)));
 				          v_monthadj = 6-v_months;
 				        }
 				        else if (v_con_type.compareTo("FYCON") ==0){
 				        	
 				          v_adj = new BigDecimal(Conventions.FYCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,0,AssetServiceDateYear));				          
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));				          
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));				          
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj).multiply(new BigDecimal(v_months)));				          
 				          v_monthadj = 12-v_months;
 				        }
 				        else if (v_con_type.compareTo("DYCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.DYCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj));				          
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				          v_monthadj = 0;
 				        }
 				        else if (v_con_type.compareTo("MQCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.MQCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj));
-				          v_DB =(v_DB.divide(new BigDecimal(v_months),2, BigDecimal.ROUND_HALF_UP));				          				          
+				          v_DB =(v_DB.divide(new BigDecimal(v_months), 2, RoundingMode.HALF_UP));				          				          
 				          v_monthadj = 0;
 				        }
 				        else if (v_con_type.compareTo("FMCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.FMCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(new BigDecimal(v_months)));				          
 				          v_monthadj = 0;
 				        }
 				        else if (v_con_type.compareTo("MMCON") ==0){
 				        	
-				          v_Accum_Dep = v_Accum_Dep.add(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(.5)).add(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(v_months-1));
+				          v_Accum_Dep = v_Accum_Dep.add(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP)).multiply(new BigDecimal(.5)).add(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP)).multiply(new BigDecimal(v_months-1));
 				          v_adj = new BigDecimal(Conventions.MMCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateMonth+1));
-				          v_DB = (v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP)).multiply(v_adj);
+				          v_DB = (v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP)).multiply(v_adj);
 				          v_monthadj = 0;
 				        }
 				        v_firstyr = 1;
@@ -351,14 +352,14 @@ public class Depreciation {
 				     else{				    	
 				    	v_DB = (v_Base_Amount.subtract(v_Accum_Dep).subtract(v_Salvage_Amount)).multiply(new BigDecimal(2/v_Life_Years));				        
 				        v_Accum_Dep = v_Accum_Dep.add(v_DB);
-				        v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				        v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				     }
 			        v_counter = v_counter+1;				     
 				    }
 				    A_Period_Exp = v_DB;					 
 					 if (p_SL ==1 ){   
 						 if (v_Life_Periods-(p_A_CURRENT_PERIOD+v_monthadj)>0 )
-							 v_SL = ((v_Base_Amount.subtract(v_Salvage_Amount).subtract(p_Accum_Dep)).divide(new BigDecimal(v_Life_Periods-(p_A_CURRENT_PERIOD+v_monthadj)),2, BigDecimal.ROUND_HALF_UP));						     				 
+							 v_SL = ((v_Base_Amount.subtract(v_Salvage_Amount).subtract(p_Accum_Dep)).divide(new BigDecimal(v_Life_Periods - (p_A_CURRENT_PERIOD + v_monthadj)), 2, RoundingMode.HALF_UP));						     				 
 		
 						 if (A_Period_Exp.compareTo(v_SL)==-1)				   
 						   A_Period_Exp = v_SL;				 
@@ -444,39 +445,39 @@ public class Depreciation {
 				        v_months = 12 - AssetServiceDateMonth +1;				        
 				        if (v_con_type.compareTo("HYCON") ==0){
 				          v_adj = new BigDecimal(Conventions.HYCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj).multiply(new BigDecimal(v_months)));
 				          v_monthadj = 6-v_months;
 				        }
 				        else if (v_con_type.compareTo("FYCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.FYCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,0,AssetServiceDateYear));
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj).multiply(new BigDecimal(v_months)));				          
 				          v_monthadj = 12-v_months;
 				        }
 				        else if (v_con_type.compareTo("DYCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.DYCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj));				          
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				          v_monthadj = 0;
 				        }
 				        else if (v_con_type.compareTo("MQCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.MQCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(v_adj));
-				          v_DB =(v_DB.divide(new BigDecimal(v_months),2, BigDecimal.ROUND_HALF_UP));				          				          
+				          v_DB =(v_DB.divide(new BigDecimal(v_months), 2, RoundingMode.HALF_UP));				          				          
 				          v_monthadj = 0;
 				        }
 				        else if (v_con_type.compareTo("FMCON") ==0){				        
 				          v_adj = new BigDecimal(Conventions.FMCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateYear));
-				          v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				          v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				          v_Accum_Dep = v_Accum_Dep.add(v_DB.multiply(new BigDecimal(v_months)));				          
 				          v_monthadj = 0;
 				        }
 				        else if (v_con_type.compareTo("MMCON") ==0){
 				        	
-				          v_Accum_Dep = v_Accum_Dep.add(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(.5)).add(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(v_months-1));
+				          v_Accum_Dep = v_Accum_Dep.add(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP)).multiply(new BigDecimal(.5)).add(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP)).multiply(new BigDecimal(v_months-1));
 				          v_adj = new BigDecimal(Conventions.MMCON(p_A_ASSET_ID,p_POSTINGTYPE,p_A_ASSET_ACCT_ID,2,AssetServiceDateMonth+1));
-				          v_DB = (v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP).multiply(v_adj));
+				          v_DB = (v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP).multiply(v_adj));
 				          v_monthadj = 0;
 				        }
 				        v_firstyr = 1;
@@ -484,14 +485,14 @@ public class Depreciation {
 				     else{				    	
 				    	v_DB = (v_Base_Amount.subtract(v_Accum_Dep).subtract(v_Salvage_Amount)).multiply(new BigDecimal(v_Var/v_Life_Years));				        
 				        v_Accum_Dep = v_Accum_Dep.add(v_DB);
-				        v_DB =(v_DB.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP));
+				        v_DB =(v_DB.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP));
 				     }
 			        v_counter = v_counter+1;				     
 				    }
 				    A_Period_Exp = v_DB;					 
 					 if (p_SL ==1 ){   
 						 if (v_Life_Periods-(p_A_CURRENT_PERIOD+v_monthadj)>0 )					 
-							 v_SL = ((v_Base_Amount.subtract(v_Salvage_Amount).subtract(p_Accum_Dep)).divide(new BigDecimal(v_Life_Periods-(p_A_CURRENT_PERIOD+v_monthadj)),2, BigDecimal.ROUND_HALF_UP));				 
+							 v_SL = ((v_Base_Amount.subtract(v_Salvage_Amount).subtract(p_Accum_Dep)).divide(new BigDecimal(v_Life_Periods - (p_A_CURRENT_PERIOD + v_monthadj)), 2, RoundingMode.HALF_UP));				 
 		
 						 if (A_Period_Exp.compareTo(v_SL)==-1)				   
 						   A_Period_Exp = v_SL;				 
@@ -678,7 +679,7 @@ public class Depreciation {
 			  try {				
 				rs = pstmt.executeQuery();
 				while (rs.next()){
-					A_Period_Exp = ((rs.getBigDecimal("A_ASSET_COST").subtract(rs.getBigDecimal("A_SALVAGE_VALUE"))).divide( rs.getBigDecimal("A_LIFE_PERIOD"),2, BigDecimal.ROUND_HALF_UP));				
+					A_Period_Exp = ((rs.getBigDecimal("A_ASSET_COST").subtract(rs.getBigDecimal("A_SALVAGE_VALUE"))).divide(rs.getBigDecimal("A_LIFE_PERIOD"), 2, RoundingMode.HALF_UP));				
 				}
 				return A_Period_Exp;
 			}
@@ -760,8 +761,8 @@ public class Depreciation {
 					
 					A_Period_Exp = ((rs.getBigDecimal("A_ASSET_COST").subtract(rs.getBigDecimal("A_SALVAGE_VALUE")))
 							.multiply(new BigDecimal(2*(rs.getInt("A_ASSET_LIFE_YEARS")-v_life_current_year+1)))
-							.divide(new BigDecimal(rs.getInt("A_ASSET_LIFE_YEARS")*(rs.getInt("A_ASSET_LIFE_YEARS")+1)),2, BigDecimal.ROUND_HALF_UP));
-					A_Period_Exp = A_Period_Exp.divide(new BigDecimal(12.0),2, BigDecimal.ROUND_HALF_UP);
+							.divide(new BigDecimal(rs.getInt("A_ASSET_LIFE_YEARS") * (rs.getInt("A_ASSET_LIFE_YEARS") + 1)), 2, RoundingMode.HALF_UP));
+					A_Period_Exp = A_Period_Exp.divide(new BigDecimal(12.0), 2, RoundingMode.HALF_UP);
 										
 				}
 				//System.out.println("SYD: "+A_Period_Exp);

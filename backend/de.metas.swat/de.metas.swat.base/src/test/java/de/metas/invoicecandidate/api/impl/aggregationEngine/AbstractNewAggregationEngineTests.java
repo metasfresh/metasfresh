@@ -177,7 +177,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 		final List<I_C_Invoice_Candidate> candsForInvoiceLine1 = aggregateForLine.getCandsFor(invoiceLine);
 		assertThat(candsForInvoiceLine1).hasSize(1);
-		assertThat(candsForInvoiceLine1.get(0)).isEqualTo(ic);
+		assertThat(candsForInvoiceLine1.getFirst()).isEqualTo(ic);
 
 		final StockQtyAndUOMQty qtyInvoiced = aggregateForLine.getAllocatedQty(ic, invoiceLine);
 		assertThat(qtyInvoiced.getStockQty().toBigDecimal()).isEqualByComparingTo(expectedAllocatedQty);

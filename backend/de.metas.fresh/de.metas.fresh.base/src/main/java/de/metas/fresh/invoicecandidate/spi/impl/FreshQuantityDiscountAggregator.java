@@ -208,7 +208,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 			// Get the original invoice line
 			// Basically there shall be only one, but there is no harm if we just pick the first one if there are more.
 			final List<IInvoiceLineRW> originalInvoiceLineRWs = invoiceCandAggregate.getLinesFor(candidate);
-			final IInvoiceLineRW originalInvoiceLineRW = originalInvoiceLineRWs.get(0);
+			final IInvoiceLineRW originalInvoiceLineRW = originalInvoiceLineRWs.getFirst();
 
 			final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyQualityDiscount, ProductId.ofRepoId(candidate.getM_Product_ID()), UomId.ofRepoId(candidate.getC_UOM_ID()));
 

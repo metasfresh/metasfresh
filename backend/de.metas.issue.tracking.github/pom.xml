@@ -13,7 +13,7 @@
     <artifactId>de.metas.issue.tracking.github</artifactId>
 
     <properties>
-        <migration-sql-basedir></migration-sql-basedir>
+        <migration-sql-basedir/>
         <metasfresh.version>[1,10.0.0]</metasfresh.version>
     </properties>
 
@@ -54,13 +54,6 @@
             <groupId>de.metas.adempiere.adempiere</groupId>
             <artifactId>de.metas.adempiere.adempiere.base</artifactId>
             <version>${metasfresh.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
-            <scope>test</scope>
         </dependency>
         
     </dependencies>

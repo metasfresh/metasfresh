@@ -120,9 +120,9 @@ public class CellValues
 		}
 		else if (DisplayType.isNumeric(displayType))
 		{
-			if (value instanceof Number)
+			if (value instanceof Number number1)
 			{
-				return CellValue.ofNumber((Number)value);
+				return CellValue.ofNumber(number1);
 			}
 			else
 			{

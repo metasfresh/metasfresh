@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,42 +43,42 @@ import java.util.function.Function;
 @JsonDeserialize(builder = JsonInvoicePaymentCreateRequest.JsonInvoicePaymentCreateRequestBuilder.class)
 public class JsonInvoicePaymentCreateRequest
 {
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String", //
-			value = "Identifier of the bPartner in question. Can be\n"
+	@Schema(required = true, //
+			type = "java.lang.String", //
+			description = "Identifier of the bPartner in question. Can be\n"
 					+ "* a plain `<C_BPartner_ID>`\n"
 					+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n")
 	@NonNull
 	String bpartnerIdentifier;
 
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String")
+	@Schema(required = true, //
+			type = "java.lang.String")
 	@NonNull
 	String currencyCode;
 
-	@ApiModelProperty(value = "Optional, to specify the `AD_Org_ID`.\n"
+	@Schema(description = "Optional, to specify the `AD_Org_ID`.\n"
 			+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
 			+ "or the invoking user needs to belong to an organisation, which is then used.")
 	@Nullable
 	String orgCode;
 
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String")
+	@Schema(required = true, //
+			type = "java.lang.String")
 	@Nullable
 	String targetIBAN;
 
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String", //
-			value = "An external identifier for the payment being posted to metasfresh. Translates to `C_Payment.ExternalId`")
+	@Schema(required = true, //
+			type = "java.lang.String", //
+			description = "An external identifier for the payment being posted to metasfresh. Translates to `C_Payment.ExternalId`")
 	@Nullable
 	String externalPaymentId;
 
-	@ApiModelProperty(dataType = "java.time.LocalDate",
-			value = "If this is sent, it is used for both `accounting date` and `payment date`.")
+	@Schema(type = "java.time.LocalDate",
+			description = "If this is sent, it is used for both `accounting date` and `payment date`.")
 	@Nullable
 	LocalDate transactionDate;
 
-	@ApiModelProperty(value = "List of payment allocations")
+	@Schema(description = "List of payment allocations")
 	@Nullable
 	@JsonProperty("lines")
 	List<JsonPaymentAllocationLine> lines;

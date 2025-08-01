@@ -95,7 +95,7 @@ public abstract class AbstractPrintJobLinesAggregatorPageRangeTestBase extends A
 		final List<I_C_Print_PackageInfo> printPackageInfos = helper.getDAO().retrievePrintPackageInfo(printPackage);
 		assertThat(printPackageInfos).as("Invalid infos count: " + printPackageInfos).hasSize(2);
 
-		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.get(0);
+		final I_C_Print_PackageInfo printPackageInfo1 = printPackageInfos.getFirst();
 		assertThat(printPackageInfo1.getPageFrom()).as("Invalid PageFrom for " + printPackageInfo1.getPageFrom()).isEqualTo(1);
 		assertThat(printPackageInfo1.getPageTo()).as("Invalid PageTo for " + printPackageInfo1.getPageFrom()).isEqualTo(1);
 		assertThat(printPackageInfo1.getAD_PrinterHW()).isEqualTo(printerHW);

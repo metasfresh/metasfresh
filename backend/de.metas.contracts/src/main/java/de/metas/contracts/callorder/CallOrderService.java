@@ -73,7 +73,7 @@ public class CallOrderService
 
 		final Optional<CallOrderSummary> summaryOptional = summaryRepo.getByFlatrateTermId(flatrateTermId);
 
-		if (!summaryOptional.isPresent())
+		if (summaryOptional.isEmpty())
 		{
 			return;
 		}

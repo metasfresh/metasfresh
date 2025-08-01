@@ -85,7 +85,7 @@ public class QualityInspectionLinesCollection implements IQualityInspectionLines
 			throw new AdempiereException("More then one line found for type " + type + ": " + linesFound);
 		}
 
-		return linesFound.get(0);
+		return linesFound.getFirst();
 	}
 
 	@Override

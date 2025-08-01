@@ -22,20 +22,18 @@ package de.metas.cache.model.impl;
  * #L%
  */
 
-
-import java.lang.ref.WeakReference;
-import java.util.Optional;
-import java.util.Properties;
-
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.lang.ref.WeakReference;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Local cache used to store model references on records which have AD_Table_ID, Record_ID.
@@ -150,7 +148,7 @@ public class TableRecordCacheLocal<ParentModelType>
 	{
 		final ParentModelType parentModel = getParentModel();
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(parentModel, COLUMNNAME_AD_Table_ID);
-		if (!adTableId.isPresent())
+		if (adTableId.isEmpty())
 		{
 			return -1;
 		}
@@ -166,7 +164,7 @@ public class TableRecordCacheLocal<ParentModelType>
 	{
 		final ParentModelType parentModel = getParentModel();
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(parentModel, COLUMNNAME_Record_ID);
-		if (!recordId.isPresent())
+		if (recordId.isEmpty())
 		{
 			return -1;
 		}

@@ -25,6 +25,8 @@ package de.metas.lock.exceptions;
 
 import de.metas.lock.api.ILock;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when a lock was already closed.
  * 
@@ -36,6 +38,7 @@ public class LockAlreadyClosedException extends LockException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 297769188483961257L;
 
 	public static void throwIfClosed(final ILock lock)

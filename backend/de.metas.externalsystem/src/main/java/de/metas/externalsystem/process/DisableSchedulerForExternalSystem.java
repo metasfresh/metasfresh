@@ -75,7 +75,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 
 			final Optional<ExternalSystemParentConfig> config = externalSystemConfigRepo.getByQuery(type, query);
 
-			if (!config.isPresent())
+			if (config.isEmpty())
 			{
 				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, type.getName()));
 			}

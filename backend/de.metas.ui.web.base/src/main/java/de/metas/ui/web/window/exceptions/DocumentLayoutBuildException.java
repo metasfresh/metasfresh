@@ -41,9 +41,9 @@ public class DocumentLayoutBuildException extends AdempiereException
 		{
 			return null;
 		}
-		else if (throwable instanceof DocumentLayoutBuildException)
+		else if (throwable instanceof DocumentLayoutBuildException exception)
 		{
-			return (DocumentLayoutBuildException)throwable;
+			return exception;
 		}
 
 		final Throwable cause = extractCause(throwable);

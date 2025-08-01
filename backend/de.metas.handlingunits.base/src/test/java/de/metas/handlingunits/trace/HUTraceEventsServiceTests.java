@@ -202,7 +202,7 @@ public class HUTraceEventsServiceTests
 				.hasSize(4);
 		allHuTraceRecords.sort(Comparator.comparing(I_M_HU_Trace::getM_HU_ID));
 
-		assertThat(allHuTraceRecords.get(0).getM_HU_ID()).isEqualTo(luHu11.getM_HU_ID());
+		assertThat(allHuTraceRecords.getFirst().getM_HU_ID()).isEqualTo(luHu11.getM_HU_ID());
 		assertThat(allHuTraceRecords.get(1).getM_HU_ID()).isEqualTo(luHu12.getM_HU_ID());
 		assertThat(allHuTraceRecords.get(2).getM_HU_ID()).isEqualTo(luHu21.getM_HU_ID());
 		assertThat(allHuTraceRecords.get(3).getM_HU_ID()).isEqualTo(luHu22.getM_HU_ID());
@@ -308,7 +308,7 @@ public class HUTraceEventsServiceTests
 		final List<I_M_HU_Trace> allHuTraceRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class).create().list();
 		assertThat(allHuTraceRecords).hasSize(1);
 
-		final I_M_HU_Trace trace = allHuTraceRecords.get(0);
+		final I_M_HU_Trace trace = allHuTraceRecords.getFirst();
 		assertThat(trace.getHUTraceType()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
 		assertThat(trace.getQty()).isEqualByComparingTo("11");
 	}

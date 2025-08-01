@@ -304,7 +304,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 				.getC_Invoice_Candidates();
 		assertThat(invoiceCandidates).as("There is 1 invoice candidate").hasSize(1);
 
-		final I_C_Invoice_Candidate candidate = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate candidate = invoiceCandidates.getFirst();
 		assertThat(candidate.getInvoiceRule()).isNotNull(); // guard
 		saveRecord(candidate);
 

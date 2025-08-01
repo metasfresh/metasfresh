@@ -407,7 +407,7 @@ public final class MProductCategoryValidator implements ModelValidator
 			final int parameter, final String trxName)
 	{
 
-		return selectIntegers(preparedStatement, parameter, trxName).get(0);
+		return selectIntegers(preparedStatement, parameter, trxName).getFirst();
 	}
 
 	private List<Integer> selectIntegers(final String preparedStatement,

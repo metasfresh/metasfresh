@@ -1,5 +1,7 @@
 package de.metas.rfq.exceptions;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.rfq
@@ -24,6 +26,7 @@ package de.metas.rfq.exceptions;
 
 public class RfQDocumentNotDraftException extends RfQException
 {
+	@Serial
 	private static final long serialVersionUID = -1710586935241536340L;
 	
 	private static final String MSG = "RfQDocumentNotDraftException";

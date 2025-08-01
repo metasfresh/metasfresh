@@ -22,16 +22,7 @@ package org.adempiere.facet.sideactions.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import de.metas.util.Check;
 import org.adempiere.facet.IFacet;
 import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.IFacetCollectorResult;
@@ -44,7 +35,14 @@ import org.adempiere.ui.sideactions.model.ISideActionsGroupModel;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupModel;
 
-import de.metas.util.Check;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Wraps an {@link ISideActionsGroupsListModel} to {@link IFacetsPool}.
@@ -80,9 +78,8 @@ public class SideActionFacetsPool<ModelType> implements IFacetsPool<ModelType>
 		@Override
 		public void execute(final ISideAction action)
 		{
-			if (action instanceof FacetSideAction<?>)
+			if (action instanceof FacetSideAction<?> facetSideAction)
 			{
-				final FacetSideAction<?> facetSideAction = (FacetSideAction<?>)action;
 				final IFacet<?> facet = facetSideAction.getFacet();
 				listeners.onFacetExecute(facet);
 			}

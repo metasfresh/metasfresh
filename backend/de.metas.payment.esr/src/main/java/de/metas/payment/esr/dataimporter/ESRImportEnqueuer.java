@@ -232,7 +232,7 @@ public class ESRImportEnqueuer
 			}
 			catch (final Exception ex)
 			{
-				errors.add(String.format("Error processing file '%s': %s", unzippedFile.getFilename(), ex.getMessage()));
+				errors.add("Error processing file '%s': %s".formatted(unzippedFile.getFilename(), ex.getMessage()));
 			}
 		}
 

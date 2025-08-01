@@ -130,7 +130,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	protected JavaProcess()
 	{
-		parametersCallout = this instanceof IProcessParametersCallout ? (IProcessParametersCallout)this : null;
+		parametersCallout = this instanceof IProcessParametersCallout ippc ? ippc : null;
 		_fieldsIndexedByFieldKey = ProcessClassInfo.retrieveParameterFieldsIndexedByFieldKey(getClass());
 	}
 
@@ -225,10 +225,12 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				// Warn if the current instance expected it's not the one the we temporary set. Shall not happen.
 				if (!Objects.equal(currentInstanceFound, instance))
 				{
-					slogger.warn("Invalid current process instance found while restoring the current instance"
-							+ "\n Current instance found: {}"
-							+ "\n Current instance expected: {}"
-							+ "\n => Current instance restored: {}", currentInstanceFound, instance, currentInstanceHolder.get());
+					slogger.warn("""
+							Invalid current process instance found while restoring the current instance
+							 Current instance found: {}
+							 Current instance expected: {}
+							 => Current instance restored: {}\
+							""", currentInstanceFound, instance, currentInstanceHolder.get());
 				}
 			}
 		};

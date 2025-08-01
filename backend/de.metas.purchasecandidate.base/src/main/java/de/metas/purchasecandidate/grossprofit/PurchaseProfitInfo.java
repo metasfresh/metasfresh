@@ -57,9 +57,9 @@ public class PurchaseProfitInfo
 			@NonNull final Optional<Money> profitPurchasePriceActual,
 			@NonNull final Optional<Money> purchasePriceActual)
 	{
-		if (!profitSalesPriceActual.isPresent()
-				&& !profitPurchasePriceActual.isPresent()
-				&& !purchasePriceActual.isPresent())
+		if (profitSalesPriceActual.isEmpty()
+				&& profitPurchasePriceActual.isEmpty()
+				&& purchasePriceActual.isEmpty())
 		{
 			throw new AdempiereException("At least one price shall be present")
 					.setParameter("profitSalesPriceActual", profitSalesPriceActual)

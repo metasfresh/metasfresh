@@ -122,7 +122,7 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 
 		//
 		// Bind data to be able to access them in our tests
-		final I_M_HU huPalet = huPalets.get(0);
+		final I_M_HU huPalet = huPalets.getFirst();
 		huPalet_Attrs = attributeStorageFactory.getAttributeStorage(huPalet);
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -130,7 +130,7 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 
 		assertThat(huIncluded).hasSize(1);
 
-		final I_M_HU huAggregate = huIncluded.get(0);
+		final I_M_HU huAggregate = huIncluded.getFirst();
 		assertThat(Services.get(IHandlingUnitsBL.class).isAggregateHU(huAggregate));
 		aggregateHU_Attrs = attributeStorageFactory.getAttributeStorage(huAggregate);
 	}

@@ -734,7 +734,7 @@ public class JsonRetrieverService
 					.appendParametersToMessage()
 					.setParameter("BPartnerCompositeLookupKeys", queryLookupKeys);
 		}
-		if (!bpartnerComposite.isPresent())
+		if (bpartnerComposite.isEmpty())
 		{
 			return ImmutableMap.of();
 		}
@@ -787,13 +787,13 @@ public class JsonRetrieverService
 	public Optional<JsonResponseContact> getContact(@NonNull final ExternalIdentifier contactIdentifier)
 	{
 		final Optional<BPartnerContactQuery> contactQuery = createContactQuery(contactIdentifier);
-		if (!contactQuery.isPresent())
+		if (contactQuery.isEmpty())
 		{
 			return Optional.empty();
 		}
 
 		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery.get());
-		if (!optionalContactIdAndBPartner.isPresent())
+		if (optionalContactIdAndBPartner.isEmpty())
 		{
 			return Optional.empty();
 		}

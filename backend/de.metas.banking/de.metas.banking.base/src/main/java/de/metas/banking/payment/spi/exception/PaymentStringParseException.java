@@ -25,6 +25,8 @@ package de.metas.banking.payment.spi.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import java.io.Serial;
+
 /**
  * Exception which is thrown when a payment string cannot be parsed correctly or is invalid
  *
@@ -35,6 +37,7 @@ public class PaymentStringParseException extends AdempiereException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 7565112704755412159L;
 
 	public PaymentStringParseException(final String message)

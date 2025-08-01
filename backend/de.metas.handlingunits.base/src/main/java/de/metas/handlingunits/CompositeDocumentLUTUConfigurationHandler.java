@@ -51,7 +51,7 @@ public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLU
 	{
 		Check.assumeNotEmpty(documentLines, "documentLines not empty");
 
-		final T documentLine = documentLines.get(0);
+		final T documentLine = documentLines.getFirst();
 		return handler.createNewLUTUConfiguration(documentLine);
 	}
 
@@ -60,7 +60,7 @@ public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLU
 	{
 		Check.assumeNotEmpty(documentLines, "documentLines not empty");
 
-		final T documentLine = documentLines.get(0);
+		final T documentLine = documentLines.getFirst();
 		handler.updateLUTUConfigurationFromDocumentLine(lutuConfiguration, documentLine);
 	}
 
@@ -77,7 +77,7 @@ public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLU
 	public I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull(final List<T> documentLines)
 	{
 		Check.assumeNotEmpty(documentLines, "documentLines not empty");
-		final T documentLine = documentLines.get(0);
+		final T documentLine = documentLines.getFirst();
 		return handler.getCurrentLUTUConfigurationOrNull(documentLine);
 	}
 
@@ -91,7 +91,7 @@ public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLU
 
 		//
 		// Main configuration
-		final T mainDocumentLine = documentLines.get(0);
+		final T mainDocumentLine = documentLines.getFirst();
 		final I_M_HU_LUTU_Configuration mainConfiguration = handler.getCurrentLUTUConfigurationOrNull(mainDocumentLine);
 		// Skip the main configuration from returning it
 		if (mainConfiguration != null)
@@ -126,7 +126,7 @@ public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLU
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(final List<T> documentLines)
 	{
 		Check.assumeNotEmpty(documentLines, "documentLines not empty");
-		final T documentLine = documentLines.get(0);
+		final T documentLine = documentLines.getFirst();
 		return handler.getM_HU_PI_Item_Product(documentLine);
 	}
 

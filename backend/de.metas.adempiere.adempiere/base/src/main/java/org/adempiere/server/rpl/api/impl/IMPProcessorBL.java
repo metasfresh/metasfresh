@@ -294,9 +294,9 @@ public class IMPProcessorBL implements IIMPProcessorBL
 	public org.compiere.model.I_IMP_Processor getIMP_Processor(final AdempiereProcessor adempiereProcessor)
 	{
 		Check.assumeNotNull(adempiereProcessor, "adempiereProcessor not null");
-		if (adempiereProcessor instanceof IMPProcessorAdempiereProcessorAdapter)
+		if (adempiereProcessor instanceof IMPProcessorAdempiereProcessorAdapter adapter)
 		{
-			return ((IMPProcessorAdempiereProcessorAdapter)adempiereProcessor).getIMP_Procesor();
+			return adapter.getIMP_Procesor();
 		}
 		else
 		{

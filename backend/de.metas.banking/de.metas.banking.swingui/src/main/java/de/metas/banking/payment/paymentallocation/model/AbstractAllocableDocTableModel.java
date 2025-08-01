@@ -24,6 +24,7 @@ package de.metas.banking.payment.paymentallocation.model;
 
 
 import java.awt.Color;
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +39,7 @@ import com.google.common.collect.FluentIterable;
 @VisibleForTesting
 public class AbstractAllocableDocTableModel<ModelType extends IAllocableDocRow> extends AnnotatedTableModel<ModelType>
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public AbstractAllocableDocTableModel(final Class<ModelType> modelClass)

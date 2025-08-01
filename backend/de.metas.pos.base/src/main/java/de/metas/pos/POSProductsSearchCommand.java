@@ -142,7 +142,7 @@ class POSProductsSearchCommand
 			return null;
 		}
 
-		return products.get(0);
+		return products.getFirst();
 	}
 
 	@Nullable

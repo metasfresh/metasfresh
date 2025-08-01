@@ -22,8 +22,8 @@
 
 package de.metas.acct.aggregation.legacy.impl;
 
-import de.metas.acct.aggregation.legacy.ILegacyFactAcctLogDAO;
 import de.metas.acct.aggregation.legacy.IFactAcctSummaryKey;
+import de.metas.acct.aggregation.legacy.ILegacyFactAcctLogDAO;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.model.I_Fact_Acct_Log;
@@ -44,7 +44,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.time.Month;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class LegacyFactAcctLogProcessorTest
@@ -116,7 +116,7 @@ public class LegacyFactAcctLogProcessorTest
 			final List<I_Fact_Acct_Summary> summaries = retrieveAllFactAcctSummariesFor(FactAcctSummaryKey.of(log1));
 			assertThat(summaries).hasSize(2);
 
-			final I_Fact_Acct_Summary summary1 = summaries.get(0);
+			final I_Fact_Acct_Summary summary1 = summaries.getFirst();
 			assertEquals("Summary AmtAcctDr", 100 - 30, summary1.getAmtAcctDr().intValueExact());
 			assertEquals("Summary AmtAcctCr", 0, summary1.getAmtAcctCr().intValueExact());
 
@@ -138,7 +138,7 @@ public class LegacyFactAcctLogProcessorTest
 			processAllLogs();
 
 			final List<I_Fact_Acct_Summary> summaries = retrieveAllFactAcctSummariesFor(FactAcctSummaryKey.of(log1));
-			assertEquals("Summary AmtAcctDr", 1000, summaries.get(0).getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctDr", 1000, summaries.getFirst().getAmtAcctDr().intValueExact());
 			assertEquals("Summary AmtAcctDr", 100 - 30 + 1000, summaries.get(1).getAmtAcctDr().intValueExact());
 			assertEquals("Summary AmtAcctDr", 100 - 30 + 10 + 1000, summaries.get(2).getAmtAcctDr().intValueExact());
 		}
@@ -160,8 +160,8 @@ public class LegacyFactAcctLogProcessorTest
 		{
 			final List<I_Fact_Acct_Summary> summaries = retrieveAllFactAcctSummariesFor(FactAcctSummaryKey.of(log1));
 			assertEquals("Summary records count", 1, summaries.size());
-			assertEquals("Summary AmtAcctDr", 100, summaries.get(0).getAmtAcctDr().intValueExact());
-			assertEquals("Summary AmtAcctDr_YTD", 100, summaries.get(0).getAmtAcctDr_YTD().intValueExact());
+			assertEquals("Summary AmtAcctDr", 100, summaries.getFirst().getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctDr_YTD", 100, summaries.getFirst().getAmtAcctDr_YTD().intValueExact());
 		}
 
 		final I_Fact_Acct_Log log2 = newFactAcctLogBuilder()
@@ -178,8 +178,8 @@ public class LegacyFactAcctLogProcessorTest
 			final List<I_Fact_Acct_Summary> summaries = retrieveAllFactAcctSummariesFor(FactAcctSummaryKey.of(log2));
 			assertThat(summaries).hasSize(2);
 			//
-			assertEquals("Summary AmtAcctDr", 100, summaries.get(0).getAmtAcctDr().intValueExact());
-			assertEquals("Summary AmtAcctDr_YTD", 100, summaries.get(0).getAmtAcctDr_YTD().intValueExact());
+			assertEquals("Summary AmtAcctDr", 100, summaries.getFirst().getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctDr_YTD", 100, summaries.getFirst().getAmtAcctDr_YTD().intValueExact());
 			//
 			assertEquals("Summary AmtAcctDr", 100 + 50, summaries.get(1).getAmtAcctDr().intValueExact());
 			assertEquals("Summary AmtAcctDr_YTD", 50, summaries.get(1).getAmtAcctDr_YTD().intValueExact());

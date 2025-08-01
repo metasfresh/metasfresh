@@ -135,7 +135,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 
 		final List<I_C_DunningDoc_Line> docLines = dao.retrieveDunningDocLines(dunningDoc);
 		assertThat(docLines).as("One line expected for " + dunningDoc).hasSize(1);
-		final I_C_DunningDoc_Line docLine = docLines.get(0);
+		final I_C_DunningDoc_Line docLine = docLines.getFirst();
 		assertValid(docLine, candidate);
 
 		final List<I_C_DunningDoc_Line_Source> docLineSources = dao.retrieveDunningDocLineSources(docLine);

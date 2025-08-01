@@ -6,15 +6,14 @@ FROM ${REGISTRY}metasfresh/metas-mvn-common:$REFNAME AS common
 FROM alpine AS poms
 
 WORKDIR /backend
-COPY backend . 
+COPY backend .
 
 # Remove everything except `pom.xml` files to leave only the Maven project structure (POM files) needed for dependency resolution.
 # This optimization allows Maven to download and cache dependencies in a separate layer before copying the actual source code.
 # The POM files contain the dependency declarations that Maven needs to resolve and download dependencies, so keeping only these files is sufficient for the dependency resolution step.
 RUN find . -type f ! -name "pom.xml" -exec rm -r {} \;
 
-
-FROM maven:3.8.4-jdk-8 AS build
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 WORKDIR /backend
 

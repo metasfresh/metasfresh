@@ -74,9 +74,9 @@ public class DimensionSpecTest
 
 		// one "empty", one for dimSpecAttr1 and two for dimSpecAttr2 with includeAllAttributeValues=true and it's two attribute-values
 		assertThat(groups).hasSize(4);
-		assertThat(groups.get(0).isEmptyGroup()).isTrue();
-		assertThat(groups.get(0).getGroupName().getDefaultValue()).isEqualTo(DimensionConstants.MSG_NoneOrEmpty.toAD_Message());
-		assertThat(groups.get(0).getAttributesKey().isNone()).isTrue();
+		assertThat(groups.getFirst().isEmptyGroup()).isTrue();
+		assertThat(groups.getFirst().getGroupName().getDefaultValue()).isEqualTo(DimensionConstants.MSG_NoneOrEmpty.toAD_Message());
+		assertThat(groups.getFirst().getAttributesKey().isNone()).isTrue();
 
 		// attr1 has two values, but just one of them is "explicitly" added to dimSpecAttr1 which has isIncludeAllAttributeValues=false
 		assertThat(groups.get(1).isEmptyGroup()).isFalse();
@@ -129,10 +129,10 @@ public class DimensionSpecTest
 
 		// one "empty", one for dimSpecAttr1 and one for dimSpecAttr2 with its isValueAggregate=true
 		assertThat(groups).hasSize(3);
-		assertThat(groups.get(0).isEmptyGroup()).isTrue();
-		assertThat(groups.get(0).getGroupName().getDefaultValue()).isEqualTo(DimensionConstants.MSG_NoneOrEmpty.toAD_Message());
-		assertThat(groups.get(0).getAttributesKey().isNone()).isTrue();
-		assertThat(groups.get(0).getAttributeId()).isEmpty();
+		assertThat(groups.getFirst().isEmptyGroup()).isTrue();
+		assertThat(groups.getFirst().getGroupName().getDefaultValue()).isEqualTo(DimensionConstants.MSG_NoneOrEmpty.toAD_Message());
+		assertThat(groups.getFirst().getAttributesKey().isNone()).isTrue();
+		assertThat(groups.getFirst().getAttributeId()).isEmpty();
 
 		// attr1 has two values, but just one of them is "explicitly" added to dimSpecAttr1 which has isIncludeAllAttributeValues=false
 		assertThat(groups.get(1).isEmptyGroup()).isFalse();

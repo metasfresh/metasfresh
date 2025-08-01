@@ -25,6 +25,7 @@ package de.metas.common.rest_api.v2.warehouse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,15 +35,19 @@ import java.util.List;
 @Value
 @Builder
 @JsonDeserialize(builder = JsonOutOfStockResponseItem.JsonOutOfStockResponseItemBuilder.class)
+@Schema(description = "Out of Stock Response Item")
 public class JsonOutOfStockResponseItem
 {
 	@JsonProperty("warehouseId")
 	@NonNull
+	@Schema(description = "Warehouse ID")
 	JsonMetasfreshId warehouseId;
 
 	@JsonProperty("inventoryDocNo")
+	@Schema(description = "Inventory Document Number")
 	String inventoryDocNo;
 
 	@JsonProperty("closedShipmentSchedules")
+	@Schema(description = "List of closed shipment schedules")
 	List<JsonMetasfreshId> closedShipmentSchedules;
 }

@@ -40,10 +40,12 @@ public class JSONMigrationScriptsInfo
 	String migrationScriptDirectory;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Schema(nullable = true, description = "The file name of the SQL script to which the system currently records.")
+	//@Schema(nullable = true, description = "The file name of the SQL script to which the system currently records.")
+	@Schema(description = "The file name of the SQL script to which the system currently records.")
 	String currentScript;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Schema(nullable = true, description = "The file names of recorded SQL scripts.")
+	//@Schema(nullable = true, description = "The file names of recorded SQL scripts.")
+	@Schema(description = "The file names of recorded SQL scripts.")
 	List<String> scripts;
 }

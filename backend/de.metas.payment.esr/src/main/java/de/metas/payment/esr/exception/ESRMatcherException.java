@@ -1,5 +1,7 @@
 package de.metas.payment.esr.exception;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -28,6 +30,7 @@ public class ESRMatcherException  extends ESRException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -7532235426178917283L;
 
 	public ESRMatcherException(String msg)

@@ -105,7 +105,7 @@ public class HULockBL_IntegrationTest
 		{
 			lockOwners.add(LockOwner.forOwnerName("owner-" + i));
 		}
-		final LockOwner lastLockOwner = lockOwners.get(lockOwners.size() - 1);
+		final LockOwner lastLockOwner = lockOwners.getLast();
 
 		//
 		// Create the HU to test with

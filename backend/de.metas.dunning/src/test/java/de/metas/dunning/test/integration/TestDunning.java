@@ -296,7 +296,7 @@ public class TestDunning extends DunningTestBase
 			final List<I_C_DunningDoc_Line_Source> sourcesToWriteOff = IteratorUtils.asList(dao.retrieveDunningDocLineSourcesToWriteOff(dunningContext));
 			assertThat(sourcesToWriteOff).as("Only one candidate shall be in writeoff list").hasSize(1);
 
-			final I_C_DunningDoc_Line_Source sourceToWriteOff = sourcesToWriteOff.get(0);
+			final I_C_DunningDoc_Line_Source sourceToWriteOff = sourcesToWriteOff.getFirst();
 			assertThat(sourceToWriteOff.isProcessed()).as("Source to writeoff - Invalid - Processed").isTrue();
 			assertThat(sourceToWriteOff.isWriteOff()).as("Source to writeoff - Invalid - IsWriteOff").isTrue();
 			assertThat(sourceToWriteOff.isWriteOffApplied()).as("Source to writeoff - Invalid - IsWriteOffApplied").isFalse();
@@ -473,14 +473,14 @@ public class TestDunning extends DunningTestBase
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 		candidates1 = dao.retrieveDunningCandidates(dunningContext, adTableDAO.retrieveTableId(I_C_Invoice.Table_Name), invoice1.getC_Invoice_ID());
-		candidate1 = candidates1.get(0);
+		candidate1 = candidates1.getFirst();
 
 		candidates2 = dao.retrieveDunningCandidates(dunningContext, adTableDAO.retrieveTableId(I_C_Invoice.Table_Name), invoice2.getC_Invoice_ID());
-		candidate2 = candidates2.get(0);
+		candidate2 = candidates2.getFirst();
 
 		candidate3 = dao.retrieveDunningCandidate(dunningContext, invoice3, dunningLevel1);
 
 		candidates4 = dao.retrieveDunningCandidates(dunningContext, adTableDAO.retrieveTableId(I_C_Invoice.Table_Name), invoice4.getC_Invoice_ID());
-		candidate4 = candidates4.get(0);
+		candidate4 = candidates4.getFirst();
 	}
 }

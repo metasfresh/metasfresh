@@ -353,9 +353,9 @@ public abstract class PO
 	 * Zero Integer
 	 */
 	@SuppressWarnings("UnnecessaryBoxing")
-	protected static final Integer I_ZERO = new Integer(0);
+	protected static final Integer I_ZERO = Integer.valueOf(0);
 	@SuppressWarnings("UnnecessaryBoxing")
-	private static final Integer I_ZERO_NATIVESEQUENCE = new Integer(0);
+	private static final Integer I_ZERO_NATIVESEQUENCE = Integer.valueOf(0);
 
 	/**
 	 * Trifon - Indicates that this record is created by replication functionality.

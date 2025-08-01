@@ -22,12 +22,13 @@ package org.adempiere.ad.trx.exceptions;
  * #L%
  */
 
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrxRunConfig;
+
+import java.io.Serial;
 
 /**
  * Exception thrown when {@link ITrxManager#run(String, ITrxRunConfig, org.compiere.util.TrxRunnable)} methods are encounting an invalid state.
@@ -45,6 +46,7 @@ public class IllegalTrxRunStateException extends TrxException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 4659574948858028974L;
 
 	private ITrxRunConfig trxRunConfig;

@@ -29,7 +29,7 @@ public class M_ShipperTransportation_AddShipments extends JavaProcess implements
 		final List<I_M_ShipperTransportation> selectedModels = context.getSelectedModels(I_M_ShipperTransportation.class);
 		if (selectedModels.size() == 1)
 		{
-			return ProcessPreconditionsResolution.acceptIf(!selectedModels.get(0).isProcessed());
+			return ProcessPreconditionsResolution.acceptIf(!selectedModels.getFirst().isProcessed());
 		}
 
 		return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();

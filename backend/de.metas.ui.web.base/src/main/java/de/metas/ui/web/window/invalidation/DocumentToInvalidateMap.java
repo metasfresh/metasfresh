@@ -94,7 +94,7 @@ final class DocumentToInvalidateMap
 		}
 		else if (list.size() == 1)
 		{
-			return list.get(0);
+			return list.getFirst();
 		}
 		else
 		{

@@ -57,9 +57,9 @@ public class RefreshContextEditorAction extends AbstractContextMenuAction
 	public IRefreshableEditor getRefreshableEditor()
 	{
 		final VEditor editor = getEditor();
-		if (editor instanceof IRefreshableEditor)
+		if (editor instanceof IRefreshableEditor refreshableEditor)
 		{
-			return (IRefreshableEditor)editor;
+			return refreshableEditor;
 		}
 		else
 		{
