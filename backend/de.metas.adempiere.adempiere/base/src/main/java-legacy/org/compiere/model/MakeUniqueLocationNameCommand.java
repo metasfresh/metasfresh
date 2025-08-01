@@ -30,6 +30,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -44,6 +45,8 @@ public final class MakeUniqueLocationNameCommand
 	private final List<String> existingNames;
 	private final int maxLength;
 
+	public final static String BPARTNER_LOCATION_NAME_DEFAULT = ".";
+
 	@Builder
 	private MakeUniqueLocationNameCommand(
 			@Nullable final String name,
@@ -57,7 +60,7 @@ public final class MakeUniqueLocationNameCommand
 		this.existingNames = existingNames != null ? existingNames : ImmutableList.of();
 		this.maxLength = maxLength > 0 ? maxLength : Integer.MAX_VALUE;
 
-		if (Check.isEmpty(name, true) || ".".equals(name))
+		if (Check.isEmpty(name, true) || BPARTNER_LOCATION_NAME_DEFAULT.equals(name))
 		{
 			this.nameInitial = null;
 		}
@@ -174,6 +177,17 @@ public final class MakeUniqueLocationNameCommand
 
 		return nameUnique;
 	}
-}
 
+	public static List<String> getOtherLocationNames(
+			final int bpartnerId,
+			final int bpartnerLocationIdToExclude)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationIdToExclude)
+				.create()
+				.listDistinct(I_C_BPartner_Location.COLUMNNAME_Name, String.class);
+	}
+}
 
