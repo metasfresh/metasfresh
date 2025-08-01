@@ -19,6 +19,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -158,7 +160,7 @@ import lombok.NonNull;
 
 		bpartnerLocation.setM_Shipper_ID(from.getM_Shipper_ID());
 
-		if(from.isUpdateLocationName()) bpartnerLocation.setName("."); // see MakeUniqueNameCommand.BPARTNER_LOCATION_NAME_DEFAULT
+		if(from.isUpdateLocationName()) bpartnerLocation.setName(BPARTNER_LOCATION_NAME_DEFAULT);
 
 		fireImportValidator(from, bpartnerLocation);
 		bpartner.addAndSaveLocation(bpartnerLocation);
