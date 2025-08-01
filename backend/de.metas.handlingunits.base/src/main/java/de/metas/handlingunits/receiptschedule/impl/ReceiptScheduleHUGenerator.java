@@ -14,6 +14,7 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.GenericListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.attributes.sscc18.impl.SSCC18AttributeValueGenerator;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -40,6 +41,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
@@ -374,7 +376,11 @@ public class ReceiptScheduleHUGenerator
 		// Allow Partial Loads (to destination): yes, because it could happen that we already have some pre-generated HUs (see "beforeLUTUProducerExecution" method)
 		loader.setAllowPartialLoads(true); // to Destination
 
-		final IAllocationResult result = loader.load(request);
+		final IAllocationResult result;
+		try(final IAutoCloseable ignored = SSCC18AttributeValueGenerator.temporaryDisableItIf(isDisableSSCCGenerateOnHUs()))
+		{
+			result = loader.load(request);
+		}
 
 		//
 		// Make sure everything was transferred
@@ -389,7 +395,12 @@ public class ReceiptScheduleHUGenerator
 		// Get the newly created HUs
 		return destination.getCreatedHUs();
 	}
-
+	
+	private boolean isDisableSSCCGenerateOnHUs()
+	{
+		// TODO check isQtyLUSet
+	}
+	
 	private IAllocationSource createAllocationSource()
 	{
 		final List<I_M_ReceiptSchedule> receiptSchedules = getReceiptSchedules();
