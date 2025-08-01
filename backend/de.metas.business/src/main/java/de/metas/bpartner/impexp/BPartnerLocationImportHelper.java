@@ -80,10 +80,6 @@ import lombok.NonNull;
 
 	/**
 	 * retrieve existent BPartner location and call method for updating the fields
-	 *
-	 * @param importRecord
-	 * @param importRecordsForSameBPartner
-	 * @return
 	 */
 	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final BPartnerImportContext context)
 	{
@@ -122,8 +118,6 @@ import lombok.NonNull;
 	 * * City not empty
 	 * </ul>
 	 *
-	 * @param importRecord
-	 * @return
 	 */
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final BPartnerImportContext context)
 	{
@@ -161,6 +155,10 @@ import lombok.NonNull;
 
 		bpartnerLocation.setExternalId(from.getC_BPartner_Location_ExternalId());
 		bpartnerLocation.setGLN(from.getGLN());
+
+		bpartnerLocation.setM_Shipper_ID(from.getM_Shipper_ID());
+
+		if(from.isUpdateLocationName()) bpartnerLocation.setName("."); // see MakeUniqueNameCommand.BPARTNER_LOCATION_NAME_DEFAULT
 
 		fireImportValidator(from, bpartnerLocation);
 		bpartner.addAndSaveLocation(bpartnerLocation);

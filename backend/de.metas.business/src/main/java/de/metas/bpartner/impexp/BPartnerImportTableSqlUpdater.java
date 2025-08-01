@@ -59,7 +59,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class BPartnerImportTableSqlUpdater
 {
-	private static final transient Logger logger = LogManager.getLogger(BPartnerImportTableSqlUpdater.class);
+	private static final Logger logger = LogManager.getLogger(BPartnerImportTableSqlUpdater.class);
 
 	public void updateBPartnerImportTable(@NonNull final ImportRecordsSelection selection)
 	{
@@ -106,6 +106,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateM_Shippers(selection);
 
+		dbUpdateLocationM_Shippers(selection);
+
 		dbUpdateAD_PrintFormats(selection);
 
 		dbUpdateM_PricingSystems(selection);
@@ -116,7 +118,7 @@ public class BPartnerImportTableSqlUpdater
 		logger.info("Took {} to update I_BPartner records ({})", stopwatch, selection);
 	}
 
-	private final void executeUpdate(@NonNull final String description, @NonNull final CharSequence sql)
+	private void executeUpdate(@NonNull final String description, @NonNull final CharSequence sql)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -774,6 +776,32 @@ public class BPartnerImportTableSqlUpdater
 							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid Invalid Shipper or DeliveryViaRule", sql);
+		}
+	}
+
+	private void dbUpdateLocationM_Shippers(final ImportRecordsSelection selection)
+	{
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET Location_M_Shipper_ID=(SELECT M_Shipper_ID FROM M_Shipper s"
+					+ " WHERE i.LocationShipperName=s.Name AND s.AD_Client_ID IN (0, i.AD_Client_ID)), "
+					+ " DeliveryViaRule = 'S' "
+					+ "WHERE Location_M_Shipper_ID IS NULL AND LocationShipperName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Set M_Shipper_ID", sql);
+		}
+
+		//
+		{
+			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Location Shipper or DeliveryViaRule, ' "
+					+ "WHERE Location_M_Shipper_ID IS NULL AND DeliveryViaRule IS NULL AND LocationShipperName IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					.append(selection.toSqlWhereClause("i"));
+
+			executeUpdate("Flag records with invalid location Shipper or DeliveryViaRule", sql);
 		}
 	}
 

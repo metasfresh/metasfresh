@@ -1807,6 +1807,48 @@ public interface I_I_BPartner
 	String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
 
 	/**
+	 * Set Adressnamen aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateLocationName (boolean IsUpdateLocationName);
+
+	/**
+	 * Get Adressnamen aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateLocationName();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_IsUpdateLocationName = new ModelColumn<>(I_I_BPartner.class, "IsUpdateLocationName", null);
+	String COLUMNNAME_IsUpdateLocationName = "IsUpdateLocationName";
+
+	/**
+	 * Set Invoice via eMail (User).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsUserInvoiceEmailEnabled (@Nullable java.lang.String IsUserInvoiceEmailEnabled);
+
+	/**
+	 * Get Invoice via eMail (User).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsUserInvoiceEmailEnabled();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_IsUserInvoiceEmailEnabled = new ModelColumn<>(I_I_BPartner.class, "IsUserInvoiceEmailEnabled", null);
+	String COLUMNNAME_IsUserInvoiceEmailEnabled = "IsUserInvoiceEmailEnabled";
+
+	/**
 	 * Set Vendor.
 	 * Indicates if this Business Partner is a Vendor
 	 *
@@ -1872,6 +1914,54 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_Lastname = new ModelColumn<>(I_I_BPartner.class, "Lastname", null);
 	String COLUMNNAME_Lastname = "Lastname";
+
+	/**
+	 * Set Delivery route for address.
+	 * Method or type of delivery of goods
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLocation_M_Shipper_ID (int Location_M_Shipper_ID);
+
+	/**
+	 * Get Delivery route for address.
+	 * Method or type of delivery of goods
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLocation_M_Shipper_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper getLocation_M_Shipper();
+
+	void setLocation_M_Shipper(@Nullable org.compiere.model.I_M_Shipper Location_M_Shipper);
+
+	ModelColumn<I_I_BPartner, org.compiere.model.I_M_Shipper> COLUMN_Location_M_Shipper_ID = new ModelColumn<>(I_I_BPartner.class, "Location_M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_Location_M_Shipper_ID = "Location_M_Shipper_ID";
+
+	/**
+	 * Set Shipper name for adress.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLocationShipperName (@Nullable java.lang.String LocationShipperName);
+
+	/**
+	 * Get Shipper name for adress.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLocationShipperName();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_LocationShipperName = new ModelColumn<>(I_I_BPartner.class, "LocationShipperName", null);
+	String COLUMNNAME_LocationShipperName = "LocationShipperName";
 
 	/**
 	 * Set Memo Shipment.
@@ -2120,6 +2210,27 @@ public interface I_I_BPartner
 	String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
+	 * Set Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRuleInfo (@Nullable java.lang.String PaymentRuleInfo);
+
+	/**
+	 * Get Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRuleInfo();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_PaymentRuleInfo = new ModelColumn<>(I_I_BPartner.class, "PaymentRuleInfo", null);
+	String COLUMNNAME_PaymentRuleInfo = "PaymentRuleInfo";
+
+	/**
 	 * Set Payment Rule.
 	 * Purchase payment option
 	 *
@@ -2141,6 +2252,27 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_PaymentRulePO = new ModelColumn<>(I_I_BPartner.class, "PaymentRulePO", null);
 	String COLUMNNAME_PaymentRulePO = "PaymentRulePO";
+
+	/**
+	 * Set Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRulePOInfo (@Nullable java.lang.String PaymentRulePOInfo);
+
+	/**
+	 * Get Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRulePOInfo();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_PaymentRulePOInfo = new ModelColumn<>(I_I_BPartner.class, "PaymentRulePOInfo", null);
+	String COLUMNNAME_PaymentRulePOInfo = "PaymentRulePOInfo";
 
 	/**
 	 * Set Payment Term Customer.
