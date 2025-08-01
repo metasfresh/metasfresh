@@ -11,6 +11,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.LocationId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
@@ -49,7 +50,7 @@ import static de.metas.util.Check.isBlank;
  */
 
 @Data
-@JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
+@JsonPropertyOrder(alphabetic = true/* we want the serialized JSON to be less flaky in our snapshot files */)
 public class BPartnerLocation
 {
 	public static final String ID = "id";
@@ -71,6 +72,11 @@ public class BPartnerLocation
 	public static final String EPHEMERAL = "ephemeral";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
+	public static final String VISITORS_ADDRESS = "visitorsAddress";
+	public static final String HANDOVER_LOCATION = "handoverLocation";
+	public static final String REMIT_TO = "remitTo";
+	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
+	public static final String VAT_TAX_ID = "vatTaxId";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -142,10 +148,12 @@ public class BPartnerLocation
 
 	@Nullable final String setupPlaceNo;
 
-	final boolean remitTo;
-	final boolean handOverLocation;
-	final boolean replicationLookupDefault;
-	final boolean visitorsAddress;
+	@Nullable private VATIdentifier vatTaxId;
+
+	final private boolean remitTo;
+	final private boolean handOverLocation;
+	final private boolean replicationLookupDefault;
+	final private boolean visitorsAddress;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
@@ -186,6 +194,7 @@ public class BPartnerLocation
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
+			@Nullable final VATIdentifier vatTaxId,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
 			@Nullable final Boolean replicationLookupDefault,
@@ -229,6 +238,7 @@ public class BPartnerLocation
 		this.email = email;
 
 		this.setupPlaceNo = setupPlaceNo;
+		this.vatTaxId = vatTaxId;
 
 		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
 

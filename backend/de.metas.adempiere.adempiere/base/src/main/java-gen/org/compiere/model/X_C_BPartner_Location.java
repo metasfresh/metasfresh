@@ -523,6 +523,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setVATaxID (final @Nullable java.lang.String VATaxID)
+	{
+		set_Value (COLUMNNAME_VATaxID, VATaxID);
+	}
+
+	@Override
+	public java.lang.String getVATaxID()
+	{
+		return get_ValueAsString(COLUMNNAME_VATaxID);
+	}
+
+	@Override
 	public void setVisitorsAddress (final boolean VisitorsAddress)
 	{
 		set_Value (COLUMNNAME_VisitorsAddress, VisitorsAddress);

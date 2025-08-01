@@ -41,7 +41,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
