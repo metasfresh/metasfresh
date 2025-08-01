@@ -26,6 +26,9 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -46,11 +49,13 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -91,6 +96,7 @@ public class ReceiptScheduleHUGenerator
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	//
 	// Parameters
@@ -398,7 +404,16 @@ public class ReceiptScheduleHUGenerator
 	
 	private boolean isDisableSSCCGenerateOnHUs()
 	{
-		// TODO check isQtyLUSet
+		final ImmutableSet<OrderAndLineId> orderAndLineIds = getReceiptSchedules().stream()
+				.map(rs -> OrderAndLineId.ofRepoIds(rs.getC_Order_ID(),rs.getC_OrderLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return orderDAO.getOrderLinesByIds(orderAndLineIds)
+				.values()
+				.stream()
+				.map(I_C_OrderLine::getQtyLU)
+				.filter(Objects::nonNull)
+				.anyMatch(qtyLU -> qtyLU.compareTo(BigDecimal.ZERO) > 0);
 	}
 	
 	private IAllocationSource createAllocationSource()

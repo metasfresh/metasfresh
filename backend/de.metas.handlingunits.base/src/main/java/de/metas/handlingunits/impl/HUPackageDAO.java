@@ -22,6 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -43,10 +44,13 @@ import java.util.Properties;
 
 public class HUPackageDAO implements IHUPackageDAO
 {
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public List<I_M_Package_HU> retrievePackageHUs(final org.compiere.model.I_M_Package mpackage)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class, mpackage)
 				.filter(new EqualsQueryFilter<>(I_M_Package_HU.COLUMN_M_Package_ID, mpackage.getM_Package_ID()))
 				.create()
@@ -58,7 +62,6 @@ public class HUPackageDAO implements IHUPackageDAO
 	{
 		Check.assumeNotNull(mpackage, "mpackage not null");
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Package_HU.class, mpackage)
 				.addEqualsFilter(I_M_Package_HU.COLUMN_M_Package_ID, mpackage.getM_Package_ID())
 				.addOnlyActiveRecordsFilter()
@@ -76,7 +79,7 @@ public class HUPackageDAO implements IHUPackageDAO
 			return Collections.emptyList();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Package.class)
 				.addInArrayOrAllFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_Package_ID, packageIds)
 				.create()
@@ -86,7 +89,7 @@ public class HUPackageDAO implements IHUPackageDAO
 	@Override
 	public boolean isHUAssignedToPackage(final I_M_HU hu)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class, hu)
 				.addEqualsFilter(I_M_Package_HU.COLUMN_M_HU_ID, hu.getM_HU_ID())
 				.create()
@@ -98,7 +101,6 @@ public class HUPackageDAO implements IHUPackageDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Package_HU.class, ctx, trxName)
 				.addEqualsFilter(I_M_Package_HU.COLUMN_M_HU_ID, hu.getM_HU_ID())
 				.addOnlyActiveRecordsFilter()
@@ -113,11 +115,21 @@ public class HUPackageDAO implements IHUPackageDAO
 	{
 		Check.assumeNotNull(shipment, "shipment not null");
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Package.class, shipment)
 				.addEqualsFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
 				.create()
 				.list(I_M_Package.class);
+
+	}
+
+	@Override
+	public Collection<PackageId> getAssignedPackageIds(final Collection<PackageId> packageIds)
+	{
+
+		return queryBL.createQueryBuilder(I_M_Package_HU.class)
+				.addInArrayFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, packageIds)
+				.create()
+				.listDistinct(I_M_Package_HU.COLUMNNAME_M_Package_ID, PackageId.class);
 
 	}
 

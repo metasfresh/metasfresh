@@ -22,8 +22,9 @@
 
 package de.metas.shipping.mpackage;
 
+import de.metas.handlingunits.HuId;
 import de.metas.inout.InOutId;
-import de.metas.sscc18.SSCC18;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -41,6 +42,8 @@ public class Package
 	@Nullable BigDecimal weightInKg;
 	@Nullable InOutId inOutId;
 	@Nullable String sscc; // because there's no easy way to parse a String into an SSCC without knowing details about the producer
+	@Nullable HuId huId;
 	@NonNull @Singular List<PackageItem> packageContents;
+	@NonNull OrgId orgId;
 
 }
