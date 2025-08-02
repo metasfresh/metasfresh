@@ -118,7 +118,6 @@ public class HUPackageDAO implements IHUPackageDAO
 				.addEqualsFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
 				.create()
 				.list(I_M_Package.class);
-
 	}
 
 	@Override

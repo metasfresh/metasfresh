@@ -160,6 +160,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	@Override
+	@Nullable
 	public BigDecimal getQtyOrderedTUOrNull(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(receiptSchedule.getC_OrderLine(), I_C_OrderLine.class);
@@ -476,10 +477,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final ImmutableCollection<HuId> luQtyHuId = huAssignmentDAO.retrieveHUsByRecordRefs(TableRecordReferenceSet.of(I_M_ReceiptSchedule.Table_Name, luQtySchedules.stream()
 				.map(rs -> ReceiptScheduleId.ofRepoId(rs.getM_ReceiptSchedule_ID()))
 				.collect(Collectors.toList()))).values();
-		final List<HuId> selectedLUQtyHUs = selectedHuIds.stream()
+		return selectedHuIds.stream()
 				.filter(luQtyHuId::contains)
 				.collect(Collectors.toList());
-		return selectedLUQtyHUs;
 	}
 
 	private List<I_M_ReceiptSchedule> retainLUQtySchedules(final List<I_M_ReceiptSchedule> receiptSchedules)
