@@ -30,6 +30,8 @@ import org.compiere.model.I_M_Shipper;
 public class M_Shipper_StepDefData extends StepDefData<I_M_Shipper>
 		implements StepDefDataGetIdAware<ShipperId, I_M_Shipper>
 {
+	public static final ShipperId DEFAULT_M_SHIPPER_ID = ShipperId.ofRepoId(1000000);
+
 	public M_Shipper_StepDefData()
 	{
 		super(I_M_Shipper.class);

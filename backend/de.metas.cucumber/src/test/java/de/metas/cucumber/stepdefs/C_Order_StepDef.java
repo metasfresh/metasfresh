@@ -92,6 +92,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData.DEFAULT_M_SHIPPER_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -119,7 +120,6 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 @RequiredArgsConstructor
 public class C_Order_StepDef
 {
-	public static final int DEFAULT_M_SHIPPER_ID = 1000001;
 	private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -180,7 +180,7 @@ public class C_Order_StepDef
 		order.setC_BPartner_ID(bpartnerId.getRepoId());
 		order.setIsSOTrx(isSOTrx);
 		order.setDateOrdered(tableRow.getAsLocalDateTimestamp(I_C_Order.COLUMNNAME_DateOrdered));
-		order.setM_Shipper_ID(DEFAULT_M_SHIPPER_ID);
+		order.setM_Shipper_ID(DEFAULT_M_SHIPPER_ID.getRepoId());
 
 		// dropship
 		order.setIsDropShip(tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsDropShip).orElse(false));
