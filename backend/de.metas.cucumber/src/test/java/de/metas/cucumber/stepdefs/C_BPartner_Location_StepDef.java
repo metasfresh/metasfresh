@@ -26,11 +26,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
-import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -49,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData.DEFAULT_M_SHIPPER_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -63,7 +60,6 @@ public class C_BPartner_Location_StepDef
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_Location_StepDefData locationTable;
-	private final M_Shipper_StepDefData shipperTable;
 
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -118,10 +114,6 @@ public class C_BPartner_Location_StepDef
 
 		bPartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bPartnerLocationRecord.setGLN(gln);
-		final ShipperId shipperId = tableRow.getAsOptionalIdentifier(I_C_BPartner_Location.COLUMNNAME_M_Shipper_ID)
-				.map(id -> ShipperId.ofRepoId(shipperTable.get(id).getM_Shipper_ID()))
-				.orElse(DEFAULT_M_SHIPPER_ID);
-		bPartnerLocationRecord.setM_Shipper_ID(ShipperId.toRepoId(shipperId));
 
 		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).ifPresent(bPartnerLocationRecord::setIsShipToDefault);
 
