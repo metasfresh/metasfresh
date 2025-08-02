@@ -154,7 +154,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	@Override
-	public I_M_ReceiptSchedule getById(@NonNull ReceiptScheduleId id)
+	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId id)
 	{
 		return InterfaceWrapperHelper.create(receiptScheduleDAO.getById(id), I_M_ReceiptSchedule.class);
 	}
@@ -213,13 +213,13 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			return;
 		}
 
-		Services.get(ITrxManager.class).run(trxName, (TrxRunnable)localTrxName -> {
+		Services.get(ITrxManager.class).run(trxName, localTrxName -> {
 			final IContextAware context = Services.get(ITrxManager.class).createThreadContextAware(allocs.get(0));
 			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
 
 			Services.get(IHUTrxBL.class)
 					.createHUContextProcessorExecutor(huContext)
-					.run((IHUContextProcessor)huContext1 -> {
+					.run(huContext1 -> {
 						destroyHandlingUnits(huContext1, allocs);
 						return IHUContextProcessor.NULL_RESULT;
 					});
@@ -389,7 +389,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		// note: selectedHUs might well be empty or null, for packing-material-M_ReceiptSchedules
 		if (selectedHuIds != null && !selectedHuIds.isEmpty())
 		{
-			ImmutableMap<HuId, I_M_HU> husByIdMap = handlingUnitsBL.getByIds(selectedHuIds)
+			final ImmutableMap<HuId, I_M_HU> husByIdMap = handlingUnitsBL.getByIds(selectedHuIds)
 					.stream()
 					.collect(ImmutableMap.toImmutableMap(hu -> HuId.ofRepoId(hu.getM_HU_ID()), Functions.identity()));
 			validateHuIds(selectedHuIds, husByIdMap);
@@ -472,7 +472,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final ImmutableMap<PackageId, Package> packageIdToPackageMap = getPackagesForReceiptSchedules(receiptSchedules)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(Package::getId, Functions.identity()));
-		final Collection<PackageId> assignedPackageIds = huPackageDAO.getAssignedPackageIds(packageIdToPackageMap.keySet());
+		final Collection<PackageId> assignedPackageIds = huPackageDAO.retainPackageIdsWithHUs(packageIdToPackageMap.keySet());
 
 		return packageIdToPackageMap.keySet()
 				.stream()
@@ -591,7 +591,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				.build());
 	}
 
-	private Set<HuId> getAssignedHUIds(List<? extends org.compiere.model.I_M_InOut> inouts)
+	private Set<HuId> getAssignedHUIds(final List<? extends org.compiere.model.I_M_InOut> inouts)
 	{
 		if (inouts.isEmpty())
 		{

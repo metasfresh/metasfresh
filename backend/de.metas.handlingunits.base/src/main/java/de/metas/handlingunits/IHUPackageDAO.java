@@ -74,6 +74,6 @@ public interface IHUPackageDAO extends ISingletonService
 	 */
 	List<I_M_Package> retrievePackagesForShipment(I_M_InOut shipment);
 
-	Collection<PackageId> getAssignedPackageIds(Collection<PackageId> packageIds);
+	Collection<PackageId> retainPackageIdsWithHUs(Collection<PackageId> packageIds);
 
 }

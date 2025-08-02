@@ -22,7 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -123,9 +122,12 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
-	public Collection<PackageId> getAssignedPackageIds(final Collection<PackageId> packageIds)
+	public Collection<PackageId> retainPackageIdsWithHUs(final Collection<PackageId> packageIds)
 	{
-
+		if (Check.isEmpty(packageIds))
+		{
+			return Collections.emptyList();
+		}
 		return queryBL.createQueryBuilder(I_M_Package_HU.class)
 				.addInArrayFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, packageIds)
 				.create()

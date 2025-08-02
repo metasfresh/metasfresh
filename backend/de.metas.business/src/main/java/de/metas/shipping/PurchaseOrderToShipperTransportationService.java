@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -24,7 +25,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,6 +56,7 @@ public class PurchaseOrderToShipperTransportationService
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
 
@@ -113,7 +114,7 @@ public class PurchaseOrderToShipperTransportationService
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		final List<I_C_OrderLine> orderLinesWithLUQty = orderLines.stream()
-				.filter(PurchaseOrderToShipperTransportationService::isLUQtySet)
+				.filter(orderBL::isLUQtySet)
 				.collect(Collectors.toList());
 		final boolean isOrderLinesWithoutLUQtyExist = orderLines.stream()
 				.anyMatch(ol -> !orderLinesWithLUQty.contains(ol) && !ol.isPackagingMaterial());
@@ -155,12 +156,6 @@ public class PurchaseOrderToShipperTransportationService
 					.sscc(sscc18CodeBL.generate(orgId))
 					.build());
 		}
-	}
-
-	private static boolean isLUQtySet(@NonNull final I_C_OrderLine orderLine)
-	{
-		final BigDecimal luQty = orderLine.getQtyLU();
-		return luQty != null && luQty.signum() > 0;
 	}
 
 }
