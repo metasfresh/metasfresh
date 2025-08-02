@@ -908,6 +908,27 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_ValidFrom = "ValidFrom";
 
 	/**
+	 * Set VAT ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxID (@Nullable java.lang.String VATaxID);
+
+	/**
+	 * Get VAT ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getVATaxID();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxID = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxID", null);
+	String COLUMNNAME_VATaxID = "VATaxID";
+
+	/**
 	 * Set Visitors Address.
 	 *
 	 * <br>Type: YesNo

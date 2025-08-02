@@ -146,6 +146,7 @@ import org.compiere.model.ModelValidationEngine;
 		user.setPhone2(importRecord.getPhone2());
 		user.setFax(importRecord.getFax());
 		user.setEMail(importRecord.getEMail());
+		user.setIsInvoiceEmailEnabled(importRecord.getIsUserInvoiceEmailEnabled());
 		user.setBirthday(importRecord.getBirthday());
 		user.setIsDefaultContact(importRecord.isDefaultContact());
 		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
@@ -194,6 +195,9 @@ import org.compiere.model.ModelValidationEngine;
 		{
 			user.setEMail(importRecord.getEMail());
 		}
+
+		user.setIsInvoiceEmailEnabled(importRecord.getIsUserInvoiceEmailEnabled());
+
 		if (importRecord.getBirthday() != null)
 		{
 			user.setBirthday(importRecord.getBirthday());
