@@ -22,15 +22,14 @@
 
 package de.metas.shipping.model;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ShipperTransportationId implements RepoIdAware
@@ -48,6 +47,11 @@ public class ShipperTransportationId implements RepoIdAware
 	public static ShipperTransportationId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static int toRepoId(@Nullable final ShipperTransportationId shipperTransportationId)
+	{
+		return shipperTransportationId != null ? shipperTransportationId.getRepoId() : -1;
 	}
 
 	private ShipperTransportationId(final int repoId)

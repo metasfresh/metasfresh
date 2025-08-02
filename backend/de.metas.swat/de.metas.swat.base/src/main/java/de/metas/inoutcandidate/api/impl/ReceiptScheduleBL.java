@@ -30,6 +30,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
@@ -93,7 +94,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
 
-	private final static transient Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
+	private final static Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
 
 	private final CompositeReceiptScheduleListener listeners = new CompositeReceiptScheduleListener();
 	private final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = new ReceiptScheduleHeaderAggregationKeyBuilder();
@@ -104,7 +105,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public void addReceiptScheduleListener(IReceiptScheduleListener listener)
+	public void addReceiptScheduleListener(final IReceiptScheduleListener listener)
 	{
 		listeners.addReceiptScheduleListener(listener);
 	}
@@ -446,7 +447,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void updatePreparationTime(I_M_ReceiptSchedule receiptSchedule)
+	public void updatePreparationTime(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(receiptSchedule.getC_Order(), I_C_Order.class);
 		if (order != null)
@@ -606,6 +607,12 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
 			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
 		}
+	}
+
+	@Override
+	public List<ReceiptScheduleId> retainLUQtySchedules(final List<ReceiptScheduleId> receiptSchedules)
+	{
+		return receiptScheduleDAO.retainLUQtySchedules(receiptSchedules);
 	}
 
 	private static class ReceiptScheduleDocumentLocationAdapter implements IDocumentLocationAdapter

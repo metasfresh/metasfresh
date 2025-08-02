@@ -20,44 +20,22 @@
  * #L%
  */
 
-package de.metas.mpackage;
+package de.metas.shipping.mpackage;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
-public class PackageId implements RepoIdAware
+@Builder(toBuilder = true)
+public class PackageItem
 {
-	int repoId;
-
-	@JsonCreator
-	public static PackageId ofRepoId(final int repoId)
-	{
-		return new PackageId(repoId);
-	}
-
-	public static PackageId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new PackageId(repoId) : null;
-	}
-
-	public static int toRepoId(final PackageId id)
-	{
-		return id != null ? id.getRepoId() : -1;
-	}
-
-	private PackageId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Package_ID");
-	}
-
-	@Override
-	@JsonValue
-	public int getRepoId()
-	{
-		return repoId;
-	}
+	@NonNull ProductId productId;
+	@Nullable Quantity quantity;
+	@NonNull OrderLineId orderLineId;
 }

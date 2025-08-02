@@ -91,4 +91,6 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(ImmutableSet<ReceiptScheduleId> receiptScheduleIds);
 
 	I_M_ReceiptSchedule getById(ReceiptScheduleId receiptScheduleId);
+
+	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 }

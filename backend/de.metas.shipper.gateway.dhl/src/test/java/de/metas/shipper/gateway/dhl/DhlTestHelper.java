@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.location.CountryCode;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;

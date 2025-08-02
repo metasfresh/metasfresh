@@ -2,7 +2,7 @@ package de.metas.shipper.gateway.go;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder_Package;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;

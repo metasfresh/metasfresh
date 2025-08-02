@@ -12,7 +12,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.product.ProductId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.uom.IUOMConversionBL;

@@ -2,7 +2,7 @@ package de.metas.shipper.gateway.derkurier;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.location.CountryCode;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData.DerKurierDeliveryDataBuilder;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;

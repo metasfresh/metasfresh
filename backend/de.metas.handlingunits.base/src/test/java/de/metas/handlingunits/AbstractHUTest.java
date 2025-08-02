@@ -19,6 +19,7 @@ import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.ProductId;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -148,6 +149,7 @@ public abstract class AbstractHUTest
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting());
 
 		setupMasterData();
 

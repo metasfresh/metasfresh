@@ -139,8 +139,8 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 
 	private int getNextTransportationOrderId()
 	{
-		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(shipperRecordId);
-		final ShipperTransportationId nextShipperTransportationForShipper = shipperTransportationRepo.retrieveNextOpenShipperTransportationIdOrNull(shipperId);
+		final ShipperId shipperId = ShipperId.ofRepoId(shipperRecordId);
+		final ShipperTransportationId nextShipperTransportationForShipper = shipperTransportationRepo.retrieveNextOpenShipperTransportationIdOrNull(shipperId, null);
 
 		return nextShipperTransportationForShipper == null ? -1 : nextShipperTransportationForShipper.getRepoId();
 	}

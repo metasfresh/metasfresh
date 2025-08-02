@@ -23,8 +23,9 @@
 package de.metas.handlingunits.attributes.sscc18.impl;
 
 import de.metas.handlingunits.StaticHUAssert;
-import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.organization.OrgId;
+import de.metas.sscc18.SSCC18;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;

@@ -20,11 +20,14 @@
  * #L%
  */
 
-package de.metas.mpackage;
+package de.metas.shipping.mpackage;
 
+import de.metas.handlingunits.HuId;
 import de.metas.inout.InOutId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -38,6 +41,9 @@ public class Package
 	@NonNull PackageId id;
 	@Nullable BigDecimal weightInKg;
 	@Nullable InOutId inOutId;
-	@NonNull List<PackageItem> packageContents;
+	@Nullable String sscc; // because there's no easy way to parse a String into an SSCC without knowing details about the producer
+	@Nullable HuId huId;
+	@NonNull @Singular List<PackageItem> packageContents;
+	@NonNull OrgId orgId;
 
 }

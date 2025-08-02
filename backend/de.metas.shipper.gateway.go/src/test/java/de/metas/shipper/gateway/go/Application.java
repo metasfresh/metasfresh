@@ -2,7 +2,7 @@ package de.metas.shipper.gateway.go;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.location.ICountryCodeFactory;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;

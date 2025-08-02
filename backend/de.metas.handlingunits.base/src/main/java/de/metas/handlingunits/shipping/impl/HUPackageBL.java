@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipping.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -12,9 +13,12 @@ import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
+import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.mpackage.Package;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -113,6 +117,16 @@ public class HUPackageBL implements IHUPackageBL
 		save(mpackageHU);
 
 		return mpackage;
+	}
+
+	@Override
+	public void assignPackageToHuId(@NonNull final Package aPackage, @NonNull final HuId huId)
+	{
+		final I_M_Package_HU mpackageHU = newInstance(I_M_Package_HU.class);
+		mpackageHU.setAD_Org_ID(OrgId.toRepoId(aPackage.getOrgId()));
+		mpackageHU.setM_Package_ID(PackageId.toRepoId(aPackage.getId()));
+		mpackageHU.setM_HU_ID(HuId.toRepoId(huId));
+		save(mpackageHU);
 	}
 
 	private static void updateFromInOut(@NonNull final I_M_Package mpackage, @NonNull final I_M_InOut inOut)

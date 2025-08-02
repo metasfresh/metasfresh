@@ -1,10 +1,8 @@
-package de.metas.handlingunits.attributes.sscc18.impl;
-
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,12 +20,14 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  * #L%
  */
 
+package de.metas.sscc18.impl;
+
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.organization.OrgId;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.SSCC18;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -76,7 +76,7 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 			final String sscc18SerialNumberStr = Services.get(IDocumentNoBuilderFactory.class)
 					.forTableName(SSCC18_SERIALNUMBER_SEQUENCENAME, ClientId.METASFRESH.getRepoId(), orgId.getRepoId())
 					.build();
-			Check.assumeNotNull(sscc18SerialNumberStr, "Count not retrieve next value from sequence {}" + SSCC18_SERIALNUMBER_SEQUENCENAME);
+			Check.assumeNotNull(sscc18SerialNumberStr, "Could not retrieve next value from sequence {}" + SSCC18_SERIALNUMBER_SEQUENCENAME);
 			return Integer.parseInt(sscc18SerialNumberStr);
 		};
 	}

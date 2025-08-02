@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Package extends org.compiere.model.PO implements I_M_Package, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 683742974L;
+	private static final long serialVersionUID = 457239898L;
 
     /** Standard Constructor */
     public X_M_Package (final Properties ctx, final int M_Package_ID, @Nullable final String trxName)
@@ -102,6 +102,18 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	}
 
 	@Override
+	public void setIPA_SSCC18(final @Nullable java.lang.String IPA_SSCC18)
+	{
+		set_Value(COLUMNNAME_IPA_SSCC18, IPA_SSCC18);
+	}
+
+	@Override
+	public java.lang.String getIPA_SSCC18()
+	{
+		return get_ValueAsString(COLUMNNAME_IPA_SSCC18);
+	}
+
+	@Override
 	public void setIsClosed (final boolean IsClosed)
 	{
 		set_Value (COLUMNNAME_IsClosed, IsClosed);
@@ -153,6 +165,18 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	public int getM_Package_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Package_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_PackagingContainer getM_PackagingContainer()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_PackagingContainer_ID, org.compiere.model.I_M_PackagingContainer.class);
+	}
+
+	@Override
+	public void setM_PackagingContainer(final org.compiere.model.I_M_PackagingContainer M_PackagingContainer)
+	{
+		set_ValueFromPO(COLUMNNAME_M_PackagingContainer_ID, org.compiere.model.I_M_PackagingContainer.class, M_PackagingContainer);
 	}
 
 	@Override

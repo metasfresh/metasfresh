@@ -68,4 +68,15 @@ public class ShipperTransportationRepository
 										   .create()
 										   .firstId(ShipperTransportationId::ofRepoIdOrNull));
 	}
+
+	public ShipperTransportationId getOrCreate(@NonNull final CreateShipperTransportationRequest request)
+	{
+		return getSingleByQuery(ShipperTransportationQuery.builder()
+				.shipperId(request.getShipperId())
+				.shipperBPartnerAndLocationId(request.getShipperBPartnerAndLocationId())
+				.shipDate(request.getShipDate())
+				.build())
+				.orElseGet(() -> create(request));
+	}
+
 }
