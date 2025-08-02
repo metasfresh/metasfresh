@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Service
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
@@ -85,8 +86,13 @@ public class PurchaseOrderToShipperTransportationService
 
 	public void addPurchaseOrderToCurrentShipperTransportation(final @NonNull I_C_Order purchaseOrder)
 	{
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(purchaseOrder.getM_Shipper_ID());
+		if (shipperId == null)
+		{
+			return;
+		}
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
-				.shipperId(ShipperId.ofRepoId(purchaseOrder.getM_Shipper_ID()))
+				.shipperId(shipperId)
 				.orgId(OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()))
 				.assignAnonymouslyPickedHUs(true)
 				.shipDate(TimeUtil.asLocalDate(purchaseOrder.getDatePromised()))
@@ -102,10 +108,15 @@ public class PurchaseOrderToShipperTransportationService
 
 	private void addPurchaseOrderToShipperTransportation(final @NonNull org.compiere.model.I_C_Order order, final @Nullable ShipperTransportationId shipperTransportationId)
 	{
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
+		if (shipperId == null)
+		{
+			return;
+		}
 		final ShipperTransportationId shipperTransportationIdToUse = shipperTransportationId != null
 				? shipperTransportationId
 				: shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
-				.shipperId(ShipperId.ofRepoId(order.getM_Shipper_ID()))
+				.shipperId(shipperId)
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.shipDate(TimeUtil.asLocalDate(order.getDatePromised()))
 				.assignAnonymouslyPickedHUs(true)
