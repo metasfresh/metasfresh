@@ -104,6 +104,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
@@ -223,7 +224,7 @@ public class HUTestHelper
 	//
 	// Initialization flags
 	private boolean initialized = false;
-	private boolean initAdempiere = true;
+	private final boolean initAdempiere = true;
 
 	public I_AD_Client adClient;
 	public I_AD_Role adRole;
@@ -455,6 +456,7 @@ public class HUTestHelper
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
+		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting());
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
@@ -1750,7 +1752,7 @@ public class HUTestHelper
 				.build());
 	}
 
-	public final void load(TestHelperLoadRequest r)
+	public final void load(final TestHelperLoadRequest r)
 	{
 		final IAllocationSource source = createDummySourceDestination(
 				r.getCuProductId(),

@@ -51,6 +51,11 @@ public class PurchaseOrderToShipperTransportationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	public static PurchaseOrderToShipperTransportationRepository newInstanceForUnitTesting()
+	{
+		return new PurchaseOrderToShipperTransportationRepository();
+	}
+
 	public boolean purchaseOrderNotInShipperTransportation(@NonNull final OrderId purchaseOrderId)
 	{
 		return !queryBL
