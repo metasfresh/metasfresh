@@ -342,6 +342,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	{
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_C_OrderLine.COLUMNNAME_QtyLU)
 				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyLU, CompareQueryFilter.Operator.GREATER, 0)
 				.andCollectChildren(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, I_M_ReceiptSchedule.class)
 				.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedules)
