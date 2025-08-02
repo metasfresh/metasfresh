@@ -26,12 +26,13 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
-import de.metas.mpackage.Package;
-import de.metas.mpackage.PackageId;
-import de.metas.mpackage.PackageItem;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
+import de.metas.shipping.mpackage.Package;
+import de.metas.shipping.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -96,6 +97,7 @@ public class InOutPackageRepository
 				.id(PackageId.ofRepoId(mPackage.getM_Package_ID()))
 				.inOutId(inOutId)
 				.weightInKg(mPackage.getPackageWeight())
+				.orgId(OrgId.ofRepoId(mPackage.getAD_Org_ID()))
 				.packageContents(getHuStorageList(inOutId))
 				.build();
 	}
@@ -115,7 +117,6 @@ public class InOutPackageRepository
 	@Nullable
 	private PackageItem toPackageItem(@NonNull final I_M_InOutLine inOutLine)
 	{
-
 		final ProductId productId = ProductId.ofRepoIdOrNull(inOutLine.getM_Product_ID());
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
 		if (productId == null || orderLineId == null)

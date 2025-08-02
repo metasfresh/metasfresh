@@ -1,10 +1,8 @@
-package de.metas.handlingunits.attributes.sscc18;
-
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +20,11 @@ package de.metas.handlingunits.attributes.sscc18;
  * #L%
  */
 
-import org.adempiere.exceptions.AdempiereException;
+package de.metas.sscc18;
 
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import org.adempiere.exceptions.AdempiereException;
 
 public interface ISSCC18CodeBL extends ISingletonService
 {

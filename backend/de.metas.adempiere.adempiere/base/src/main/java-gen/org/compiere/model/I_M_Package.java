@@ -185,6 +185,28 @@ public interface I_M_Package
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
+	 * Set SSCC18.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIPA_SSCC18(@Nullable java.lang.String IPA_SSCC18);
+
+	/**
+	 * Get SSCC18.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	java.lang.String getIPA_SSCC18();
+
+	ModelColumn<I_M_Package, Object> COLUMN_IPA_SSCC18 = new ModelColumn<>(I_M_Package.class, "IPA_SSCC18", null);
+	String COLUMNNAME_IPA_SSCC18 = "IPA_SSCC18";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -296,6 +318,12 @@ public interface I_M_Package
 	 */
 	int getM_PackagingContainer_ID();
 
+	@Nullable
+	org.compiere.model.I_M_PackagingContainer getM_PackagingContainer();
+
+	void setM_PackagingContainer(@Nullable org.compiere.model.I_M_PackagingContainer M_PackagingContainer);
+
+	ModelColumn<I_M_Package, org.compiere.model.I_M_PackagingContainer> COLUMN_M_PackagingContainer_ID = new ModelColumn<>(I_M_Package.class, "M_PackagingContainer_ID", org.compiere.model.I_M_PackagingContainer.class);
 	String COLUMNNAME_M_PackagingContainer_ID = "M_PackagingContainer_ID";
 
 	/**

@@ -1,10 +1,8 @@
-package de.metas.handlingunits.attributes.sscc18;
-
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,17 +11,21 @@ package de.metas.handlingunits.attributes.sscc18;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.sscc18;
+
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /**
  * Immutable POJO for Serial Shipping Container Code (SSCC-18)
@@ -60,9 +62,9 @@ public class SSCC18
 	int checkDigit;
 
 	public SSCC18(final int extensionDigit,
-			@NonNull final String manufacturerCode,
-			@NonNull final String serialNumber,
-			final int checkDigit)
+				  @NonNull final String manufacturerCode,
+				  @NonNull final String serialNumber,
+				  final int checkDigit)
 	{
 		this.extensionDigit = extensionDigit;
 		this.manufacturerCode = manufacturerCode.trim();
@@ -75,6 +77,12 @@ public class SSCC18
 	public String toString()
 	{
 		return asString();
+	}
+
+	@Nullable
+	public static String toString(@Nullable final SSCC18 sscc)
+	{
+		return sscc == null ? null : sscc.asString();
 	}
 
 	/**

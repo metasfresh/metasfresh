@@ -35,6 +35,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
@@ -52,6 +53,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
+@RequiredArgsConstructor
 public class C_BPartner_Location_StepDef
 {
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -62,16 +64,6 @@ public class C_BPartner_Location_StepDef
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-	public C_BPartner_Location_StepDef(
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final C_Location_StepDefData locationTable)
-	{
-		this.bPartnerTable = bPartnerTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.locationTable = locationTable;
-	}
 
 	@Given("metasfresh contains C_BPartner_Locations:")
 	public void createC_BPartner_Location(@NonNull final DataTable dataTable)
@@ -147,7 +139,7 @@ public class C_BPartner_Location_StepDef
 			final CountryId countryId = tableRow.getAsOptionalString("C_Country_ID")
 					.map(countryDAO::getCountryIdByCountryCode)
 					.orElse(StepDefConstants.COUNTRY_ID);
-			
+
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(countryId.getRepoId());
 			saveRecord(locationRecord);

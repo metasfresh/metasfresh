@@ -40,9 +40,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.generichumodel.HU;
 import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.handlingunits.generichumodel.PackagingCode;
@@ -65,6 +62,8 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.SSCC18;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
@@ -603,7 +602,7 @@ public class EDIDesadvPackService
 			@NonNull final HU rootHU,
 			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder)
 	{
-		final String sscc18Attribute = rootHU.getAttributes().getValueAsStringOrNull(HUAttributeConstants.ATTR_SSCC18_Value);
+		final String sscc18Attribute = rootHU.getAttributes().getValueAsStringOrNull(AttributeConstants.ATTR_SSCC18_Value);
 		if (Check.isNotBlank(sscc18Attribute))
 		{
 			createEDIDesadvPackRequestBuilder.sscc18(sscc18Attribute);

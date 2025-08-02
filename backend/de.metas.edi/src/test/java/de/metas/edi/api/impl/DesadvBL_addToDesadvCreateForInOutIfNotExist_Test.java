@@ -18,9 +18,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
-import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -37,6 +34,8 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -411,7 +410,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final I_M_Attribute sscc18AttrRecord = newInstance(I_M_Attribute.class);
 		sscc18AttrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
-		sscc18AttrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value.getCode());
+		sscc18AttrRecord.setValue(AttributeConstants.ATTR_SSCC18_Value.getCode());
 		saveRecord(sscc18AttrRecord);
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);

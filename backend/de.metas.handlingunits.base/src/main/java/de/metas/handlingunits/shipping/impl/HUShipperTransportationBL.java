@@ -155,7 +155,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 			//
 			// Add M_Package to Shipper Transportation document
-			shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
+			shipperTransportationBL.createShippingPackage(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), mpackage);
 
 			//
 			// Update HU related things
@@ -229,7 +229,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 			//
 			// Add M_Package to Shipper Transportation document
-			mPackages.forEach(mpackage -> shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage));
+			mPackages.forEach(mpackage -> shipperTransportationBL.createShippingPackage(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), mpackage));
 
 			linkTransportationToShipment(request.getShipment(), shipperTransportationId);
 		}

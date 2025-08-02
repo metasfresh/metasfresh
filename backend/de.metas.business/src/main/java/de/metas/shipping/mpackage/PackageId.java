@@ -1,20 +1,8 @@
-package de.metas.shipping;
-
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,25 +20,36 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.shipping.mpackage;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
 @Value
-public class MPackageId implements RepoIdAware
+public class PackageId implements RepoIdAware
 {
 	int repoId;
 
-	@NonNull
 	@JsonCreator
-	public static MPackageId ofRepoId(final int repoId)
+	public static PackageId ofRepoId(final int repoId)
 	{
-		return new MPackageId(repoId);
+		return new PackageId(repoId);
 	}
 
-	@Nullable
-	public static MPackageId ofRepoIdOrNull(final int repoId)
+	public static PackageId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
+		return repoId > 0 ? new PackageId(repoId) : null;
 	}
 
-	private MPackageId(final int repoId)
+	public static int toRepoId(final PackageId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	private PackageId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Package_ID");
 	}
