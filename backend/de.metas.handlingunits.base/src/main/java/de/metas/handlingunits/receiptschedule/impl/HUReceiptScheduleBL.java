@@ -2,6 +2,7 @@ package de.metas.handlingunits.receiptschedule.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.base.Functions;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -82,13 +83,12 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -168,8 +168,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			return null;
 		}
 
-		final BigDecimal qtyTU = ol.getQtyEnteredTU();
-		return qtyTU;
+		return ol.getQtyEnteredTU();
 	}
 
 	@Override
@@ -189,9 +188,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	{
 		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrZero(receiptSchedule);
 		final BigDecimal qtyMovedTU = receiptSchedule.getQtyMovedTU();
-		final BigDecimal qtyToMoveTU = qtyOrderedTU.subtract(qtyMovedTU);
 
-		return qtyToMoveTU;
+		return qtyOrderedTU.subtract(qtyMovedTU);
 	}
 
 	// @Override public
@@ -200,8 +198,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			@NonNull final InOutGenerateResult result)
 
 	{
-		final InOutProducerFromReceiptScheduleHU producer = new InOutProducerFromReceiptScheduleHU(parameters, result);
-		return producer;
+		return new InOutProducerFromReceiptScheduleHU(parameters, result);
 	}
 
 	@Override
@@ -329,8 +326,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	public IAllocationSource createAllocationSource(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final IProductStorage productStorage = createProductStorage(receiptSchedule);
-		final IAllocationSource allocationSource = new GenericAllocationSourceDestination(productStorage, receiptSchedule);
-		return allocationSource;
+		return new GenericAllocationSourceDestination(productStorage, receiptSchedule);
 	}
 
 	@Override
@@ -418,13 +414,21 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 	private void matchHUsToPackages(@NonNull final Set<HuId> selectedHuIds, @NonNull final ImmutableMap<HuId, I_M_HU> husByIdMap, final List<I_M_ReceiptSchedule> receiptSchedules)
 	{
-		final ImmutableList<Package> packages = getUnassignedPackages(receiptSchedules);
+		final List<I_M_ReceiptSchedule> luQtySchedules = retainLUQtySchedules(receiptSchedules);
+		if (luQtySchedules.isEmpty())
+		{
+			return;
+		}
+
+		final List<HuId> selectedLUQtyHUs = retainLUQtyHUIds(selectedHuIds, luQtySchedules);
+
+		final ImmutableList<Package> packages = getUnassignedPackages(luQtySchedules);
 
 		final Map<String, Package> mutableSSCCToPackageMap = new HashMap<>(packages.stream()
 				.collect(ImmutableMap.toImmutableMap(Package::getSscc, Function.identity())));
-		Check.assume(selectedHuIds.size() <= packages.size(), "Not enough unassigned packages to match all selected HUs");
+		Check.assume(selectedLUQtyHUs.size() <= packages.size(), "Not enough unassigned packages to match all selected HUs");
 
-		final Map<HuId, String> huIdToSscc18Map = selectedHuIds.stream()
+		final Map<HuId, String> huIdToSscc18Map = selectedLUQtyHUs.stream()
 				.collect(HashMap::new,
 						(map, huId) -> {
 							final String ssccValue = huAttributesBL.getHUAttributeValue(husByIdMap.get(huId), AttributeConstants.ATTR_SSCC18_Value);
@@ -455,7 +459,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				});
 
 		//copy SSCC from first matching Package
-		selectedHuIds.stream()
+		selectedLUQtyHUs.stream()
 				.filter(huId -> !seenHUIds.contains(huId))
 				.forEach(huId ->
 						{
@@ -467,6 +471,27 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				);
 	}
 
+	private @NonNull List<HuId> retainLUQtyHUIds(final @NonNull Set<HuId> selectedHuIds, final List<I_M_ReceiptSchedule> luQtySchedules)
+	{
+		final ImmutableCollection<HuId> luQtyHuId = huAssignmentDAO.retrieveHUsByRecordRefs(TableRecordReferenceSet.of(I_M_ReceiptSchedule.Table_Name, luQtySchedules.stream()
+				.map(rs -> ReceiptScheduleId.ofRepoId(rs.getM_ReceiptSchedule_ID()))
+				.collect(Collectors.toList()))).values();
+		final List<HuId> selectedLUQtyHUs = selectedHuIds.stream()
+				.filter(luQtyHuId::contains)
+				.collect(Collectors.toList());
+		return selectedLUQtyHUs;
+	}
+
+	private List<I_M_ReceiptSchedule> retainLUQtySchedules(final List<I_M_ReceiptSchedule> receiptSchedules)
+	{
+		final List<ReceiptScheduleId> luQtySchedules = receiptScheduleBL.retainLUQtySchedules(receiptSchedules.stream()
+				.map(rs -> ReceiptScheduleId.ofRepoId(rs.getM_ReceiptSchedule_ID()))
+				.collect(Collectors.toList()));
+		return receiptSchedules.stream()
+				.filter(rs -> luQtySchedules.contains(ReceiptScheduleId.ofRepoId(rs.getM_ReceiptSchedule_ID())))
+				.collect(Collectors.toList());
+	}
+
 	private ImmutableList<Package> getUnassignedPackages(final List<I_M_ReceiptSchedule> receiptSchedules)
 	{
 		final ImmutableMap<PackageId, Package> packageIdToPackageMap = getPackagesForReceiptSchedules(receiptSchedules)
@@ -476,7 +501,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		return packageIdToPackageMap.keySet()
 				.stream()
-				.filter(id ->!assignedPackageIds.contains(id))
+				.filter(id -> !assignedPackageIds.contains(id))
 				.map(packageIdToPackageMap::get)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -547,7 +572,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				.setContext(processorCtx)
 				.setProcessor(producer)
 				// Configure executor to fail on first error
-				// NOTE: we expect max. 1 receipt, so it's fine to fail anyways
+				// NOTE: we expect max. 1 receipt, so it's fine to fail anyway
 				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
 				// Process schedules => receipt(s) will be generated
 				.process(parameters.getReceiptSchedules());
@@ -561,7 +586,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * being called multiple times in a row, from different transactions.
 	 * This happens if there are >1 inout lines sharing the same LU.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1905
+	 * @task <a href="https://github.com/metasfresh/metasfresh/issues/1905">...</a>
 	 */
 	private void printReceiptLabels(final InOutGenerateResult result)
 	{
@@ -608,7 +633,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			@NonNull final InOutGenerateResult result,
 			@Nullable final LocatorId destinationLocatorId)
 	{
-		final DistributeAndMoveReceiptCreator distributeAndMoveReceiptCreator = Adempiere.getBean(DistributeAndMoveReceiptCreator.class);
+		final DistributeAndMoveReceiptCreator distributeAndMoveReceiptCreator = SpringContextHolder.instance.getBean(DistributeAndMoveReceiptCreator.class);
 
 		final List<I_M_InOut> receipts = createList(result.getInOuts(), I_M_InOut.class);
 		for (final I_M_InOut receipt : receipts)

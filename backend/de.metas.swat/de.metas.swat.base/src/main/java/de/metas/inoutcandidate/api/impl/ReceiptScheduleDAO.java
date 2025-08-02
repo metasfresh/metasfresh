@@ -20,6 +20,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -334,5 +335,17 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId receiptScheduleId)
 	{
 		return InterfaceWrapperHelper.load(receiptScheduleId, I_M_ReceiptSchedule.class);
+	}
+
+	@Override
+	public List<ReceiptScheduleId> retainLUQtySchedules(final List<ReceiptScheduleId> receiptSchedules)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyLU, CompareQueryFilter.Operator.GREATER, 0)
+				.andCollectChildren(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, I_M_ReceiptSchedule.class)
+				.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedules)
+				.create()
+				.listIds(ReceiptScheduleId::ofRepoId);
 	}
 }

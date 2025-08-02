@@ -71,6 +71,7 @@ import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -378,9 +379,7 @@ public class HUInOutBL implements IHUInOutBL
 			return ImmutableSetMultimap.of();
 		}
 
-		final ImmutableSet<TableRecordReference> recordRefs = inoutLineIds.stream()
-				.map(inoutLineId -> TableRecordReference.of(I_M_InOutLine.Table_Name, inoutLineId))
-				.collect(ImmutableSet.toImmutableSet());
+		final TableRecordReferenceSet recordRefs = TableRecordReferenceSet.of(I_M_InOutLine.Table_Name, inoutLineIds);
 
 		final ImmutableSetMultimap<TableRecordReference, HuId> huIdsByRecordRefs = huAssignmentBL.getHUsByRecordRefs(recordRefs);
 
