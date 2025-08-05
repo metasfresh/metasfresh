@@ -28,22 +28,31 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_
 
 public interface CoreConstants
 {
-	/** This is the header-key for our API-token when doing http. */
+	/**
+	 * This is the header-key for our API-token when doing http.
+	 */
 	String AUTHORIZATION = "Authorization";
 	String ACCEPT = "accept";
-	
+
 	String AUDIT_SENSITIVE_DATA_PATTERN_PROPERTY = "metasfresh.audit.sensitive-data.pattern";
 	String AUDIT_SENSITIVE_DATA_PATTERN_GROUP_PROPERTY = "metasfresh.audit.sensitive-data.pattern.group";
 
 	String AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT = "\".*?(auth|key|pass|token).*?\":(.*?\"(.+?)\")";
 	String AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT_GROUP = "3";
 
-	String FROM_MF_ROUTE = "spring-rabbitmq:" + QUEUE_NAME_MF_TO_ES
-			+ "?routingKey=" + QUEUE_NAME_MF_TO_ES;
+	/**
+	 * The queue is bound to the default exchange, hence the "default"
+	 * (see <a href="https://camel.apache.org/components/4.10.x/spring-rabbitmq-component.html#_default_exchange_name">camel-docu</a>)
+	 */
+	String FROM_MF_ROUTE = "spring-rabbitmq:default?queues=" + QUEUE_NAME_MF_TO_ES
+			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
+			+ "&arg.queue.durable=true";
 
-	String CUSTOM_TO_MF_ROUTE = "spring-rabbitmq:" + QUEUE_NAME_ES_TO_MF_CUSTOM
-			+ "?routingKey=" + QUEUE_NAME_ES_TO_MF_CUSTOM;
+	String CUSTOM_TO_MF_ROUTE = "spring-rabbitmq:default?queues=" + QUEUE_NAME_ES_TO_MF_CUSTOM
+			+ "&routingKey=" + QUEUE_NAME_ES_TO_MF_CUSTOM
+			+ "&arg.queue.durable=true";
 
-	String CUSTOM_FROM_MF_ROUTE = "spring-rabbitmq:" + QUEUE_NAME_MF_TO_ES_CUSTOM
-			+ "?routingKey=" + QUEUE_NAME_MF_TO_ES_CUSTOM;
+	String CUSTOM_FROM_MF_ROUTE = "spring-rabbitmq:default?queues=" + QUEUE_NAME_MF_TO_ES_CUSTOM
+			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES_CUSTOM
+			+ "&arg.queue.durable=true";
 }

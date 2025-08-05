@@ -117,8 +117,14 @@ public class ExternalSystemConstants
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
+	/**
+	 * Used by apache-camel to request an API-token from metasfresh. See readme for more details. Note that the queue uses the default exchange.
+	 */
 	public static final String QUEUE_NAME_ES_TO_MF_CUSTOM = "Custom_ExternalSystem_To_Metasfresh";
 
+	/**
+	 * Analog to {@link #QUEUE_NAME_ES_TO_MF_CUSTOM}, just for the opposite direction.
+	 */
 	public static final String QUEUE_NAME_MF_TO_ES_CUSTOM = "Custom_Metasfresh_To_ExternalSystem";
 
 
