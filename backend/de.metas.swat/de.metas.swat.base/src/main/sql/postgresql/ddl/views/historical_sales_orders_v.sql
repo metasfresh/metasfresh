@@ -19,6 +19,7 @@ SELECT o.C_Order_ID
                 THEN o.DatePromised
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END)                                    AS DatePromised
+     , o.externalid                             AS ExternalId
      , rbp.C_BPartner_ID
      , rbp.value                                AS BPartnerValue
      , rbp.name                                 AS BPartnerName
