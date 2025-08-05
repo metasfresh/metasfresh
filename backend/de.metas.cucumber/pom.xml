@@ -250,6 +250,13 @@
                         <!-- Should match junit-bom-version -->
                         <version>1.13.4</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-surefire-provider</artifactId>
+                        <!-- Ensure this version aligns with your JUnit Platform dependencies (e.g., junit-platform-launcher) -->
+                        <version>1.3.2</version>
+                    </dependency>
+
                 </dependencies>
             </plugin>
         </plugins>
