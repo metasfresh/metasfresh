@@ -96,6 +96,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_InputDataSource_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
@@ -317,9 +318,13 @@ public class C_Order_StepDef
 					tableRow.getAsOptionalString(COLUMNNAME_ExternalId)
 							.ifPresent(order::setExternalId);
 
+					tableRow.getAsOptionalInt(COLUMNNAME_AD_InputDataSource_ID)
+							.ifPresent(order::setAD_InputDataSource_ID);
+					
 					saveRecord(order);
 
 					orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
+					restTestContext.setIntVariableFromRow(tableRow, order::getC_Order_ID);
 				});
 	}
 

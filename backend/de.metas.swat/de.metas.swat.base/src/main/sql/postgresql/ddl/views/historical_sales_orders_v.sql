@@ -20,6 +20,7 @@ SELECT o.C_Order_ID
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END)                                    AS DatePromised
      , o.externalid                             AS ExternalId
+     , o.ad_inputdatasource_id                  AS AD_InputDataSource_ID
      , rbp.C_BPartner_ID
      , rbp.value                                AS BPartnerValue
      , rbp.name                                 AS BPartnerName

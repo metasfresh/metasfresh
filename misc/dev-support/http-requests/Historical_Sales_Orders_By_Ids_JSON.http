@@ -13,6 +13,10 @@ accept: application/json;charset=UTF-8
     {
       "name": "ExternalId",
       "value": "externalHeaderId_10052022_1"
+    },
+    {
+      "name": "AD_InputDataSource_ID",
+      "value": 540217
     }
   ]
 }
