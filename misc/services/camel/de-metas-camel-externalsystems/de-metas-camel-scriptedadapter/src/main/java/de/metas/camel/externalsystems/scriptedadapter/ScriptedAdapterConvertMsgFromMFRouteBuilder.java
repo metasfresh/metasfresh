@@ -37,6 +37,11 @@ import java.util.Map;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 /**
@@ -50,12 +55,6 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 	public static final String PROPERTY_SCRIPTING_REPO_BASE_DIR = "metasfresh.scriptedadapter.repo.baseDir";
 
-	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT = "messageFromMetasfresh";
-	public static final String PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER = "scriptIdentifier";
-	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP = "outboundHttpEP";
-	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN = "outboundHttpToken";
-	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD = "outboundHttpMethod";
-	
 	@VisibleForTesting
 	static final String SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID = "scriptedAdapterOutboundHttpEPId";
 
@@ -123,7 +122,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	private void prepareHttpRequest(@NonNull final Exchange exchange)
 	{
 		final MsgFromMfContext msgFromMfContext = exchange.getIn().getBody(MsgFromMfContext.class);
-		
+
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, msgFromMfContext.getOutboundHttpToken());
 		exchange.getIn().setHeader(Exchange.HTTP_URI, msgFromMfContext.getOutboundHttpEP());
