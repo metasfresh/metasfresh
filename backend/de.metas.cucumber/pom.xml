@@ -229,6 +229,18 @@
                         </configurationParameters>
                     </properties>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.cucumber</groupId>
+                        <artifactId>cucumber-junit-platform-engine</artifactId>
+                        <!-- Version will be inherited from cucumber-bom -->
+                    </dependency>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <!-- Version will be inherited from junit-bom -->
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
