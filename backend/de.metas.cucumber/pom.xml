@@ -235,14 +235,20 @@
                     <dependency>
                         <groupId>org.junit.platform</groupId>
                         <artifactId>junit-platform-launcher</artifactId>
+                        <!-- Should match junit-bom-version -->
+                        <version>1.13.4</version>
                     </dependency>
                     <dependency>
                         <groupId>io.cucumber</groupId>
                         <artifactId>cucumber-junit-platform-engine</artifactId>
+                        <!-- Should match cucumber-bom-version -->
+                        <version>7.27.0</version>
                     </dependency>
                     <dependency>
                         <groupId>org.junit.platform</groupId>
                         <artifactId>junit-platform-suite</artifactId>
+                        <!-- Should match junit-bom-version -->
+                        <version>1.13.4</version>
                     </dependency>
                 </dependencies>
             </plugin>
