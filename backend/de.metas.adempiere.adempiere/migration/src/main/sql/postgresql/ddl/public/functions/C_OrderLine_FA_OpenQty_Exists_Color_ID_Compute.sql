@@ -16,7 +16,7 @@ DECLARE
 BEGIN
 
     SELECT (CASE
-                WHEN (summary.qtydeliveredinuom IS NULL)                                                THEN v_Red
+                WHEN (summary.qtydeliveredinuom IS NULL)                                                THEN -1
                 WHEN (summary.qtydeliveredinuom <= 0)                                                   THEN v_Red
                 WHEN (summary.qtydeliveredinuom > 0 AND summary.qtydeliveredinuom < summary.qtyentered) THEN v_Yellow
                 WHEN (summary.qtydeliveredinuom >= summary.qtyentered)                                  THEN v_Green
