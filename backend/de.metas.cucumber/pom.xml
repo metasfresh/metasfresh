@@ -234,28 +234,15 @@
                     <!-- Needed so also the cucumber.log contains correct test results -->
                     <dependency>
                         <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>1.3.2</version>
+                        <artifactId>junit-platform-launcher</artifactId>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.cucumber</groupId>
+                        <artifactId>cucumber-junit-platform-engine</artifactId>
                     </dependency>
                     <dependency>
                         <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-launcher</artifactId>
-                        <version>1.3.2</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apiguardian</groupId>
-                        <artifactId>apiguardian-api</artifactId>
-                        <version>1.0.0</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-api</artifactId>
-                        <version>2.22.0</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>common-java5</artifactId>
-                        <version>2.22.0</version>
+                        <artifactId>junit-platform-suite</artifactId>
                     </dependency>
                 </dependencies>
             </plugin>
