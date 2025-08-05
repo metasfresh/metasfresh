@@ -22,14 +22,6 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.util.lang.ITableRecordReference;
-import org.junit.Assert;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -39,6 +31,13 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationUtils;
 import de.metas.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.junit.jupiter.api.Assertions;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Listens to InOutGenerate topic, collects the inouts which were notified and later can compare with a given list.
@@ -96,6 +95,6 @@ public class InOutGeneratedNotificationChecker implements IEventListener
 			return;
 		}
 
-		Assert.fail("Following inouts were expected to be notified but they were not: " + inoutsNotNotified);
+		Assertions.fail("Following inouts were expected to be notified but they were not: " + inoutsNotNotified);
 	}
 }

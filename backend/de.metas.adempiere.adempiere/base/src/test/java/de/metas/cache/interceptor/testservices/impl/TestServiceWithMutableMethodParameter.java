@@ -30,11 +30,11 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.adempiere.util.proxy.Cached;
-import org.junit.Ignore;
 
 import de.metas.cache.interceptor.testservices.ITestServiceWithMutableMethodParameter;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class TestServiceWithMutableMethodParameter implements ITestServiceWithMutableMethodParameter
 {
 

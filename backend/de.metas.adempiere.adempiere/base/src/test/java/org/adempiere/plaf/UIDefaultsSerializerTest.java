@@ -23,14 +23,16 @@ package org.adempiere.plaf;
  */
 
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.awt.Color;
 import java.awt.Font;
 
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 
-import org.junit.Assert;
-import org.junit.Test;
+
 
 public class UIDefaultsSerializerTest
 {
@@ -39,9 +41,9 @@ public class UIDefaultsSerializerTest
 	@Test
 	public void testNull()
 	{
-		Assert.assertEquals(null, serializer.toString(null));
-		Assert.assertEquals(null, serializer.fromString(null));
-		Assert.assertEquals(null, serializer.fromString(""));
+		Assertions.assertEquals(null, serializer.toString(null));
+		Assertions.assertEquals(null, serializer.fromString(null));
+		Assertions.assertEquals(null, serializer.fromString(""));
 	}
 
 	@Test
@@ -63,14 +65,14 @@ public class UIDefaultsSerializerTest
 			final Object value2 = serializer.fromString(valueStr);
 			// System.out.println("value2=" + value2);
 
-			Assert.assertEquals(value, value2);
+			Assertions.assertEquals(value, value2);
 		}
 
 		// Test serializing/deserializing directly
 		{
 			final String valueStr = serializer.toString(testColor);
 			final Object value2 = serializer.fromString(valueStr);
-			Assert.assertEquals(testColor, value2);
+			Assertions.assertEquals(testColor, value2);
 		}
 
 	}
@@ -89,7 +91,7 @@ public class UIDefaultsSerializerTest
 			final String valueStr = serializer.toString(value);
 
 			final Object value2 = serializer.fromString(valueStr);
-			Assert.assertEquals(value, value2);
+			Assertions.assertEquals(value, value2);
 		}
 
 		// Test serializing/deserializing directly
@@ -97,7 +99,7 @@ public class UIDefaultsSerializerTest
 			final String valueStr = serializer.toString(testFont);
 
 			final Object value2 = serializer.fromString(valueStr);
-			Assert.assertEquals(testFont, value2);
+			Assertions.assertEquals(testFont, value2);
 		}
 	}
 }

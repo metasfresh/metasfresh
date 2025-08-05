@@ -12,9 +12,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class ProcessExecutionResultTest
 {
 	private ObjectMapper jsonMapper = null;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -68,7 +68,7 @@ public class ProcessExecutionResultTest
 
 	private void assertEqualsAsJson(final ProcessExecutionResult expected, final ProcessExecutionResult actual) throws JsonProcessingException
 	{
-		Assert.assertEquals(toJson(expected), toJson(actual));
+		Assertions.assertEquals(toJson(expected), toJson(actual));
 	}
 
 	private ProcessExecutionResult createTestResult()
@@ -122,25 +122,25 @@ public class ProcessExecutionResultTest
 		final ProcessExecutionResult resultFromJson = fromJson(json);
 
 		// Compare
-		Assert.assertEquals(result.getPinstanceId(), resultFromJson.getPinstanceId());
-		Assert.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
-		Assert.assertEquals(result.getSummary(), resultFromJson.getSummary());
-		Assert.assertEquals(result.isError(), resultFromJson.isError());
-		Assert.assertEquals(result.isErrorWasReportedToUser(), resultFromJson.isErrorWasReportedToUser());
-		Assert.assertEquals(result.isShowProcessLogs(), resultFromJson.isShowProcessLogs());
-		Assert.assertEquals(result.isRefreshAllAfterExecution(), resultFromJson.isRefreshAllAfterExecution());
+		Assertions.assertEquals(result.getPinstanceId(), resultFromJson.getPinstanceId());
+		Assertions.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
+		Assertions.assertEquals(result.getSummary(), resultFromJson.getSummary());
+		Assertions.assertEquals(result.isError(), resultFromJson.isError());
+		Assertions.assertEquals(result.isErrorWasReportedToUser(), resultFromJson.isErrorWasReportedToUser());
+		Assertions.assertEquals(result.isShowProcessLogs(), resultFromJson.isShowProcessLogs());
+		Assertions.assertEquals(result.isRefreshAllAfterExecution(), resultFromJson.isRefreshAllAfterExecution());
 		//
-		Assert.assertEquals(result.getReportData(), resultFromJson.getReportData());
-		Assert.assertEquals(result.getReportFilename(), resultFromJson.getReportFilename());
-		Assert.assertEquals(result.getReportContentType(), resultFromJson.getReportContentType());
+		Assertions.assertEquals(result.getReportData(), resultFromJson.getReportData());
+		Assertions.assertEquals(result.getReportFilename(), resultFromJson.getReportFilename());
+		Assertions.assertEquals(result.getReportContentType(), resultFromJson.getReportContentType());
 		//
-		Assert.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
+		Assertions.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
 		//
-		Assert.assertEquals(result.getRecordsToOpen(), resultFromJson.getRecordsToOpen());
+		Assertions.assertEquals(result.getRecordsToOpen(), resultFromJson.getRecordsToOpen());
 		//
-		Assert.assertEquals(result.getWebuiViewToOpen(), resultFromJson.getWebuiViewToOpen());
+		Assertions.assertEquals(result.getWebuiViewToOpen(), resultFromJson.getWebuiViewToOpen());
 		//
-		Assert.assertEquals(result.getDisplayQRCode(), resultFromJson.getDisplayQRCode());
+		Assertions.assertEquals(result.getDisplayQRCode(), resultFromJson.getDisplayQRCode());
 		//
 		// Assert.assertEquals(result.get, resultFromJson.get);
 

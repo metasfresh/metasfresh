@@ -22,6 +22,16 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
+import de.metas.async.exceptions.WorkpackageSkipRequestException;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.logging.LogManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.slf4j.Logger;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -32,24 +42,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.slf4j.Logger;
-
-import de.metas.async.exceptions.WorkpackageSkipRequestException;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.logging.LogManager;
-
 /**
  * An {@link IWorkpackageProcessor} implementation whom behavior can be configured (e.g. return {@link Result#SUCCESS} for some packages, throw exception for others etc).
  *
  * @author tsa
- *
  */
-@Ignore
+@Disabled
 public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 {
 	private static final Logger logger = LogManager.getLogger(MockedWorkpackageProcessor.class);
@@ -70,8 +68,9 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 	{
 		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
 
-		Assert.assertFalse("Workpackage with ID " + workpackageId + " may not yet be processed! workkpackage=" + workpackageId,
-				processedWorkpackageIds.contains(workpackageId));
+		Assertions.assertFalse(
+				processedWorkpackageIds.contains(workpackageId), "Workpackage with ID " + workpackageId + " may not yet be processed! workkpackage=" + workpackageId
+		);
 		synchronized (processedWorkpackages)
 		{
 			processedWorkpackages.add(workpackage);
@@ -109,7 +108,7 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 		{
 			throw runtimeExceptionMap.get(workpackageId);
 		}
-		else if(outOfMemoryErrorMap.containsKey(workpackageId))
+		else if (outOfMemoryErrorMap.containsKey(workpackageId))
 		{
 			throw outOfMemoryErrorMap.get(workpackageId);
 		}
@@ -175,7 +174,6 @@ public class MockedWorkpackageProcessor implements IWorkpackageProcessor
 		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
 		return runtimeExceptionMap.get(workpackageId);
 	}
-
 
 	public OutOfMemoryError getOutOfMemoryErrorFor(final I_C_Queue_WorkPackage workpackage)
 	{

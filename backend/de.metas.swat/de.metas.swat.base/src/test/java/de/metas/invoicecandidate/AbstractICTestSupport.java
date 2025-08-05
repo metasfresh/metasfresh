@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoicecandidate;
 
 import de.metas.aggregation.api.IAggregationFactory;
@@ -101,10 +123,11 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -162,13 +185,13 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	private C_Invoice_Candidate invoiceCandidateValidator = null;
 	private boolean modelInterceptorsRegistered = false;
 
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public final void initStuff()
 	{
 		AdempiereTestHelper.get().init();
@@ -364,7 +387,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * Configures {@link DefaultAggregator} to be the aggregator that is returned by invocations of {@link IAggregationDAO#retrieveAggregate(I_C_Invoice_Candidate)} throughout tests. <br>
 	 * Override this method to test different {@link IAggregator}s.
 	 */
-	protected void config_InvoiceCand_LineAggregation(final Properties ctx, final String trxName)
+	protected void config_InvoiceCand_LineAggregation(final Properties ctx, @Nullable final String trxName)
 	{
 		//
 		// Create Default Invoice Candidate Aggregator Definition
@@ -669,7 +692,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
 					.anyMatch();
-			Assert.assertFalse("Existing invalid invoice candidates", existingInvalidCandidates);
+			Assertions.assertFalse(existingInvalidCandidates,"Existing invalid invoice candidates");
 		}
 	}
 

@@ -22,14 +22,13 @@ package org.adempiere.ad.trx.processor.api.impl;
  * #L%
  */
 
+import org.junit.jupiter.api.Disabled;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
-
-@Ignore
+@Disabled
 public class AggregatedItem
 {
 	private final String groupKey;

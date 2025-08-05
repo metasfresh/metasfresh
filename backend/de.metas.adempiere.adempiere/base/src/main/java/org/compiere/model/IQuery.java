@@ -165,6 +165,12 @@ public interface IQuery<T>
 		return idMapper.apply(firstId());
 	}
 
+	@NonNull
+	default <ID extends RepoIdAware> Optional<ID> firstIdOptional(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return Optional.ofNullable(idMapper.apply(firstId()));
+	}
+
 	/**
 	 * @return first ID or -1 if no records are found.
 	 * An exception is thrown if multiple results exist.

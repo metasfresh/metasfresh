@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import org.compiere.model.I_M_Package;
 
 /**

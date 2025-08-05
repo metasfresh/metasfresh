@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -67,8 +67,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -81,7 +79,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test creation of material receipts ({@link I_M_InOut}s) from scheduled receipts ({@link I_M_ReceiptSchedule}s) and how line aggregations are made based on products, packing and ASIs.
@@ -192,7 +190,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	public void testDifferentASIAndQualityIssues()
 	{
 		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
-		MatcherAssert.assertThat(paloxes.size(), is(10)); // guard
+		assertThat(paloxes).hasSize(10); // guard
 
 		//
 		// Setup paloxe attribute structure
@@ -521,7 +519,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	private List<I_M_HU> createStandardHUsAndAssignThemToTheReceiptSchedule()
 	{
 		final BigDecimal qtyOrdered = receiptSchedule.getQtyOrdered();
-		MatcherAssert.assertThat("precondition: QtyOrdered", qtyOrdered, Matchers.comparesEqualTo(new BigDecimal("4300")));
+		assertThat(qtyOrdered).as("precondition: QtyOrdered").isEqualByComparingTo(new BigDecimal("4300"));
 
 		final List<I_M_HU> paloxes = createIncomingTradingUnits(
 				materialItemTomato_430, // Paloxe x 430 kg

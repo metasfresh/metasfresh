@@ -5,8 +5,10 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
@@ -37,6 +39,14 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	default ID getId(@NonNull final StepDefDataIdentifier identifier)
 	{
 		return extractIdFromRecord(get(identifier));
+	}
+
+	default Set<ID> getIds(@NonNull final Collection<StepDefDataIdentifier> identifiers)
+	{
+		return identifiers.stream()
+				.distinct()
+				.map(this::getId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Nullable

@@ -66,11 +66,10 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -80,15 +79,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class DunningTestBase
 {
-	/**
-	 * Watches current test and dumps the database to console in case of failure
-	 */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -105,7 +100,7 @@ public class DunningTestBase
 	protected CurrencyId currencyCHF;
 	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);
 
-	@Before
+	@BeforeEach
 	public final void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
@@ -155,7 +150,7 @@ public class DunningTestBase
 		// nothing; to be implemented by particular test classes
 	}
 
-	@After
+	@AfterEach
 	public final void assumeAllIteratorsClosed()
 	{
 		MockedCloseableIterator.assertAllClosed();

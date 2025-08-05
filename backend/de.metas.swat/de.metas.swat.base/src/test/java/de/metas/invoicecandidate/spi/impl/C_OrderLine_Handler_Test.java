@@ -44,8 +44,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -64,10 +64,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * #%L
@@ -96,7 +94,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 	private C_OrderLine_Handler orderLineHandler;
 	private final IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggregationKeyBuilder = new HeaderAggregationKeyBuilder();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		final Properties ctx = Env.getCtx();
@@ -207,8 +205,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		updateInvalidCandidates();
 
-		assertThat(iCands1.size(), comparesEqualTo(1));
-		assertThat(iCands2.size(), comparesEqualTo(1));
+		assertEquals(1, iCands1.size());
+		assertEquals(1, iCands2.size());
 
 		final I_C_Invoice_Candidate ic1 = iCands1.get(0);
 		final I_C_Invoice_Candidate ic2 = iCands2.get(0);

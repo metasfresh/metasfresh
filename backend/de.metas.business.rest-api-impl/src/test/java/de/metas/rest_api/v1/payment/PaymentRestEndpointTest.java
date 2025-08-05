@@ -40,6 +40,7 @@ import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -137,7 +138,8 @@ class PaymentRestEndpointTest
 		new C_Order(bpartnerBL,
 				new OrderLineDetailRepository(),
 				documentLocationBL,
-				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()))
+				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
+				PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting())
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment

@@ -1,10 +1,10 @@
 package de.metas.util.collections;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import de.metas.util.collections.IncludeExcludeListPredicate;
 import de.metas.util.collections.IncludeExcludeListPredicate.Builder;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class IncludeExcludeListPredicateTest
 {
@@ -12,12 +12,12 @@ public class IncludeExcludeListPredicateTest
 
 	private final void assertAccepted(final String testItem)
 	{
-		Assert.assertTrue("Item shall be accepted: " + testItem, includeExcludeList.test(testItem));
+		assertThat(includeExcludeList.test(testItem)).as("Item shall be accepted: %s", testItem).isTrue();
 	}
 
 	private final void assertNotAccepted(final String testItem)
 	{
-		Assert.assertFalse("Item shall NOT be accepted: " + testItem, includeExcludeList.test(testItem));
+		assertThat(includeExcludeList.test(testItem)).as("Item shall NOT be accepted: %s", testItem).isFalse();
 	}
 
 	/**
@@ -102,11 +102,13 @@ public class IncludeExcludeListPredicateTest
 		assertNotAccepted("item4");
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void test_addNullInclude_Fails()
 	{
-		IncludeExcludeListPredicate.<String> builder()
+		assertThrows(RuntimeException.class, () -> {
+			IncludeExcludeListPredicate.<String> builder()
 				.include(null);
+		});
 	}
 
 	@Test
@@ -116,7 +118,7 @@ public class IncludeExcludeListPredicateTest
 				.exclude(null)
 				.build();
 
-		Assert.assertSame(IncludeExcludeListPredicate.empty(), includeExcludeList);
+		assertThat(includeExcludeList).isSameAs(IncludeExcludeListPredicate.empty());
 	}
 
 	/**
@@ -129,24 +131,24 @@ public class IncludeExcludeListPredicateTest
 
 		// If nothing added, builder shall always return the the "empty" list.
 		IncludeExcludeListPredicate<String> list = builder.build();
-		Assert.assertSame(IncludeExcludeListPredicate.empty(), list);
+		assertThat(list).isSameAs(IncludeExcludeListPredicate.empty());
 
 		// Add an item to builder.
 		// We expect a new list to be built.
 		IncludeExcludeListPredicate<String> lastList = list;
 		list = builder.include("item1").build();
-		Assert.assertNotSame(lastList, list);
+		assertThat(list).isNotSameAs(lastList);
 
 		// Add the same item again.
 		// We expect same list to be built.
 		lastList = list;
 		list = builder.include("item1").build();
-		Assert.assertSame(lastList, list);
+		assertThat(list).isSameAs(lastList);
 
 		// Add a new item to builder.
 		// We expect a new list to be built.
 		lastList = list;
 		list = builder.include("item2").build();
-		Assert.assertNotSame(lastList, list);
+		assertThat(list).isNotSameAs(lastList);
 	}
 }

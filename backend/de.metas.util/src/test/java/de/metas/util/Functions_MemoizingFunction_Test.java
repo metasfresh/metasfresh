@@ -1,17 +1,14 @@
 package de.metas.util;
 
+import com.google.common.base.MoreObjects;
+import de.metas.util.Functions.MemoizingFunction;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Function;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.util.Functions;
-import de.metas.util.Functions.MemoizingFunction;
 
 /*
  * #%L
@@ -40,7 +37,7 @@ public class Functions_MemoizingFunction_Test
 	private TestFunction testFunc;
 	private MemoizingFunction<Integer, String> memoizingFunction;
 
-	@Before
+	@BeforeEach
 	public void beforeTest()
 	{
 		testFunc = new TestFunction();
@@ -98,7 +95,7 @@ public class Functions_MemoizingFunction_Test
 
 	private final void assertCallsCount(final int expectedCallsCount)
 	{
-		Assert.assertEquals("Invalid callsCount for " + testFunc, expectedCallsCount, testFunc.callsCount);
+		Assertions.assertEquals(expectedCallsCount, testFunc.callsCount, "Invalid callsCount for " + testFunc);
 	}
 
 	private final void assertCallsIncrementedBy(final int expectedCallsCountIncrement, final Collection<Integer> inputs)
@@ -113,14 +110,14 @@ public class Functions_MemoizingFunction_Test
 		final int callsCountAfter = testFunc.callsCount;
 		final int actualCallsCountIncrement = callsCountAfter - callsCountBefore;
 
-		Assert.assertEquals("Invalid callsCount increment for " + testFunc, expectedCallsCountIncrement, actualCallsCountIncrement);
+		Assertions.assertEquals(expectedCallsCountIncrement, actualCallsCountIncrement, "Invalid callsCount increment for " + testFunc);
 	}
 
 	private final void assertReturnValue(final String expectedValue, final Collection<Integer> inputs)
 	{
 		for (final Integer input : inputs)
 		{
-			Assert.assertEquals("Invalid return value for " + memoizingFunction, expectedValue, memoizingFunction.apply(input));
+			Assertions.assertEquals(expectedValue, memoizingFunction.apply(input), "Invalid return value for " + memoizingFunction);
 		}
 	}
 

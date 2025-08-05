@@ -1,8 +1,5 @@
 package de.metas.vertical.pharma.securpharm.service;
 
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Ignore;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.user.UserId;
@@ -15,6 +12,8 @@ import de.metas.vertical.pharma.securpharm.notifications.SecurPharmUserNotificat
 import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductRepository;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.Disabled;
 
 /*
  * #%L
@@ -38,7 +37,7 @@ import de.metas.vertical.pharma.securpharm.product.SecurPharmProductRepository;
  * #L%
  */
 
-@Ignore
+@Disabled
 public class SecurPharmServiceManualTest
 {
 	public static void main(final String[] args)

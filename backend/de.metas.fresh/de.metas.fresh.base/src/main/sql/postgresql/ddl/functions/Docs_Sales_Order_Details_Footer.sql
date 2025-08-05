@@ -70,7 +70,7 @@ FROM C_Order o
          LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
          LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
 
-WHERE o.C_Order_ID = p_Order_ID;
+WHERE o.C_Order_ID = p_Order_ID
 
 $$
     LANGUAGE sql STABLE

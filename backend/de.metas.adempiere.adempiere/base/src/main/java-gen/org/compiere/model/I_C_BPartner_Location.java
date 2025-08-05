@@ -8,13 +8,13 @@ import javax.annotation.Nullable;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner_Location 
+public interface I_C_BPartner_Location
 {
 
 	String Table_Name = "C_BPartner_Location";
 
-//	/** AD_Table_ID=293 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=293 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -31,7 +31,6 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Set Address.
-	 * Anschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -41,7 +40,6 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Get Address.
-	 * Anschrift
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -507,7 +505,8 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_ISDN = "ISDN";
 
 	/**
-	 * Set Ephemeral.
+	 * Set One-time-address.
+	 * One-time addresses are ephemeral business partner addresses created via the REST API. If an address is marked as a one-time address, it will be used when importing documents into the metafresh system. However, it is not available for selection when creating new documents in the metasfresh user interface.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -516,7 +515,8 @@ public interface I_C_BPartner_Location
 	void setIsEphemeral (boolean IsEphemeral);
 
 	/**
-	 * Get Ephemeral.
+	 * Get One-time-address.
+	 * One-time addresses are ephemeral business partner addresses created via the REST API. If an address is marked as a one-time address, it will be used when importing documents into the metafresh system. However, it is not available for selection when creating new documents in the metasfresh user interface.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -572,7 +572,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsNameReadWrite = "IsNameReadWrite";
 
 	/**
-	 * Set Zahlungs-Adresse.
+	 * Set Pay-From Address.
 	 * Business Partner pays from that address and we'll send dunning letters there
 	 *
 	 * <br>Type: YesNo
@@ -582,7 +582,7 @@ public interface I_C_BPartner_Location
 	void setIsPayFrom (boolean IsPayFrom);
 
 	/**
-	 * Get Zahlungs-Adresse.
+	 * Get Pay-From Address.
 	 * Business Partner pays from that address and we'll send dunning letters there
 	 *
 	 * <br>Type: YesNo
@@ -683,7 +683,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
 
 	/**
-	 * Set Abo Adresse.
+	 * Set isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -693,7 +693,7 @@ public interface I_C_BPartner_Location
 	void setIsSubscriptionTo (boolean IsSubscriptionTo);
 
 	/**
-	 * Get Abo Adresse.
+	 * Get isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -725,6 +725,33 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsSubscriptionToDefault = new ModelColumn<>(I_C_BPartner_Location.class, "IsSubscriptionToDefault", null);
 	String COLUMNNAME_IsSubscriptionToDefault = "IsSubscriptionToDefault";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
+
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
+
+	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_C_BPartner_Location.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Name.
@@ -881,6 +908,27 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_ValidFrom = "ValidFrom";
 
 	/**
+	 * Set VAT ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxID (@Nullable java.lang.String VATaxID);
+
+	/**
+	 * Get VAT ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getVATaxID();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxID = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxID", null);
+	String COLUMNNAME_VATaxID = "VATaxID";
+
+	/**
 	 * Set Visitors Address.
 	 *
 	 * <br>Type: YesNo
@@ -900,4 +948,5 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VisitorsAddress = new ModelColumn<>(I_C_BPartner_Location.class, "VisitorsAddress", null);
 	String COLUMNNAME_VisitorsAddress = "VisitorsAddress";
+
 }

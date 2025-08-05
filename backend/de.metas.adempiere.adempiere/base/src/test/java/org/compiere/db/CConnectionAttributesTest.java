@@ -22,8 +22,8 @@ package org.compiere.db;
  * #L%
  */
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class CConnectionAttributesTest
 {
@@ -33,14 +33,14 @@ public class CConnectionAttributesTest
 		final String attributesStr = "CConnection[DBhost=roddb001,DBport=5432,DBname=ad_rt_tsa,UID=metasfresh,PWD=metas]";
 		final CConnectionAttributes attrs = CConnectionAttributes.of(attributesStr);
 
-		Assert.assertEquals("DbHost", "roddb001", attrs.getDbHost());
-		Assert.assertEquals("DbPort", 5432, attrs.getDbPort());
-		Assert.assertEquals("DbName", "ad_rt_tsa", attrs.getDbName());
-		Assert.assertEquals("DbUid", "metasfresh", attrs.getDbUid());
-		Assert.assertEquals("DbPwd", "metas", attrs.getDbPwd());
+		Assertions.assertEquals("roddb001", attrs.getDbHost(), "DbHost");
+		Assertions.assertEquals(5432, attrs.getDbPort(), "DbPort");
+		Assertions.assertEquals("ad_rt_tsa", attrs.getDbName(), "DbName");
+		Assertions.assertEquals("metasfresh", attrs.getDbUid(), "DbUid");
+		Assertions.assertEquals("metas", attrs.getDbPwd(), "DbPwd");
 
 		// Convert back to string and test
-		Assert.assertEquals(attributesStr, attrs.toString());
+		Assertions.assertEquals(attributesStr, attrs.toString());
 	}
 
 	@Test
@@ -50,13 +50,13 @@ public class CConnectionAttributesTest
 		final String attributesStr = "CConnection[DBhost=roddb001,DBport=5432,DBname=ad_rt_tsa,UID=metasfresh,PWD=metas]";
 		final CConnectionAttributes attrs = CConnectionAttributes.of(attributesStrOld);
 
-		Assert.assertEquals("DbHost", "roddb001", attrs.getDbHost());
-		Assert.assertEquals("DbPort", 5432, attrs.getDbPort());
-		Assert.assertEquals("DbName", "ad_rt_tsa", attrs.getDbName());
-		Assert.assertEquals("DbUid", "metasfresh", attrs.getDbUid());
-		Assert.assertEquals("DbPwd", "metas", attrs.getDbPwd());
+		Assertions.assertEquals("roddb001", attrs.getDbHost(), "DbHost");
+		Assertions.assertEquals(5432, attrs.getDbPort(), "DbPort");
+		Assertions.assertEquals("ad_rt_tsa", attrs.getDbName(), "DbName");
+		Assertions.assertEquals("metasfresh", attrs.getDbUid(), "DbUid");
+		Assertions.assertEquals("metas", attrs.getDbPwd(), "DbPwd");
 
 		// Convert back to string and test
-		Assert.assertEquals(attributesStr, attrs.toString());
+		Assertions.assertEquals(attributesStr, attrs.toString());
 	}
 }

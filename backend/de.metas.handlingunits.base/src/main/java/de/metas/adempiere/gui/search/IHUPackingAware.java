@@ -22,19 +22,20 @@ package de.metas.adempiere.gui.search;
  * #L%
  */
 
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import de.metas.quantity.Quantity;
-
 /**
  * Implementations or adapters of this interface model a record (e.g. C_OrderLine) which supports handling unit packing instructions (e.g. packing item, qty etc).
- *
+ * <p>
  * NOTE to developers: if you add/change fields in this interface, make sure you will also change the business logic related methods from {@link IHUPackingAwareBL} (e.g. copying).
  *
  * @author tsa
- *
  */
 public interface IHUPackingAware
 {
@@ -63,10 +64,13 @@ public interface IHUPackingAware
 
 	void setC_UOM_ID(int uomId);
 
-	/** @param qty quantity (aka Qty CU) */
+	/**
+	 * @param qty quantity (aka Qty CU)
+	 */
 	void setQty(BigDecimal qtyInHUsUOM);
 
-	/** @return quantity (aka Qty CU)
+	/**
+	 * @return quantity (aka Qty CU)
 	 * TODO: change to {@link Quantity}, so the UOM is known
 	 */
 	BigDecimal getQty();
@@ -75,23 +79,27 @@ public interface IHUPackingAware
 
 	void setM_HU_PI_Item_Product_ID(final int huPiItemProductId);
 
-	/** @return Qty Packs (aka Qty TU). */
+	/**
+	 * @return Qty Packs (aka Qty TU).
+	 */
 	BigDecimal getQtyTU();
 
-	/** @param qtyPacks Qty Packs (aka Qty TU). */
+	/**
+	 * @param qtyPacks Qty Packs (aka Qty TU).
+	 */
 	void setQtyTU(final BigDecimal qtyPacks);
 
 	void setC_BPartner_ID(int bpartnerId);
 
-	default void setQtyCUsPerTU(BigDecimal qtyCUsPerTU) {}
+	default void setQtyCUsPerTU(final BigDecimal qtyCUsPerTU) {}
 
-	default Optional<BigDecimal> getQtyCUsPerTU() { return Optional.empty();}
+	default Optional<BigDecimal> getQtyCUsPerTU() {return Optional.empty();}
 
 	int getC_BPartner_ID();
 
 	/**
 	 * Checks if this record is in dispute.
-	 *
+	 * <p>
 	 * For records which are in dispute:
 	 * <ul>
 	 * <li>QtyPacks will be set to ZERO
@@ -102,4 +110,16 @@ public interface IHUPackingAware
 	boolean isInDispute();
 
 	void setInDispute(boolean inDispute);
+
+	default BigDecimal getQtyLU() {return BigDecimal.ZERO;}
+
+	default void setQtyLU(@NonNull final BigDecimal qtyLU) {}
+
+	@Nullable
+	default HuPackingInstructionsId getLuId()
+	{
+		return null;
+	}
+
+	default void setLuId(@Nullable final HuPackingInstructionsId luId) {}
 }

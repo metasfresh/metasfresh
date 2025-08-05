@@ -1,14 +1,12 @@
 package de.metas.util;
 
+import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.GuavaCollectors;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /*
  * #%L
@@ -44,7 +42,7 @@ public class BatchSpliteratorTest
 				4)
 				.collect(ImmutableList.toImmutableList());
 
-		Assert.assertEquals(expected, actual);
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -60,6 +58,6 @@ public class BatchSpliteratorTest
 				4)
 				.collect(ImmutableList.toImmutableList());
 
-		Assert.assertEquals(expected, actual);
+		assertEquals(expected, actual);
 	}
 }
