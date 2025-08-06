@@ -152,6 +152,12 @@
             <artifactId>junit-platform-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-surefire-provider</artifactId>
+            <version>1.3.2</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>io.cucumber</groupId>
