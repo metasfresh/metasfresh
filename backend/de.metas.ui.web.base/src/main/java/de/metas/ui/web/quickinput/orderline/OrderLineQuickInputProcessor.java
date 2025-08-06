@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.quickinput.orderline;
 
 import de.metas.adempiere.callout.OrderFastInput;
@@ -67,28 +89,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 {
 	// services
@@ -103,7 +103,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final Collection<IOrderLineInputValidator> validators = SpringContextHolder.instance.getBeansOfType(IOrderLineInputValidator.class);
 
 	@Override
-	public Set<DocumentId> process(final QuickInput quickInput)
+	public Set<DocumentId> process(@NonNull final QuickInput quickInput)
 	{
 		final Set<OrderLineId> newOrderLineIds;
 		if (extractGroupTemplateId(quickInput).isPresent())
@@ -215,7 +215,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		}
 	}
 
-	private OrderLineCandidate toOrderLineCandidate(final QuickInput quickInput)
+	private OrderLineCandidate toOrderLineCandidate(@NonNull final QuickInput quickInput)
 	{
 		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 
@@ -322,7 +322,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		huPackingAware.setAsiId(createASI(candidate.getProductId(), candidate.getAttributes()));
 		huPackingAware.setPiItemProductId(candidate.getPiItemProductId());
 		huPackingAware.setLuId(candidate.getLuId());
-		huPackingAware.setQtyLU(candidate.getLuQty().toBigDecimal());
+		huPackingAware.setQtyLU(Quantitys.toBigDecimalOrZero(candidate.getLuQty()));
 
 		//
 		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, candidate.getQty().toBigDecimal());
