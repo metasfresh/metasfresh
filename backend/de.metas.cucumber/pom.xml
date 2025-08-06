@@ -237,14 +237,9 @@
                     <reportFormat>plain</reportFormat> <!-- Ensures plain text output to console -->
                     <useFile>false</useFile> <!-- Prevents output from going only to file -->
                     <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter"/>
-                    <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoTreeReporter"/>
+                    <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfo"/>
                 </configuration>
                 <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-junit-platform</artifactId>
-                        <version>${surefire-plugin.version}</version>
-                    </dependency>
                     <dependency>
                         <groupId>org.apache.maven.surefire</groupId>
                         <artifactId>maven-surefire-common</artifactId>
