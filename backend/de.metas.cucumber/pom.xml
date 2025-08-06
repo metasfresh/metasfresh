@@ -245,8 +245,12 @@
                         <artifactId>maven-surefire-common</artifactId>
                         <version>${surefire-plugin.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-shared-utils</artifactId>
+                        <version>${surefire-plugin.version}</version>
+                    </dependency>
                 </dependencies>
-
             </plugin>
         </plugins>
     </build>
