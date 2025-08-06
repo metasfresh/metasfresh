@@ -242,10 +242,11 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-junit5-platform</artifactId>
+                        <artifactId>surefire-junit-platform</artifactId>
                         <version>${surefire-plugin.version}</version>
                     </dependency>
                 </dependencies>
+
             </plugin>
         </plugins>
     </build>
