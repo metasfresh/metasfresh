@@ -11,19 +11,11 @@
             </properties>
             <repositories>
                 <repository>
-                    <id>central</id>
-                    <url>https://repo.maven.apache.org/maven2</url>
-                </repository>
-                <repository>
                     <id>github-3rdparty-maven</id>
                     <url>https://maven.pkg.github.com/metasfresh/metasfresh-maven-repo/</url>
                 </repository>
             </repositories>
             <pluginRepositories>
-                <pluginRepository>
-                    <id>central</id>
-                    <url>https://repo.maven.apache.org/maven2</url>
-                </pluginRepository>
                 <pluginRepository>
                     <id>github-3rdparty-maven</id>
                     <url>https://maven.pkg.github.com/metasfresh/metasfresh-maven-repo/</url>
