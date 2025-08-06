@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor3
-Feature: EDI INVOIC export via postgREST
+Feature: Historical Sales Orders via postgREST
 
   Background:
     Given infrastructure and metasfresh are running
