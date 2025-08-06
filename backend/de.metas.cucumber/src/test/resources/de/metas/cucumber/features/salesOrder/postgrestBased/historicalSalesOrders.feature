@@ -27,7 +27,7 @@ Feature: Historical Sales Orders via postgREST
       | bpartner_location_1 | customer1     | Y               | Y               |
 
   @from:cucumber
-  Scenario: create a sales order and export it to JSON via ExternalId
+  Scenario: create a sales order and export it to JSON via ExternalId and DataSource
     Given metasfresh contains M_Products:
       | Identifier | Value                       | REST.Context | Name                       | Description                       |
       | product1   | postgRESTExportProductValue | product_ID   | postgRESTExportProductName | postgRESTExportProductDescription |
@@ -60,8 +60,8 @@ Feature: Historical Sales Orders via postgREST
       "value": "ExtHeader_08052025_1"
     },
     {
-      "name": "AD_InputDataSource_ID",
-      "value": 540217
+      "name": "DataSource",
+      "value": "int-Shopware"
     }
   ]
 }
@@ -80,7 +80,7 @@ Feature: Historical Sales Orders via postgREST
     "Partner_Value": "customerValue_08052025",
     "Partner_Name": "customerName_08052025",
     "ExternalId": "ExtHeader_08052025_1",
-    "AD_InputDataSource_ID": 540217,
+    "DataSource": "int-Shopware",
     "Bill_Partner_ID": @customer_ID@,
     "Bill_Partner_Value": "customerValue_08052025",
     "Bill_Partner_Name": "customerName_08052025",
@@ -167,7 +167,7 @@ Feature: Historical Sales Orders via postgREST
     "Partner_Value": "customerValue_08052025",
     "Partner_Name": "customerName_08052025",
     "ExternalId": "ExtHeader_08052025_2",
-    "AD_InputDataSource_ID": 540217,
+    "DataSource": "int-Shopware",
     "Bill_Partner_ID": @customer_ID@,
     "Bill_Partner_Value": "customerValue_08052025",
     "Bill_Partner_Name": "customerName_08052025",

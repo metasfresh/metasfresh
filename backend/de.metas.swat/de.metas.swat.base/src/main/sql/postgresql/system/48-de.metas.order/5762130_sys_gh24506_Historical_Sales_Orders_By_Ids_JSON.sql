@@ -61,5 +61,23 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 UPDATE AD_Process_Para SET FieldLength=10,Updated=TO_TIMESTAMP('2025-08-05 13:34:39.138000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=542962
 ;
 
-UPDATE AD_Process SET JSONPath='/historical_sales_orders_json_v?or=(Order_ID.eq.@C_Order_ID/-1@,and(ExternalId.ilike.@ExternalId/-1@,AD_InputDataSource_ID.eq.@AD_InputDataSource_ID/-1@))&limit=@Limit/2000@&offset=@Offset/0@',Updated=TO_TIMESTAMP('2025-08-05 10:01:01.995000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585484
+-- 2025-08-06T07:59:23.239Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583850,0,'DataSource',TO_TIMESTAMP('2025-08-06 07:59:23.052000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Identifier of the `AD_InputDataSource` record that tells where this record came from. An identifier means int-<AD_InputDataSource.InternalName>','D','Y','DataSource','DataSource',TO_TIMESTAMP('2025-08-06 07:59:23.052000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-08-06T07:59:23.246Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=583850 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Process: Historical_Sales_Orders_By_Ids_JSON(de.metas.postgrest.process.PostgRESTProcessExecutor)
+-- ParameterName: DataSource
+-- 2025-08-06T08:00:29.968Z
+UPDATE AD_Process_Para SET AD_Element_ID=583850, AD_Reference_ID=10, ColumnName='DataSource', Description='Identifier of the `AD_InputDataSource` record that tells where this record came from. An identifier means int-<AD_InputDataSource.InternalName>', FieldLength=150, Name='DataSource',Updated=TO_TIMESTAMP('2025-08-06 08:00:29.968000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=542964
+;
+
+-- 2025-08-06T08:00:29.969Z
+UPDATE AD_Process_Para_Trl trl SET Description='Identifier of the `AD_InputDataSource` record that tells where this record came from. An identifier means int-<AD_InputDataSource.InternalName>',Name='DataSource' WHERE AD_Process_Para_ID=542964 AND AD_Language='de_DE'
+;
+
+UPDATE AD_Process SET JSONPath='/historical_sales_orders_json_v?or=(Order_ID.eq.@C_Order_ID/-1@,and(ExternalId.ilike.@ExternalId/-1@,DataSource.eq.@DataSource/-1@))&limit=@Limit/2000@&offset=@Offset/0@',Updated=TO_TIMESTAMP('2025-08-05 10:01:01.995000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585484
 ;

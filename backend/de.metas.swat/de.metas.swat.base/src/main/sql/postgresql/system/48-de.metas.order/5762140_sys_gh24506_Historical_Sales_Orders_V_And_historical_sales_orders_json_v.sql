@@ -23,7 +23,10 @@ SELECT o.C_Order_ID
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END)                                    AS DatePromised
      , o.externalid                             AS ExternalId
-     , o.ad_inputdatasource_id                  AS AD_InputDataSource_ID
+     , (CASE
+            WHEN dsource.internalname IS NOT NULL
+                THEN 'int-' || dsource.internalname
+        END)                                    AS DataSource
      , rbp.C_BPartner_ID
      , rbp.value                                AS BPartnerValue
      , rbp.name                                 AS BPartnerName
@@ -47,6 +50,7 @@ FROM C_Order o
          LEFT JOIN C_BPartner dbp ON dbp.C_BPartner_ID = o.dropship_bpartner_id
          LEFT JOIN C_Currency c ON c.C_Currency_ID = o.C_Currency_ID
          LEFT JOIN C_PaymentTerm pterm ON pterm.c_paymentterm_id = o.c_paymentterm_id
+         LEFT JOIN AD_InputDataSource dsource ON dsource.ad_inputdatasource_id = o.ad_inputdatasource_id
 WHERE dt.docbasetype = 'SOO'
   AND dt.docsubtype = 'SO'
   AND o.DocStatus IN ('CO')
@@ -57,29 +61,29 @@ DROP VIEW IF EXISTS historical_sales_orders_json_v
 ;
 
 CREATE OR REPLACE VIEW historical_sales_orders_json_v AS
-SELECT order_v.C_Order_ID            AS "Order_ID",
-       order_v.Order_DocumentNo      AS "DocumentNo",
-       order_v.POReference           AS "POReference",
-       order_v.DateOrdered           AS "DateOrdered",
-       order_v.DatePromised          AS "DatePromised",
-       order_v.C_BPartner_ID         AS "Partner_ID",
-       order_v.BPartnerValue         AS "Partner_Value",
-       order_v.BPartnerName          AS "Partner_Name",
-       order_v.ExternalId            AS "ExternalId",
-       order_v.AD_InputDataSource_ID AS "AD_InputDataSource_ID",
-       order_v.BillBParterId         AS "Bill_Partner_ID",
-       order_v.BillBParterValue      AS "Bill_Partner_Value",
-       order_v.BillBParterName       AS "Bill_Partner_Name",
-       order_v.HandoverBParterId     AS "Handover_Partner_ID",
-       order_v.HandoverBParterValue  AS "Handover_Partner_Value",
-       order_v.HandoverBParterName   AS "Handover_Partner_Name",
-       order_v.DropshipBParterId     AS "Dropship_Partner_ID",
-       order_v.DropshipBParterValue  AS "Dropship_Partner_Value",
-       order_v.DropshipBParterName   AS "Dropship_Partner_Name",
-       order_v.GrandTotal            AS "GrandTotal",
-       order_v.PaymentTermName       AS "PaymentTerm",
-       order_v.Currency              AS "Currency",
-       lines.json_data               AS "Lines"
+SELECT order_v.C_Order_ID           AS "Order_ID",
+       order_v.Order_DocumentNo     AS "DocumentNo",
+       order_v.POReference          AS "POReference",
+       order_v.DateOrdered          AS "DateOrdered",
+       order_v.DatePromised         AS "DatePromised",
+       order_v.C_BPartner_ID        AS "Partner_ID",
+       order_v.BPartnerValue        AS "Partner_Value",
+       order_v.BPartnerName         AS "Partner_Name",
+       order_v.ExternalId           AS "ExternalId",
+       order_v.DataSource           AS "DataSource",
+       order_v.BillBParterId        AS "Bill_Partner_ID",
+       order_v.BillBParterValue     AS "Bill_Partner_Value",
+       order_v.BillBParterName      AS "Bill_Partner_Name",
+       order_v.HandoverBParterId    AS "Handover_Partner_ID",
+       order_v.HandoverBParterValue AS "Handover_Partner_Value",
+       order_v.HandoverBParterName  AS "Handover_Partner_Name",
+       order_v.DropshipBParterId    AS "Dropship_Partner_ID",
+       order_v.DropshipBParterValue AS "Dropship_Partner_Value",
+       order_v.DropshipBParterName  AS "Dropship_Partner_Name",
+       order_v.GrandTotal           AS "GrandTotal",
+       order_v.PaymentTermName      AS "PaymentTerm",
+       order_v.Currency             AS "Currency",
+       lines.json_data              AS "Lines"
 FROM Historical_Sales_Orders_V order_v
          LEFT JOIN (SELECT ol.c_order_id,
                            JSON_AGG(JSON_BUILD_OBJECT(
