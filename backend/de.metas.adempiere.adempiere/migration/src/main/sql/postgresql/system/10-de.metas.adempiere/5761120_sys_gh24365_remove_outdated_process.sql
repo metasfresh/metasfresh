@@ -20,6 +20,21 @@ SET ad_process_id = 540061, Updated=TO_TIMESTAMP('2025-08-05 17:11:51.444000','Y
 WHERE ad_process_id = 540046
 ;
 
+UPDATE c_printing_queue
+SET ad_process_id = 540061, Updated=TO_TIMESTAMP('2025-08-05 17:11:51.444000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=99
+WHERE ad_process_id = 540046
+;
+
+UPDATE AD_PInstance
+SET ad_process_id = 540061, Updated=TO_TIMESTAMP('2025-08-05 17:11:51.444000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=99
+WHERE ad_process_id = 540046
+;
+
+DELETE
+FROM AD_Process_Stats
+WHERE ad_process_id = 540046
+;
+
 -- Value: Speditionsauftrag (Jasper)
 -- Classname: de.metas.report.jasper.client.process.JasperReportStarter
 -- JasperReport: @PREFIX@de/metas/docs/sales/shippingorder/report.jasper
