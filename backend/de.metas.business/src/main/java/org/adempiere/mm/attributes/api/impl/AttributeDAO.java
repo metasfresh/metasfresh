@@ -655,8 +655,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Cached(cacheName = I_M_AttributeValue.Table_Name
-			+ "#by#" + I_M_AttributeValue.COLUMNNAME_M_Attribute_ID
-			+ "#" + I_M_AttributeValue.COLUMNNAME_Value)
+			+ "#by#" + I_M_AttributeValue.COLUMNNAME_M_Attribute_ID)
 	AttributeListValueMap retrieveAttributeValuesMap(
 			@CacheCtx final Properties ctx,
 			@NonNull final I_M_Attribute attribute,
