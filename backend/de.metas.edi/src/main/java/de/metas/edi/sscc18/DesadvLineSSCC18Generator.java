@@ -132,27 +132,26 @@ public class DesadvLineSSCC18Generator
 		final int countRequired = desadvLineLabels.getRequiredSSCC18sCount().intValueExact();
 		final TotalQtyCUBreakdownCalculator totalQtyCUsRemaining = desadvLineLabels.breakdownTotalQtyCUsToLUs();
 
-		for (int i = 0; i < countRequired; i++)
+		for (int i = 0; i < countExisting; i++)
 		{
-			// Use existing SSCC if any
-			if (i < countExisting)
+			final EDIDesadvPack desadvPack = desadvLineSSCCsExisting.get(i);
+
+			// Subtract the "LU" of this SSCC from total QtyCUs remaining
+			totalQtyCUsRemaining.subtractLU()
+					.setQtyTUsPerLU(desadvPack.getQtyTU())
+					.setQtyCUsPerTU(desadvPack.getQtyCUsPerTU())
+					.setQtyCUsPerLU_IfGreaterThanZero(desadvPack.getQtyCUsPerLU())
+					.build();
+
+			if (printExistingLabels)
 			{
-				final EDIDesadvPack desadvPack = desadvLineSSCCsExisting.get(i);
-
-				// Subtract the "LU" of this SSCC from total QtyCUs remaining
-				totalQtyCUsRemaining.subtractLU()
-						.setQtyTUsPerLU(desadvPack.getQtyTU())
-						.setQtyCUsPerTU(desadvPack.getQtyCUsPerTU())
-						.setQtyCUsPerLU_IfGreaterThanZero(desadvPack.getQtyCUsPerLU())
-						.build();
-
-				if (printExistingLabels)
-				{
-					enqueueToPrint(desadvPack);
-				}
+				enqueueToPrint(desadvPack);
 			}
+		}
+
+		for (int i = 0; i < countRequired - countExisting; i++)
+		{
 			// Generate a new SSCC record
-			else
 			{
 				final I_EDI_DesadvLine desadvLine = desadvLineLabels.getEDI_DesadvLine();
 				final I_M_HU_PI_Item_Product tuPIItemProduct = desadvLineLabels.getTuPIItemProduct();
