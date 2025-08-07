@@ -25,9 +25,13 @@ package de.metas.adempiere.gui.search.impl;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
@@ -50,6 +54,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	private final transient IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
 	public IHUPackingAware create(final IInfoSimple infoWindow, final int rowIndexModel)
@@ -195,6 +200,37 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		return capacityBL.getCapacity(huPiItemProduct, productId, uom);
 	}
 
+	@Nullable
+	private BigDecimal calculateLUCapacity(@NonNull final IHUPackingAware record)
+	{
+		final I_M_HU_PI_Item_Product huPiItemProduct = extractHUPIItemProductOrNull(record);
+		if (huPiItemProduct == null)
+		{
+			return null;
+		}
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
+		if (productId == null)
+		{
+			// nothing to do; shall not happen
+			return null;
+		}
+		final HuPackingInstructionsId luId = record.getLuId();
+		if (luId == null)
+		{
+			return null;
+		}
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
+		if (bPartnerId == null)
+		{
+			return null;
+		}
+
+		return handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bPartnerId, luId, HUPIItemProductId.ofRepoId(huPiItemProduct.getM_HU_PI_Item_Product_ID()))
+				.map(I_M_HU_PI_Item::getQty)
+				.orElse(null);
+	}
+
 	@Override
 	public void computeAndSetQtysForNewHuPackingAware(
 			@NonNull final PlainHUPackingAware huPackingAware,
@@ -228,6 +264,23 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNone(huPackingAware.getM_HU_PI_Item_Product_ID());
 		return piItemProductBL.isInfiniteCapacity(piItemProductId);
+	}
+
+	@Override
+	public void setQtyCUTUFromQtyLU(final IHUPackingAware record, final BigDecimal qtyLUs)
+	{
+		if (qtyLUs == null)
+		{
+			return;
+		}
+		final BigDecimal capacity = calculateLUCapacity(record);
+		if (capacity == null)
+		{
+			return;
+		}
+
+		final BigDecimal qtyTUs = qtyLUs.multiply(capacity);
+		record.setQtyTU(qtyTUs);
 	}
 
 	private I_C_UOM extractUOMOrNull(final IHUPackingAware huPackingAware)

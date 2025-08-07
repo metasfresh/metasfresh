@@ -3,21 +3,16 @@ package de.metas.handlingunits.callout;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.order.IOrderLineBL;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
 
-import java.util.Optional;
+import java.math.BigDecimal;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
@@ -51,6 +46,16 @@ public class C_OrderLine
 
 		// Update lineNetAmt, because QtyEnteredCU changed : see task 06727
 		Services.get(IOrderLineBL.class).updateLineNetAmtFromQtyEntered(orderLine);
+	}
+
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyLU, I_C_OrderLine.COLUMNNAME_M_LU_HU_PI_ID })
+	public void updateQtyTUCU(final I_C_OrderLine orderLine, final ICalloutField field)
+	{
+		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
+		final BigDecimal qtyLUs = packingAware.getQtyLU();
+		Services.get(IHUPackingAwareBL.class).setQtyCUTUFromQtyLU(packingAware, qtyLUs);
+		updateQtyCU(orderLine, field);
+
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID

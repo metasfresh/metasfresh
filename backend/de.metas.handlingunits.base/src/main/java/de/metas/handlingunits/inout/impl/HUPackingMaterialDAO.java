@@ -152,7 +152,7 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_PackingMaterial)
 				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, bpartnerId, null)
 				.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
-				.orderBy(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID)
+				.orderBy(I_M_HU_PackingMaterial.COLUMNNAME_M_HU_PackingMaterial_ID)
 				.create()
 				.firstOptional(I_M_HU_PackingMaterial.class)
 				.map(this::toHuPackingMaterial);

@@ -182,9 +182,21 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 		orderLine.setQtyLU(qtyLU);
 	}
 
+	public BigDecimal getQtyLU()
+	{
+		return orderLine.getQtyLU();
+	}
+
+	@Override
 	public void setLuId(@Nullable final HuPackingInstructionsId luId)
 	{
 		orderLine.setM_LU_HU_PI_ID(HuPackingInstructionsId.toRepoId(luId));
+	}
+
+	@Override
+	public HuPackingInstructionsId getLuId()
+	{
+		return HuPackingInstructionsId.ofRepoIdOrNull(orderLine.getM_LU_HU_PI_ID());
 	}
 
 	@Override

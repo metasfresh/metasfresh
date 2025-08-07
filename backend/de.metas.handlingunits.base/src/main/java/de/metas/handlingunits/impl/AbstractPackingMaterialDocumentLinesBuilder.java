@@ -91,13 +91,13 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 			for (final I_M_HU_PackingMaterial packingMaterial : packingMaterials)
 			{
 				final IPackingMaterialDocumentLine packingMaterialLine = getCreatePackingMaterialDocumentLine(packingMaterial);
-				packingMaterialLine.addSourceOrderLine(source);
+				packingMaterialLine.addSourceOrderLine(source, source.getQty());
 			}
 			final ProductId luProductID = source.getLUProductId();
 			if (luProductID != null)
 			{
 				final IPackingMaterialDocumentLine luPackingMaterialLine = getLUPackingMaterialDocumentLine(luProductID);
-				luPackingMaterialLine.addSourceOrderLine(source);
+				luPackingMaterialLine.addSourceOrderLine(source, source.getQtyLU());
 			}
 		}
 	}
