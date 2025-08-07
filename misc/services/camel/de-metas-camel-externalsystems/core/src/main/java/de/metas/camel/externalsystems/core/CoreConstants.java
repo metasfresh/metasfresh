@@ -46,13 +46,20 @@ public interface CoreConstants
 	 */
 	String FROM_MF_ROUTE = "spring-rabbitmq:default?queues=" + QUEUE_NAME_MF_TO_ES
 			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
-			+ "&arg.queue.durable=true";
-
-	String CUSTOM_TO_MF_ROUTE = "spring-rabbitmq:default?queues=" + QUEUE_NAME_ES_TO_MF_CUSTOM
-			+ "&routingKey=" + QUEUE_NAME_ES_TO_MF_CUSTOM
-			+ "&arg.queue.durable=true";
+			+ "&arg.queue.durable=true" 
+			+ "&autoDeclare=true";
 
 	String CUSTOM_FROM_MF_ROUTE = "spring-rabbitmq:default?queues=" + QUEUE_NAME_MF_TO_ES_CUSTOM
 			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES_CUSTOM
-			+ "&arg.queue.durable=true";
+			+ "&arg.queue.durable=true" 
+			+ "&autoDeclare=true";
+
+	/**
+	 * This is for sending only, so we will send to the default-exchange and tell it to forward the message to the queue named {@link de.metas.common.externalsystem.ExternalSystemConstants#QUEUE_NAME_ES_TO_MF_CUSTOM}.
+	 * <br>
+	 * To make sure that queue actually exists, we absolutely need {@link de.metas.camel.externalsystems.core.authorization.RabbitMQConfig}.
+	 * If the queue does not exist - for example, because metasfresh-{@code app} didn't create it yet - our message would otherwise be discarded!
+	 */
+	String CUSTOM_TO_MF_ROUTE = "spring-rabbitmq:default"
+			+ "?routingKey=" + QUEUE_NAME_ES_TO_MF_CUSTOM;
 }
