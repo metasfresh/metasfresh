@@ -233,19 +233,9 @@
                             cucumber.junit-platform.naming-strategy=surefire
                         </configurationParameters>
                     </properties>
-                    <!-- Add explicit reporters for console output (cucumber.log in gh-actions)-->
                     <reportFormat>plain</reportFormat> <!-- Ensures plain text output to console -->
                     <useFile>false</useFile> <!-- Prevents output from going only to file -->
-                    <consoleOutputReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter"/>
-                    <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter"/>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>maven-surefire-common</artifactId>
-                        <version>${surefire-plugin.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
