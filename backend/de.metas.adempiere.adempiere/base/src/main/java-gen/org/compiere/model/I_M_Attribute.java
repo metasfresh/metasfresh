@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Attribute
  *  @author metasfresh (generated) 
@@ -98,6 +99,27 @@ public interface I_M_Attribute
 	String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
+	 * Set Attribute Values Order By.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAttributeValuesOrderBy (java.lang.String AttributeValuesOrderBy);
+
+	/**
+	 * Get Attribute Values Order By.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAttributeValuesOrderBy();
+
+	ModelColumn<I_M_Attribute, Object> COLUMN_AttributeValuesOrderBy = new ModelColumn<>(I_M_Attribute.class, "AttributeValuesOrderBy", null);
+	String COLUMNNAME_AttributeValuesOrderBy = "AttributeValuesOrderBy";
+
+	/**
 	 * Set Attribute Value Type.
 	 * Type of Attribute Value
 	 *
@@ -119,6 +141,28 @@ public interface I_M_Attribute
 
 	ModelColumn<I_M_Attribute, Object> COLUMN_AttributeValueType = new ModelColumn<>(I_M_Attribute.class, "AttributeValueType", null);
 	String COLUMNNAME_AttributeValueType = "AttributeValueType";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Created.
@@ -144,28 +188,6 @@ public interface I_M_Attribute
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Description.
