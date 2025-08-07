@@ -1077,7 +1077,7 @@ jobs:
           TEST_SMTP_PASSWORD: ${{ secrets.TEST_SMTP_PASSWORD }}
         timeout-minutes: 120
         run: |
-          mkdir cucumber
+          mkdir -p cucumber
           docker pull metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} --quiet
           docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
           docker compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
@@ -1098,11 +1098,36 @@ jobs:
           command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
       - name: produce-summary
         run: |
-          echo '#### images' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}' >> $GITHUB_STEP_SUMMARY
-      - name: assert success
-        run: |
-          if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi                                     # print cucumber log and exit if cucumber failed
+          junit_xml_path="cucumber/cucumber-junit.xml"
+
+          if [ -f "$junit_xml_path" ]; then
+            echo "Parsing JUnit XML report at: $junit_xml_path"
+
+            # Extract failures and errors from the XML using xmllint.
+            # We explicitly check for 'testsuite' as the root element that holds 'failures' and 'errors'.
+            failures=$(xmllint --xpath 'string(//testsuite/@failures)' "$junit_xml_path" 2>/dev/null)
+            errors=$(xmllint --xpath 'string(//testsuite/@errors)' "$junit_xml_path" 2>/dev/null)
+
+            # Default to 0 if the attributes are not found or xmllint returns nothing.
+            failures=${failures:-0}
+            errors=${errors:-0}
+
+            echo "Found $failures failures and $errors errors in $junit_xml_path"
+
+            if [ "$failures" -gt 0 ] || [ "$errors" -gt 0 ]; then
+              echo "--- Cucumber tests FAILED! ---"
+              echo "Failures: $failures, Errors: $errors"
+              tail -n 1000 cucumber.log || true # Print last 1000 lines of log (if available).
+              exit 1 # Exit with a non-zero code to indicate failure
+            else
+              echo "--- All Cucumber tests PASSED successfully! ---"
+            fi
+          else
+            echo "ERROR: JUnit XML report not found at $junit_xml_path."
+            echo "This is unexpected, as entrypoint.sh should copy it. Check container logs and paths."
+            tail -n 1000 cucumber.log || true # Print last 1000 lines of log.
+            exit 1 # Fail the CI/CD step if the report is missing.
+          fi
       - name: Check if 'metasfreshArchives' directory exists
         id: check_metasfreshArchives_dir
         run: |
