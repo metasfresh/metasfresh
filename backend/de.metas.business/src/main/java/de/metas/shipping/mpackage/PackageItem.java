@@ -22,7 +22,7 @@
 
 package de.metas.shipping.mpackage;
 
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -37,5 +37,5 @@ public class PackageItem
 {
 	@NonNull ProductId productId;
 	@Nullable Quantity quantity;
-	@NonNull OrderLineId orderLineId;
+	@NonNull OrderAndLineId orderAndLineId;
 }

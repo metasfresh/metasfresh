@@ -1,6 +1,8 @@
 package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingMaterial;
 import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.inout.HuPackingMaterialQuery;
@@ -9,12 +11,14 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.shipping.mpackage.PackageId;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -28,6 +32,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -37,7 +42,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 {
 
-	private final IQueryBL iQueryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public List<I_M_HU_PackingMaterial> retrievePackingMaterials(@Nullable final I_M_HU_PI_Item_Product pip)
@@ -50,7 +55,7 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 		/*note that the pip's M_HU_PI_Item item has type "Material"; we are looking for its "PackingMaterial"-sibling(s)*/
 		final int piVersionId = pip.getM_HU_PI_Item().getM_HU_PI_Version_ID();
 
-		return iQueryBL
+		return queryBL
 				.createQueryBuilder(I_M_HU_PI_Item.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID, piVersionId)
@@ -64,7 +69,7 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 	@Override
 	public I_M_HU_PackingMaterial retrivePackingMaterialOfProduct(final I_M_Product product)
 	{
-		return iQueryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, product)
+		return queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, product)
 				.filter(new EqualsQueryFilter<I_M_HU_PackingMaterial>(I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID, product.getM_Product_ID()))
 				.create()
 				.setOnlyActiveRecords(true)
@@ -75,7 +80,7 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 	@Override
 	public I_M_HU_PackingMaterial retrievePackingMaterialOrNull(@NonNull final PackageId packageId)
 	{
-		return iQueryBL
+		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class)
 				.addEqualsFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, packageId)
 				//
@@ -113,7 +118,7 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 	@Override
 	public List<HuPackingMaterial> retrieveBy(final @NonNull HuPackingMaterialQuery query)
 	{
-		final IQueryBuilder<I_M_HU_PackingMaterial> builder = iQueryBL.createQueryBuilder(I_M_HU_PackingMaterial.class)
+		final IQueryBuilder<I_M_HU_PackingMaterial> builder = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class)
 				.addOnlyActiveRecordsFilter();
 		if (query.getProductId() != null)
 		{
@@ -133,5 +138,23 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.name(packingMaterial.getName())
 				.isInvoiceable(packingMaterial.isInvoiceable())
 				.build();
+	}
+
+	@Override
+	public Optional<HuPackingMaterial> getLUPIItemForHUPI(final BPartnerId bpartnerId, final @NonNull HuPackingInstructionsId luPIId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, luPIId)
+				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_IsCurrent, true)
+				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_HU_UnitType, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit)
+				.andCollectChildren(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Item.class)
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_PackingMaterial)
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, bpartnerId, null)
+				.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
+				.orderBy(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID)
+				.create()
+				.firstOptional(I_M_HU_PackingMaterial.class)
+				.map(this::toHuPackingMaterial);
 	}
 }

@@ -61,6 +61,7 @@ public class OrderLineCandidate
 	@Nullable
 	HuPackingInstructionsId luId;
 
+	@Nullable
 	Quantity luQty;
 
 	@Nullable
