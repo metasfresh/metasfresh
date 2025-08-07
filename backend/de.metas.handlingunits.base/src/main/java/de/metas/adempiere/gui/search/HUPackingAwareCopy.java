@@ -1,17 +1,8 @@
-package de.metas.adempiere.gui.search;
-
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_AttributeSetInstance;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,6 +19,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.adempiere.gui.search;
+
+import de.metas.common.util.CoalesceUtil;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class HUPackingAwareCopy
 {
@@ -61,7 +64,7 @@ public class HUPackingAwareCopy
 		to.setM_HU_PI_Item_Product_ID(from.getM_HU_PI_Item_Product_ID());
 		to.setQtyTU(from.getQtyTU());
 		to.setLuId(from.getLuId());
-		to.setQtyLU(from.getQtyLU());
+		to.setQtyLU(CoalesceUtil.coalesceNotNull(from.getQtyLU(), BigDecimal.ZERO));
 		from.getQtyCUsPerTU().ifPresent(to::setQtyCUsPerTU);
 
 		copyBPartner(to);
