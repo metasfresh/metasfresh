@@ -36,7 +36,7 @@ public class MsgFromMfContext
 	private String script;
 	private String scriptReturnValue;
 
-	// TODO These three shall soon be replaced with a config- or request-object for de-metas-camel-outbound-endpoints  
+	// These three shall soon be replaced with a config- or request-object for de-metas-camel-outbound-endpoints  
 	@NonNull private final String outboundHttpEP;
 	@NonNull private final String outboundHttpToken;
 	@NonNull private final String outboundHttpMethod;

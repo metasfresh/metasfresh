@@ -20,34 +20,44 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core;
+package de.metas.camel.externalsystems.core.authorization;
 
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_ES_TO_MF_CUSTOM;
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_CUSTOM;
 
+@EnableRabbit
 @Configuration
-public class RabbitMqConfig
+public class RabbitMQConfig
 {
 	@Bean
-	public Queue metasfreshToExternalSystemQueue()
+	public Queue customQueue()
 	{
-		return new Queue(QUEUE_NAME_MF_TO_ES, true, false, false);
+		return QueueBuilder.durable(QUEUE_NAME_ES_TO_MF_CUSTOM).build();
 	}
 
+	/**
+	 * Makes sure the queue, which the metasfresh {@code app} server listens to 
+	 * exists and is bound to the default exchange.
+	 * If it didn't exist, any messages would be silently discarded. 
+	 */
 	@Bean
-	public Queue customMetasfreshToExternalSystemQueue()
+	public Binding customQueueBinding()
 	{
-		return new Queue(QUEUE_NAME_ES_TO_MF_CUSTOM, true, false, false);
+		final DirectExchange exchange = ExchangeBuilder.directExchange("").build();
+		
+		return BindingBuilder
+				.bind(customQueue())
+				.to(exchange)
+				.with(QUEUE_NAME_ES_TO_MF_CUSTOM);
 	}
 
-	@Bean
-	public Queue customMExternalSystemQueueToetasfreshQueue()
-	{
-		return new Queue(QUEUE_NAME_MF_TO_ES_CUSTOM, true, false, false);
-	}
 }

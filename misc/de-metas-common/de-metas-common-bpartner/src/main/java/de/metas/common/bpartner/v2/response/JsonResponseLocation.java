@@ -68,6 +68,8 @@ public class JsonResponseLocation
 	public static final String REMIT_TO = "remitTo";
 	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
 
+	public static final String VAT_ID = "vatId";
+
 	public static final String EPHEMERAL = "ephemeral";
 
 	@Schema(type = "java.lang.Integer")
@@ -147,6 +149,9 @@ public class JsonResponseLocation
 	@Schema
 	boolean replicationLookupDefault;
 
+	@ApiModelProperty
+	String vatId;
+
 	@JsonInclude(Include.NON_NULL)
 	@Schema // shall be last
 	JsonChangeInfo changeInfo;
@@ -183,6 +188,8 @@ public class JsonResponseLocation
 			@JsonProperty(REMIT_TO)  final boolean remitTo,
 			@JsonProperty(REPLICATION_LOOKUP_DEFAULT)  final boolean replicationLookupDefault,
 
+			@JsonProperty(VAT_ID) @Nullable final String vatId,
+
 			@JsonProperty("changeInfo") @Nullable final JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
@@ -218,6 +225,8 @@ public class JsonResponseLocation
 		this.remitTo = remitTo;
 		this.handoverLocation = handoverLocation;
 		this.replicationLookupDefault = replicationLookupDefault;
+
+		this.vatId = vatId;
 
 		this.ephemeral = ephemeral;
 		

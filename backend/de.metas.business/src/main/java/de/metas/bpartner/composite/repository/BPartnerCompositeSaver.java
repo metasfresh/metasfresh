@@ -33,6 +33,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -356,6 +357,8 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(partnerLocation.getOrgMappingId()));
 
 			bpartnerLocationRecord.setIsEphemeral(partnerLocation.isEphemeral());
+
+			bpartnerLocationRecord.setVATaxID(VATIdentifier.toString(partnerLocation.getVatTaxId()));
 
 			saveRecord(bpartnerLocationRecord);
 

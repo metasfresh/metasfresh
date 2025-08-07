@@ -33,6 +33,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -70,11 +71,13 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
+	private final static String SYS_CONFIG_IgnorePartnerVATID = "de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID";
 
 	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
 	private final IBPGroupDAO bpGroupDAO;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public BPartnerBL()
 	{
@@ -438,7 +441,7 @@ public class BPartnerBL implements IBPartnerBL
 		if (soTrx.isSales())
 		{
 			final boolean allowConsolidateInOutOverrideDefault = false; // default=false (preserve existing logic)
-			return Services.get(ISysConfigBL.class).getBooleanValue(
+			return sysConfigBL.getBooleanValue(
 					SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override,
 					allowConsolidateInOutOverrideDefault);
 		}
@@ -853,5 +856,34 @@ public class BPartnerBL implements IBPartnerBL
 	public Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId)
 	{
 		return userRepository.getDefaultDunningContact(bPartnerId);
+	}
+
+	@NonNull
+	@Override
+	public Optional<VATIdentifier> getVATTaxId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		if (bpartnerLocation != null && Check.isNotBlank(bpartnerLocation.getVATaxID()))
+		{
+			return Optional.of(VATIdentifier.of(bpartnerLocation.getVATaxID()));
+		}
+
+		// if is set on Y, we will not use the vatid from partner
+		final boolean ignorePartnerVATID = sysConfigBL.getBooleanValue(SYS_CONFIG_IgnorePartnerVATID, false);
+
+		if (ignorePartnerVATID)
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			final I_C_BPartner bPartner = getById(bpartnerLocationId.getBpartnerId());
+			if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
+			{
+				return Optional.of(VATIdentifier.of(bPartner.getVATaxID()));
+			}
+
+		}
+		return Optional.empty();
 	}
 }

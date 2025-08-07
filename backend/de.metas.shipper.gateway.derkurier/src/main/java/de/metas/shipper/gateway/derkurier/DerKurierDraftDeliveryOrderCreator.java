@@ -1,7 +1,7 @@
 package de.metas.shipper.gateway.derkurier;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
