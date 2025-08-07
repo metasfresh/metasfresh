@@ -86,5 +86,7 @@ public interface IHUPackingAwareBL extends ISingletonService
 
 	boolean isInfiniteCapacityTU(IHUPackingAware huPackingAware);
 
-	void setQtyCUTUFromQtyLU(IHUPackingAware packingAware, BigDecimal qtyPacks);
+	void setQtyTUFromQtyLU(IHUPackingAware packingAware);
+
+	void setQtyLUFromQtyTU(IHUPackingAware record);
 }

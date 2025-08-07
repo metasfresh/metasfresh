@@ -12,50 +12,52 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import java.math.BigDecimal;
-
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
+
+	private final IHUPackingAwareBL packingAwareBL = Services.get(IHUPackingAwareBL.class);
+
 	/**
 	 * Task 06915: only updating on QtyEntered, but not on M_HU_PI_Item_Product_ID, because when the HU_PI_Item_Product changes, we want QtyEnteredTU to stay the same.
 	 *
-	 * @param orderLine
-	 * @param field
 	 */
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyEntered })
 	public void updateQtyTU(final I_C_OrderLine orderLine, final ICalloutField field)
 	{
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
+		packingAwareBL.setQtyTU(packingAware);
+		packingAwareBL.setQtyLUFromQtyTU(packingAware);
 		packingAware.setQty(packingAware.getQty());
 	}
 
 	/**
 	 * Task 06915: If QtyEnteredTU or M_HU_PI_Item_Product_ID change, then update QtyEntered (i.e. the CU qty).
 	 *
-	 * @param orderLine
-	 * @param field
 	 */
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyEnteredTU, I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID })
 	public void updateQtyCU(final I_C_OrderLine orderLine, final ICalloutField field)
 	{
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		final Integer qtyPacks = packingAware.getQtyTU().intValue();
-		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
+		setQtuCUFromQtyTU(packingAware);
+		packingAwareBL.setQtyLUFromQtyTU(packingAware);
 
 		// Update lineNetAmt, because QtyEnteredCU changed : see task 06727
 		Services.get(IOrderLineBL.class).updateLineNetAmtFromQtyEntered(orderLine);
+	}
+
+	private void setQtuCUFromQtyTU(final IHUPackingAware packingAware)
+	{
+		final int qtyPacks = packingAware.getQtyTU().intValue();
+		packingAwareBL.setQtyCUFromQtyTU(packingAware, qtyPacks);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyLU, I_C_OrderLine.COLUMNNAME_M_LU_HU_PI_ID })
 	public void updateQtyTUCU(final I_C_OrderLine orderLine, final ICalloutField field)
 	{
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		final BigDecimal qtyLUs = packingAware.getQtyLU();
-		Services.get(IHUPackingAwareBL.class).setQtyCUTUFromQtyLU(packingAware, qtyLUs);
+		packingAwareBL.setQtyTUFromQtyLU(packingAware);
 		updateQtyCU(orderLine, field);
-
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID

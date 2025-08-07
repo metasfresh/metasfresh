@@ -47,6 +47,7 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
@@ -267,8 +268,10 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public void setQtyCUTUFromQtyLU(final IHUPackingAware record, final BigDecimal qtyLUs)
+	public void setQtyTUFromQtyLU(final IHUPackingAware record)
 	{
+		BigDecimal qtyLUs = record.getQtyLU();
+
 		if (qtyLUs == null)
 		{
 			return;
@@ -281,6 +284,25 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 
 		final BigDecimal qtyTUs = qtyLUs.multiply(capacity);
 		record.setQtyTU(qtyTUs);
+	}
+
+	@Override
+	public void setQtyLUFromQtyTU(final IHUPackingAware record)
+	{
+		BigDecimal qtyTUs = record.getQtyTU();
+
+		if (qtyTUs == null)
+		{
+			return;
+		}
+		final BigDecimal capacity = calculateLUCapacity(record);
+		if (capacity == null)
+		{
+			return;
+		}
+
+		final BigDecimal qtyLUs = qtyTUs.divide(capacity, RoundingMode.UP);
+		record.setQtyLU(qtyLUs);
 	}
 
 	private I_C_UOM extractUOMOrNull(final IHUPackingAware huPackingAware)
