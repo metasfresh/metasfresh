@@ -25,9 +25,7 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.CurrencyRepository;
-import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.location.CountryCode;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
@@ -45,8 +43,10 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -228,7 +228,7 @@ class DhlTestHelper
 		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
 		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository);
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
-		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(new InOutPackageRepository(), new CurrencyRepository(), orderRepository);
+		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), new CurrencyRepository(), orderRepository);
 
 		final UomId dummyUom = UomId.ofRepoId(1);
 
