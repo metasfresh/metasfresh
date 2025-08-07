@@ -123,7 +123,8 @@ public class DesadvLineSSCC18Generator
 	/**
 	 * Generates {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fulfilled.
 	 * <p>
-	 * It will enqueue the SSCC18 labels to be printed. To actually print the labels, call {@link #printAll()}.
+	 * It will enqueue the SSCC18 labels to be printed.
+	 * To actually print the labels, call {@link #printAll()}.
 	 */
 	public void generateAndEnqueuePrinting(@NonNull final IPrintableDesadvLineSSCC18Labels desadvLineLabels)
 	{
@@ -191,7 +192,8 @@ public class DesadvLineSSCC18Generator
 	/**
 	 * Generates {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fullfilled.
 	 * <p>
-	 * It will enqueue the SSCC18 labels to be printed. To actually print the labels, call {@link #printAll()}.
+	 * It will enqueue the SSCC18 labels to be printed.
+	 * To actually print the labels, call {@link #printAll()}.
 	 *
 	 * @param desadvLineLabelsCollection collection of {@link IPrintableDesadvLineSSCC18Labels}
 	 */
