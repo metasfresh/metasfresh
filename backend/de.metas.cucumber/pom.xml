@@ -152,11 +152,6 @@
             <artifactId>junit-platform-engine</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-commons</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>io.cucumber</groupId>
@@ -233,8 +228,9 @@
                             cucumber.junit-platform.naming-strategy=surefire
                         </configurationParameters>
                     </properties>
-                    <reportFormat>plain</reportFormat> <!-- Ensures plain text output to console -->
-                    <useFile>false</useFile> <!-- Prevents output from going only to file -->
+                    <systemPropertyVariables>
+                        <junit.jupiter.extensions.autodetection.enabled>true</junit.jupiter.extensions.autodetection.enabled>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
