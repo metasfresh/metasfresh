@@ -1123,9 +1123,9 @@ jobs:
             echo "Found $failures failures and $errors errors in $junit_xml_path"
 
             if [ "$failures" -gt 0 ] || [ "$errors" -gt 0 ]; then
+              tail -n 1000 cucumber.log || true # Print last 1000 lines of log (if available).
               echo "--- Cucumber tests FAILED! ---"
               echo "Failures: $failures, Errors: $errors"
-              tail -n 1000 cucumber.log || true # Print last 1000 lines of log (if available).
               exit 1 # Exit with a non-zero code to indicate failure
             else
               echo "--- All Cucumber tests PASSED successfully! ---"
