@@ -143,7 +143,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	}
 
 	@Override
-	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(final ProductId productId)
+	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(@NonNull final ProductId productId)
 	{
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(order, I_C_OrderLine.class);
 		final UomId uomId = productBL.getStockUOMId(ProductId.toRepoId(productId));

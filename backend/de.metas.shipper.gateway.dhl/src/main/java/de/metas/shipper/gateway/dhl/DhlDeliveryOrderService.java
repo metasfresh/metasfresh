@@ -189,7 +189,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 			packagedQuantity = Quantitys.of(1, UomId.EACH);
 		}
 
-		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(packageItem.getOrderAndLineId().getOrderLineId());
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(packageItem.getOrderLineId());
 		final CurrencyCode currencyCode = currencyRepository.getCurrencyCodeById(CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
 		return DhlCustomsItem.builder()

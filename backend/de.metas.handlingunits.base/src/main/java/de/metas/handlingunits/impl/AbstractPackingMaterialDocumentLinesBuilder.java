@@ -96,13 +96,13 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 			final ProductId luProductID = source.getLUProductId();
 			if (luProductID != null)
 			{
-				final IPackingMaterialDocumentLine luPackingMaterialLine = getLUPackingMaterialDocumentLine(luProductID);
+				final IPackingMaterialDocumentLine luPackingMaterialLine = getCreatePackingMaterialDocumentLine(luProductID);
 				luPackingMaterialLine.addSourceOrderLine(source, source.getQtyLU());
 			}
 		}
 	}
 
-	private IPackingMaterialDocumentLine getLUPackingMaterialDocumentLine(final ProductId luProductId)
+	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(@NonNull final ProductId luProductId)
 	{
 		final ArrayKey pmKey = createPackingMaterialKey(luProductId);
 
@@ -137,24 +137,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	private IPackingMaterialDocumentLine getCreatePackingMaterialDocumentLine(@NonNull final I_M_HU_PackingMaterial packingMaterial)
 	{
 		final ProductId productId = ProductId.ofRepoId(packingMaterial.getM_Product_ID());
-		final ArrayKey pmKey = createPackingMaterialKey(productId);
-
-		//
-		// Check if we already have a packing material line
-		final IPackingMaterialDocumentLine pmLineExisting = packingMaterialKey2packingMaterialLine.get(pmKey);
-		if (pmLineExisting != null)
-		{
-			return pmLineExisting;
-		}
-
-		//
-		// Packing material order line was not found => Create New
-		final IPackingMaterialDocumentLine pmLineNew = createPackingMaterialDocumentLine(productId);
-
-		// NOTE: we are not saving here, but later
-		addPackingMaterialDocumentLine(pmLineNew);
-
-		return pmLineNew;
+		return getCreatePackingMaterialDocumentLine(productId);
 	}
 
 	/**
