@@ -24,14 +24,14 @@
 set -e
 
 #needed if your locally installed "default" java is not the one expected by maven
-#export JAVA_HOME=c:/Users/tobia/.jdks/temurin-21.0.7 
+export JAVA_HOME=c:/Users/tobia/.jdks/temurin-21.0.7 
 #export JAVA_HOME=c:/Users/tobia/.jdks/temurin-17.0.15
-export JAVA_HOME=c:/Users/tobia/.jdks/temurin-1.8.0_452
+#export JAVA_HOME=c:/Users/tobia/.jdks/temurin-1.8.0_452
 
 MULTITHREAD_PARAM=''
 #MULTITHREAD_PARAM='-T2C'
 
-ADDITIONAL_PARAMS='-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true'
+ADDITIONAL_PARAMS='-Djib.skip=true -Dmaven.gitcommitid.skip=true -Dlicense.skip=true -DskipTests'
 #ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS} -DskipTests'
 #ADDITIONAL_PARAMS='${ADDITIONAL_PARAMS} -Dmaven.test.skip=true'
 
@@ -42,7 +42,7 @@ mvn --file ../../parent-pom/pom.xml --settings ../maven/settings.xml $ADDITIONAL
 
 mvn --file ../../de-metas-common/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
 
-mvn -e --file ../../../backend/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
+mvn --file ../../../backend/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
 
 mvn --file ../../services/camel/pom.xml --settings ../maven/settings.xml $MULTITHREAD_PARAM $ADDITIONAL_PARAMS $GOALS && \
 

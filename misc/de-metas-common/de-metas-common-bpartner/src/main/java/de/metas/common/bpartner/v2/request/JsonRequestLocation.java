@@ -189,11 +189,10 @@ public class JsonRequestLocation
 	@Schema(hidden = true)
 	private boolean visitorsAddressSet;
 
-	@ApiModelProperty(position = 270, //
-			value = "Translates to C_BPartner_Location.VATaxId")
+	@Schema(description = "Translates to C_BPartner_Location.VATaxId")
 	private String vatId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean vatIdSet;
 
 	public void setActive(final Boolean active)

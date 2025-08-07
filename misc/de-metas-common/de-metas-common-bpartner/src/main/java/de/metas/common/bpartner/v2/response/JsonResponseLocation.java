@@ -149,7 +149,7 @@ public class JsonResponseLocation
 	@Schema
 	boolean replicationLookupDefault;
 
-	@ApiModelProperty
+	@Schema
 	String vatId;
 
 	@JsonInclude(Include.NON_NULL)
