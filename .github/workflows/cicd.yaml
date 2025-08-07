@@ -1098,6 +1098,14 @@ jobs:
           command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
       - name: produce-summary
         run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}' >> $GITHUB_STEP_SUMMARY
+      - name: Install xmllint
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
+      - name: assert success
+        run: |
           junit_xml_path="cucumber/cucumber-junit.xml"
 
           if [ -f "$junit_xml_path" ]; then
