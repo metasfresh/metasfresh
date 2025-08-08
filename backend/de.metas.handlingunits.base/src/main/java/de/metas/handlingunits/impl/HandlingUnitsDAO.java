@@ -1328,7 +1328,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, piItemProductId)
 				.andCollect(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, I_M_HU_PI_Item.class)
 				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_Material)
-				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId)
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, bpartnerId, null)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Version.class)
 				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_HU_UnitType, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit)
