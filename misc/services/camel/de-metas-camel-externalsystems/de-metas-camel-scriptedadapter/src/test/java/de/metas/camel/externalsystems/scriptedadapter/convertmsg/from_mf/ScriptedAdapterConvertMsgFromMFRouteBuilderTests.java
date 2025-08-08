@@ -20,11 +20,13 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter;
+package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorException;
+import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -43,9 +45,9 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConvertMsgFromMFRouteBuilder.Scripting_ROUTE_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
+import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN;
@@ -118,7 +120,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		context.start();
 
 		// When: Send message to the scripting route
-		template.send("direct:" + Scripting_ROUTE_ID, exchange);
+		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
 		
 		// Then: Verify the result
 		MockEndpoint.assertIsSatisfied(context);
@@ -160,7 +162,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		context.start();
 
 		// When: Send message to the scripting route
-		template.send("direct:" + Scripting_ROUTE_ID, exchange);
+		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
 
 		// Then: Verify the result
 		MockEndpoint.assertIsSatisfied(context);
@@ -198,7 +200,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		mockHttpEndpoint.expectedMessageCount(1);
 		
 		context.start();
-		template.send("direct:" + Scripting_ROUTE_ID, exchange);
+		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
 
 		MockEndpoint.assertIsSatisfied(context);
 		
@@ -214,8 +216,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	{
 		final MockEndpoint mockHttpEndpoint = getMockEndpoint("mock:httpEndPoint");
 		AdviceWith.adviceWith(context,
-				ScriptedAdapterConvertMsgFromMFRouteBuilder.Scripting_ROUTE_ID,
-				advice -> advice.weaveById(SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID)
+				ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID,
+				advice -> advice.weaveById(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
 						.replace()
 						.to(mockHttpEndpoint));
 		return mockHttpEndpoint;
@@ -244,7 +246,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 		context.start();
 
 		// When: Send message to the scripting route with faulty JavaScript
-		template.send("direct:" + Scripting_ROUTE_ID, exchange);
+		template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
 
 		// Then: Verify that the error route was invoked
 		MockEndpoint.assertIsSatisfied(context);

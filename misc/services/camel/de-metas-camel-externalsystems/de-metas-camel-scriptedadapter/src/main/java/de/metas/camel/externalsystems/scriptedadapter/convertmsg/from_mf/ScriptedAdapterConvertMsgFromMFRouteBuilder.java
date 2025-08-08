@@ -20,11 +20,13 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter;
+package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
+import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -51,12 +53,12 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 {
-	public static final String Scripting_ROUTE_ID = "ScriptedAdapter-ConvertMsgFromMF";
+	public static final String ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID = "ScriptedExportConversion-ConvertMsgFromMF";
 
 	public static final String PROPERTY_SCRIPTING_REPO_BASE_DIR = "metasfresh.scriptedadapter.repo.baseDir";
 
 	@VisibleForTesting
-	static final String SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID = "scriptedAdapterOutboundHttpEPId";
+	static final String ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID = "ScriptedExportConversionOutboundHttpEPId";
 
 	private JavaScriptRepo javaScriptRepo;
 
@@ -77,14 +79,14 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(Scripting_ROUTE_ID))
-				.routeId(Scripting_ROUTE_ID)
+		from(direct(ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID))
+				.routeId(ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID)
 				.log("Route invoked!")
 				.process(this::buildAndSetContext)
 				.process(this::executeJavaScript)
 				.process(this::prepareHttpRequest)
 				//dev-note: the actual path is set in this.prepareHttpRequest()
-				.to("https://placeholder").id(SCRIPTEDADAPTER_OUTBOUND_HTTP_EP_ID)
+				.to("https://placeholder").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
 			;
 		//@formatter:on
 	}

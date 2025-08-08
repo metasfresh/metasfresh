@@ -107,6 +107,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
+		// open http-endpoint
 		from(direct(ENABLE_RESOURCE_ROUTE_ID))
 				.routeId(ENABLE_RESOURCE_ROUTE_ID)
 				.log("Route invoked!")
@@ -118,6 +119,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.end();
 
+		// close http-endpoint
 		from(direct(DISABLE_RESOURCE_ROUTE_ID))
 				.routeId(DISABLE_RESOURCE_ROUTE_ID)
 				.log("Route invoked!")
@@ -129,6 +131,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.end();
 
+		// here comes the *actual* REST-endpoint
 		rest().path(RestServiceRoutes.GRS.getPath())
 			.post()
 			.to("direct:" + REST_API_ROUTE_ID);

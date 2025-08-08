@@ -57,6 +57,10 @@ public class JavaScriptRepo
 		final Path path = Paths.get(baseDir, identifier + ".js");
 		try
 		{
+			if (path.getParent() != null && !Files.exists(path.getParent()))
+			{
+				Files.createDirectories(path.getParent());
+			}
 			Files.writeString(path, javascript);
 		}
 		catch (final IOException e)
