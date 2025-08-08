@@ -28,6 +28,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import org.compiere.apps.search.IInfoSimple;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /**
@@ -89,4 +90,6 @@ public interface IHUPackingAwareBL extends ISingletonService
 	void setQtyTUFromQtyLU(IHUPackingAware packingAware);
 
 	void setQtyLUFromQtyTU(IHUPackingAware record);
+
+	void validateLUQty(@Nullable BigDecimal luQty);
 }
