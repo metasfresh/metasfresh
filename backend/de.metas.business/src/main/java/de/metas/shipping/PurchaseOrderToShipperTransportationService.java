@@ -165,7 +165,7 @@ public class PurchaseOrderToShipperTransportationService
 		final int existingPackagesCount = existingPackages.size();
 		if (existingPackagesCount > qtyLUs)
 		{
-			final ImmutableList<PackageId> packageIdsToRemove = existingPackages.subList(qtyLUs, existingPackages.size() - 1)
+			final ImmutableList<PackageId> packageIdsToRemove = existingPackages.subList(qtyLUs - 1, existingPackages.size() - 1)
 					.stream()
 					.map(Package::getId)
 					.collect(ImmutableList.toImmutableList());
