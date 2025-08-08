@@ -22,6 +22,7 @@ package de.metas.edi.sscc18;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
@@ -127,29 +128,36 @@ public class DesadvLineSSCC18Generator
 	 */
 	public void generateAndEnqueuePrinting(@NonNull final IPrintableDesadvLineSSCC18Labels desadvLineLabels)
 	{
-		final List<EDIDesadvPack> desadvLineSSCCsExisting = desadvLineLabels.getExistingSSCC18s();
-		final int countExisting = desadvLineSSCCsExisting.size();
 		final int countRequired = desadvLineLabels.getRequiredSSCC18sCount().intValueExact();
 		final TotalQtyCUBreakdownCalculator totalQtyCUsRemaining = desadvLineLabels.breakdownTotalQtyCUsToLUs();
 
-		for (int i = 0; i < countRequired; i++)
+		final List<EDIDesadvPack> desadvLineSSCCsExisting = desadvLineLabels.getExistingSSCC18s();
+		final List<EDIDesadvPack> existingPacksWithHUIds = desadvLineSSCCsExisting.stream().filter(pack -> pack.getHuId() != null).collect(ImmutableList.toImmutableList());
+		final int countExistingWithHUIds = existingPacksWithHUIds.size();
+
+		// if packs with HUIds exist, print them all regardless of the required quantity
+		for (final EDIDesadvPack desadvPack : existingPacksWithHUIds)
 		{
-			// Use existing SSCC if any
-			if (i < countExisting)
+			subtractsAndPrintExistingPack(totalQtyCUsRemaining, desadvPack);
+		}
+
+		if (countExistingWithHUIds >= countRequired)
+		{
+			return;
+		}
+
+		final List<EDIDesadvPack> existingPacksWithoutHUIds = desadvLineSSCCsExisting.stream().filter(pack -> pack.getHuId() == null).collect(ImmutableList.toImmutableList());
+		final int countExistingWithoutHUIds = existingPacksWithoutHUIds.size();
+
+		final int qtyToPrint = countRequired - countExistingWithHUIds;
+		for (int i = 0; i < qtyToPrint; i++)
+		{
+			// Use existing SSCC without HUId if any
+			if (i < countExistingWithoutHUIds)
 			{
-				final EDIDesadvPack desadvPack = desadvLineSSCCsExisting.get(i);
+				final EDIDesadvPack desadvPack = existingPacksWithoutHUIds.get(i);
 
-				// Subtract the "LU" of this SSCC from total QtyCUs remaining
-				totalQtyCUsRemaining.subtractLU()
-						.setQtyTUsPerLU(desadvPack.getQtyTU())
-						.setQtyCUsPerTU(desadvPack.getQtyCUsPerTU())
-						.setQtyCUsPerLU_IfGreaterThanZero(desadvPack.getQtyCUsPerLU())
-						.build();
-
-				if (printExistingLabels)
-				{
-					enqueueToPrint(desadvPack);
-				}
+				subtractsAndPrintExistingPack(totalQtyCUsRemaining, desadvPack);
 			}
 			// Generate a new SSCC record
 			else
@@ -163,6 +171,21 @@ public class DesadvLineSSCC18Generator
 				final EDIDesadvPack desadvPack = generateDesadvLineSSCC(desadvLine, luQtys, tuPIItemProduct);
 				enqueueToPrint(desadvPack);
 			}
+		}
+	}
+
+	private void subtractsAndPrintExistingPack(final TotalQtyCUBreakdownCalculator totalQtyCUsRemaining, final EDIDesadvPack desadvPack)
+	{
+		// Subtract the "LU" of this SSCC from total QtyCUs remaining
+		totalQtyCUsRemaining.subtractLU()
+				.setQtyTUsPerLU(desadvPack.getQtyTU())
+				.setQtyCUsPerTU(desadvPack.getQtyCUsPerTU())
+				.setQtyCUsPerLU_IfGreaterThanZero(desadvPack.getQtyCUsPerLU())
+				.build();
+
+		if (printExistingLabels)
+		{
+			enqueueToPrint(desadvPack);
 		}
 	}
 
@@ -224,11 +247,11 @@ public class DesadvLineSSCC18Generator
 		final String ipaSSCC18 = sscc18.asString(); // humanReadable=false
 
 		final EDIDesadvPackService.Sequences sequences = ediDesadvPackService.createSequences(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()));
-		
+
 		// Create SSCC record
 		final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = buildCreateEDIDesadvPackItemRequest(
-				desadvLine, 
-				luQtys, 
+				desadvLine,
+				luQtys,
 				tuPIItemProduct,
 				sequences);
 
@@ -237,7 +260,7 @@ public class DesadvLineSSCC18Generator
 
 		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = CreateEDIDesadvPackRequest.builder()
 				.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
-				.seqNo(sequences.getPackSeqNoSequence().next()) 
+				.seqNo(sequences.getPackSeqNoSequence().next())
 				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
 				.sscc18(ipaSSCC18)
 				.isManualIpaSSCC(true)
