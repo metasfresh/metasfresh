@@ -33,6 +33,7 @@ import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -42,6 +43,8 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.model.I_C_UOM;
 
@@ -51,11 +54,16 @@ import java.math.RoundingMode;
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
+	public static final AdMessageKey MSG_MAX_LUS_EXCEEDED = AdMessageKey.of("de.metas.quickinput.orderline.MaxLUsExceeded");
+	public static final String SYS_CONFIG_MAXQTYLU = "de.metas.OrderLine.MaxLUQty";
+	public static final Integer SYS_CONFIG_MAXQTYLU_DEFAULT_VALUE = 100;
+
 	private final transient IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final transient IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public IHUPackingAware create(final IInfoSimple infoWindow, final int rowIndexModel)
@@ -111,7 +119,6 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		{
 			record.setQty(maxQty.toBigDecimal());
 			record.setC_UOM_ID(maxQty.getUomId().getRepoId());
-			return;
 		}
 	}
 
@@ -166,10 +173,6 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 
 		final QuantityTU qtyTU = capacity.calculateQtyTU(record.getQty(), extractUOMOrNull(record), uomConversionBL).orElse(null);
-		if (qtyTU == null)
-		{
-			return null;
-		}
 
 		return qtyTU;
 	}
@@ -270,7 +273,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	@Override
 	public void setQtyTUFromQtyLU(final IHUPackingAware record)
 	{
-		BigDecimal qtyLUs = record.getQtyLU();
+		final BigDecimal qtyLUs = record.getQtyLU();
 
 		if (qtyLUs == null)
 		{
@@ -289,7 +292,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	@Override
 	public void setQtyLUFromQtyTU(final IHUPackingAware record)
 	{
-		BigDecimal qtyTUs = record.getQtyTU();
+		final BigDecimal qtyTUs = record.getQtyTU();
 
 		if (qtyTUs == null)
 		{
@@ -303,6 +306,16 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 
 		final BigDecimal qtyLUs = qtyTUs.divide(capacity, RoundingMode.UP);
 		record.setQtyLU(qtyLUs);
+	}
+
+	@Override
+	public void validateLUQty(final BigDecimal luQty)
+	{
+		final int maxLUQty = sysConfigBL.getIntValue(SYS_CONFIG_MAXQTYLU, SYS_CONFIG_MAXQTYLU_DEFAULT_VALUE);
+		if (luQty != null && luQty.compareTo(BigDecimal.valueOf(maxLUQty)) > 0)
+		{
+			throw new AdempiereException(MSG_MAX_LUS_EXCEEDED);
+		}
 	}
 
 	private I_C_UOM extractUOMOrNull(final IHUPackingAware huPackingAware)

@@ -35,7 +35,6 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -93,9 +92,6 @@ import java.util.Set;
 
 public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 {
-	public static final AdMessageKey MSG_MAX_LUS_EXCEEDED = AdMessageKey.of("de.metas.quickinput.orderline.MaxLUsExceeded");
-	public static final String SYS_CONFIG_MAXQTYLU = "de.metas.OrderLine.MaxQtyLU";
-	public static final Integer SYS_CONFIG_MAXQTYLU_DEFAULT_VALUE = 100;
 	// services
 	private static final Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
@@ -228,11 +224,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		// Validate quick input:
 		final BigDecimal quickInputTUQty;
 		final BigDecimal quickInputLUQty = orderLineQuickInput.getQtyLU();
-		final int maxLUQty = sysConfigBL.getIntValue(SYS_CONFIG_MAXQTYLU, SYS_CONFIG_MAXQTYLU_DEFAULT_VALUE);
-		if (quickInputLUQty != null && quickInputLUQty.compareTo(BigDecimal.valueOf(maxLUQty)) > 0)
-		{
-			throw new AdempiereException(MSG_MAX_LUS_EXCEEDED);
-		}
+		huPackingAwareBL.validateLUQty(quickInputLUQty);
+
 		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(orderLineQuickInput.getM_LU_HU_PI_ID());
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID());
 

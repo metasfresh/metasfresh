@@ -55,6 +55,8 @@ public class C_OrderLine
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyLU, I_C_OrderLine.COLUMNNAME_M_LU_HU_PI_ID })
 	public void updateQtyTUCU(final I_C_OrderLine orderLine, final ICalloutField field)
 	{
+		packingAwareBL.validateLUQty(orderLine.getQtyLU());
+
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
 		packingAwareBL.setQtyTUFromQtyLU(packingAware);
 		updateQtyCU(orderLine, field);
