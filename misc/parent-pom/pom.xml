@@ -93,6 +93,8 @@
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>30.1.1-jre</guava.version>
+
+        <surefire-plugin.version>3.5.3</surefire-plugin.version>
     </properties>
 
     <modules>
@@ -401,13 +403,13 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.3</version>
+                    <version>${surefire-plugin.version}</version>
                     <dependencies>
                         <!-- Declaring these explicitly to allow go-offline-maven-plugin to pick it up -->
                         <dependency>
                             <groupId>org.apache.maven.surefire</groupId>
                             <artifactId>surefire-junit-platform</artifactId>
-                            <version>3.5.3</version>
+                            <version>${surefire-plugin.version}</version>
                         </dependency>
                         <dependency>
                             <groupId>org.apache.tomcat</groupId>
