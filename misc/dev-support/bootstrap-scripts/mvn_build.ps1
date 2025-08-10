@@ -71,25 +71,25 @@ function Split-Params {
 try {
     Write-Host "Starting Maven build process..."
     
-#     Write-Host "Building parent-pom..."
-#     $additionalArgs = Split-Params $ADDITIONAL_PARAMS
-#     $goalArgs = Split-Params $GOALS
-#     mvn --file ../../parent-pom/pom.xml --settings ../maven/settings.xml @additionalArgs @goalArgs
-#     if ($LASTEXITCODE -ne 0) { throw "parent-pom build failed" }
-#     
-#     Write-Host "Building de-metas-common..."
-#     $multithreadArgs = Split-Params $MULTITHREAD_PARAM
-#     $additionalArgs = Split-Params $ADDITIONAL_PARAMS
-#     $goalArgs = Split-Params $GOALS
-#     mvn --file ../../de-metas-common/pom.xml --settings ../maven/settings.xml @multithreadArgs @additionalArgs @goalArgs
-#     if ($LASTEXITCODE -ne 0) { throw "de-metas-common build failed" }
-#     
-#     Write-Host "Building backend..."
-#     $multithreadArgs = Split-Params $MULTITHREAD_PARAM
-#     $additionalArgs = Split-Params $ADDITIONAL_PARAMS
-#     $goalArgs = Split-Params $GOALS
-#     mvn --file ../../../backend/pom.xml --settings ../maven/settings.xml @multithreadArgs @additionalArgs @goalArgs
-#     if ($LASTEXITCODE -ne 0) { throw "backend build failed" }
+    Write-Host "Building parent-pom..."
+    $additionalArgs = Split-Params $ADDITIONAL_PARAMS
+    $goalArgs = Split-Params $GOALS
+    mvn --file ../../parent-pom/pom.xml --settings ../maven/settings.xml @additionalArgs @goalArgs
+    if ($LASTEXITCODE -ne 0) { throw "parent-pom build failed" }
+
+    Write-Host "Building de-metas-common..."
+    $multithreadArgs = Split-Params $MULTITHREAD_PARAM
+    $additionalArgs = Split-Params $ADDITIONAL_PARAMS
+    $goalArgs = Split-Params $GOALS
+    mvn --file ../../de-metas-common/pom.xml --settings ../maven/settings.xml @multithreadArgs @additionalArgs @goalArgs
+    if ($LASTEXITCODE -ne 0) { throw "de-metas-common build failed" }
+
+    Write-Host "Building backend..."
+    $multithreadArgs = Split-Params $MULTITHREAD_PARAM
+    $additionalArgs = Split-Params $ADDITIONAL_PARAMS
+    $goalArgs = Split-Params $GOALS
+    mvn --file ../../../backend/pom.xml --settings ../maven/settings.xml @multithreadArgs @additionalArgs @goalArgs
+    if ($LASTEXITCODE -ne 0) { throw "backend build failed" }
     
     Write-Host "Building camel services..."
     $multithreadArgs = Split-Params $MULTITHREAD_PARAM
