@@ -1,13 +1,5 @@
 package de.metas.handlingunits.empties;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IReference;
-import org.adempiere.util.lang.ImmutableReference;
-import org.compiere.model.I_M_InOut;
-
 import de.metas.handlingunits.IPackingMaterialDocumentLine;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLinesBuilder;
@@ -16,10 +8,18 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IReference;
+import org.adempiere.util.lang.ImmutableReference;
+import org.compiere.model.I_M_InOut;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Helper class used to create {@link I_M_InOutLine}s for a given inout header.
@@ -86,13 +86,13 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 	}
 
 	@Override
-	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(@NonNull final I_M_HU_PackingMaterial packingMaterial)
+	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(@NonNull final ProductId productId)
 	{
 		final I_M_InOut inout = getM_InOut();
 		final I_M_InOutLine inoutLine = inOutBL.newInOutLine(inout, I_M_InOutLine.class);
-		final UomId uomId = productBL.getStockUOMId(packingMaterial.getM_Product_ID());
+		final UomId uomId = productBL.getStockUOMId(ProductId.toRepoId( productId));
 
-		inoutLine.setM_Product_ID(packingMaterial.getM_Product_ID());
+		inoutLine.setM_Product_ID(ProductId.toRepoId( productId));
 		inoutLine.setC_UOM_ID(uomId.getRepoId()); // prevent the system from picking its default-UOM; there might be no UOM-conversion to/from the product's UOM
 		// NOTE: don't save it
 

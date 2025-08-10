@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter;
+package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
 import lombok.Builder;
 import lombok.Data;

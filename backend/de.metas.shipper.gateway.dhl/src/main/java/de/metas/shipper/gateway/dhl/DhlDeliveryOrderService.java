@@ -27,12 +27,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
-import de.metas.shipping.mpackage.Package;
-import de.metas.shipping.mpackage.PackageId;
-import de.metas.shipping.mpackage.PackageItem;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -49,6 +45,10 @@ import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
+import de.metas.shipping.mpackage.Package;
+import de.metas.shipping.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -82,7 +82,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-	private final InOutPackageRepository inOutPackageRepository;
+	private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository;
 	private final CurrencyRepository currencyRepository;
 	private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository;
 
@@ -159,7 +159,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private DhlCustomsDocument getCustomsDocument(@NonNull final I_DHL_ShipmentOrder firstOrder, @NonNull final I_DHL_ShipmentOrder po, @Nullable final String orgBpEORI)
 	{
 		final I_C_BPartner consigneeBpartner = bpartnerDAO.getById(firstOrder.getC_BPartner_ID());
-		final Package mPackage = inOutPackageRepository.getPackageById(PackageId.ofRepoId(po.getM_Package_ID()));
+		final Package mPackage = purchaseOrderToShipperTransportationRepository.getPackageById(PackageId.ofRepoId(po.getM_Package_ID()));
 
 		final ImmutableList<DhlCustomsItem> dhlCustomsItems = mPackage.getPackageContents()
 				.stream()
