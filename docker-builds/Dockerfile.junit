@@ -1,8 +1,10 @@
 ARG REFNAME=local
-FROM metasfresh/metas-mvn-common:$REFNAME as common
-FROM metasfresh/metas-mvn-backend:$REFNAME as backend
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-mvn-common:$REFNAME AS common
+FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
+FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
-FROM maven:3.8.4-jdk-8 as junit
+FROM maven:3.9.9-eclipse-temurin-21 AS junit
 
 ARG SKIP_MIGRATION_SCRIPTS_TEST=false
 
@@ -17,12 +19,13 @@ SHELL ["/bin/bash", "-c"]
 COPY --from=backend /root/.m2 /root/.m2/
 COPY --from=common /commons commons
 COPY --from=backend /backend backend
+COPY --from=camel /camel camel
 
 
 WORKDIR /java/commons
 
 # run all tests, never fail, never surrender, and capture log and exit code
-RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --offline surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --offline surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
 
 # capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
 RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
@@ -31,7 +34,15 @@ RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code |
 WORKDIR /java/backend
 
 # run all tests, never fail, never surrender, and capture log and exit code
-RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --offline surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --offline surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
+
+# capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
+RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
+
+WORKDIR /java/camel
+
+# run all tests, never fail, never surrender, and capture log and exit code
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode --offline surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
 
 # capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
 RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
