@@ -950,16 +950,14 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
             docker push --quiet metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
-            docker push --quiet metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
-      - name: push-results
+      - name: push test results to testspace
         run: |
-          docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
-          docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+          docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting test results from docker image
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace 
-          testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
-          testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
-          testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code       
-      - name: assert success
+          testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java commons junit tests}"     # upload commons log with combined exit code  
+          testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java backend junit tests}"     # upload backend log with combined exit code 
+          testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java camel junit tests}"              # upload camel log with combined exit code       
+      - name: assert test success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
           if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/backend/junit.log && exit 1; fi      # print backend log and exit if backend failed
