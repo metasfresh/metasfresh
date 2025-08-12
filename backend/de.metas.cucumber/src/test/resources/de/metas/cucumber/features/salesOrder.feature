@@ -45,13 +45,13 @@ Feature: sales order
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier | Name                  |
-      | p_1        | salesProduct_17082021 |
+      | p_1        | salesProduct_12082025 |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_17082021 | null            | true  | false         | 2              | true         |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_12082025 | null            | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
       | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
