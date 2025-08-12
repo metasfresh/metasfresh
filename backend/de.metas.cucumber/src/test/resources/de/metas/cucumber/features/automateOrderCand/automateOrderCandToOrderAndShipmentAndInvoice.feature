@@ -18,6 +18,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @topic:orderCandidate
   @Id:S0150_100
   @Id:S0469_100
+  @Id:S0472
   Scenario: Order candidate to shipment and invoice flow and closed order
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """

@@ -41,6 +41,7 @@ Feature: sales order
       | s_ol_1     | ol_1                      | N             |
 
   @from:cucumber
+  @Id:S0473
   Scenario: we can create and complete a sales order with external ids and those ids are propagated to shipment schedule
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
