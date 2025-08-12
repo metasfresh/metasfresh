@@ -43,14 +43,19 @@ FROM Historical_Sales_Orders_V order_v
                                             'IsPackingMaterial', ol.ispackagingmaterial,
                                             'Product_Name', product.name,
                                             'Product_Value', product.value,
-                                            'Product_ID', product.m_product_id
-                                        ) ORDER BY ol.line) AS json_data
+                                            'Product_ID', product.m_product_id,
+                                            'QtyTU', ol.qtyEnteredTU,
+                                            'M_HU_PI_Item_Product_ID', ol.m_hu_pi_item_product_id,
+                                            'Rendered PI Name', hupip.name
+                                    ) ORDER BY ol.line) AS json_data
                     FROM c_orderline ol
                              LEFT JOIN m_product product ON product.m_product_id = ol.m_product_id
                              LEFT JOIN c_uom suom ON suom.c_uom_id = product.c_uom_id
                              LEFT JOIN c_uom ouom ON ouom.c_uom_id = ol.c_uom_id
                              LEFT JOIN c_uom puom ON puom.c_uom_id = ol.price_uom_id
                              LEFT JOIN c_tax tax ON tax.c_tax_id = ol.c_tax_id
+                             LEFT JOIN M_HU_PI_Item_Product hupip ON ol.m_hu_pi_item_product_id = hupip.m_hu_pi_item_product_id
                     GROUP BY ol.c_order_id) lines ON lines.c_order_id = order_v.C_Order_ID
+
 ORDER BY DateOrdered, order_v.C_Order_ID
 ;

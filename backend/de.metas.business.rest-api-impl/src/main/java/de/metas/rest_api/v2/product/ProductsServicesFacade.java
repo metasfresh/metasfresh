@@ -22,15 +22,20 @@
 
 package de.metas.rest_api.v2.product;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
+import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -62,6 +67,8 @@ public class ProductsServicesFacade
 	private final IBPartnerProductDAO partnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IUOMConversionDAO uomConversionDAO= Services.get(IUOMConversionDAO.class);
+	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 	public Stream<I_M_Product> streamAllProducts(@Nullable final Instant since)
 	{
@@ -88,6 +95,21 @@ public class ProductsServicesFacade
 	public List<I_C_BPartner_Product> getBPartnerProductRecords(final Set<ProductId> productIds)
 	{
 		return partnerProductsRepo.retrieveForProductIds(productIds);
+	}
+
+	public List<I_M_HU_PI_Item_Product> getMHUPIItemProductRecords(final Set<ProductId> productIds)
+	{
+		return huPIItemProductDAO.retrieveAllForProducts(productIds);
+	}
+
+
+	public List<UOMConversionsMap> getProductUOMConversions(final Set<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return  productIds.stream().map(uomConversionDAO::getProductConversions).collect(ImmutableList.toImmutableList());
 	}
 
 	public Stream<I_M_Product_Category> streamAllProductCategories()
