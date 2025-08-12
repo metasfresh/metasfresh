@@ -180,7 +180,6 @@ public class GetProductsCommand
 				.map(this::toJsonProduct)
 				.collect(ImmutableList.toImmutableList());
 
-
 		return JsonGetProductsResponse.builder()
 				.products(products)
 				.build();

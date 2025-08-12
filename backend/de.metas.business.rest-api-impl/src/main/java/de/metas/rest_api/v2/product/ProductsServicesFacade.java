@@ -67,7 +67,7 @@ public class ProductsServicesFacade
 	private final IBPartnerProductDAO partnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IUOMConversionDAO uomConversionDAO= Services.get(IUOMConversionDAO.class);
+	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 	public Stream<I_M_Product> streamAllProducts(@Nullable final Instant since)
@@ -102,14 +102,13 @@ public class ProductsServicesFacade
 		return huPIItemProductDAO.retrieveAllForProducts(productIds);
 	}
 
-
 	public List<UOMConversionsMap> getProductUOMConversions(final Set<ProductId> productIds)
 	{
 		if (productIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		return  productIds.stream().map(uomConversionDAO::getProductConversions).collect(ImmutableList.toImmutableList());
+		return productIds.stream().map(uomConversionDAO::getProductConversions).collect(ImmutableList.toImmutableList());
 	}
 
 	public Stream<I_M_Product_Category> streamAllProductCategories()
