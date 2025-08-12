@@ -142,4 +142,7 @@ public interface IOrderDAO extends ISingletonService
 
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+
+	@NonNull
+	Optional<ExternalId> getExternalId(@NonNull OrderId orderId);
 }

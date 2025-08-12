@@ -204,6 +204,12 @@ public class M_InOut_StepDef
 
 					softly.assertThat(inout.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
 				});
+		
+		final String externalId = row.getAsOptionalString(I_M_InOut.COLUMNNAME_ExternalId).orElse(null);
+		if (Check.isNotBlank(externalId))
+		{
+			softly.assertThat(inout.getExternalId()).isEqualTo(externalId);
+		}
 
 		softly.assertAll();
 	}

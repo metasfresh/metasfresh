@@ -36,6 +36,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -254,6 +255,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		// tthier values
 		shipmentSchedule.setSinglePriceTag_ID(groupingOrderLineLabel);
 		// 03152 end
+
+		shipmentSchedule.setExternalHeaderId(orderDAO.getExternalId(OrderId.ofRepoId(orderLine.getC_Order_ID())).map(ExternalId::getValue).orElse(null));
+		shipmentSchedule.setExternalLineId(orderLine.getExternalId());
 
 		extensions.updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLine);
 	}

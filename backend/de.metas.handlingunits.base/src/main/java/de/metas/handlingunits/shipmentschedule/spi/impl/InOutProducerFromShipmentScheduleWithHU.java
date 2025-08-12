@@ -31,7 +31,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -39,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
@@ -375,6 +375,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			{
 				shipment.setDateOrdered(order.getDateOrdered());
 				shipment.setC_Order_ID(order.getC_Order_ID()); // TODO change if partner allow consolidation too
+				shipment.setExternalId(order.getExternalId());
 				shipment.setPOReference(order.getPOReference());
 				shipment.setC_Incoterms_ID(order.getC_Incoterms_ID());
 				shipment.setIncotermLocation(order.getIncotermLocation());

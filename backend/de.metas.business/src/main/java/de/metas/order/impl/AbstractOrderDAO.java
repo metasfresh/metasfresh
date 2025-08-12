@@ -458,4 +458,10 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
 		return Optional.ofNullable(PPCostCollectorId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId)));
 	}
+
+	@NonNull
+	public Optional<ExternalId> getExternalId(@NonNull final OrderId orderId)
+	{
+		return Optional.ofNullable(ExternalId.ofOrNull(getById(orderId).getExternalId()));
+	}
 }
