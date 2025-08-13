@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,22 +45,22 @@ public class JsonProductUOMConversion
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	JsonMetasfreshId productId;
 
-	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_ID.")
+	@Schema(description = "This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_ID.")
 	@NonNull
 	@JsonProperty("uomFrom")
 	String fromUomCode;
 
-	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_To_ID.")
+	@Schema(description = "This is the `C_UOM.UOMSymbol` of the C_UOM_Conversion.C_UOM_To_ID.")
 	@NonNull
 	@JsonProperty("uomTo")
 	String toUomCode;
 
-	@ApiModelProperty("Corresponding to C_UOM_Conversion.MultiplyRate")
+	@Schema(description = "Corresponding to C_UOM_Conversion.MultiplyRate")
 	@NonNull
 	@JsonProperty("fromToMultiplier")
 	BigDecimal fromToMultiplier;
 
-	@ApiModelProperty("Corresponding to C_UOM_Conversion.IsCatchUOMForProduct")
+	@Schema(description = "Corresponding to C_UOM_Conversion.IsCatchUOMForProduct")
 	@NonNull
 	@JsonProperty("catchUOMForProduct")
 	Boolean catchUOMForProduct;

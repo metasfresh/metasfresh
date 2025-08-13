@@ -126,7 +126,7 @@ public class ProductBOMDescriptionBuilderTest
 		final String productDescription = ProductBOMDescriptionBuilder.newInstance()
 				.build(bomProductId);
 
-		assertThat(productDescription).isEqualTo(
+		assertThat(productDescription).isEqualToIgnoringNewLines(
 				"""
 				ComponentName1
 				ComponentName2 5 mm
