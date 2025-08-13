@@ -7,7 +7,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 /*
  * #%L
@@ -56,12 +55,6 @@ public class ExternalId implements Comparable<ExternalId>
 			return null;
 		}
 		return new ExternalId(value);
-	}
-
-	@NonNull
-	public static Optional<ExternalId> optionalOf(@Nullable final String value)
-	{
-		return Optional.ofNullable(ofOrNull(value));
 	}
 
 	@Nullable
