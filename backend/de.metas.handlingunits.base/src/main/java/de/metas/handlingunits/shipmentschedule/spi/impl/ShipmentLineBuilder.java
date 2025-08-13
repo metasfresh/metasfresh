@@ -444,6 +444,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		if (orderLine != null)
 		{
 			shipmentLine.setC_Project_ID(orderLine.getC_Project_ID());
+			shipmentLine.setExternalId(orderLine.getExternalId());
 		}
 
 		optimisticallySetLineNo(shipmentLine);

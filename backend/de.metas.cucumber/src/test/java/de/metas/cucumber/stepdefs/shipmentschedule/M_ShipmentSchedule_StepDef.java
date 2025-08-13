@@ -812,6 +812,18 @@ public class M_ShipmentSchedule_StepDef
 			softly.assertThat(shipmentSchedule.getDeliveryRule()).as("DeliveryRule for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(deliveryRule);
 		}
 
+		final String externalHeaderId = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_ExternalHeaderId);
+		if (Check.isNotBlank(externalHeaderId))
+		{
+			softly.assertThat(shipmentSchedule.getExternalHeaderId()).as("ExternalHeaderId for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(externalHeaderId);
+		}
+
+		final String externalLineId = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_ExternalLineId);
+		if (Check.isNotBlank(externalLineId))
+		{
+			softly.assertThat(shipmentSchedule.getExternalLineId()).as("ExternalLineId for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(externalLineId);
+		}
+
 		softly.assertAll();
 	}
 
