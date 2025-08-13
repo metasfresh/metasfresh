@@ -96,7 +96,7 @@ public class ArchiveBL implements IArchiveBL
 		archive.setAD_Language(language);
 
 		archive.setDocumentNo(request.getDocumentNo());
-		archive.setName(request.getArchiveName());
+		archive.setName(request.getArchiveName().concat(" ").concat(archive.getCreated().toString()));
 		archive.setC_Async_Batch_ID(NumberUtils.asInt(request.getAsyncBatchId(), -1));
 		archive.setIsReport(request.isReport());
 		//
