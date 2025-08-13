@@ -71,7 +71,7 @@
         <springdoc-swagger.version>1.8.0</springdoc-swagger.version>
 
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
-        <slf4j-api.version>2.0.9</slf4j-api.version>
+        <slf4j-api.version>2.0.17</slf4j-api.version>
 
         <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
         <xmlunit.version>2.10.0</xmlunit.version>
@@ -463,7 +463,7 @@
                              Hence it is important to add those command-line params where @{argLine} holds those params.
                              Note that the @ is not a typo.
                              See https://www.jacoco.org/jacoco/trunk/doc/prepare-agent-mojo.html and https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#argLine -->
-                        <argLine>@{argLine} -Xms256m -Xmx2048m</argLine>
+                        <argLine>@{argLine} -Xms256m -Xmx2048m --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
                         <!-- From http://www.jacoco.org/jacoco/trunk/doc/maven.html :
                              When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0
                              or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded.
