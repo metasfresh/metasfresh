@@ -329,12 +329,15 @@ public class GetProductsCommand
 	@NonNull
 	private JsonMHUPIItemProduct toJsonProductBPartner(final I_M_HU_PI_Item_Product record)
 	{
+		final int bpartnerRecordId = record.getC_BPartner_ID();
+		final int uomRecordId = record.getC_UOM_ID();
+
 		return JsonMHUPIItemProduct.builder()
 				.mHUPIItemProductId(JsonMetasfreshId.of(record.getM_HU_PI_Item_Product_ID()))
-				.bpartnerId(JsonMetasfreshId.of(record.getC_BPartner_ID()))
+				.bpartnerId(bpartnerRecordId > 0 ? JsonMetasfreshId.of(bpartnerRecordId) : null)
 				.name(record.getName())
 				.qty(record.getQty())
-				.uom(servicesFacade.getUOMSymbol(UomId.ofRepoId(record.getC_UOM_ID())))
+				.uom(uomRecordId > 0 ?  servicesFacade.getUOMSymbol(UomId.ofRepoId(record.getC_UOM_ID())) : null)
 
 				//
 				.build();

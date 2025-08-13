@@ -23,6 +23,7 @@
 package de.metas.common.product.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -53,6 +54,7 @@ public class JsonMHUPIItemProduct
 			value = "Corresponding to `M_HU_PI_Item_Product.C_BPartnerId`.")
 	@Nullable
 	@JsonProperty("bpartnerId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	JsonMetasfreshId bpartnerId;
 
 	@ApiModelProperty( //
@@ -69,8 +71,9 @@ public class JsonMHUPIItemProduct
 	BigDecimal qty;
 
 	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the M_HU_PI_Item_Product.C_UOM_ID.")
-	@NonNull
+	@Nullable
 	@JsonProperty("uom")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String uom;
 
 
