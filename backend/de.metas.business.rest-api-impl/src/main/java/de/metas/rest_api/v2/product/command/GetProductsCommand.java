@@ -329,15 +329,15 @@ public class GetProductsCommand
 	@NonNull
 	private JsonMHUPIItemProduct toJsonProductBPartner(final I_M_HU_PI_Item_Product record)
 	{
-		final int bpartnerRecordId = record.getC_BPartner_ID();
-		final int uomRecordId = record.getC_UOM_ID();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
+		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
 
 		return JsonMHUPIItemProduct.builder()
 				.mHUPIItemProductId(JsonMetasfreshId.of(record.getM_HU_PI_Item_Product_ID()))
-				.bpartnerId(bpartnerRecordId > 0 ? JsonMetasfreshId.of(bpartnerRecordId) : null)
+				.bpartnerId(bpartnerId != null ? JsonMetasfreshId.of(bpartnerId) : null)
 				.name(record.getName())
 				.qty(record.getQty())
-				.uom(uomRecordId > 0 ?  servicesFacade.getUOMSymbol(UomId.ofRepoId(record.getC_UOM_ID())) : null)
+				.uom(uomId != null ? servicesFacade.getUOMSymbol(uomId) : null)
 
 				//
 				.build();
@@ -383,9 +383,9 @@ public class GetProductsCommand
 		final List<JsonAlbertaPackagingUnit> jsonPackagingUnitList = Check.isEmpty(albertaCompositeProductInfo.getAlbertaPackagingUnitList())
 				? null
 				: albertaCompositeProductInfo.getAlbertaPackagingUnitList()
-						.stream()
-						.map(this::mapToJsonAlbertaPackagingUnit)
-						.collect(ImmutableList.toImmutableList());
+				.stream()
+				.map(this::mapToJsonAlbertaPackagingUnit)
+				.collect(ImmutableList.toImmutableList());
 
 		return JsonAlbertaProductInfo.builder()
 				.albertaProductId(albertaCompositeProductInfo.getAlbertaArticleId())
