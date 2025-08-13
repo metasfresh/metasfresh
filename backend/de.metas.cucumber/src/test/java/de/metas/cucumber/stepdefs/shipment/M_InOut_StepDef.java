@@ -205,6 +205,9 @@ public class M_InOut_StepDef
 					softly.assertThat(inout.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
 				});
 
+		row.getAsOptionalString(I_M_InOut.COLUMNNAME_ExternalId).
+				ifPresent(externalId -> softly.assertThat(inout.getExternalId()).isEqualTo(externalId));
+
 		softly.assertAll();
 	}
 
@@ -287,7 +290,7 @@ public class M_InOut_StepDef
 		final Optional<String> docStatus = firstRow.getAsOptionalString(I_M_InOut.COLUMNNAME_DocStatus);
 
 		final Optional<String> alreadyCreatedShipmentIdentifiers = firstRow.getAsOptionalString("OPT.IgnoreCreated" + "." + COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-		
+
 		final Set<InOutLineId> alreadyCreatedShipmentLines = alreadyCreatedShipmentIdentifiers
 				.map(StepDefUtil::extractIdentifiers)
 				.map(this::getShipmentLinesForShipmentIdentifiers)
@@ -354,7 +357,7 @@ public class M_InOut_StepDef
 						.ifPresent(id -> restTestContext.setVariable(id.getAsString(), shipment.getM_InOut_ID()));
 				firstRow.getAsOptionalIdentifier("REST.Context.DocumentNo")
 						.ifPresent(id -> restTestContext.setVariable(id.getAsString(), shipment.getDocumentNo()));
-				
+
 				return true;
 			}
 

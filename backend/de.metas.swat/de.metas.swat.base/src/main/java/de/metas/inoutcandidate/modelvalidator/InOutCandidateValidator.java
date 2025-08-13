@@ -1,17 +1,6 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.agg.key.IAggregationKeyRegistry;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_M_Product;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.cache.CacheMgt;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -28,6 +17,15 @@ import de.metas.product.ProductType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_M_Product;
 
 /**
  * Shipment Schedule / Receipt Schedule module activator
@@ -111,7 +109,8 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 				I_M_ShipmentSchedule.COLUMNNAME_AD_User_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_AD_User_Override_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_AD_Org_ID,
-				I_M_ShipmentSchedule.COLUMNNAME_DateOrdered);
+				I_M_ShipmentSchedule.COLUMNNAME_DateOrdered,
+				I_M_ShipmentSchedule.COLUMNNAME_ExternalHeaderId);
 	}
 
 	@Override

@@ -114,6 +114,7 @@ public class M_InOut_Line_StepDef
 		final SoftAssertions softly = new SoftAssertions();
 		row.getAsOptionalBoolean("processed").ifPresent(processed -> softly.assertThat(inoutLine.isProcessed()).as("Processed").isEqualTo(processed));
 		row.getAsOptionalBigDecimal("movementqty").ifPresent(movementQty -> softly.assertThat(inoutLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementQty));
+		row.getAsOptionalString(I_M_InOutLine.COLUMNNAME_ExternalId).ifPresent(externalId -> softly.assertThat(inoutLine.getExternalId()).as("ExternalId").isEqualTo(externalId));
 		softly.assertAll();
 	}
 

@@ -54,7 +54,6 @@ public class JsonProduct
 	@NonNull
 	@JsonProperty("id")
 	JsonMetasfreshId id;
-
 	@Schema(description = "This translates to `M_Product.M_Product_Category_ID`.")
 	@NonNull
 	@JsonProperty("productCategoryId")
@@ -131,4 +130,14 @@ public class JsonProduct
 	@JsonInclude(Include.NON_NULL)
 	@JsonProperty("albertaProductInfo")
 	JsonAlbertaProductInfo albertaProductInfo;
+
+	@Nullable
+	@Singular
+	@JsonProperty("uomConversions")
+	List<JsonProductUOMConversion> uomConversions;
+
+	@Nullable
+	@Singular
+	@JsonProperty("mHUPIItemProducts")
+	List<JsonMHUPIItemProduct> mhupiItemProducts;
 }
