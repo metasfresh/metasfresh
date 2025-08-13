@@ -22,29 +22,34 @@ package de.metas.handlingunits.order.api.impl;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingMaterial;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-
-import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
-import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /* package */class OrderLinePackingMaterialDocumentLineSource implements IPackingMaterialDocumentLineSource
 {
 	//
 	// Services
 	private final transient IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final I_C_OrderLine orderLine;
 
@@ -99,8 +104,26 @@ import lombok.NonNull;
 
 		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
 
-		final BigDecimal qty = qtyOrdered.divide(qtyItemCapacity, 0, RoundingMode.UP);
-		return qty;
+		return qtyOrdered.divide(qtyItemCapacity, 0, RoundingMode.UP);
+	}
+
+	@Override
+	public @Nullable ProductId getLUProductId()
+	{
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(orderLine.getM_LU_HU_PI_ID());
+		if (luPIId == null)
+		{
+			return null;
+		}
+		return packingMaterialDAO.getLUPIItemForHUPI(BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()), luPIId)
+				.map(HuPackingMaterial::getProductId)
+				.orElse(null);
+	}
+
+	@Override
+	public BigDecimal getQtyLU()
+	{
+		return orderLine.getQtyLU();
 	}
 
 	@Override

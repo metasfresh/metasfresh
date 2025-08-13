@@ -3,25 +3,34 @@ package de.metas.shipping;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.InOutId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageItem;
 import de.metas.sscc18.SSCC18;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -89,6 +98,20 @@ public class PurchaseOrderToShipperTransportationRepository
 		save(shippingPackage);
 	}
 
+	public void removeFromShipperTransportation(@NonNull final Collection<PackageId> packageIdsToDelete)
+	{
+		queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_M_Package_ID, packageIdsToDelete)
+				.create()
+				.delete();
+		queryBL.createQueryBuilder(I_M_Package.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Package.COLUMNNAME_M_Package_ID, packageIdsToDelete)
+				.create()
+				.delete();
+	}
+
 	public ImmutableList<Package> getPackagesByOrderLineIds(@NonNull final Collection<OrderLineId> orderLineIds)
 	{
 		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
@@ -97,21 +120,60 @@ public class PurchaseOrderToShipperTransportationRepository
 				.andCollect(I_M_ShippingPackage.COLUMN_M_Package_ID)
 				.create()
 				.stream()
-				.map(this::fromDB)
+				.map(PurchaseOrderToShipperTransportationRepository::fromPO)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private Package fromDB(@NonNull final I_M_Package mPackage)
+	public Package getPackageById(@NonNull final PackageId packageId)
 	{
-		//TODO IT2 unify logic with de.metas.handlingunits.shipping.InOutPackageRepository.fromPO
-		final PackageId packageId = PackageId.ofRepoId(mPackage.getM_Package_ID());
+		final I_M_Package mPackage = load(packageId, I_M_Package.class);
+		return fromPO(mPackage);
+	}
+
+	public static Package fromPO(final I_M_Package mPackage)
+	{
+		final InOutId inOutId = InOutId.ofRepoIdOrNull(mPackage.getM_InOut_ID());
 		return Package.builder()
-				.id(packageId)
-				.inOutId(InOutId.ofRepoIdOrNull(mPackage.getM_InOut_ID()))
+				.id(PackageId.ofRepoId(mPackage.getM_Package_ID()))
+				.inOutId(inOutId)
 				.weightInKg(mPackage.getPackageWeight())
-				.sscc(mPackage.getIPA_SSCC18())
 				.orgId(OrgId.ofRepoId(mPackage.getAD_Org_ID()))
-				.packageContents(Collections.emptyList())
+				.sscc(mPackage.getIPA_SSCC18())
+				.packageContents(getHuStorageListOrNull(inOutId))
+				.build();
+	}
+
+	@Nullable
+	private static List<PackageItem> getHuStorageListOrNull(@Nullable final InOutId inOutId)
+	{
+		if (inOutId == null)
+		{
+			return ImmutableList.of();
+		}
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOutId)
+				.create()
+				.stream()
+				.map(PurchaseOrderToShipperTransportationRepository::toPackageItem)
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	private static PackageItem toPackageItem(@NonNull final I_M_InOutLine inOutLine)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(inOutLine.getM_Product_ID());
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
+		if (productId == null || orderLineId == null)
+		{
+			return null;
+		}
+		return PackageItem.builder()
+				.productId(productId)
+				.quantity(Quantitys.of(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
+				.orderAndLineId(OrderAndLineId.of(OrderId.ofRepoId(inOutLine.getC_Order_ID()), orderLineId))
 				.build();
 	}
 

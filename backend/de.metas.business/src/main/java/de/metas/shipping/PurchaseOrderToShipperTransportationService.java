@@ -15,6 +15,8 @@ import de.metas.organization.OrgId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.Package;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -25,6 +27,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -156,16 +159,29 @@ public class PurchaseOrderToShipperTransportationService
 	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate, @NonNull final I_C_OrderLine ol)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
-		requestTemplate.orderLineId(orderLineId);
-		final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
+		final ImmutableList<Package> existingPackages = repo.getPackagesByOrderLineIds(Collections.singleton(orderLineId));
 		final int qtyLUs = ol.getQtyLU().intValueExact();
-		//TODO IT2 avoid creating duplicates on reopen, via de.metas.shipping.PurchaseOrderToShipperTransportationRepository.getByOrderLineId
 
-		for (int i = 0; i < qtyLUs; i++)
+		final int existingPackagesCount = existingPackages.size();
+		if (existingPackagesCount > qtyLUs)
 		{
-			repo.addPurchaseOrderToShipperTransportation(requestTemplate
-					.sscc(sscc18CodeBL.generate(orgId))
-					.build());
+			final ImmutableList<PackageId> packageIdsToRemove = existingPackages.subList(qtyLUs - 1, existingPackages.size() - 1)
+					.stream()
+					.map(Package::getId)
+					.collect(ImmutableList.toImmutableList());
+			repo.removeFromShipperTransportation(packageIdsToRemove);
+		}
+		else if (existingPackagesCount < qtyLUs)
+		{
+			requestTemplate.orderLineId(orderLineId);
+			final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
+
+			for (int i = 0; i < qtyLUs - existingPackagesCount; i++)
+			{
+				repo.addPurchaseOrderToShipperTransportation(requestTemplate
+						.sscc(sscc18CodeBL.generate(orgId))
+						.build());
+			}
 		}
 	}
 

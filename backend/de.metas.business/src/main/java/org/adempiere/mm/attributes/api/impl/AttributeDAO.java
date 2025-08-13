@@ -39,6 +39,7 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.AttributeValuesOrderByType;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -637,8 +638,6 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
 
-		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-
 		//
 		// 07708: Apply AD_Val_Rule when filtering attributes for current context
 		final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter;
@@ -652,12 +651,17 @@ public class AttributeDAO implements IAttributeDAO
 			validationRuleQueryFilter = null;
 		}
 
-		return retrieveAttributeValuesMap(ctx, attributeId, includeInactive, validationRuleQueryFilter);
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		final String orderByColumnName = Optional.ofNullable(attribute.getAttributeValuesOrderBy())
+				.map(AttributeValuesOrderByType::ofCode)
+				.map(Enum::name)
+				.orElse(I_M_AttributeValue.COLUMNNAME_Value);  // order attributes by value, so we can have names like breakfast, lunch, dinner in their "temporal" order
+		
+		return retrieveAttributeValuesMap(ctx, attributeId, includeInactive, validationRuleQueryFilter, orderByColumnName);
 	}
 
 	@Cached(cacheName = I_M_AttributeValue.Table_Name
-			+ "#by#" + I_M_AttributeValue.COLUMNNAME_M_Attribute_ID
-			+ "#" + I_M_AttributeValue.COLUMNNAME_Value)
+			+ "#by#" + I_M_AttributeValue.COLUMNNAME_M_Attribute_ID)
 	AttributeListValueMap retrieveAttributeValuesMap(
 			@CacheCtx final Properties ctx,
 			@NonNull final AttributeId attributeId,
@@ -666,7 +670,8 @@ public class AttributeDAO implements IAttributeDAO
 			// If we have a filter:
 			// * that's mutable so it will screw up up our case
 			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karotten ID example from)
-			@CacheSkipIfNotNull final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter)
+			@CacheSkipIfNotNull final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter,
+			@NonNull final String orderByColumnName)
 	{
 		final IQueryBuilder<I_M_AttributeValue> queryBuilder = queryBL.createQueryBuilder(I_M_AttributeValue.class, ctx, ITrx.TRXNAME_None);
 
@@ -683,7 +688,7 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		final List<AttributeListValue> list = queryBuilder
-				.orderBy(I_M_AttributeValue.COLUMNNAME_Value) // order attributes by value, so we can have names like breakfast, lunch, dinner in their "temporal" order
+				.orderBy(orderByColumnName)
 				.create()
 				.stream()
 				.map(AttributeDAO::toAttributeListValue)
