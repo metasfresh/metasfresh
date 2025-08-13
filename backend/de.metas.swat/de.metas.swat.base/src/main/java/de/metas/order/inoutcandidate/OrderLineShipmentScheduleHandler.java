@@ -36,7 +36,6 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -303,8 +302,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(orderId, de.metas.order.model.I_C_Order.class);
 		shipmentSchedule.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
-
-		shipmentSchedule.setExternalHeaderId(orderDAO.getExternalId(orderId).map(ExternalId::getValue).orElse(null));
+		shipmentSchedule.setExternalHeaderId(orderModel.getExternalId());
 	}
 
 	/**
