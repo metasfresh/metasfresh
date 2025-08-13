@@ -334,7 +334,7 @@ public class GetProductsCommand
 
 		return JsonMHUPIItemProduct.builder()
 				.mHUPIItemProductId(JsonMetasfreshId.of(record.getM_HU_PI_Item_Product_ID()))
-				.bpartnerId(bpartnerId != null ? JsonMetasfreshId.of(bpartnerId) : null)
+				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartnerId)))
 				.name(record.getName())
 				.qty(record.getQty())
 				.uom(uomId != null ? servicesFacade.getUOMSymbol(uomId) : null)
