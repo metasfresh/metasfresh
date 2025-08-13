@@ -297,9 +297,7 @@ public class GetProductsCommand
 				.flatMap(productUOMConversion -> {
 					final ProductId productId = productUOMConversion.getProductId();
 					return productUOMConversion.getRates().values().stream().filter(value -> value.getFromUomId() != value.getToUomId())
-							.map(rate -> ImmutableListMultimap.<ProductId, JsonProductUOMConversion> builder()
-									.put(productId, toJsonProductUOMConversion(rate))
-									.build());
+							.map(rate -> ImmutableListMultimap.of(productId, toJsonProductUOMConversion(rate)));
 				})
 				.flatMap(multimap -> multimap.entries().stream())
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
