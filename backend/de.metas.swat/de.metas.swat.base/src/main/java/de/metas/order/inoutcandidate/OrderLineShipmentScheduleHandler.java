@@ -256,9 +256,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setSinglePriceTag_ID(groupingOrderLineLabel);
 		// 03152 end
 
-		shipmentSchedule.setExternalHeaderId(orderDAO.getExternalId(OrderId.ofRepoId(orderLine.getC_Order_ID())).map(ExternalId::getValue).orElse(null));
-		shipmentSchedule.setExternalLineId(orderLine.getExternalId());
-
 		extensions.updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLine);
 	}
 
@@ -303,8 +300,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		shipmentSchedule.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 
-		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(OrderId.ofRepoId(order.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(orderId, de.metas.order.model.I_C_Order.class);
 		shipmentSchedule.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
+
+		shipmentSchedule.setExternalHeaderId(orderDAO.getExternalId(orderId).map(ExternalId::getValue).orElse(null));
 	}
 
 	/**

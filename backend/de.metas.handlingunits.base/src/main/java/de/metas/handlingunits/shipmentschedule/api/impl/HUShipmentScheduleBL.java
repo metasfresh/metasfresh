@@ -16,7 +16,6 @@ import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -40,6 +39,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
@@ -83,8 +83,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -728,6 +728,15 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		updatePackingInstructionsFromOrderLine(shipmentScheduleToUse, orderLine);
 		updateHUQuantitiesFromOrderLine(shipmentScheduleToUse, orderLine);
 		updatePackingRelatedQtys(shipmentScheduleToUse);
+	}
+
+	@Override
+	public void updateExternalLineIdFromOrderLine(
+			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final de.metas.interfaces.I_C_OrderLine orderLine = orderDAO.getOrderLineById(shipmentSchedule.getC_OrderLine_ID());
+
+		shipmentSchedule.setExternalLineId(orderLine.getExternalId());
 	}
 
 	private void updatePackingInstructionsFromOrderLine(

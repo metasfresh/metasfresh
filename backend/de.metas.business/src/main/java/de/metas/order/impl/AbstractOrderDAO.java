@@ -462,6 +462,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@NonNull
 	public Optional<ExternalId> getExternalId(@NonNull final OrderId orderId)
 	{
-		return Optional.ofNullable(ExternalId.ofOrNull(getById(orderId).getExternalId()));
+		return ExternalId.optionalOf(getById(orderId).getExternalId());
 	}
 }
