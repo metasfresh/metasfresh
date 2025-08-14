@@ -5,8 +5,6 @@
 release:
   - ghost_rider_hotfix
   - ghost_rider_release
-  - temporary_test20250616_hotfix
-  - temporary_test20250616_release
   - gray_knight_hotfix
   - keen_hawk_uat
   - task_force_uat

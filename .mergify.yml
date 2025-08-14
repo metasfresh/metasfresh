@@ -58,7 +58,6 @@ pull_request_rules:
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=ghost_rider_hotfix
-              - base=temporary_test20250616_hotfix
               - base=gray_knight_hotfix
               - base=hard_encoded_hotfix
               - base=inner_silence_hotfix
@@ -76,7 +75,6 @@ pull_request_rules:
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=ghost_rider_release
-              - base=temporary_test20250616_release
               - base=intensive_care_release
               - base=soft_panda_release
               - base=vampire_textbook_release
