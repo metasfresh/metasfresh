@@ -137,7 +137,8 @@ FROM edi_cctop_invoic_v invoic_v
                                             'Product_Buyer_TU_GTIN', v.Buyer_GTIN_TU,
                                             'Product_Buyer_ProductNo', v.CustomerProductNo,
                                             'Product_Supplier_TU_GTIN', v.Supplier_GTIN_CU,
-                                            'Product_Supplier_ProductNo', v.Value
+                                            'Product_Supplier_ProductNo', v.Value,
+                                            'ExternalId', v.ExternalId,
                                         ) ORDER BY v.line) AS json_data
                     FROM edi_cctop_invoic_500_v v
                              LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
