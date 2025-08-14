@@ -102,9 +102,19 @@ public class ArchiveBL implements IArchiveBL
 		archive.setDocumentNo(request.getDocumentNo());
 
 		final boolean isAttachDateAndTimeEnabled = sysConfigBL.getBooleanValue(SYSCONFIG_AttachDateAndTime, false);
+
 		if (isAttachDateAndTimeEnabled)
 		{
-			archive.setName(request.getArchiveName() + " " + SystemTime.asTimestamp().toString());
+			if (request.getArchiveName() != null && request.getArchiveName().contains(".pdf"))
+			{
+				final String fileName = request.getArchiveName();
+				final int pdfIndex = fileName.lastIndexOf(".pdf");
+				archive.setName(fileName.substring(0, pdfIndex) + " " + SystemTime.asTimestamp() + ".pdf");
+			}
+			else
+			{
+				archive.setName(request.getArchiveName() + " " + SystemTime.asTimestamp());
+			}
 		}
 		else
 		{
