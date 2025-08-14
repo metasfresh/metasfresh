@@ -52,11 +52,11 @@
         <poi.version>4.1.2</poi.version>
         <zxing.version>2.3.0</zxing.version>
 
-        <spring-boot.version>3.5.0</spring-boot.version>
+        <spring-boot.version>3.5.4</spring-boot.version>
         <lucene.version>8.6.2</lucene.version>
 
-        <!-- Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason. -->
-        <spring.version>6.2.3</spring.version>
+<!--        &lt;!&ndash; Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason. &ndash;&gt;-->
+<!--        <spring.version>6.2.3</spring.version>-->
 
         <!-- jackson-dataformat-xml:2.9.9 has two different version in its dependency tree -->
         <woodstox.stax2-api.version>4.1</woodstox.stax2-api.version>
