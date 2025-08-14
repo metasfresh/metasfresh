@@ -23,11 +23,11 @@ package de.metas.logging;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-
-import org.compiere.util.Ini;
 
 import lombok.experimental.UtilityClass;
+import org.compiere.util.Ini;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
 
 
 @UtilityClass
@@ -35,7 +35,7 @@ public class MetasfreshLogDirUtil
 {
 	public String getLogDir()
 	{
-		return coalesceSuppliers(
+		return coalesceSuppliersNotNull(
 				() -> System.getProperty(LoggingConstants.SYSTEM_PROP_LogDir),
 				() -> System.getenv(LoggingConstants.ENV_VAR_LogDir),
 				() -> Ini.getMetasfreshHome());
