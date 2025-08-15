@@ -43,8 +43,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-
-
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
@@ -52,11 +50,7 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+        
         <dependency>
             <groupId>de.metas.issue.tracking.everhour</groupId>
             <artifactId>de.metas.issue.tracking.everhour</artifactId>
