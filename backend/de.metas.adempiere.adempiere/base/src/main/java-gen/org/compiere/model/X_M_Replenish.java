@@ -1,6 +1,7 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -8,20 +9,20 @@ import java.util.Properties;
 /** Generated Model for M_Replenish
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenish, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1201937262L;
+	private static final long serialVersionUID = -1411381810L;
 
     /** Standard Constructor */
-    public X_M_Replenish (Properties ctx, int M_Replenish_ID, String trxName)
+    public X_M_Replenish (final Properties ctx, final int M_Replenish_ID, @Nullable final String trxName)
     {
       super (ctx, M_Replenish_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_Replenish (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Replenish (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,7 +30,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
@@ -41,18 +42,18 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	@Override
-	public void setC_Calendar(org.compiere.model.I_C_Calendar C_Calendar)
+	public void setC_Calendar(final org.compiere.model.I_C_Calendar C_Calendar)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Calendar);
 	}
 
 	@Override
-	public void setC_Calendar_ID (int C_Calendar_ID)
+	public void setC_Calendar_ID (final int C_Calendar_ID)
 	{
 		if (C_Calendar_ID < 1) 
 			set_Value (COLUMNNAME_C_Calendar_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Calendar_ID, Integer.valueOf(C_Calendar_ID));
+			set_Value (COLUMNNAME_C_Calendar_ID, C_Calendar_ID);
 	}
 
 	@Override
@@ -68,18 +69,18 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	@Override
-	public void setC_Period(org.compiere.model.I_C_Period C_Period)
+	public void setC_Period(final org.compiere.model.I_C_Period C_Period)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
 	}
 
 	@Override
-	public void setC_Period_ID (int C_Period_ID)
+	public void setC_Period_ID (final int C_Period_ID)
 	{
 		if (C_Period_ID < 1) 
 			set_Value (COLUMNNAME_C_Period_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
+			set_Value (COLUMNNAME_C_Period_ID, C_Period_ID);
 	}
 
 	@Override
@@ -89,38 +90,50 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	@Override
-	public void setLevel_Max (java.math.BigDecimal Level_Max)
+	public void setIsHighPriority (final boolean IsHighPriority)
+	{
+		set_Value (COLUMNNAME_IsHighPriority, IsHighPriority);
+	}
+
+	@Override
+	public boolean isHighPriority() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHighPriority);
+	}
+
+	@Override
+	public void setLevel_Max (final BigDecimal Level_Max)
 	{
 		set_Value (COLUMNNAME_Level_Max, Level_Max);
 	}
 
 	@Override
-	public java.math.BigDecimal getLevel_Max() 
+	public BigDecimal getLevel_Max() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Level_Max);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Level_Max);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setLevel_Min (java.math.BigDecimal Level_Min)
+	public void setLevel_Min (final BigDecimal Level_Min)
 	{
 		set_Value (COLUMNNAME_Level_Min, Level_Min);
 	}
 
 	@Override
-	public java.math.BigDecimal getLevel_Min() 
+	public BigDecimal getLevel_Min() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Level_Min);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Level_Min);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
 	@Override
@@ -130,12 +143,12 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
@@ -145,12 +158,12 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	@Override
-	public void setM_Replenish_ID (int M_Replenish_ID)
+	public void setM_Replenish_ID (final int M_Replenish_ID)
 	{
 		if (M_Replenish_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Replenish_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Replenish_ID, Integer.valueOf(M_Replenish_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Replenish_ID, M_Replenish_ID);
 	}
 
 	@Override
@@ -160,12 +173,12 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
 	@Override
@@ -190,22 +203,21 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	/** Zuk?nftigen Bestand sichern = 7 */
 	public static final String REPLENISHTYPE_ZukNftigenBestandSichern = "7";
 	@Override
-	public void setReplenishType (java.lang.String ReplenishType)
+	public void setReplenishType (final java.lang.String ReplenishType)
 	{
-
 		set_Value (COLUMNNAME_ReplenishType, ReplenishType);
 	}
 
 	@Override
 	public java.lang.String getReplenishType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ReplenishType);
+		return get_ValueAsString(COLUMNNAME_ReplenishType);
 	}
 
 	@Override
-	public void setTimeToMarket (int TimeToMarket)
+	public void setTimeToMarket (final int TimeToMarket)
 	{
-		set_Value (COLUMNNAME_TimeToMarket, Integer.valueOf(TimeToMarket));
+		set_Value (COLUMNNAME_TimeToMarket, TimeToMarket);
 	}
 
 	@Override

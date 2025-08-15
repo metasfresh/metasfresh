@@ -23,6 +23,7 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -153,6 +154,8 @@ public class DDOrderCandidateRepository
 				//
 				.sourceWarehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_From_ID()))
 				.targetWarehouseId(WarehouseId.ofRepoId(record.getM_WarehouseTo_ID()))
+				.sourceLocatorId(LocatorId.ofRepoIdOrNull(record.getM_Warehouse_From_ID(), record.getM_LocatorFrom_ID()))
+				.targetLocatorId(LocatorId.ofRepoIdOrNull(record.getM_WarehouseTo_ID(), record.getM_LocatorTo_ID()))
 				.targetPlantId(ResourceId.ofRepoIdOrNull(record.getPP_Plant_To_ID()))
 				.shipperId(ShipperId.ofRepoId(record.getM_Shipper_ID()))
 				//

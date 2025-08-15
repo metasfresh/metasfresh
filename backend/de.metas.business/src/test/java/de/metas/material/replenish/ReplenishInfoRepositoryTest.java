@@ -62,9 +62,9 @@ class ReplenishInfoRepositoryTest
 
 		// when
 		final ReplenishInfo replenishInfo = new ReplenishInfoRepository()
-				.getBy(
+				.getBy(ReplenishInfo.Identifier.of(
 						WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()),
-						ProductId.ofRepoId(productRecord.getM_Product_ID()));
+						ProductId.ofRepoId(productRecord.getM_Product_ID())));
 
 		// then
 		assertThat(replenishInfo.getMin().getStockQty().toBigDecimal()).isEqualByComparingTo("10");
