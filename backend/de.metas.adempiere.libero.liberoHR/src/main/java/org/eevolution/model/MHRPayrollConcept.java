@@ -15,6 +15,7 @@
  *****************************************************************************/
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -35,6 +36,7 @@ public class MHRPayrollConcept extends X_HR_PayrollConcept
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -4335196239535511224L;
 
 	/**

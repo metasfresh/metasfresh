@@ -52,8 +52,8 @@ public class ReceiverPostResonseJsonTest
 		final List<Object> resultList = JsonParserFactory.getJsonParser().parseList(serializedResponse);
 		assertThat(resultList).hasSize(3);
 
-		assertThat(resultList.get(0)).isInstanceOf(Map.class);
-		final Map status1 = (Map)resultList.get(0);
+		assertThat(resultList.getFirst()).isInstanceOf(Map.class);
+		final Map status1 = (Map)resultList.getFirst();
 		assertThat(status1).hasSize(2).containsEntry("id", "6").containsEntry("status", "upsert success");
 
 		assertThat(resultList.get(1)).isInstanceOf(String.class);

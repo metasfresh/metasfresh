@@ -232,7 +232,7 @@ public class PrinterBL implements IPrinterBL
 
 		final List<I_AD_PrinterTray_Matching> existingPrinterTrayMatchings = dao.retrievePrinterTrayMatchings(printerMatching);
 
-		final I_AD_PrinterHW_MediaTray defaultHWTray = hwTrays.isEmpty() ? null : hwTrays.get(0);
+		final I_AD_PrinterHW_MediaTray defaultHWTray = hwTrays.isEmpty() ? null : hwTrays.getFirst();
 
 		if (defaultHWTray == null)
 		{

@@ -175,7 +175,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 	 */
 	public static MDocTypeCounter get(Properties ctx, int C_DocTypeCounter_ID, String trxName)
 	{
-		Integer key = new Integer(C_DocTypeCounter_ID);
+		Integer key = Integer.valueOf(C_DocTypeCounter_ID);
 		MDocTypeCounter retValue = s_cache.get(key);
 		if (retValue != null)
 		{

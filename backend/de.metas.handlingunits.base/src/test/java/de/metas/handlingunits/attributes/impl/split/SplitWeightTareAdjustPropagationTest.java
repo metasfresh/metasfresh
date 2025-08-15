@@ -115,7 +115,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		// Assert data integrity on TARGET TUs
 		//
-		final I_M_HU splitTU1 = splitTUs.get(0);
+		final I_M_HU splitTU1 = splitTUs.getFirst();
 		final I_M_HU splitTU2 = splitTUs.get(1);
 
 		final IAttributeStorage attributeStorageTU1 = attributeStorageFactory.getAttributeStorage(splitTU1);
@@ -164,7 +164,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		// Assert data integrity on TARGET LU
 		//
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		Assertions.assertTrue( splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		// commitAndDump(splitLU);
@@ -206,7 +206,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 
 		//
 		// Assert data integrity on destination LU
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		Assertions.assertTrue( splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 3,
@@ -252,7 +252,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		// Assert data integrity on TARGET TU
 		//
-		final I_M_HU splitTU = splitTUs.get(0);
+		final I_M_HU splitTU = splitTUs.getFirst();
 		Assertions.assertTrue( splitTU.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		final IAttributeStorage attributeStorageTU = attributeStorageFactory.getAttributeStorage(splitTU);
@@ -298,7 +298,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		// Assert data integrity on TARGET LU
 		//
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		Assertions.assertTrue( splitLU.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 1,
@@ -345,14 +345,14 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 				newHUWeightsExpectation("83.471", "50.471", "32"/* 25+7 */, "1"), newHUWeightsExpectation("4.882", "3.882", "1", "0"), newHUWeightsExpectation("52.588", "46.588", "6", "0"));
 		//
 		// Assert data integrity on TARGET LUs
-		final I_M_HU splitLU1 = splitLUs.get(0);
+		final I_M_HU splitLU1 = splitLUs.getFirst();
 		Assertions.assertTrue( splitLU1.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU1, huItemIFCO_10, 1,
 				newHUWeightsExpectation("33.765", "7.765", "26", "0"),
 				newHUWeightsExpectation("8.765", "7.765", "1", "0"));
 
-		final I_M_HU splitLU2 = splitLUs.get(0);
+		final I_M_HU splitLU2 = splitLUs.getFirst();
 		Assertions.assertTrue( splitLU2.getM_HU_Item_Parent_ID() <= 0, "The target LU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU2, huItemIFCO_10, 1,
@@ -401,7 +401,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		//
 		// Assert data integrity on TARGET TUs
 		//
-		final I_M_HU splitTU1 = splitTUs.get(0);
+		final I_M_HU splitTU1 = splitTUs.getFirst();
 		Assertions.assertTrue( splitTU1.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		final IAttributeStorage attributeStorageTU1 = attributeStorageFactory.getAttributeStorage(splitTU1);
@@ -456,7 +456,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		// Assert data integrity on TARGET LUs
 		// 35
 
-		final I_M_HU splitLU = splitLUs.get(0);
+		final I_M_HU splitLU = splitLUs.getFirst();
 		Assertions.assertTrue( splitLU.getM_HU_Item_Parent_ID() <= 0, "The target TU we just split to shall be a top-level handling unit");
 
 		assertLoadingUnitStorageWeights(splitLU, huItemIFCO_5, 7,

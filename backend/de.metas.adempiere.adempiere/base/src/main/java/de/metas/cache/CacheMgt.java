@@ -486,7 +486,7 @@ public final class CacheMgt
 
 	private static CCacheStats extractStatsOrNull(final CacheInterface cacheInterface)
 	{
-		return cacheInterface instanceof CCache ? ((CCache<?, ?>)cacheInterface).stats() : null;
+		return cacheInterface instanceof CCache<?, ?> cc ? cc.stats() : null;
 	}
 
 	public Optional<CacheInterface> getById(final long cacheId)

@@ -113,14 +113,14 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
 		assertThat(invoices).as("We are expecting only one invoice: %s", invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.CustomerInvoice);
 		validateInvoiceHeader("Invoice", invoice, ic1);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 		assertThat(invoiceLines).as("We are expecting one invoice line per IC: %s", invoiceLines).hasSize(3);
 
-		assertLineCorrect(invoiceLines.get(0));
+		assertLineCorrect(invoiceLines.getFirst());
 		assertLineCorrect(invoiceLines.get(1));
 		assertLineCorrect(invoiceLines.get(2));
 		// System.out.println(invoices);
@@ -177,14 +177,14 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
 		assertThat(invoices).as("We are expecting only one invoice: %s", invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.VendorInvoice);
 		validateInvoiceHeader("Invoice", invoice, ic1);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 		assertThat(invoiceLines).as("We are expecting one invoice line per IC: %s", invoiceLines).hasSize(3);
 
-		assertLineCorrect(invoiceLines.get(0));
+		assertLineCorrect(invoiceLines.getFirst());
 		assertLineCorrect(invoiceLines.get(1));
 		assertLineCorrect(invoiceLines.get(2));
 		// System.out.println(invoices);
@@ -227,14 +227,14 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
 		assertThat(invoices).as("We are expecting only one invoice: %s", invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.CustomerCreditMemo);
 		validateInvoiceHeader("Invoice", invoice, manualIc1);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 		assertThat(invoiceLines).as("We are expecting only one invoice line: %s", invoiceLines).hasSize(1);
 
-		final IInvoiceLineRW invoiceLine = invoiceLines.get(0);
+		final IInvoiceLineRW invoiceLine = invoiceLines.getFirst();
 		assertThat(invoiceLine.getPriceActual().toMoney().toBigDecimal()).as("Invalid PriceActual").isEqualByComparingTo(new BigDecimal("10"));
 		assertThat(invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal()).as("Invalid QtyToInvoice").isEqualByComparingTo(new BigDecimal("1"));
 		assertThat(invoiceLine.getNetLineAmt().toBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(new BigDecimal("100")); // price=10 times qtyInUom=10
@@ -280,14 +280,14 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
 		assertThat(invoices).as("We are expecting only one invoice: %s", invoices).hasSize(1);
 
-		final IInvoiceHeader invoice = invoices.get(0);
+		final IInvoiceHeader invoice = invoices.getFirst();
 		assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(InvoiceDocBaseType.VendorCreditMemo);
 		validateInvoiceHeader("Invoice", invoice, manualIc1);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 		assertThat(invoiceLines).as("We are expecting only one invoice line: %s", invoiceLines).hasSize(1);
 
-		final IInvoiceLineRW invoiceLine = invoiceLines.get(0);
+		final IInvoiceLineRW invoiceLine = invoiceLines.getFirst();
 		assertThat(invoiceLine.getPriceActual().toMoney().toBigDecimal()).as("Invalid PriceActual").isEqualByComparingTo(new BigDecimal("10"));
 		assertThat(invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal()).as("Invalid QtyToInvoice").isEqualByComparingTo(new BigDecimal("1"));
 		assertThat(invoiceLine.getNetLineAmt().toBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(new BigDecimal("100")); // price=10 times qtyInUom=10
@@ -335,7 +335,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 			final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
 			assertThat(invoices).as("We are expecting only one invoice: %s", invoices).hasSize(1);
 
-			final IInvoiceHeader invoice = invoices.get(0);
+			final IInvoiceHeader invoice = invoices.getFirst();
 			assertThat(invoice.getDocBaseType()).as("Invalid DocBaseType").isEqualTo(X_C_DocType.DOCBASETYPE_ARInvoice);
 			validateInvoiceHeader("Invoice", invoice, ic1);
 
@@ -463,7 +463,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 			final List<IInvoiceHeader> invoices = engine.aggregate();
 			assertThat(invoices).as("RUN2 - We are expecting only one invoice: %s", invoices).hasSize(1);
 
-			final IInvoiceHeader invoice = invoices.get(0);
+			final IInvoiceHeader invoice = invoices.getFirst();
 			assertThat(invoice.getDocBaseType()).as("RUN2 - Invalid DocBaseType").isEqualTo(X_C_DocType.DOCBASETYPE_ARInvoice);
 			final boolean invoiceReferencesOrder = false;
 			validateInvoiceHeader("Invoice", invoice, ic3, invoiceReferencesOrder);

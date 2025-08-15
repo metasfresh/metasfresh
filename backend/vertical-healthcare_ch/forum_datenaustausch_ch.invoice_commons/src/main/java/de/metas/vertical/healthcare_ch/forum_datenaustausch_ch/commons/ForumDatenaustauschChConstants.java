@@ -27,10 +27,10 @@ public class ForumDatenaustauschChConstants
 	/**
 	 * Note: to activate this spring profile, you can add an AD_SysConfig with
 	 * {@code de.metas.spring.profiles.activeN = de.metas.vertical.cables}.
-	 *
+	 * <p>
 	 * There is a template AD_Sysconfig record for further info.
 	 */
-	public static final String PROFILE = "de.metas.vertical.healthcare.forum_datenaustausch_ch";
+	public static final String PROFILE = "de-metas-vertical-healthcare-forum_datenaustausch_ch";
 
 	public static final String INVOICE_EXPORT_PROVIDER_ID = "forum-datenaustausch.ch-invoice";
 

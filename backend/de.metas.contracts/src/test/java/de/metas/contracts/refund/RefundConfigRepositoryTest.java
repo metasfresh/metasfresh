@@ -86,8 +86,8 @@ public class RefundConfigRepositoryTest
 		final List<RefundConfig> result = refundConfigRepository.getByQuery(query);
 
 		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getMinQty()).isEqualByComparingTo(ZERO);
-		assertThat(result.get(0).getInvoiceSchedule()).isNotNull();
+		assertThat(result.getFirst().getMinQty()).isEqualByComparingTo(ZERO);
+		assertThat(result.getFirst().getInvoiceSchedule()).isNotNull();
 	}
 
 	/**

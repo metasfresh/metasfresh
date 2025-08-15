@@ -189,9 +189,9 @@ public class SwingTool {
 			}
 
 			//Recursively calling this method to search in deep
-			if(c instanceof Container) {
+			if(c instanceof Container container) {
 
-				c = searchComponent((Container)c , clazz, remove);
+				c = searchComponent(container , clazz, remove);
 				
 				if(clazz.isInstance(c)) {
 				
@@ -226,16 +226,16 @@ public class SwingTool {
 					return;
 				}
 				// sets transparent
-				else if(c instanceof JComponent) {
+				else if(c instanceof JComponent component) {
 
-					((JComponent)c).setOpaque(opaque);
+					component.setOpaque(opaque);
 				}
 				// recursively calls this method for all container components
-				else if(c instanceof Container) {
+				else if(c instanceof Container container) {
 					
-					for(int i = 0; i > ((Container)c).getComponentCount(); i++) {
+					for(int i = 0; i > container.getComponentCount(); i++) {
 						
-						setOpaque(((Container)c).getComponent(i));
+						setOpaque(container.getComponent(i));
 					}
 				}
 			}

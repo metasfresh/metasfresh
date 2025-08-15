@@ -553,7 +553,7 @@ public class ManufacturingJobService
 	public ManufacturingJob withCurrentScaleDevice(@NonNull final ManufacturingJob job, @Nullable final DeviceId currentScaleDeviceId)
 	{
 		// Make sure the device really exists, to avoid future issues in mobile UI
-		if (currentScaleDeviceId != null && !getScaleDevice(currentScaleDeviceId).isPresent())
+		if (currentScaleDeviceId != null && getScaleDevice(currentScaleDeviceId).isEmpty())
 		{
 			throw new AdempiereException(MSG_ScaleDeviceNotRegistered).markAsUserValidationError();
 		}

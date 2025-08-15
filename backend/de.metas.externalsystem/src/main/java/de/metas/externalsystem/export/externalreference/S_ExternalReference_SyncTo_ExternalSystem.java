@@ -58,7 +58,7 @@ public abstract class S_ExternalReference_SyncTo_ExternalSystem extends JavaProc
 					.collect(ImmutableList.toImmutableList());
 
 			return activeConfigs.size() == 1
-					? activeConfigs.get(0).getChildConfig().getId().getRepoId()
+					? activeConfigs.getFirst().getChildConfig().getId().getRepoId()
 					: IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;

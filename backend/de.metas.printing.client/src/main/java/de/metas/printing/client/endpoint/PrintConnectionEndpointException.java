@@ -24,6 +24,8 @@ package de.metas.printing.client.endpoint;
 
 import de.metas.printing.client.IPrintConnectionEndpoint;
 
+import java.io.Serial;
+
 /**
  * Exception to be thrown by {@link IPrintConnectionEndpoint} on error
  *
@@ -35,6 +37,7 @@ public class PrintConnectionEndpointException extends RuntimeException
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 3336849851724086746L;
 
 	public PrintConnectionEndpointException(final String message, final Throwable cause)

@@ -42,10 +42,10 @@
     <version>10.0.0</version>
 
     <properties>
-        <java.version>14</java.version>
-        <maven.compiler.source>14</maven.compiler.source>
-        <maven.compiler.target>14</maven.compiler.target>
-        <spring-boot.version>2.4.1</spring-boot.version>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <spring-boot.version>3.5.0</spring-boot.version>
         <metasfresh.version>10.0.0</metasfresh.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
         <!-- NOTE: versions below 5.7.0 does not support junit 4.13.1
@@ -67,17 +67,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
-                <!-- <version>1.18.18</version> -->
-                <version>1.18.22</version>
-            </dependency>
-            
-            <!-- https://github.com/hoereth/springfox-enum-plugin -->
-            <dependency>
-                <groupId>de.pentabyte</groupId>
-                <artifactId>springfox-enum-plugin</artifactId>
-                <version>${springfox-enum-plugin.version}</version>
-            </dependency>
+              </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -119,10 +109,11 @@
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
         </dependency>
-
+ 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -132,9 +123,8 @@
         <dependency>
             <groupId>org.threeten</groupId>
             <artifactId>threeten-extra</artifactId>
-            <version>1.5.0</version>
+            <version>1.7.2</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -147,16 +137,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Swagger -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox-swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox-swagger.version}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${org.springdoc.version}</version>
         </dependency>
     </dependencies>
     

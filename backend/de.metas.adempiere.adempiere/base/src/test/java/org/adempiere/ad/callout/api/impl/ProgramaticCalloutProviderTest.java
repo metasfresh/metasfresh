@@ -22,10 +22,7 @@ package org.adempiere.ad.callout.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import de.metas.util.Services;
 import org.adempiere.ad.callout.api.ICalloutFactory;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
@@ -33,11 +30,13 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.callout.spi.impl.ProgramaticCalloutProvider;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
-
-import de.metas.util.Services;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class ProgramaticCalloutProviderTest
 {

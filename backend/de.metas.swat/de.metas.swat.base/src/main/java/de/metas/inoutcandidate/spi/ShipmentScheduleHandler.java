@@ -193,7 +193,7 @@ public abstract class ShipmentScheduleHandler
 		final Optional<AttributeConfig> attributeConfigIfPresent = findMatchingAttributeConfig(
 				shipmentSchedule.getAD_Org_ID(),
 				attribute);
-		if (!attributeConfigIfPresent.isPresent())
+		if (attributeConfigIfPresent.isEmpty())
 		{
 			return false;
 		}
@@ -268,8 +268,7 @@ public abstract class ShipmentScheduleHandler
 
 		final Optional<AttributeConfig> attributeConfigIfPresent = //
 				Stream.of(matchingConfigIfPresent, wildCardConfigIfPresent)
-						.filter(Optional::isPresent)
-						.map(Optional::get)
+						.flatMap(Optional::stream)
 						.findFirst();
 		return attributeConfigIfPresent;
 	}

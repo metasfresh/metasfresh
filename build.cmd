@@ -68,7 +68,6 @@ docker build --progress=plain -f docker-builds/Dockerfile.camel --build-arg REGI
 docker build --progress=plain -f docker-builds/Dockerfile.camel.dist --build-arg REGISTRY=%registry% --build-arg REFNAME=%qualifier% -t %pubregistry%/metas-mvn-camel-dist:%qualifier% . || @goto error
 
 docker build --progress=plain -f docker-builds/Dockerfile.junit --build-arg REGISTRY=%registry% --build-arg REFNAME=%qualifier% --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-junit:%qualifier% . || @goto error
-docker build --progress=plain -f docker-builds/Dockerfile.camel.junit --build-arg REGISTRY=%registry% --build-arg REFNAME=%qualifier% --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-camel-junit:%qualifier% . || @goto error
 docker build --progress=plain -f docker-builds/Dockerfile.cucumber --build-arg REGISTRY=%registry% --build-arg REFNAME=%qualifier% --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-cucumber:%qualifier% . || @goto error
 
 

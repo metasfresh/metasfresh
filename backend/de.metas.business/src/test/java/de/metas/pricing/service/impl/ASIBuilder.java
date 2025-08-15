@@ -84,18 +84,17 @@ public class ASIBuilder
 		{
 			ai.setValue(value.toString());
 		}
-		else if (value instanceof BigDecimal)
+		else if (value instanceof BigDecimal decimal)
 		{
-			ai.setValueNumber((BigDecimal)value);
+			ai.setValueNumber(decimal);
 		}
-		else if (value instanceof java.util.Date)
+		else if (value instanceof java.util.Date date)
 		{
-			final Timestamp valueDate = TimeUtil.asTimestamp((java.util.Date)value);
+			final Timestamp valueDate = TimeUtil.asTimestamp(date);
 			ai.setValueDate(valueDate);
 		}
-		else if (value instanceof AttributeListValue)
+		else if (value instanceof AttributeListValue av)
 		{
-			final AttributeListValue av = (AttributeListValue)value;
 			ai.setValue(av.getValue());
 			ai.setM_AttributeValue_ID(av.getId().getRepoId());
 		}

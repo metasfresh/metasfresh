@@ -81,7 +81,7 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 		{
 			// note: assuming that existingCorrEntries are ordered by their periods
 			final Timestamp endDate =
-					existingCorrEntries.get(existingCorrEntries.size() - 1).getC_Period().getEndDate();
+					existingCorrEntries.getLast().getC_Period().getEndDate();
 			dateFrom = TimeUtil.addDays(endDate, 1);
 		}
 		final Map<Integer, I_C_Flatrate_DataEntry> uomId2NewCorrectionEntries = new HashMap<>();

@@ -43,7 +43,7 @@ public class MResolution extends X_R_Resolution
 	 */
 	public static MResolution get (Properties ctx, int R_Resolution_ID)
 	{
-		Integer key = new Integer (R_Resolution_ID);
+		Integer key = Integer.valueOf(R_Resolution_ID);
 		MResolution retValue = (MResolution) s_cache.get (key);
 		if (retValue != null)
 			return retValue;

@@ -88,9 +88,8 @@ public final class QuickInputPath
 		{
 			return true;
 		}
-		else if (obj instanceof QuickInputPath)
+		else if (obj instanceof QuickInputPath other)
 		{
-			final QuickInputPath other = (QuickInputPath)obj;
 			return Objects.equals(rootDocumentPath, other.rootDocumentPath)
 					&& Objects.equals(detailId, other.detailId)
 					&& Objects.equals(quickInputId, other.quickInputId);

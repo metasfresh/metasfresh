@@ -100,9 +100,9 @@ public class QualityInvoiceLineGroup implements IQualityInvoiceLineGroup
 
 	private void setThisAsParentIfPossible(IQualityInvoiceLine invoiceableLineOverride)
 	{
-		if (invoiceableLineOverride instanceof QualityInvoiceLine)
+		if (invoiceableLineOverride instanceof QualityInvoiceLine line)
 		{
-			((QualityInvoiceLine)invoiceableLineOverride).setGroup(this);
+			line.setGroup(this);
 		}
 	}
 

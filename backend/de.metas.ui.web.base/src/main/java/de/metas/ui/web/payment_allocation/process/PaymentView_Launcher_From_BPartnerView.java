@@ -44,7 +44,7 @@ public class PaymentView_Launcher_From_BPartnerView extends ViewBasedProcessTemp
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSingleSelectedBPartnerId().isPresent())
+		if (getSingleSelectedBPartnerId().isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a single selected BPartner");
 		}

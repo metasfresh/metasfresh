@@ -392,7 +392,7 @@ public final class VAccount extends JComponent
 		// We have a Value
 		if (C_ValidCombination_ID > 0)
 		{
-			final Integer newValue = new Integer(C_ValidCombination_ID);
+			final Integer newValue = Integer.valueOf(C_ValidCombination_ID);
 
 			// set & redisplay & Data Binding (i.e. fire vetoable change)
 			setValue(newValue);

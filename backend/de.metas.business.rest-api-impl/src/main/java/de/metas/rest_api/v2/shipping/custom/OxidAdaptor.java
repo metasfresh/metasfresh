@@ -57,7 +57,7 @@ public class OxidAdaptor
 		final List<I_C_OLCand> olCands = olCandDAO.retrieveOLCands(orderAndLineId.getOrderLineId(), I_C_OLCand.class);
 
 		return olCands.size() > 0
-				&& olCands.get(0).getCreatedBy() == oxidUserId;
+				&& olCands.getFirst().getCreatedBy() == oxidUserId;
 	}
 
 	@Nullable

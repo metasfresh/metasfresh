@@ -438,7 +438,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		}
 		if (orderLineIds.size() == 1)
 		{
-			receiptLine.setC_OrderLine_ID(orderLineIds.get(0));
+			receiptLine.setC_OrderLine_ID(orderLineIds.getFirst());
 		}
 
 		//

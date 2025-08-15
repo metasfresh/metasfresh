@@ -23,9 +23,9 @@
 package de.metas.util.xml;
 
 import de.metas.util.Check;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;

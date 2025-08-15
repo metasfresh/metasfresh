@@ -1243,9 +1243,9 @@ public class WFActivity
 			else if (DisplayType.isDate(displayType))
 			{
 				final Timestamp ts;
-				if (value instanceof Timestamp)
+				if (value instanceof Timestamp timestamp)
 				{
-					ts = (Timestamp)value;
+					ts = timestamp;
 				}
 				else
 				{
@@ -1303,9 +1303,9 @@ public class WFActivity
 			if (context.hasDocumentColumn(getDocumentRef(), "AD_User_ID"))
 			{
 				final Object oo = context.getDocumentColumnValueByColumnName(getDocumentRef(), "AD_User_ID");
-				if (oo instanceof Integer)
+				if (oo instanceof Integer integer)
 				{
-					final UserId userId = UserId.ofRepoIdOrNull((Integer)oo);
+					final UserId userId = UserId.ofRepoIdOrNull(integer);
 					if (userId != null)
 					{
 						sendEMail(client, userId, null, subject, message, pdf, mailText.isHtml());

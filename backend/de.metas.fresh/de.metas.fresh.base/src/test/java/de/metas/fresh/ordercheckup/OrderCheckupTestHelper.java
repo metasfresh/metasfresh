@@ -252,7 +252,7 @@ public class OrderCheckupTestHelper
 
 		assertThat(printoutRecipients).as("Printout recipients - wrong number").hasSize(1);
 
-		assertThat(printoutRecipients.get(0).getAD_User_ToPrint_ID()).as("Printout recipient - wrong AD_User_ToPrint_ID").isEqualTo(report.getAD_User_Responsible_ID());
+		assertThat(printoutRecipients.getFirst().getAD_User_ToPrint_ID()).as("Printout recipient - wrong AD_User_ToPrint_ID").isEqualTo(report.getAD_User_Responsible_ID());
 	}
 
 }

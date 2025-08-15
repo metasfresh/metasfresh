@@ -22,11 +22,10 @@ package de.metas.printing.esb.base.jaxb;
  * #L%
  */
 
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 
 import java.lang.reflect.Method;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 
 public final class ObjectFactoryHelper
 {

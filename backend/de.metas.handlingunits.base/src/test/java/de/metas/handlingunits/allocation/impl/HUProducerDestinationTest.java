@@ -109,7 +109,7 @@ public class HUProducerDestinationTest
 		final List<I_M_HU> hus = destination.getCreatedHUs();
 		assertThat(hus).hasSize(1);
 
-		return getHUStorage(hus.get(0));
+		return getHUStorage(hus.getFirst());
 	}
 
 	private IHUStorage getHUStorage(final I_M_HU hu)
@@ -168,7 +168,7 @@ public class HUProducerDestinationTest
 		final List<I_M_HU> hus = destination.getCreatedHUs();
 		assertThat(hus).hasSize(3);
 
-		final IHUProductStorage huStorage1 = getHUProductStorage(hus.get(0), helper.pTomatoProductId);
+		final IHUProductStorage huStorage1 = getHUProductStorage(hus.getFirst(), helper.pTomatoProductId);
 		assertThat(huStorage1.getQty().toBigDecimal()).isEqualByComparingTo("10");
 
 		final IHUProductStorage huStorage2 = getHUProductStorage(hus.get(1), helper.pTomatoProductId);

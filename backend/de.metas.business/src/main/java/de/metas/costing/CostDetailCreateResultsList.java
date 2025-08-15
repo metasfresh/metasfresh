@@ -54,7 +54,7 @@ public class CostDetailCreateResultsList
 
 	public CostDetailCreateResult getSingleResult() {return CollectionUtils.singleElement(list);}
 
-	public Optional<CostAmountAndQty> getAmtAndQtyToPost(@NonNull final CostAmountType type, @NonNull AcctSchema as)
+	public Optional<CostAmountAndQty> getAmtAndQtyToPost(@NonNull final CostAmountType type, @NonNull final AcctSchema as)
 	{
 		return list.stream()
 				.filter(result -> isAccountable(result, as))

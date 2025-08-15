@@ -119,7 +119,7 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 			final List<I_C_BPartner_Location> partnerLocations = bpartnersRepo.retrieveBPartnerLocations(BPartnerId.ofRepoId(getRecord_ID()));
 			if (!partnerLocations.isEmpty())
 			{
-				return locationsRepo.getById(LocationId.ofRepoId(partnerLocations.get(0).getC_Location_ID()));
+				return locationsRepo.getById(LocationId.ofRepoId(partnerLocations.getFirst().getC_Location_ID()));
 			}
 		}
 

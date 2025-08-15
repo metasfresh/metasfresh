@@ -278,7 +278,7 @@ import java.util.Set;
 
 		// as of now, return the last one
 		// TODO: consider returning an aggregated/averaged one
-		return qualityInspectionOrders.get(qualityInspectionOrders.size() - 1);
+		return qualityInspectionOrders.getLast();
 	}
 
 	@Override

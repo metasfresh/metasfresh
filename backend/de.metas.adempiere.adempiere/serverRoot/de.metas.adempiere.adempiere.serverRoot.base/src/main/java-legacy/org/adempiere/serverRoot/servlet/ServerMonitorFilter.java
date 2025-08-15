@@ -16,28 +16,6 @@
  *****************************************************************************/
 package org.adempiere.serverRoot.servlet;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.UUID;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.xml.bind.DatatypeConverter;
-
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_User;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -46,6 +24,26 @@ import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.xml.bind.DatatypeConverter;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_User;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Server Monitor Filter. Application Server independent check of username/password

@@ -37,10 +37,11 @@ public class XmlIntrospectionUtilTest
 	@Test
 	public void test() throws XMLStreamException
 	{
-		final String xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\r\n" +
-				"<invoice:request xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:invoice=\"http://www.forum-datenaustausch.ch/invoice\" xsi:schemaLocation=\"http://www.forum-datenaustausch.ch/invoice generalInvoiceRequest_440.xsd\" language=\"de\" modus=\"production\" validation_status=\"0\">\r\n" +
-				"</invoice:request>\r\n" +
-				"";
+		final String xmlString = """
+				<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+				<invoice:request xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:invoice="http://www.forum-datenaustausch.ch/invoice" xsi:schemaLocation="http://www.forum-datenaustausch.ch/invoice generalInvoiceRequest_440.xsd" language="de" modus="production" validation_status="0">
+				</invoice:request>
+				""";
 		final InputStream xmlStream = new ByteArrayInputStream(xmlString.getBytes());
 
 		// invoke the method under test

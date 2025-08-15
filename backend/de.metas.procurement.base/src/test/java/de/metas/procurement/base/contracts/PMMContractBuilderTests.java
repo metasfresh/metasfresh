@@ -106,7 +106,7 @@ public class PMMContractBuilderTests
 
 		final List<I_C_Flatrate_DataEntry> newEntries = Services.get(IFlatrateDAO.class).retrieveDataEntries(newTermProcessed, null, null);
 		assertThat(newEntries).hasSize(3);
-		assertThat(InterfaceWrapperHelper.isNull(newEntries.get(0),I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM)).isTrue();
+		assertThat(InterfaceWrapperHelper.isNull(newEntries.getFirst(),I_C_Flatrate_DataEntry.COLUMNNAME_FlatrateAmtPerUOM)).isTrue();
 		assertThat(newEntries.get(1).getFlatrateAmtPerUOM()).isZero();
 		assertThat(newEntries.get(2).getFlatrateAmtPerUOM()).isEqualByComparingTo(new BigDecimal("1.23"));
 	}

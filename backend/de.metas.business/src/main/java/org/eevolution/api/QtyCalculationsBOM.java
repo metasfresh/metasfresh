@@ -65,7 +65,7 @@ public class QtyCalculationsBOM
 			throw new AdempiereException("No lines");
 		}
 
-		return lines.get(0).getBomProductId();
+		return lines.getFirst().getBomProductId();
 	}
 
 	public  I_C_UOM getBomProductUOM()
@@ -75,7 +75,7 @@ public class QtyCalculationsBOM
 			throw new AdempiereException("No lines");
 		}
 
-		return lines.get(0).getBomProductUOM();
+		return lines.getFirst().getBomProductUOM();
 	}
 
 

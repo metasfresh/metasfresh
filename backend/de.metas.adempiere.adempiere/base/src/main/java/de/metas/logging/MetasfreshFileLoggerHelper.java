@@ -1,13 +1,5 @@
 package de.metas.logging;
 
-import java.io.File;
-import java.util.List;
-
-import org.slf4j.ILoggerFactory;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -15,6 +7,12 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.RollingPolicy;
 import ch.qos.logback.core.rolling.TimeBasedFileNamingAndTriggeringPolicy;
+import com.google.common.collect.ImmutableList;
+import org.slf4j.ILoggerFactory;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.List;
 
 /*
  * #%L
@@ -43,9 +41,8 @@ public class MetasfreshFileLoggerHelper
 	public static final MetasfreshFileLoggerHelper get()
 	{
 		final ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
-		if (loggerFactory instanceof LoggerContext)
+		if (loggerFactory instanceof LoggerContext loggerContext)
 		{
-			final LoggerContext loggerContext = (LoggerContext)loggerFactory;
 			return get(loggerContext);
 		}
 
@@ -139,9 +136,8 @@ public class MetasfreshFileLoggerHelper
 		if (metasfreshRollingPolicy != null)
 		{
 			final TimeBasedFileNamingAndTriggeringPolicy<?> triggeringPolicy = metasfreshRollingPolicy.getTimeBasedFileNamingAndTriggeringPolicy();
-			if (triggeringPolicy instanceof MetasfreshTimeBasedFileNamingAndTriggeringPolicy)
+			if (triggeringPolicy instanceof MetasfreshTimeBasedFileNamingAndTriggeringPolicy<?> metasfreshTriggeringPolicy)
 			{
-				final MetasfreshTimeBasedFileNamingAndTriggeringPolicy<?> metasfreshTriggeringPolicy = (MetasfreshTimeBasedFileNamingAndTriggeringPolicy<?>)triggeringPolicy;
 				metasfreshTriggeringPolicy.setForceRollover();
 			}
 		}
@@ -154,17 +150,17 @@ public class MetasfreshFileLoggerHelper
 	
 	public void setDisabled(final boolean disabled)
 	{
-		if (rollingFileAppender instanceof MetasfreshFileAppender)
+		if (rollingFileAppender instanceof MetasfreshFileAppender<?> appender)
 		{
-			((MetasfreshFileAppender<?>)rollingFileAppender).setDisabled(disabled);
+			appender.setDisabled(disabled);
 		}
 	}
 	
 	public boolean isDisabled()
 	{
-		if (rollingFileAppender instanceof MetasfreshFileAppender)
+		if (rollingFileAppender instanceof MetasfreshFileAppender<?> appender)
 		{
-			return ((MetasfreshFileAppender<?>)rollingFileAppender).isDisabled();
+			return appender.isDisabled();
 		}
 		
 		return false;

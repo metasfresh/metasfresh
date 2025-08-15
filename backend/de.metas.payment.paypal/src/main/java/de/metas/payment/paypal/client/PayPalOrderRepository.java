@@ -182,7 +182,7 @@ public class PayPalOrderRepository
 			return null;
 		}
 
-		final PaymentCollection payments = purchaseUnits.get(0).payments();
+		final PaymentCollection payments = purchaseUnits.getFirst().payments();
 		if (payments == null)
 		{
 			return null;
@@ -194,7 +194,7 @@ public class PayPalOrderRepository
 			return null;
 		}
 
-		return PayPalOrderAuthorizationId.ofString(authorizations.get(0).id());
+		return PayPalOrderAuthorizationId.ofString(authorizations.getFirst().id());
 	}
 
 	private static String extractApproveUrlOrNull(@NonNull final com.paypal.orders.Order apiOrder)

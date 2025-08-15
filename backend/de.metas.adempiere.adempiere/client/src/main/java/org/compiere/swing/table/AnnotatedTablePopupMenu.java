@@ -1,5 +1,6 @@
 package org.compiere.swing.table;
 
+import java.io.Serial;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ final class AnnotatedTablePopupMenu extends JPopupMenu
 	/**
 	 *
 	 */
+	@Serial
 	private static final long serialVersionUID = 6618408337499167870L;
 
 	private final WeakReference<JTable> tableRef;
@@ -99,9 +101,8 @@ final class AnnotatedTablePopupMenu extends JPopupMenu
 			final AbstractButton button = (AbstractButton)me;
 			final Action action = button.getAction();
 
-			if (action instanceof AnnotatedTableAction)
+			if (action instanceof AnnotatedTableAction tableAction)
 			{
-				final AnnotatedTableAction tableAction = (AnnotatedTableAction)action;
 				tableActions.add(tableAction);
 			}
 		}

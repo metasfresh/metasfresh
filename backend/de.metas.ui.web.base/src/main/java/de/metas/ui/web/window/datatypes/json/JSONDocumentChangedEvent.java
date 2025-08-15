@@ -164,9 +164,9 @@ public class JSONDocumentChangedEvent
 		{
 			return null;
 		}
-		else if (value instanceof BigDecimal)
+		else if (value instanceof BigDecimal decimal)
 		{
-			return (BigDecimal)value;
+			return decimal;
 		}
 		else
 		{
@@ -205,9 +205,8 @@ public class JSONDocumentChangedEvent
 			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			return JSONLookupValue.stringLookupValueFromJsonMap(map);
 		}
-		else if (value instanceof JSONLookupValue)
+		else if (value instanceof JSONLookupValue json)
 		{
-			final JSONLookupValue json = (JSONLookupValue)value;
 			return json.toIntegerLookupValue();
 		}
 		else
@@ -236,9 +235,8 @@ public class JSONDocumentChangedEvent
 			final LookupValue.StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 			valueStr = lookupValue.getIdAsString();
 		}
-		else if (value instanceof JSONLookupValue)
+		else if (value instanceof JSONLookupValue json)
 		{
-			final JSONLookupValue json = (JSONLookupValue)value;
 			valueStr = json.getKey();
 		}
 		else

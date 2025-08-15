@@ -2,6 +2,8 @@ package de.metas.rfq.exceptions;
 
 import de.metas.rfq.model.I_C_RfQResponseLine;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.rfq
@@ -26,6 +28,7 @@ import de.metas.rfq.model.I_C_RfQResponseLine;
 
 public class RfQResponseLineInvalidException extends RfQException
 {
+	@Serial
 	private static final long serialVersionUID = -5082192922773707880L;
 
 	public RfQResponseLineInvalidException(final I_C_RfQResponseLine rfqResponseLine, final String message)

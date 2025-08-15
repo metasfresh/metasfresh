@@ -58,7 +58,7 @@ public class FileImportReaderTest
 			.hasSize(2);
 		
 		lines.forEach(l -> assertThat(l).startsWith("G00"));
-		assertThat(lines.get(0)).endsWith("70");
+		assertThat(lines.getFirst()).endsWith("70");
 		assertThat(lines.get(1)).endsWith("80");
 	}
 
@@ -84,22 +84,27 @@ public class FileImportReaderTest
 		// todo
 		assertThat(lines.get(0)).isEqualTo("Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF");
 		assertThat(lines.get(1)).isEqualTo("Umsatztotal;;;;;4420;2210;");
-		assertThat(lines.get(2)).isEqualTo("11.01.1111;11.01.1111;aaaaaaaaaaaaaaaaaaa;\"aaaaaaa\n"
-				+ "aaaaaaaaaaaaaaaa\n"
-				+ "aaaaaaaaaaaaa\n"
-				+ "aaaaa aaaaaaaaaaaaaaaaaaaa aaaa\";;2210;;");
+		assertThat(lines.get(2)).isEqualTo("""
+				11.01.1111;11.01.1111;aaaaaaaaaaaaaaaaaaa;"aaaaaaa
+				aaaaaaaaaaaaaaaa
+				aaaaaaaaaaaaa
+				aaaaa aaaaaaaaaaaaaaaaaaaa aaaa";;2210;;""");
 
-		assertThat(lines.get(3)).isEqualTo("22.02.2222;22.02.2222;bbbbbbbbb bbbbbbbbb; \"bbbbbbbb\n"
-				+ "bbbbbbbbbbbbbbbbb b\n"
-				+ "bbbb\n"
-				+ "bbbbbbbbb\n"
-				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
-				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
-				+ "bbbbbbbbbbb.bb bb\n"
-				+ "bbbbbbbbbbbbbbbbbbbb\";;;2210;");
+		assertThat(lines.get(3)).isEqualTo("""
+				22.02.2222;22.02.2222;bbbbbbbbb bbbbbbbbb; "bbbbbbbb
+				bbbbbbbbbbbbbbbbb b
+				bbbb
+				bbbbbbbbb
+				bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+				bbbbbbbbbbbbbbbbbbbbbbbbbbbb
+				bbbbbbbbbbb.bb bb
+				bbbbbbbbbbbbbbbbbbbb";;;2210;\
+				""");
 
-		assertThat(lines.get(4)).isEqualTo("33.03.3333;33.03.3333;cccccccccccccc;\"cccccccccccccccccc\n"
-				+ "cccccc c cccccccc  cc\";;2210;;");
+		assertThat(lines.get(4)).isEqualTo("""
+				33.03.3333;33.03.3333;cccccccccccccc;"cccccccccccccccccc
+				cccccc c cccccccc  cc";;2210;;\
+				""");
 	}
 
 	@Test
@@ -122,10 +127,12 @@ public class FileImportReaderTest
 						"Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF",
 						"",
 						"tttttttt;;;;;4444;2222;",
-						"11.01.1111;11.01.1111;aaaaaaaaaaaaaa;\"aaaaaaaaa\n"
-								+ "aaaaaaaaaa\n"
-								+ "aaaaaaaaaaaaaaa\n"
-								+ "aaaaaaaaaaaaaaaaaaaa\";;1111;;",
+						"""
+						11.01.1111;11.01.1111;aaaaaaaaaaaaaa;"aaaaaaaaa
+						aaaaaaaaaa
+						aaaaaaaaaaaaaaa
+						aaaaaaaaaaaaaaaaaaaa";;1111;;\
+						""",
 						"",
 						"",
 						"",
@@ -133,18 +140,22 @@ public class FileImportReaderTest
 						"",
 						"",
 						"",
-						"22.02.2222;22.02.2222;bbbbbbbbbbbbb;\"bbbbbbbbbbbbbb\n"
-								+ "bbbbbbbbbbbbbb\n"
-								+ "bbbbbbb\n"
-								+ "bbbbbbbbb\n"
-								+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
-								+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
-								+ "bbbbbbbbbbbbbbb\n"
-								+ "bbbbbbbbbbbb\";;;2222;",
+						"""
+						22.02.2222;22.02.2222;bbbbbbbbbbbbb;"bbbbbbbbbbbbbb
+						bbbbbbbbbbbbbb
+						bbbbbbb
+						bbbbbbbbb
+						bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+						bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+						bbbbbbbbbbbbbbb
+						bbbbbbbbbbbb";;;2222;\
+						""",
 						"",
 						"",
-						"33.03.3333;33.03.3333;ccccccccccccc;\"ccccccccccc\n"
-								+ "ccccccccccc\";;3333;;"
+						"""
+						33.03.3333;33.03.3333;ccccccccccccc;"ccccccccccc
+						ccccccccccc";;3333;;\
+						"""
 				));
 	}
 
@@ -170,25 +181,28 @@ public class FileImportReaderTest
 						"Umsatztotal;;;;;0000000.00;0000000.00;",
 						"Schlusssaldo per 30.03.2020;;;;;;;000000.00",
 						"30.03.2020;30.03.2020;aaaaaaaaaaaaaaaa / aaaaaaaaaa;aaaaaaaaaaaaaaaa AAAA v. 30.03.2020;;;111111.11;111111.11",
-						"30.03.2020;30.03.2020;bbbbbbbbb / 2222222222;\"bbbbbb bbbbb\n"
-								+ "bbbbbbbbbbbbbb 26\n"
-								+ "2222 bbbbbbb\n"
-								+ "bbbbbbb\n"
-								+ "bbbb:\n"
-								+ "bbbbbbbbb 13. bbbbbbbbbb\";;2222.22;;222222.22",
+						"""
+						30.03.2020;30.03.2020;bbbbbbbbb / 2222222222;"bbbbbb bbbbb
+						bbbbbbbbbbbbbb 26
+						2222 bbbbbbb
+						bbbbbbb
+						bbbb:
+						bbbbbbbbb 13. bbbbbbbbbb";;2222.22;;222222.22""",
 						"30.03.2020;30.03.2020;ccccccccc cccccccc / 3333333333;\"cccccccc ccccc-33, 0.00% 30.03.2020-30.03.2025 (33333333.3333)\";;;333333.33;333333.33",
-						"30.03.2020;30.03.2020;dddddddddd / 4444444444;\"ddddd d.d.\n"
-								+ "ddddd dd dddddd 4\n"
-								+ "4444 ddddddd-ddd-ddddd\n"
-								+ "ddddddddddd\n"
-								+ "'- - dddd - -\n"
-								+ "F444444 + F444444\";;;4444.44;'-44444.44",
-						"30.03.2020;30.03.2020;eeeeeeeeee / 5555555555;\"eeeeee eeeee-eeeeeee ee\n"
-								+ "eeeeeeeeeee 55 eeeeeeee 555\n"
-								+ "5555 eeeeeee\n"
-								+ "eeeeeeeeeee\n"
-								+ "'- - eeee - -\n"
-								+ "29.02.2020 55555.55 555555\";;;55555.55;'-55555.55"
+						"""
+						30.03.2020;30.03.2020;dddddddddd / 4444444444;"ddddd d.d.
+						ddddd dd dddddd 4
+						4444 ddddddd-ddd-ddddd
+						ddddddddddd
+						'- - dddd - -
+						F444444 + F444444";;;4444.44;'-44444.44""",
+						"""
+						30.03.2020;30.03.2020;eeeeeeeeee / 5555555555;"eeeeee eeeee-eeeeeee ee
+						eeeeeeeeeee 55 eeeeeeee 555
+						5555 eeeeeee
+						eeeeeeeeeee
+						'- - eeee - -
+						29.02.2020 55555.55 555555";;;55555.55;'-55555.55"""
 						)
 				);
 	}
@@ -211,7 +225,7 @@ public class FileImportReaderTest
 			.hasSize(3);
 			
 		lines.forEach(l -> assertThat(l).startsWith("G00"));
-		assertThat(lines.get(0)).endsWith("80");
+		assertThat(lines.getFirst()).endsWith("80");
 		assertThat(lines.get(1)).endsWith("90");
 		assertThat(lines.get(2)).endsWith("100");
 	}

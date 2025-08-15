@@ -103,7 +103,7 @@ public class UpperBoundsAllocationStrategyTest
 		assertThat(result.getQtyToAllocate()).isZero();
 		assertThat(result.getTransactions()).hasSize(1);
 
-		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
+		final IHUTransactionCandidate huTransaction = result.getTransactions().getFirst();
 		assertThat(huTransaction.getProductId()).isEqualTo(helper.pTomatoProductId);
 		assertThat(huTransaction.getQuantity().toBigDecimal()).isEqualTo("6000.321");
 		assertThat(huTransaction.getQuantity().getUOM()).isEqualTo(helper.uomKg);
@@ -134,7 +134,7 @@ public class UpperBoundsAllocationStrategyTest
 		assertThat(result.getQtyToAllocate()).isEqualTo("0.321");
 		assertThat(result.getTransactions()).hasSize(1);
 
-		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
+		final IHUTransactionCandidate huTransaction = result.getTransactions().getFirst();
 		assertThat(huTransaction.getProductId()).isEqualTo(helper.pTomatoProductId);
 		assertThat(huTransaction.getQuantity().toBigDecimal()).isEqualTo("6000");
 		assertThat(huTransaction.getQuantity().getUOM()).isEqualTo(helper.uomKg);

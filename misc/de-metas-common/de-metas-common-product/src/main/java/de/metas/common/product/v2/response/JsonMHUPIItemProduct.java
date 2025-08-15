@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,40 +41,49 @@ import java.math.BigDecimal;
 @JsonDeserialize(builder = JsonMHUPIItemProduct.JsonMHUPIItemProductBuilder.class)
 public class JsonMHUPIItemProduct
 {
-	@ApiModelProperty( //
-			dataType = "java.lang.Integer", //
-			value = "Corresponding to `M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID`.")
+	@Schema(
+			type = "integer",
+			format = "int32",
+			description = "Corresponding to `M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID`."
+	)
 	@NonNull
 	@JsonProperty("mHUPIItemProductId")
 	JsonMetasfreshId mHUPIItemProductId;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			dataType = "java.lang.Integer", //
-			value = "Corresponding to `M_HU_PI_Item_Product.C_BPartnerId`.")
+	@Schema(
+			type = "integer",
+			format = "int32",
+			description = "Corresponding to `M_HU_PI_Item_Product.C_BPartnerId`.",
+			nullable = true
+	)
 	@Nullable
 	@JsonProperty("bpartnerId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	JsonMetasfreshId bpartnerId;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			dataType = "java.lang.String", //
-			value = "Corresponding to `M_HU_PI_Item_Product.Name`.")
+	@Schema(
+			type = "string",
+			description = "Corresponding to `M_HU_PI_Item_Product.Name`.",
+			nullable = true
+	)
 	@Nullable
 	@JsonProperty("name")
 	String name;
 
-	@ApiModelProperty("Corresponding to M_HU_PI_Item_Product.Qty")
+	@Schema(
+			description = "Corresponding to M_HU_PI_Item_Product.Qty",
+			required = true
+	)
 	@NonNull
 	@JsonProperty("qty")
 	BigDecimal qty;
 
-	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the M_HU_PI_Item_Product.C_UOM_ID.")
+	@Schema(
+			description = "This is the `C_UOM.UOMSymbol` of the M_HU_PI_Item_Product.C_UOM_ID.",
+			nullable = true
+	)
 	@Nullable
 	@JsonProperty("uom")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String uom;
-
-
 }

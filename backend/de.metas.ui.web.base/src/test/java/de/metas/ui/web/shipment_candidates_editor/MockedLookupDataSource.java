@@ -89,13 +89,13 @@ public class MockedLookupDataSource implements LookupDataSource
 
 	private static int convertIdToInt(@NonNull final Object idObj)
 	{
-		if (idObj instanceof Number)
+		if (idObj instanceof Number number)
 		{
-			return ((Number)idObj).intValue();
+			return number.intValue();
 		}
-		else if (idObj instanceof RepoIdAware)
+		else if (idObj instanceof RepoIdAware aware)
 		{
-			return ((RepoIdAware)idObj).getRepoId();
+			return aware.getRepoId();
 		}
 		else
 		{

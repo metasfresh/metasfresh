@@ -252,7 +252,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 			}
 		}
 
-		final BigDecimal lastInterval = percentages.get(percentages.size() - 1);
+		final BigDecimal lastInterval = percentages.getLast();
 		return feeProductPercentage2fee.get(lastInterval);
 	}
 

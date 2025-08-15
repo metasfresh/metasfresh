@@ -4,6 +4,7 @@ import de.metas.Profiles;
 import de.metas.business_rule.BusinessRuleService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
@@ -12,7 +13,6 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 
 @Component

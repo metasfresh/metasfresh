@@ -138,7 +138,7 @@ public class PurchaseCandidateAggregate
 			return;
 		}
 
-		final Quantity qtyToPurchase = purchaseCandidates.get(0).getQtyToPurchase();
+		final Quantity qtyToPurchase = purchaseCandidates.getFirst().getQtyToPurchase();
 		final Quantity sum = purchaseCandidates
 				.stream()
 				.map(PurchaseCandidate::getQtyToPurchase)

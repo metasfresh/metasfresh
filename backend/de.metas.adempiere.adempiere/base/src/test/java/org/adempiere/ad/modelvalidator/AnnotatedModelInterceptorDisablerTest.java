@@ -65,8 +65,9 @@ public class AnnotatedModelInterceptorDisablerTest
 	public void createHowtoDisableMsg0()
 	{
 		assertThat(AnnotatedModelInterceptorDisabler.createHowtoDisableMessage(pointcut))
-				.isEqualTo("Model interceptor method org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod threw an exception."
-						+ "\nYou can disable this method with SysConfig InterceptorEnabled_org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod='N' (with AD_Client_ID and AD_Org_ID=0!)");
+				.isEqualTo("""
+						Model interceptor method org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod threw an exception.
+						You can disable this method with SysConfig InterceptorEnabled_org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod='N' (with AD_Client_ID and AD_Org_ID=0!)""");
 	}
 
 	@Test

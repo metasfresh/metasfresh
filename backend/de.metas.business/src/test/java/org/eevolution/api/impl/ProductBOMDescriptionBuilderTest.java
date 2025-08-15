@@ -126,10 +126,11 @@ public class ProductBOMDescriptionBuilderTest
 		final String productDescription = ProductBOMDescriptionBuilder.newInstance()
 				.build(bomProductId);
 
-		assertThat(productDescription).isEqualTo(
-				"ComponentName1\r\n"
-						+ "ComponentName2 5 mm\r\n"
-						+ "ComponentName3");
+		assertThat(productDescription).isEqualToIgnoringNewLines(
+				"""
+				ComponentName1
+				ComponentName2 5 mm
+				ComponentName3""");
 	}
 
 	private static class BOMBuilder

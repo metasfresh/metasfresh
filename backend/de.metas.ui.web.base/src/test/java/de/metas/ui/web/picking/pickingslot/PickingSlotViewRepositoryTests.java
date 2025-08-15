@@ -94,7 +94,7 @@ public class PickingSlotViewRepositoryTests
 
 		assertThat(pickingSlotRows).hasSize(1); // even if there are no HUs, there shall still be a row for our picking slot.
 
-		final PickingSlotRow pickingSlotRow = pickingSlotRows.get(0);
+		final PickingSlotRow pickingSlotRow = pickingSlotRows.getFirst();
 		assertThat(pickingSlotRow.getType()).isEqualTo(PickingSlotRowType.forPickingSlotRow());
 	}
 
@@ -141,19 +141,19 @@ public class PickingSlotViewRepositoryTests
 		final List<PickingSlotRow> rowsByShipmentScheduleId = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
 		assertThat(rowsByShipmentScheduleId).hasSize(1);
-		final PickingSlotRow pickingSlotRow = rowsByShipmentScheduleId.get(0);
+		final PickingSlotRow pickingSlotRow = rowsByShipmentScheduleId.getFirst();
 		assertThat(pickingSlotRow.isPickingSlotRow()).isTrue();
 		assertThat(pickingSlotRow.isPickedHURow()).isFalse();
 		assertThat(pickingSlotRow.isProcessed()).isEqualTo(pickingSlotRowProcessed);
 
 		assertThat(pickingSlotRow.getIncludedRows()).hasSize(1);
-		final PickingSlotRow tuRow = pickingSlotRow.getIncludedRows().get(0);
+		final PickingSlotRow tuRow = pickingSlotRow.getIncludedRows().getFirst();
 		assertThat(tuRow.isPickingSlotRow()).isFalse();
 		assertThat(tuRow.isPickedHURow()).isTrue();
 		assertThat(tuRow.getHuId().getRepoId()).isEqualTo(100);
 
 		assertThat(tuRow.getIncludedRows()).hasSize(1);
-		final PickingSlotRow whuRow = tuRow.getIncludedRows().get(0);
+		final PickingSlotRow whuRow = tuRow.getIncludedRows().getFirst();
 		assertThat(whuRow.isPickingSlotRow()).isFalse();
 		assertThat(whuRow.isPickedHURow()).isTrue();
 		assertThat(whuRow.getHuId().getRepoId()).isEqualTo(101);

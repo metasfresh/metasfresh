@@ -75,7 +75,7 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, ignored);
 
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		assertThat(ic.getC_Invoice_Candidate_Agg()).isEqualTo(freshAgg);
 	}
@@ -86,7 +86,7 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 		assertThat(invoices)
 			.as("We are expecting one invoice: %s", invoices)
 			.hasSize(1);
-		final IInvoiceHeader invoice = invoices.remove(0);
+		final IInvoiceHeader invoice = invoices.removeFirst();
 
 		final I_C_Invoice_Candidate ic = CollectionUtils.singleElement(invoiceCandidates);
 
@@ -127,7 +127,7 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 		// also verify that 'iol12_five_disp' is associated to both invoiceLines 1 and 2
 		assertThat(getForInOutLine(invoiceLines, iol22_twenty_disp)).contains(invoiceLine1);
 
-		final IInvoiceLineRW invoiceLine2 = forIol22.get(0);
+		final IInvoiceLineRW invoiceLine2 = forIol22.getFirst();
 
 		assertThat(invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal())
 			.isEqualByComparingTo(qtyDisputed.negate());

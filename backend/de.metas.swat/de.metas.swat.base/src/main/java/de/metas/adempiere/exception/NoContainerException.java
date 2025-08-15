@@ -30,6 +30,8 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
 
 import de.metas.i18n.Msg;
+
+import java.io.Serial;
 import de.metas.util.Services;
 
 public class NoContainerException extends AdempiereException {
@@ -37,6 +39,7 @@ public class NoContainerException extends AdempiereException {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 613087606261595301L;
 
 	public static final String MSG_NO_SUFFICIENT_CONTAINERS = "Kein ausreichendes Verpackungsmaterial";

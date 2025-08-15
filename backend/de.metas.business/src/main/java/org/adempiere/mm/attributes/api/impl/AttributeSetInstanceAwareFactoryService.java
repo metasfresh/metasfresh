@@ -72,9 +72,9 @@ public class AttributeSetInstanceAwareFactoryService implements IAttributeSetIns
 			return null;
 		}
 		// If already an ASI aware, return it
-		if (referencedObj instanceof IAttributeSetInstanceAware)
+		if (referencedObj instanceof IAttributeSetInstanceAware aware)
 		{
-			return (IAttributeSetInstanceAware)referencedObj;
+			return aware;
 		}
 
 		final IAttributeSetInstanceAwareFactory factory;

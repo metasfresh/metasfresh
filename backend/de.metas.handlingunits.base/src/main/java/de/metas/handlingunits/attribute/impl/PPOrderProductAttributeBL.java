@@ -116,7 +116,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 		//
 		// Stop here if there is nothing to do
-		if (attributesMap.isEmpty() && !serialNoContext.isPresent())
+		if (attributesMap.isEmpty() && serialNoContext.isEmpty())
 		{
 			logger.trace("Skip updating because there is nothing to update from");
 			return;
@@ -291,7 +291,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			final Optional<SerialNoContext> serialNoContext)
 	{
 		// Stop here if there is nothing to do
-		if (from.isEmpty() && !serialNoContext.isPresent())
+		if (from.isEmpty() && serialNoContext.isEmpty())
 		{
 			return;
 		}

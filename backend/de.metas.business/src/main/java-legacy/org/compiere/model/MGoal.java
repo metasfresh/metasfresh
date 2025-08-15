@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import java.awt.Color;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -448,7 +449,7 @@ public class MGoal extends X_PA_Goal
 		BigDecimal MeasureActual = getMeasureActual();
 		BigDecimal GoalPerformance = Env.ZERO;
 		if (MeasureTarget.signum() != 0)
-			GoalPerformance = MeasureActual.divide(MeasureTarget, 6, BigDecimal.ROUND_HALF_UP);
+			GoalPerformance = MeasureActual.divide(MeasureTarget, 6, RoundingMode.HALF_UP);
 		super.setGoalPerformance(GoalPerformance);
 		m_color = null;
 	}	// setGoalPerformance

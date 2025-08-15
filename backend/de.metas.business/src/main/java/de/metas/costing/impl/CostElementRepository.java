@@ -110,7 +110,7 @@ public class CostElementRepository implements ICostElementRepository
 		}
 		else if (costElements.size() == 1)
 		{
-			return costElements.get(0);
+			return costElements.getFirst();
 		}
 		else
 		{

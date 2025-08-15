@@ -262,7 +262,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
 
-		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
+		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.getFirst().getM_PriceList_ID()) : null;
 	}
 
 	@Override
@@ -286,7 +286,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
 
-		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
+		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.getFirst().getM_PriceList_ID()) : null;
 	}
 
 	@NonNull

@@ -247,8 +247,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 
 		final Set<HuId> huIds = job.streamLines()
 				.map(PickingJobLine::getLastPickedHUId)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(Optional::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
 		cache.cacheHUs(handlingUnitsBL.getByIds(huIds));

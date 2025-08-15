@@ -335,14 +335,13 @@ public final class WebuiProcessClassInfo
 			{
 				return null;
 			}
-			else if (resultObj instanceof LookupValuesList)
+			else if (resultObj instanceof LookupValuesList lookupValuesList)
 			{
-				final LookupValuesList lookupValuesList = (LookupValuesList)resultObj;
 				return LookupValuesPage.allValues(lookupValuesList);
 			}
-			else if (resultObj instanceof LookupValuesPage)
+			else if (resultObj instanceof LookupValuesPage page)
 			{
-				return (LookupValuesPage)resultObj;
+				return page;
 			}
 			else
 			{

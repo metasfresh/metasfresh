@@ -58,7 +58,7 @@ public class TestDoubleReceiptInvoiceOneAndAHalf extends AbstractDoubleReceiptQt
 			.as("We are expecting one invoice: %s", invoices)
 			.hasSize(1);
 
-		final IInvoiceHeader invoice1 = invoices.remove(0);
+		final IInvoiceHeader invoice1 = invoices.removeFirst();
 
 		assertThat(invoice1.getPOReference()).isEqualTo(IC_PO_REFERENCE);
 		assertThat(invoice1.getDateAcct()).isEqualTo(IC_DATE_ACCT);

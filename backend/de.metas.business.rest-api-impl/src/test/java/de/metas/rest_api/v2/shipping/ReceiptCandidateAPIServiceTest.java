@@ -133,9 +133,9 @@ class ReceiptCandidateAPIServiceTest
 
 		final List<I_M_ReceiptSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ReceiptSchedule_ExportAudit.class);
 		assertThat(exportAudits).hasSize(1);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
-		assertThat(exportAudits.get(0).getM_ReceiptSchedule_ID()).isEqualTo(receiptScheduleRecord.getM_ReceiptSchedule_ID());
-		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAudits.getFirst().getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudits.getFirst().getM_ReceiptSchedule_ID()).isEqualTo(receiptScheduleRecord.getM_ReceiptSchedule_ID());
+		assertThat(exportAudits.getFirst().getExportStatus()).isEqualTo(Exported.getCode());
 	}
 
 	private I_M_ReceiptSchedule createReceiptScheduleRecord()

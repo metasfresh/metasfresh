@@ -38,6 +38,7 @@ import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serial;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.PreparedStatement;
@@ -84,6 +85,7 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 8125801717324723271L;
 	private static Dimension paneldimensionMin = new Dimension(80, 80);
 	private	JEditorPane	html;
@@ -221,8 +223,12 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 					DB.close(rs, pstmt);
 					rs = null; pstmt = null;
 				}
-				result += "<br><br><br>\n"
-				+ "</div>\n</body>\n</html>\n";
+				result += """
+				<br><br><br>
+				</div>
+				</body>
+				</html>
+				""";
 				break;
 			default: //************************************************************** 
 				log.warn("Unknown option - "+requestPage);

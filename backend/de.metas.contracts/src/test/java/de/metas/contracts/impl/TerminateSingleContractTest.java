@@ -259,7 +259,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	{
 		final List<I_C_Invoice_Candidate> candsForTerm = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(flatrateTerm));
 		assertThat(candsForTerm).hasSize(1);
-		final I_C_Invoice_Candidate invoiceCandidate = candsForTerm.get(0);
+		final I_C_Invoice_Candidate invoiceCandidate = candsForTerm.getFirst();
 		assertThat(invoiceCandidate.getQtyInvoiced()).isEqualByComparingTo(BigDecimal.ZERO);
 		assertThat(invoiceCandBL.extractProcessedOverride(invoiceCandidate)).isEqualTo(OptionalBoolean.TRUE);
 	}

@@ -42,7 +42,7 @@ public class MRequestCategory extends X_R_Category
 	 */
 	public static MRequestCategory get (Properties ctx, int R_Category_ID)
 	{
-		Integer key = new Integer (R_Category_ID);
+		Integer key = Integer.valueOf(R_Category_ID);
 		MRequestCategory retValue = (MRequestCategory) s_cache.get (key);
 		if (retValue != null)
 			return retValue;

@@ -1,8 +1,9 @@
 package de.metas.dao.selection.pagination;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import lombok.NonNull;
+import java.io.Serial;
 
 /*
  * #%L
@@ -28,6 +29,7 @@ import lombok.NonNull;
 
 public class PageNotFoundException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = 2037196076279971989L;
 
 	public PageNotFoundException(@NonNull final String completePageId)

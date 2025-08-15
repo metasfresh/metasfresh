@@ -38,6 +38,7 @@ import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,7 +52,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 

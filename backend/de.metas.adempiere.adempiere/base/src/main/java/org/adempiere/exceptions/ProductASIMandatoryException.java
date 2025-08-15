@@ -22,16 +22,17 @@ package org.adempiere.exceptions;
  * #L%
  */
 
-
+import de.metas.document.engine.IDocument;
 import org.compiere.model.I_M_Product;
 
-import de.metas.document.engine.IDocument;
+import java.io.Serial;
 
 public class ProductASIMandatoryException extends AdempiereException
 {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -8622998816450307889L;
 
 	public ProductASIMandatoryException(final IDocument doc, final I_M_Product product, final int documentLineNo)

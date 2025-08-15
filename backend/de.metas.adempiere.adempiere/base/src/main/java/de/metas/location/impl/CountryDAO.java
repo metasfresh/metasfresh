@@ -77,7 +77,7 @@ public class CountryDAO implements ICountryDAO
 		final ImmutableBiMap.Builder<String, String> alpha2to3CountryCodesBuilder = ImmutableBiMap.builder();
 		for (final String countryCodeAlpha2 : Locale.getISOCountries())
 		{
-			final Locale locale = new Locale("", countryCodeAlpha2);
+			final Locale locale = Locale.of("", countryCodeAlpha2);
 			final String countryCodeAlpha3 = locale.getISO3Country();
 			alpha2to3CountryCodesBuilder.put(countryCodeAlpha2, countryCodeAlpha3);
 		}

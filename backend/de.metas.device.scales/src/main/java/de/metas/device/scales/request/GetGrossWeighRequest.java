@@ -43,6 +43,6 @@ public class GetGrossWeighRequest implements IDeviceRequest<GetWeightResponse>
 	@Override
 	public String toString()
 	{
-		return String.format("GetGrossWeighRequest []");
+		return "GetGrossWeighRequest []".formatted();
 	}
 }

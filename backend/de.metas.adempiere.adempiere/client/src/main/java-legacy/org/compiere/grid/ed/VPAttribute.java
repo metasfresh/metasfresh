@@ -215,7 +215,7 @@ public class VPAttribute extends JComponent
 	/** Calling Window Info */
 	private GridField m_mField;
 	/** No Instance Key */
-	private static Integer NO_INSTANCE = new Integer(0);
+	private static Integer NO_INSTANCE = Integer.valueOf(0);
 	/** Logger */
 	private static final transient Logger log = LogManager.getLogger(VPAttribute.class);
 

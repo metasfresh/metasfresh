@@ -62,13 +62,13 @@ public abstract class AbstractTwoInOutsOneInvoicePurchaseTests extends AbstractT
 
 		final BigDecimal fullqty = partialQty1_32.add(partialQty2_8).add(partialQty3_4);
 
-		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
+		final I_C_Invoice_Candidate ic = invoiceCandidates.getFirst();
 
 		//
 		// Assume that the invoice is OK
 		{
 			assertThat(invoices).hasSize(1);
-			final IInvoiceHeader invoice1 = invoices.remove(0);
+			final IInvoiceHeader invoice1 = invoices.removeFirst();
 			assertThat(invoice1.isSOTrx()).isEqualTo(config_IsSOTrx());
 			validateInvoiceHeader("Invoice", invoice1, ic);
 

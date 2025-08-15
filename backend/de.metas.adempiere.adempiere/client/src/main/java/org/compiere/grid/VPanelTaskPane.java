@@ -25,6 +25,7 @@ package org.compiere.grid;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.io.Serial;
 
 import javax.swing.JPanel;
 
@@ -42,6 +43,7 @@ import org.jdesktop.swingx.JXTaskPane;
  */
 final class VPanelTaskPane extends JXTaskPane implements IUISubClassIDAware
 {
+	@Serial
 	private static final long serialVersionUID = 1054350358867570709L;
 
 	public VPanelTaskPane()

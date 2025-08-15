@@ -23,6 +23,7 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
+import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempiereLookAndFeel;
@@ -799,6 +800,7 @@ public final class Ini
 	 *
 	 * @return Metasfresh home directory; never returns <code>null</code>
 	 */
+	@NonNull
 	public static String getMetasfreshHome()
 	{
 		return METASFRESH_HOME_Supplier.get();
@@ -809,6 +811,7 @@ public final class Ini
 	 *
 	 * @return Metasfresh home directory; never returns <code>null</code>
 	 */
+	@NonNull
 	private static String findMetasfreshHome()
 	{
 		// Try getting the METASFRESH_HOME from JRE defined properties (i.e. via -DMETASFRESH_HOME=....)

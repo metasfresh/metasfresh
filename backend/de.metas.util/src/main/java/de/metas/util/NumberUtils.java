@@ -31,6 +31,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -159,17 +160,17 @@ public final class NumberUtils
 		{
 			return defaultValue;
 		}
-		if (value instanceof BigDecimal)
+		if (value instanceof BigDecimal decimal)
 		{
-			return (BigDecimal)value;
+			return decimal;
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer integer)
 		{
-			return BigDecimal.valueOf((int)value);
+			return BigDecimal.valueOf(integer);
 		}
-		else if (value instanceof Long)
+		else if (value instanceof Long long1)
 		{
-			return BigDecimal.valueOf((long)value);
+			return BigDecimal.valueOf(long1);
 		}
 		else
 		{
@@ -241,17 +242,17 @@ public final class NumberUtils
 		{
 			return defaultValue;
 		}
-		else if (value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware aware)
 		{
-			return ((RepoIdAware)value).getRepoId();
+			return aware.getRepoId();
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof Integer integer)
 		{
-			return (Integer)value;
+			return integer;
 		}
-		else if (value instanceof Number)
+		else if (value instanceof Number number)
 		{
-			return ((Number)value).intValue();
+			return number.intValue();
 		}
 		else
 		{
@@ -282,7 +283,7 @@ public final class NumberUtils
 			final int scale)
 	{
 		final BigDecimal range = valueMax.subtract(valueMin);
-		final BigDecimal random = BigDecimal.valueOf(Math.random());
+		final BigDecimal random = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble());
 
 		return valueMin
 				.add(random.multiply(range))

@@ -151,8 +151,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		InOutLineExpectations.newExpectations()
 			.newInOutLineExpectation()
 				.qtyEnteredTU(10)
-				.newHUAssignmentExpectation().hu(paloxes.get(0)).luHU(null).tuHU(null).endExpectation()
-				.newHUAssignmentExpectation().hu(paloxes.get(0)).luHU(null).tuHU(paloxes.get(0)).endExpectation()
+				.newHUAssignmentExpectation().hu(paloxes.getFirst()).luHU(null).tuHU(null).endExpectation()
+				.newHUAssignmentExpectation().hu(paloxes.getFirst()).luHU(null).tuHU(paloxes.getFirst()).endExpectation()
 				.newHUAssignmentExpectation().hu(paloxes.get(1)).luHU(null).tuHU(null).endExpectation()
 				.newHUAssignmentExpectation().hu(paloxes.get(1)).luHU(null).tuHU(paloxes.get(1)).endExpectation()
 				.newHUAssignmentExpectation().hu(paloxes.get(2)).luHU(null).tuHU(null).endExpectation()
@@ -196,7 +196,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		// Setup paloxe attribute structure
 		{
 			{
-				final I_M_HU paloxe1 = paloxes.get(0);
+				final I_M_HU paloxe1 = paloxes.getFirst();
 				final IAttributeStorage as1 = attributeStorageFactory.getAttributeStorage(paloxe1);
 				Assertions.assertTrue(as1.getAttributeValue(helper.attr_CountryMadeIn).isUseInASI(), "precondition: CountryMadeIn.UseInASI"); // else we will get different aggregates
 				as1.setValue(helper.attr_CountryMadeIn, "DE");
@@ -253,8 +253,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		InOutLineExpectations.newExpectations()
 				.newInOutLineExpectation()// line 1: Quality issue: 95% OK
 					.qtyEnteredTU(1)
-					.newHUAssignmentExpectation().hu(paloxes.get(0)).luHU(null).tuHU(null).endExpectation()
-					.newHUAssignmentExpectation().hu(paloxes.get(0)).luHU(null).tuHU(paloxes.get(0)).endExpectation()
+					.newHUAssignmentExpectation().hu(paloxes.getFirst()).luHU(null).tuHU(null).endExpectation()
+					.newHUAssignmentExpectation().hu(paloxes.getFirst()).luHU(null).tuHU(paloxes.getFirst()).endExpectation()
 					.referencesPackagingMaterialLineIdx(5) // does reference the 6th iol
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
@@ -353,7 +353,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		// Setup paloxe attribute structure
 		{
 			{
-				final I_M_HU paloxe1 = paloxes.get(0);
+				final I_M_HU paloxe1 = paloxes.getFirst();
 				final IAttributeStorage as1 = attributeStorageFactory.getAttributeStorage(paloxe1);
 				as1.setValue(attr_WeightGross, "510");
 				as1.setValue(attr_QualityDiscountPercent, "5");
@@ -399,8 +399,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		InOutLineExpectations.newExpectations()
 				.newInOutLineExpectation()// Quality issue: OK
 					.qtyEnteredTU(10)
-					.newHUAssignmentExpectation().hu(paloxes.get(0)).luHU(null).tuHU(null).endExpectation()
-					.newHUAssignmentExpectation().hu(paloxes.get(0)).luHU(null).tuHU(paloxes.get(0)).endExpectation()
+					.newHUAssignmentExpectation().hu(paloxes.getFirst()).luHU(null).tuHU(null).endExpectation()
+					.newHUAssignmentExpectation().hu(paloxes.getFirst()).luHU(null).tuHU(paloxes.getFirst()).endExpectation()
 					.newHUAssignmentExpectation().hu(paloxes.get(1)).luHU(null).tuHU(null).endExpectation()
 					.newHUAssignmentExpectation().hu(paloxes.get(1)).luHU(null).tuHU(paloxes.get(1)).endExpectation()
 					.newHUAssignmentExpectation().hu(paloxes.get(2)).luHU(null).tuHU(null).endExpectation()
@@ -562,6 +562,6 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 				.build();
 
 		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(parameters);
-		return result.getInOuts().get(0);
+		return result.getInOuts().getFirst();
 	}
 }

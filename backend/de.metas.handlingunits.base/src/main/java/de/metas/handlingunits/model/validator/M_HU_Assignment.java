@@ -139,10 +139,12 @@ public class M_HU_Assignment
 
 			// Make sure we have only one inout per segment
 			Check.assume(inoutsForSegment.size() <= 1,
-					"A Handling Unit can only be assigned to ONE shipment/receipt."
-							+ "\n @M_HU_ID@: {}"
-							+ "\n uniqueSegment: {}"
-							+ "\n @M_InOut_ID@ / segment: {}",
+					"""
+					A Handling Unit can only be assigned to ONE shipment/receipt.
+					 @M_HU_ID@: {}
+					 uniqueSegment: {}
+					 @M_InOut_ID@ / segment: {}\
+					""",
 					hu, uniqueSegment, inoutsForSegment);
 		}
 	}

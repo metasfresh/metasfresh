@@ -294,8 +294,7 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 					final ImmutableList<InstantInterval> intersectingIntervals = bPartnerSalesRepIdByInterval.keySet()
 							.stream()
 							.map(userSalesRepInterval::getIntersectionWith) // intersect userSalesRepInterval with the current bPartnerSalesRepInterval
-							.filter(Optional::isPresent)
-							.map(Optional::get)
+							.flatMap(Optional::stream)
 							.collect(ImmutableList.toImmutableList());
 
 					if (intersectingIntervals.isEmpty())

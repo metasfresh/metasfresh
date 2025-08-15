@@ -208,8 +208,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		assertEquals(1, iCands1.size());
 		assertEquals(1, iCands2.size());
 
-		final I_C_Invoice_Candidate ic1 = iCands1.get(0);
-		final I_C_Invoice_Candidate ic2 = iCands2.get(0);
+		final I_C_Invoice_Candidate ic1 = iCands1.getFirst();
+		final I_C_Invoice_Candidate ic2 = iCands2.getFirst();
 
 		ic1.setC_Order_ID(orderLine1.getC_Order_ID());
 		save(ic1);
@@ -370,7 +370,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		assertEquals(2, candidates.size());
 
-		final I_C_Invoice_Candidate cand1 = candidates.get(0);
+		final I_C_Invoice_Candidate cand1 = candidates.getFirst();
 		final I_C_Invoice_Candidate cand2 = candidates.get(1);
 
 		// Check that we create both SO and PO candidates
@@ -416,7 +416,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		}
 
 		final InvoiceCandidateGenerateResult invoiceCandidates = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1));
-		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidates.getC_Invoice_Candidates().get(0);
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidates.getC_Invoice_Candidates().getFirst();
 
 		assertThat(invoiceCandidate.getPresetDateInvoiced()).isEqualTo(orderLine1.getPresetDateInvoiced());
 		assertThat(invoiceCandidate.getPresetDateInvoiced()).isEqualTo(TimeUtil.asTimestamp(presetDateInvoiced));
@@ -455,7 +455,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final List<I_C_Invoice_Candidate> ics = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1)).getC_Invoice_Candidates();
 
 		assertThat(ics).hasSize(1);
-		final I_C_Invoice_Candidate ic = ics.get(0);
+		final I_C_Invoice_Candidate ic = ics.getFirst();
 
 		assertThat(InvoiceCandidateLocationAdapterFactory.billLocationAdapter(ic).toDocumentLocation())
 				.usingRecursiveComparison()

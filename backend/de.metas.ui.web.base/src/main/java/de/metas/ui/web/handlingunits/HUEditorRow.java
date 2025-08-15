@@ -375,7 +375,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	@Override
 	public HUEditorRowAttributes getAttributes() throws EntityNotFoundException
 	{
-		if (!attributesSupplier.isPresent())
+		if (attributesSupplier.isEmpty())
 		{
 			throw new EntityNotFoundException("row does not support attributes");
 		}

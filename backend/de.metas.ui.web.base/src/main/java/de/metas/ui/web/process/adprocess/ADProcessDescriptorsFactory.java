@@ -482,14 +482,13 @@ import java.util.stream.Stream;
 		{
 			final String parameterName = calloutField.getColumnName();
 			final Object fieldValue = calloutField.getValue();
-			if (fieldValue instanceof LookupValue)
+			if (fieldValue instanceof LookupValue value)
 			{
-				final Object idObj = ((LookupValue)fieldValue).getId();
+				final Object idObj = value.getId();
 				return ProcessParams.ofValueObject(parameterName, idObj);
 			}
-			else if (fieldValue instanceof DateRangeValue)
+			else if (fieldValue instanceof DateRangeValue dateRange)
 			{
-				final DateRangeValue dateRange = (DateRangeValue)fieldValue;
 				return ProcessParams.of(
 						parameterName,
 						TimeUtil.asDate(dateRange.getFrom()),

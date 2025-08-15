@@ -25,6 +25,7 @@ package org.adempiere.ui.sideactions.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serial;
 
 import org.adempiere.ui.sideactions.model.ISideAction;
 import org.adempiere.util.lang.ObjectUtils;
@@ -46,6 +47,7 @@ class HyperlinkSideActionComponent extends JXHyperlink
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -39482230916850468L;
 	private final ISideAction action;
 

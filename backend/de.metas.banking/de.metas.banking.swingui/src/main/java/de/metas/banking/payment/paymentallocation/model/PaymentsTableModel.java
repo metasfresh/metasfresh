@@ -1,5 +1,7 @@
 package de.metas.banking.payment.paymentallocation.model;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.banking.swingui
@@ -24,6 +26,7 @@ package de.metas.banking.payment.paymentallocation.model;
 
 public class PaymentsTableModel extends AbstractAllocableDocTableModel<IPaymentRow>
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	// NOTE: using cast() is discouraged

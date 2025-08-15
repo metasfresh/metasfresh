@@ -306,9 +306,9 @@ public class ReferenceListAwareEnums
 			final ImmutableMap.Builder<String, T> typesByName = ImmutableMap.builder();
 			for (final T value : values)
 			{
-				if (value instanceof Enum)
+				if (value instanceof Enum<?> enum1)
 				{
-					final String name = ((Enum<?>)value).name();
+					final String name = enum1.name();
 					typesByName.put(name, value);
 				}
 			}

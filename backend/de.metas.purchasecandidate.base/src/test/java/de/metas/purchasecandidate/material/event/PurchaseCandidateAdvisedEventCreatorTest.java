@@ -119,9 +119,9 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 						context);
 
 		assertThat(purchaseAdvisedEvents).hasSize(1);
-		assertThat(purchaseAdvisedEvents.get(0).getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
-		assertThat(purchaseAdvisedEvents.get(0).getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
-		assertThat(purchaseAdvisedEvents.get(0).getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+		assertThat(purchaseAdvisedEvents.getFirst().getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
+		assertThat(purchaseAdvisedEvents.getFirst().getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
+		assertThat(purchaseAdvisedEvents.getFirst().getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
 	}
 
 	static MaterialDescriptor createMaterialDescriptor()

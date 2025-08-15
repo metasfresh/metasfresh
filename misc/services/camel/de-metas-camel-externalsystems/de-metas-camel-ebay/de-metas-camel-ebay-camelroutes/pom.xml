@@ -76,13 +76,6 @@
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
 			</dependency>
-
-			<dependency>
-				<groupId>org.assertj</groupId>
-				<artifactId>assertj-core</artifactId>
-				<scope>test</scope>
-				<version>${assertj.version}</version>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -209,10 +202,11 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 
 		<!-- Automatic download of webdriver. -->
 		<dependency>

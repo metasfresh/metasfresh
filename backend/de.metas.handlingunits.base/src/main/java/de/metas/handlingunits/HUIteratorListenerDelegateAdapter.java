@@ -64,9 +64,9 @@ public class HUIteratorListenerDelegateAdapter implements IHUIteratorListener
 
 	protected IHUIterator getHUIterator()
 	{
-		if (delegate instanceof HUIteratorListenerAdapter)
+		if (delegate instanceof HUIteratorListenerAdapter adapter)
 		{
-			return ((HUIteratorListenerAdapter)delegate).getHUIterator();
+			return adapter.getHUIterator();
 		}
 		else
 		{

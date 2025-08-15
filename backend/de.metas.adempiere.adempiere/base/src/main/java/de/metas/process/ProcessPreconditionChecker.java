@@ -117,9 +117,9 @@ public class ProcessPreconditionChecker
 			final IProcessPreconditionsContext context)
 	{
 		final IProcessPrecondition processPreconditions = Util.newInstance(IProcessPrecondition.class, preconditionsClass);
-		if (processPreconditions instanceof JavaProcess)
+		if (processPreconditions instanceof JavaProcess process)
 		{
-			((JavaProcess)processPreconditions).init(context);
+			process.init(context);
 		}
 		return processPreconditions;
 	}

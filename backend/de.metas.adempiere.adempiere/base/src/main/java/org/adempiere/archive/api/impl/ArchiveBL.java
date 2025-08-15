@@ -373,7 +373,7 @@ public class ArchiveBL implements IArchiveBL
 		}
 		else
 		{
-			return Optional.of(lastArchives.get(0));
+			return Optional.of(lastArchives.getFirst());
 		}
 	}
 

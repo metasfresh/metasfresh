@@ -196,7 +196,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		// get a reference to the two scheds now; the allocation() method might remove them from the packing item later on.
 		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules(itemToPack);
 
-		final I_M_ShipmentSchedule shipmentScheduleWithEleven = shipmentSchedules.get(0);
+		final I_M_ShipmentSchedule shipmentScheduleWithEleven = shipmentSchedules.getFirst();
 		assertThat(shipmentScheduleWithEleven.getQtyToDeliver()).isEqualByComparingTo(huDefIFCOWithEleven.getQty());
 
 		final I_M_ShipmentSchedule shipmentScheduleWithTen = shipmentSchedules.get(1);
@@ -211,18 +211,18 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 		final List<I_M_HU> tuHUsWithTen = createTUs(helper, huDefIFCOWithTen, 10);
 		assertThat(tuHUsWithTen).hasSize(1);
-		assertThat(handlingUnitsBL.isTopLevel(tuHUsWithTen.get(0))).isTrue();
+		assertThat(handlingUnitsBL.isTopLevel(tuHUsWithTen.getFirst())).isTrue();
 
 		final List<I_M_HU> tuHUsWithEleven = createTUs(helper, huDefIFCOWithEleven, 11);
 		assertThat(tuHUsWithEleven).hasSize(1);
-		assertThat(handlingUnitsBL.isTopLevel(tuHUsWithEleven.get(0))).isTrue();
+		assertThat(handlingUnitsBL.isTopLevel(tuHUsWithEleven.getFirst())).isTrue();
 
 		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 		HU2PackingItemsAllocator.builder()
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
-				.pickFromHU(tuHUsWithTen.get(0))
-				.pickFromHU(tuHUsWithEleven.get(0))
+				.pickFromHU(tuHUsWithTen.getFirst())
+				.pickFromHU(tuHUsWithEleven.getFirst())
 				.allocate();
 
 		assertThat(POJOLookupMap.get().getRecords(I_M_ShipmentSchedule.class)).hasSize(2);
@@ -239,7 +239,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 				.qtyPicked(huDefIFCOWithTen.getQty())
 				.newShipmentScheduleQtyPickedExpectation()
 				.noLU()
-				.tu(tuHUsWithEleven.get(0))
+				.tu(tuHUsWithEleven.getFirst())
 				.qtyPicked(huDefIFCOWithTen.getQty())
 				.endExpectation()
 				.assertExpected("");
@@ -249,13 +249,13 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 				.qtyPicked(huDefIFCOWithEleven.getQty())
 				.newShipmentScheduleQtyPickedExpectation()
 				.noLU()
-				.tu(tuHUsWithTen.get(0))
+				.tu(tuHUsWithTen.getFirst())
 				.qtyPicked(BigDecimal.TEN)
 				.endExpectation()
 
 				.newShipmentScheduleQtyPickedExpectation()
 				.noLU()
-				.tu(tuHUsWithEleven.get(0))
+				.tu(tuHUsWithEleven.getFirst())
 				.qtyPicked(BigDecimal.ONE)
 				.endExpectation()
 				.assertExpected("");
@@ -284,10 +284,10 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		// HU guards
 		// there shall be one LU with one aggregate TU that represents 2 IFCOs with 10 each
 		assertThat(luHUs).hasSize(1);
-		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(luHUs.get(0));
+		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(luHUs.getFirst());
 		assertThat(includedHUs).hasSize(1);
-		assertThat(handlingUnitsBL.isVirtual(includedHUs.get(0))).isTrue();
-		assertThat(includedHUs.get(0).getM_HU_Item_Parent().getQty()).isEqualTo(new BigDecimal("2"));
+		assertThat(handlingUnitsBL.isVirtual(includedHUs.getFirst())).isTrue();
+		assertThat(includedHUs.getFirst().getM_HU_Item_Parent().getQty()).isEqualTo(new BigDecimal("2"));
 
 		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 		HU2PackingItemsAllocator.builder()
@@ -311,9 +311,9 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 					.shipmentSchedule(shipmentSchedule)
 					.qtyPicked("10")
 					.newShipmentScheduleQtyPickedExpectation()
-					.lu(luHUs.get(0))
-					.tu(includedHUs.get(0))
-					.vhu(includedHUs.get(0))
+					.lu(luHUs.getFirst())
+					.tu(includedHUs.getFirst())
+					.vhu(includedHUs.getFirst())
 					.qtyPicked("10")
 					.endExpectation()
 					.assertExpected("shipment schedule");

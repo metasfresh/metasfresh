@@ -68,6 +68,10 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -84,10 +88,6 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -182,7 +182,7 @@ public class BankStatementCamt53Service
 		}
 		else
 		{
-			return Optional.of(invoiceList.get(0));
+			return Optional.of(invoiceList.getFirst());
 		}
 	}
 
@@ -472,7 +472,7 @@ public class BankStatementCamt53Service
 				.statementLineDate(request.getStatementDate())
 				.build();
 
-		lineRequests.add(0, summaryRequest);
+		lineRequests.addFirst(summaryRequest);
 
 		return lineRequests;
 	}

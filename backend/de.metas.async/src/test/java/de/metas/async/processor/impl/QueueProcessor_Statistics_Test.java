@@ -131,7 +131,7 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 
 		// Workpackage 0: Process Successfully
 		{
-			final I_C_Queue_WorkPackage workpackage = workpackages.get(0);
+			final I_C_Queue_WorkPackage workpackage = workpackages.getFirst();
 			
 			Assertions.assertEquals( false,  workpackage.isReadyForProcessing(), "Invalid ReadyForProcessing");
 			helper.markReadyForProcessingAndWait(workpackageQueue, workpackage);

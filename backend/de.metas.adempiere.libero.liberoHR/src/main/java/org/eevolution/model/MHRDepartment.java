@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.eevolution.model;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -31,6 +32,7 @@ public class MHRDepartment extends X_HR_Department
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 83878114891519775L;
 
 	public static List<MHRDepartment> getAll(Properties ctx)

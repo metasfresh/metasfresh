@@ -101,9 +101,8 @@ public class ProhibitNegativeQtyReserved implements ModelValidator
 			return null;
 		}
 
-		if (po instanceof MStorage)
+		if (po instanceof MStorage st)
 		{
-			final MStorage st = (MStorage)po;
 			if (st.getQtyReserved().signum() < 0)
 			{
 				st.setQtyReserved(BigDecimal.ZERO);

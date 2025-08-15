@@ -36,29 +36,26 @@
     <artifactId>de-metas-camel-edi</artifactId>
     <version>10.0.0</version>
     <properties>
-        <java.version>14</java.version>
-        <spring-boot.version>2.7.11</spring-boot.version>
-        <camel.version>3.14.7</camel.version>
-        <guava.version>30.1.1-jre</guava.version>
-        <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
-        <jackson.version>2.13.1</jackson.version>
-        <lombok.version>1.18.22</lombok.version>
-        <org.apache.poi.version>4.1.2</org.apache.poi.version>
+        <java.version>21</java.version>
+        <spring-boot.version>3.4.3</spring-boot.version>
+        <camel.version>4.10.2</camel.version>
+        <guava.version>33.4.5-jre</guava.version>
+        <smooks.edifact.cartridge.version>2.1.0</smooks.edifact.cartridge.version>
+        <jackson.version>2.18.3</jackson.version>
+        <org.apache.poi.version>5.4.0</org.apache.poi.version>
+
+        <jaxb.api.version>2.3.1</jaxb.api.version>
+        <jaxb.core.version>2.3.0.1</jaxb.core.version>
+        <jaxb.impl.version>2.3.8</jaxb.impl.version>
+
+        <jaxb.inhouse.v1.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev1</jaxb.inhouse.v1.packageName>
         <jaxb.inhouse.v2.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev2</jaxb.inhouse.v2.packageName>
         <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>
         <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
-        <jaxb.inhouse.v1.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev1</jaxb.inhouse.v1.packageName>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
-        <!--
-            3.27.2 is currently the latest and greatest. Spring boot declares some 2.x version that
-            see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
-        -->
-        <assertj.version>3.27.2</assertj.version>
-        <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
-
-        <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.1.5</spring-boot-admin.version>
+        
+        <junit-jupiter.version>5.12.1</junit-jupiter.version>
     </properties>
 
     <dependencyManagement>
@@ -89,19 +86,36 @@
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <scope>test</scope>
-                <version>${assertj.version}</version>
+                <version>3.27.2</version>
             </dependency>
 
             <dependency>
                 <groupId>org.xmlunit</groupId>
                 <artifactId>xmlunit-assertj3</artifactId>
-                <version>${xmlunit-assertj3.version}</version>
+                <version>2.10.0</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
+
+        <!-- JAXB Runtime Dependencies for Java 21 -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>4.0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <version>2.1.3</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -144,7 +158,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>6.2.0</version>
+            <version>7.1.0</version>
         </dependency>
 
         <!-- Camel -->
@@ -161,8 +175,8 @@
 
         <!-- ADDITIONAL DEPENDENCIES for our use cases -->
         <dependency>
-            <groupId>org.apache.camel.springboot</groupId>
-            <artifactId>camel-rabbitmq-starter</artifactId>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring-rabbitmq</artifactId>
             <version>${camel.version}</version>
         </dependency>
 
@@ -204,35 +218,48 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
+            <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.smooks.cartridges</groupId>
-            <artifactId>smooks-camel-cartridge</artifactId>
-            <version>${smooks-cartridge.version}</version>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-smooks-starter</artifactId>
+            <version>${camel.version}</version>
         </dependency>
         <dependency>
             <groupId>org.smooks.cartridges</groupId>
             <artifactId>smooks-templating-cartridge</artifactId>
-            <version>${smooks-cartridge.version}</version>
+            <version>2.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.smooks.cartridges</groupId>
             <artifactId>smooks-fixed-length-cartridge</artifactId>
-            <version>${smooks-cartridge.version}</version>
+            <version>2.0.3</version>
         </dependency>
 
         <dependency>
-            <artifactId>commons-logging</artifactId>
-            <groupId>commons-logging</groupId>
-            <version>1.2</version>
+            <groupId>org.smooks.cartridges.edi</groupId>
+            <artifactId>smooks-edifact-cartridge</artifactId>
+            <version>${smooks.edifact.cartridge.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.smooks.cartridges.edi</groupId>
+            <artifactId>d01b-edifact-binding</artifactId>
+            <version>${smooks.edifact.cartridge.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
+            <groupId>org.smooks.cartridges.edi</groupId>
+            <artifactId>edifact-schemas</artifactId>
+            <version>${smooks.edifact.cartridge.version}</version>
+            <classifier>d01b</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.17.0</version>
         </dependency>
 
         <!-- Apache POI: required for Excel importing support. -->
@@ -280,13 +307,19 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-rabbitmq</artifactId>
+            <version>3.14.7</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
         <finalName>${project.artifactId}</finalName>
-
         <plugins>
-            <plugin>
+             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <configuration>
@@ -324,106 +357,151 @@
             </plugin>
 
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
-                        <id>xjc-schema-metasfresh-inhouse-v2</id>
+                        <id>generate-xjc-schema-metasfresh-inhouse-v2</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/xsd/metasfreshinhousev2</schemaDirectory>
-                            <generatePackage>${jaxb.inhouse.v2.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev2</generateDirectory>
+                            <sources>
+                                <source>src/main/xsd/metasfreshinhousev2/MetasfreshInHouseV2.xsd</source>
+                            </sources>
+                            <packageName>${jaxb.inhouse.v2.packageName}</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev2</outputDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <extension>true</extension>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>xjc-stepcom-orders</id>
+                        <id>generate-xjc-stepcom-orders</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/xsd/stepcom/orders</schemaDirectory>
-                            <generatePackage>${jaxb.orders.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_orders</generateDirectory>
+                            <sources>
+                                <source>src/main/xsd/stepcom/orders/Xbest4h.xsd</source>
+                            </sources>
+                            <packageName>${jaxb.orders.packageName}</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc_stepcom_orders</outputDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <extension>true</extension>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>xjc-stepcom-desadv</id>
+                        <id>generate-xjc-stepcom-desadv</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/xsd/stepcom/desadv</schemaDirectory>
-                            <generatePackage>${jaxb.desadv.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_desadv</generateDirectory>
+                            <sources>
+                                <source>src/main/xsd/stepcom/desadv/Xlief4h.xsd</source>
+                            </sources>
+                            <packageName>${jaxb.desadv.packageName}</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc_stepcom_desadv</outputDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <extension>true</extension>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>xjc-stepcom-invoic</id>
+                        <id>generate-xjc-stepcom-invoic</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/xsd/stepcom/invoic</schemaDirectory>
-                            <generatePackage>${jaxb.invoic.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_invoic</generateDirectory>
+                            <sources>
+                                <source>src/main/xsd/stepcom/invoic/Xrech4h.xsd</source>
+                            </sources>
+                            <packageName>${jaxb.invoic.packageName}</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc_stepcom_invoic</outputDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <extension>true</extension>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>xjc-schema-remadv</id>
+                        <id>generate-xjc-ecosio-remadv</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <bindingDirectory>src/main/xsd/ecosio/ERPEL1p0</bindingDirectory>
-                            <schemaDirectory>src/main/xsd/ecosio/ERPEL1p0</schemaDirectory>
+                            <sources>
+                                <source>src/main/xsd/ecosio/ERPEL1p0/Document.xsd</source>
+                                <source>src/main/xsd/ecosio/ERPEL1p0/EBDH.xsd</source>
+                                <source>src/main/xsd/ecosio/ERPEL1p0/Message.xsd</source>
+                            </sources>
+                            <xjbSources>
+                                <xjbSource>src/main/xsd/ecosio/ERPEL1p0/ecosio.xjb</xjbSource>
+                            </xjbSources>
                             <!-- don't try to enforce one package like this (unless you know what you are doing ofc):
                             <generatePackage>${jaxb.ecosio.remadv.packageName}</generatePackage>
-
                             because it will end with "Two declarations cause a collision in the ObjectFactory class."
                             -->
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</generateDirectory>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</outputDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <extension>true</extension>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>xjc-schema-metasfresh-inhouse-v1</id>
+                        <id>generate-xjc-schema-metasfresh-inhouse-v1</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/xsd/metasfreshinhousev1</schemaDirectory>
-                            <generatePackage>${jaxb.inhouse.v1.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev1</generateDirectory>
+                            <sources>
+                                <source>src/main/xsd/metasfreshinhousev1/MetasfreshInHouseV1.xsd</source>
+                            </sources>
+                            <packageName>${jaxb.inhouse.v1.packageName}</packageName>
+                            <outputDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev1</outputDirectory>
+                            <clearOutputDir>false</clearOutputDir>
+                            <extension>true</extension>
                         </configuration>
                     </execution>
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                        <version>2.3.1</version>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>4.0.2</version>
                     </dependency>
                     <dependency>
                         <groupId>org.glassfish.jaxb</groupId>
                         <artifactId>jaxb-runtime</artifactId>
-                        <version>2.3.1</version>
+                        <version>4.0.5</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.activation</groupId>
+                        <artifactId>jakarta.activation-api</artifactId>
+                        <version>2.1.3</version>
+                    </dependency>
+                    <!-- Exclude conflicting XML processing libraries -->
+                    <dependency>
+                        <groupId>xerces</groupId>
+                        <artifactId>xercesImpl</artifactId>
+                        <version>2.12.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                        <version>1.4.01</version>
                     </dependency>
                 </dependencies>
             </plugin>
-
+            
             <plugin>
                 <!-- Adds src/main/java-xsd as additional source folder (if the directory
                     is present) -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>add-sources-java-xjc</id>
@@ -448,7 +526,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -459,7 +537,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>

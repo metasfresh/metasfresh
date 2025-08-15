@@ -342,7 +342,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		Check.assumeNotEmpty(receiptSchedules, "receiptSchedules not empty");
 		if (receiptSchedules.size() == 1)
 		{
-			final I_M_ReceiptSchedule receiptSchedule = receiptSchedules.get(0);
+			final I_M_ReceiptSchedule receiptSchedule = receiptSchedules.getFirst();
 			return createLUTUConfigurationManager(receiptSchedule);
 		}
 		else
@@ -817,7 +817,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		}
 
 		final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
-		huWeightNetAdjuster.setInScopeHU_IDs(org.elasticsearch.common.collect.Set.of(HuId.ofRepoId(hu.getM_HU_ID())));
+		huWeightNetAdjuster.setInScopeHU_IDs(Set.of(HuId.ofRepoId(hu.getM_HU_ID())));
 
 		final List<I_M_ReceiptSchedule> receiptSchedules = huAssignmentDAO.retrieveModelsForHU(hu, I_M_ReceiptSchedule.class);
 

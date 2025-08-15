@@ -192,7 +192,7 @@ public class ProductsToPickRowsService
 
 	public boolean noRowsEligibleForPicking(final List<ProductsToPickRow> selectedRows)
 	{
-		return !streamRowsEligibleForPicking(selectedRows).findAny().isPresent();
+		return streamRowsEligibleForPicking(selectedRows).findAny().isEmpty();
 	}
 
 	@NonNull

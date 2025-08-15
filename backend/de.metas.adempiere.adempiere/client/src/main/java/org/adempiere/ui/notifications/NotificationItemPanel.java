@@ -27,6 +27,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serial;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -52,6 +53,7 @@ import net.miginfocom.swing.MigLayout;
  */
 class NotificationItemPanel extends JPanel
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	private final NotificationItem item;

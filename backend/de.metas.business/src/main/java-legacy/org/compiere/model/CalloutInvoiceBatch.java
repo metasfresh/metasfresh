@@ -30,6 +30,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -170,7 +171,7 @@ public class CalloutInvoiceBatch extends CalloutEngine
 				}
 				else
 				{
-					mTab.setValue("C_BPartner_Location_ID", new Integer(locID));
+					mTab.setValue("C_BPartner_Location_ID", Integer.valueOf(locID));
 				}
 
 				//	Contact - overwritten by InfoBP selection
@@ -189,7 +190,7 @@ public class CalloutInvoiceBatch extends CalloutEngine
 				}
 				else
 				{
-					mTab.setValue("AD_User_ID", new Integer(contID));
+					mTab.setValue("AD_User_ID", Integer.valueOf(contID));
 				}
 
 				//	CreditAvailable
@@ -394,7 +395,7 @@ public class CalloutInvoiceBatch extends CalloutEngine
 		BigDecimal LineNetAmt = QtyEntered.multiply(PriceEntered);
 		if (LineNetAmt.scale() > StdPrecision)
 		{
-			LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+			LineNetAmt = LineNetAmt.setScale(StdPrecision, RoundingMode.HALF_UP);
 		}
 
 		//	Calculate Tax Amount

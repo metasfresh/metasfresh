@@ -102,14 +102,14 @@ public class HUShipmentProcess_AttributesAggregation_WithDifferentTemplateAttrib
 		//
 		// Get generated shipment
 		assertThat(generatedShipments).as("Invalid generated shipments count").hasSize(1);
-		final I_M_InOut shipment = generatedShipments.get(0);
+		final I_M_InOut shipment = generatedShipments.getFirst();
 
 		//
 		// Retrieve generated shipment lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
 		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(2);
 
-		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
+		final I_M_InOutLine shipmentLine1 = shipmentLines.getFirst();
 		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
 
 		assertShipmentLineASIAttributeValueString(lu1_attributeValue, shipmentLine1, attribute);

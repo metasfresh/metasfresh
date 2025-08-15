@@ -71,9 +71,8 @@ public final class ListUtils
 			return null;
 		}
 
-		if (iterable instanceof Collection)
+		if (iterable instanceof Collection<? extends T> col)
 		{
-			final Collection<? extends T> col = (Collection<? extends T>)iterable;
 			return new ArrayList<>(col);
 		}
 		else

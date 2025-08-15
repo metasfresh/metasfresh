@@ -374,7 +374,7 @@ final class ChangeLogUtil
 			@NonNull final Optional<RecordChangeLogEntry> currentLogEntry,
 			@NonNull final IPair<Instant, UserId> previousLastChanged)
 	{
-		if (!currentLogEntry.isPresent())
+		if (currentLogEntry.isEmpty())
 		{
 			return previousLastChanged;
 		}

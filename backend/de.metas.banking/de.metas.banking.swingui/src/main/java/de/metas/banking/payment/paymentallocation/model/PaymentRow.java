@@ -53,7 +53,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 
 	public static IPaymentRow castOrNull(final IAllocableDocRow row)
 	{
-		return row instanceof IPaymentRow ? (IPaymentRow)row : null;
+		return row instanceof IPaymentRow ipr ? ipr : null;
 	}
 
 	private final OrgId orgId;

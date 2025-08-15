@@ -53,7 +53,7 @@ public class ArrayExcelExporterTest
 		assertThat(excelFormat.getLastRowIndex()).isEqualByComparingTo(65535); // guard
 		final List<List<Object>> data = generateData(excelFormat.getLastRowIndex() * 2, 1);
 		assertThat(data).hasSize(131070); // 65535 * 2
-		assertThat(data.get(data.size() - 1).get(0)).isEqualTo("cell 131069 x 0");
+		assertThat(data.getLast().getFirst()).isEqualTo("cell 131069 x 0");
 		// System.out.println("Generated " + data.size() + " rows");
 		// final Stopwatch stopwatch = Stopwatch.createStarted();
 

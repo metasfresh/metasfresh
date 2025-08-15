@@ -86,7 +86,7 @@ public class MediatedCommissionAlgorithmTest
 		//then
 		assertThat(commissionShare.size()).isEqualTo(1);
 
-		expect.serializer("orderedJson").toMatchSnapshot(commissionShare.get(0));
+		expect.serializer("orderedJson").toMatchSnapshot(commissionShare.getFirst());
 	}
 
 	@Test

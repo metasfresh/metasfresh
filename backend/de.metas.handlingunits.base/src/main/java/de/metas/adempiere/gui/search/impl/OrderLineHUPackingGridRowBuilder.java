@@ -102,9 +102,9 @@ public class OrderLineHUPackingGridRowBuilder implements IGridTabRowBuilder
 	@Override
 	public void setSource(final Object model)
 	{
-		if (model instanceof IHUPackingAware)
+		if (model instanceof IHUPackingAware aware)
 		{
-			record = (IHUPackingAware)model;
+			record = aware;
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_C_Order.class))
 		{

@@ -101,7 +101,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 		{
 			reversedLines = createReceiptInOutLines(IDocument.STATUS_Reversed);
-			assertThat(reversedLines.get(0).getM_Product_ID()).isEqualTo(helper.pTomato.getM_Product_ID());
+			assertThat(reversedLines.getFirst().getM_Product_ID()).isEqualTo(helper.pTomato.getM_Product_ID());
 			assertThat(reversedLines.get(1).getM_Product_ID()).isEqualTo(helper.pSalad.getM_Product_ID());
 
 			reversedLineTomatoHU = createLU(helper.pTomatoProductId, new BigDecimal("20"));
@@ -110,7 +110,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 			reversedLineSaladHU = createLU(helper.pSaladProductId, new BigDecimal("20"));
 
 			createAssignments(
-					reversedLines.get(0), // the one with tomato
+					reversedLines.getFirst(), // the one with tomato
 					reversedLineTomatoHU);
 
 			createAssignments(
@@ -123,7 +123,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final I_M_HU completedLineSaladHU;
 		{
 			completedLines = createReceiptInOutLines(IDocument.STATUS_Completed);
-			assertThat(completedLines.get(0).getM_Product_ID()).isEqualTo(helper.pTomatoProductId.getRepoId());
+			assertThat(completedLines.getFirst().getM_Product_ID()).isEqualTo(helper.pTomatoProductId.getRepoId());
 			assertThat(completedLines.get(1).getM_Product_ID()).isEqualTo(helper.pSaladProductId.getRepoId());
 
 			completedLineTomatoHU = createLU(helper.pTomatoProductId, new BigDecimal("30"));
@@ -133,7 +133,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 			assertThat(handlingUnitsBL.isTopLevel(completedLineSaladHU)).isTrue();
 
 			createAssignments(
-					completedLines.get(0), // the one with tomato
+					completedLines.getFirst(), // the one with tomato
 					completedLineTomatoHU);
 
 			createAssignments(
@@ -169,11 +169,11 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 		final List<de.metas.materialtracking.model.I_M_InOutLine> provideIssuedInOutLinesTomato = new PPOrderMInOutLineRetrievalService().provideIssuedInOutLines(issueCostCollectorTomato);
 		assertThat(provideIssuedInOutLinesTomato).hasSize(1);
-		assertThat(provideIssuedInOutLinesTomato.get(0)).isEqualTo(completedLines.get(0)); // expecting the completed tomato line
+		assertThat(provideIssuedInOutLinesTomato.getFirst()).isEqualTo(completedLines.getFirst()); // expecting the completed tomato line
 
 		final List<de.metas.materialtracking.model.I_M_InOutLine> provideIssuedInOutLinesSalad = new PPOrderMInOutLineRetrievalService().provideIssuedInOutLines(issueCostCollectorSalad);
 		assertThat(provideIssuedInOutLinesSalad).hasSize(1);
-		assertThat(provideIssuedInOutLinesSalad.get(0)).isEqualTo(completedLines.get(1)); // expecting the completed salad line
+		assertThat(provideIssuedInOutLinesSalad.getFirst()).isEqualTo(completedLines.get(1)); // expecting the completed salad line
 
 	}
 

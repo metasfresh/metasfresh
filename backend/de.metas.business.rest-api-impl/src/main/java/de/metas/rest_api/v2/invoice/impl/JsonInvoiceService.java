@@ -201,8 +201,7 @@ public class JsonInvoiceService
 		}
 
 		final BankAccountId bankAccountId = paymentService.determineInboundBankAccountId(orgId, currencyId, request.getTargetIBAN())
-				.orElseThrow(() -> new AdempiereException(String.format(
-						"Cannot find Bank Account for org-id: %s, currency: %s and iban: %s", orgId, currencyId, request.getTargetIBAN())));
+				.orElseThrow(() -> new AdempiereException("Cannot find Bank Account for org-id: %s, currency: %s and iban: %s".formatted(orgId, currencyId, request.getTargetIBAN())));
 
 		final ExternalIdentifier bPartnerExternalIdentifier = ExternalIdentifier.of(request.getBpartnerIdentifier());
 		final BPartnerId bPartnerId = jsonRetrieverService.resolveBPartnerExternalIdentifier(bPartnerExternalIdentifier, orgId)

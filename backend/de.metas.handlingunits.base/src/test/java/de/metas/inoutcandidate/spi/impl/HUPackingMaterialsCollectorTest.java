@@ -87,7 +87,7 @@ public class HUPackingMaterialsCollectorTest
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdLUs.size()).isEqualTo(1);
-		return createdLUs.get(0);
+		return createdLUs.getFirst();
 	}
 
 	private int extractAggregatedTUsCount(final I_M_HU luHU)
@@ -95,7 +95,7 @@ public class HUPackingMaterialsCollectorTest
 		final List<I_M_HU> aggregatedHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
 		assertThat(aggregatedHUs).hasSize(1);
 
-		final I_M_HU aggregatedHU = aggregatedHUs.get(0);
+		final I_M_HU aggregatedHU = aggregatedHUs.getFirst();
 		assertThat(handlingUnitsBL.isAggregateHU(aggregatedHU)).isTrue();
 
 		assertThat(aggregatedHU.getM_HU_Item_Parent().getM_HU_PI_Item_ID()).isEqualTo(data.piLU_Item_IFCO.getM_HU_PI_Item_ID());

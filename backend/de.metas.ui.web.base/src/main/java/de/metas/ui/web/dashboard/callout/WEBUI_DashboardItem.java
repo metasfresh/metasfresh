@@ -27,13 +27,12 @@ import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.kpi.descriptor.KPIId;
 import de.metas.ui.web.kpi.descriptor.KPIRepository;
 import de.metas.util.Services;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 @Callout(I_WEBUI_DashboardItem.class)
 @Component

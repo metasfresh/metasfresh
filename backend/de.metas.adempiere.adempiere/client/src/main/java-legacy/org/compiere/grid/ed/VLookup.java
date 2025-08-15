@@ -1396,7 +1396,7 @@ public class VLookup extends JComponent
 		log.debug(m_columnName + " - Unique ID=" + id);
 		m_value = null;     // forces re-display if value is unchanged but text updated and still unique
 		resetTabInfo();
-		actionCombo(new Integer(id));          // data binding
+		actionCombo(Integer.valueOf(id));          // data binding
 		//
 		// Don't request focus if value was solved - teo_sarca [ 2552901 ]
 		if (id <= 0)

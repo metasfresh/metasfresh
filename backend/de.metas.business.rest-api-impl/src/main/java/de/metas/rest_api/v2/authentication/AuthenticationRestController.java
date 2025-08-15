@@ -250,7 +250,7 @@ public class AuthenticationRestController
 		}
 		else if (roles.size() == 1)
 		{
-			return roles.get(0);
+			return roles.getFirst();
 		}
 		else
 		{
@@ -267,7 +267,7 @@ public class AuthenticationRestController
 
 			if (nonSysAdminRoles.size() == 1)
 			{
-				return nonSysAdminRoles.get(0);
+				return nonSysAdminRoles.getFirst();
 			}
 			else
 			{

@@ -22,6 +22,7 @@
 
 package de.metas.elasticsearch.impl;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.util.Services;
@@ -29,7 +30,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.elasticsearch.client.RestHighLevelClient;
 
 public class ESSystem implements IESSystem
 {
@@ -38,7 +38,7 @@ public class ESSystem implements IESSystem
 	// IMPORTANT: fetch it only when needed and when this feature is enabled!!!
 	// else it might start the elasticsearch client when the elasticsearch server does not even exists,
 	// which will flood the console with errors
-	private RestHighLevelClient elasticsearchClient = null;
+	private ElasticsearchClient elasticsearchClient = null;
 
 	public static final String SYSCONFIG_elastic_enable = "elastic_enable";
 	private static final BooleanWithReason DISABLED_BECAUSE_JUNIT_MODE = BooleanWithReason.falseBecause("Elasticsearch disabled when running in JUnit test mode");
@@ -71,14 +71,14 @@ public class ESSystem implements IESSystem
 	}
 
 	@Override
-	public RestHighLevelClient elasticsearchClient()
+	public ElasticsearchClient elasticsearchClient()
 	{
 		assertEnabled();
 
-		RestHighLevelClient elasticsearchClient = this.elasticsearchClient;
+		ElasticsearchClient elasticsearchClient = this.elasticsearchClient;
 		if (elasticsearchClient == null)
 		{
-			elasticsearchClient = this.elasticsearchClient = SpringContextHolder.instance.getBean(RestHighLevelClient.class);
+			elasticsearchClient = this.elasticsearchClient = SpringContextHolder.instance.getBean(ElasticsearchClient.class);
 		}
 
 		return elasticsearchClient;

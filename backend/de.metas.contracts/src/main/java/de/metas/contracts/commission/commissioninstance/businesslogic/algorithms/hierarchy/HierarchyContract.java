@@ -70,9 +70,9 @@ public class HierarchyContract implements CommissionContract
 		{
 			return Optional.empty();
 		}
-		if (contract instanceof HierarchyContract)
+		if (contract instanceof HierarchyContract hierarchyContract)
 		{
-			return Optional.of((HierarchyContract)contract);
+			return Optional.of(hierarchyContract);
 		}
 		return Optional.empty();
 	}

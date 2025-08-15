@@ -287,7 +287,7 @@ public class HUInOutBL implements IHUInOutBL
 
 		if (inOutLines.size() == 1)
 		{
-			final I_M_InOutLine inOutLine = inOutLines.get(0);
+			final I_M_InOutLine inOutLine = inOutLines.getFirst();
 			return new DocumentLUTUConfigurationManager<>(inOutLine, lutuConfigurationHandler);
 		}
 		else
@@ -408,7 +408,7 @@ public class HUInOutBL implements IHUInOutBL
 	{
 
 		final Optional<AttributeId> serialNoAttributeIdOptional = serialNoBL.getSerialNoAttributeId();
-		if (!serialNoAttributeIdOptional.isPresent())
+		if (serialNoAttributeIdOptional.isEmpty())
 		{
 			return false;
 		}

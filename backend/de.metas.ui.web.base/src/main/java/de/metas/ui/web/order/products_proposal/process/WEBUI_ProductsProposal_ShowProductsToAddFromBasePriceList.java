@@ -39,7 +39,7 @@ public class WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList extends P
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getView().getBasePriceListVersionId().isPresent())
+		if (getView().getBasePriceListVersionId().isEmpty())
 		{
 			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_MissingBasePriceListVersion);
 			return ProcessPreconditionsResolution.reject(msg);

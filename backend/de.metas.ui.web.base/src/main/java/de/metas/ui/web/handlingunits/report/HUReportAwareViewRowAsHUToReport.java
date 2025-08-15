@@ -47,7 +47,7 @@ public final class HUReportAwareViewRowAsHUToReport implements HUToReport
 	@Nullable
 	public static HUReportAwareViewRowAsHUToReport ofOrNull(final IViewRow row)
 	{
-		return row instanceof HUReportAwareViewRow ? new HUReportAwareViewRowAsHUToReport((HUReportAwareViewRow)row) : null;
+		return row instanceof HUReportAwareViewRow huravr ? new HUReportAwareViewRowAsHUToReport(huravr) : null;
 	}
 
 	private final HUReportAwareViewRow row;

@@ -22,12 +22,12 @@
 
 package de.metas.fulltextsearch.config;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.model.I_ES_FTS_Config;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -53,7 +53,7 @@ public class FTSConfigService
 		return esSystem.getEnabled();
 	}
 
-	public RestHighLevelClient elasticsearchClient()
+	public ElasticsearchClient elasticsearchClient()
 	{
 		return esSystem.elasticsearchClient();
 	}

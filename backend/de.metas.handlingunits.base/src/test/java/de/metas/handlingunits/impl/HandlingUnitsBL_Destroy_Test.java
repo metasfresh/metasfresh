@@ -132,10 +132,10 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 		assertThat(tuHUs).as("Invalid TUs count").hasSize(2); // we expect one "real" HU and one aggregate "stub" HU
 
 		// the ordering shall be such that the first HU is the real one
-		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.get(0))).isFalse();
+		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.getFirst())).isFalse();
 		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.get(1))).isTrue();
 
-		final I_M_HU tuHU = tuHUs.get(0);
+		final I_M_HU tuHU = tuHUs.getFirst();
 
 		//
 		// Empty the TU (i.e. just remove it's storage Qty)
@@ -177,10 +177,10 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 		assertThat(tuHUs).as("Invalid TUs count").hasSize(2); // we expect one "real" HU and one aggregate "stub" HU
 
 		// the ordering shall be such that the first HU is the real one
-		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.get(0))).isFalse();
+		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.getFirst())).isFalse();
 		assertThat(handlingUnitsBL.isAggregateHU(tuHUs.get(1))).isTrue();
 
-		final I_M_HU tuHU = tuHUs.get(0);
+		final I_M_HU tuHU = tuHUs.getFirst();
 
 		//
 		// Take out the TU from LU

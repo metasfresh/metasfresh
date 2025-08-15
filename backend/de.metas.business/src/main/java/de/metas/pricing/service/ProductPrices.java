@@ -153,7 +153,7 @@ public class ProductPrices
 
 		final UOMConversionsMap conversionsMap = uomConversionRepo.getProductConversions(productId);
 
-		if (!conversionsMap.getRateIfExists(UomId.ofRepoId(product.getC_UOM_ID()), UomId.ofRepoId(productPrice.getC_UOM_ID())).isPresent())
+		if (conversionsMap.getRateIfExists(UomId.ofRepoId(product.getC_UOM_ID()), UomId.ofRepoId(productPrice.getC_UOM_ID())).isEmpty())
 		{
 			throw new AdempiereException(MSG_NO_UOM_CONVERSION_AVAILABLE).markAsUserValidationError();
 		}
@@ -194,11 +194,11 @@ public class ProductPrices
 		}
 		else if (allMainPrices.size() == 1)
 		{
-			return allMainPrices.get(0);
+			return allMainPrices.getFirst();
 		}
 		else
 		{
-			throw newDuplicateMainProductPriceException(allMainPrices.get(0));
+			throw newDuplicateMainProductPriceException(allMainPrices.getFirst());
 		}
 	}
 

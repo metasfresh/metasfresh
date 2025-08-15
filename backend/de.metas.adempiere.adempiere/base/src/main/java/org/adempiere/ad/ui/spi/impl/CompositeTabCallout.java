@@ -22,18 +22,15 @@ package org.adempiere.ad.ui.spi.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.concurrent.Immutable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.ITabCallout;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
+import javax.annotation.concurrent.Immutable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Immutable
 public final class CompositeTabCallout implements ITabCallout
@@ -139,7 +136,7 @@ public final class CompositeTabCallout implements ITabCallout
 			}
 			else if (tabCalloutsAll.size() == 1)
 			{
-				return tabCalloutsAll.get(0);
+				return tabCalloutsAll.getFirst();
 			}
 			else
 			{

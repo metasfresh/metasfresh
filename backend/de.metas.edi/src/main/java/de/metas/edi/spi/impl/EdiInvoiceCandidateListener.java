@@ -62,7 +62,7 @@ public class EdiInvoiceCandidateListener implements IInvoiceCandidateListener
 		{
 			return false;
 		}
-		final boolean isEdiEnabled = InterfaceWrapperHelper.create(fromCandidates.get(0), de.metas.edi.model.I_C_Invoice_Candidate.class).isEdiEnabled();
+		final boolean isEdiEnabled = InterfaceWrapperHelper.create(fromCandidates.getFirst(), de.metas.edi.model.I_C_Invoice_Candidate.class).isEdiEnabled();
 
 		for (int i = 0; i < fromCandidates.size(); i++)
 		{

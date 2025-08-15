@@ -175,9 +175,8 @@ import java.util.Properties;
 		{
 			return null;
 		}
-		else if (attributeSet instanceof IAttributeStorage)
+		else if (attributeSet instanceof IAttributeStorage attributeStorage)
 		{
-			final IAttributeStorage attributeStorage = (IAttributeStorage)attributeSet;
 			return Weightables.wrap(attributeStorage);
 		}
 		else

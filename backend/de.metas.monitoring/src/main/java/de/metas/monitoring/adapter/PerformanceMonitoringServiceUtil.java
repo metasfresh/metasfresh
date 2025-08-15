@@ -29,9 +29,9 @@ public class PerformanceMonitoringServiceUtil
 {
 	public RuntimeException asRTE(Exception e)
 	{
-		if (e instanceof RuntimeException)
+		if (e instanceof RuntimeException exception)
 		{
-			return (RuntimeException)e;
+			return exception;
 		}
 		return new RuntimeException(e);
 	}

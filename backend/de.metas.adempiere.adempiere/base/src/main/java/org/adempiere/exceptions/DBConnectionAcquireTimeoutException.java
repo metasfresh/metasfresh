@@ -1,5 +1,7 @@
 package org.adempiere.exceptions;
 
+import java.io.Serial;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,6 +32,7 @@ package org.adempiere.exceptions;
  */
 public class DBConnectionAcquireTimeoutException extends DBNoConnectionException
 {
+	@Serial
 	private static final long serialVersionUID = -6558012776228675922L;
 
 	public DBConnectionAcquireTimeoutException(final Throwable timeoutException)

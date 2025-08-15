@@ -23,12 +23,14 @@
 package de.metas.security.permissions2;
 
 import de.metas.i18n.ITranslatableString;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import lombok.NonNull;
+import java.io.Serial;
 
 public class PermissionNotGrantedException extends AdempiereException
 {
+	@Serial
 	private static final long serialVersionUID = 8485777988689504117L;
 
 	public PermissionNotGrantedException(@NonNull final ITranslatableString message)

@@ -1,10 +1,10 @@
 package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 import lombok.ToString;
-import org.elasticsearch.common.util.set.Sets;
 
 import java.util.Collection;
 import java.util.HashSet;

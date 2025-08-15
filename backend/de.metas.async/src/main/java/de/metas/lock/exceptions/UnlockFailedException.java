@@ -5,6 +5,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.lock.api.IUnlockCommand;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when a lock releasing failed.
  * 
@@ -16,13 +18,14 @@ public class UnlockFailedException extends LockException
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 1714489085379778609L;
 	
 	public static final UnlockFailedException wrapIfNeeded(final Exception e)
 	{
-		if (e instanceof UnlockFailedException)
+		if (e instanceof UnlockFailedException exception)
 		{
-			return (UnlockFailedException)e;
+			return exception;
 		}
 		else
 		{

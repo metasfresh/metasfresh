@@ -90,14 +90,14 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 
 		Document document = null;
 		Boolean useOldValuesDefault = null;
-		if (model instanceof Document)
+		if (model instanceof Document document1)
 		{
-			document = (Document)model;
+			document = document1;
 			useOldValuesDefault = false;
 		}
-		else if (model instanceof IDocumentAware)
+		else if (model instanceof IDocumentAware aware)
 		{
-			document = ((IDocumentAware)model).getDocument();
+			document = aware.getDocument();
 			useOldValuesDefault = false;
 		}
 
@@ -154,14 +154,14 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			return null;
 		}
 
-		if (model instanceof Document)
+		if (model instanceof Document document1)
 		{
-			return (Document)model;
+			return document1;
 		}
 
-		if (model instanceof IDocumentAware)
+		if (model instanceof IDocumentAware aware)
 		{
-			return ((IDocumentAware)model).getDocument();
+			return aware.getDocument();
 		}
 
 		final DocumentInterfaceWrapper wrapper = getWrapper(model);
@@ -187,16 +187,15 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		if (Proxy.isProxyClass(model.getClass()))
 		{
 			final InvocationHandler ih = Proxy.getInvocationHandler(model);
-			if (ih instanceof DocumentInterfaceWrapper)
+			if (ih instanceof DocumentInterfaceWrapper wrapper)
 			{
-				final DocumentInterfaceWrapper wrapper = (DocumentInterfaceWrapper)ih;
 				return wrapper;
 			}
 			return null;
 		}
-		else if (model instanceof DocumentInterfaceWrapper)
+		else if (model instanceof DocumentInterfaceWrapper wrapper)
 		{
-			return (DocumentInterfaceWrapper)model;
+			return wrapper;
 		}
 
 		return null;
@@ -214,29 +213,27 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 		if (Proxy.isProxyClass(model.getClass()))
 		{
 			final InvocationHandler ih = Proxy.getInvocationHandler(model);
-			if (ih instanceof DocumentInterfaceWrapper)
+			if (ih instanceof DocumentInterfaceWrapper wrapper)
 			{
-				final DocumentInterfaceWrapper wrapper = (DocumentInterfaceWrapper)ih;
 				return wrapper;
 			}
 			return null;
 		}
-		else if (model instanceof DocumentInterfaceWrapper)
+		else if (model instanceof DocumentInterfaceWrapper wrapper)
 		{
-			return (DocumentInterfaceWrapper)model;
+			return wrapper;
 		}
 
 		//
 		// Try getting the document and create a wrapper for it
-		if (model instanceof Document)
+		if (model instanceof Document document)
 		{
-			final Document document = (Document)model;
 			final boolean useOldValues = false;
 			return new DocumentInterfaceWrapper(document, useOldValues);
 		}
-		else if (model instanceof IDocumentAware)
+		else if (model instanceof IDocumentAware aware)
 		{
-			final Document document = ((IDocumentAware)model).getDocument();
+			final Document document = aware.getDocument();
 			final boolean useOldValues = false;
 			return new DocumentInterfaceWrapper(document, useOldValues);
 		}
@@ -422,9 +419,8 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 			{
 				return null;
 			}
-			else if (value instanceof LookupValue)
+			else if (value instanceof LookupValue lookupValue)
 			{
-				final LookupValue lookupValue = (LookupValue)value;
 				return lookupValue.getId();
 			}
 		}

@@ -31,7 +31,7 @@ import org.compiere.model.I_C_Location;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.time.Instant;
 
 public class ShipperTestHelper
@@ -65,7 +65,7 @@ public class ShipperTestHelper
 	{
 		try
 		{
-			Files.write(Paths.get("C:", "a", Instant.now().toString().replace(":", ".") + ".pdf"), pdf);
+			Files.write(Path.of("C:", "a", Instant.now().toString().replace(":", ".") + ".pdf"), pdf);
 		}
 		catch (final IOException e)
 		{

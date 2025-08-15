@@ -105,7 +105,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 
 		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0).getRepoId(), printRecipient.getAD_User_ID());
+		assertEquals(result.getFirst().getRepoId(), printRecipient.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 
@@ -128,7 +128,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 
 		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0).getRepoId(), printRecipientEffective.getAD_User_ID());
+		assertEquals(result.getFirst().getRepoId(), printRecipientEffective.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 
@@ -154,7 +154,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 
 		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0).getRepoId(), printRecipientEffective.getAD_User_ID());
+		assertEquals(result.getFirst().getRepoId(), printRecipientEffective.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 
@@ -187,7 +187,7 @@ public class C_Printing_Queue_RecipientHandlerTests
 		// the result shall *not* be printRecipientWrong. We want the handler to update the existing record no to reset it
 		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0).getRepoId(), printRecipientEffective.getAD_User_ID());
+		assertEquals(result.getFirst().getRepoId(), printRecipientEffective.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 }

@@ -40,9 +40,8 @@ public class StringToNumericModifier implements IQueryFilterModifier
 	@Override
 	public String getValueSql(final Object value, final List<Object> params)
 	{
-		if (value instanceof ModelColumnNameValue<?>)
+		if (value instanceof ModelColumnNameValue<?> modelValue)
 		{
-			final ModelColumnNameValue<?> modelValue = (ModelColumnNameValue<?>)value;
 			return modelValue.getColumnName();
 		}
 

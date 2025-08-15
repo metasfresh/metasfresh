@@ -87,7 +87,7 @@ public class HUPPOrderIssueProducer
 		}
 		else if (candidates.size() == 1)
 		{
-			return Optional.of(candidates.get(0));
+			return Optional.of(candidates.getFirst());
 		}
 		else
 		{

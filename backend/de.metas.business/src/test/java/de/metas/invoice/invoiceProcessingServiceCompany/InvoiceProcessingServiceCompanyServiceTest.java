@@ -476,8 +476,33 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		}
 	}
 
+	@Builder(builderMethodName = "bpartnerAndLocation", builderClassName = "$BPartnerAndLocationBuilder")
+	private BPartnerLocationId createBPartnerAndLocation(
+			@NonNull final PricingSystemId purchasePricingSystemId,
+			@NonNull final CountryId countryId)
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setPO_PricingSystem_ID(purchasePricingSystemId.getRepoId());
+		bpartner.setPaymentRule(PaymentRule.OnCredit.getCode());
+		saveRecord(bpartner);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setC_Country_ID(countryId.getRepoId());
+		saveRecord(location);
+
+		final I_C_BPartner_Location bpartnerLocation = newInstance(I_C_BPartner_Location.class);
+		bpartnerLocation.setC_BPartner_ID(bpartnerId.getRepoId());
+		bpartnerLocation.setIsBillToDefault(true);
+		bpartnerLocation.setIsBillTo(true);
+		bpartnerLocation.setC_Location_ID(location.getC_Location_ID());
+		saveRecord(bpartnerLocation);
+
+		return BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocation.getC_BPartner_Location_ID());
+	}
+
 	@Nested
-	public class generateServiceInvoice
+	class generateServiceInvoice
 	{
 		private ITrxManager trxManager;
 
@@ -558,31 +583,6 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			product.setIsStocked(false);
 			saveRecord(product);
 			return ProductId.ofRepoId(product.getM_Product_ID());
-		}
-
-		@Builder(builderMethodName = "bpartnerAndLocation", builderClassName = "$BPartnerAndLocationBuilder")
-		private BPartnerLocationId createBPartnerAndLocation(
-				@NonNull final PricingSystemId purchasePricingSystemId,
-				@NonNull final CountryId countryId)
-		{
-			final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
-			bpartner.setPO_PricingSystem_ID(purchasePricingSystemId.getRepoId());
-			bpartner.setPaymentRule(PaymentRule.OnCredit.getCode());
-			saveRecord(bpartner);
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
-
-			final I_C_Location location = newInstance(I_C_Location.class);
-			location.setC_Country_ID(countryId.getRepoId());
-			saveRecord(location);
-
-			final I_C_BPartner_Location bpartnerLocation = newInstance(I_C_BPartner_Location.class);
-			bpartnerLocation.setC_BPartner_ID(bpartnerId.getRepoId());
-			bpartnerLocation.setIsBillToDefault(true);
-			bpartnerLocation.setIsBillTo(true);
-			bpartnerLocation.setC_Location_ID(location.getC_Location_ID());
-			saveRecord(bpartnerLocation);
-
-			return BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocation.getC_BPartner_Location_ID());
 		}
 
 		private PricingSystemId createPricingSystem()
@@ -669,7 +669,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 				final POJOLookupMap db = POJOLookupMap.get();
 				final List<I_C_Invoice> invoices = db.getRecords(I_C_Invoice.class);
 				assertThat(invoices).hasSize(1);
-				final I_C_Invoice serviceInvoice = invoices.get(0);
+				final I_C_Invoice serviceInvoice = invoices.getFirst();
 				assertThat(serviceInvoice.getC_Invoice_ID()).isEqualTo(serviceInvoiceId.getRepoId());
 				assertThat(serviceInvoice.getRef_Invoice_ID()).isEqualTo(3);
 				assertThat(serviceInvoice.getC_BPartner_ID()).isEqualTo(serviceCompanyBPartnerAndLocationId.getBpartnerId().getRepoId());
@@ -683,7 +683,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 				// Check service invoice line
 				final List<I_C_InvoiceLine> serviceInvoiceLines = db.getRecords(I_C_InvoiceLine.class);
 				assertThat(serviceInvoiceLines).hasSize(1);
-				final I_C_InvoiceLine serviceInvoiceLine = serviceInvoiceLines.get(0);
+				final I_C_InvoiceLine serviceInvoiceLine = serviceInvoiceLines.getFirst();
 				assertThat(serviceInvoiceLine.getC_Invoice_ID()).isEqualTo(serviceInvoice.getC_Invoice_ID());
 				assertThat(serviceInvoiceLine.getM_Product_ID()).isEqualTo(serviceFeeProductId.getRepoId());
 				assertThat(serviceInvoiceLine.isManualPrice()).isTrue();

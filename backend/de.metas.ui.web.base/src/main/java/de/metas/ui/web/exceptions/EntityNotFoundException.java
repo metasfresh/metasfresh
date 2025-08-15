@@ -41,9 +41,9 @@ public class EntityNotFoundException extends AdempiereException
 {
 	public static final EntityNotFoundException wrapIfNeeded(@NonNull final Throwable throwable)
 	{
-		if (throwable instanceof EntityNotFoundException)
+		if (throwable instanceof EntityNotFoundException exception)
 		{
-			return (EntityNotFoundException)throwable;
+			return exception;
 		}
 
 		final Throwable cause = extractCause(throwable);
