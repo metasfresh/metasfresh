@@ -115,6 +115,7 @@ public class ProcessExecutionResult
 	 */
 	@Getter private boolean error = false;
 
+	@JsonProperty("errorWasReportedToUser") // annotation needed because we don't have proper setter
 	@Getter private transient boolean errorWasReportedToUser = false;
 
 	/**

@@ -1,15 +1,16 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion;
 
-import lombok.NonNull;
-
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
+import lombok.NonNull;
+
 import javax.xml.stream.FactoryConfigurationError;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 
 /*
@@ -84,17 +85,25 @@ public class JaxbUtil
 				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			}
 
-			// we want the XML header to have " (just like all the rest of the XML) and not '
-			// background: some systems that shall be able to work with our XML have issues with the single quote in the XML header
-			// https://stackoverflow.com/questions/18451870/altering-the-xml-header-produced-by-the-jaxb-marshaller/32892565
-			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true); // let the marshaler *not* provide stupid single-quote header
-			marshaller.setProperty("com.sun.xml.internal.bind.xmlHeaders", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // let the marshaller provide our header
+			// Instead of using internal properties, we manually write the XML header with double quotes
+			// and then marshal the fragment without the standard header
+			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true); // let the marshaler not provide the default header
+			
+			// Write the custom XML header with double quotes manually
+			final OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+			writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			// note that we don't need to a manually write a line-break. If this changes with some future marshaler version, we will notice by way of failing unit-tests
+			writer.flush();
 
 			marshaller.marshal(jaxbElement, outputStream);
 		}
 		catch (final JAXBException | FactoryConfigurationError e)
 		{
 			throw new RuntimeException(e);
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeException("Failed to write XML header", e);
 		}
 	}
 }

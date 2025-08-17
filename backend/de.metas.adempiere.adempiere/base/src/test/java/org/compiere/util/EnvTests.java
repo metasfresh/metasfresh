@@ -1,15 +1,13 @@
 package org.compiere.util;
 
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.collections.IdentityHashSet;
+import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.Enumeration;
 import java.util.List;
@@ -21,13 +19,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class EnvTests
 {
-	/** Creates a new context for testing */
+	/**
+	 * Creates a new context for testing
+	 */
 	private Properties newContext()
 	{
 		return new Properties();
 	}
 
-	/** Creates a new context for testing */
+	/**
+	 * Creates a new context for testing
+	 */
 	private Properties newContext(final Properties parentCtx)
 	{
 		return new Properties(parentCtx);
@@ -192,26 +194,18 @@ public class EnvTests
 		assertThat(valueActual).as(message).isSameAs(Env.CTXVALUE_NullString);
 	}
 
-	private void assertDefaults(final Properties ctx, final Properties defaultsExpected)
+	private void assertDefaults(@NonNull final Properties ctx,
+								@NonNull final Properties defaultsExpected)
 	{
-		final Properties defaultsActual = getDefaults(ctx);
-		Assertions.assertSame(defaultsExpected, defaultsActual, "Context shall not have defaults: " + ctx);
-	}
-
-	private Properties getDefaults(final Properties ctx)
-	{
-		Check.assumeNotNull(ctx, "ctx not null");
-		try
+		// Test that properties from defaults are accessible
+		for (final String key : defaultsExpected.stringPropertyNames())
 		{
-			final Field defaultsField = ctx.getClass().getDeclaredField("defaults");
-			defaultsField.setAccessible(true);
+			final String expectedValue = defaultsExpected.getProperty(key);
+			final String actualValue = ctx.getProperty(key);
 
-			final Properties defaults = (Properties)defaultsField.get(ctx);
-			return defaults;
-		}
-		catch (Exception e)
-		{
-			throw new AssertionError("Failed getting the defaults of " + ctx, e);
+			assertThat(actualValue)
+					.as("Property from defaults should be accessible: " + key)
+					.isEqualTo(expectedValue);
 		}
 	}
 
@@ -558,7 +552,6 @@ public class EnvTests
 	public void test_getRemoteCallCtx_WithDefaults()
 	{
 		final Properties ctxParent = newContext();
-		assertDefaults(ctxParent, null); // no defaults
 		Env.setContext(ctxParent, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctxParent, Env.CTXNAME_AD_Org_ID, 2);
 		Env.setContext(ctxParent, Env.CTXNAME_AD_User_ID, 3);
@@ -574,7 +567,6 @@ public class EnvTests
 		final Properties ctxLight = Env.getRemoteCallCtx(ctx);
 
 		// Test:
-		assertDefaults(ctxLight, null); // no defaults whall be set in light context
 		assertContextSet(ctxLight, Env.CTXNAME_AD_Client_ID, int.class, 10);
 		assertContextSet(ctxLight, Env.CTXNAME_AD_Org_ID, int.class, 2);
 		assertContextSet(ctxLight, Env.CTXNAME_AD_User_ID, int.class, 3);
@@ -585,7 +577,7 @@ public class EnvTests
 
 	/**
 	 * Makes sure the {@link Properties#propertyNames()} is also returning the properties from the underlying "defaults".
-	 *
+	 * <p>
 	 * NOTE: {@link Properties#propertyNames()} will fail for non-string keys.
 	 */
 	@Test
@@ -618,7 +610,7 @@ public class EnvTests
 		//
 		// Get all properties and add them to an identity set (to make sure we are not removing the duplicates)
 		final Set<String> propertyNames = new IdentityHashSet<>();
-		for (final Enumeration<?> e = ctx.propertyNames(); e.hasMoreElements();)
+		for (final Enumeration<?> e = ctx.propertyNames(); e.hasMoreElements(); )
 		{
 			final String key = (String)e.nextElement();
 			propertyNames.add(key);

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="ServerBoot - new_dawn_uat" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" folderName="new_dawn_uat">
-    <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+    <option name="ALTERNATIVE_JRE_PATH" value="temurin-21" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <module name="metasfresh-dist-serverRoot" />
     <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />

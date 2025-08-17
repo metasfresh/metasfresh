@@ -470,8 +470,10 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
+                        <!-- needed to run mockito with java-21+, see https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3 -->
+                        <id>resolve-dep-paths</id>
+                        <phase>initialize</phase>
                         <goals>
-                            <!-- needed to run mockito with java-21+, see https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3 -->
                             <goal>properties</goal>
                         </goals>
                     </execution>

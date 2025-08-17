@@ -7,6 +7,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.process.ProcessExecutionResult.DisplayQRCode;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -60,9 +61,9 @@ public class ProcessExecutionResultTest
 		return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
 	}
 
-	private ProcessExecutionResult fromJson(final String json) throws IOException
+	private ProcessExecutionResult fromJson(@NonNull final String json) throws IOException
 	{
-		// System.out.println("result (from json): " + resultFromJson);
+		System.out.println("result (from json): " + json);
 		return jsonMapper.readValue(json, ProcessExecutionResult.class);
 	}
 
@@ -115,7 +116,7 @@ public class ProcessExecutionResultTest
 		final ProcessExecutionResult result = createTestResult();
 
 		//
-		// System.out.println("result: " + result);
+		System.out.println("result: " + result);
 
 		final String json = toJson(result);
 

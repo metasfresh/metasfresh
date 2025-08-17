@@ -395,21 +395,21 @@ public class ParsedSqlTest
 	@Test
 	public void rewriteWhereClauseWithLowercaseKeyWords_adaptInnerWhereClause()
 	{
-		final String initialWhereClause = """
-				noise WHERE noise NOISE Where noise
-				WHERE noise FROM
-				 FROM noise frOm noise noiseFROM	\
-				ON  noise on ON\
-				 noise
-				FROM
-				
-				WHERE
-				
-				ON
-				 noise\
-					FROM	\
-					WHERE	\
-					ON	""";
+		// in case you change this to text-block, please make sure the resulting string is still as we want it
+		final String initialWhereClause = "noise WHERE noise NOISE Where noise"
+				+ "\n"
+				+ "WHERE noise FROM"
+				+ "\n"
+				+ " FROM noise frOm noise noiseFROM\t"
+				+ "ON  noise on ON"
+				+ " noise"
+				+ "\nFROM\n"
+				+ "\nWHERE\n"
+				+ "\nON\n"
+				+ " noise"
+				+ "\tFROM\t"
+				+ "\tWHERE\t"
+				+ "\tON\t";
 
 		final String adaptInnerWhereClause = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(initialWhereClause);
 

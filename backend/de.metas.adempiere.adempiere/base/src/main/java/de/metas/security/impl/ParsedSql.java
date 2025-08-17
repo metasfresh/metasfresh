@@ -302,11 +302,8 @@ public final class ParsedSql
 	/**
 	 * Transform the key words WHERE, FROM and ON in lowercase.
 	 * TODO: Delete this logic when we get rid of the workaround in org.compiere.model.AccessSqlParser.getTableInfo(String)
-	 *
-	 * @param whereClause
-	 * @return
 	 */
-	public static String rewriteWhereClauseWithLowercaseKeyWords(final String whereClause)
+	public static String rewriteWhereClauseWithLowercaseKeyWords(@NonNull final String whereClause)
 	{
 		return whereClause.replaceAll("\\s", " ")
 				.replaceAll(WHERE, WHERE_LOWERCASE)

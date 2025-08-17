@@ -167,10 +167,11 @@
                             <executable>true</executable>
                             <mainClass>${start-class}</mainClass>
 
-                            <!-- layout=ZIP still creates an executable jar, but with org.springframework.boot.loader.PropertiesLauncher
-     That way we can specify external jars which contain additional things like cucumber tests 
-     Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features -->
-                            <layout>ZIP</layout>
+                            <!-- Use JAR layout with default JarLauncher for modern Spring Boot -->
+                            <layout>JAR</layout>
+                            
+                            <!-- Include external libraries in the fat JAR -->
+                            <includeSystemScope>true</includeSystemScope>
                             
                             <!-- this also provides the super-jar to the successive docker build 
                                 Note that the ${docker.build.directory} property  is set by the prepare-docker profile 

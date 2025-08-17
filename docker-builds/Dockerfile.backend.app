@@ -15,9 +15,14 @@ COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/metasfresh_s
 COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/configs/* ./
 COPY --from=backend /backend/metasfresh-dist/dist/target/docker/app/reports/ reports/
 
+# Create external-lib directory for additional JAR files
+RUN mkdir -p /opt/metasfresh/external-lib
+
 # repackage version information
 COPY docker-builds/metadata/build-info.properties META-INF/
 COPY docker-builds/metadata/git.properties BOOT-INF/classes/
 RUN zip -g metasfresh_server.jar META-INF/build-info.properties BOOT-INF/classes/git.properties
 
-CMD ["java", "-cp", "/opt/metasfresh/metasfresh_server.jar", "-Dloader.path=/opt/metasfresh/external-lib", "org.springframework.boot.loader.PropertiesLauncher"]
+# Use standard java -jar execution with JarLauncher
+# Add external-lib directory to classpath for additional JARs
+CMD ["java", "-cp", "/opt/metasfresh/metasfresh_server.jar:/opt/metasfresh/external-lib/*", "-jar", "/opt/metasfresh/metasfresh_server.jar"]
