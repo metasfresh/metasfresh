@@ -288,6 +288,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.date(preparationDate.toInstant())
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
+				.locatorId(shipmentScheduleEffectiveBL.getDefaultLocatorId(shipmentSchedule))
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.quantity(orderedQuantity.subtract(getDeliveredQtyFromHUs(shipmentSchedule)))
 				.build();

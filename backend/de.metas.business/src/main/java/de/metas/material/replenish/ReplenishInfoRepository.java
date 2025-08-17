@@ -31,13 +31,16 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Replenish;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import static org.adempiere.ad.dao.IQueryOrderBy.Direction.Ascending;
+import static org.adempiere.ad.dao.IQueryOrderBy.Nulls.First;
+import static org.adempiere.ad.dao.IQueryOrderBy.Nulls.Last;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
@@ -51,38 +54,38 @@ public class ReplenishInfoRepository
 	 */
 	public ReplenishInfo getBy(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		return getBy(materialDescriptor.getWarehouseId(), ProductId.ofRepoId(materialDescriptor.getProductId()));
+		return getBy(ReplenishInfo.Identifier.of(materialDescriptor.getWarehouseId(), materialDescriptor.getLocatorId(), ProductId.ofRepoId(materialDescriptor.getProductId())));
 	}
 
 	@NonNull
-	public ReplenishInfo getBy(@NonNull final WarehouseId warehouseId, @NonNull final ProductId productId)
+	public ReplenishInfo getBy(@NonNull final ReplenishInfo.Identifier identifier)
 	{
-		final ReplenishInfo.Identifier identifier = ReplenishInfo.Identifier.builder()
-			.warehouseId(warehouseId)
-			.productId(productId)
-			.build();
-
+		final ProductId productId = identifier.getProductId();
 		final I_M_Replenish replenishRecord = getRecordByIdentifier(identifier).orElse(null);
 
 		final UomId uomId = productBL.getStockUOMId(productId);
 
 		final StockQtyAndUOMQty min;
 		final StockQtyAndUOMQty max;
+		final boolean highPriority;
 		if (replenishRecord == null)
 		{
 			min = StockQtyAndUOMQtys.createZero(productId, uomId);
 			max = StockQtyAndUOMQtys.createZero(productId, uomId);
+			highPriority = false;
 		}
 		else
 		{
 			min = StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Min(), productId, uomId);
 			max = StockQtyAndUOMQtys.createConvert(replenishRecord.getLevel_Max(), productId, uomId);
+			highPriority = replenishRecord.isHighPriority();
 		}
 
 		return ReplenishInfo.builder()
 				.identifier(identifier)
 				.min(min)
 				.max(max)
+				.highPriority(highPriority)
 				.build();
 	}
 
@@ -110,11 +113,17 @@ public class ReplenishInfoRepository
 	@NonNull
 	private Optional<I_M_Replenish> getRecordByIdentifier(@NonNull final ReplenishInfo.Identifier identifier)
 	{
+		// if locator has been provided, give preference to replenish rules that are specific to that locator
+		final IQueryOrderBy locatorPreferenceOrderBy = queryBL.createQueryOrderByBuilder(I_M_Replenish.class)
+				.addColumn(I_M_Replenish.COLUMNNAME_M_Locator_ID, Ascending, identifier.getLocatorId() != null ? Last : First)
+				.createQueryOrderBy();
 		return queryBL.createQueryBuilder(I_M_Replenish.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Replenish.COLUMNNAME_M_Product_ID, identifier.getProductId())
 				.addEqualsFilter(I_M_Replenish.COLUMNNAME_M_Warehouse_ID, identifier.getWarehouseId())
+				.addInArrayFilter(I_M_Replenish.COLUMNNAME_M_Locator_ID, identifier.getLocatorId(), null)
 				.create()
+				.setOrderBy(locatorPreferenceOrderBy)
 				.firstOnlyOptional(I_M_Replenish.class);
 	}
 }
