@@ -262,9 +262,3 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2025-08-18 13:47:34.616000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=636147
 ;
 
--- UI Element: Lieferweg(142,D) -> Leitcode(548360,D) -> Routingcode -> 10 -> Routingcode.Mandant
--- Column: M_Shipper_RoutingCode.AD_Client_ID
--- 2025-08-18T13:47:34.977Z
-UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2025-08-18 13:47:34.976000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=636148
-;
-
