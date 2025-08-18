@@ -13,18 +13,16 @@
 
 	<!-- File logging configuration -->
 	<property name="LOG_PATH" value="${LOG_PATH:-./log/}" />
-	<appender name="FILE" class="de.metas.logging.MetasfreshFileAppender">
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<encoder>
 			<pattern>${FILE_LOG_PATTERN}</pattern>
 		</encoder>
 		
 		<!-- it works with changing the logging.path property -->
-		<rollingPolicy class="de.metas.logging.MetasfreshTimeBasedRollingPolicy">
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<LogDir>${LOG_PATH}</LogDir>
-			<LogFilePrefix>metasfresh</LogFilePrefix>
-			<LogFileDatePattern>%d{yyyy-MM-dd}_%d{HHmmss,aux}</LogFileDatePattern>
-			
-			<TimeBasedFileNamingAndTriggeringPolicy class="de.metas.logging.MetasfreshTimeBasedFileNamingAndTriggeringPolicy" />
+            <FileNamePattern>metasfresh-%d{yyyy-MM-dd}.log</FileNamePattern>
+			<TimeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.DefaultTimeBasedFileNamingAndTriggeringPolicy" />
 		</rollingPolicy>
 	</appender>
 	

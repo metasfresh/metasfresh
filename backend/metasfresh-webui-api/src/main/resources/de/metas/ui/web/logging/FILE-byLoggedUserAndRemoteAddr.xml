@@ -9,20 +9,17 @@
 			<defaultValue>_unknown</defaultValue>
 		</discriminator>
 		<sift>
-			<appender name="FILE-byLoggedUserAndRemoteAddr-${LoggedUser}-${RemoteAddr}" class="de.metas.logging.MetasfreshFileAppender">
+			<appender name="FILE-byLoggedUserAndRemoteAddr-${LoggedUser}-${RemoteAddr}" class="ch.qos.logback.core.rolling.RollingFileAppender">
 				<encoder>
 					<pattern>${FILE_LOG_PATTERN}</pattern>
 				</encoder>
 
 				<!-- it works with changing the logging.path property -->
-				<rollingPolicy class="de.metas.logging.MetasfreshTimeBasedRollingPolicy">
+				<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 					<LogDir>${LOG_PATH}/byLoggedUserAndRemoteAddr/${LoggedUserAndRemoteAddr}</LogDir>
-					<LogFilePrefix>-</LogFilePrefix>
-					<LogFileDatePattern>%d{yyyy-MM-dd}_%d{HHmmss,aux}
-					</LogFileDatePattern>
-
+                    <FileNamePattern>metasfresh-%d{yyyy-MM-dd}_%d{HHmmss,aux}.log</FileNamePattern>
 					<TimeBasedFileNamingAndTriggeringPolicy
-						class="de.metas.logging.MetasfreshTimeBasedFileNamingAndTriggeringPolicy" />
+						class="ch.qos.logback.core.rolling.DefaultTimeBasedFileNamingAndTriggeringPolicy" />
 				</rollingPolicy>
 			</appender>
 		</sift>
