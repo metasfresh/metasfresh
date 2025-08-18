@@ -32,7 +32,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" },
+		exclude = { org.springframework.boot.autoconfigure.web.reactive.function.client.ClientHttpConnectorAutoConfiguration.class /* exclude deprecated config because we also already have the new one */})
 public class SwingUIApplication extends SwingUIApplicationTemplate
 {
 	public static void main(final String[] args)

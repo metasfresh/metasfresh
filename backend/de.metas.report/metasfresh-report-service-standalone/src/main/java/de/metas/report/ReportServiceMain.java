@@ -1,7 +1,10 @@
 package de.metas.report;
 
-import java.util.Collections;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.MetasfreshBeanNameGenerator;
+import de.metas.Profiles;
+import de.metas.util.StringUtils;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
@@ -18,12 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.metas.JsonObjectMapperHolder;
-import de.metas.MetasfreshBeanNameGenerator;
-import de.metas.Profiles;
-import de.metas.util.StringUtils;
+import java.util.Collections;
 
 /*
  * #%L
@@ -47,10 +45,12 @@ import de.metas.util.StringUtils;
  * #L%
  */
 
-@SpringBootApplication(scanBasePackages = {
-		"de.metas",
-		"org.adempiere.ad.modelvalidator" // FIXME: workaround needed for ModuleActivatorDescriptorsRepository to be discovered
-})
+@SpringBootApplication(
+		scanBasePackages = {
+				"de.metas",
+				"org.adempiere.ad.modelvalidator" // FIXME: workaround needed for ModuleActivatorDescriptorsRepository to be discovered
+		},
+		exclude = { org.springframework.boot.autoconfigure.web.reactive.function.client.ClientHttpConnectorAutoConfiguration.class /* exclude deprecated config because we also already have the new one */ })
 @ServletComponentScan(value = { "de.metas.adempiere.report.jasper.servlet" })
 @Profile(Profiles.PROFILE_ReportService_Standalone)
 public class ReportServiceMain

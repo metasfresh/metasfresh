@@ -66,7 +66,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.ArrayList;
 
-@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" },
+		exclude = { org.springframework.boot.autoconfigure.web.reactive.function.client.ClientHttpConnectorAutoConfiguration.class /* exclude deprecated config because we also already have the new one in our classpath */ })
 @EnableAsync
 @Profile(Profiles.PROFILE_Webui)
 public class WebRestApiApplication
