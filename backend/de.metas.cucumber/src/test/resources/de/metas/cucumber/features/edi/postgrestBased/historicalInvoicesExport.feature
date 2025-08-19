@@ -1,5 +1,4 @@
 @from:cucumber
-@myfeature
 @ghActions:run_on_executor3
 Feature: Invoice export via postgREST
 
