@@ -40,12 +40,12 @@ SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::te
        ol.c_orderline_id
 
 FROM C_Order o
-         JOIN t_selection t_sel ON t_sel.t_selection_id = o.c_order_id AND t_sel.ad_pinstance_id = (SELECT ad_pinstance_id
+         JOIN M_ShippingPackage shippingPackage ON o.c_order_id = shippingPackage.c_order_id
+         JOIN t_selection t_sel ON t_sel.t_selection_id = shippingPackage.m_shippingpackage_id AND t_sel.ad_pinstance_id = (SELECT ad_pinstance_id
                                                                                                     FROM t_selection
-                                                                                                    WHERE t_selection_id = o.c_order_id
+                                                                                                    WHERE t_selection_id = shippingPackage.m_shippingpackage_id
                                                                                                     ORDER BY ad_pinstance_id DESC
                                                                                                     LIMIT 1)
-         JOIN M_ShippingPackage shippingPackage ON o.c_order_id = shippingPackage.c_order_id
          JOIN M_Package package ON shippingPackage.m_package_id = package.m_package_id
          JOIN C_OrderLine ol ON shippingPackage.c_orderline_id = ol.c_orderline_id
          JOIN M_HU_PI_Item_Product piip ON ol.m_product_id = piip.m_product_id AND ol.m_hu_pi_item_product_id = piip.m_hu_pi_item_product_id
