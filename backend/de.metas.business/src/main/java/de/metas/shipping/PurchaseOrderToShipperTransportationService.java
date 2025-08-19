@@ -12,23 +12,31 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.report.ReportResultData;
+import de.metas.report.server.ReportConstants;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /*
@@ -68,6 +76,8 @@ public class PurchaseOrderToShipperTransportationService
 	{
 		return new PurchaseOrderToShipperTransportationService(new PurchaseOrderToShipperTransportationRepository());
 	}
+
+	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print = "C_Order_SSCC_Print";
 
 	public void addPurchaseOrdersToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final IQueryFilter<I_C_Order> queryFilter)
 	{
@@ -183,6 +193,38 @@ public class PurchaseOrderToShipperTransportationService
 						.build());
 			}
 		}
+	}
+
+	@Nullable
+	public ReportResultData printSSCC18_Labels(
+			@NonNull final Properties ctx,
+			@NonNull final OrderId orderId)
+	{
+		final ImmutableList<PackageId> packageIDs = repo.getPackageIDsByOrderId(orderId);
+
+		Check.assumeNotEmpty(packageIDs, "packageIDs not empty");
+
+		//
+		// Create the process info based on AD_Process and AD_PInstance
+		final ProcessExecutionResult result = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_ProcessByValue(AD_PROCESS_VALUE_C_Order_SSCC_Print)
+				//
+				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
+				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_M_Package_SSCC_Label_Report"
+						+ " where AD_PInstance_ID=" + ReportConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder + " "
+						+ " order by C_OrderLine_ID")
+				//
+				// Execute the actual printing process
+				.buildAndPrepareExecution()
+				.onErrorThrowException()
+				// Create a selection with the M_Package_IDs that we need to print.
+				// The report will fetch it from selection.
+				.callBefore(pi -> DB.createT_Selection(pi.getPinstanceId(), packageIDs, ITrx.TRXNAME_ThreadInherited))
+				.executeSync()
+				.getResult();
+
+		return result.getReportData();
 	}
 
 }

@@ -124,6 +124,15 @@ public class PurchaseOrderToShipperTransportationRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public ImmutableList<PackageId> getPackageIDsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.listIds(PackageId::ofRepoId);
+	}
+
 	public Package getPackageById(@NonNull final PackageId packageId)
 	{
 		final I_M_Package mPackage = load(packageId, I_M_Package.class);
