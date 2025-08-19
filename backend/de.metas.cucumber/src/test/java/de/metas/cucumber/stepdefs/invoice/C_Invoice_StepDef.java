@@ -59,7 +59,6 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
@@ -779,10 +778,9 @@ public class C_Invoice_StepDef
 		row.getAsOptionalString(COLUMNNAME_DocumentNo).ifPresent(invoice::setDocumentNo);
 		row.getAsOptionalString(COLUMNNAME_ExternalId).ifPresent(invoice::setExternalId);
 
-		final StepDefDataIdentifier dataSourceIdentifier = row.getAsIdentifier(COLUMNNAME_AD_InputDataSource_ID);
-		final InputDataSourceId dataSourceId = dataSourceTable.getIdOptional(dataSourceIdentifier)
-				.orElseGet(() -> dataSourceIdentifier.getAsId(InputDataSourceId.class));
-		invoice.setAD_InputDataSource_ID(dataSourceId.getRepoId());
+		row.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
+				.map(dataSourceTable::getId)
+				.ifPresent(dataSourceId -> invoice.setAD_InputDataSource_ID(dataSourceId.getRepoId()));
 
 		extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
