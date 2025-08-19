@@ -34,6 +34,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 
 import java.util.Optional;
 
@@ -58,6 +59,7 @@ public class AD_InputDataSource_StepDef
 	{
 		final ValueAndName valueAndName = tableRow.suggestValueAndName();
 		final Optional<InputDataSourceId> existingInputDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdBy(InputDataSourceQuery.builder()
+				.orgId(Env.getOrgId())
 				.value(valueAndName.getValue())
 				.build());
 		final I_AD_InputDataSource inputDataSourceRecord;
