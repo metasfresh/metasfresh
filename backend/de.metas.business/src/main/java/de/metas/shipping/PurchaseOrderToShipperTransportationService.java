@@ -77,7 +77,7 @@ public class PurchaseOrderToShipperTransportationService
 		return new PurchaseOrderToShipperTransportationService(new PurchaseOrderToShipperTransportationRepository());
 	}
 
-	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print = "C_Order_SSCC_Print";
+	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print = "C_Order_SSCC_Print_Jasper";
 
 	public void addPurchaseOrdersToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final IQueryFilter<I_C_Order> queryFilter)
 	{
