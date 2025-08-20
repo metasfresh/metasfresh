@@ -339,6 +339,11 @@ public class M_Product_StepDef
 		productTable.putOrReplace(tableRow.getAsIdentifier(), productRecord);
 
 		restTestContext.setIntVariableFromRow(tableRow, productRecord::getM_Product_ID);
+
+		tableRow.getAsOptionalIdentifier("REST.Context.Value")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), productRecord.getValue()));
+		tableRow.getAsOptionalIdentifier("REST.Context.Name")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), productRecord.getName()));
 	}
 
 	private void locate_product_by_external_identifier(@NonNull final Map<String, String> tableRow)

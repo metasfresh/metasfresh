@@ -30,6 +30,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -43,6 +44,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.lang.SOTrx;
@@ -137,6 +139,7 @@ public class C_Order_StepDef
 	private final @NonNull M_PricingSystem_StepDefData pricingSystemDataTable;
 	private final @NonNull M_Warehouse_StepDefData warehouseTable;
 	private final @NonNull AD_Org_StepDefData orgTable;
+	private final @NonNull AD_InputDataSource_StepDefData dataSourceTable;
 	private final @NonNull TestContext restTestContext;
 
 	@Given("metasfresh contains C_Orders:")
@@ -336,8 +339,10 @@ public class C_Order_StepDef
 		tableRow.getAsOptionalString(COLUMNNAME_ExternalId)
 				.ifPresent(order::setExternalId);
 
-		tableRow.getAsOptionalInt(COLUMNNAME_AD_InputDataSource_ID)
-				.ifPresent(order::setAD_InputDataSource_ID);
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
+				.map(dataSourceIdentifier -> dataSourceTable.getIdOptional(dataSourceIdentifier)
+						.orElseGet(() -> dataSourceIdentifier.getAsId(InputDataSourceId.class)))
+				.ifPresent(inputDataSourceId -> order.setAD_InputDataSource_ID(inputDataSourceId.getRepoId()));
 
 		saveRecord(order);
 
