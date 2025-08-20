@@ -22,6 +22,7 @@
 
 package de.metas.shipping.process;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
@@ -33,6 +34,7 @@ import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
 
 public class C_Order_SSCC_Print extends JavaProcess implements IProcessPrecondition
 {
@@ -49,10 +51,16 @@ public class C_Order_SSCC_Print extends JavaProcess implements IProcessPrecondit
 		}
 
 		final OrderId orderId = OrderId.ofRepoId(context.getSingleSelectedRecordId());
-		final org.compiere.model.I_C_Order order = orderBL.getById(orderId);
+		final I_C_Order order = orderBL.getById(orderId);
 		if (order.isSOTrx())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("is sales order");
+		}
+
+		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
+		if(!docStatus.isCompletedOrClosed())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not completed or closed");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -61,7 +69,7 @@ public class C_Order_SSCC_Print extends JavaProcess implements IProcessPrecondit
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ReportResultData report = orderToShipperTransportationService.printSSCC18_Labels(getCtx(), OrderId.ofRepoId(getRecord_ID()));
+		final ReportResultData report = orderToShipperTransportationService.printSSCC18_Labels(OrderId.ofRepoId(getRecord_ID()));
 
 		getResult().setReportData(report);
 

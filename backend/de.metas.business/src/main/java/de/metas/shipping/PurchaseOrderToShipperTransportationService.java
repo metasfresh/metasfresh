@@ -30,13 +30,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 /*
@@ -77,7 +77,7 @@ public class PurchaseOrderToShipperTransportationService
 		return new PurchaseOrderToShipperTransportationService(new PurchaseOrderToShipperTransportationRepository());
 	}
 
-	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print = "C_Order_SSCC_Print_Jasper";
+	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
 
 	public void addPurchaseOrdersToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final IQueryFilter<I_C_Order> queryFilter)
 	{
@@ -196,9 +196,7 @@ public class PurchaseOrderToShipperTransportationService
 	}
 
 	@Nullable
-	public ReportResultData printSSCC18_Labels(
-			@NonNull final Properties ctx,
-			@NonNull final OrderId orderId)
+	public ReportResultData printSSCC18_Labels(@NonNull final OrderId orderId)
 	{
 		final ImmutableList<PackageId> packageIDs = repo.getPackageIDsByOrderId(orderId);
 
@@ -207,8 +205,8 @@ public class PurchaseOrderToShipperTransportationService
 		//
 		// Create the process info based on AD_Process and AD_PInstance
 		final ProcessExecutionResult result = ProcessInfo.builder()
-				.setCtx(ctx)
-				.setAD_ProcessByValue(AD_PROCESS_VALUE_C_Order_SSCC_Print)
+				.setCtx(Env.getCtx())
+				.setAD_ProcessByValue(AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper)
 				//
 				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
 				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_M_Package_SSCC_Label_Report"

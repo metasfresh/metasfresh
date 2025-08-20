@@ -130,7 +130,7 @@ public class PurchaseOrderToShipperTransportationRepository
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
 				.create()
-				.listIds(PackageId::ofRepoId);
+				.listDistinct(I_M_ShippingPackage.COLUMNNAME_M_Package_ID, PackageId.class);
 	}
 
 	public Package getPackageById(@NonNull final PackageId packageId)
