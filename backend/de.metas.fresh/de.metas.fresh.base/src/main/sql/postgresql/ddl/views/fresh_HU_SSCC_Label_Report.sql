@@ -3,7 +3,7 @@
 CREATE OR REPLACE VIEW report.fresh_HU_SSCC_Label_Report as
 SELECT
 	/*
-	 * NOTE to developer: please keep in sync with fresh_EDI_DesadvLine_SSCC_Label_Report
+	 * NOTE to developer: please keep in sync with fresh_EDI_DesadvLine_SSCC_Label_Report AND fresh_M_Package_SSCC_Label_Report
 	 */
 	 ( 
 		SELECT  COALESCE(org_bp.name, '') || ', ' || COALESCE(org_l.Postal, '')|| ' '  || COALESCE(org_l.city, '')
