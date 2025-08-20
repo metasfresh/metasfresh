@@ -210,8 +210,8 @@ public class PurchaseOrderToShipperTransportationService
 				//
 				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
 				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_M_Package_SSCC_Label_Report"
-						+ " where AD_PInstance_ID=" + ReportConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder + " "
-						+ " order by C_OrderLine_ID")
+						+ " where C_Order_ID=" + orderId.getRepoId() + " "
+						+ " order by M_Package_ID")
 				//
 				// Execute the actual printing process
 				.buildAndPrepareExecution()
