@@ -326,7 +326,7 @@ Feature: Invoice export via postgREST
         "Tax_Percent": 19.0,
         "Tax_Amount": 0.95,
         "Product_Name": "@postgRESTExportProductName_S0474_020@",
-        "Product_Description": "postgRESTExportProductName_S0474_020",
+        "Product_Description": "postgRESTExportProductDescription_S0474_020",
         "Product_Buyer_CU_GTIN": null,
         "Product_Buyer_TU_GTIN": null,
         "Product_Buyer_ProductNo": null,
