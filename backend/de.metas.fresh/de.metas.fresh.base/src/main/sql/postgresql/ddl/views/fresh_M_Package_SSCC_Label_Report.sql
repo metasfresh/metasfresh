@@ -1,3 +1,9 @@
+/*
+ * NOTE to developer: please keep in sync with fresh_EDI_DesadvLine_SSCC_Label_Report AND fresh_HU_SSCC_Label_Report.
+ * They must all contain the fields needed in the report src/main/jasperreports/de/metas/docs/label/sscc/label.jrxml
+ */
+
+
 DROP VIEW IF EXISTS report.fresh_M_Package_SSCC_Label_Report
 ;
 
