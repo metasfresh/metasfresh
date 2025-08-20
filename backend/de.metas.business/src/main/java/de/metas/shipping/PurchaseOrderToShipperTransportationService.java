@@ -22,14 +22,11 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.sscc18.ISSCC18CodeBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -195,13 +192,14 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
+	public ImmutableList<PackageId> getPackageIDsByOrderId(@NonNull final OrderId orderId)
+	{
+		return repo.getPackageIDsByOrderId(orderId);
+	}
+
 	@Nullable
 	public ReportResultData printSSCC18_Labels(@NonNull final OrderId orderId)
 	{
-		final ImmutableList<PackageId> packageIDs = repo.getPackageIDsByOrderId(orderId);
-
-		Check.assumeNotEmpty(packageIDs, "packageIDs not empty");
-
 		//
 		// Create the process info based on AD_Process and AD_PInstance
 		final ProcessExecutionResult result = ProcessInfo.builder()
@@ -216,9 +214,6 @@ public class PurchaseOrderToShipperTransportationService
 				// Execute the actual printing process
 				.buildAndPrepareExecution()
 				.onErrorThrowException()
-				// Create a selection with the M_Package_IDs that we need to print.
-				// The report will fetch it from selection.
-				.callBefore(pi -> DB.createT_Selection(pi.getPinstanceId(), packageIDs, ITrx.TRXNAME_ThreadInherited))
 				.executeSync()
 				.getResult();
 

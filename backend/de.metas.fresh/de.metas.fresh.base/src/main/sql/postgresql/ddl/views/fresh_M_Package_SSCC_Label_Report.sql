@@ -3,7 +3,7 @@ DROP VIEW IF EXISTS report.fresh_M_Package_SSCC_Label_Report
 
 CREATE VIEW report.fresh_M_Package_SSCC_Label_Report
             (org_address, sscc, p_customervalue, priceactual, p_name, cu_per_tu, tu_per_lu, net_weight, gross_weight,
-             order_docno, p_value, lotcode, paletno, customer, ad_language, m_hu_id, M_Package_ID, lotnumberdate)
+             order_docno, p_value, lotcode, paletno, customer, ad_language, m_hu_id, M_Package_ID, lotnumberdate, C_Order_ID)
 
 AS
 SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::text) ||
@@ -34,7 +34,8 @@ SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::te
        bp.ad_language,
        NULL::NUMERIC                                                                                                                            AS m_hu_id,
        package.m_package_id,
-       ''::TEXT                                                                                                                                 AS lotnumberdate
+       ''::TEXT                                                                                                                                 AS lotnumberdate,
+       o.c_order_id
 FROM C_Order o
          JOIN C_OrderLine ol ON o.c_order_id = ol.c_order_id
          JOIN M_ShippingPackage shippingPackage ON ol.c_orderline_id = shippingPackage.c_orderline_id

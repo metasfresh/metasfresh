@@ -49,7 +49,8 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 -- Table: C_Order
 -- EntityType: D
 -- 2025-08-19T12:46:15.121Z
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585489,259,541563,TO_TIMESTAMP('2025-08-19 12:46:14.847000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y',TO_TIMESTAMP('2025-08-19 12:46:14.847000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','N','N')
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,
+WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585489,259,541563,TO_TIMESTAMP('2025-08-19 12:46:14.847000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y',TO_TIMESTAMP('2025-08-19 12:46:14.847000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','N','N')
 ;
 
 -- Value: C_Order_SSCC_Print_Jasper
@@ -61,5 +62,45 @@ UPDATE AD_Process SET Name='C_Order_SSCC_Print_Jasper',Updated=TO_TIMESTAMP('202
 
 -- 2025-08-19T12:46:48.307Z
 UPDATE AD_Process_Trl trl SET Name='C_Order_SSCC_Print_Jasper' WHERE AD_Process_ID=585487 AND AD_Language='de_DE'
+;
+
+
+
+
+
+
+
+-- Value: C_Order_SSCC_Print
+-- Classname: de.metas.shipping.process.C_Order_SSCC_Print
+-- JasperReport: @PREFIX@de/metas/docs/label/sscc/label.jasper
+-- 2025-08-20T13:25:51.726Z
+UPDATE AD_Process SET Name='SSCC-Etiketten drucken',Updated=TO_TIMESTAMP('2025-08-20 13:25:51.723000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585489
+;
+
+-- 2025-08-20T13:25:51.730Z
+UPDATE AD_Process_Trl trl SET Name='SSCC-Etiketten drucken' WHERE AD_Process_ID=585489 AND AD_Language='de_DE'
+;
+
+-- Process: C_Order_SSCC_Print(de.metas.shipping.process.C_Order_SSCC_Print)
+-- 2025-08-20T13:26:00.773Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='SSCC-Etiketten drucken',Updated=TO_TIMESTAMP('2025-08-20 13:26:00.773000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585489
+;
+
+-- 2025-08-20T13:26:00.775Z
+UPDATE AD_Process base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Process: C_Order_SSCC_Print(de.metas.shipping.process.C_Order_SSCC_Print)
+-- 2025-08-20T13:26:11.504Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-08-20 13:26:11.504000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585489
+;
+
+-- Process: C_Order_SSCC_Print(de.metas.shipping.process.C_Order_SSCC_Print)
+-- 2025-08-20T13:26:24.763Z
+UPDATE AD_Process_Trl SET Name='Print SSCC Labels',Updated=TO_TIMESTAMP('2025-08-20 13:26:24.763000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585489
+;
+
+-- 2025-08-20T13:26:24.764Z
+UPDATE AD_Process base SET Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
 ;
 

@@ -63,6 +63,11 @@ public class C_Order_SSCC_Print extends JavaProcess implements IProcessPrecondit
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not completed or closed");
 		}
 
+		if(orderToShipperTransportationService.getPackageIDsByOrderId(orderId).isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("has no packages");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
