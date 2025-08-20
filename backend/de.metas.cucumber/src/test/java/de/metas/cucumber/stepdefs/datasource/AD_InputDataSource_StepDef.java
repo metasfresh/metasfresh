@@ -43,7 +43,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 @RequiredArgsConstructor
 public class AD_InputDataSource_StepDef
 {
-	private final AD_InputDataSource_StepDefData dataSourceTable;
+	private final @NonNull AD_InputDataSource_StepDefData dataSourceTable;
 
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
