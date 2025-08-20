@@ -23,7 +23,7 @@ SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::te
        COALESCE(pt.name, p.name)                                                                                                                AS p_name,
 
        piip.qty                                                                                                                                 AS cu_per_tu,
-       shippingPackage.qtytu                                                                                                                    AS tu_per_lu,
+       ol.qtyenteredtu                                                                                                                          AS tu_per_lu,
        NULL::NUMERIC                                                                                                                            AS net_weight,
        NULL::NUMERIC                                                                                                                            AS gross_weight,
        o.documentno                                                                                                                             AS order_docno,
