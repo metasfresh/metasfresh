@@ -91,13 +91,14 @@ Feature: Shipments export via postgREST
   {
     "Shipment_ID": @shipment_S0475_010_ID@,
     "Shipment_DocumentNo": "shipment_S0475_010_DocumentNo",
+    "Shipment_Date": "2025-05-15T00:00:00",
     "DocStatus": "CO",
     "ExternalId": "externalId_S0475_010",
     "DataSource": "int-test_S0475_010",
     "Order_Date": "2025-04-17T00:00:00",
     "Order_POReference": null,
     "DESADV_ID": null,
-    "DeliveryViaRule": "S",
+    "DeliveryViaRule": "P",
     "Supplier": {
       "Name": "metasfresh AG",
       "Name2": null,
@@ -172,7 +173,7 @@ Feature: Shipments export via postgREST
       | salesPLV               | product_S0475_020 | 5.00     | PCE      |
     And metasfresh contains AD_InputDataSource:
       | Identifier           | InternalName   |
-      | dataSource_S0475_010 | test_S0475_020 |
+      | dataSource_S0475_020 | test_S0475_020 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | AD_InputDataSource_ID | ExternalId           |
@@ -220,13 +221,14 @@ Feature: Shipments export via postgREST
   {
     "Shipment_ID": @shipment_S0475_020_ID@,
     "Shipment_DocumentNo": "shipment_S0475_020_DocumentNo",
+    "Shipment_Date": "2025-05-15T00:00:00",
     "DocStatus": "CO",
     "ExternalId": "externalId_S0475_020",
     "DataSource": "int-test_S0475_020",
     "Order_Date": "2025-04-17T00:00:00",
     "Order_POReference": null,
     "DESADV_ID": null,
-    "DeliveryViaRule": "S",
+    "DeliveryViaRule": "P",
     "Supplier": {
       "Name": "metasfresh AG",
       "Name2": null,
