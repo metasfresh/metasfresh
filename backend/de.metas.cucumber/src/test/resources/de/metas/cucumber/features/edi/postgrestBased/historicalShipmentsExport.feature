@@ -90,7 +90,7 @@ Feature: Shipments export via postgREST
 [
   {
     "Shipment_ID": @shipment_S0475_010_ID@,
-    "Shipment_DocumentNo": "shipment_S0475_010_DocumentNo",
+    "Shipment_DocumentNo": "@shipment_S0475_010_DocumentNo@",
     "Shipment_Date": "2025-05-15T00:00:00",
     "DocStatus": "CO",
     "ExternalId": "externalId_S0475_010",
@@ -220,7 +220,7 @@ Feature: Shipments export via postgREST
 [
   {
     "Shipment_ID": @shipment_S0475_020_ID@,
-    "Shipment_DocumentNo": "shipment_S0475_020_DocumentNo",
+    "Shipment_DocumentNo": "@shipment_S0475_020_DocumentNo@",
     "Shipment_Date": "2025-05-15T00:00:00",
     "DocStatus": "CO",
     "ExternalId": "externalId_S0475_020",
