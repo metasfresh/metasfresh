@@ -32,8 +32,8 @@ Feature: Shipments export via postgREST
   Scenario: create a shipment and export it to JSON via UpdatedGE and InputDataSource
 
     Given metasfresh contains M_Products:
-      | Identifier        | Value                       | Name                       | Description                       | REST.Context.M_Product_ID |
-      | product_S0475_010 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription | product_S0475_010_ID      |
+      | Identifier        | Value                       | Name                       | Description                       | REST.Context         |
+      | product_S0475_010 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription | product_S0475_010_ID |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
       | salesPLV               | product_S0475_010 | 5.00     | PCE      |
@@ -166,8 +166,8 @@ Feature: Shipments export via postgREST
   Scenario: create a shipment and export it to JSON via externalId
 
     Given metasfresh contains M_Products:
-      | Identifier        | Value                       | Name                       | Description                       | REST.Context.M_Product_ID |
-      | product_S0475_020 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription | product_S0475_020_ID      |
+      | Identifier        | Value                       | Name                       | Description                       | REST.Context         |
+      | product_S0475_020 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription | product_S0475_020_ID |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
       | salesPLV               | product_S0475_020 | 5.00     | PCE      |

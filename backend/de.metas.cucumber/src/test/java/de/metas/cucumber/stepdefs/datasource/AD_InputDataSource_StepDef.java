@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.datasource;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ValueAndName;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -35,8 +34,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
@@ -58,19 +55,12 @@ public class AD_InputDataSource_StepDef
 	private void createAD_InputDataSource(@NonNull final DataTableRow tableRow)
 	{
 		final ValueAndName valueAndName = tableRow.suggestValueAndName();
-		final Optional<InputDataSourceId> existingInputDataSourceId = inputDataSourceDAO.retrieveInputDataSourceIdBy(InputDataSourceQuery.builder()
-				.orgId(Env.getOrgId())
-				.value(valueAndName.getValue())
-				.build());
-		final I_AD_InputDataSource inputDataSourceRecord;
-		if (existingInputDataSourceId.isPresent())
-		{
-			inputDataSourceRecord = inputDataSourceDAO.getById(existingInputDataSourceId.get());
-		}
-		else
-		{
-			inputDataSourceRecord = newInstanceOutOfTrx(I_AD_InputDataSource.class);
-		}
+		final I_AD_InputDataSource inputDataSourceRecord = inputDataSourceDAO.retrieveInputDataSourceIdBy(InputDataSourceQuery.builder()
+						.orgId(Env.getOrgId())
+						.value(valueAndName.getValue())
+						.build())
+				.map(inputDataSourceDAO::getById)
+				.orElseGet(() -> newInstanceOutOfTrx(I_AD_InputDataSource.class));
 
 		inputDataSourceRecord.setValue(valueAndName.getValue());
 		inputDataSourceRecord.setName(valueAndName.getName());

@@ -339,14 +339,10 @@ public class C_Order_StepDef
 		tableRow.getAsOptionalString(COLUMNNAME_ExternalId)
 				.ifPresent(order::setExternalId);
 
-		final Optional<StepDefDataIdentifier> dataSourceIdentifier = tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID);
-		if (dataSourceIdentifier.isPresent())
-		{
-			final InputDataSourceId inputDataSourceId = dataSourceTable.getIdOptional(dataSourceIdentifier.get())
-					.orElseGet(() -> dataSourceIdentifier.get().getAsId(InputDataSourceId.class));
-
-			order.setAD_InputDataSource_ID(inputDataSourceId.getRepoId());
-		}
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_InputDataSource_ID)
+				.map(dataSourceIdentifier -> dataSourceTable.getIdOptional(dataSourceIdentifier)
+						.orElseGet(() -> dataSourceIdentifier.getAsId(InputDataSourceId.class)))
+				.ifPresent(inputDataSourceId -> order.setAD_InputDataSource_ID(inputDataSourceId.getRepoId()));
 
 		saveRecord(order);
 
