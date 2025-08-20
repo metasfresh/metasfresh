@@ -26,32 +26,32 @@ Feature: Invoice export via postgREST
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
       | bpartner_location_1 | customer1     | Y               | Y               |
 
-  @Id:S0474_011
+  @Id:S0474_010
   @from:cucumber
   Scenario: create an invoice and export it to JSON via UpdatedGE and InputDataSource
     Given metasfresh contains M_Products:
-      | Identifier        | Value                       | Name                       | Description                       |
-      | product_S0474_011 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription |
+      | Identifier        | REST.Context.Value                    | REST.Context.Name                    | Description                                 |
+      | product_S0474_010 | postgRESTExportProductValue_S0474_010 | postgRESTExportProductName_S0474_010 | postgRESTExportProductDescription_S0474_010 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
-      | salesPLV               | product_S0474_011 | 5.00     | PCE      |
+      | salesPLV               | product_S0474_010 | 5.00     | PCE      |
     And metasfresh contains AD_InputDataSource:
       | Identifier           | InternalName   |
-      | dataSource_S0474_011 | test_S0474_011 |
+      | dataSource_S0474_010 | test_S0474_010 |
     And metasfresh contains C_Invoice:
       | Identifier            | REST.Context             | AD_InputDataSource_ID | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoiceS0474_011 | salesInvoiceS0474_011_ID | dataSource_S0474_011  | customer1     | Ausgangsrechnung        | S0474_011  | 2025-05-01   | Spot                     | true    | EUR                 |
+      | salesInvoiceS0474_010 | salesInvoiceS0474_010_ID | dataSource_S0474_010  | customer1     | Ausgangsrechnung        | S0474_010  | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID          | M_Product_ID      | QtyInvoiced |
-      | salesInvoiceS0474_011 | product_S0474_011 | 1 PCE       |
-    And the invoice identified by salesInvoiceS0474_011 is completed
+      | salesInvoiceS0474_010 | product_S0474_010 | 1 PCE       |
+    And the invoice identified by salesInvoiceS0474_010 is completed
     And metasfresh contains C_Invoice:
       | Identifier              | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo  | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoiceS0474_011_2 | customer1     | Ausgangsrechnung        | S0474_011_2 | 2025-05-01   | Spot                     | true    | EUR                 |
+      | salesInvoiceS0474_010_2 | customer1     | Ausgangsrechnung        | S0474_010_2 | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID            | M_Product_ID      | QtyInvoiced |
-      | salesInvoiceS0474_011_2 | product_S0474_011 | 1 PCE       |
-    And the invoice identified by salesInvoiceS0474_011_2 is completed
+      | salesInvoiceS0474_010_2 | product_S0474_010 | 1 PCE       |
+    And the invoice identified by salesInvoiceS0474_010_2 is completed
 
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -71,7 +71,7 @@ Feature: Invoice export via postgREST
     },
     {
       "name": "DataSource",
-      "value": "int-test_S0474_011"
+      "value": "int-test_S0474_010"
     }
   ]
 }
@@ -81,12 +81,12 @@ Feature: Invoice export via postgREST
     """
 [
   {
-    "Invoice_ID": @salesInvoiceS0474_011_ID@,
+    "Invoice_ID": @salesInvoiceS0474_010_ID@,
     "Invoice_Receiver_Tec_GLN": null,
     "Invoice_Sender_Tec_GLN": null,
     "Invoice_Sender_CountryCode": "DE",
     "Invoice_Sender_VATaxId": null,
-    "Invoice_DocumentNo": "S0474_011",
+    "Invoice_DocumentNo": "S0474_010",
     "Invoice_Date": "2025-05-01T00:00:00",
     "Invoice_Acct_Date": "2025-05-01T00:00:00",
     "DocType_Base": "ARI",
@@ -108,7 +108,7 @@ Feature: Invoice export via postgREST
     "Invoice_TotalVATWithSurchargeAmt": 0.95,
     "Invoice_GrandTotalWithSurchargeAmt": 5.95,
     "ExternalId": null,
-    "DataSource": "int-test_S0474_011",
+    "DataSource": "int-test_S0474_010",
     "DocStatus": "CO",
     "Partners": [
       {
@@ -166,13 +166,13 @@ Feature: Invoice export via postgREST
         "NetAmt": 5.0,
         "Tax_Percent": 19.0,
         "Tax_Amount": 0.95,
-        "Product_Name": "postgRESTExportProductName",
-        "Product_Description": "postgRESTExportProductDescription",
+        "Product_Name": "@postgRESTExportProductName_S0474_010@",
+        "Product_Description": "postgRESTExportProductDescription_S0474_010",
         "Product_Buyer_CU_GTIN": null,
         "Product_Buyer_TU_GTIN": null,
         "Product_Buyer_ProductNo": null,
         "Product_Supplier_TU_GTIN": null,
-        "Product_Supplier_ProductNo": "postgRESTExportProductValue",
+        "Product_Supplier_ProductNo": "@postgRESTExportProductValue_S0474_010@",
         "ExternalId": null
       }
     ],
@@ -192,29 +192,29 @@ Feature: Invoice export via postgREST
 ]
     """
 
-  @Id:S0474_012
+  @Id:S0474_020
   @from:cucumber
   Scenario: create an invoice and export it to JSON via externalId
     Given metasfresh contains M_Products:
-      | Identifier        | Value                       | Name                       | Description                       |
-      | product_S0474_012 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription |
+      | Identifier        | REST.Context.Value                    | REST.Context.Name                    | Description                                 |
+      | product_S0474_020 | postgRESTExportProductValue_S0474_020 | postgRESTExportProductName_S0474_020 | postgRESTExportProductDescription_S0474_020 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
-      | salesPLV               | product_S0474_012 | 5.00     | PCE      |
+      | salesPLV               | product_S0474_020 | 5.00     | PCE      |
     And metasfresh contains C_Invoice:
       | Identifier            | REST.Context             | ExternalId           | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoiceS0474_012 | salesInvoiceS0474_012_ID | externalId_S0474_012 | customer1     | Ausgangsrechnung        | S0474_012  | 2025-05-01   | Spot                     | true    | EUR                 |
+      | salesInvoiceS0474_020 | salesInvoiceS0474_020_ID | externalId_S0474_020 | customer1     | Ausgangsrechnung        | S0474_020  | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID          | M_Product_ID      | QtyInvoiced |
-      | salesInvoiceS0474_012 | product_S0474_012 | 1 PCE       |
-    And the invoice identified by salesInvoiceS0474_012 is completed
+      | salesInvoiceS0474_020 | product_S0474_020 | 1 PCE       |
+    And the invoice identified by salesInvoiceS0474_020 is completed
     And metasfresh contains C_Invoice:
       | Identifier              | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo  | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoiceS0474_012_2 | customer1     | Ausgangsrechnung        | S0474_012_2 | 2025-05-01   | Spot                     | true    | EUR                 |
+      | salesInvoiceS0474_020_2 | customer1     | Ausgangsrechnung        | S0474_020_2 | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID            | M_Product_ID      | QtyInvoiced |
-      | salesInvoiceS0474_012_2 | product_S0474_012 | 1 PCE       |
-    And the invoice identified by salesInvoiceS0474_012_2 is completed
+      | salesInvoiceS0474_020_2 | product_S0474_020 | 1 PCE       |
+    And the invoice identified by salesInvoiceS0474_020_2 is completed
 
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -230,7 +230,7 @@ Feature: Invoice export via postgREST
   "processParameters": [
     {
       "name": "ExternalId",
-      "value": "externalId_S0474_012"
+      "value": "externalId_S0474_020"
     }
   ]
 }
@@ -240,12 +240,12 @@ Feature: Invoice export via postgREST
     """
 [
   {
-    "Invoice_ID": @salesInvoiceS0474_012_ID@,
+    "Invoice_ID": @salesInvoiceS0474_020_ID@,
     "Invoice_Receiver_Tec_GLN": null,
     "Invoice_Sender_Tec_GLN": null,
     "Invoice_Sender_CountryCode": "DE",
     "Invoice_Sender_VATaxId": null,
-    "Invoice_DocumentNo": "S0474_012",
+    "Invoice_DocumentNo": "S0474_020",
     "Invoice_Date": "2025-05-01T00:00:00",
     "Invoice_Acct_Date": "2025-05-01T00:00:00",
     "DocType_Base": "ARI",
@@ -266,7 +266,7 @@ Feature: Invoice export via postgREST
     "Invoice_TotalLinesWithSurchargeAmt": 5.0,
     "Invoice_TotalVATWithSurchargeAmt": 0.95,
     "Invoice_GrandTotalWithSurchargeAmt": 5.95,
-    "ExternalId": "externalId_S0474_012",
+    "ExternalId": "externalId_S0474_020",
     "DataSource": "",
     "DocStatus": "CO",
     "Partners": [
@@ -325,13 +325,13 @@ Feature: Invoice export via postgREST
         "NetAmt": 5.0,
         "Tax_Percent": 19.0,
         "Tax_Amount": 0.95,
-        "Product_Name": "postgRESTExportProductName",
-        "Product_Description": "postgRESTExportProductDescription",
+        "Product_Name": "@postgRESTExportProductName_S0474_020@",
+        "Product_Description": "postgRESTExportProductName_S0474_020",
         "Product_Buyer_CU_GTIN": null,
         "Product_Buyer_TU_GTIN": null,
         "Product_Buyer_ProductNo": null,
         "Product_Supplier_TU_GTIN": null,
-        "Product_Supplier_ProductNo": "postgRESTExportProductValue",
+        "Product_Supplier_ProductNo": "@postgRESTExportProductValue_S0474_020@",
         "ExternalId": null
       }
     ],

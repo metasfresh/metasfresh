@@ -20,7 +20,7 @@ Feature: Shipments export via postgREST
       | Identifier | M_PriceList_ID |
       | salesPLV   | salesPriceList |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Value                    | Name                    | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | Identifier | REST.Context.Value       | REST.Context.Name       | IsCustomer | IsVendor | M_PricingSystem_ID |
       | customer1  | customer_value_S0475_010 | customer_name_S0475_010 | Y          | N        | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
@@ -32,8 +32,8 @@ Feature: Shipments export via postgREST
   Scenario: create a shipment and export it to JSON via UpdatedGE and InputDataSource
 
     Given metasfresh contains M_Products:
-      | Identifier        | Value                       | Name                       | Description                       | REST.Context         |
-      | product_S0475_010 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription | product_S0475_010_ID |
+      | Identifier        | REST.Context.Value                    | REST.Context.Name                    | Description                                 | REST.Context         |
+      | product_S0475_010 | postgRESTExportProductValue_S0475_010 | postgRESTExportProductName_S0475_010 | postgRESTExportProductDescription_S0475_010 | product_S0475_010_ID |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
       | salesPLV               | product_S0475_010 | 5.00     | PCE      |
@@ -113,9 +113,9 @@ Feature: Shipments export via postgREST
       "CountryCode": "DE"
     },
     "Buyer": {
-      "Name": "customer_name_S0475_010",
+      "Name": "@customer_name_S0475_010@",
       "Name2": null,
-      "Value": "customer_value_S0475_010"
+      "Value": "@customer_value_S0475_010@"
     },
     "Buyer_Location": {
       "GLN": null,
@@ -126,9 +126,9 @@ Feature: Shipments export via postgREST
       "CountryCode": "DE"
     },
     "Invoicee": {
-      "Name": "customer_name_S0475_010",
+      "Name": "@customer_name_S0475_010@",
       "Name2": null,
-      "Value": "customer_value_S0475_010"
+      "Value": "@customer_value_S0475_010@"
     },
     "Invoicee_Location": {
       "GLN": null,
@@ -153,8 +153,8 @@ Feature: Shipments export via postgREST
         "ExternalId": "externalLineId_S0475_010",
         "Product_ID": @product_S0475_010_ID@,
         "QtyEntered": 100,
-        "ProductName": "postgRESTExportProductName",
-        "ProductValue": "postgRESTExportProductValue"
+        "ProductName": "@postgRESTExportProductName_S0475_010@",
+        "ProductValue": "@postgRESTExportProductValue_S0475_010@"
       }
     ]
   }
@@ -166,8 +166,8 @@ Feature: Shipments export via postgREST
   Scenario: create a shipment and export it to JSON via externalId
 
     Given metasfresh contains M_Products:
-      | Identifier        | Value                       | Name                       | Description                       | REST.Context         |
-      | product_S0475_020 | postgRESTExportProductValue | postgRESTExportProductName | postgRESTExportProductDescription | product_S0475_020_ID |
+      | Identifier        | REST.Context.Value                    | REST.Context.Name                    | Description                                 | REST.Context         |
+      | product_S0475_020 | postgRESTExportProductValue_S0475_020 | postgRESTExportProductName_S0475_020 | postgRESTExportProductDescription_S0475_020 | product_S0475_020_ID |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
       | salesPLV               | product_S0475_020 | 5.00     | PCE      |
@@ -243,9 +243,9 @@ Feature: Shipments export via postgREST
       "CountryCode": "DE"
     },
     "Buyer": {
-      "Name": "customer_name_S0475_020",
+      "Name": "@customer_name_S0475_010@",
       "Name2": null,
-      "Value": "customer_value_S0475_020"
+      "Value": "@customer_value_S0475_010@"
     },
     "Buyer_Location": {
       "GLN": null,
@@ -256,9 +256,9 @@ Feature: Shipments export via postgREST
       "CountryCode": "DE"
     },
     "Invoicee": {
-      "Name": "customer_name_S0475_020",
+      "Name": "@customer_name_S0475_010@",
       "Name2": null,
-      "Value": "customer_value_S0475_020"
+      "Value": "@customer_value_S0475_010@"
     },
     "Invoicee_Location": {
       "GLN": null,
@@ -283,8 +283,8 @@ Feature: Shipments export via postgREST
         "ExternalId": "externalLineId_S0475_020",
         "Product_ID": @product_S0475_020_ID@,
         "QtyEntered": 100,
-        "ProductName": "postgRESTExportProductName",
-        "ProductValue": "postgRESTExportProductValue"
+        "ProductName": "@postgRESTExportProductName_S0475_020@",
+        "ProductValue": "@postgRESTExportProductValue_S0475_020@"
       }
     ]
   }

@@ -351,6 +351,11 @@ public class C_BPartner_StepDef
 		row.getAsOptionalIdentifier()
 				.ifPresent(recordIdentifier -> bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord));
 		restTestContext.setIntVariableFromRow(row, bPartnerRecord::getC_BPartner_ID);
+
+		row.getAsOptionalIdentifier("REST.Context.Value")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getValue()));
+		row.getAsOptionalIdentifier("REST.Context.Name")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), bPartnerRecord.getName()));
 	}
 
 	private void changeBPartner(@NonNull final DataTableRow row)
