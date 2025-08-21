@@ -30,6 +30,7 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdUIElementGroupId;
 
 import javax.annotation.Nullable;
 
