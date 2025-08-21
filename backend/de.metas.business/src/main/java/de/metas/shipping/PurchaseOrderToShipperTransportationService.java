@@ -12,6 +12,10 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.report.ReportResultData;
+import de.metas.report.server.ReportConstants;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -23,6 +27,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -68,6 +73,8 @@ public class PurchaseOrderToShipperTransportationService
 	{
 		return new PurchaseOrderToShipperTransportationService(new PurchaseOrderToShipperTransportationRepository());
 	}
+
+	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
 
 	public void addPurchaseOrdersToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final IQueryFilter<I_C_Order> queryFilter)
 	{
@@ -183,6 +190,34 @@ public class PurchaseOrderToShipperTransportationService
 						.build());
 			}
 		}
+	}
+
+	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return repo.hasPackageIdsByOrderId(orderId);
+	}
+
+	@Nullable
+	public ReportResultData printSSCC18_Labels(@NonNull final OrderId orderId)
+	{
+		//
+		// Create the process info based on AD_Process and AD_PInstance
+		final ProcessExecutionResult result = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setAD_ProcessByValue(AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper)
+				//
+				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
+				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_C_Order_SSCC_Label_Report"
+						+ " where C_Order_ID=" + orderId.getRepoId() + " "
+						+ " order by M_Package_ID")
+				//
+				// Execute the actual printing process
+				.buildAndPrepareExecution()
+				.onErrorThrowException()
+				.executeSync()
+				.getResult();
+
+		return result.getReportData();
 	}
 
 }
