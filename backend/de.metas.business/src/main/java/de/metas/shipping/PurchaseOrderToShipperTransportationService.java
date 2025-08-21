@@ -192,9 +192,9 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	public ImmutableList<PackageId> getPackageIDsByOrderId(@NonNull final OrderId orderId)
+	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
 	{
-		return repo.getPackageIDsByOrderId(orderId);
+		return repo.hasPackageIdsByOrderId(orderId);
 	}
 
 	@Nullable
@@ -207,7 +207,7 @@ public class PurchaseOrderToShipperTransportationService
 				.setAD_ProcessByValue(AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper)
 				//
 				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
-				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_M_Package_SSCC_Label_Report"
+				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_C_Order_SSCC_Label_Report"
 						+ " where C_Order_ID=" + orderId.getRepoId() + " "
 						+ " order by M_Package_ID")
 				//

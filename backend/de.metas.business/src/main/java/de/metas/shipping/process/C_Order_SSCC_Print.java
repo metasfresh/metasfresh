@@ -58,12 +58,12 @@ public class C_Order_SSCC_Print extends JavaProcess implements IProcessPrecondit
 		}
 
 		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
-		if(!docStatus.isCompletedOrClosed())
+		if (!docStatus.isCompletedOrClosed())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not completed or closed");
 		}
 
-		if(orderToShipperTransportationService.getPackageIDsByOrderId(orderId).isEmpty())
+		if (!orderToShipperTransportationService.hasPackageIdsByOrderId(orderId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("has no packages");
 		}
@@ -72,7 +72,7 @@ public class C_Order_SSCC_Print extends JavaProcess implements IProcessPrecondit
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final ReportResultData report = orderToShipperTransportationService.printSSCC18_Labels(OrderId.ofRepoId(getRecord_ID()));
 

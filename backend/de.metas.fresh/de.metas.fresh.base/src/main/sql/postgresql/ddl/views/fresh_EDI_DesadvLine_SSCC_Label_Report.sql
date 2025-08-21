@@ -1,7 +1,9 @@
-
 /*
- * NOTE to developer: please keep in sync with fresh_M_Package_SSCC_Label_Report AND fresh_HU_SSCC_Label_Report.
- * They must all contain the fields needed in the report src/main/jasperreports/de/metas/docs/label/sscc/label.jrxml
+ * NOTE to the developer: The following views need to be kept in sync:
+ * - fresh_EDI_DesadvLine_SSCC_Label_Report
+ * - fresh_HU_SSCC_Label_Report
+ * - fresh_C_Order_SSCC_Label_Report
+ * They all must contain the fields needed in the report src/main/jasperreports/de/metas/docs/label/sscc/label.jrxml
  */
 
 

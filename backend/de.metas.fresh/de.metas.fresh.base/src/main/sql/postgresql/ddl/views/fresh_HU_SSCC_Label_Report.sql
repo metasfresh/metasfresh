@@ -1,11 +1,16 @@
---DROP VIEW IF EXISTS report.fresh_HU_SSCC_Label_Report;
+/*
+ * NOTE to the developer: The following views need to be kept in sync:
+ * - fresh_EDI_DesadvLine_SSCC_Label_Report
+ * - fresh_HU_SSCC_Label_Report
+ * - fresh_C_Order_SSCC_Label_Report
+ * They all must contain the fields needed in the report src/main/jasperreports/de/metas/docs/label/sscc/label.jrxml
+ */
+
+
+DROP VIEW IF EXISTS report.fresh_HU_SSCC_Label_Report;
 
 CREATE OR REPLACE VIEW report.fresh_HU_SSCC_Label_Report as
 SELECT
-	/*
-	 * NOTE to developer: please keep in sync with fresh_EDI_DesadvLine_SSCC_Label_Report AND fresh_M_Package_SSCC_Label_Report.
-	 * They must all contain the fields needed in the report src/main/jasperreports/de/metas/docs/label/sscc/label.jrxml
-	 */
 	 ( 
 		SELECT  COALESCE(org_bp.name, '') || ', ' || COALESCE(org_l.Postal, '')|| ' '  || COALESCE(org_l.city, '')
 			FROM AD_Org org

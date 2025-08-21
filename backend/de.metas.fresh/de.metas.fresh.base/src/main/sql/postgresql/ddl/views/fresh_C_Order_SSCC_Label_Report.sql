@@ -1,16 +1,16 @@
 /*
- * NOTE to developer: please keep in sync with fresh_EDI_DesadvLine_SSCC_Label_Report AND fresh_HU_SSCC_Label_Report.
- * They must all contain the fields needed in the report src/main/jasperreports/de/metas/docs/label/sscc/label.jrxml
+ * NOTE to the developer: The following views need to be kept in sync:
+ * - fresh_EDI_DesadvLine_SSCC_Label_Report
+ * - fresh_HU_SSCC_Label_Report
+ * - fresh_C_Order_SSCC_Label_Report
+ * They all must contain the fields needed in the report src/main/jasperreports/de/metas/docs/label/sscc/label.jrxml
  */
 
 
-DROP VIEW IF EXISTS report.fresh_M_Package_SSCC_Label_Report
+DROP VIEW IF EXISTS report.fresh_C_Order_SSCC_Label_Report
 ;
 
-CREATE VIEW report.fresh_M_Package_SSCC_Label_Report
-            (org_address, sscc, p_customervalue, priceactual, p_name, cu_per_tu, tu_per_lu, net_weight, gross_weight,
-             order_docno, p_value, lotcode, paletno, customer, ad_language, m_hu_id, M_Package_ID, lotnumberdate, C_Order_ID)
-
+CREATE VIEW report.fresh_C_Order_SSCC_Label_Report
 AS
 SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::text) ||
                  COALESCE(org_l.postal, ''::character varying)::text) || ' '::text) ||

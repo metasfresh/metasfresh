@@ -124,13 +124,12 @@ public class PurchaseOrderToShipperTransportationRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableList<PackageId> getPackageIDsByOrderId(@NonNull final OrderId orderId)
+	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
-				.create()
-				.listDistinct(I_M_ShippingPackage.COLUMNNAME_M_Package_ID, PackageId.class);
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
+				.anyMatch();
 	}
 
 	public Package getPackageById(@NonNull final PackageId packageId)
