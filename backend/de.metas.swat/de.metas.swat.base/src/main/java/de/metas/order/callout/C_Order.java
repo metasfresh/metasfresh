@@ -33,10 +33,10 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
@@ -82,22 +82,21 @@ public class C_Order
 		}
 	}
 
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_AD_User_ID, skipIfCopying = true)
+	public void updateRenderedAddressAndCapturedLocation(final I_C_Order order)
+	{
+		updateRenderedAddressCapturedLocationAndPricingSystem(order);
+	}
+
 	@CalloutMethod(columnNames = {
 			I_C_Order.COLUMNNAME_C_BPartner_ID,
-			I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
-			I_C_Order.COLUMNNAME_AD_User_ID },
+			I_C_Order.COLUMNNAME_C_BPartner_Location_ID },
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_C_Order order)
 	{
-		final I_C_Order oldRecord = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
-		if (oldRecord.getAD_User_ID() == order.getAD_User_ID())
-		{
-			documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
-		}
+		documentLocationBL.updateCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
 
-		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
-		
-		orderBL.setM_PricingSystem_ID(order, true); // changed partner/location might imply a changed PS/PL
+		updateRenderedAddressCapturedLocationAndPricingSystem(order);
 	}
 
 	@CalloutMethod(columnNames = {
@@ -193,12 +192,13 @@ public class C_Order
 			order.setPhone(bPartnerLocationRecord.getPhone());
 		}
 	}
+
 	@CalloutMethod(columnNames = {
 			I_C_Order.COLUMNNAME_M_Shipper_ID },
 			skipIfCopying = true)
 	public void updateDeliveryViaRule(final I_C_Order order)
 	{
-		if(order.getM_Shipper_ID() > 0)
+		if (order.getM_Shipper_ID() > 0)
 		{
 			order.setDeliveryViaRule(X_C_Order.DELIVERYVIARULE_Shipper);
 		}
@@ -206,5 +206,12 @@ public class C_Order
 		{
 			order.setDeliveryViaRule(X_C_Order.DELIVERYVIARULE_Pickup);
 		}
+	}
+
+	private void updateRenderedAddressCapturedLocationAndPricingSystem(@NonNull final I_C_Order order)
+	{
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
+
+		orderBL.setM_PricingSystem_ID(order, true); // changed partner/location might imply a changed PS/PL
 	}
 }
